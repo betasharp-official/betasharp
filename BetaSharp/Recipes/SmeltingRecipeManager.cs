@@ -21,6 +21,9 @@ public class SmeltingRecipeManager
         AddSmelting(Block.Sand.id, new ItemStack(Block.Glass));
         AddSmelting(Item.RawPorkchop.id, new ItemStack(Item.CookedPorkchop));
         AddSmelting(Item.RawFish.id, new ItemStack(Item.CookedFish));
+        AddSmelting(Item.RawChicken.id, new ItemStack(Item.CookedChicken));
+        AddSmelting(Item.Beef.id, new ItemStack(Item.CookedPorkchop));
+        AddSmelting(Item.RawMutton.id, new ItemStack(Item.CookenMutton));
         AddSmelting(Block.Cobblestone.id, new ItemStack(Block.Stone));
         AddSmelting(Item.Clay.id, new ItemStack(Item.Brick));
         AddSmelting(Block.Cactus.id, new ItemStack(Item.Dye, 1, 2));

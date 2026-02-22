@@ -516,16 +516,29 @@ public class EntityLiving : Entity
         world.broadcastEntityEvent(this, (byte)3);
     }
 
+    protected virtual void dropSomeItems(int id = -1, int count = 0)
+    {
+        id = id != -1 ? id : getDropItemId();
+        if (id > 0)
+        {
+            count = count == 0 ? random.NextInt(2) + 1: count;
+
+            for (int i = 0; i < count; ++i)
+            {
+                dropItem(id, 1);
+            }
+        }
+    }
     protected virtual void dropFewItems()
     {
-        int var1 = getDropItemId();
-        if (var1 > 0)
+        int id = getDropItemId();
+        if (id > 0)
         {
-            int var2 = random.NextInt(3);
+            int count = random.NextInt(3);
 
-            for (int var3 = 0; var3 < var2; ++var3)
+            for (int i = 0; i < count; ++i)
             {
-                dropItem(var1, 1);
+                dropItem(id, 1);
             }
         }
 

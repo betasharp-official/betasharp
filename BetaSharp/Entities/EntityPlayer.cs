@@ -490,6 +490,21 @@ public abstract class EntityPlayer : EntityLiving
                     commandWolvesToAttack((EntityLiving)var3, false);
                 }
 
+                if (health - amount < 1)
+                {
+                    ItemStack currentStack = inventory.getSelectedItem();
+                    
+                    if (currentStack is not null)
+                    {
+                        Item? item = currentStack.getItem();
+                        if (item is ItemTotem totem)
+                        {
+                            totem.saveLife(currentStack, world, this);
+                            return false;
+                        }
+                    }
+                }
+
                 increaseStat(Stats.Stats.damageTakenStat, amount);
                 return base.damage(damageSource, amount);
             }

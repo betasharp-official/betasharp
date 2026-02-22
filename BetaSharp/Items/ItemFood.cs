@@ -9,11 +9,11 @@ public class ItemFood : Item
     private int healAmount;
     private bool isWolfsFavoriteMeat;
 
-    public ItemFood(int id, int healAmount, bool isWolfsFavoriteMeat) : base(id)
+    public ItemFood(int id, int healAmount, bool isWolfsFavoriteMeat, int max = 1) : base(id)
     {
         this.healAmount = healAmount;
         this.isWolfsFavoriteMeat = isWolfsFavoriteMeat;
-        maxCount = 1;
+        maxCount = max;
     }
 
     public override ItemStack use(ItemStack itemStack, World world, EntityPlayer entityPlayer)

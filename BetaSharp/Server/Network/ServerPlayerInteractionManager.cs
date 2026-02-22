@@ -144,7 +144,7 @@ public class ServerPlayerInteractionManager
         if (itemStack != stack || itemStack != null && itemStack.count != count)
         {
             player.inventory.main[player.inventory.selectedSlot] = itemStack;
-            if (itemStack.count == 0)
+            if (itemStack.count <= 0)
             {
                 player.inventory.main[player.inventory.selectedSlot] = null;
             }

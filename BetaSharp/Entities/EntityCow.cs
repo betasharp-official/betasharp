@@ -44,9 +44,15 @@ public class EntityCow : EntityAnimal
         return 0.4F;
     }
 
+    protected override void dropFewItems()
+    {
+        dropSomeItems(Item.Leather.id);
+        dropSomeItems();
+    }
+
     protected override int getDropItemId()
     {
-        return Item.Leather.id;
+        return fireTicks > 0 ? Item.CookedPorkchop.id : Item.Beef.id;
     }
 
     public override bool interact(EntityPlayer player)

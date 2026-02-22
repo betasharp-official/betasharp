@@ -35,12 +35,12 @@ public class EntitySheep : EntityAnimal
         {
             dropItem(new ItemStack(Block.Wool.id, 1, getFleeceColor()), 0.0F);
         }
-
+        dropSomeItems();
     }
 
     protected override int getDropItemId()
     {
-        return Block.Wool.id;
+        return fireTicks > 0 ? Item.CookenMutton.id : Item.RawMutton.id;
     }
 
     public override bool interact(EntityPlayer player)

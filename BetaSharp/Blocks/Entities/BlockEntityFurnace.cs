@@ -14,6 +14,8 @@ public class BlockEntityFurnace : BlockEntity, IInventory
     public int fuelTime;
     public int cookTime;
 
+    public int meltSpeed = 200;
+
     public int size()
     {
         return inventory.Length;
@@ -22,6 +24,17 @@ public class BlockEntityFurnace : BlockEntity, IInventory
     public ItemStack getStack(int slot)
     {
         return inventory[slot];
+    }
+
+    public BlockEntityFurnace setMeltSpeed(int speed)
+    {
+        this.meltSpeed = speed; 
+        return this;
+    }
+
+    public int getMeltSpeed()
+    {
+        return meltSpeed;
     }
 
     public ItemStack removeStack(int slot, int stack)
@@ -116,14 +129,14 @@ public class BlockEntityFurnace : BlockEntity, IInventory
 
     public int getCookTimeDelta(int multiplier)
     {
-        return cookTime * multiplier / 200;
+        return cookTime * multiplier / meltSpeed;
     }
 
     public int getFuelTimeDelta(int multiplier)
     {
         if (fuelTime == 0)
         {
-            fuelTime = 200;
+            fuelTime = meltSpeed;
         }
 
         return burnTime * multiplier / fuelTime;
@@ -165,7 +178,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             if (isBurning() && canAcceptRecipeOutput())
             {
                 ++cookTime;
-                if (cookTime == 200)
+                if (cookTime >= meltSpeed)
                 {
                     cookTime = 0;
                     craftRecipe();

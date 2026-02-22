@@ -70,7 +70,7 @@ public class TextureManager
         Load(image, textureName, false);
     }
 
-    public int GetTextureId(string path)
+    public int GetTextureId(string path, bool forceMipmaps = false)
     {
         if (_textures.TryGetValue(path, out int id)) return id;
 
@@ -81,7 +81,7 @@ public class TextureManager
 
             _atlasTileSizes[path] = img.Width / 16;
 
-            Load(img, (int)newId, path.Contains("terrain.png"));
+            Load(img, (int)newId, path.Contains("terrain.png") || forceMipmaps);
             _textures[path] = (int)newId;
             return (int)newId;
         }

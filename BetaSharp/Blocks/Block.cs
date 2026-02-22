@@ -127,6 +127,7 @@ public class Block
     public static readonly Block Repeater = new BlockRedstoneRepeater(93, false).setHardness(0.0F).setSoundGroup(SoundWoodFootstep).setBlockName("diode").disableStats().ignoreMetaUpdates();
     public static readonly Block PoweredRepeater = new BlockRedstoneRepeater(94, true).setHardness(0.0F).setLuminance(10.0F / 16.0F).setSoundGroup(SoundWoodFootstep).setBlockName("diode").disableStats().ignoreMetaUpdates();
     public static readonly Block Trapdoor = new BlockTrapDoor(96, Material.Wood).setHardness(3.0F).setSoundGroup(SoundWoodFootstep).setBlockName("trapdoor").disableStats().ignoreMetaUpdates();
+    public static readonly BlockPlant BlueRose = (BlockPlant)new BlockPlant(97, 111).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("blueRose");
     public int textureId;
     public readonly int id;
     public float hardness;

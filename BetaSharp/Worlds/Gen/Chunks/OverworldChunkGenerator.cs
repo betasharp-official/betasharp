@@ -721,6 +721,14 @@ public class OverworldChunkGenerator : ChunkSource
             new PlantPatchFeature(Block.Rose.id).Generate(world, random, featureX, featureY, featureZ);
         }
 
+        if (random.NextInt(3) == 0)
+        {
+            featureX = blockX + random.NextInt(16) + 8;
+            featureY = random.NextInt(128);
+            featureZ = blockZ + random.NextInt(16) + 8;
+            new PlantPatchFeature(Block.BlueRose.id).Generate(world, random, featureX, featureY, featureZ);
+        }
+
 	    // Generate Brown Mushrooms
         if (random.NextInt(4) == 0)
         {

@@ -10,7 +10,7 @@
 *.user
 *.userosscache
 *.sln.docstates
-assets/
+assets/*
 b1.7.3.jar
 
 # User-specific files (MonoDevelop/Xamarin Studio)
@@ -236,7 +236,7 @@ _pkginfo.txt
 !?*.[Cc]ache/
 
 # Others
-ClientBin/
+ClientBin/*
 ~$*
 *~
 *.dbmdl
@@ -367,3 +367,26 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+#wtf
+
+!BetaSharp.Launcher/
+!BetaSharp.Launcher/bin/
+!BetaSharp.Launcher/bin/Debug/
+!BetaSharp.Launcher/bin/Debug/net10.0/
+!BetaSharp.Launcher/bin/Debug/net10.0/assets/
+!BetaSharp.Launcher/bin/Debug/net10.0/assets/xcf/
+
+BetaSharp.Launcher/bin/*
+!BetaSharp.Launcher/bin/Debug/
+
+BetaSharp.Launcher/bin/Debug/*
+!BetaSharp.Launcher/bin/Debug/net10.0/
+
+BetaSharp.Launcher/bin/Debug/net10.0/*
+!BetaSharp.Launcher/bin/Debug/net10.0/assets/
+
+BetaSharp.Launcher/bin/Debug/net10.0/assets/*
+!BetaSharp.Launcher/bin/Debug/net10.0/assets/xcf/
+
+!BetaSharp.Launcher/bin/Debug/net10.0/assets/xcf/**

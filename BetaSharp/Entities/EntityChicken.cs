@@ -96,6 +96,15 @@ public class EntityChicken : EntityAnimal
 
     protected override int getDropItemId()
     {
-        return Item.Feather.id;
+        return fireTicks > 0 ? Item.CookedChicken.id : Item.RawChicken.id;
+    }
+
+    protected override void dropFewItems()
+    {
+        if (fireTicks <= 0)
+        {
+            dropSomeItems(Item.Feather.id);
+        }
+        dropSomeItems(count: 1);
     }
 }

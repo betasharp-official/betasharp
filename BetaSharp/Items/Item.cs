@@ -126,6 +126,15 @@ public class Item : java.lang.Object
     public static ItemShears Shears = (ItemShears)(new ItemShears(103)).setTexturePosition(13, 5).setItemName("shears");
     public static Item RecordThirteen = (new ItemRecord(2000, "13")).setTexturePosition(0, 15).setItemName("record");
     public static Item RecordCat = (new ItemRecord(2001, "cat")).setTexturePosition(1, 15).setItemName("record");
+    //New food
+    public static Item Beef = (new ItemFood(104, 2, true)).setTexturePosition(9, 6).setItemName("beef");
+    public static Item RawChicken = (new ItemFood(105, 1, true)).setTexturePosition(9, 7).setItemName("rawChicken");
+    public static Item RawMutton = (new ItemFood(106, 2, true)).setTexturePosition(9, 8).setItemName("rawMutton");
+    public static Item CookedChicken = (new ItemFood(107, 8, true)).setTexturePosition(10, 7).setItemName("cookedChicken");
+    public static Item CookenMutton = (new ItemFood(108, 8, true)).setTexturePosition(10, 8).setItemName("cookedMutton");
+    public static Item PumkinPie = (new ItemFood(109, 6, false, 2)).setTexturePosition(9, 9).setItemName("pumpkinPie");
+    //Totem
+    public static Item Totem = (new ItemTotem(110)).setTexturePosition(5, 6).setItemName("totem");
     public readonly int id;
     public int maxCount = 64;
     private int maxDamage;

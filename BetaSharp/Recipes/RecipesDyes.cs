@@ -14,6 +14,7 @@ public class RecipesDyes
 
         m.AddShapelessRecipe(new ItemStack(Item.Dye, 2, 11), Block.Dandelion);
         m.AddShapelessRecipe(new ItemStack(Item.Dye, 2, 1), Block.Rose);
+        m.AddShapelessRecipe(new ItemStack(Item.Dye, 3, 6), Block.BlueRose);
         m.AddShapelessRecipe(new ItemStack(Item.Dye, 3, 15), Item.Bone);
         m.AddShapelessRecipe(new ItemStack(Item.Dye, 2, 9), new ItemStack(Item.Dye, 1, 1), new ItemStack(Item.Dye, 1, 15));
         m.AddShapelessRecipe(new ItemStack(Item.Dye, 2, 14), new ItemStack(Item.Dye, 1, 1), new ItemStack(Item.Dye, 1, 11));
