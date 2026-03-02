@@ -44,6 +44,7 @@ public class GuiIngameMenu : GuiScreen
 
             mc.stopInternalServer();
             mc.changeWorld(null);
+            mc.options.ShowDebugInfo = false;
             mc.displayGuiScreen(new GuiMainMenu());
         }
 
