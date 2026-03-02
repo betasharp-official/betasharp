@@ -80,32 +80,6 @@ public class BlockRenderer
     public static void RenderBlockOnInventory(Block block, int metadata, float brightness, Tessellator tess)
     {
         BlockRendererType renderType = block.getRenderType();
-        if (renderType == BlockRendererType.PistonBase)
-        {
-            const int pistonMeta = 1;
-            var pistonWorld = new PistonItemBlockAccess(block.id, pistonMeta);
-
-            GLManager.GL.Color4(brightness, brightness, brightness, 1.0F);
-
-            GLManager.GL.Translate(-0.5F, -0.5F, -0.5F);
-
-            tess.startDrawingQuads();
-
-            BlockRenderContext ctx = new(
-                world: pistonWorld,
-                tess: tess,
-                renderAllFaces: true,
-                enableAo: false
-            );
-
-            BlockPos pos = new(0, 0, 0);
-            s_pistonBase.Draw(block, pos, ref ctx);
-
-            tess.draw();
-            GLManager.GL.Translate(0.5F, 0.5F, 0.5F);
-            return;
-        }
-
         var uiCtx = new BlockRenderContext(
             world: NullBlockAccess.Instance,
             tess: tess,
@@ -117,8 +91,10 @@ public class BlockRenderer
         Vec3D origin = new Vec3D(0, 0, 0);
         FaceColors dummyColors = new FaceColors();
 
-        if (renderType == BlockRendererType.Standard)
+        if (renderType == BlockRendererType.Standard || renderType == BlockRendererType.PistonBase)
         {
+            bool isPiston = renderType == BlockRendererType.PistonBase;
+
             void SetFaceColor(int face)
             {
                 int c = block.getColorForFace(metadata, face);
@@ -132,41 +108,45 @@ public class BlockRenderer
             block.setupRenderBoundingBox();
             GLManager.GL.Translate(-0.5F, -0.5F, -0.5F);
 
-            // We manually draw the cube faces here to set GL Normals for the UI lighting
             tess.startDrawingQuads();
             tess.setNormal(0.0F, -1.0F, 0.0F);
             SetFaceColor(0);
-            uiCtx.DrawBottomFace(block, origin, dummyColors, block.getTexture(0, metadata));
+            uiCtx.DrawBottomFace(block, origin, dummyColors, isPiston ? block.getTexture(0) : block.getTexture(0, metadata));
             tess.draw();
 
             tess.startDrawingQuads();
             tess.setNormal(0.0F, 1.0F, 0.0F);
             SetFaceColor(1);
-            uiCtx.DrawTopFace(block, origin, dummyColors, block.getTexture(1, metadata));
+            uiCtx.DrawTopFace(block, origin, dummyColors,
+                isPiston ? block.getTexture(1) : block.getTexture(1, metadata));
             tess.draw();
 
             tess.startDrawingQuads();
             tess.setNormal(0.0F, 0.0F, -1.0F);
             SetFaceColor(2);
-            uiCtx.DrawEastFace(block, origin, dummyColors, block.getTexture(2, metadata));
+            uiCtx.DrawEastFace(block, origin, dummyColors,
+                isPiston ? block.getTexture(2) : block.getTexture(2, metadata));
             tess.draw();
 
             tess.startDrawingQuads();
             tess.setNormal(0.0F, 0.0F, 1.0F);
             SetFaceColor(3);
-            uiCtx.DrawWestFace(block, origin, dummyColors, block.getTexture(3, metadata));
+            uiCtx.DrawWestFace(block, origin, dummyColors,
+                isPiston ? block.getTexture(3) : block.getTexture(3, metadata));
             tess.draw();
 
             tess.startDrawingQuads();
             tess.setNormal(-1.0F, 0.0F, 0.0F);
             SetFaceColor(4);
-            uiCtx.DrawNorthFace(block, origin, dummyColors, block.getTexture(4, metadata));
+            uiCtx.DrawNorthFace(block, origin, dummyColors,
+                isPiston ? block.getTexture(4) : block.getTexture(4, metadata));
             tess.draw();
 
             tess.startDrawingQuads();
             tess.setNormal(1.0F, 0.0F, 0.0F);
             SetFaceColor(5);
-            uiCtx.DrawSouthFace(block, origin, dummyColors, block.getTexture(5, metadata));
+            uiCtx.DrawSouthFace(block, origin, dummyColors,
+                isPiston ? block.getTexture(5) : block.getTexture(5, metadata));
             tess.draw();
 
             GLManager.GL.Translate(0.5F, 0.5F, 0.5F);
@@ -197,7 +177,6 @@ public class BlockRenderer
         float lightZ = 0.8F; // East/West faces
         float lightX = 0.6F; // North/South faces
 
-        // Create a specialized Entity Context: No AO, Forced All Faces
         var entityCtx = new BlockRenderContext(
             world: world,
             tess: tess,
@@ -212,17 +191,17 @@ public class BlockRenderer
         Vec3D localOrigin = new Vec3D(-0.5, -0.5, -0.5);
         FaceColors dummyColors = new FaceColors();
 
-        // --- Bottom Face ---
+        // Bottom Face
         float faceLum = Math.Max(currentLuminance, block.getLuminance(world, x, y - 1, z));
         tess.setColorOpaque_F(lightBottom * faceLum, lightBottom * faceLum, lightBottom * faceLum);
         entityCtx.DrawBottomFace(block, localOrigin, dummyColors, block.getTexture(0));
 
-        // --- Top Face ---
+        // Top Face
         faceLum = Math.Max(currentLuminance, block.getLuminance(world, x, y + 1, z));
         tess.setColorOpaque_F(lightTop * faceLum, lightTop * faceLum, lightTop * faceLum);
         entityCtx.DrawTopFace(block, localOrigin, dummyColors, block.getTexture(1));
 
-        // --- East/West Faces ---
+        // East/West Faces
         faceLum = Math.Max(currentLuminance, block.getLuminance(world, x, y, z - 1));
         tess.setColorOpaque_F(lightZ * faceLum, lightZ * faceLum, lightZ * faceLum);
         entityCtx.DrawEastFace(block, localOrigin, dummyColors, block.getTexture(2));
@@ -231,7 +210,7 @@ public class BlockRenderer
         tess.setColorOpaque_F(lightZ * faceLum, lightZ * faceLum, lightZ * faceLum);
         entityCtx.DrawWestFace(block, localOrigin, dummyColors, block.getTexture(3));
 
-        // --- North/South Faces ---
+        // North/South Faces
         faceLum = Math.Max(currentLuminance, block.getLuminance(world, x - 1, y, z));
         tess.setColorOpaque_F(lightX * faceLum, lightX * faceLum, lightX * faceLum);
         entityCtx.DrawNorthFace(block, localOrigin, dummyColors, block.getTexture(4));
