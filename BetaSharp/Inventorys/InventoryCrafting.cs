@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Screens;
 
@@ -87,7 +87,7 @@ public class InventoryCrafting : IInventory
         return 64;
     }
 
-    public void markDirty()
+    public void MarkDirty()
     {
     }
 

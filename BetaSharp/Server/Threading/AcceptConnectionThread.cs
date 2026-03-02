@@ -27,7 +27,7 @@ internal class AcceptConnectionThread
     {
         Dictionary<IPAddress, long> map = [];
 
-        while (_listener.open)
+        while (_listener.Open)
         {
             try
             {
@@ -50,7 +50,7 @@ internal class AcceptConnectionThread
                 {
                     map[address] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
 ;
-                    ServerLoginNetworkHandler handler = new(_listener.server, socket, "Connection # " + _listener.connectionCounter);
+                    ServerLoginNetworkHandler handler = new(_listener.Server, socket, "Connection # " + _listener.ConnectionCounter);
                     _listener.AddPendingConnection(handler);
                 }
             }

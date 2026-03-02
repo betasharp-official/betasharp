@@ -1,4 +1,4 @@
-using BetaSharp.Blocks;
+﻿using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Rendering.Blocks;
@@ -905,7 +905,7 @@ public class WorldRenderer : IWorldAccess
         chunkRenderer.UpdateAllRenderers();
     }
 
-    public void updateBlockEntity(int var1, int var2, int var3, BlockEntity var4)
+    public void UpdateBlockEntity(int var1, int var2, int var3, BlockEntity var4)
     {
     }
 

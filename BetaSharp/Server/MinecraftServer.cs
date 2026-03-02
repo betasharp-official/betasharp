@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Threading;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Server.Commands;
@@ -16,24 +16,24 @@ namespace BetaSharp.Server;
 public abstract class MinecraftServer : CommandOutput
 {
     public Dictionary<string, int> GIVE_COMMANDS_COOLDOWNS = [];
-    public ConnectionListener connections;
-    public IServerConfiguration config;
-    public ServerWorld[] worlds;
-    public PlayerManager playerManager;
+    public ConnectionListener Connections;
+    public IServerConfiguration Config;
+    public ServerWorld[] Worlds;
+    public PlayerManager PlayerManager;
     private ServerCommandHandler commandHandler;
-    public bool running = true;
-    public bool stopped;
+    public bool Running = true;
+    public bool Stopped;
     private int ticks;
-    public string progressMessage;
-    public int progress;
+    public string ProgressMessage;
+    public int Progress;
     private readonly List<Command> _pendingCommands = [];
     private readonly object _pendingCommandsLock = new();
-    public EntityTracker[] entityTrackers = new EntityTracker[2];
-    public bool onlineMode;
-    public bool spawnAnimals;
-    public bool pvpEnabled;
-    public bool flightEnabled;
-    protected bool logHelp = true;
+    public EntityTracker[] EntityTrackers = new EntityTracker[2];
+    public bool OnlineMode;
+    public bool SpawnAnimals;
+    public bool PvpEnabled;
+    public bool FlightEnabled;
+    protected bool LogHelp = true;
 
     private readonly ILogger<MinecraftServer> _logger = Log.Instance.For<MinecraftServer>();
     private readonly Lock _tpsLock = new();
@@ -59,26 +59,26 @@ public abstract class MinecraftServer : CommandOutput
         _isPaused = paused;
     }
 
-    public MinecraftServer(IServerConfiguration config)
+    public MinecraftServer(IServerConfiguration Config)
     {
-        this.config = config;
+        this.Config = Config;
     }
 
     protected virtual bool Init()
     {
         commandHandler = new ServerCommandHandler(this);
 
-        onlineMode = config.GetOnlineMode(true);
-        spawnAnimals = config.GetSpawnAnimals(true);
-        pvpEnabled = config.GetPvpEnabled(true);
-        flightEnabled = config.GetAllowFlight(false);
+        OnlineMode = Config.GetOnlineMode(true);
+        SpawnAnimals = Config.GetSpawnAnimals(true);
+        PvpEnabled = Config.GetPvpEnabled(true);
+        FlightEnabled = Config.GetAllowFlight(false);
 
-        playerManager = CreatePlayerManager();
-        entityTrackers[0] = new EntityTracker(this, 0);
-        entityTrackers[1] = new EntityTracker(this, -1);
+        PlayerManager = CreatePlayerManager();
+        EntityTrackers[0] = new EntityTracker(this, 0);
+        EntityTrackers[1] = new EntityTracker(this, -1);
         long startTimestamp = Stopwatch.GetTimestamp();
-        string worldName = config.GetLevelName("world");
-        string seedString = config.GetLevelSeed("");
+        string worldName = Config.GetLevelName("world");
+        string seedString = Config.GetLevelSeed("");
         long seed = Random.Shared.NextInt64();
         if (seedString.Length > 0)
         {
@@ -101,7 +101,7 @@ public abstract class MinecraftServer : CommandOutput
         _logger.LogInformation($"Preparing level \"{worldName}\"");
         loadWorld(new RegionWorldStorageSource(GetFilePath(".")), worldName, seed);
 
-        if (logHelp)
+        if (LogHelp)
         {
             long elapsedNs = (long)((Stopwatch.GetTimestamp() - startTimestamp) * (1_000_000_000.0 / Stopwatch.Frequency));
             _logger.LogInformation($"Done ({elapsedNs}ns)! For help, type \"help\" or \"?\"");
@@ -112,41 +112,41 @@ public abstract class MinecraftServer : CommandOutput
 
     private void loadWorld(IWorldStorageSource storageSource, string worldDir, long seed)
     {
-        worlds = new ServerWorld[2];
+        Worlds = new ServerWorld[2];
         RegionWorldStorage worldStorage = new RegionWorldStorage(GetFilePath("."), worldDir, true);
 
-        for (int i = 0; i < worlds.Length; i++)
+        for (int i = 0; i < Worlds.Length; i++)
         {
             if (i == 0)
             {
-                worlds[i] = new ServerWorld(this, worldStorage, worldDir, i == 0 ? 0 : -1, seed);
+                Worlds[i] = new ServerWorld(this, worldStorage, worldDir, i == 0 ? 0 : -1, seed);
             }
             else
             {
-                worlds[i] = new ReadOnlyServerWorld(this, worldStorage, worldDir, i == 0 ? 0 : -1, seed, worlds[0]);
+                Worlds[i] = new ReadOnlyServerWorld(this, worldStorage, worldDir, i == 0 ? 0 : -1, seed, Worlds[0]);
             }
 
-            worlds[i].addWorldAccess(new ServerWorldEventListener(this, worlds[i]));
-            worlds[i].difficulty = config.GetSpawnMonsters(true) ? 1 : 0;
-            worlds[i].allowSpawning(config.GetSpawnMonsters(true), spawnAnimals);
-            playerManager.saveAllPlayers(worlds);
+            Worlds[i].addWorldAccess(new ServerWorldEventListener(this, Worlds[i]));
+            Worlds[i].difficulty = Config.GetSpawnMonsters(true) ? 1 : 0;
+            Worlds[i].allowSpawning(Config.GetSpawnMonsters(true), SpawnAnimals);
+            PlayerManager.SaveAllPlayers(Worlds);
         }
 
         short startRegionSize = 196;
         long lastTimeLogged = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
 ;
 
-        for (int i = 0; i < worlds.Length; i++)
+        for (int i = 0; i < Worlds.Length; i++)
         {
             _logger.LogInformation($"Preparing start region for level {i}");
-            if (i == 0 || config.GetAllowNether(true))
+            if (i == 0 || Config.GetAllowNether(true))
             {
-                ServerWorld world = worlds[i];
+                ServerWorld world = Worlds[i];
                 Vec3i spawnPos = world.getSpawnPos();
 
-                for (int x = -startRegionSize; x <= startRegionSize && running; x += 16)
+                for (int x = -startRegionSize; x <= startRegionSize && Running; x += 16)
                 {
-                    for (int z = -startRegionSize; z <= startRegionSize && running; z += 16)
+                    for (int z = -startRegionSize; z <= startRegionSize && Running; z += 16)
                     {
                         long currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
 ;
@@ -165,7 +165,7 @@ public abstract class MinecraftServer : CommandOutput
 
                         world.chunkCache.LoadChunk(spawnPos.X + x >> 4, spawnPos.Z + z >> 4);
 
-                        while (world.doLightingUpdates() && running)
+                        while (world.doLightingUpdates() && Running)
                         {
                         }
                     }
@@ -178,22 +178,22 @@ public abstract class MinecraftServer : CommandOutput
 
     private void logProgress(string progressType, int progress)
     {
-        progressMessage = progressType;
-        this.progress = progress;
+        ProgressMessage = progressType;
+        this.Progress = progress;
         _logger.LogInformation($"{progressType}: {progress}%");
     }
 
     private void clearProgress()
     {
-        progressMessage = null;
-        progress = 0;
+        ProgressMessage = null;
+        Progress = 0;
     }
 
     private void saveWorlds()
     {
         _logger.LogInformation("Saving chunks");
 
-        foreach (ServerWorld world in worlds)
+        foreach (ServerWorld world in Worlds)
         {
             world.saveWithLoadingDisplay(true, null);
             world.forceSave();
@@ -202,19 +202,19 @@ public abstract class MinecraftServer : CommandOutput
 
     private void shutdown()
     {
-        if (stopped)
+        if (Stopped)
         {
             return;
         }
 
         _logger.LogInformation("Stopping server");
 
-        if (playerManager != null)
+        if (PlayerManager != null)
         {
-            playerManager.savePlayers();
+            PlayerManager.SavePlayers();
         }
 
-        foreach (ServerWorld world in worlds)
+        foreach (ServerWorld world in Worlds)
         {
             if (world != null)
             {
@@ -223,12 +223,12 @@ public abstract class MinecraftServer : CommandOutput
         }
     }
 
-    public void stop()
+    public void Stop()
     {
-        running = false;
+        Running = false;
     }
 
-    public void run()
+    public void Run()
     {
         try
         {
@@ -240,7 +240,7 @@ public abstract class MinecraftServer : CommandOutput
                 _lastTpsTime = lastTime;
                 _ticksThisSecond = 0;
 
-                while (running)
+                while (Running)
                 {
                     long currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
 ;
@@ -270,7 +270,7 @@ public abstract class MinecraftServer : CommandOutput
                         continue;
                     }
 
-                    if (worlds[0].canSkipNight())
+                    if (Worlds[0].canSkipNight())
                     {
                         tick();
                         _ticksThisSecond++;
@@ -304,9 +304,9 @@ public abstract class MinecraftServer : CommandOutput
             }
             else
             {
-                while (running)
+                while (Running)
                 {
-                    runPendingCommands();
+                    RunPendingCommands();
                     Thread.Sleep(10);
                 }
             }
@@ -315,9 +315,9 @@ public abstract class MinecraftServer : CommandOutput
         {
             _logger.LogError(ex, "Exception");
 
-            while (running)
+            while (Running)
             {
-                runPendingCommands();
+                RunPendingCommands();
                 Thread.Sleep(10);
             }
         }
@@ -326,7 +326,7 @@ public abstract class MinecraftServer : CommandOutput
             try
             {
                 shutdown();
-                stopped = true;
+                Stopped = true;
             }
             catch (Exception ex)
             {
@@ -365,14 +365,14 @@ public abstract class MinecraftServer : CommandOutput
 
         ticks++;
 
-        for (int i = 0; i < worlds.Length; i++)
+        for (int i = 0; i < Worlds.Length; i++)
         {
-            if (i == 0 || config.GetAllowNether(true))
+            if (i == 0 || Config.GetAllowNether(true))
             {
-                ServerWorld world = worlds[i];
+                ServerWorld world = Worlds[i];
                 if (ticks % 20 == 0)
                 {
-                    playerManager.sendToDimension(new WorldTimeUpdateS2CPacket(world.getTime()), world.dimension.Id);
+                    PlayerManager.SendToDimension(new WorldTimeUpdateS2CPacket(world.getTime()), world.dimension.Id);
                 }
 
                 world.Tick();
@@ -385,20 +385,20 @@ public abstract class MinecraftServer : CommandOutput
             }
         }
 
-        if (connections != null)
+        if (Connections != null)
         {
-            connections.Tick();
+            Connections.Tick();
         }
-        playerManager.updateAllChunks();
+        PlayerManager.UpdateAllChunks();
 
-        foreach (EntityTracker t in entityTrackers)
+        foreach (EntityTracker t in EntityTrackers)
         {
-            t.tick();
+            t.Tick();
         }
 
         try
         {
-            runPendingCommands();
+            RunPendingCommands();
         }
         catch (Exception e)
         {
@@ -406,7 +406,7 @@ public abstract class MinecraftServer : CommandOutput
         }
     }
 
-    public void queueCommands(string str, CommandOutput cmd)
+    public void QueueCommands(string str, CommandOutput cmd)
     {
         lock (_pendingCommandsLock)
         {
@@ -414,7 +414,7 @@ public abstract class MinecraftServer : CommandOutput
         }
     }
 
-    public void runPendingCommands()
+    public void RunPendingCommands()
     {
         while (true)
         {
@@ -446,14 +446,14 @@ public abstract class MinecraftServer : CommandOutput
         return "CONSOLE";
     }
 
-    public ServerWorld getWorld(int dimensionId)
+    public ServerWorld GetWorld(int dimensionId)
     {
-        return dimensionId == -1 ? worlds[1] : worlds[0];
+        return dimensionId == -1 ? Worlds[1] : Worlds[0];
     }
 
-    public EntityTracker getEntityTracker(int dimensionId)
+    public EntityTracker GetEntityTracker(int dimensionId)
     {
-        return dimensionId == -1 ? entityTrackers[1] : entityTrackers[0];
+        return dimensionId == -1 ? EntityTrackers[1] : EntityTrackers[0];
     }
     protected virtual PlayerManager CreatePlayerManager()
     {

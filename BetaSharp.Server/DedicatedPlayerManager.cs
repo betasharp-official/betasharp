@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server;
 
@@ -17,28 +17,28 @@ internal class DedicatedPlayerManager : PlayerManager
         _operatorsFile = server.GetFilePath("ops.txt");
         _whitelistFile = server.GetFilePath("white-list.txt");
 
-        loadBannedPlayers();
-        loadBannedIps();
-        loadOperators();
-        loadWhitelist();
-        saveBannedPlayers();
-        saveBannedIps();
-        saveOperators();
-        saveWhitelist();
+        LoadBannedPlayers();
+        LoadBannedIps();
+        LoadOperators();
+        LoadWhitelist();
+        SaveBannedPlayers();
+        SaveBannedIps();
+        SaveOperators();
+        SaveWhitelist();
     }
 
-    protected override void loadBannedPlayers()
+    protected override void LoadBannedPlayers()
     {
         try
         {
-            bannedPlayers.Clear();
+            BannedPlayers.Clear();
             if (File.Exists(_bannedPlayersFile))
             {
                 foreach (string line in File.ReadAllLines(_bannedPlayersFile))
                 {
                     string trimmed = line.Trim().ToLower();
                     if (trimmed.Length > 0)
-                        bannedPlayers.Add(trimmed);
+                        BannedPlayers.Add(trimmed);
                 }
             }
         }
@@ -48,11 +48,11 @@ internal class DedicatedPlayerManager : PlayerManager
         }
     }
 
-    protected override void saveBannedPlayers()
+    protected override void SaveBannedPlayers()
     {
         try
         {
-            File.WriteAllLines(_bannedPlayersFile, bannedPlayers);
+            File.WriteAllLines(_bannedPlayersFile, BannedPlayers);
         }
         catch (Exception ex)
         {
@@ -60,18 +60,18 @@ internal class DedicatedPlayerManager : PlayerManager
         }
     }
 
-    protected override void loadBannedIps()
+    protected override void LoadBannedIps()
     {
         try
         {
-            bannedIps.Clear();
+            BannedIps.Clear();
             if (File.Exists(_bannedIpsFile))
             {
                 foreach (string line in File.ReadAllLines(_bannedIpsFile))
                 {
                     string trimmed = line.Trim().ToLower();
                     if (trimmed.Length > 0)
-                        bannedIps.Add(trimmed);
+                        BannedIps.Add(trimmed);
                 }
             }
         }
@@ -81,11 +81,11 @@ internal class DedicatedPlayerManager : PlayerManager
         }
     }
 
-    protected override void saveBannedIps()
+    protected override void SaveBannedIps()
     {
         try
         {
-            File.WriteAllLines(_bannedIpsFile, bannedIps);
+            File.WriteAllLines(_bannedIpsFile, BannedIps);
         }
         catch (Exception ex)
         {
@@ -93,18 +93,18 @@ internal class DedicatedPlayerManager : PlayerManager
         }
     }
 
-    protected override void loadOperators()
+    protected override void LoadOperators()
     {
         try
         {
-            ops.Clear();
+            Ops.Clear();
             if (File.Exists(_operatorsFile))
             {
                 foreach (string line in File.ReadAllLines(_operatorsFile))
                 {
                     string trimmed = line.Trim().ToLower();
                     if (trimmed.Length > 0)
-                        ops.Add(trimmed);
+                        Ops.Add(trimmed);
                 }
             }
         }
@@ -114,11 +114,11 @@ internal class DedicatedPlayerManager : PlayerManager
         }
     }
 
-    protected override void saveOperators()
+    protected override void SaveOperators()
     {
         try
         {
-            File.WriteAllLines(_operatorsFile, ops);
+            File.WriteAllLines(_operatorsFile, Ops);
         }
         catch (Exception ex)
         {
@@ -126,18 +126,18 @@ internal class DedicatedPlayerManager : PlayerManager
         }
     }
 
-    protected override void loadWhitelist()
+    protected override void LoadWhitelist()
     {
         try
         {
-            whitelist.Clear();
+            Whitelist.Clear();
             if (File.Exists(_whitelistFile))
             {
                 foreach (string line in File.ReadAllLines(_whitelistFile))
                 {
                     string trimmed = line.Trim().ToLower();
                     if (trimmed.Length > 0)
-                        whitelist.Add(trimmed);
+                        Whitelist.Add(trimmed);
                 }
             }
         }
@@ -147,11 +147,11 @@ internal class DedicatedPlayerManager : PlayerManager
         }
     }
 
-    protected override void saveWhitelist()
+    protected override void SaveWhitelist()
     {
         try
         {
-            File.WriteAllLines(_whitelistFile, whitelist);
+            File.WriteAllLines(_whitelistFile, Whitelist);
         }
         catch (Exception ex)
         {

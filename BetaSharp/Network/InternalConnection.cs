@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using BetaSharp.Network.Packets;
 using Microsoft.Extensions.Logging;
 
@@ -23,7 +23,7 @@ public class InternalConnection : Connection
         RemoteConnection = remote;
     }
 
-    public override void sendPacket(Packet packet)
+    public override void SendPacket(Packet packet)
     {
         if (!closed)
         {
@@ -71,7 +71,7 @@ public class InternalConnection : Connection
         return false;
     }
 
-    public override void disconnect(string disconnectedReason, params object[] disconnectReasonArgs)
+    public override void Disconnect(string disconnectedReason, params object[] disconnectReasonArgs)
     {
         if (open)
         {
@@ -101,9 +101,9 @@ public class InternalConnection : Connection
         }
     }
 
-    public override void disconnect()
+    public override void Disconnect()
     {
-        disconnect("Disconnecting");
+        Disconnect("Disconnecting");
     }
 
     public override void interrupt()

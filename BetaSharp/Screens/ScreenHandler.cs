@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Screens.Slots;
@@ -145,7 +145,7 @@ public abstract class ScreenHandler
                     Slot var12 = (Slot)slots.get(index);
                     if (var12 != null)
                     {
-                        var12.markDirty();
+                        var12.MarkDirty();
                         ItemStack var13 = var12.getStack();
                         ItemStack var14 = var6.getCursorStack();
                         if (var13 != null)
@@ -327,13 +327,13 @@ public abstract class ScreenHandler
                     {
                         stack.count = 0;
                         var7.count = var8;
-                        var6.markDirty();
+                        var6.MarkDirty();
                     }
                     else if (var7.count < stack.getMaxCount())
                     {
                         stack.count -= stack.getMaxCount() - var7.count;
                         var7.count = stack.getMaxCount();
-                        var6.markDirty();
+                        var6.MarkDirty();
                     }
                 }
 
@@ -366,7 +366,7 @@ public abstract class ScreenHandler
                 if (var7 == null)
                 {
                     var6.setStack(stack.copy());
-                    var6.markDirty();
+                    var6.MarkDirty();
                     stack.count = 0;
                     break;
                 }

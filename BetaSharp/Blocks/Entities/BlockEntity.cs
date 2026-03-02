@@ -1,4 +1,4 @@
-using BetaSharp.NBT;
+﻿using BetaSharp.NBT;
 using BetaSharp.Network.Packets;
 using BetaSharp.Worlds;
 using Microsoft.Extensions.Logging;
@@ -87,11 +87,11 @@ public class BlockEntity
         return World.getBlockMeta(X, Y, Z);
     }
 
-    public void markDirty()
+    public void MarkDirty()
     {
         if (World != null)
         {
-            World.updateBlockEntity(X, Y, Z, this);
+            World.UpdateBlockEntity(X, Y, Z, this);
         }
     }
 

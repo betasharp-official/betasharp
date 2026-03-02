@@ -1,4 +1,4 @@
-using BetaSharp.Network.Packets.Play;
+﻿using BetaSharp.Network.Packets.Play;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Commands;
@@ -13,7 +13,7 @@ internal static class ChatCommands
 
         string message = string.Join(" ", args);
         s_logger.LogInformation($"[{senderName}] {message}");
-        server.playerManager.sendToAll(new ChatMessagePacket("§d[Server] " + message));
+        server.PlayerManager.SendToAll(new ChatMessagePacket("§d[Server] " + message));
     }
 
     public static void Tell(MinecraftServer server, string senderName, string[] args, CommandOutput output)
@@ -31,7 +31,7 @@ internal static class ChatCommands
         string whisper = "§7" + senderName + " whispers " + message;
         s_logger.LogInformation(whisper);
 
-        if (!server.playerManager.sendPacket(targetName, new ChatMessagePacket(whisper)))
+        if (!server.PlayerManager.SendPacket(targetName, new ChatMessagePacket(whisper)))
         {
             output.SendMessage("There's no player by that name online.");
         }

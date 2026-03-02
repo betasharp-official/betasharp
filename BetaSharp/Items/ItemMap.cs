@@ -1,4 +1,4 @@
-using BetaSharp.Blocks;
+﻿using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.S2CPlay;
@@ -42,7 +42,7 @@ public class ItemMap : NetworkSyncedItem
             mapState.centerZ = world.getProperties().SpawnZ;
             mapState.scale = 3;
             mapState.dimension = (sbyte)world.dimension.Id;
-            mapState.markDirty();
+            mapState.MarkDirty();
             world.setState(mapName, mapState);
         }
 
@@ -207,7 +207,7 @@ public class ItemMap : NetworkSyncedItem
 
                     if (minDirtyZ <= maxDirtyZ)
                     {
-                        map.markDirty(pixelX, minDirtyZ, maxDirtyZ);
+                        map.MarkDirty(pixelX, minDirtyZ, maxDirtyZ);
                     }
                 }
             }
@@ -294,7 +294,7 @@ public class ItemMap : NetworkSyncedItem
         mapState.centerZ = MathHelper.Floor(entityPlayer.z);
         mapState.scale = 3;
         mapState.dimension = (sbyte)world.dimension.Id;
-        mapState.markDirty();
+        mapState.MarkDirty();
     }
 
     public override Packet getUpdatePacket(ItemStack stack, World world, EntityPlayer player)

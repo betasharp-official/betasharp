@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.Items;
 
 namespace BetaSharp.Inventorys;
@@ -47,7 +47,7 @@ internal class InventoryCraftResult : IInventory
         return 64;
     }
 
-    public void markDirty()
+    public void MarkDirty()
     {
     }
 

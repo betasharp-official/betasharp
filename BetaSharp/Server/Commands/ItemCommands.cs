@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Items;
@@ -21,7 +21,7 @@ internal static class ItemCommands
 
         if (TryResolveItemId(args[0], out int selfItemId))
         {
-            ServerPlayerEntity sender = server.playerManager.getPlayer(senderName);
+            ServerPlayerEntity sender = server.PlayerManager.GetPlayer(senderName);
             if (sender == null) { output.SendMessage("Could not find your player."); return; }
 
             int count = 1;
@@ -38,7 +38,7 @@ internal static class ItemCommands
         if (args.Length >= 2)
         {
             string targetName = args[0];
-            ServerPlayerEntity targetPlayer = server.playerManager.getPlayer(targetName);
+            ServerPlayerEntity targetPlayer = server.PlayerManager.GetPlayer(targetName);
 
             if (targetPlayer == null)
             {

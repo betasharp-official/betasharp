@@ -1,4 +1,4 @@
-using BetaSharp.Blocks.Entities;
+﻿using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
@@ -20,8 +20,8 @@ namespace BetaSharp.Server.Network;
 
 public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 {
-    public Connection connection;
-    public bool disconnected;
+    public Connection Connection;
+    public bool Disconnected;
     private MinecraftServer server;
     private ServerPlayerEntity player;
     private int ticks;
@@ -39,30 +39,30 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
     public ServerPlayNetworkHandler(MinecraftServer server, Connection connection, ServerPlayerEntity player)
     {
         this.server = server;
-        this.connection = connection;
-        connection.setNetworkHandler(this);
+        this.Connection = connection;
+        Connection.setNetworkHandler(this);
         this.player = player;
         player.networkHandler = this;
     }
 
-    public void tick()
+    public void Tick()
     {
         moved = false;
-        connection.tick();
+        Connection.tick();
         if (ticks - lastKeepAliveTime > 20)
         {
-            sendPacket(new KeepAlivePacket());
+            SendPacket(new KeepAlivePacket());
         }
     }
 
-    public void disconnect(string reason)
+    public void Disconnect(string reason)
     {
         player.onDisconnect();
-        sendPacket(new DisconnectPacket(reason));
-        connection.disconnect();
-        server.playerManager.sendToAll(new ChatMessagePacket("§e" + player.name + " left the game."));
-        server.playerManager.disconnect(player);
-        disconnected = true;
+        SendPacket(new DisconnectPacket(reason));
+        Connection.Disconnect();
+        server.PlayerManager.SendToAll(new ChatMessagePacket("Â§e" + player.name + " left the game."));
+        server.PlayerManager.Disconnect(player);
+        Disconnected = true;
     }
 
 
@@ -73,7 +73,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 
     public override void onPlayerMove(PlayerMovePacket packet)
     {
-        ServerWorld var2 = server.getWorld(player.dimensionId);
+        ServerWorld var2 = server.GetWorld(player.dimensionId);
         moved = true;
         if (!teleported)
         {
@@ -124,7 +124,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
                     player.vehicle.updatePassengerPosition();
                 }
 
-                server.playerManager.updatePlayerChunks(player);
+                server.PlayerManager.UpdatePlayerChunks(player);
                 teleportTargetX = player.x;
                 teleportTargetY = player.y;
                 teleportTargetZ = player.z;
@@ -162,14 +162,14 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
                 double var13 = packet.eyeHeight - packet.y;
                 if (!player.isSleeping() && (var13 > 1.65 || var13 < 0.1))
                 {
-                    disconnect("Illegal stance");
+                    Disconnect("Illegal stance");
                     _logger.LogWarning($"{player.name} had an illegal stance: {var13}");
                     return;
                 }
 
                 if (Math.Abs(packet.x) > 3.2E7 || Math.Abs(packet.z) > 3.2E7)
                 {
-                    disconnect("Illegal position");
+                    Disconnect("Illegal position");
                     return;
                 }
             }
@@ -195,7 +195,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             if (var19 > 100.0)
             {
                 _logger.LogWarning($"{player.name} moved too quickly!");
-                disconnect("You moved too quickly :( (Hacking?)");
+                Disconnect("You moved too quickly :( (Hacking?)");
                 return;
             }
 
@@ -224,12 +224,12 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             bool var24 = var2.getEntityCollisions(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
             if (var22 && (var23 || !var24) && !player.isSleeping())
             {
-                teleport(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
+                Teleport(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
                 return;
             }
 
             Box var25 = player.boundingBox.Expand(var21, var21, var21).Stretch(0.0, -0.55, 0.0);
-            if (server.flightEnabled || var2.isAnyBlockInBox(var25))
+            if (server.FlightEnabled || var2.isAnyBlockInBox(var25))
             {
                 floatingTime = 0;
             }
@@ -239,38 +239,38 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
                 if (floatingTime > 80)
                 {
                     _logger.LogWarning($"{player.name} was kicked for floating too long!");
-                    disconnect("Flying is not enabled on this server");
+                    Disconnect("Flying is not enabled on this server");
                     return;
                 }
             }
 
             player.onGround = packet.onGround;
-            server.playerManager.updatePlayerChunks(player);
+            server.PlayerManager.UpdatePlayerChunks(player);
             player.handleFall(player.y - var26, packet.onGround);
         }
     }
 
-    public void teleport(double x, double y, double z, float yaw, float pitch)
+    public void Teleport(double x, double y, double z, float yaw, float pitch)
     {
         teleported = false;
         teleportTargetX = x;
         teleportTargetY = y;
         teleportTargetZ = z;
         player.setPositionAndAngles(x, y, z, yaw, pitch);
-        player.networkHandler.sendPacket(new PlayerMoveFullPacket(x, y + 1.62F, y, z, yaw, pitch, false));
+        player.networkHandler.SendPacket(new PlayerMoveFullPacket(x, y + 1.62F, y, z, yaw, pitch, false));
     }
 
 
     public override void handlePlayerAction(PlayerActionC2SPacket packet)
     {
-        ServerWorld var2 = server.getWorld(player.dimensionId);
+        ServerWorld var2 = server.GetWorld(player.dimensionId);
         if (packet.action == 4)
         {
             player.dropSelectedItem();
         }
         else
         {
-            bool var3 = var2.bypassSpawnProtection = var2.dimension.Id != 0 || server.playerManager.isOperator(player.name) || server is InternalServer;
+            bool var3 = var2.bypassSpawnProtection = var2.dimension.Id != 0 || server.PlayerManager.IsOperator(player.name) || server is InternalServer;
             bool var4 = false;
             if (packet.action == 0)
             {
@@ -309,19 +309,19 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             {
                 if (var20 <= 16 && !var3)
                 {
-                    player.networkHandler.sendPacket(new BlockUpdateS2CPacket(var5, var6, var7, var2));
+                    SendPacket(new BlockUpdateS2CPacket(var5, var6, var7, var2));
                 }
                 else
                 {
-                    player.interactionManager.onBlockBreakingAction(var5, var6, var7, packet.direction);
+                    player.interactionManager.OnBlockBreakingAction(var5, var6, var7, packet.direction);
                 }
             }
             else if (packet.action == 2)
             {
-                player.interactionManager.continueMining(var5, var6, var7);
+                player.interactionManager.ContinueMining(var5, var6, var7);
                 if (var2.getBlockId(var5, var6, var7) != 0)
                 {
-                    player.networkHandler.sendPacket(new BlockUpdateS2CPacket(var5, var6, var7, var2));
+                    SendPacket(new BlockUpdateS2CPacket(var5, var6, var7, var2));
                 }
             }
             else if (packet.action == 3)
@@ -332,7 +332,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
                 double var17 = var11 * var11 + var13 * var13 + var15 * var15;
                 if (var17 < 256.0)
                 {
-                    player.networkHandler.sendPacket(new BlockUpdateS2CPacket(var5, var6, var7, var2));
+                    SendPacket(new BlockUpdateS2CPacket(var5, var6, var7, var2));
                 }
             }
 
@@ -342,9 +342,9 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 
     public override void onPlayerInteractBlock(PlayerInteractBlockC2SPacket packet)
     {
-        ServerWorld var2 = server.getWorld(player.dimensionId);
+        ServerWorld var2 = server.GetWorld(player.dimensionId);
         ItemStack var3 = player.inventory.getSelectedItem();
-        bool var4 = var2.bypassSpawnProtection = var2.dimension.Id != 0 || server.playerManager.isOperator(player.name) || server is InternalServer;
+        bool var4 = var2.bypassSpawnProtection = var2.dimension.Id != 0 || server.PlayerManager.IsOperator(player.name) || server is InternalServer;
         if (packet.side == 255)
         {
             if (var3 == null)
@@ -352,7 +352,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
                 return;
             }
 
-            player.interactionManager.interactItem(player, var2, var3);
+            player.interactionManager.InteractItem(player, var2, var3);
         }
         else
         {
@@ -370,10 +370,10 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 
             if (teleported && player.getSquaredDistance(var5 + 0.5, var6 + 0.5, var7 + 0.5) < 64.0 && (var11 > 16 || var4))
             {
-                player.interactionManager.interactBlock(player, var2, var3, var5, var6, var7, var8);
+                player.interactionManager.InteractBlock(player, var2, var3, var5, var6, var7, var8);
             }
 
-            player.networkHandler.sendPacket(new BlockUpdateS2CPacket(var5, var6, var7, var2));
+            SendPacket(new BlockUpdateS2CPacket(var5, var6, var7, var2));
             if (var8 == 0)
             {
                 var6--;
@@ -404,7 +404,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
                 var5++;
             }
 
-            player.networkHandler.sendPacket(new BlockUpdateS2CPacket(var5, var6, var7, var2));
+            SendPacket(new BlockUpdateS2CPacket(var5, var6, var7, var2));
         }
 
         var3 = player.inventory.getSelectedItem();
@@ -420,7 +420,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
         player.skipPacketSlotUpdates = false;
         if (!ItemStack.areEqual(player.inventory.getSelectedItem(), packet.stack))
         {
-            sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.currentScreenHandler.syncId, var13.id, player.inventory.getSelectedItem()));
+            SendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.currentScreenHandler.syncId, var13.id, player.inventory.getSelectedItem()));
         }
 
         var2.bypassSpawnProtection = false;
@@ -429,20 +429,20 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
     public override void onDisconnected(string reason, object[]? objects)
     {
         _logger.LogInformation($"{player.name} lost connection: {reason}");
-        server.playerManager.sendToAll(new ChatMessagePacket("§e" + player.name + " left the game."));
-        server.playerManager.disconnect(player);
-        disconnected = true;
+        server.PlayerManager.SendToAll(new ChatMessagePacket("Â§e" + player.name + " left the game."));
+        server.PlayerManager.Disconnect(player);
+        Disconnected = true;
     }
 
     public override void handle(Packet packet)
     {
         _logger.LogWarning($"{GetType()} wasn't prepared to deal with a {packet.GetType()}");
-        disconnect("Protocol error, unexpected packet");
+        Disconnect("Protocol error, unexpected packet");
     }
 
-    public void sendPacket(Packet packet)
+    public void SendPacket(Packet packet)
     {
-        connection.sendPacket(packet);
+        Connection.SendPacket(packet);
         lastKeepAliveTime = ticks;
     }
 
@@ -463,7 +463,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
         string var2 = packet.chatMessage;
         if (var2.Length > 100)
         {
-            disconnect("Chat message too long");
+            Disconnect("Chat message too long");
         }
         else
         {
@@ -471,15 +471,15 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 
             for (int var3 = 0; var3 < var2.Length; var3++)
             {
-                // Allow the section sign (§) for color/style codes as well as the standard allowed characters
-                if (var2[var3] == (char)167) // '§'
+                // Allow the section sign (Â§) for color/style codes as well as the standard allowed characters
+                if (var2[var3] == (char)167) // 'Â§'
                 {
                     continue;
                 }
 
                 if (ChatAllowedCharacters.allowedCharacters.IndexOf(var2[var3]) < 0)
                 {
-                    disconnect("Illegal characters in chat");
+                    Disconnect("Illegal characters in chat");
                     return;
                 }
             }
@@ -492,7 +492,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             {
                 var2 = "<" + player.name + "> " + var2;
                 _logger.LogInformation(var2);
-                server.playerManager.sendToAll(new ChatMessagePacket(var2));
+                server.PlayerManager.SendToAll(new ChatMessagePacket(var2));
             }
         }
     }
@@ -503,19 +503,19 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
         {
             string emote = "* " + player.name + " " + message[message.IndexOf(" ")..].Trim();
             _logger.LogInformation(emote);
-            server.playerManager.sendToAll(new ChatMessagePacket(emote));
+            server.PlayerManager.SendToAll(new ChatMessagePacket(emote));
         }
-        else if (server is InternalServer || server.playerManager.isOperator(player.name))
+        else if (server is InternalServer || server.PlayerManager.IsOperator(player.name))
         {
             string commandText = message[1..];
             _logger.LogInformation($"{player.name} issued server command: {commandText}");
-            server.queueCommands(commandText, this);
+            server.QueueCommands(commandText, this);
         }
         else
         {
             string commandText = message[1..];
             _logger.LogInformation($"{player.name} tried command: {commandText}");
-            sendPacket(new ChatMessagePacket("§cYou do not have permission to use this command."));
+            SendPacket(new ChatMessagePacket("Â§cYou do not have permission to use this command."));
         }
     }
 
@@ -546,17 +546,17 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 
     public override void onDisconnect(DisconnectPacket packet)
     {
-        connection.disconnect("disconnect.quitting");
+        Connection.Disconnect("disconnect.quitting");
     }
 
-    public int getBlockDataSendQueueSize()
+    public int GetBlockDataSendQueueSize()
     {
-        return connection.getDelayedSendQueueSize();
+        return Connection.getDelayedSendQueueSize();
     }
 
     public void SendMessage(string message)
     {
-        sendPacket(new ChatMessagePacket("§7" + message));
+        SendPacket(new ChatMessagePacket("Â§7" + message));
     }
 
     public string GetName()
@@ -566,7 +566,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 
     public override void handleInteractEntity(PlayerInteractEntityC2SPacket packet)
     {
-        ServerWorld var2 = server.getWorld(player.dimensionId);
+        ServerWorld var2 = server.GetWorld(player.dimensionId);
         Entity var3 = var2.getEntity(packet.entityId);
         if (var3 != null && player.canSee(var3) && player.getSquaredDistance(var3) < 36.0)
         {
@@ -585,7 +585,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
     {
         if (player.health <= 0)
         {
-            player = server.playerManager.respawnPlayer(player, 0);
+            player = server.PlayerManager.RespawnPlayer(player, 0);
         }
     }
 
@@ -601,7 +601,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             ItemStack var2 = player.currentScreenHandler.onSlotClick(packet.slot, packet.button, packet.holdingShift, player);
             if (ItemStack.areEqual(packet.stack, var2))
             {
-                player.networkHandler.sendPacket(new ScreenHandlerAcknowledgementPacket(packet.syncId, packet.actionType, true));
+                player.networkHandler.SendPacket(new ScreenHandlerAcknowledgementPacket(packet.syncId, packet.actionType, true));
                 player.skipPacketSlotUpdates = true;
                 player.currentScreenHandler.sendContentUpdates();
                 player.updateCursorStack();
@@ -611,7 +611,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             {
                 // should something be done adding fails?
                 transactions.TryAdd(player.currentScreenHandler.syncId, packet.actionType);
-                player.networkHandler.sendPacket(new ScreenHandlerAcknowledgementPacket(packet.syncId, packet.actionType, false));
+                player.networkHandler.SendPacket(new ScreenHandlerAcknowledgementPacket(packet.syncId, packet.actionType, false));
                 player.currentScreenHandler.updatePlayerList(player, false);
 
                 int size = player.currentScreenHandler.slots.size();
@@ -640,7 +640,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 
     public override void handleUpdateSign(UpdateSignPacket packet)
     {
-        ServerWorld var2 = server.getWorld(player.dimensionId);
+        ServerWorld var2 = server.GetWorld(player.dimensionId);
         if (var2.isPosLoaded(packet.x, packet.y, packet.z))
         {
             BlockEntity var3 = var2.getBlockEntity(packet.x, packet.y, packet.z);
@@ -689,13 +689,13 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
                 }
 
                 var7.SetEditable(false);
-                var7.markDirty();
+                var7.MarkDirty();
                 var2.blockUpdateEvent(var10, var11, var12);
             }
         }
     }
 
-    public override bool isServerSide()
+    public override bool IsServerSide()
     {
         return true;
     }

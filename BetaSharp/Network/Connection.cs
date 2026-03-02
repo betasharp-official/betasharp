@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Network.Packets;
 using BetaSharp.Threading;
@@ -63,7 +63,7 @@ public class Connection
         networkHandler = netHandler;
     }
 
-    public virtual void sendPacket(Packet packet)
+    public virtual void SendPacket(Packet packet)
     {
         if (!closed)
         {
@@ -140,7 +140,7 @@ public class Connection
         {
             if (!disconnected)
             {
-                disconnect(ex);
+                Disconnect(ex);
             }
 
             return false;
@@ -169,7 +169,7 @@ public class Connection
 
         try
         {
-            Packet? packet = Packet.Read(_networkStream, networkHandler.isServerSide());
+            Packet? packet = Packet.Read(_networkStream, networkHandler.IsServerSide());
             if (packet != null)
             {
                 int[] sizeStats = TOTAL_READ_SIZE;
@@ -180,7 +180,7 @@ public class Connection
             }
             else
             {
-                disconnect("disconnect.endOfStream");
+                Disconnect("disconnect.endOfStream");
             }
 
             return receivedPacket;
@@ -189,20 +189,20 @@ public class Connection
         {
             if (!disconnected)
             {
-                disconnect(ex);
+                Disconnect(ex);
             }
 
             return false;
         }
     }
 
-    private void disconnect(Exception e)
+    private void Disconnect(Exception e)
     {
         _logger.LogError(e, e.Message);
-        disconnect("disconnect.genericReason", "Internal exception: " + e);
+        Disconnect("disconnect.genericReason", "Internal exception: " + e);
     }
 
-    public virtual void disconnect(string disconnectedReason, params object[] disconnectReasonArgs)
+    public virtual void Disconnect(string disconnectedReason, params object[] disconnectReasonArgs)
     {
         if (open)
         {
@@ -231,14 +231,14 @@ public class Connection
     {
         if (sendQueueSize > 1048576)
         {
-            disconnect("disconnect.overflow");
+            Disconnect("disconnect.overflow");
         }
 
         if (readQueue.isEmpty())
         {
             if (timeout++ == 1200)
             {
-                disconnect("disconnect.timeout");
+                Disconnect("disconnect.timeout");
             }
         }
         else
@@ -277,7 +277,7 @@ public class Connection
         return _address;
     }
 
-    public virtual void disconnect()
+    public virtual void Disconnect()
     {
         interrupt();
         closed = true;
@@ -319,9 +319,9 @@ public class Connection
         return conn.disconnected;
     }
 
-    public static void disconnect(Connection conn, Exception ex)
+    public static void Disconnect(Connection conn, Exception ex)
     {
-        conn.disconnect(ex);
+        conn.Disconnect(ex);
     }
 
     public static java.lang.Thread getReader(Connection conn)

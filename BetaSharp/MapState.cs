@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Worlds;
@@ -134,9 +134,9 @@ public class MapState : PersistentState
         return var4 == null ? null : var4.getUpdateData();
     }
 
-    public void markDirty(int var1, int var2, int var3)
+    public void MarkDirty(int var1, int var2, int var3)
     {
-        base.markDirty();
+        base.MarkDirty();
 
         for (int var4 = 0; var4 < updateTrackers.size(); ++var4)
         {
@@ -167,7 +167,7 @@ public class MapState : PersistentState
                 colors[(var4 + var3) * 128 + var2] = var1[var4 + 3];
             }
 
-            markDirty();
+            MarkDirty();
         }
         else if (var1[0] == 1)
         {

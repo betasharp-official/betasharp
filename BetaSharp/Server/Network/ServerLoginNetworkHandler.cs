@@ -1,4 +1,4 @@
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using BetaSharp.Entities;
 using BetaSharp.Network;
 using BetaSharp.Network.Packets;
@@ -14,8 +14,8 @@ namespace BetaSharp.Server.Network;
 public class ServerLoginNetworkHandler : NetHandler
 {
     private static JavaRandom random = new();
-    public Connection connection;
-    public bool closed;
+    public Connection Connection;
+    public bool Closed;
     private MinecraftServer server;
     private int loginTicks;
     private string username;
@@ -27,44 +27,44 @@ public class ServerLoginNetworkHandler : NetHandler
     public ServerLoginNetworkHandler(MinecraftServer server, Socket socket, string name)
     {
         this.server = server;
-        connection = new Connection(socket, name, this);
-        connection.lag = 0;
+        Connection = new Connection(socket, name, this);
+        Connection.lag = 0;
     }
 
     public ServerLoginNetworkHandler(MinecraftServer server, Connection connection)
     {
         this.server = server;
-        this.connection = connection;
-        connection.setNetworkHandler(this);
-        connection.lag = 0;
+        this.Connection = connection;
+        Connection.setNetworkHandler(this);
+        Connection.lag = 0;
     }
 
-    public void tick()
+    public void Tick()
     {
         if (loginPacket != null)
         {
-            accept(loginPacket);
+            Accept(loginPacket);
             loginPacket = null;
         }
 
         if (loginTicks++ == 600)
         {
-            disconnect("Took too long to log in");
+            Disconnect("Took too long to log in");
         }
         else
         {
-            connection.tick();
+            Connection.tick();
         }
     }
 
-    public void disconnect(string reason)
+    public void Disconnect(string reason)
     {
         try
         {
-            _logger.LogInformation($"Disconnecting {getConnectionInfo()}: {reason}");
-            connection.sendPacket(new DisconnectPacket(reason));
-            connection.disconnect();
-            closed = true;
+            _logger.LogInformation($"Disconnecting {GetConnectionInfo()}: {reason}");
+            Connection.SendPacket(new DisconnectPacket(reason));
+            Connection.Disconnect();
+            Closed = true;
         }
         catch (Exception e)
         {
@@ -74,14 +74,14 @@ public class ServerLoginNetworkHandler : NetHandler
 
     public override void onHandshake(HandshakePacket packet)
     {
-        if (server.onlineMode)
+        if (server.OnlineMode)
         {
             serverId = random.NextLong().ToString("x");
-            connection.sendPacket(new HandshakePacket(serverId));
+            Connection.SendPacket(new HandshakePacket(serverId));
         }
         else
         {
-            connection.sendPacket(new HandshakePacket("-"));
+            Connection.SendPacket(new HandshakePacket("-"));
         }
     }
 
@@ -101,18 +101,18 @@ public class ServerLoginNetworkHandler : NetHandler
         {
             if (packet.protocolVersion > 14)
             {
-                disconnect("Outdated server!");
+                Disconnect("Outdated server!");
             }
             else
             {
-                disconnect("Outdated client!");
+                Disconnect("Outdated client!");
             }
         }
         else
         {
-            if (!server.onlineMode)
+            if (!server.OnlineMode)
             {
-                accept(packet);
+                Accept(packet);
             }
             else
             {
@@ -123,52 +123,52 @@ public class ServerLoginNetworkHandler : NetHandler
         }
     }
 
-    public void accept(LoginHelloPacket packet)
+    public void Accept(LoginHelloPacket packet)
     {
-        ServerPlayerEntity ent = server.playerManager.connectPlayer(this, packet.username);
+        ServerPlayerEntity ent = server.PlayerManager.ConnectPlayer(this, packet.username);
         if (ent != null)
         {
-            server.playerManager.loadPlayerData(ent);
-            ent.setWorld(server.getWorld(ent.dimensionId));
-            _logger.LogInformation($"{getConnectionInfo()} logged in with entity id {ent.id} at ({ent.x}, {ent.y}, {ent.z})");
-            ServerWorld var3 = server.getWorld(ent.dimensionId);
+            server.PlayerManager.LoadPlayerData(ent);
+            ent.setWorld(server.GetWorld(ent.dimensionId));
+            _logger.LogInformation($"{GetConnectionInfo()} logged in with entity id {ent.id} at ({ent.x}, {ent.y}, {ent.z})");
+            ServerWorld var3 = server.GetWorld(ent.dimensionId);
             Vec3i var4 = var3.getSpawnPos();
-            ServerPlayNetworkHandler handler = new ServerPlayNetworkHandler(server, connection, ent);
-            handler.sendPacket(new LoginHelloPacket("", ent.id, var3.getSeed(), (sbyte)var3.dimension.Id));
-            handler.sendPacket(new PlayerSpawnPositionS2CPacket(var4.X, var4.Y, var4.Z));
-            server.playerManager.sendWorldInfo(ent, var3);
-            server.playerManager.sendToAll(new ChatMessagePacket("§e" + ent.name + " joined the game."));
-            server.playerManager.addPlayer(ent);
-            handler.teleport(ent.x, ent.y, ent.z, ent.yaw, ent.pitch);
-            server.connections.AddConnection(handler);
-            handler.sendPacket(new WorldTimeUpdateS2CPacket(var3.getTime()));
+            ServerPlayNetworkHandler handler = new ServerPlayNetworkHandler(server, Connection, ent);
+            handler.SendPacket(new LoginHelloPacket("", ent.id, var3.getSeed(), (sbyte)var3.dimension.Id));
+            handler.SendPacket(new PlayerSpawnPositionS2CPacket(var4.X, var4.Y, var4.Z));
+            server.PlayerManager.SendWorldInfo(ent, var3);
+            server.PlayerManager.SendToAll(new ChatMessagePacket("Â§e" + ent.name + " joined the game."));
+            server.PlayerManager.AddPlayer(ent);
+            handler.Teleport(ent.x, ent.y, ent.z, ent.yaw, ent.pitch);
+            server.Connections.AddConnection(handler);
+            handler.SendPacket(new WorldTimeUpdateS2CPacket(var3.getTime()));
             ent.initScreenHandler();
         }
 
-        closed = true;
+        Closed = true;
     }
 
     public override void onDisconnected(string reason, object[]? objects)
     {
-        _logger.LogInformation($"{getConnectionInfo()} lost connection");
-        closed = true;
+        _logger.LogInformation($"{GetConnectionInfo()} lost connection");
+        Closed = true;
     }
 
     public override void handle(Packet packet)
     {
-        disconnect("Protocol error");
+        Disconnect("Protocol error");
     }
 
-    public string getConnectionInfo()
+    public string GetConnectionInfo()
     {
-        var endPoint = connection.getAddress();
+        var endPoint = Connection.getAddress();
 
         if (endPoint == null) return "Internal";
 
         return !string.IsNullOrWhiteSpace(username) ? username : endPoint.ToString();
     }
 
-    public override bool isServerSide()
+    public override bool IsServerSide()
     {
         return true;
     }

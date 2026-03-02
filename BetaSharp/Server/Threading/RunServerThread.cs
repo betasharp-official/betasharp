@@ -1,4 +1,4 @@
-namespace BetaSharp.Server.Threading;
+﻿namespace BetaSharp.Server.Threading;
 
 public class RunServerThread
 {
@@ -6,7 +6,7 @@ public class RunServerThread
 
     public RunServerThread(MinecraftServer server, string name)
     {
-        _thread = new Thread(server.run) { Name = name };
+        _thread = new Thread(server.Run) { Name = name };
     }
 
     public void Start() => _thread.Start();

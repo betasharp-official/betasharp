@@ -103,7 +103,7 @@ public class EntityFallingSand : Entity
         return 0.0F;
     }
 
-    public World getWorld()
+    public World GetWorld()
     {
         return world;
     }

@@ -1,4 +1,4 @@
-using BetaSharp.Server.Network;
+﻿using BetaSharp.Server.Network;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Internal;
@@ -15,23 +15,23 @@ public class InternalServer : MinecraftServer
     public InternalServer(string worldPath, string levelName, string seed, int viewDistance, int initialDifficulty) : base(new InternalServerConfiguration(levelName, seed, viewDistance))
     {
         _worldPath = worldPath;
-        logHelp = false;
+        LogHelp = false;
         _initialDifficulty = initialDifficulty;
         _lastDifficulty = _initialDifficulty;
     }
 
     public void SetViewDistance(int viewDistanceChunks)
     {
-        InternalServerConfiguration serverConfiguration = (InternalServerConfiguration)config;
+        InternalServerConfiguration serverConfiguration = (InternalServerConfiguration)Config;
         serverConfiguration.SetViewDistance(viewDistanceChunks);
-        playerManager?.SetViewDistance(viewDistanceChunks);
+        PlayerManager?.SetViewDistance(viewDistanceChunks);
     }
 
-    public volatile bool isReady;
+    public volatile bool IsReady;
 
     protected override bool Init()
     {
-        connections = new ConnectionListener(this);
+        Connections = new ConnectionListener(this);
 
         _logger.LogInformation("Starting internal server");
 
@@ -39,16 +39,16 @@ public class InternalServer : MinecraftServer
 
         if (result)
         {
-            for (int i = 0; i < worlds.Length; ++i)
+            for (int i = 0; i < Worlds.Length; ++i)
             {
-                if (worlds[i] != null)
+                if (Worlds[i] != null)
                 {
-                    worlds[i].difficulty = _initialDifficulty;
-                    worlds[i].allowSpawning(_initialDifficulty > 0, true);
+                    Worlds[i].difficulty = _initialDifficulty;
+                    Worlds[i].allowSpawning(_initialDifficulty > 0, true);
                 }
             }
 
-            isReady = true;
+            IsReady = true;
         }
         return result;
     }
@@ -65,12 +65,12 @@ public class InternalServer : MinecraftServer
             if (_lastDifficulty != difficulty)
             {
                 _lastDifficulty = difficulty;
-                for (int i = 0; i < worlds.Length; ++i)
+                for (int i = 0; i < Worlds.Length; ++i)
                 {
-                    if (worlds[i] != null)
+                    if (Worlds[i] != null)
                     {
-                        worlds[i].difficulty = difficulty;
-                        worlds[i].allowSpawning(difficulty > 0, true);
+                        Worlds[i].difficulty = difficulty;
+                        Worlds[i].allowSpawning(difficulty > 0, true);
                     }
                 }
 
@@ -83,7 +83,7 @@ public class InternalServer : MinecraftServer
                     _ => "Unknown"
                 };
 
-                playerManager?.sendToAll(new BetaSharp.Network.Packets.Play.ChatMessagePacket($"Difficulty set to {difficultyName}"));
+                PlayerManager?.SendToAll(new BetaSharp.Network.Packets.Play.ChatMessagePacket($"Difficulty set to {difficultyName}"));
             }
         }
     }

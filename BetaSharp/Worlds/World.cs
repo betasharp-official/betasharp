@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
@@ -51,7 +51,7 @@ public abstract class World : BlockView
 
     private readonly long _worldTimeMask = 0xFFFFFFL;
 
-    public List<EntityPlayer> players = [];
+    public List<EntityPlayer> Players = [];
     private bool _allPlayersSleeping;
     public List<Entity> entities = [];
     public List<Entity> globalEntities = [];
@@ -211,7 +211,7 @@ public abstract class World : BlockView
     {
     }
 
-    public void addPlayer(EntityPlayer player)
+    public void AddPlayer(EntityPlayer player)
     {
         try
         {
@@ -262,7 +262,7 @@ public abstract class World : BlockView
         Properties.RulesTag = new NBTTagCompound();
         Rules.WriteToNBT(Properties.RulesTag);
 
-        Storage.Save(Properties, players.ToList());
+        Storage.Save(Properties, Players.ToList());
         Profiler.Stop("saveWorldInfoAndPlayer");
 
         Profiler.Start("saveAllData");
@@ -929,7 +929,7 @@ public abstract class World : BlockView
 
         if (entity is EntityPlayer player)
         {
-            players.Add(player);
+            Players.Add(player);
             updateSleepingPlayers();
         }
 
@@ -973,7 +973,7 @@ public abstract class World : BlockView
         entity.markDead();
         if (entity is EntityPlayer)
         {
-            players.Remove((EntityPlayer)entity);
+            Players.Remove((EntityPlayer)entity);
             updateSleepingPlayers();
         }
     }
@@ -983,7 +983,7 @@ public abstract class World : BlockView
         entity.markDead();
         if (entity is EntityPlayer player)
         {
-            players.Remove(player);
+            Players.Remove(player);
             this.updateSleepingPlayers();
         }
 
@@ -1972,7 +1972,7 @@ public abstract class World : BlockView
 
             if (_spawnHostileMobs && difficulty >= 1)
             {
-                wasSpawnInterrupted = NaturalSpawner.SpawnMonstersAndWakePlayers(this, _pathFinder, players);
+                wasSpawnInterrupted = NaturalSpawner.SpawnMonstersAndWakePlayers(this, _pathFinder, Players);
             }
 
             if (!wasSpawnInterrupted)
@@ -2124,9 +2124,9 @@ public abstract class World : BlockView
     {
         _activeChunks.Clear();
 
-        for (int i = 0; i < players.Count; ++i)
+        for (int i = 0; i < Players.Count; ++i)
         {
-            EntityPlayer player = players[i];
+            EntityPlayer player = Players[i];
             int playerChunkX = MathHelper.Floor(player.x / 16.0D);
             int playerChunkZ = MathHelper.Floor(player.z / 16.0D);
             const byte viewDistance = 9;
@@ -2336,7 +2336,7 @@ public abstract class World : BlockView
         return entities;
     }
 
-    public void updateBlockEntity(int x, int y, int z, BlockEntity blockEntity)
+    public void UpdateBlockEntity(int x, int y, int z, BlockEntity blockEntity)
     {
         if (isPosLoaded(x, y, z))
         {
@@ -2345,7 +2345,7 @@ public abstract class World : BlockView
 
         for (int i = 0; i < EventListeners.Count; ++i)
         {
-            EventListeners[i].updateBlockEntity(x, y, z, blockEntity);
+            EventListeners[i].UpdateBlockEntity(x, y, z, blockEntity);
         }
     }
 
@@ -2505,9 +2505,9 @@ public abstract class World : BlockView
         double minDistanceSquared = -1.0D;
         EntityPlayer closestPlayer = null;
 
-        for (int i = 0; i < players.Count; ++i)
+        for (int i = 0; i < Players.Count; ++i)
         {
-            EntityPlayer player = players[i];
+            EntityPlayer player = Players[i];
             double distanceSquared = player.getSquaredDistance(x, y, z);
 
             bool withinRange = range < 0.0D || distanceSquared < range * range;
@@ -2523,13 +2523,13 @@ public abstract class World : BlockView
         return closestPlayer;
     }
 
-    public EntityPlayer getPlayer(string name)
+    public EntityPlayer GetPlayer(string name)
     {
-        for (int i = 0; i < players.Count; ++i)
+        for (int i = 0; i < Players.Count; ++i)
         {
-            if (name.Equals(players[i].name))
+            if (name.Equals(Players[i].name))
             {
-                return players[i];
+                return Players[i];
             }
         }
 
@@ -2756,8 +2756,8 @@ public abstract class World : BlockView
 
     public void updateSleepingPlayers()
     {
-        _allPlayersSleeping = players.Count > 0;
-        foreach (var player in players)
+        _allPlayersSleeping = Players.Count > 0;
+        foreach (var player in Players)
         {
             if (!player.isSleeping())
             {
@@ -2770,7 +2770,7 @@ public abstract class World : BlockView
     private void afterSkipNight()
     {
         _allPlayersSleeping = false;
-        foreach (var player in players)
+        foreach (var player in Players)
         {
             if (player.isSleeping())
             {
@@ -2788,7 +2788,7 @@ public abstract class World : BlockView
             return false;
         }
 
-        return players.All(player => player.isPlayerFullyAsleep());
+        return Players.All(player => player.isPlayerFullyAsleep());
     }
 
     public float getThunderGradient(float delta)

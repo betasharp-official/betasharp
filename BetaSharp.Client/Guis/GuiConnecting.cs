@@ -1,4 +1,4 @@
-using BetaSharp.Client.Network;
+﻿using BetaSharp.Client.Network;
 using BetaSharp.Client.Threading;
 using Microsoft.Extensions.Logging;
 
@@ -53,7 +53,7 @@ public class GuiConnecting : GuiScreen
         {
             case _buttonCancel:
                 _cancelled = true;
-                _clientHandler?.disconnect();
+                _clientHandler?.Disconnect();
 
                 mc.displayGuiScreen(new GuiMainMenu());
                 break;

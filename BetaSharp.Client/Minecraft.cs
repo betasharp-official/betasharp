@@ -1,4 +1,4 @@
-using BetaSharp.Client.Options;
+﻿using BetaSharp.Client.Options;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using BetaSharp.Blocks;
@@ -86,7 +86,7 @@ public partial class Minecraft
     private int serverPort;
     private readonly WaterSprite textureWaterFX = new();
     private readonly LavaSprite textureLavaFX = new();
-    public volatile bool running = true;
+    public volatile bool Running = true;
     public string debug = "";
     bool isTakingScreenshot;
     long prevFrameTime = -1L;
@@ -484,7 +484,7 @@ public partial class Minecraft
 
     public void Run()
     {
-        running = true;
+        Running = true;
 
         try
         {
@@ -502,7 +502,7 @@ public partial class Minecraft
 ;
             int frameCounter = 0;
 
-            while (running)
+            while (Running)
             {
                 if (options.DebugMode)
                 {
@@ -833,7 +833,7 @@ public partial class Minecraft
 
     public void shutdown()
     {
-        running = false;
+        Running = false;
     }
 
     public void setIngameFocus()
@@ -855,8 +855,8 @@ public partial class Minecraft
     {
         if (internalServer != null)
         {
-            internalServer.stop();
-            while (!internalServer.stopped)
+            internalServer.Stop();
+            while (!internalServer.Stopped)
             {
                 Thread.Sleep(1);
             }
@@ -1512,7 +1512,7 @@ public partial class Minecraft
                 newWorld.saveWorldData();
             }
 
-            newWorld.addPlayer(player);
+            newWorld.AddPlayer(player);
 
             if (!string.IsNullOrEmpty(session?.skinUrl))
             {
@@ -1678,7 +1678,7 @@ public partial class Minecraft
         }
 
         playerController.flipPlayer(player);
-        world.addPlayer(player);
+        world.AddPlayer(player);
         player.movementInput = new MovementInputFromOptions(options);
         player.id = previousPlayerId;
         player.spawn();

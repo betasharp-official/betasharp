@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Recipes;
@@ -113,7 +113,7 @@ internal class PlayerScreenHandler : ScreenHandler
             }
             else
             {
-                var3.markDirty();
+                var3.MarkDirty();
             }
 
             if (var4.count == var2.count)

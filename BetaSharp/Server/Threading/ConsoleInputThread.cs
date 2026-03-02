@@ -1,4 +1,4 @@
-namespace BetaSharp.Server.Threading;
+﻿namespace BetaSharp.Server.Threading;
 
 public class ConsoleInputThread
 {
@@ -19,12 +19,12 @@ public class ConsoleInputThread
 
     private void Run()
     {
-        while (!_mcServer.stopped && _mcServer.running)
+        while (!_mcServer.Stopped && _mcServer.Running)
         {
             string? line = Console.ReadLine();
             if (line != null)
             {
-                _mcServer.queueCommands(line, _mcServer);
+                _mcServer.QueueCommands(line, _mcServer);
             }
         }
     }

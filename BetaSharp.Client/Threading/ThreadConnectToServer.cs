@@ -1,4 +1,4 @@
-using BetaSharp.Client.Guis;
+﻿using BetaSharp.Client.Guis;
 using BetaSharp.Client.Network;
 using BetaSharp.Network.Packets;
 using java.net;

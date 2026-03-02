@@ -7,7 +7,7 @@ namespace BetaSharp.Network;
 
 public abstract class NetHandler
 {
-    public abstract bool isServerSide();
+    public abstract bool IsServerSide();
 
     public virtual void handleChunkData(ChunkDataS2CPacket var1)
     {

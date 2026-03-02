@@ -1,4 +1,4 @@
-using BetaSharp.Blocks;
+﻿using BetaSharp.Blocks;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.NBT;
@@ -956,7 +956,7 @@ public class EntityMinecart : Entity, IInventory
         return 64;
     }
 
-    public void markDirty()
+    public void MarkDirty()
     {
     }
 

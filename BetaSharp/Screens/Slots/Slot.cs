@@ -1,4 +1,4 @@
-using BetaSharp.Inventorys;
+﻿using BetaSharp.Inventorys;
 using BetaSharp.Items;
 
 namespace BetaSharp.Screens.Slots;
@@ -21,7 +21,7 @@ public class Slot
 
     public virtual void onTakeItem(ItemStack stack)
     {
-        markDirty();
+        MarkDirty();
     }
 
     public virtual bool canInsert(ItemStack stack)
@@ -42,12 +42,12 @@ public class Slot
     public void setStack(ItemStack var1)
     {
         inventory.setStack(slotIndex, var1);
-        markDirty();
+        MarkDirty();
     }
 
-    public void markDirty()
+    public void MarkDirty()
     {
-        inventory.markDirty();
+        inventory.MarkDirty();
     }
 
     public virtual int getMaxItemCount()

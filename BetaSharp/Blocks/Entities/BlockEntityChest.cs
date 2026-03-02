@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.NBT;
@@ -28,7 +28,7 @@ internal class BlockEntityChest : BlockEntity, IInventory
             {
                 itemStack = inventory[slot];
                 inventory[slot] = null;
-                markDirty();
+                MarkDirty();
                 return itemStack;
             }
             else
@@ -39,7 +39,7 @@ internal class BlockEntityChest : BlockEntity, IInventory
                     inventory[slot] = null;
                 }
 
-                markDirty();
+                MarkDirty();
                 return itemStack;
             }
         }
@@ -57,7 +57,7 @@ internal class BlockEntityChest : BlockEntity, IInventory
             stack.count = getMaxCountPerStack();
         }
 
-        markDirty();
+        MarkDirty();
     }
 
     public string getName()

@@ -1,4 +1,4 @@
-using BetaSharp.Blocks;
+﻿using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.NBT;
@@ -441,7 +441,7 @@ public class InventoryPlayer : IInventory
 
     }
 
-    public void markDirty()
+    public void MarkDirty()
     {
         dirty = true;
     }

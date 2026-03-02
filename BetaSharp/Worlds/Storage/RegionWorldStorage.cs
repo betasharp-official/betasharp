@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.NBT;
 using BetaSharp.Server.Worlds;
 using BetaSharp.Worlds.Chunks.Storage;
@@ -185,14 +185,14 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
 
     public void LoadPlayerData(EntityPlayer player)
     {
-        NBTTagCompound tag = loadPlayerData(player.name);
+        NBTTagCompound tag = LoadPlayerData(player.name);
         if (tag != null)
         {
             player.read(tag);
         }
     }
 
-    public NBTTagCompound loadPlayerData(string playerName)
+    public NBTTagCompound LoadPlayerData(string playerName)
     {
         try
         {

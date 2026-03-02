@@ -1,4 +1,4 @@
-using BetaSharp.Blocks.Materials;
+﻿using BetaSharp.Blocks.Materials;
 using BetaSharp.NBT;
 using BetaSharp.Worlds;
 
@@ -34,7 +34,7 @@ internal class BlockEntityNote : BlockEntity
     public void cycleNote()
     {
         note = (sbyte)((note + 1) % 25);
-        markDirty();
+        MarkDirty();
     }
 
     public void playNote(World world, int x, int y, int z)

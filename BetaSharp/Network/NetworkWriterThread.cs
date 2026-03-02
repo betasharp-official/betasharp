@@ -1,4 +1,4 @@
-namespace BetaSharp.Network;
+﻿namespace BetaSharp.Network;
 
 internal class NetworkWriterThread : java.lang.Thread
 {
@@ -45,7 +45,7 @@ internal class NetworkWriterThread : java.lang.Thread
                 {
                     if (!Connection.isDisconnected(netManager))
                     {
-                        Connection.disconnect(this.netManager, ex);
+                        Connection.Disconnect(this.netManager, ex);
                         ex.printStackTrace();
                     }
                 }

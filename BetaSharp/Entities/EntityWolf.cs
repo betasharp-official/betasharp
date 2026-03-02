@@ -1,4 +1,4 @@
-using BetaSharp.Items;
+﻿using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.PathFinding;
 using BetaSharp.Util.Maths;
@@ -107,7 +107,7 @@ public class EntityWolf : EntityAnimal
         base.tickLiving();
         if (!hasAttacked && !hasPath() && isWolfTamed() && vehicle == null)
         {
-            EntityPlayer owner = world.getPlayer(getWolfOwner());
+            EntityPlayer owner = world.GetPlayer(getWolfOwner());
             if (owner != null)
             {
                 float distance = owner.getDistance(this);

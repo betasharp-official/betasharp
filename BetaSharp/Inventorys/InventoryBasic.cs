@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.Items;
 using java.util;
 
@@ -33,7 +33,7 @@ public class InventoryBasic : IInventory
             {
                 removeStack = inventoryContents[slotIndex];
                 inventoryContents[slotIndex] = null;
-                markDirty();
+                MarkDirty();
                 return removeStack;
             }
             else
@@ -44,7 +44,7 @@ public class InventoryBasic : IInventory
                     inventoryContents[slotIndex] = null;
                 }
 
-                markDirty();
+                MarkDirty();
                 return removeStack;
             }
         }
@@ -62,7 +62,7 @@ public class InventoryBasic : IInventory
             itemStack.count = getMaxCountPerStack();
         }
 
-        markDirty();
+        MarkDirty();
     }
 
     public int size()
@@ -80,7 +80,7 @@ public class InventoryBasic : IInventory
         return 64;
     }
 
-    public void markDirty()
+    public void MarkDirty()
     {
         if (field_20073_d != null)
         {

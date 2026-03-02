@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Server.Network;
@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server;
 
-internal class DedicatedServer(IServerConfiguration config) : MinecraftServer(config)
+internal class DedicatedServer(IServerConfiguration Config) : MinecraftServer(Config)
 {
     private static readonly ILogger<DedicatedServer> s_logger = Log.Instance.For<DedicatedServer>();
 
@@ -30,9 +30,9 @@ internal class DedicatedServer(IServerConfiguration config) : MinecraftServer(co
 
         s_logger.LogInformation("Loading properties");
 
-        string addressInput = config.GetServerIp("");
+        string addressInput = Config.GetServerIp("");
 
-        bool dualStack = config.GetDualStack(false);
+        bool dualStack = Config.GetDualStack(false);
 
         var address = dualStack ? IPAddress.IPv6Any : IPAddress.Any;
 
@@ -41,22 +41,22 @@ internal class DedicatedServer(IServerConfiguration config) : MinecraftServer(co
             address = Dns.GetHostAddresses(addressInput)[0];
         }
 
-        int port = config.GetServerPort(25565);
+        int port = Config.GetServerPort(25565);
         s_logger.LogInformation($"Starting Minecraft server on {(addressInput.Length == 0 ? "*" : addressInput)}:{port}");
 
         try
         {
-            connections = new ConnectionListener(this, address, port, dualStack);
+            Connections = new ConnectionListener(this, address, port, dualStack);
         }
         catch (IOException ex)
         {
             s_logger.LogWarning("**** FAILED TO BIND TO PORT!");
             s_logger.LogWarning($"The exception was: {ex}");
-            s_logger.LogWarning("Perhaps a server is already running on that port?");
+            s_logger.LogWarning("Perhaps a server is already Running on that port?");
             return false;
         }
 
-        if (!onlineMode)
+        if (!OnlineMode)
         {
             s_logger.LogWarning("**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!");
             s_logger.LogWarning("The server will make no attempt to authenticate usernames. Beware.");
@@ -73,8 +73,8 @@ internal class DedicatedServer(IServerConfiguration config) : MinecraftServer(co
 
         try
         {
-            DedicatedServerConfiguration config = new("server.properties");
-            DedicatedServer server = new(config);
+            DedicatedServerConfiguration Config = new("server.properties");
+            DedicatedServer server = new(Config);
 
             new RunServerThread(server, "Server thread").Start();
         }

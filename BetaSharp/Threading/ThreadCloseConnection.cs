@@ -1,4 +1,4 @@
-using BetaSharp.Network;
+﻿using BetaSharp.Network;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Threading;
@@ -25,7 +25,7 @@ internal class ThreadCloseConnection
                 if (Connection.isOpen(Connection))
                 {
                     Connection.getWriter(Connection).interrupt();
-                    Connection.disconnect(Connection, new Exception("disconnect.closed"));
+                    Connection.Disconnect(Connection, new Exception("disconnect.closed"));
                 }
             }
             catch (Exception ex)

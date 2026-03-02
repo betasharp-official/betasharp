@@ -16,84 +16,84 @@ public class EntityTracker
     {
         world = server;
         this.dimensionId = dimensionId;
-        viewDistance = server.playerManager.getBlockViewDistance();
+        viewDistance = server.PlayerManager.GetBlockViewDistance();
     }
 
-    public void onEntityAdded(Entity entity)
+    public void OnEntityAdded(Entity entity)
     {
         if (entity is ServerPlayerEntity)
         {
-            startTracking(entity, 512, 2);
+            StartTracking(entity, 512, 2);
             ServerPlayerEntity var2 = (ServerPlayerEntity)entity;
 
             foreach (EntityTrackerEntry var4 in entries)
             {
-                if (var4.currentTrackedEntity != var2)
+                if (var4.CurrentTrackedEntity != var2)
                 {
-                    var4.updateListener(var2);
+                    var4.UpdateListener(var2);
                 }
             }
         }
         else if (entity is EntityFish)
         {
-            startTracking(entity, 64, 5, true);
+            StartTracking(entity, 64, 5, true);
         }
         else if (entity is EntityArrow)
         {
-            startTracking(entity, 64, 20, false);
+            StartTracking(entity, 64, 20, false);
         }
         else if (entity is EntityFireball)
         {
-            startTracking(entity, 64, 10, false);
+            StartTracking(entity, 64, 10, false);
         }
         else if (entity is EntitySnowball)
         {
-            startTracking(entity, 64, 10, true);
+            StartTracking(entity, 64, 10, true);
         }
         else if (entity is EntityEgg)
         {
-            startTracking(entity, 64, 10, true);
+            StartTracking(entity, 64, 10, true);
         }
         else if (entity is EntityItem)
         {
-            startTracking(entity, 64, 20, true);
+            StartTracking(entity, 64, 20, true);
         }
         else if (entity is EntityMinecart)
         {
-            startTracking(entity, 160, 5, true);
+            StartTracking(entity, 160, 5, true);
         }
         else if (entity is EntityBoat)
         {
-            startTracking(entity, 160, 5, true);
+            StartTracking(entity, 160, 5, true);
         }
         else if (entity is EntitySquid)
         {
-            startTracking(entity, 160, 3, true);
+            StartTracking(entity, 160, 3, true);
         }
         else if (entity is SpawnableEntity)
         {
-            startTracking(entity, 160, 3);
+            StartTracking(entity, 160, 3);
         }
         else if (entity is EntityTNTPrimed)
         {
-            startTracking(entity, 160, 10, true);
+            StartTracking(entity, 160, 10, true);
         }
         else if (entity is EntityFallingSand)
         {
-            startTracking(entity, 160, 20, true);
+            StartTracking(entity, 160, 20, true);
         }
         else if (entity is EntityPainting)
         {
-            startTracking(entity, 160, int.MaxValue, false);
+            StartTracking(entity, 160, int.MaxValue, false);
         }
     }
 
-    public void startTracking(Entity entity, int trackedDistance, int tracingFrequency)
+    public void StartTracking(Entity entity, int trackedDistance, int tracingFrequency)
     {
-        startTracking(entity, trackedDistance, tracingFrequency, false);
+        StartTracking(entity, trackedDistance, tracingFrequency, false);
     }
 
-    public void startTracking(Entity entity, int trackedDistance, int tracingFrequency, bool alwaysUpdateVelocity)
+    public void StartTracking(Entity entity, int trackedDistance, int tracingFrequency, bool alwaysUpdateVelocity)
     {
         if (trackedDistance > viewDistance)
         {
@@ -109,11 +109,11 @@ public class EntityTracker
             EntityTrackerEntry var5 = new(entity, trackedDistance, tracingFrequency, alwaysUpdateVelocity);
             entries.Add(var5);
             entriesById[entity.id] = var5;
-            var5.updateListeners(world.getWorld(dimensionId).players.Cast<ServerPlayerEntity>());
+            var5.UpdateListeners(world.GetWorld(dimensionId).Players.Cast<ServerPlayerEntity>());
         }
     }
 
-    public void onEntityRemoved(Entity entity)
+    public void OnEntityRemoved(Entity entity)
     {
         if (entity is ServerPlayerEntity)
         {
@@ -121,27 +121,27 @@ public class EntityTracker
 
             foreach (EntityTrackerEntry var4 in entries)
             {
-                var4.notifyEntityRemoved(var2);
+                var4.NotifyEntityRemoved(var2);
             }
         }
 
         if (entriesById.Remove(entity.id, out EntityTrackerEntry ent))
         {
             entries.Remove(ent);
-            ent.notifyEntityRemoved();
+            ent.NotifyEntityRemoved();
         }
     }
 
-    public void tick()
+    public void Tick()
     {
         List<ServerPlayerEntity> var1 = [];
 
         foreach (EntityTrackerEntry var3 in entries)
         {
-            var3.notifyNewLocation(world.getWorld(dimensionId).players.Cast<ServerPlayerEntity>());
-            if (var3.newPlayerDataUpdated && var3.currentTrackedEntity is ServerPlayerEntity)
+            var3.NotifyNewLocation(world.GetWorld(dimensionId).Players.Cast<ServerPlayerEntity>());
+            if (var3.NewPlayerDataUpdated && var3.CurrentTrackedEntity is ServerPlayerEntity)
             {
-                var1.Add((ServerPlayerEntity)var3.currentTrackedEntity);
+                var1.Add((ServerPlayerEntity)var3.CurrentTrackedEntity);
             }
         }
 
@@ -151,35 +151,35 @@ public class EntityTracker
 
             foreach (EntityTrackerEntry var5 in entries)
             {
-                if (var5.currentTrackedEntity != var7)
+                if (var5.CurrentTrackedEntity != var7)
                 {
-                    var5.updateListener(var7);
+                    var5.UpdateListener(var7);
                 }
             }
         }
     }
 
-    public void sendToListeners(Entity entity, Packet packet)
+    public void SendToListeners(Entity entity, Packet packet)
     {
         if (entriesById.TryGetValue(entity.id, out EntityTrackerEntry ent))
         {
-            ent.sendToListeners(packet);
+            ent.SendToListeners(packet);
         }
     }
 
-    public void sendToAround(Entity entity, Packet packet)
+    public void SendToAround(Entity entity, Packet packet)
     {
         if (entriesById.TryGetValue(entity.id, out EntityTrackerEntry ent))
         {
-            ent.sendToAround(packet);
+            ent.SendToAround(packet);
         }
     }
 
-    public void removeListener(ServerPlayerEntity player)
+    public void RemoveListener(ServerPlayerEntity player)
     {
         foreach (EntityTrackerEntry var3 in entries)
         {
-            var3.removeListener(player);
+            var3.RemoveListener(player);
         }
     }
 }
