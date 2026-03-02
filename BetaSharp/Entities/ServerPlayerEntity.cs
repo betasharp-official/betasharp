@@ -86,6 +86,8 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public override void tick()
     {
+        TickSleep();
+
         interactionManager.update();
         joinInvulnerabilityTicks--;
         currentScreenHandler.SendContentUpdates();
@@ -141,7 +143,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void playerTick(bool shouldSendChunkUpdates)
     {
-        base.tick();
+        GenericTick();
 
         for (int slotIndex = 0; slotIndex < inventory.size(); slotIndex++)
         {
