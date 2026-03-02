@@ -1,8 +1,7 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Network.Packets;
 using BetaSharp.Threading;
-using java.util;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Network;
@@ -17,13 +16,13 @@ public class Connection
     private Socket? _socket;
     private readonly IPEndPoint? _address;
     protected bool open = true;
-    protected List readQueue = Collections.synchronizedList(new ArrayList());
-    protected List sendQueue = Collections.synchronizedList(new ArrayList());
-    protected List delayedSendQueue = Collections.synchronizedList(new ArrayList());
+    protected List<Packet> readQueue = new();
+    protected List<Packet> sendQueue = new();
+    protected List<Packet> delayedSendQueue = new();
     protected NetHandler? networkHandler;
     protected bool closed;
-    private readonly java.lang.Thread _writer;
-    private readonly java.lang.Thread _reader;
+    private readonly Thread _writer;
+    private readonly Thread _reader;
     protected bool disconnected;
     protected string disconnectedReason = "";
     protected object[]? disconnectReasonArgs;
@@ -47,10 +46,12 @@ public class Connection
 
         _networkStream = new NetworkStream(socket);
 
-        _reader = new NetworkReaderThread(this, address + " read thread");
-        _writer = new NetworkWriterThread(this, address + " write thread");
-        _reader.start();
-        _writer.start();
+        var readerRunnable = new NetworkReaderThread(this);
+        var writerRunnable = new NetworkWriterThread(this);
+        _reader = new Thread(readerRunnable.Run) { Name = address + " read thread", IsBackground = true };
+        _writer = new Thread(writerRunnable.Run) { Name = address + " write thread", IsBackground = true };
+        _reader.Start();
+        _writer.Start();
     }
 
     protected Connection()
@@ -63,7 +64,7 @@ public class Connection
         networkHandler = netHandler;
     }
 
-    public virtual void sendPacket(Packet packet)
+    public virtual void SendPacket(Packet packet)
     {
         if (!closed)
         {
@@ -73,11 +74,11 @@ public class Connection
                 sendQueueSize += packet.Size() + 1;
                 if (packet.WorldPacket)
                 {
-                    delayedSendQueue.add(packet);
+                    delayedSendQueue.Add(packet);
                 }
                 else
                 {
-                    sendQueue.add(packet);
+                    sendQueue.Add(packet);
                 }
 
             }
@@ -99,13 +100,14 @@ public class Connection
             int packetId;
             Packet packet;
             object lockObj;
-            if (!sendQueue.isEmpty() && (lag == 0 || DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
- - ((Packet)sendQueue.get(0)).CreationTime >= lag))
+            if (sendQueue.Count > 0 && (lag == 0 || DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+ - sendQueue[0].CreationTime >= lag))
             {
                 lockObj = lck;
                 lock (lockObj)
                 {
-                    packet = (Packet)sendQueue.remove(0);
+                    packet = sendQueue[0];
+                    sendQueue.RemoveAt(0);
                     sendQueueSize -= packet.Size() + 1;
                 }
 
@@ -116,13 +118,14 @@ public class Connection
                 wrotePacket = true;
             }
 
-            if (_delay-- <= 0 && !delayedSendQueue.isEmpty() && (lag == 0 || DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
- - ((Packet)delayedSendQueue.get(0)).CreationTime >= lag))
+            if (_delay-- <= 0 && delayedSendQueue.Count > 0 && (lag == 0 || DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+ - delayedSendQueue[0].CreationTime >= lag))
             {
                 lockObj = lck;
                 lock (lockObj)
                 {
-                    packet = (Packet)delayedSendQueue.remove(0);
+                    packet = delayedSendQueue[0];
+                    delayedSendQueue.RemoveAt(0);
                     sendQueueSize -= packet.Size() + 1;
                 }
 
@@ -140,7 +143,7 @@ public class Connection
         {
             if (!disconnected)
             {
-                disconnect(ex);
+                Disconnect(ex);
             }
 
             return false;
@@ -169,18 +172,18 @@ public class Connection
 
         try
         {
-            Packet? packet = Packet.Read(_networkStream, networkHandler.isServerSide());
+            Packet? packet = Packet.Read(_networkStream, networkHandler.IsServerSide());
             if (packet != null)
             {
                 int[] sizeStats = TOTAL_READ_SIZE;
                 int packetId = packet.GetRawId();
                 sizeStats[packetId] += packet.Size() + 1;
-                readQueue.add(packet);
+                readQueue.Add(packet);
                 receivedPacket = true;
             }
             else
             {
-                disconnect("disconnect.endOfStream");
+                Disconnect("disconnect.endOfStream");
             }
 
             return receivedPacket;
@@ -189,27 +192,27 @@ public class Connection
         {
             if (!disconnected)
             {
-                disconnect(ex);
+                Disconnect(ex);
             }
 
             return false;
         }
     }
 
-    private void disconnect(Exception e)
+    private void Disconnect(Exception e)
     {
         _logger.LogError(e, e.Message);
-        disconnect("disconnect.genericReason", "Internal exception: " + e);
+        Disconnect("disconnect.genericReason", "Internal exception: " + e);
     }
 
-    public virtual void disconnect(string disconnectedReason, params object[] disconnectReasonArgs)
+    public virtual void Disconnect(string disconnectedReason, params object[] disconnectReasonArgs)
     {
         if (open)
         {
             disconnected = true;
             this.disconnectedReason = disconnectedReason;
             this.disconnectReasonArgs = disconnectReasonArgs;
-            new NetworkMasterThread(this).start();
+            new NetworkMasterThread(this).Start();
             open = false;
 
             try
@@ -231,14 +234,14 @@ public class Connection
     {
         if (sendQueueSize > 1048576)
         {
-            disconnect("disconnect.overflow");
+            Disconnect("disconnect.overflow");
         }
 
-        if (readQueue.isEmpty())
+        if (readQueue.Count == 0)
         {
             if (timeout++ == 1200)
             {
-                disconnect("disconnect.timeout");
+                Disconnect("disconnect.timeout");
             }
         }
         else
@@ -249,7 +252,7 @@ public class Connection
         processPackets();
 
         interrupt();
-        if (disconnected && readQueue.isEmpty())
+        if (disconnected && readQueue.Count == 0)
         {
             networkHandler?.onDisconnected(disconnectedReason, disconnectReasonArgs);
         }
@@ -265,9 +268,10 @@ public class Connection
 
         int maxPacketsPerTick = 100;
 
-        while (!readQueue.isEmpty() && maxPacketsPerTick-- >= 0)
+        while (readQueue.Count > 0 && maxPacketsPerTick-- >= 0)
         {
-            Packet packet = (Packet)readQueue.remove(0);
+            Packet packet = readQueue[0];
+            readQueue.RemoveAt(0);
             packet.Apply(networkHandler);
         }
     }
@@ -277,7 +281,7 @@ public class Connection
         return _address;
     }
 
-    public virtual void disconnect()
+    public virtual void Disconnect()
     {
         interrupt();
         closed = true;
@@ -286,7 +290,7 @@ public class Connection
 
     public int getDelayedSendQueueSize()
     {
-        return delayedSendQueue.size();
+        return delayedSendQueue.Count;
     }
 
     public static bool isOpen(Connection conn)
@@ -319,17 +323,17 @@ public class Connection
         return conn.disconnected;
     }
 
-    public static void disconnect(Connection conn, Exception ex)
+    public static void Disconnect(Connection conn, Exception ex)
     {
-        conn.disconnect(ex);
+        conn.Disconnect(ex);
     }
 
-    public static java.lang.Thread getReader(Connection conn)
+    public static Thread getReader(Connection conn)
     {
         return conn._reader;
     }
 
-    public static java.lang.Thread getWriter(Connection conn)
+    public static Thread getWriter(Connection conn)
     {
         return conn._writer;
     }

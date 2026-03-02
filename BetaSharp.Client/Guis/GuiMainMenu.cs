@@ -1,6 +1,5 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Util.Maths;
-using java.io;
 
 namespace BetaSharp.Client.Guis;
 
@@ -21,26 +20,18 @@ public class GuiMainMenu : GuiScreen
         try
         {
             List<string> splashLines = [];
-            BufferedReader reader =
-                new(new java.io.StringReader(AssetManager.Instance.getAsset("title/splashes.txt")
-                    .getTextContent()));
-            string line = "";
-
-            while (true)
+            using var reader = new StringReader(AssetManager.Instance.getAsset("title/splashes.txt").getTextContent());
+            string? line;
+            while ((line = reader.ReadLine()) != null)
             {
-                line = reader.readLine();
-                if (line == null)
-                {
-                    _splashText = splashLines[s_rand.NextInt(splashLines.Count)];
-                    break;
-                }
-
                 line = line.Trim();
                 if (line.Length > 0)
                 {
                     splashLines.Add(line);
                 }
             }
+            if (splashLines.Count > 0)
+                _splashText = splashLines[s_rand.NextInt(splashLines.Count)];
         }
         catch (Exception)
         {

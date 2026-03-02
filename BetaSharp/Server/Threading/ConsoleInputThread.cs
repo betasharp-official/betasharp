@@ -1,22 +1,30 @@
-namespace BetaSharp.Server.Threading;
+﻿namespace BetaSharp.Server.Threading;
 
-public class ConsoleInputThread : java.lang.Thread
+public class ConsoleInputThread
 {
-    private readonly MinecraftServer mcServer;
+    private readonly MinecraftServer _mcServer;
+    private readonly Thread _thread;
 
-    public ConsoleInputThread(MinecraftServer server) : base("Server console handler")
+    public ConsoleInputThread(MinecraftServer server)
     {
-        mcServer = server;
+        _mcServer = server;
+        _thread = new Thread(Run)
+        {
+            Name = "Server console handler",
+            IsBackground = true
+        };
     }
 
-    public override void run()
+    public void Start() => _thread.Start();
+
+    private void Run()
     {
-        while (!mcServer.stopped && mcServer.running)
+        while (!_mcServer.Stopped && _mcServer.Running)
         {
             string? line = Console.ReadLine();
             if (line != null)
             {
-                mcServer.queueCommands(line, mcServer);
+                _mcServer.QueueCommands(line, _mcServer);
             }
         }
     }

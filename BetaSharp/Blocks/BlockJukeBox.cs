@@ -1,4 +1,4 @@
-using BetaSharp.Blocks.Entities;
+﻿using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Items;
@@ -37,7 +37,7 @@ internal class BlockJukeBox : BlockWithEntity
         {
             BlockEntityRecordPlayer jukebox = (BlockEntityRecordPlayer)world.getBlockEntity(x, y, z);
             jukebox.recordId = id;
-            jukebox.markDirty();
+            jukebox.MarkDirty();
             world.setBlockMeta(x, y, z, 1);
         }
     }
@@ -53,7 +53,7 @@ internal class BlockJukeBox : BlockWithEntity
                 world.worldEvent(1005, x, y, z, 0);
                 world.playStreaming((String)null, x, y, z);
                 jukebox.recordId = 0;
-                jukebox.markDirty();
+                jukebox.MarkDirty();
                 world.setBlockMeta(x, y, z, 0);
                 float spreadFactor = 0.7F;
                 double offsetX = (double)(world.random.NextFloat() * spreadFactor) + (double)(1.0F - spreadFactor) * 0.5D;

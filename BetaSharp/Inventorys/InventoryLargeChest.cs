@@ -1,4 +1,4 @@
-using BetaSharp.Blocks.Entities;
+﻿using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 
@@ -55,10 +55,10 @@ internal class InventoryLargeChest : BlockEntity, IInventory
         return upperChest.getMaxCountPerStack();
     }
 
-    public void markDirty()
+    public void MarkDirty()
     {
-        upperChest.markDirty();
-        lowerChest.markDirty();
+        upperChest.MarkDirty();
+        lowerChest.MarkDirty();
     }
 
     public bool canPlayerUse(EntityPlayer entityPlayer)

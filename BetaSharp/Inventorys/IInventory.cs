@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.Items;
 
 namespace BetaSharp.Inventorys;
@@ -17,7 +17,7 @@ public interface IInventory
 
     int getMaxCountPerStack();
 
-    void markDirty();
+    void MarkDirty();
 
     bool canPlayerUse(EntityPlayer entityPlayer);
 }

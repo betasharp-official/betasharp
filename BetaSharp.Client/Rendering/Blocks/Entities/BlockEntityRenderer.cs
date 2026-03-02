@@ -3,13 +3,12 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Entities;
 using BetaSharp.Worlds;
-using java.lang;
 
 namespace BetaSharp.Client.Rendering.Blocks.Entities;
 
 public class BlockEntityRenderer
 {
-    private readonly Dictionary<Class, BlockEntitySpecialRenderer?> _specialRendererMap = [];
+    private readonly Dictionary<Type, BlockEntitySpecialRenderer?> _specialRendererMap = [];
     public static BlockEntityRenderer Instance { get; } = new();
     private TextRenderer _fontRenderer;
     public static double StaticPlayerX;

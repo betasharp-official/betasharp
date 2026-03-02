@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using BetaSharp.Items;
 using BetaSharp.Network.Packets;
 using BetaSharp.Util.Maths;
-using java.io;
 using Console = System.Console;
 
 namespace BetaSharp;

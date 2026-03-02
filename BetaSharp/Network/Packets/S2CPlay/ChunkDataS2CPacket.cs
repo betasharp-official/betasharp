@@ -1,6 +1,7 @@
+using System.IO;
+using System.IO.Compression;
 using System.Net.Sockets;
 using BetaSharp.Worlds;
-using java.util.zip;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
@@ -32,19 +33,15 @@ public class ChunkDataS2CPacket : Packet
         this.sizeZ = sizeZ;
         byte[] chunkData = world.GetChunkData(x, y, z, sizeX, sizeY, sizeZ);
         rawData = chunkData;
-        Deflater deflater = new(1);
-
-        try
+        byte[] compressed;
+        using (var ms = new MemoryStream())
         {
-            deflater.setInput(chunkData);
-            deflater.finish();
-            this.chunkData = new byte[sizeX * sizeY * sizeZ * 5 / 2];
-            chunkDataSize = deflater.deflate(this.chunkData);
+            using (var zlib = new ZLibStream(ms, CompressionLevel.Fastest, leaveOpen: true))
+                zlib.Write(chunkData, 0, chunkData.Length);
+            compressed = ms.ToArray();
         }
-        finally
-        {
-            deflater.end();
-        }
+        this.chunkData = compressed;
+        chunkDataSize = compressed.Length;
     }
 
     public override void Read(NetworkStream stream)
@@ -60,20 +57,15 @@ public class ChunkDataS2CPacket : Packet
         stream.ReadExactly(chunkData);
 
         this.chunkData = new byte[sizeX * sizeY * sizeZ * 5 / 2];
-        Inflater inflater = new();
-        inflater.setInput(chunkData);
-
         try
         {
-            inflater.inflate(this.chunkData);
+            using var ms = new MemoryStream(chunkData);
+            using var zlib = new ZLibStream(ms, CompressionMode.Decompress);
+            _ = zlib.Read(this.chunkData, 0, this.chunkData.Length);
         }
-        catch (DataFormatException ex)
+        catch (InvalidDataException)
         {
-            throw new java.io.IOException("Bad compressed data format");
-        }
-        finally
-        {
-            inflater.end();
+            throw new IOException("Bad compressed data format");
         }
 
     }

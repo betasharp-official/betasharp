@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Recipes;
@@ -85,7 +85,7 @@ internal class PlayerScreenHandler : ScreenHandler
     public override ItemStack quickMove(int slot)
     {
         ItemStack var2 = null;
-        Slot var3 = (Slot)slots.get(slot);
+        Slot var3 = slots[slot];
         if (var3 != null && var3.hasStack())
         {
             ItemStack var4 = var3.getStack();
@@ -113,7 +113,7 @@ internal class PlayerScreenHandler : ScreenHandler
             }
             else
             {
-                var3.markDirty();
+                var3.MarkDirty();
             }
 
             if (var4.count == var2.count)

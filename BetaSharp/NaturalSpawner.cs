@@ -1,4 +1,4 @@
-using System.Xml;
+﻿using System.Xml;
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.PathFinding;
@@ -39,7 +39,7 @@ internal static class NaturalSpawner
 
         ChunksForSpawning.Clear();
 
-        foreach (var p in world.players)
+        foreach (var p in world.Players)
         {
             int chunkX = MathHelper.Floor(p.x / 16.0D);
             int chunkZ = MathHelper.Floor(p.z / 16.0D);

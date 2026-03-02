@@ -1,4 +1,4 @@
-using BetaSharp.Blocks.Entities;
+﻿using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
@@ -49,9 +49,9 @@ public class FurnaceScreenHandler : ScreenHandler
     {
         base.sendContentUpdates();
 
-        for (int var1 = 0; var1 < listeners.size(); ++var1)
+        for (int var1 = 0; var1 < listeners.Count; ++var1)
         {
-            ScreenHandlerListener var2 = (ScreenHandlerListener)listeners.get(var1);
+            ScreenHandlerListener var2 = listeners[var1];
             if (cookTime != furnaceBlockEntity.cookTime)
             {
                 var2.onPropertyUpdate(this, 0, furnaceBlockEntity.cookTime);
@@ -100,7 +100,7 @@ public class FurnaceScreenHandler : ScreenHandler
     public override ItemStack quickMove(int slot)
     {
         ItemStack var2 = null;
-        Slot var3 = (Slot)slots.get(slot);
+        Slot var3 = slots[slot];
         if (var3 != null && var3.hasStack())
         {
             ItemStack var4 = var3.getStack();
@@ -128,7 +128,7 @@ public class FurnaceScreenHandler : ScreenHandler
             }
             else
             {
-                var3.markDirty();
+                var3.MarkDirty();
             }
 
             if (var4.count == var2.count)

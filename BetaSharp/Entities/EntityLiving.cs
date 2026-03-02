@@ -542,7 +542,7 @@ public class EntityLiving : Entity
     protected override void onLanding(float fallDistance)
     {
         base.onLanding(fallDistance);
-        int var2 = (int)java.lang.Math.ceil((double)(fallDistance - 3.0F));
+        int var2 = (int)Math.Ceiling((double)(fallDistance - 3.0F));
         if (var2 > 0)
         {
             damage(null, var2);

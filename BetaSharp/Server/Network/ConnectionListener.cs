@@ -10,37 +10,40 @@ public class ConnectionListener
 {
     public Socket Socket { get; }
 
-    private readonly java.lang.Thread _thread;
+    private readonly AcceptConnectionThread? _thread;
     private readonly ILogger<ConnectionListener> _logger = Log.Instance.For<ConnectionListener>();
 
-    public volatile bool open;
-    public int connectionCounter = 0;
+    public volatile bool Open;
+    public int ConnectionCounter = 0;
     private readonly List<ServerLoginNetworkHandler> _pendingConnections = [];
     private readonly List<ServerPlayNetworkHandler> _connections = [];
-    public MinecraftServer server;
-    public int port;
+    public MinecraftServer Server;
+    public int Port;
 
     public ConnectionListener(MinecraftServer server, IPAddress address, int port, bool dualStack = false)
     {
-        this.server = server;
+        this.Server = server;
 
         Socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
-        Socket.DualMode = dualStack;
+        if (dualStack)
+        {
+            Socket.DualMode = true;
+        }
         Socket.Bind(new IPEndPoint(address, port));
         Socket.Listen();
 
-        this.port = port;
-        open = true;
+        this.Port = port;
+        Open = true;
         _thread = new AcceptConnectionThread(this, "Listen Thread");
-        _thread.start();
+        _thread.Start();
     }
 
     public ConnectionListener(MinecraftServer server)
     {
-        this.server = server;
-        Socket = null;
-        port = 0;
-        open = true;
+        this.Server = server;
+        Socket = null!;
+        Port = 0;
+        Open = true;
         _thread = null;
     }
 
@@ -63,7 +66,7 @@ public class ConnectionListener
 
     public void AddInternalConnection(InternalConnection connection)
     {
-        ServerLoginNetworkHandler loginHandler = new(server, connection);
+        ServerLoginNetworkHandler loginHandler = new(Server, connection);
         _pendingConnections.Add(loginHandler);
     }
 
@@ -75,20 +78,20 @@ public class ConnectionListener
 
             try
             {
-                connection.tick();
+                connection.Tick();
             }
             catch (Exception ex)
             {
-                connection.disconnect("Internal server error");
+                connection.Disconnect("Internal server error");
                 _logger.LogError($"Failed to handle packet: {ex}");
             }
 
-            if (connection.closed)
+            if (connection.Closed)
             {
                 _pendingConnections.RemoveAt(i--);
             }
 
-            connection.connection.interrupt();
+            connection.Connection.interrupt();
         }
 
         for (int i = 0; i < _connections.Count; i++)
@@ -97,20 +100,20 @@ public class ConnectionListener
 
             try
             {
-                connection.tick();
+                connection.Tick();
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Failed to handle packet: {ex}");
-                connection.disconnect("Internal server error");
+                connection.Disconnect("Internal server error");
             }
 
-            if (connection.disconnected)
+            if (connection.Disconnected)
             {
                 _connections.RemoveAt(i--);
             }
 
-            connection.connection.interrupt();
+            connection.Connection.interrupt();
         }
     }
 }

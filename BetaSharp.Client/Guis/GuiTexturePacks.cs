@@ -27,7 +27,7 @@ public class GuiTexturePacks : GuiScreen
         _controlList.Add(new GuiSmallButton(ButtonOpenFolder, Width / 2 - 154, Height - 48, translations.TranslateKey("texturePack.openFolder")));
         _controlList.Add(new GuiSmallButton(ButtonDone, Width / 2 + 4, Height - 48, translations.TranslateKey("gui.done")));
         mc.texturePackList.updateAvaliableTexturePacks();
-        _texturePackFolder = new java.io.File(Minecraft.getMinecraftDir(), "texturepacks").getAbsolutePath();
+        _texturePackFolder = Path.Combine(Minecraft.getMinecraftDir(), "texturepacks");
         _guiTexturePackSlot = new GuiTexturePackSlot(this);
         _guiTexturePackSlot.RegisterScrollButtons(_controlList, 7, 8);
     }

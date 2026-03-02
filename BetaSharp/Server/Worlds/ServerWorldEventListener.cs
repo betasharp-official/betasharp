@@ -1,4 +1,4 @@
-using BetaSharp.Blocks.Entities;
+﻿using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Worlds;
@@ -22,12 +22,12 @@ internal class ServerWorldEventListener : IWorldAccess
 
     public void notifyEntityAdded(Entity entity)
     {
-        server.getEntityTracker(world.dimension.Id).onEntityAdded(entity);
+        server.GetEntityTracker(world.dimension.Id).OnEntityAdded(entity);
     }
 
     public void notifyEntityRemoved(Entity entity)
     {
-        server.getEntityTracker(world.dimension.Id).onEntityRemoved(entity);
+        server.GetEntityTracker(world.dimension.Id).OnEntityRemoved(entity);
     }
 
     public void playSound(string sound, double x, double y, double z, float volume, float pitch)
@@ -44,21 +44,21 @@ internal class ServerWorldEventListener : IWorldAccess
 
     public void blockUpdate(int x, int y, int z)
     {
-        server.playerManager.markDirty(x, y, z, world.dimension.Id);
+        server.PlayerManager.MarkDirty(x, y, z, world.dimension.Id);
     }
 
     public void playStreaming(String stream, int x, int y, int z)
     {
     }
 
-    public void updateBlockEntity(int x, int y, int z, BlockEntity blockEntity)
+    public void UpdateBlockEntity(int x, int y, int z, BlockEntity blockEntity)
     {
-        server.playerManager.updateBlockEntity(x, y, z, blockEntity);
+        server.PlayerManager.UpdateBlockEntity(x, y, z, blockEntity);
     }
 
     public void worldEvent(EntityPlayer player, int @event, int x, int y, int z, int data)
     {
-        server.playerManager.sendToAround(player, x, y, z, 64.0, world.dimension.Id, new WorldEventS2CPacket(@event, x, y, z, data));
+        server.PlayerManager.SendToAround(player, x, y, z, 64.0, world.dimension.Id, new WorldEventS2CPacket(@event, x, y, z, data));
     }
 
     public void spawnParticle(string var1, double var2, double var4, double var6, double var8, double var10, double var12)

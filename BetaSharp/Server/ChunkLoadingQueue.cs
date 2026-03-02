@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 
 namespace BetaSharp.Server;
 
@@ -80,7 +80,7 @@ internal class ChunkLoadingQueue(ChunkMap chunkMap)
                 {
                     if (!chunk.HasPlayer(player))
                     {
-                        chunk.addPlayer(player);
+                        chunk.AddPlayer(player);
                     }
                 }
             }

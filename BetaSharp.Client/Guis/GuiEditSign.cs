@@ -1,4 +1,4 @@
-using BetaSharp.Blocks;
+﻿using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering.Blocks.Entities;
@@ -49,7 +49,7 @@ public class GuiEditSign : GuiScreen
     {
         if (button.Enabled && button.Id == ButtonDoneId)
         {
-            _entitySign.markDirty();
+            _entitySign.MarkDirty();
             mc?.displayGuiScreen(null);
         }
     }
@@ -79,7 +79,7 @@ public class GuiEditSign : GuiScreen
 
         if (eventKey == Keyboard.KEY_ESCAPE)
         {
-            _entitySign.markDirty();
+            _entitySign.MarkDirty();
             mc?.displayGuiScreen(null);
             return;
         }

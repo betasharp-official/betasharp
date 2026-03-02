@@ -2,7 +2,6 @@ using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Entities;
-using java.util;
 using Silk.NET.OpenGL.Legacy;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -73,11 +72,8 @@ public class MapItemRenderer
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.GL.Disable(GLEnum.Blend);
         textureManager.BindTexture(textureManager.GetTextureId("/misc/mapicons.png"));
-        Iterator it = mapState.icons.iterator();
-
-        while (it.hasNext())
+        foreach (MapCoord coord in mapState.icons)
         {
-            MapCoord coord = (MapCoord)it.next();
             GLManager.GL.PushMatrix();
             GLManager.GL.Translate((sbyte)coord.x / 2.0F + 64.0F, (sbyte)coord.z / 2.0F + 64.0F, -0.02F);
             GLManager.GL.Rotate((sbyte)coord.rotation * 360 / 16.0F, 0.0F, 0.0F, 1.0F);

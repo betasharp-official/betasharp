@@ -107,7 +107,7 @@ internal class LargeOakTreeFeature : Feature
             {
                 branches[i] = new int[4];
             }
-            java.lang.System.arraycopy(var2, 0, branches, 0, var4);
+            Array.Copy(var2, 0, branches, 0, var4);
             return;
         }
     }

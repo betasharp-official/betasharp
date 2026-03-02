@@ -8,11 +8,11 @@ namespace BetaSharp.Worlds.Chunks.Storage;
 internal class RegionChunkStorage : IChunkStorage
 {
     private readonly ILogger<RegionChunkStorage> _logger = Log.Instance.For<RegionChunkStorage>();
-    private readonly java.io.File dir;
+    private readonly string dir;
 
     public RegionChunkStorage(string dir)
     {
-        this.dir = new java.io.File(dir);
+        this.dir = dir;
     }
 
     public Chunk LoadChunk(World world, int chunkX, int chunkZ)

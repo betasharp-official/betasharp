@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.Rules;
 using BetaSharp.Worlds;
 
@@ -24,9 +24,9 @@ internal static class WorldCommands
                 return;
             }
 
-            for (int i = 0; i < server.worlds.Length; i++)
+            for (int i = 0; i < server.Worlds.Length; i++)
             {
-                ServerWorld world = server.worlds[i];
+                ServerWorld world = server.Worlds[i];
                 if (mode == "add")
                 {
                     world.synchronizeTimeAndUpdates(world.getTime() + timeValue);
@@ -45,9 +45,9 @@ internal static class WorldCommands
 
         if (args.Length == 1 && TryParseTimeValue(args[0], out long namedTime))
         {
-            for (int i = 0; i < server.worlds.Length; i++)
+            for (int i = 0; i < server.Worlds.Length; i++)
             {
-                server.worlds[i].synchronizeTimeAndUpdates(namedTime);
+                server.Worlds[i].synchronizeTimeAndUpdates(namedTime);
             }
 
             output.SendMessage($"Time set to {args[0]} ({namedTime})");
@@ -64,9 +64,9 @@ internal static class WorldCommands
         if (args.Length < 1) { output.SendMessage("Usage: weather <clear|rain|storm>"); return; }
 
         string weather = args[0].ToLower();
-        for (int i = 0; i < server.worlds.Length; i++)
+        for (int i = 0; i < server.Worlds.Length; i++)
         {
-            ServerWorld world = server.worlds[i];
+            ServerWorld world = server.Worlds[i];
             switch (weather)
             {
                 case "clear":
@@ -99,7 +99,7 @@ internal static class WorldCommands
             return;
         }
 
-        ServerPlayerEntity player = server.playerManager.getPlayer(senderName);
+        ServerPlayerEntity player = server.PlayerManager.GetPlayer(senderName);
         if (player == null)
         {
             output.SendMessage("Could not find your player.");
@@ -118,7 +118,7 @@ internal static class WorldCommands
             }
         }
 
-        ServerWorld world = server.getWorld(player.dimensionId);
+        ServerWorld world = server.GetWorld(player.dimensionId);
         int summoned = 0;
 
         for (int i = 0; i < count; i++)
@@ -145,9 +145,9 @@ internal static class WorldCommands
         string filter = args.Length > 0 ? args[0].ToLower() : "all";
         int count = 0;
 
-        for (int w = 0; w < server.worlds.Length; w++)
+        for (int w = 0; w < server.Worlds.Length; w++)
         {
-            ServerWorld world = server.worlds[w];
+            ServerWorld world = server.Worlds[w];
             var entities = new System.Collections.Generic.List<Entity>(world.entities);
 
             foreach (Entity entity in entities)
@@ -202,8 +202,8 @@ internal static class WorldCommands
 
     public static void GameRule(MinecraftServer server, string senderName, string[] args, CommandOutput output)
     {
-        ServerPlayerEntity player = server.playerManager.getPlayer(senderName);
-        ServerWorld world = player != null ? server.getWorld(player.dimensionId) : server.worlds[0];
+        ServerPlayerEntity player = server.PlayerManager.GetPlayer(senderName);
+        ServerWorld world = player != null ? server.GetWorld(player.dimensionId) : server.Worlds[0];
         RuleSet rules = world.Rules;
         RuleRegistry registry = RuleRegistry.Instance;
 

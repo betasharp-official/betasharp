@@ -8,7 +8,6 @@ using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
-using java.awt;
 using Silk.NET.OpenGL.Legacy;
 
 namespace BetaSharp.Client.Guis;
@@ -257,7 +256,7 @@ public class GuiIngame : Gui
                 j = 0xFFFFFF;
                 if (_isRecordMessageRainbow)
                 {
-                    j = java.awt.Color.HSBtoRGB(t / 50.0F, 0.7F, 0.6F) & 0xFFFFFF;
+                    j = HsvToRgb(t / 50.0F, 0.7F, 0.6F) & 0xFFFFFF;
                 }
 
                 font.DrawString(_recordPlaying, -font.GetStringWidth(_recordPlaying) / 2, -4, Color.FromArgb((uint)(j + (i << 24))));
@@ -554,6 +553,34 @@ public class GuiIngame : Gui
         _chatScrollPos += amount;
         if (_chatScrollPos < 0) _chatScrollPos = 0;
         if (_chatScrollPos > maxScroll) _chatScrollPos = maxScroll;
+    }
+
+    /// <summary>Java-compatible HSV (HSB) to packed RGB integer.</summary>
+    private static int HsvToRgb(float hue, float saturation, float brightness)
+    {
+        int r = 0, g = 0, b = 0;
+        if (saturation == 0)
+        {
+            r = g = b = (int)(brightness * 255.0f + 0.5f);
+        }
+        else
+        {
+            float h = (hue - MathF.Floor(hue)) * 6.0f;
+            float f = h - MathF.Floor(h);
+            float p = brightness * (1.0f - saturation);
+            float q = brightness * (1.0f - saturation * f);
+            float t = brightness * (1.0f - saturation * (1.0f - f));
+            switch ((int)h)
+            {
+                case 0: r = (int)(brightness * 255.0f + 0.5f); g = (int)(t * 255.0f + 0.5f); b = (int)(p * 255.0f + 0.5f); break;
+                case 1: r = (int)(q * 255.0f + 0.5f); g = (int)(brightness * 255.0f + 0.5f); b = (int)(p * 255.0f + 0.5f); break;
+                case 2: r = (int)(p * 255.0f + 0.5f); g = (int)(brightness * 255.0f + 0.5f); b = (int)(t * 255.0f + 0.5f); break;
+                case 3: r = (int)(p * 255.0f + 0.5f); g = (int)(q * 255.0f + 0.5f); b = (int)(brightness * 255.0f + 0.5f); break;
+                case 4: r = (int)(t * 255.0f + 0.5f); g = (int)(p * 255.0f + 0.5f); b = (int)(brightness * 255.0f + 0.5f); break;
+                case 5: r = (int)(brightness * 255.0f + 0.5f); g = (int)(p * 255.0f + 0.5f); b = (int)(q * 255.0f + 0.5f); break;
+            }
+        }
+        return (r << 16) | (g << 8) | b;
     }
 
 }

@@ -1,47 +1,38 @@
-using java.io;
-using java.lang;
-using java.util;
-using java.util.logging;
-using Exception = System.Exception;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server;
 
 internal class DedicatedServerConfiguration : IServerConfiguration
 {
-    public static Logger logger = Logger.getLogger("Minecraft");
-    private readonly Properties properties = new();
-    private readonly java.io.File propertiesFile;
+    private readonly ILogger<DedicatedServerConfiguration> _logger = Log.Instance.For<DedicatedServerConfiguration>();
+    private readonly PropertiesFile _properties = new();
+    private readonly string _filePath;
 
-    public DedicatedServerConfiguration(java.io.File file)
+    public DedicatedServerConfiguration(string filePath)
     {
-        propertiesFile = file;
-        if (file.exists())
+        _filePath = filePath;
+        if (File.Exists(filePath))
         {
             try
             {
-                properties.load(new FileInputStream(file));
+                _properties.Load(filePath);
             }
             catch (Exception ex)
             {
-                logger.log(Level.WARNING, "Failed to load " + file, (Throwable)ex);
-                generateNew();
+                _logger.LogWarning(ex, "Failed to load {File}", filePath);
+                GenerateNew();
             }
         }
         else
         {
-            logger.log(Level.WARNING, file + " does not exist");
-            generateNew();
+            _logger.LogWarning("{File} does not exist", filePath);
+            GenerateNew();
         }
     }
 
-    public void generateNew()
+    private void GenerateNew()
     {
-        logger.log(Level.INFO, "Generating new properties file");
-        save();
-    }
-
-    public void save()
-    {
+        _logger.LogInformation("Generating new properties file");
         Save();
     }
 
@@ -49,76 +40,51 @@ internal class DedicatedServerConfiguration : IServerConfiguration
     {
         try
         {
-            properties.store(new FileOutputStream(propertiesFile), "Minecraft server properties");
+            _properties.Save(_filePath, "Minecraft server properties");
         }
         catch (Exception ex)
         {
-            logger.log(Level.WARNING, "Failed to save " + propertiesFile, ex);
-            generateNew();
+            _logger.LogWarning(ex, "Failed to save {File}", _filePath);
         }
-    }
-
-    public string getProperty(string property, string fallback)
-    {
-        return GetProperty(property, fallback);
     }
 
     public string GetProperty(string property, string fallback)
     {
-        if (!properties.containsKey(property))
+        if (!_properties.ContainsKey(property))
         {
-            properties.setProperty(property, fallback);
-            save();
+            _properties.SetProperty(property, fallback);
+            Save();
         }
 
-        return properties.getProperty(property, fallback);
-    }
-
-    public int getProperty(string property, int fallback)
-    {
-        return GetProperty(property, fallback);
+        return _properties.GetProperty(property, fallback);
     }
 
     public int GetProperty(string property, int fallback)
     {
-        try
+        if (!int.TryParse(GetProperty(property, fallback.ToString()), out int result))
         {
-            return Integer.parseInt(getProperty(property, "" + fallback));
-        }
-        catch (Exception)
-        {
-            properties.setProperty(property, "" + fallback);
+            _properties.SetProperty(property, fallback.ToString());
             return fallback;
         }
-    }
 
-    public bool getProperty(string property, bool fallback)
-    {
-        return GetProperty(property, fallback);
+        return result;
     }
 
     public bool GetProperty(string property, bool fallback)
     {
-        try
+        if (!bool.TryParse(GetProperty(property, fallback.ToString().ToLower()), out bool result))
         {
-            return java.lang.Boolean.parseBoolean(getProperty(property, "" + fallback));
-        }
-        catch (Exception)
-        {
-            properties.setProperty(property, "" + fallback);
+            _properties.SetProperty(property, fallback.ToString().ToLower());
             return fallback;
         }
-    }
 
-    public void setProperty(string property, bool value)
-    {
-        SetProperty(property, value);
+        return result;
     }
 
     public void SetProperty(string property, bool value)
     {
-        properties.setProperty(property, "" + value);
-        save();
+        _properties.SetProperty(property, value.ToString().ToLower());
+        Save();
     }
 
     public string GetServerIp(string fallback) => GetProperty("server-ip", fallback);

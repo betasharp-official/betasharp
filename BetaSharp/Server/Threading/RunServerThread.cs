@@ -1,16 +1,13 @@
-namespace BetaSharp.Server.Threading;
+﻿namespace BetaSharp.Server.Threading;
 
-public class RunServerThread : java.lang.Thread
+public class RunServerThread
 {
-    private readonly MinecraftServer mcServer;
+    private readonly Thread _thread;
 
-    public RunServerThread(MinecraftServer server, string name) : base(name)
+    public RunServerThread(MinecraftServer server, string name)
     {
-        mcServer = server;
+        _thread = new Thread(server.Run) { Name = name };
     }
 
-    public override void run()
-    {
-        mcServer.run();
-    }
+    public void Start() => _thread.Start();
 }

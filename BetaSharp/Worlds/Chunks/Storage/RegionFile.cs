@@ -1,6 +1,4 @@
 using System.IO.Compression;
-using java.io;
-using java.util;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Worlds.Chunks.Storage;
@@ -15,15 +13,15 @@ internal class RegionFile
     }
 
     private static readonly byte[] emptySector = new byte[4096];
-    private readonly java.io.File fileName;
+    private readonly string fileName;
     private readonly RandomAccessFile dataFile;
     private readonly ILogger<RegionFile> _logger = Log.Instance.For<RegionFile>();
     private readonly int[] offsets = new int[1024];
     private readonly int[] chunkSaveTimes = new int[1024];
-    private readonly ArrayList sectorFree;
+    private readonly List<bool> sectorFree;
     private int sizeDelta;
 
-    public RegionFile(java.io.File var1)
+    public RegionFile(string var1)
     {
         fileName = var1;
         debugln("REGION LOAD " + fileName);
@@ -57,16 +55,16 @@ internal class RegionFile
             }
 
             var2 = (int)dataFile.length() / 4096;
-            sectorFree = new ArrayList(var2);
+            sectorFree = new List<bool>(var2);
 
             int var3;
             for (var3 = 0; var3 < var2; ++var3)
             {
-                sectorFree.add(java.lang.Boolean.TRUE);
+                sectorFree.Add(true);
             }
 
-            sectorFree.set(0, java.lang.Boolean.FALSE);
-            sectorFree.set(1, java.lang.Boolean.FALSE);
+            sectorFree[0] = false;
+            sectorFree[1] = false;
             dataFile.seek(0L);
 
             int var4;
@@ -74,11 +72,11 @@ internal class RegionFile
             {
                 var4 = dataFile.readInt();
                 offsets[var3] = var4;
-                if (var4 != 0 && (var4 >> 8) + (var4 & 255) <= sectorFree.size())
+                if (var4 != 0 && (var4 >> 8) + (var4 & 255) <= sectorFree.Count)
                 {
                     for (int var5 = 0; var5 < (var4 & 255); ++var5)
                     {
-                        sectorFree.set((var4 >> 8) + var5, java.lang.Boolean.FALSE);
+                        sectorFree[(var4 >> 8) + var5] = false;
                     }
                 }
             }
@@ -89,9 +87,9 @@ internal class RegionFile
                 chunkSaveTimes[var3] = var4;
             }
         }
-        catch (java.io.IOException ex)
+        catch (IOException ex)
         {
-            ex.printStackTrace();
+            _logger.LogError(ex, "RegionFile constructor error");
         }
 
     }
@@ -117,12 +115,12 @@ internal class RegionFile
 
     private void func_22199_a(string var1, int var2, int var3, string var4)
     {
-        func_22211_a("REGION " + var1 + " " + fileName.getName() + "[" + var2 + "," + var3 + "] = " + var4);
+        func_22211_a("REGION " + var1 + " " + Path.GetFileName(fileName) + "[" + var2 + "," + var3 + "] = " + var4);
     }
 
     private void func_22197_a(string var1, int var2, int var3, int var4, string var5)
     {
-        func_22211_a("REGION " + var1 + " " + fileName.getName() + "[" + var2 + "," + var3 + "] " + var4 + "B = " + var5);
+        func_22211_a("REGION " + var1 + " " + Path.GetFileName(fileName) + "[" + var2 + "," + var3 + "] " + var4 + "B = " + var5);
     }
 
     private void debugln(string var1, int var2, int var3, string var4)
@@ -152,7 +150,7 @@ internal class RegionFile
                     {
                         int var4 = var3 >> 8;
                         int var5 = var3 & 255;
-                        if (var4 + var5 > sectorFree.size())
+                        if (var4 + var5 > sectorFree.Count)
                         {
                             debugln("READ", var1, var2, "invalid sector");
                             return null;
@@ -233,19 +231,19 @@ internal class RegionFile
                     int var9;
                     for (var9 = 0; var9 < var7; ++var9)
                     {
-                        sectorFree.set(var6 + var9, java.lang.Boolean.TRUE);
+                        sectorFree[var6 + var9] = true;
                     }
 
-                    var9 = sectorFree.indexOf(java.lang.Boolean.TRUE);
+                    var9 = sectorFree.IndexOf(true);
                     int var10 = 0;
                     int var11;
                     if (var9 != -1)
                     {
-                        for (var11 = var9; var11 < sectorFree.size(); ++var11)
+                        for (var11 = var9; var11 < sectorFree.Count; ++var11)
                         {
                             if (var10 != 0)
                             {
-                                if (((java.lang.Boolean)sectorFree.get(var11)).booleanValue())
+                                if (sectorFree[var11])
                                 {
                                     ++var10;
                                 }
@@ -254,7 +252,7 @@ internal class RegionFile
                                     var10 = 0;
                                 }
                             }
-                            else if (((java.lang.Boolean)sectorFree.get(var11)).booleanValue())
+                            else if (sectorFree[var11])
                             {
                                 var9 = var11;
                                 var10 = 1;
@@ -275,7 +273,7 @@ internal class RegionFile
 
                         for (var11 = 0; var11 < var8; ++var11)
                         {
-                            sectorFree.set(var6 + var11, java.lang.Boolean.FALSE);
+                            sectorFree[var6 + var11] = false;
                         }
 
                         write(var6, var3, var4);
@@ -284,12 +282,12 @@ internal class RegionFile
                     {
                         func_22197_a("SAVE", var1, var2, var4, "grow");
                         dataFile.seek(dataFile.length());
-                        var6 = sectorFree.size();
+                        var6 = sectorFree.Count;
 
                         for (var11 = 0; var11 < var8; ++var11)
                         {
                             dataFile.write(emptySector);
-                            sectorFree.add(java.lang.Boolean.FALSE);
+                            sectorFree.Add(false);
                         }
 
                         sizeDelta += 4096 * var8;
@@ -349,5 +347,53 @@ internal class RegionFile
     public void func_22196_b()
     {
         dataFile.close();
+    }
+
+    private sealed class RandomAccessFile : IDisposable
+    {
+        private readonly FileStream _fs;
+        private readonly BinaryReader _reader;
+        private readonly BinaryWriter _writer;
+
+        public RandomAccessFile(string path, string mode)
+        {
+            var access = mode == "r" ? FileAccess.Read : FileAccess.ReadWrite;
+            _fs = new FileStream(path, FileMode.OpenOrCreate, access, FileShare.ReadWrite);
+            _reader = new BinaryReader(_fs);
+            _writer = new BinaryWriter(_fs);
+        }
+
+        public long length() => _fs.Length;
+
+        public void seek(long pos) => _fs.Seek(pos, SeekOrigin.Begin);
+
+        /// <summary>Reads a big-endian int (Java-compatible)</summary>
+        public int readInt()
+        {
+            int value = _reader.ReadInt32();
+            return System.Net.IPAddress.NetworkToHostOrder(value);
+        }
+
+        public byte readByte() => _reader.ReadByte();
+
+        public int read(byte[] buffer) => _fs.Read(buffer, 0, buffer.Length);
+
+        /// <summary>Writes a big-endian int (Java-compatible)</summary>
+        public void writeInt(int value) => _writer.Write(System.Net.IPAddress.HostToNetworkOrder(value));
+
+        public void writeByte(int b) => _writer.Write((byte)b);
+
+        /// <summary>Writes a single byte (Java write(int) behavior)</summary>
+        public void write(int b) => _writer.Write((byte)b);
+
+        /// <summary>Writes an entire byte array</summary>
+        public void write(byte[] data) => _writer.Write(data);
+
+        /// <summary>Writes a portion of a byte array</summary>
+        public void write(byte[] data, int offset, int length) => _fs.Write(data, offset, length);
+
+        public void close() { _writer.Flush(); _fs.Close(); }
+
+        public void Dispose() => close();
     }
 }

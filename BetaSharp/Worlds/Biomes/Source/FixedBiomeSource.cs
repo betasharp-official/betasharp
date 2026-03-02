@@ -1,5 +1,4 @@
 using BetaSharp.Util.Maths;
-using java.util;
 
 namespace BetaSharp.Worlds.Biomes.Source;
 
@@ -37,7 +36,7 @@ internal class FixedBiomeSource : BiomeSource
             map = new double[size];
         }
 
-        Arrays.fill(map, 0, size, _temperature);
+        Array.Fill(map, _temperature, 0, size);
         return map;
     }
 
@@ -55,9 +54,9 @@ internal class FixedBiomeSource : BiomeSource
             DownfallMap = new double[size];
         }
 
-        Arrays.fill(biomes, 0, size, _biome);
-        Arrays.fill(DownfallMap, 0, size, _downfall);
-        Arrays.fill(TemperatureMap, 0, size, _temperature);
+        Array.Fill(biomes, _biome, 0, size);
+        Array.Fill(DownfallMap, _downfall, 0, size);
+        Array.Fill(TemperatureMap, _temperature, 0, size);
 
         return biomes;
     }

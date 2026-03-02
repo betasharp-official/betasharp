@@ -1,4 +1,4 @@
-using BetaSharp.NBT;
+﻿using BetaSharp.NBT;
 
 namespace BetaSharp.Worlds;
 
@@ -16,7 +16,7 @@ public abstract class PersistentState
 
     public abstract void writeNBT(NBTTagCompound var1);
 
-    public void markDirty()
+    public void MarkDirty()
     {
         setDirty(true);
     }

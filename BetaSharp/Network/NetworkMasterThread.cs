@@ -1,8 +1,8 @@
-using java.lang;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Network;
 
-internal class NetworkMasterThread : java.lang.Thread
+internal class NetworkMasterThread
 {
     public readonly Connection netManager;
 
@@ -11,34 +11,32 @@ internal class NetworkMasterThread : java.lang.Thread
         netManager = var1;
     }
 
+    public void Start()
+    {
+        var thread = new Thread(Run) { Name = "NetworkMaster", IsBackground = true };
+        thread.Start();
+    }
 
-    public override void run()
+    private void Run()
     {
         try
         {
-            sleep(5000L);
-            if (Connection.getReader(this.netManager).isAlive())
+            Thread.Sleep(5000);
+            Thread? reader = Connection.getReader(netManager);
+            if (reader?.IsAlive == true)
             {
-                try
-                {
-                    Connection.getReader(this.netManager).stop();
-                }
-                catch (Throwable) { }
+                try { reader.Interrupt(); } catch (Exception) { }
             }
 
-            if (Connection.getWriter(this.netManager).isAlive())
+            Thread? writer = Connection.getWriter(netManager);
+            if (writer?.IsAlive == true)
             {
-                try
-                {
-                    Connection.getWriter(this.netManager).stop();
-                }
-                catch (Throwable) { }
+                try { writer.Interrupt(); } catch (Exception) { }
             }
         }
-        catch (InterruptedException ex)
+        catch (ThreadInterruptedException ex)
         {
-            ex.printStackTrace();
+            Log.Instance.For<NetworkMasterThread>().LogError(ex, ex.Message);
         }
-
     }
 }

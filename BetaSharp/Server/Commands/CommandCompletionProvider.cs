@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 
 namespace BetaSharp.Server.Commands;
 
@@ -65,12 +65,12 @@ internal static class CommandCompletionProvider
 
     private static List<string> GetPlayerCompletions(string prefix, MinecraftServer server)
     {
-        if (server?.playerManager?.players == null)
+        if (server?.PlayerManager?.Players == null)
         {
             return [];
         }
 
-        return server.playerManager.players
+        return server.PlayerManager.Players
             .Select(p => p?.name)
             .Where(name => !string.IsNullOrEmpty(name) &&
                           (string.IsNullOrEmpty(prefix) || name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))

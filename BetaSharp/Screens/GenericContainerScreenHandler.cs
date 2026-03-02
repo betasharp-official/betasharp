@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Screens.Slots;
@@ -50,14 +50,14 @@ public class GenericContainerScreenHandler : ScreenHandler
     public override ItemStack quickMove(int slot)
     {
         ItemStack var2 = null;
-        Slot var3 = (Slot)slots.get(slot);
+        Slot var3 = slots[slot];
         if (var3 != null && var3.hasStack())
         {
             ItemStack var4 = var3.getStack();
             var2 = var4.copy();
             if (slot < rows * 9)
             {
-                insertItem(var4, rows * 9, slots.size(), true);
+                insertItem(var4, rows * 9, slots.Count, true);
             }
             else
             {
@@ -70,7 +70,7 @@ public class GenericContainerScreenHandler : ScreenHandler
             }
             else
             {
-                var3.markDirty();
+                var3.MarkDirty();
             }
         }
 

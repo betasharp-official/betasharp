@@ -1,48 +1,47 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Screens.Slots;
-using java.util;
 
 namespace BetaSharp.Screens;
 
 public abstract class ScreenHandler
 {
-    public List trackedStacks = new ArrayList();
-    public List slots = new ArrayList();
+    public List<ItemStack?> trackedStacks = new();
+    public List<Slot> slots = new();
     public int syncId = 0;
     private short revision;
-    protected List listeners = new ArrayList();
-    private Set players = new HashSet();
+    protected List<ScreenHandlerListener> listeners = new();
+    private HashSet<EntityPlayer> players = new();
 
     protected void addSlot(Slot var1)
     {
-        var1.id = slots.size();
-        slots.add(var1);
-        trackedStacks.add(null);
+        var1.id = slots.Count;
+        slots.Add(var1);
+        trackedStacks.Add(null);
     }
 
     public virtual void addListener(ScreenHandlerListener listener)
     {
-        if (listeners.contains(listener))
+        if (listeners.Contains(listener))
         {
             throw new ArgumentException("Listener already listening", nameof(listener));
         }
         else
         {
-            listeners.add(listener);
+            listeners.Add(listener);
             listener.onContentsUpdate(this, getStacks());
             sendContentUpdates();
         }
     }
 
-    public List getStacks()
+    public List<ItemStack?> getStacks()
     {
-        ArrayList var1 = new ArrayList();
+        List<ItemStack?> var1 = [];
 
-        for (int var2 = 0; var2 < slots.size(); var2++)
+        for (int var2 = 0; var2 < slots.Count; var2++)
         {
-            var1.add(((Slot)slots.get(var2)).getStack());
+            var1.Add(slots[var2].getStack());
         }
 
         return var1;
@@ -50,18 +49,18 @@ public abstract class ScreenHandler
 
     public virtual void sendContentUpdates()
     {
-        for (int var1 = 0; var1 < slots.size(); ++var1)
+        for (int var1 = 0; var1 < slots.Count; ++var1)
         {
-            ItemStack var2 = ((Slot)slots.get(var1)).getStack();
-            ItemStack var3 = (ItemStack)trackedStacks.get(var1);
+            ItemStack var2 = slots[var1].getStack();
+            ItemStack var3 = trackedStacks[var1];
             if (!ItemStack.areEqual(var3, var2))
             {
                 var3 = var2 == null ? null : var2.copy();
-                trackedStacks.set(var1, var3);
+                trackedStacks[var1] = var3;
 
-                for (int var4 = 0; var4 < listeners.size(); ++var4)
+                for (int var4 = 0; var4 < listeners.Count; ++var4)
                 {
-                    ((ScreenHandlerListener)listeners.get(var4)).onSlotUpdate(this, var1, var3);
+                    listeners[var4].onSlotUpdate(this, var1, var3);
                 }
             }
         }
@@ -70,9 +69,9 @@ public abstract class ScreenHandler
 
     public Slot getSlot(IInventory inventory, int index)
     {
-        for (int var3 = 0; var3 < slots.size(); var3++)
+        for (int var3 = 0; var3 < slots.Count; var3++)
         {
-            Slot var4 = (Slot)slots.get(var3);
+            Slot var4 = slots[var3];
             if (var4.Equals(inventory, index))
             {
                 return var4;
@@ -84,12 +83,12 @@ public abstract class ScreenHandler
 
     public Slot getSlot(int index)
     {
-        return (Slot)slots.get(index);
+        return slots[index];
     }
 
     public virtual ItemStack quickMove(int slot)
     {
-        Slot var2 = (Slot)slots.get(slot);
+        Slot var2 = slots[slot];
         return var2 != null ? var2.getStack() : null;
     }
 
@@ -129,7 +128,7 @@ public abstract class ScreenHandler
                     {
                         int var8 = var7.count;
                         var5 = var7.copy();
-                        Slot var9 = (Slot)slots.get(index);
+                        Slot var9 = slots[index];
                         if (var9 != null && var9.getStack() != null)
                         {
                             var10 = var9.getStack().count;
@@ -142,10 +141,10 @@ public abstract class ScreenHandler
                 }
                 else
                 {
-                    Slot var12 = (Slot)slots.get(index);
+                    Slot var12 = slots[index];
                     if (var12 != null)
                     {
-                        var12.markDirty();
+                        var12.MarkDirty();
                         ItemStack var13 = var12.getStack();
                         ItemStack var14 = var6.getCursorStack();
                         if (var13 != null)
@@ -287,18 +286,18 @@ public abstract class ScreenHandler
 
     public bool canOpen(EntityPlayer player)
     {
-        return !players.contains(player);
+        return !players.Contains(player);
     }
 
     public void updatePlayerList(EntityPlayer player, bool remove)
     {
         if (remove)
         {
-            players.remove(player);
+            players.Remove(player);
         }
         else
         {
-            players.add(player);
+            players.Add(player);
         }
     }
 
@@ -318,7 +317,7 @@ public abstract class ScreenHandler
         {
             while (stack.count > 0 && (!fromLast && var5 < end || fromLast && var5 >= start))
             {
-                var6 = (Slot)slots.get(var5);
+                var6 = slots[var5];
                 var7 = var6.getStack();
                 if (var7 != null && var7.itemId == stack.itemId && (!stack.getHasSubtypes() || stack.getDamage() == var7.getDamage()))
                 {
@@ -327,13 +326,13 @@ public abstract class ScreenHandler
                     {
                         stack.count = 0;
                         var7.count = var8;
-                        var6.markDirty();
+                        var6.MarkDirty();
                     }
                     else if (var7.count < stack.getMaxCount())
                     {
                         stack.count -= stack.getMaxCount() - var7.count;
                         var7.count = stack.getMaxCount();
-                        var6.markDirty();
+                        var6.MarkDirty();
                     }
                 }
 
@@ -361,12 +360,12 @@ public abstract class ScreenHandler
 
             while (!fromLast && var5 < end || fromLast && var5 >= start)
             {
-                var6 = (Slot)slots.get(var5);
+                var6 = slots[var5];
                 var7 = var6.getStack();
                 if (var7 == null)
                 {
                     var6.setStack(stack.copy());
-                    var6.markDirty();
+                    var6.MarkDirty();
                     stack.count = 0;
                     break;
                 }

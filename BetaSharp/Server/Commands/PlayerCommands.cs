@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Server.Internal;
 
@@ -8,7 +8,7 @@ internal static class PlayerCommands
 {
     public static void Kill(MinecraftServer server, string senderName, string[] args, CommandOutput output)
     {
-        ServerPlayerEntity player = server.playerManager.getPlayer(senderName);
+        ServerPlayerEntity player = server.PlayerManager.GetPlayer(senderName);
         if (player == null) { output.SendMessage("Could not find your player."); return; }
 
         player.damage(null, 1000);
@@ -16,7 +16,7 @@ internal static class PlayerCommands
 
     public static void Heal(MinecraftServer server, string senderName, string[] args, CommandOutput output)
     {
-        ServerPlayerEntity player = server.playerManager.getPlayer(senderName);
+        ServerPlayerEntity player = server.PlayerManager.GetPlayer(senderName);
         if (player == null) { output.SendMessage("Could not find your player."); return; }
 
         int amount = 20;
@@ -31,7 +31,7 @@ internal static class PlayerCommands
 
     public static void Clear(MinecraftServer server, string senderName, string[] args, CommandOutput output)
     {
-        ServerPlayerEntity player = server.playerManager.getPlayer(senderName);
+        ServerPlayerEntity player = server.PlayerManager.GetPlayer(senderName);
         if (player == null) { output.SendMessage("Could not find your player."); return; }
 
         ItemStack[] inventory = player.inventory.main;
@@ -47,14 +47,14 @@ internal static class PlayerCommands
     {
         if (args.Length == 3)
         {
-            ServerPlayerEntity sender = server.playerManager.getPlayer(senderName);
+            ServerPlayerEntity sender = server.PlayerManager.GetPlayer(senderName);
             if (sender == null) { output.SendMessage("Could not find your player."); return; }
 
             if (float.TryParse(args[0], out float x) &&
                 float.TryParse(args[1], out float y) &&
                 float.TryParse(args[2], out float z))
             {
-                sender.networkHandler.teleport(x, y, z, sender.yaw, sender.pitch);
+                sender.networkHandler.Teleport(x, y, z, sender.yaw, sender.pitch);
                 output.SendMessage($"Teleported to {x}, {y}, {z}");
             }
             else
@@ -66,8 +66,8 @@ internal static class PlayerCommands
 
         if (args.Length == 2)
         {
-            ServerPlayerEntity source = server.playerManager.getPlayer(args[0]);
-            ServerPlayerEntity target = server.playerManager.getPlayer(args[1]);
+            ServerPlayerEntity source = server.PlayerManager.GetPlayer(args[0]);
+            ServerPlayerEntity target = server.PlayerManager.GetPlayer(args[1]);
 
             if (source == null)
             {
@@ -83,7 +83,7 @@ internal static class PlayerCommands
             }
             else
             {
-                source.networkHandler.teleport(target.x, target.y, target.z, target.yaw, target.pitch);
+                source.networkHandler.Teleport(target.x, target.y, target.z, target.yaw, target.pitch);
                 AdminCommands.LogCommand(server, senderName, "Teleporting " + args[0] + " to " + args[1] + ".");
             }
             return;
@@ -115,7 +115,7 @@ internal static class PlayerCommands
         ServerPlayerEntity targetPlayer;
         if (args.Length >= 2)
         {
-            targetPlayer = server.playerManager.getPlayer(args[1]);
+            targetPlayer = server.PlayerManager.GetPlayer(args[1]);
             if (targetPlayer == null)
             {
                 output.SendMessage("Player " + args[1] + " not found.");
@@ -124,7 +124,7 @@ internal static class PlayerCommands
         }
         else
         {
-            targetPlayer = server.playerManager.getPlayer(senderName);
+            targetPlayer = server.PlayerManager.GetPlayer(senderName);
             if (targetPlayer == null)
             {
                 output.SendMessage("Could not find your player.");
@@ -138,7 +138,7 @@ internal static class PlayerCommands
             return;
         }
 
-        server.playerManager.sendPlayerToDimension(targetPlayer, dim);
+        server.PlayerManager.SendPlayerToDimension(targetPlayer, dim);
         output.SendMessage("Teleported " + targetPlayer.name + " to dimension " + dim);
     }
 }

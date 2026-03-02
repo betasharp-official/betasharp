@@ -52,9 +52,9 @@ public abstract class GuiContainer : GuiScreen
         Slot hoveredSlot = null;
 
 
-        for (int i = 0; i < InventorySlots.slots.size(); ++i)
+        for (int i = 0; i < InventorySlots.slots.Count; ++i)
         {
-            Slot slot = (Slot)InventorySlots.slots.get(i);
+            Slot slot = InventorySlots.slots[i];
             DrawSlotInventory(slot);
             if (GetIsMouseOverSlot(slot, mouseX, mouseY))
             {
@@ -148,9 +148,9 @@ public abstract class GuiContainer : GuiScreen
 
     private Slot GetSlotAtPosition(int mouseX, int mouseY)
     {
-        for (int i = 0; i < InventorySlots.slots.size(); ++i)
+        for (int i = 0; i < InventorySlots.slots.Count; ++i)
         {
-            Slot slot = (Slot)InventorySlots.slots.get(i);
+            Slot slot = InventorySlots.slots[i];
             if (GetIsMouseOverSlot(slot, mouseX, mouseY))
             {
                 return slot;

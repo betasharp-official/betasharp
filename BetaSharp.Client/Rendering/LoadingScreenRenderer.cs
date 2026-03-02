@@ -33,7 +33,7 @@ public class LoadingScreenRenderer : LoadingDisplay
 
     public void func_597_c(string var1)
     {
-        if (!mc.running)
+        if (!mc.Running)
         {
             if (!field_1005_e)
             {
@@ -56,7 +56,7 @@ public class LoadingScreenRenderer : LoadingDisplay
 
     public void progressStage(string var1)
     {
-        if (!mc.running)
+        if (!mc.Running)
         {
             if (!field_1005_e)
             {
@@ -74,7 +74,7 @@ public class LoadingScreenRenderer : LoadingDisplay
 
     public void setLoadingProgress(int var1)
     {
-        if (!mc.running)
+        if (!mc.Running)
         {
             if (!field_1005_e)
             {
@@ -137,7 +137,7 @@ public class LoadingScreenRenderer : LoadingDisplay
 
                 try
                 {
-                    java.lang.Thread.yield();
+                    Thread.Yield();
                 }
                 catch (Exception) { }
 

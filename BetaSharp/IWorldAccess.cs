@@ -1,4 +1,4 @@
-using BetaSharp.Blocks.Entities;
+﻿using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 
 namespace BetaSharp;
@@ -21,7 +21,7 @@ public interface IWorldAccess
 
     void playStreaming(string var1, int var2, int var3, int var4);
 
-    void updateBlockEntity(int var1, int var2, int var3, BlockEntity var4);
+    void UpdateBlockEntity(int var1, int var2, int var3, BlockEntity var4);
 
     void worldEvent(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6);
 }

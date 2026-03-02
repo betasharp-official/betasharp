@@ -19,7 +19,6 @@ using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Storage;
-using java.net;
 using Microsoft.Extensions.Logging;
 using Socket = System.Net.Sockets.Socket;
 
@@ -332,7 +331,7 @@ public class ClientNetworkHandler : NetHandler
         packet.y = ent.boundingBox.MinY;
         packet.z = ent.z;
         packet.eyeHeight = ent.y;
-        netManager.sendPacket(packet);
+        netManager.SendPacket(packet);
         if (!terrainLoaded)
         {
             mc.player.prevX = mc.player.x;
@@ -383,7 +382,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onDisconnect(DisconnectPacket packet)
     {
-        netManager.disconnect("disconnect.kicked");
+        netManager.Disconnect("disconnect.kicked");
         disconnected = true;
         mc.changeWorld(null);
         mc.displayGuiScreen(new GuiConnectFailed("disconnect.disconnected", "disconnect.genericReason", packet.reason));
@@ -403,8 +402,8 @@ public class ClientNetworkHandler : NetHandler
     {
         if (!disconnected)
         {
-            netManager.sendPacket(packet);
-            netManager.disconnect();
+            netManager.SendPacket(packet);
+            netManager.Disconnect();
         }
     }
 
@@ -412,7 +411,7 @@ public class ClientNetworkHandler : NetHandler
     {
         if (!disconnected)
         {
-            netManager.sendPacket(packet);
+            netManager.SendPacket(packet);
         }
     }
 
@@ -489,10 +488,9 @@ public class ClientNetworkHandler : NetHandler
         {
             try
             {
-                URL authUrl = new("http://www.minecraft.net/game/joinserver.jsp?user=" + mc.session.username + "&sessionId=" + mc.session.sessionId + "&serverId=" + packet.username);
-                java.io.BufferedReader reader = new(new java.io.InputStreamReader(authUrl.openStream()));
-                string response = reader.readLine();
-                reader.close();
+                string authUrlStr = "http://www.minecraft.net/game/joinserver.jsp?user=" + mc.session.username + "&sessionId=" + mc.session.sessionId + "&serverId=" + packet.username;
+                using var httpClient = new System.Net.Http.HttpClient();
+                string response = httpClient.GetStringAsync(authUrlStr).GetAwaiter().GetResult();
                 //TODO: AUTH
                 if (response == null || response.Equals("ok", StringComparison.OrdinalIgnoreCase))
                 {
@@ -500,23 +498,23 @@ public class ClientNetworkHandler : NetHandler
                 }
                 else
                 {
-                    netManager.disconnect("disconnect.loginFailedInfo", response);
+                    netManager.Disconnect("disconnect.loginFailedInfo", response);
                 }
             }
             catch (Exception e)
             {
                 _logger.LogError(e, e.Message);
-                netManager.disconnect("disconnect.genericReason", "Internal client error: " + e);
+                netManager.Disconnect("disconnect.genericReason", "Internal client error: " + e);
             }
         }
 
     }
 
-    public void disconnect()
+    public void Disconnect()
     {
         disconnected = true;
         netManager.interrupt();
-        netManager.disconnect("disconnect.closed");
+        netManager.Disconnect("disconnect.closed");
     }
 
     public override void onLivingEntitySpawn(LivingEntitySpawnS2CPacket packet)
@@ -720,7 +718,7 @@ public class ClientNetworkHandler : NetHandler
                     signEntity.Texts[i] = packet.text[i];
                 }
 
-                signEntity.markDirty();
+                signEntity.MarkDirty();
             }
         }
 
@@ -800,7 +798,7 @@ public class ClientNetworkHandler : NetHandler
         ((EntityClientPlayerMP)mc.player).func_27027_b(Stats.Stats.GetStatById(packet.statId), packet.amount);
     }
 
-    public override bool isServerSide()
+    public override bool IsServerSide()
     {
         return false;
     }

@@ -2,8 +2,6 @@ using BetaSharp.Client.Input;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Storage;
-using java.text;
-using java.util;
 
 namespace BetaSharp.Client.Guis;
 
@@ -15,7 +13,7 @@ public class GuiSelectWorld : GuiScreen
     private const int BUTTON_CREATE = 3;
     private const int BUTTON_RENAME = 6;
 
-    private readonly DateFormat dateFormatter = new SimpleDateFormat();
+    private readonly Func<long, string> dateFormatter = (ms) => DateTimeOffset.FromUnixTimeMilliseconds(ms).LocalDateTime.ToString("g");
     protected GuiScreen parentScreen;
     protected string screenTitle = "Select world";
     private bool selected;
@@ -207,7 +205,7 @@ public class GuiSelectWorld : GuiScreen
         return screen.worldNameHeader;
     }
 
-    public static DateFormat getDateFormatter(GuiSelectWorld screen)
+    public static Func<long, string> getDateFormatter(GuiSelectWorld screen)
     {
         return screen.dateFormatter;
     }

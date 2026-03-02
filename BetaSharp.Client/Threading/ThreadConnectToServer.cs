@@ -1,16 +1,22 @@
+﻿using System.Net.Sockets;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Network;
 using BetaSharp.Network.Packets;
-using java.net;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Threading;
 
-public class ThreadConnectToServer(GuiConnecting connectingGui, Minecraft mc, string hostName, int port) : java.lang.Thread
+public class ThreadConnectToServer(GuiConnecting connectingGui, Minecraft mc, string hostName, int port)
 {
     private readonly ILogger<ThreadConnectToServer> _logger = Log.Instance.For<ThreadConnectToServer>();
 
-    public override void run()
+    public void Start()
+    {
+        var thread = new Thread(Run) { Name = "ConnectToServer", IsBackground = true };
+        thread.Start();
+    }
+
+    private void Run()
     {
         try
         {
@@ -23,23 +29,23 @@ public class ThreadConnectToServer(GuiConnecting connectingGui, Minecraft mc, st
 
             GuiConnecting.getNetClientHandler(connectingGui).addToSendQueue(new HandshakePacket(mc.session.username));
         }
-        catch (UnknownHostException)
+        catch (SocketException ex) when (ex.SocketErrorCode is SocketError.HostNotFound or SocketError.TryAgain or SocketError.HostUnreachable)
         {
             if (GuiConnecting.isCancelled(connectingGui))
             {
                 return;
             }
 
-            mc.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", "Unknown host \'" + hostName + "\'"));
+            mc.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", "Unknown host '" + hostName + "'"));
         }
-        catch (ConnectException ex)
+        catch (SocketException ex)
         {
             if (GuiConnecting.isCancelled(connectingGui))
             {
                 return;
             }
 
-            mc.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", ex.getMessage()));
+            mc.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", ex.Message));
         }
         catch (Exception e)
         {

@@ -1,22 +1,21 @@
 using BetaSharp.Worlds.Storage;
-using java.lang;
 
 namespace BetaSharp.Worlds.Chunks.Storage;
 
-internal class DataFile : Comparable
+internal class DataFile : IComparable
 {
-    private readonly java.io.File file;
+    private readonly string file;
     private readonly int chunkX;
     private readonly int chunkZ;
 
-    public DataFile(java.io.File var1)
+    public DataFile(string var1)
     {
         file = var1;
-        var match = DataFilenameFilter.ChunkFilePattern().Match(var1.getName());
+        var match = DataFilenameFilter.ChunkFilePattern().Match(Path.GetFileName(var1));
         if (match.Success)
         {
-            chunkX = Integer.parseInt(match.Groups[1].Value, 36);
-            chunkZ = Integer.parseInt(match.Groups[2].Value, 36);
+            chunkX = Convert.ToInt32(match.Groups[1].Value, 36);
+            chunkZ = Convert.ToInt32(match.Groups[2].Value, 36);
         }
         else
         {
@@ -42,7 +41,7 @@ internal class DataFile : Comparable
         }
     }
 
-    public java.io.File getFile()
+    public string getFile()
     {
         return file;
     }

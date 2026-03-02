@@ -1,4 +1,4 @@
-using BetaSharp.Blocks.Entities;
+﻿using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Server;
@@ -28,7 +28,7 @@ public class ServerWorld : World
 
     public override void updateEntity(Entity entity, bool requireLoaded)
     {
-        if (!server.spawnAnimals && (entity is EntityAnimal || entity is EntityWaterMob))
+        if (!server.SpawnAnimals && (entity is EntityAnimal || entity is EntityWaterMob))
         {
             entity.markDead();
         }
@@ -78,7 +78,7 @@ public class ServerWorld : World
             var6 = var5;
         }
 
-        return var6 > 16 || server.playerManager.isOperator(player.name) || server is InternalServer;
+        return var6 > 16 || server.PlayerManager.IsOperator(player.name) || server is InternalServer;
     }
 
 
@@ -106,7 +106,7 @@ public class ServerWorld : World
     {
         if (base.spawnGlobalEntity(entity))
         {
-            server.playerManager.sendToAround(entity.x, entity.y, entity.z, 512.0, dimension.Id, new GlobalEntitySpawnS2CPacket(entity));
+            server.PlayerManager.SendToAround(entity.x, entity.y, entity.z, 512.0, dimension.Id, new GlobalEntitySpawnS2CPacket(entity));
             return true;
         }
         else
@@ -119,7 +119,7 @@ public class ServerWorld : World
     public override void broadcastEntityEvent(Entity entity, byte @event)
     {
         EntityStatusS2CPacket var3 = new EntityStatusS2CPacket(entity.id, @event);
-        server.getEntityTracker(dimension.Id).sendToAround(entity, var3);
+        server.GetEntityTracker(dimension.Id).SendToAround(entity, var3);
     }
 
 
@@ -131,7 +131,7 @@ public class ServerWorld : World
         };
         var10.doExplosionA();
         var10.doExplosionB(false);
-        server.playerManager.sendToAround(x, y, z, 64.0, dimension.Id, new ExplosionS2CPacket(x, y, z, power, var10.destroyedBlockPositions));
+        server.PlayerManager.SendToAround(x, y, z, 64.0, dimension.Id, new ExplosionS2CPacket(x, y, z, power, var10.destroyedBlockPositions));
         return var10;
     }
 
@@ -139,7 +139,7 @@ public class ServerWorld : World
     public override void playNoteBlockActionAt(int x, int y, int z, int soundType, int pitch)
     {
         base.playNoteBlockActionAt(x, y, z, soundType, pitch);
-        server.playerManager.sendToAround(x, y, z, 64.0, dimension.Id, new PlayNoteSoundS2CPacket(x, y, z, soundType, pitch));
+        server.PlayerManager.SendToAround(x, y, z, 64.0, dimension.Id, new PlayNoteSoundS2CPacket(x, y, z, soundType, pitch));
     }
 
     public void forceSave()
@@ -156,11 +156,11 @@ public class ServerWorld : World
         {
             if (var1)
             {
-                server.playerManager.sendToAll(new GameStateChangeS2CPacket(2));
+                server.PlayerManager.SendToAll(new GameStateChangeS2CPacket(2));
             }
             else
             {
-                server.playerManager.sendToAll(new GameStateChangeS2CPacket(1));
+                server.PlayerManager.SendToAll(new GameStateChangeS2CPacket(1));
             }
         }
     }

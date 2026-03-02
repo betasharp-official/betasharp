@@ -2,7 +2,6 @@ using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Gen.Features;
-using java.awt;
 
 namespace BetaSharp.Worlds.Biomes;
 
@@ -114,7 +113,34 @@ public class Biome
             var1 = 1.0F;
         }
 
-        return Color.getHSBColor(224.0F / 360.0F - var1 * 0.05F, 0.5F + var1 * 0.1F, 1.0F).getRGB();
+        return HsbToRgb(224.0F / 360.0F - var1 * 0.05F, 0.5F + var1 * 0.1F, 1.0F);
+    }
+
+    private static int HsbToRgb(float hue, float saturation, float brightness)
+    {
+        int r = 0, g = 0, b = 0;
+        if (saturation == 0)
+        {
+            r = g = b = (int)(brightness * 255.0F + 0.5F);
+        }
+        else
+        {
+            float h = (hue - MathF.Floor(hue)) * 6.0F;
+            float f = h - MathF.Floor(h);
+            float p = brightness * (1.0F - saturation);
+            float q = brightness * (1.0F - saturation * f);
+            float t = brightness * (1.0F - saturation * (1.0F - f));
+            switch ((int)h)
+            {
+                case 0: r = (int)(brightness * 255.0F + 0.5F); g = (int)(t * 255.0F + 0.5F); b = (int)(p * 255.0F + 0.5F); break;
+                case 1: r = (int)(q * 255.0F + 0.5F); g = (int)(brightness * 255.0F + 0.5F); b = (int)(p * 255.0F + 0.5F); break;
+                case 2: r = (int)(p * 255.0F + 0.5F); g = (int)(brightness * 255.0F + 0.5F); b = (int)(t * 255.0F + 0.5F); break;
+                case 3: r = (int)(p * 255.0F + 0.5F); g = (int)(q * 255.0F + 0.5F); b = (int)(brightness * 255.0F + 0.5F); break;
+                case 4: r = (int)(t * 255.0F + 0.5F); g = (int)(p * 255.0F + 0.5F); b = (int)(brightness * 255.0F + 0.5F); break;
+                case 5: r = (int)(brightness * 255.0F + 0.5F); g = (int)(p * 255.0F + 0.5F); b = (int)(q * 255.0F + 0.5F); break;
+            }
+        }
+        return unchecked((int)0xFF000000) | (r << 16) | (g << 8) | b;
     }
 
     public WeightedRandomSelector<SpawnListEntry> GetSpawnableList(CreatureKind kind)

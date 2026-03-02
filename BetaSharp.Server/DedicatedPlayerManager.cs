@@ -1,190 +1,161 @@
-using java.io;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server;
 
 internal class DedicatedPlayerManager : PlayerManager
 {
     private readonly ILogger<DedicatedPlayerManager> _logger = Log.Instance.For<DedicatedPlayerManager>();
-    private readonly java.io.File BANNED_PLAYERS_FILE;
-    private readonly java.io.File BANNED_IPS_FILE;
-    private readonly java.io.File OPERATORS_FILE;
-    private readonly java.io.File WHITELIST_FILE;
+    private readonly string _bannedPlayersFile;
+    private readonly string _bannedIpsFile;
+    private readonly string _operatorsFile;
+    private readonly string _whitelistFile;
 
     public DedicatedPlayerManager(MinecraftServer server) : base(server)
     {
-        BANNED_PLAYERS_FILE = server.getFile("banned-players.txt");
-        BANNED_IPS_FILE = server.getFile("banned-ips.txt");
-        OPERATORS_FILE = server.getFile("ops.txt");
-        WHITELIST_FILE = server.getFile("white-list.txt");
+        _bannedPlayersFile = server.GetFilePath("banned-players.txt");
+        _bannedIpsFile = server.GetFilePath("banned-ips.txt");
+        _operatorsFile = server.GetFilePath("ops.txt");
+        _whitelistFile = server.GetFilePath("white-list.txt");
 
-        loadBannedPlayers();
-        loadBannedIps();
-        loadOperators();
-        loadWhitelist();
-        saveBannedPlayers();
-        saveBannedIps();
-        saveOperators();
-        saveWhitelist();
+        LoadBannedPlayers();
+        LoadBannedIps();
+        LoadOperators();
+        LoadWhitelist();
+        SaveBannedPlayers();
+        SaveBannedIps();
+        SaveOperators();
+        SaveWhitelist();
     }
 
-    protected override void loadBannedPlayers()
+    protected override void LoadBannedPlayers()
     {
         try
         {
-            bannedPlayers.Clear();
-            BufferedReader var1 = new(new FileReader(BANNED_PLAYERS_FILE));
-            string var2 = "";
-
-            while ((var2 = var1.readLine()) != null)
+            BannedPlayers.Clear();
+            if (File.Exists(_bannedPlayersFile))
             {
-                bannedPlayers.Add(var2.Trim().ToLower());
+                foreach (string line in File.ReadAllLines(_bannedPlayersFile))
+                {
+                    string trimmed = line.Trim().ToLower();
+                    if (trimmed.Length > 0)
+                        BannedPlayers.Add(trimmed);
+                }
             }
-
-            var1.close();
         }
-        catch (Exception var3)
+        catch (Exception ex)
         {
-            _logger.LogWarning($"Failed to load ban list: {var3}");
+            _logger.LogWarning($"Failed to load ban list: {ex}");
         }
     }
 
-    protected override void saveBannedPlayers()
+    protected override void SaveBannedPlayers()
     {
         try
         {
-            PrintWriter var1 = new(new FileWriter(BANNED_PLAYERS_FILE, false));
-
-            foreach (string var3 in bannedPlayers)
-            {
-                var1.println(var3);
-            }
-
-            var1.close();
+            File.WriteAllLines(_bannedPlayersFile, BannedPlayers);
         }
-        catch (Exception var4)
+        catch (Exception ex)
         {
-            _logger.LogWarning($"Failed to save ban list: {var4}");
+            _logger.LogWarning($"Failed to save ban list: {ex}");
         }
     }
 
-    protected override void loadBannedIps()
+    protected override void LoadBannedIps()
     {
         try
         {
-            bannedIps.Clear();
-            BufferedReader var1 = new(new FileReader(BANNED_IPS_FILE));
-            string var2 = "";
-
-            while ((var2 = var1.readLine()) != null)
+            BannedIps.Clear();
+            if (File.Exists(_bannedIpsFile))
             {
-                bannedIps.Add(var2.Trim().ToLower());
+                foreach (string line in File.ReadAllLines(_bannedIpsFile))
+                {
+                    string trimmed = line.Trim().ToLower();
+                    if (trimmed.Length > 0)
+                        BannedIps.Add(trimmed);
+                }
             }
-
-            var1.close();
         }
-        catch (Exception var3)
+        catch (Exception ex)
         {
-            _logger.LogWarning($"Failed to load ip ban list: {var3}");
+            _logger.LogWarning($"Failed to load ip ban list: {ex}");
         }
     }
 
-    protected override void saveBannedIps()
+    protected override void SaveBannedIps()
     {
         try
         {
-            PrintWriter var1 = new(new FileWriter(BANNED_IPS_FILE, false));
-
-            foreach (string var3 in bannedIps)
-            {
-                var1.println(var3);
-            }
-
-            var1.close();
+            File.WriteAllLines(_bannedIpsFile, BannedIps);
         }
-        catch (Exception var4)
+        catch (Exception ex)
         {
-            _logger.LogWarning($"Failed to save ip ban list: {var4}");
+            _logger.LogWarning($"Failed to save ip ban list: {ex}");
         }
     }
 
-    protected override void loadOperators()
+    protected override void LoadOperators()
     {
         try
         {
-            ops.Clear();
-            BufferedReader var1 = new(new FileReader(OPERATORS_FILE));
-            string var2 = "";
-
-            while ((var2 = var1.readLine()) != null)
+            Ops.Clear();
+            if (File.Exists(_operatorsFile))
             {
-                ops.Add(var2.Trim().ToLower());
+                foreach (string line in File.ReadAllLines(_operatorsFile))
+                {
+                    string trimmed = line.Trim().ToLower();
+                    if (trimmed.Length > 0)
+                        Ops.Add(trimmed);
+                }
             }
-
-            var1.close();
         }
-        catch (Exception var3)
+        catch (Exception ex)
         {
-            _logger.LogWarning($"Failed to load ip ban list: {var3}");
+            _logger.LogWarning($"Failed to load operators list: {ex}");
         }
     }
 
-    protected override void saveOperators()
+    protected override void SaveOperators()
     {
         try
         {
-            PrintWriter var1 = new(new FileWriter(OPERATORS_FILE, false));
-
-            foreach (string var3 in ops)
-            {
-                var1.println(var3);
-            }
-
-            var1.close();
+            File.WriteAllLines(_operatorsFile, Ops);
         }
-        catch (Exception var4)
+        catch (Exception ex)
         {
-            _logger.LogWarning($"Failed to save ip ban list: {var4}");
+            _logger.LogWarning($"Failed to save operators list: {ex}");
         }
     }
 
-    protected override void loadWhitelist()
+    protected override void LoadWhitelist()
     {
         try
         {
-            whitelist.Clear();
-            BufferedReader var1 = new(new FileReader(WHITELIST_FILE));
-            string var2 = "";
-
-            while ((var2 = var1.readLine()) != null)
+            Whitelist.Clear();
+            if (File.Exists(_whitelistFile))
             {
-                whitelist.Add(var2.Trim().ToLower());
+                foreach (string line in File.ReadAllLines(_whitelistFile))
+                {
+                    string trimmed = line.Trim().ToLower();
+                    if (trimmed.Length > 0)
+                        Whitelist.Add(trimmed);
+                }
             }
-
-            var1.close();
         }
-        catch (Exception var3)
+        catch (Exception ex)
         {
-            _logger.LogWarning($"Failed to load white-list: {var3}");
+            _logger.LogWarning($"Failed to load white-list: {ex}");
         }
     }
 
-    protected override void saveWhitelist()
+    protected override void SaveWhitelist()
     {
         try
         {
-            PrintWriter var1 = new(new FileWriter(WHITELIST_FILE, false));
-
-            foreach (String var3 in whitelist)
-            {
-                var1.println(var3);
-            }
-
-            var1.close();
+            File.WriteAllLines(_whitelistFile, Whitelist);
         }
-        catch (Exception var4)
+        catch (Exception ex)
         {
-            _logger.LogWarning($"Failed to save white-list: {var4}");
+            _logger.LogWarning($"Failed to save white-list: {ex}");
         }
     }
 }

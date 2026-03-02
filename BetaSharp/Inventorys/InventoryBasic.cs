@@ -1,6 +1,5 @@
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.Items;
-using java.util;
 
 namespace BetaSharp.Inventorys;
 
@@ -10,7 +9,7 @@ public class InventoryBasic : IInventory
     private string inventoryTitle;
     private int slotsCount;
     private ItemStack[] inventoryContents;
-    private List field_20073_d;
+    private List<IInvBasic>? field_20073_d;
 
     public InventoryBasic(string inventoryTitle, int slotsCount)
     {
@@ -33,7 +32,7 @@ public class InventoryBasic : IInventory
             {
                 removeStack = inventoryContents[slotIndex];
                 inventoryContents[slotIndex] = null;
-                markDirty();
+                MarkDirty();
                 return removeStack;
             }
             else
@@ -44,7 +43,7 @@ public class InventoryBasic : IInventory
                     inventoryContents[slotIndex] = null;
                 }
 
-                markDirty();
+                MarkDirty();
                 return removeStack;
             }
         }
@@ -62,7 +61,7 @@ public class InventoryBasic : IInventory
             itemStack.count = getMaxCountPerStack();
         }
 
-        markDirty();
+        MarkDirty();
     }
 
     public int size()
@@ -80,13 +79,13 @@ public class InventoryBasic : IInventory
         return 64;
     }
 
-    public void markDirty()
+    public void MarkDirty()
     {
         if (field_20073_d != null)
         {
-            for (int slotIndex = 0; slotIndex < field_20073_d.size(); ++slotIndex)
+            for (int slotIndex = 0; slotIndex < field_20073_d.Count; ++slotIndex)
             {
-                ((IInvBasic)field_20073_d.get(slotIndex)).func_20134_a(this);
+                field_20073_d[slotIndex].func_20134_a(this);
             }
         }
 

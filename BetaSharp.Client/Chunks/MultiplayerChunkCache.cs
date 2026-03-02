@@ -1,8 +1,6 @@
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
-using java.lang;
-using java.util;
 
 namespace BetaSharp.Client.Chunks;
 
@@ -15,7 +13,7 @@ public class MultiplayerChunkCache : ChunkSource
 
     public MultiplayerChunkCache(World world)
     {
-        empty = new EmptyChunk(world, new byte[-Short.MIN_VALUE], 0, 0);
+        empty = new EmptyChunk(world, new byte[-short.MinValue], 0, 0);
         this.world = world;
     }
 
@@ -46,9 +44,9 @@ public class MultiplayerChunkCache : ChunkSource
     public Chunk LoadChunk(int x, int z)
     {
         ChunkPos key = new(x, z);
-        byte[] blocks = new byte[-Short.MIN_VALUE];
+        byte[] blocks = new byte[-short.MinValue];
         Chunk chunk = new(world, blocks, x, z);
-        Arrays.fill(chunk.SkyLight.Bytes, 255);
+        Array.Fill<byte>(chunk.SkyLight.Bytes, 255);
 
         if (chunkByPos.ContainsKey(key))
         {

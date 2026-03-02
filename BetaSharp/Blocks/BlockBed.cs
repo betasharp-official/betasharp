@@ -1,4 +1,4 @@
-using BetaSharp.Blocks.Materials;
+﻿using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
@@ -62,7 +62,7 @@ public class BlockBed : Block
                 if (isBedOccupied(meta))
                 {
                     EntityPlayer occupant = null;
-                    foreach (var otherPlayer in world.players) {
+                    foreach (var otherPlayer in world.Players) {
                         if (otherPlayer.isSleeping())
                         {
                             Vec3i sleepingPos = otherPlayer.sleepingPos;

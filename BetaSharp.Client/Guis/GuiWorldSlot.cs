@@ -1,7 +1,6 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Storage;
-using java.util;
 
 namespace BetaSharp.Client.Guis;
 
@@ -60,7 +59,7 @@ public class GuiWorldSlot : GuiSlot
         }
 
         string fileInfo = worldInfo.FileName;
-        fileInfo = fileInfo + " (" + GuiSelectWorld.getDateFormatter(_parentWorldGui).format(new Date(worldInfo.LastPlayed));
+        fileInfo = fileInfo + " (" + GuiSelectWorld.getDateFormatter(_parentWorldGui)(worldInfo.LastPlayed);
         long size = worldInfo.Size;
         fileInfo = fileInfo + ", " + size / 1024L * 100L / 1024L / 100.0F + " MB)";
         string extraStatus = "";

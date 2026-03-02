@@ -1,4 +1,4 @@
-using BetaSharp.Client.Network;
+﻿using BetaSharp.Client.Network;
 using BetaSharp.Client.Threading;
 using Microsoft.Extensions.Logging;
 
@@ -18,7 +18,7 @@ public class GuiConnecting : GuiScreen
     {
         _logger.LogInformation($"Connecting to {host}, {port}");
         mc.changeWorld(null);
-        new ThreadConnectToServer(this, mc, host, port).start();
+        new ThreadConnectToServer(this, mc, host, port).Start();
     }
 
     public GuiConnecting(Minecraft mc, ClientNetworkHandler clientHandler)
@@ -53,7 +53,7 @@ public class GuiConnecting : GuiScreen
         {
             case _buttonCancel:
                 _cancelled = true;
-                _clientHandler?.disconnect();
+                _clientHandler?.Disconnect();
 
                 mc.displayGuiScreen(new GuiMainMenu());
                 break;

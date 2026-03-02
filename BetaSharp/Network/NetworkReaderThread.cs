@@ -1,16 +1,16 @@
 namespace BetaSharp.Network;
 
-class NetworkReaderThread : java.lang.Thread
+class NetworkReaderThread
 {
     public readonly Connection netManager;
 
-    public NetworkReaderThread(Connection var1, string var2) : base(var2)
+    public NetworkReaderThread(Connection var1)
     {
         this.netManager = var1;
     }
 
 
-    public override void run()
+    public void Run()
     {
         object var1 = Connection.LOCK;
         lock (var1)

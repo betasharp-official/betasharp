@@ -1,4 +1,4 @@
-using BetaSharp.Blocks.Materials;
+﻿using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
@@ -186,7 +186,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
 
         if (stateChanged)
         {
-            markDirty();
+            MarkDirty();
         }
 
     }
