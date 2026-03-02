@@ -1,4 +1,5 @@
 ﻿using BetaSharp.Client.Input;
+using BetaSharp.Client.Options;
 
 namespace BetaSharp.Client.Guis;
 
@@ -7,11 +8,13 @@ public class GuiDirectConnect : GuiScreen
     private readonly GuiMultiplayer _parentScreen;
     private GuiTextField _serverAddress = null!;
     private readonly ServerData _serverData;
+    private readonly GameOptions _options;
 
-    public GuiDirectConnect(GuiMultiplayer parentScreen, ServerData serverData)
+    public GuiDirectConnect(GuiMultiplayer parentScreen, ServerData serverData, GameOptions options)
     {
         _parentScreen = parentScreen;
         _serverData = serverData;
+        _options = options;
     }
 
     public override void UpdateScreen()
@@ -28,6 +31,7 @@ public class GuiDirectConnect : GuiScreen
 
         _serverAddress = new GuiTextField(this, FontRenderer, Width / 2 - 100, 106, 200, 20, _serverData.Ip);
         _serverAddress.SetMaxStringLength(128);
+        _serverAddress.SetText(_options.LastServer);
 
         _controlList[0].Enabled = _serverAddress.GetText().Length > 0 && _serverAddress.GetText().Split(":").Length > 0;
     }
@@ -73,7 +77,11 @@ public class GuiDirectConnect : GuiScreen
     protected override void MouseClicked(int x, int y, int button)
     {
         base.MouseClicked(x, y, button);
+
         _serverAddress.MouseClicked(x, y, button);
+
+        _options.LastServer = _serverAddress.GetText();
+        _options.SaveOptions();
     }
 
     public override void Render(int mouseX, int mouseY, float partialTicks)
