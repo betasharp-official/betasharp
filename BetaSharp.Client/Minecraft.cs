@@ -302,6 +302,7 @@ public partial class Minecraft
         checkGLError("Post startup");
         ingameGUI = new GuiIngame(this);
 
+        statFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
         if (serverName != null)
         {
             displayGuiScreen(new GuiConnecting(this, serverName, serverPort));

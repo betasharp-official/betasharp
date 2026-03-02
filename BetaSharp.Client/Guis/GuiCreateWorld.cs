@@ -1,4 +1,5 @@
 using BetaSharp.Client.Input;
+using BetaSharp.Stats;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Storage;
@@ -126,6 +127,7 @@ public class GuiCreateWorld : GuiScreen
                             }
                         }
 
+                        mc.statFileWriter.ReadStat(Stats.Stats.CreateWorldStat, 1);
                         mc.playerController = new PlayerControllerSP(mc);
                         mc.startWorld(_folderName, _textboxWorldName.GetText(), worldSeed);
                         break;
