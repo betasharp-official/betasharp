@@ -85,7 +85,7 @@ internal class DedicatedServer(IServerConfiguration config) : MinecraftServer(co
 
         await Discord.Client.ConnectAsync(new DiscordActivity("20.19.33.224", ActivityType.Playing), UserStatus.Online);
 
-        Discord.Channel = await Discord.Client.GetChannelAsync(Discord.Id);
+        Discord.Channel = await Discord.Client.GetChannelAsync(ulong.Parse(args[1]));
 
         try
         {
