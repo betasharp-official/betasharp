@@ -5,8 +5,7 @@ namespace BetaSharp.Server;
 internal class ChunkLoadingQueue(ChunkMap chunkMap)
 {
     private readonly ChunkMap chunkMap = chunkMap;
-    private readonly List<PendingChunk> pendingChunks = [];
-    private readonly HashSet<long> pendingChunkSet = [];
+    private readonly Dictionary<long, PendingChunk> _pendingChunks = [];
     //TODO: MAKE THIS CONFIGURABLE
     private const int MAX_CHUNKS_PER_TICK = 5;
 
@@ -14,66 +13,52 @@ internal class ChunkLoadingQueue(ChunkMap chunkMap)
     {
         long hash = ChunkMap.GetChunkHash(x, z);
 
-        if (pendingChunkSet.Contains(hash))
+        if (_pendingChunks.TryGetValue(hash, out var pending))
         {
-            var pending = pendingChunks.FirstOrDefault(c => c.Hash == hash);
-            if (pending != null && !pending.Players.Contains(player))
+            if (!pending.Players.Contains(player))
             {
                 pending.Players.Add(player);
             }
         }
         else
         {
-            var pending = new PendingChunk(hash, x, z, player);
-            pendingChunks.Add(pending);
-            pendingChunkSet.Add(hash);
+            _pendingChunks[hash] = new PendingChunk(hash, x, z, player);
         }
     }
 
     public void RemovePlayer(ServerPlayerEntity player)
     {
-        foreach (var chunk in pendingChunks)
+        var toRemove = new List<long>();
+        foreach (var (hash, chunk) in _pendingChunks)
         {
             chunk.Players.Remove(player);
+            if (chunk.Players.Count == 0)
+            {
+                toRemove.Add(hash);
+            }
         }
-
-        int removed = pendingChunks.RemoveAll(c => c.Players.Count == 0);
-        if (removed > 0)
+        foreach (var hash in toRemove)
         {
-            RebuildSet();
-        }
-    }
-
-    private void RebuildSet()
-    {
-        pendingChunkSet.Clear();
-        foreach (var c in pendingChunks)
-        {
-            pendingChunkSet.Add(c.Hash);
+            _pendingChunks.Remove(hash);
         }
     }
 
     public void Tick()
     {
-        if (pendingChunks.Count == 0) return;
+        if (_pendingChunks.Count == 0) return;
 
-        pendingChunks.Sort((a, b) =>
-        {
-            double distA = a.GetMinDistanceSqr();
-            double distB = b.GetMinDistanceSqr();
-            return distA.CompareTo(distB);
-        });
+        // Convert to list once and sort once — avoids repeated full-sort of the backing store.
+        var sortedChunks = new List<PendingChunk>(_pendingChunks.Values);
+        sortedChunks.Sort((a, b) => a.GetMinDistanceSqr().CompareTo(b.GetMinDistanceSqr()));
 
         int chunksLoaded = 0;
-
-        while (chunksLoaded < MAX_CHUNKS_PER_TICK && pendingChunks.Count > 0)
+        foreach (var chunkToLoad in sortedChunks)
         {
-            var chunkToLoad = pendingChunks[0];
-            pendingChunks.RemoveAt(0);
-            pendingChunkSet.Remove(chunkToLoad.Hash);
+            if (chunksLoaded >= MAX_CHUNKS_PER_TICK) break;
+
+            _pendingChunks.Remove(chunkToLoad.Hash);
 
             var chunk = chunkMap.GetOrCreateChunk(chunkToLoad.X, chunkToLoad.Z, true);
-
             if (chunk != null)
             {
                 foreach (var player in chunkToLoad.Players)
@@ -95,24 +80,27 @@ internal class ChunkLoadingQueue(ChunkMap chunkMap)
         public int Z { get; }
         public List<ServerPlayerEntity> Players { get; } = [];
 
+        // Cached chunk-center coordinates — computed once at construction.
+        public double CenterX { get; }
+        public double CenterZ { get; }
+
         public PendingChunk(long hash, int x, int z, ServerPlayerEntity initiator)
         {
             Hash = hash;
             X = x;
             Z = z;
+            CenterX = x * 16 + 8;
+            CenterZ = z * 16 + 8;
             Players.Add(initiator);
         }
 
         public double GetMinDistanceSqr()
         {
             double min = double.MaxValue;
-            double centerX = X * 16 + 8;
-            double centerZ = Z * 16 + 8;
-
             foreach (var p in Players)
             {
-                double dx = p.x - centerX;
-                double dz = p.z - centerZ;
+                double dx = p.x - CenterX;
+                double dz = p.z - CenterZ;
                 double d = dx * dx + dz * dz;
                 if (d < min) min = d;
             }

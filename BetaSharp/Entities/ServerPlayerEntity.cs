@@ -162,7 +162,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             {
                 ServerWorld world = server.getWorld(dimensionId);
                 if (!activeChunks.Contains(chunkPos)) continue;
-                if (!world.chunkCache.GetChunk(chunkPos.X, chunkPos.Z).TerrainPopulated) continue;
                 SendChunkData(world, chunkPos);
                 SendBlockEntityUpdates(world, chunkPos);
             }

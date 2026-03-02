@@ -6,17 +6,20 @@ using BetaSharp.Server.Network;
 using BetaSharp.Server.Worlds;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Storage;
 using java.lang;
 using java.util;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+using System.Threading;
 using Exception = System.Exception;
 
 namespace BetaSharp.Server;
 
 public abstract class MinecraftServer : Runnable, CommandOutput
 {
-    public HashMap GIVE_COMMANDS_COOLDOWNS = [];
+    public Dictionary<string, int> GIVE_COMMANDS_COOLDOWNS = [];
     public ConnectionListener connections;
     public IServerConfiguration config;
     public ServerWorld[] worlds;
@@ -27,7 +30,8 @@ public abstract class MinecraftServer : Runnable, CommandOutput
     private int ticks;
     public string progressMessage;
     public int progress;
-    private List pendingCommands = Collections.synchronizedList(new ArrayList());
+    private readonly Queue<Command> _pendingCommands = new();
+    private readonly object _pendingCommandsLock = new();
     public EntityTracker[] entityTrackers = new EntityTracker[2];
     public bool onlineMode;
     public bool spawnAnimals;
@@ -131,44 +135,64 @@ public abstract class MinecraftServer : Runnable, CommandOutput
             playerManager.saveAllPlayers(worlds);
         }
 
-        short startRegionSize = 196;
-        long lastTimeLogged = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-;
+        int startRegionSize = config.GetSpawnRegionSize(196);
+        long lastTimeLogged = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         for (int i = 0; i < worlds.Length; i++)
         {
             _logger.LogInformation($"Preparing start region for level {i}");
-            if (i == 0 || config.GetAllowNether(true))
+            // Only pre-generate the overworld spawn region. The nether is only accessible
+            // via portal (which implies a teleport/load anyway), so on-demand generation
+            // there is fine and avoids the 40+ second lava-sea light propagation cost.
+            if (i == 0)
             {
                 ServerWorld world = worlds[i];
                 Vec3i spawnPos = world.getSpawnPos();
 
-                for (int x = -startRegionSize; x <= startRegionSize && running; x += 16)
+                var chunkList = new List<(int cx, int cz)>();
+                for (int x = -startRegionSize; x <= startRegionSize; x += 16)
+                    for (int z = -startRegionSize; z <= startRegionSize; z += 16)
+                        chunkList.Add(((spawnPos.X + x) >> 4, (spawnPos.Z + z) >> 4));
+                int totalChunks = chunkList.Count;
+                var preGenerated = new Chunk[totalChunks];
+
+                // Phase 1: Parallel terrain generation
+                var sw1 = Stopwatch.StartNew();
+                var threadLocalGen = new ThreadLocal<ChunkSource>(
+                    () => world.chunkCache.CreateParallelGenerator(), trackAllValues: false);
+                Parallel.For(0, totalChunks, idx =>
                 {
-                    for (int z = -startRegionSize; z <= startRegionSize && running; z += 16)
+                    if (!running) return;
+                    var (cx, cz) = chunkList[idx];
+                    preGenerated[idx] = threadLocalGen.Value!.GetChunk(cx, cz);
+                });
+                threadLocalGen.Dispose();
+                sw1.Stop();
+                _logger.LogInformation($"  Level {i} terrain: {sw1.ElapsedMilliseconds}ms");
+
+                // Phase 2: Sequential insert + decoration
+                var sw2 = Stopwatch.StartNew();
+                for (int idx = 0; idx < totalChunks && running; idx++)
+                {
+                    long currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    if (currentTime > lastTimeLogged + 1000L)
                     {
-                        long currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-;
-                        if (currentTime < lastTimeLogged)
-                        {
-                            lastTimeLogged = currentTime;
-                        }
-
-                        if (currentTime > lastTimeLogged + 1000L)
-                        {
-                            int total = (startRegionSize * 2 + 1) * (startRegionSize * 2 + 1);
-                            int complete = (x + startRegionSize) * (startRegionSize * 2 + 1) + z + 1;
-                            logProgress("Preparing spawn area", complete * 100 / total);
-                            lastTimeLogged = currentTime;
-                        }
-
-                        world.chunkCache.LoadChunk(spawnPos.X + x >> 4, spawnPos.Z + z >> 4);
-
-                        while (world.doLightingUpdates() && running)
-                        {
-                        }
+                        logProgress("Preparing spawn area", (idx + 1) * 100 / totalChunks);
+                        lastTimeLogged = currentTime;
                     }
+                    var (cx, cz) = chunkList[idx];
+                    world.chunkCache.InsertPreGeneratedChunk(cx, cz, preGenerated[idx]);
+                    world.chunkCache.DecorateIfReady(cx, cz);
                 }
+                sw2.Stop();
+                _logger.LogInformation($"  Level {i} decoration: {sw2.ElapsedMilliseconds}ms");
+
+                // Phase 3: Batch lighting drain — all neighbors already loaded so sky-light
+                // propagates without border re-queuing.
+                var sw3 = Stopwatch.StartNew();
+                while (world.doLightingUpdates() && running) { }
+                sw3.Stop();
+                _logger.LogInformation($"  Level {i} lighting: {sw3.ElapsedMilliseconds}ms");
             }
         }
 
@@ -218,6 +242,7 @@ public abstract class MinecraftServer : Runnable, CommandOutput
             if (world != null)
             {
                 saveWorlds();
+                break;
             }
         }
     }
@@ -359,27 +384,17 @@ public abstract class MinecraftServer : Runnable, CommandOutput
 
     private void tick()
     {
-        ArrayList completeCooldowns = [];
-
-        var keys = GIVE_COMMANDS_COOLDOWNS.keySet();
-        var iter = keys.iterator();
-        while (iter.hasNext())
+        // Snapshot keys to allow safe mutation during iteration.
+        var keysSnapshot = new List<string>(GIVE_COMMANDS_COOLDOWNS.Keys);
+        foreach (var key in keysSnapshot)
         {
-            string key = (string)iter.next();
-            int cooldown = (int)GIVE_COMMANDS_COOLDOWNS.get(key);
-            if (cooldown > 0)
+            if (GIVE_COMMANDS_COOLDOWNS.TryGetValue(key, out int cooldown))
             {
-                GIVE_COMMANDS_COOLDOWNS.put(key, cooldown - 1);
+                if (cooldown > 0)
+                    GIVE_COMMANDS_COOLDOWNS[key] = cooldown - 1;
+                else
+                    GIVE_COMMANDS_COOLDOWNS.Remove(key);
             }
-            else
-            {
-                completeCooldowns.add(key);
-            }
-        }
-
-        for (int i = 0; i < completeCooldowns.size(); i++)
-        {
-            GIVE_COMMANDS_COOLDOWNS.remove(completeCooldowns.get(i));
         }
 
         ticks++;
@@ -396,7 +411,13 @@ public abstract class MinecraftServer : Runnable, CommandOutput
 
                 world.Tick();
 
-                while (world.doLightingUpdates())
+                // Cap lighting updates to avoid spending the entire tick (and beyond)
+                // draining the queue.  The nether's lava seas can generate thousands
+                // of lighting entries per tick; processing them all in one go causes
+                // >2-second stalls and "Can't keep up" spam.  Any remaining work
+                // carries over and is processed across subsequent ticks.
+                var lightSw = Stopwatch.StartNew();
+                while (lightSw.ElapsedMilliseconds < 15L && world.doLightingUpdates())
                 {
                 }
 
@@ -427,14 +448,23 @@ public abstract class MinecraftServer : Runnable, CommandOutput
 
     public void queueCommands(string str, CommandOutput cmd)
     {
-        pendingCommands.add(new Command(str, cmd));
+        lock (_pendingCommandsLock)
+        {
+            _pendingCommands.Enqueue(new Command(str, cmd));
+        }
     }
 
     public void runPendingCommands()
     {
-        while (pendingCommands.size() > 0)
+        while (true)
         {
-            commandHandler.ExecuteCommand((Command)pendingCommands.remove(0));
+            Command cmd;
+            lock (_pendingCommandsLock)
+            {
+                if (_pendingCommands.Count == 0) break;
+                cmd = _pendingCommands.Dequeue();
+            }
+            commandHandler.ExecuteCommand(cmd);
         }
     }
 

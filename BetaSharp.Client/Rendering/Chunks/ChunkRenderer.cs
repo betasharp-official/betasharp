@@ -88,7 +88,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _world = world;
 
         _chunkShader = new(AssetManager.Instance.getAsset("shaders/chunk.vert").getTextContent(), AssetManager.Instance.getAsset("shaders/chunk.frag").getTextContent());
-        _logger.LogInformation("Loaded chunk shader");
 
         GLManager.GL.UseProgram(0);
     }

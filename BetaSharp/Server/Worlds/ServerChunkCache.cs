@@ -275,4 +275,59 @@ public class ServerChunkCache : ChunkSource
     {
         return "NOP";
     }
+
+    // Exposes storage loading so the parallel gen phase can skip already-saved chunks.
+    public Chunk? TryLoadFromStorage(int chunkX, int chunkZ) => LoadChunkFromStorage(chunkX, chunkZ);
+
+    /// Creates a parallel-safe generator instance for off-thread terrain generation.
+    public ChunkSource CreateParallelGenerator() => _generator.CreateParallelInstance();
+
+    // Inserts a pre-generated chunk without triggering terrain re-generation.
+    // Checks storage first so that saved data is used correctly on server restart.
+    public void InsertPreGeneratedChunk(int chunkX, int chunkZ, Chunk generatedChunk)
+    {
+        int key = ChunkPos.GetHashCode(chunkX, chunkZ);
+        _chunksToUnload.Remove(key);
+        if (_chunksByPos.ContainsKey(key)) return;
+        Chunk chunk = LoadChunkFromStorage(chunkX, chunkZ) ?? generatedChunk;
+        _chunksByPos.Add(key, chunk);
+        _chunks.Add(chunk);
+        chunk.PopulateBlockLight();
+        chunk.Load();
+    }
+
+    // Runs the 4 decoration neighbour checks for a newly inserted chunk,
+    // mirroring the logic in LoadChunk but without re-generating terrain.
+    
+    public void DecorateIfReady(int chunkX, int chunkZ)
+    {
+        if (!IsChunkLoaded(chunkX, chunkZ)) return;
+
+        if (!GetChunk(chunkX, chunkZ).TerrainPopulated
+            && IsChunkLoaded(chunkX + 1, chunkZ + 1)
+            && IsChunkLoaded(chunkX, chunkZ + 1)
+            && IsChunkLoaded(chunkX + 1, chunkZ))
+            DecorateTerrain(this, chunkX, chunkZ);
+
+        if (IsChunkLoaded(chunkX - 1, chunkZ)
+            && !GetChunk(chunkX - 1, chunkZ).TerrainPopulated
+            && IsChunkLoaded(chunkX - 1, chunkZ + 1)
+            && IsChunkLoaded(chunkX, chunkZ + 1)
+            && IsChunkLoaded(chunkX - 1, chunkZ))
+            DecorateTerrain(this, chunkX - 1, chunkZ);
+
+        if (IsChunkLoaded(chunkX, chunkZ - 1)
+            && !GetChunk(chunkX, chunkZ - 1).TerrainPopulated
+            && IsChunkLoaded(chunkX + 1, chunkZ - 1)
+            && IsChunkLoaded(chunkX, chunkZ - 1)
+            && IsChunkLoaded(chunkX + 1, chunkZ))
+            DecorateTerrain(this, chunkX, chunkZ - 1);
+
+        if (IsChunkLoaded(chunkX - 1, chunkZ - 1)
+            && !GetChunk(chunkX - 1, chunkZ - 1).TerrainPopulated
+            && IsChunkLoaded(chunkX - 1, chunkZ - 1)
+            && IsChunkLoaded(chunkX, chunkZ - 1)
+            && IsChunkLoaded(chunkX - 1, chunkZ))
+            DecorateTerrain(this, chunkX - 1, chunkZ - 1);
+    }
 }
