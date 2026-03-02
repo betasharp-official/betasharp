@@ -168,6 +168,8 @@ public class AssetManager
 
         defineEmbeddedAsset("shaders/chunk.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/chunk.frag", AssetType.Text);
+        defineEmbeddedAsset("shaders/fixed_function.vert.spv", AssetType.Binary);
+        defineEmbeddedAsset("shaders/fixed_function.frag.spv", AssetType.Binary);
 
         _logger.LogInformation($"Loaded {embeddedAssetsLoaded} embedded assets");
     }
@@ -288,22 +290,22 @@ public class AssetManager
             switch (type)
             {
                 case AssetType.Text:
-                {
-                    using var reader = new StreamReader(stream);
-                    string text = reader.ReadToEnd();
-                    loadedAssets[embeddedAssetPath] = new(text);
-                    embeddedAssetsLoaded++;
-                    break;
-                }
+                    {
+                        using var reader = new StreamReader(stream);
+                        string text = reader.ReadToEnd();
+                        loadedAssets[embeddedAssetPath] = new(text);
+                        embeddedAssetsLoaded++;
+                        break;
+                    }
 
                 case AssetType.Binary:
-                {
-                    using var ms = new MemoryStream();
-                    stream.CopyTo(ms);
-                    loadedAssets[embeddedAssetPath] = new(ms.ToArray());
-                    embeddedAssetsLoaded++;
-                    break;
-                }
+                    {
+                        using var ms = new MemoryStream();
+                        stream.CopyTo(ms);
+                        loadedAssets[embeddedAssetPath] = new(ms.ToArray());
+                        embeddedAssetsLoaded++;
+                        break;
+                    }
             }
         }
         catch (Exception e)

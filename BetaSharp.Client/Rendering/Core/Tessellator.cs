@@ -436,6 +436,10 @@ public class Tessellator
             {
                 scratchBuffer[scratchBufferIndex + 5] = color;
             }
+            else
+            {
+                scratchBuffer[scratchBufferIndex + 5] = (BetaSharp.Client.Rendering.Core.GLManager.GL as BetaSharp.Client.Rendering.Core.OpenGL.EmulatedGL)?.CurrentPackedColor ?? unchecked((int)0xFFFFFFFF);
+            }
 
             if (hasNormals)
             {
@@ -494,7 +498,10 @@ public class Tessellator
                     {
                         rawBuffer[rawBufferIndex + 5] = rawBuffer[rawBufferIndex - var8 + 5];
                     }
-
+                    else
+                    {
+                        rawBuffer[rawBufferIndex + 5] = (BetaSharp.Client.Rendering.Core.GLManager.GL as BetaSharp.Client.Rendering.Core.OpenGL.EmulatedGL)?.CurrentPackedColor ?? unchecked((int)0xFFFFFFFF);
+                    }
                     rawBuffer[rawBufferIndex + 0] = rawBuffer[rawBufferIndex - var8 + 0];
                     rawBuffer[rawBufferIndex + 1] = rawBuffer[rawBufferIndex - var8 + 1];
                     rawBuffer[rawBufferIndex + 2] = rawBuffer[rawBufferIndex - var8 + 2];
@@ -512,6 +519,10 @@ public class Tessellator
             if (hasColor)
             {
                 rawBuffer[rawBufferIndex + 5] = color;
+            }
+            else
+            {
+                rawBuffer[rawBufferIndex + 5] = (BetaSharp.Client.Rendering.Core.GLManager.GL as BetaSharp.Client.Rendering.Core.OpenGL.EmulatedGL)?.CurrentPackedColor ?? unchecked((int)0xFFFFFFFF);
             }
 
             if (hasNormals)

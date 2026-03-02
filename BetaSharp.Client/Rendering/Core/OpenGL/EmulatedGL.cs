@@ -154,9 +154,33 @@ public unsafe class EmulatedGL : IGL
     // Color / Normal state
     // ========================================================================
 
-    public void Color3(float r, float g, float b) => _currentColor = new Vector4(r, g, b, 1.0f);
+    public int CurrentPackedColor { get; private set; } = unchecked((int)0xFFFFFFFF);
+
+    public void Color3(float r, float g, float b)
+    {
+        _currentColor = new Vector4(r, g, b, 1.0f);
+        UpdateCurrentPackedColor();
+    }
     public void Color3(byte r, byte g, byte b) => Color3(r / 255.0f, g / 255.0f, b / 255.0f);
-    public void Color4(float r, float g, float b, float a) => _currentColor = new Vector4(r, g, b, a);
+    public void Color4(float r, float g, float b, float a)
+    {
+        _currentColor = new Vector4(r, g, b, a);
+        UpdateCurrentPackedColor();
+    }
+
+    private void UpdateCurrentPackedColor()
+    {
+        int r = (int)(_currentColor.X * 255f);
+        int g = (int)(_currentColor.Y * 255f);
+        int b = (int)(_currentColor.Z * 255f);
+        int a = (int)(_currentColor.W * 255f);
+        r = Math.Clamp(r, 0, 255);
+        g = Math.Clamp(g, 0, 255);
+        b = Math.Clamp(b, 0, 255);
+        a = Math.Clamp(a, 0, 255);
+        CurrentPackedColor = a << 24 | b << 16 | g << 8 | r;
+    }
+
     public void Normal3(float nx, float ny, float nz) => _currentNormal = new Vector3(nx, ny, nz);
 
     // ========================================================================

@@ -16,9 +16,5 @@
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.7" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Rendering\Core\VkBackend\Shaders\fixed_function.vert.spv" />
-    <EmbeddedResource Include="Rendering\Core\VkBackend\Shaders\fixed_function.frag.spv" />
-  </ItemGroup>
 
 </Project>

@@ -26,5 +26,7 @@
   <ItemGroup>
     <EmbeddedResource Include="shaders/chunk.vert" />
     <EmbeddedResource Include="shaders/chunk.frag" />
+    <EmbeddedResource Include="shaders\fixed_function.vert.spv" />
+    <EmbeddedResource Include="shaders\fixed_function.frag.spv" />
   </ItemGroup>
 </Project>

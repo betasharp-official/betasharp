@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Silk.NET.OpenGL.Legacy;
@@ -9,7 +8,6 @@ using Sampler = Vuldrid.Sampler;
 namespace BetaSharp.Client.Rendering.Core.VkBackend;
 
 /// <summary>
-/// Uniform buffer layout matching the GLSL shader UBO.
 /// Must be kept in sync with fixed_function.vert/frag uniform block.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
@@ -129,33 +127,27 @@ public class FixedFunctionPipeline : IDisposable
         _device = device;
         ResourceFactory factory = device.ResourceFactory;
 
-        // Load SPIR-V shaders from embedded resources
-        byte[] vertSpirv = LoadEmbeddedResource("BetaSharp.Client.Rendering.Core.VkBackend.Shaders.fixed_function.vert.spv");
-        byte[] fragSpirv = LoadEmbeddedResource("BetaSharp.Client.Rendering.Core.VkBackend.Shaders.fixed_function.frag.spv");
+        byte[] vertSpirv = AssetManager.Instance.getAsset("shaders/fixed_function.vert.spv").getBinaryContent();
+        byte[] fragSpirv = AssetManager.Instance.getAsset("shaders/fixed_function.frag.spv").getBinaryContent();
 
         _vertexShader = factory.CreateShader(new ShaderDescription(ShaderStages.Vertex, vertSpirv, "main"));
         _fragmentShader = factory.CreateShader(new ShaderDescription(ShaderStages.Fragment, fragSpirv, "main"));
 
-        // Uniform buffer (set 0, binding 0)
         UniformBuffer = factory.CreateBuffer(new BufferDescription(
             (uint)Unsafe.SizeOf<FixedFunctionUniforms>(),
             BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
-        // Resource layout for uniforms (set 0)
         UniformLayout = factory.CreateResourceLayout(new ResourceLayoutDescription(
             new ResourceLayoutElementDescription("Uniforms", ResourceKind.UniformBuffer, ShaderStages.Vertex | ShaderStages.Fragment)));
 
-        // Resource layout for texture (set 1)
         TextureLayout = factory.CreateResourceLayout(new ResourceLayoutDescription(
             new ResourceLayoutElementDescription("u_Texture0", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
             new ResourceLayoutElementDescription("u_Texture0Sampler", ResourceKind.Sampler, ShaderStages.Fragment)));
 
-        // Create uniform resource set
         UniformResourceSet = factory.CreateResourceSet(new ResourceSetDescription(UniformLayout, UniformBuffer));
 
-        // Create default white 1x1 texture
         Vuldrid.Texture whiteTex = factory.CreateTexture(TextureDescription.Texture2D(
-            1, 1, 1, 1, global::Vuldrid.PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled));
+            1, 1, 1, 1, Vuldrid.PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled));
         device.UpdateTexture(whiteTex, new byte[] { 255, 255, 255, 255 }, 0, 0, 0, 1, 1, 1, 0, 0);
         DefaultTextureView = factory.CreateTextureView(whiteTex);
 
@@ -284,34 +276,9 @@ public class FixedFunctionPipeline : IDisposable
         };
     }
 
-    private static byte[] LoadEmbeddedResource(string name)
-    {
-        Assembly assembly = typeof(FixedFunctionPipeline).Assembly;
-        using Stream? stream = assembly.GetManifestResourceStream(name);
-        if (stream == null)
-        {
-            // Try alternative name with dots
-            string[] names = assembly.GetManifestResourceNames();
-            string? match = names.FirstOrDefault(n => n.EndsWith(string.Join(".", name.Split('.').TakeLast(2))));
-            if (match != null)
-            {
-                using Stream? altStream = assembly.GetManifestResourceStream(match);
-                if (altStream != null)
-                {
-                    byte[] altBytes = new byte[altStream.Length];
-                    altStream.ReadExactly(altBytes);
-                    return altBytes;
-                }
-            }
-            throw new FileNotFoundException($"Embedded resource '{name}' not found. Available: {string.Join(", ", names)}");
-        }
-        byte[] bytes = new byte[stream.Length];
-        stream.ReadExactly(bytes);
-        return bytes;
-    }
-
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
         foreach (Pipeline p in _pipelineCache.Values) p.Dispose();
         _pipelineCache.Clear();
 
