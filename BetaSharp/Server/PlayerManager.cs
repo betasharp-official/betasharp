@@ -313,7 +313,7 @@ public class PlayerManager
             return;
         }
 
-        if (!message.chatMessage[..].Contains(" Discord"))
+        if (!message.chatMessage[..index].Contains(" Discord"))
             Discord.Channel!.SendMessageAsync(message.chatMessage);
     }
 
