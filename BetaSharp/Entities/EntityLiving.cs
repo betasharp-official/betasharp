@@ -735,7 +735,7 @@ public class EntityLiving : Entity
             --newPosRotationIncrements;
             setPosition(newX, newY, newZ);
             setRotation(yaw, pitch);
-            var collisions = world.GetEntityCollisions(this, boundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
+            var collisions = world.GetEntityCollisionsScratch(this, boundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
             if (collisions.Count > 0)
             {
                 double highestCollisionY = 0.0D;
@@ -788,7 +788,7 @@ public class EntityLiving : Entity
         forwardSpeed *= 0.98F;
         rotationSpeed *= 0.9F;
         travel(sidewaysSpeed, forwardSpeed);
-        var nearbyEntities = world.getEntities(this, boundingBox.Expand((double)0.2F, 0.0D, (double)0.2F));
+        var nearbyEntities = world.GetEntitiesScratch(this, boundingBox.Expand((double)0.2F, 0.0D, (double)0.2F));
         if (nearbyEntities != null && nearbyEntities.Count > 0)
         {
             for (int i = 0; i < nearbyEntities.Count; ++i)

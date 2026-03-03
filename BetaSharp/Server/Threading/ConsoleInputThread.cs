@@ -2,9 +2,9 @@ namespace BetaSharp.Server.Threading;
 
 public class ConsoleInputThread : java.lang.Thread
 {
-    private readonly MinecraftServer mcServer;
+    private readonly BetaSharpServer mcServer;
 
-    public ConsoleInputThread(MinecraftServer server) : base("Server console handler")
+    public ConsoleInputThread(BetaSharpServer server) : base("Server console handler")
     {
         mcServer = server;
     }

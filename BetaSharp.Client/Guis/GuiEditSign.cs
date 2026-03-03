@@ -33,9 +33,9 @@ public class GuiEditSign : GuiScreen
     public override void OnGuiClosed()
     {
         Keyboard.enableRepeatEvents(false);
-        if (mc?.world?.isRemote ?? false)
+        if (Game?.world?.isRemote ?? false)
         {
-            mc.getSendQueue().addToSendQueue(new UpdateSignPacket(_entitySign.X, _entitySign.Y, _entitySign.Z, _entitySign.Texts));
+            Game.getSendQueue().addToSendQueue(new UpdateSignPacket(_entitySign.X, _entitySign.Y, _entitySign.Z, _entitySign.Texts));
         }
     }
 
@@ -49,7 +49,7 @@ public class GuiEditSign : GuiScreen
         if (button.Enabled && button.Id == ButtonDoneId)
         {
             _entitySign.markDirty();
-            mc?.displayGuiScreen(null);
+            Game?.displayGuiScreen(null);
         }
     }
 
@@ -79,7 +79,7 @@ public class GuiEditSign : GuiScreen
         if (eventKey == Keyboard.KEY_ESCAPE)
         {
             _entitySign.markDirty();
-            mc?.displayGuiScreen(null);
+            Game?.displayGuiScreen(null);
             return;
         }
 

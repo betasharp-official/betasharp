@@ -42,24 +42,99 @@ public class TextRenderer
         public readonly float Width = width, Height = height;
     }
 
+    private void LoadClassicFontIntoAtlas(Image<Rgba32> classicFontImage)
+    {
+        int scale = AtlasFontSize / 8;
+        int imgWidth = classicFontImage.Width;
+        int imgHeight = classicFontImage.Height;
+
+        Rgba32[] pixels = new Rgba32[imgWidth * imgHeight];
+        classicFontImage.CopyPixelDataTo(pixels);
+
+        for (int charIndex = 32; charIndex < 127; ++charIndex)
+        {
+            int col = charIndex % 16;
+            int row = charIndex / 16;
+            int lastSolidPixel = -1;
+
+            for (int bit = 7; bit >= 0; --bit)
+            {
+                int xOffset = col * 8 + bit;
+                bool columnIsEmpty = true;
+
+                for (int yOffset = 0; yOffset < 8 && columnIsEmpty; ++yOffset)
+                {
+                    int pixelIndex = (row * 8 + yOffset) * imgWidth + xOffset;
+                    if (pixels[pixelIndex].A > 0)
+                    {
+                        columnIsEmpty = false;
+                    }
+                }
+
+                if (!columnIsEmpty)
+                {
+                    lastSolidPixel = bit;
+                    break;
+                }
+            }
+
+            int advancePixels = lastSolidPixel + 2;
+            if (charIndex == 32) advancePixels = 4;
+
+            int cellW = 8 * scale;
+            int cellH = 8 * scale;
+
+            if (_atlasX + cellW > AtlasSize)
+            {
+                _atlasX = 0;
+                _atlasY += _rowHeight;
+            }
+
+            using (Image<Rgba32> glyphImage = classicFontImage.Clone(ctx => ctx
+                .Crop(new Rectangle(col * 8, row * 8, 8, 8))
+                .Resize(cellW, cellH, KnownResamplers.NearestNeighbor)))
+            {
+                glyphImage.ProcessPixelRows(_atlasImage, (srcAccessor, dstAccessor) =>
+                {
+                    for (int y = 0; y < cellH; y++)
+                    {
+                        Span<Rgba32> srcRow = srcAccessor.GetRowSpan(y);
+                        Span<Rgba32> dstRow = dstAccessor.GetRowSpan(_atlasY + y);
+                        srcRow.Slice(0, cellW).CopyTo(dstRow.Slice(_atlasX, cellW));
+                    }
+                });
+            }
+
+            float u0 = (float)_atlasX / AtlasSize;
+            float v0 = (float)_atlasY / AtlasSize;
+            float u1 = (float)(_atlasX + cellW) / AtlasSize;
+            float v1 = (float)(_atlasY + cellH) / AtlasSize;
+
+            char c = (char)charIndex;
+
+            float advanceWidth = advancePixels * scale;
+            _glyphCache[c] = new GlyphInfo(advanceWidth, u0, v0, u1, v1, cellW, cellH);
+
+            _atlasX += cellW;
+        }
+
+        UploadAtlasSubImage(0, 0, AtlasSize, _atlasY + _rowHeight);
+    }
+
     public TextRenderer(GameOptions options, TextureManager textureManager)
     {
         _textureManager = textureManager;
+
         string path = Path.Combine(AppContext.BaseDirectory, "font", "Monocraft.ttc");
-        if (!File.Exists(path))
-        {
-            path = FontPath;
-        }
+        if (!File.Exists(path)) path = FontPath;
 
         if (!File.Exists(path))
         {
-            throw new InvalidOperationException($"Font file not found. Tried: {Path.Combine(AppContext.BaseDirectory, "font", "Monocraft.ttc")} and {FontPath}");
+            throw new InvalidOperationException($"Font file not found at {path}");
         }
 
         var collection = new FontCollection();
-        IEnumerable<FontFamily> families = collection.AddCollection(path);
-        FontFamily family = families.First();
-        _font = family.CreateFont(AtlasFontSize);
+        _font = collection.AddCollection(path).First().CreateFont(AtlasFontSize);
         _textOptions = new TextOptions(_font);
 
         _rowHeight = AtlasFontSize + GlyphPadding;
@@ -68,8 +143,20 @@ public class TextRenderer
 
         fontTextureName = textureManager.Load(_atlasImage);
         fontTextureName.Texture?.SetFilter(Silk.NET.OpenGL.Legacy.TextureMinFilter.Nearest, Silk.NET.OpenGL.Legacy.TextureMagFilter.Nearest);
-    }
 
+        try
+        {
+            var asset = AssetManager.Instance.getAsset("font/default.png");
+            using var stream = new MemoryStream(asset.getBinaryContent());
+            using var classicFontImage = Image.Load<Rgba32>(stream);
+
+            LoadClassicFontIntoAtlas(classicFontImage);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to load classic font. Falling back entirely to TrueType.");
+        }
+    }
     private static void ClearAtlasRegion(Image<Rgba32> image, int x, int y, int w, int h)
     {
         image.Mutate(ctx => ctx.Fill(SixLabors.ImageSharp.Color.Transparent, new Rectangle(x, y, w, h)));
@@ -88,8 +175,6 @@ public class TextRenderer
         ReadOnlySpan<char> charSpan = stackalloc char[] { c };
         FontRectangle advanceRect = TextMeasurer.MeasureAdvance(charSpan, _textOptions);
 
-        // We no longer strictly need boundsRect for X/Y drawing offsets,
-        // but it's still useful if you ever want to do tighter packing later.
         FontRectangle boundsRect = TextMeasurer.MeasureBounds(charSpan, _textOptions);
 
         float advanceWidth = advanceRect.Width;
@@ -108,13 +193,17 @@ public class TextRenderer
             ClearAtlasRegion(0, 0, AtlasSize, AtlasSize);
             _atlasX = 0;
             _atlasY = 0;
+
+            var asset = AssetManager.Instance.getAsset("font/default.png");
+            using var stream = new MemoryStream(asset.getBinaryContent());
+            using var classicFontImage = Image.Load<Rgba32>(stream);
+            LoadClassicFontIntoAtlas(classicFontImage);
         }
 
         using (Image<Rgba32> glyphImage = new Image<Rgba32>(cellW, cellH))
         {
             ClearAtlasRegion(glyphImage, 0, 0, cellW, cellH);
 
-            // Fixed offsets to preserve both baseline and monospace grid
             float drawX = 1f;
             float drawY = 1f;
 
@@ -124,7 +213,6 @@ public class TextRenderer
                 Color.White,
                 new PointF(drawX, drawY)));
 
-            // High-performance direct memory copy
             glyphImage.ProcessPixelRows(_atlasImage, (srcAccessor, dstAccessor) =>
             {
                 for (int gy = 0; gy < cellH; gy++)
@@ -179,7 +267,8 @@ public class TextRenderer
             {
                 fontTextureName.Texture!.UploadSubImage(x, y, width, height, ptr);
             }
-        }catch(Exception ex)
+        }
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Error uploading atlas sub image");
         }

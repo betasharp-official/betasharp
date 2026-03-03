@@ -48,6 +48,29 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         public bool priority = priority;
     }
 
+    private sealed class ChunkDistanceComparer : IComparer<ChunkToMeshInfo>
+    {
+        public Vector3D<double> Origin;
+        public int Compare(ChunkToMeshInfo a, ChunkToMeshInfo b)
+        {
+            double distA = Vector3D.DistanceSquared(ToDoubleVec(a.Pos), Origin);
+            double distB = Vector3D.DistanceSquared(ToDoubleVec(b.Pos), Origin);
+            return distA.CompareTo(distB);
+        }
+    }
+
+    private sealed class TranslucentDistanceComparer : IComparer<SubChunkRenderer>
+    {
+        public Vector3D<double> Origin;
+        public int Compare(SubChunkRenderer? a, SubChunkRenderer? b)
+        {
+            if (a == null || b == null) return 0;
+            double distA = Vector3D.DistanceSquared(ToDoubleVec(a.Position), Origin);
+            double distB = Vector3D.DistanceSquared(ToDoubleVec(b.Position), Origin);
+            return distB.CompareTo(distA); // descending
+        }
+    }
+
     private static readonly Vector3D<int>[] s_spiralOffsets;
     private const int MaxRenderDistance = 32 + 1;
     private readonly Dictionary<Vector3D<int>, SubChunkState> _renderers = [];
@@ -72,6 +95,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private Vector4D<float> _fogColor;
     private readonly ChunkOcclusionCuller _occlusionCuller = new();
     private readonly List<SubChunkRenderer> _visibleRenderers = [];
+    private readonly List<SubChunkRenderer> _occludedRenderersBuffer = [];
+    private readonly ChunkDistanceComparer _chunkDistanceComparer = new();
+    private readonly TranslucentDistanceComparer _translucentDistanceComparer = new();
     private int _frameIndex = 0;
 
     public bool UseOcclusionCulling { get; set; } = true;
@@ -180,7 +206,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         if (renderParams.RenderOccluded)
         {
-            var occludedRenderers = new List<SubChunkRenderer>();
+            _occludedRenderersBuffer.Clear();
             foreach (SubChunkState state in _renderers.Values)
             {
                 SubChunkRenderer renderer = state.Renderer;
@@ -188,12 +214,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 {
                     if (renderer.IsVisible(renderParams.Camera, renderParams.ViewPos, renderDistWorld))
                     {
-                        occludedRenderers.Add(renderer);
+                        _occludedRenderersBuffer.Add(renderer);
                     }
                 }
             }
             _visibleRenderers.Clear();
-            _visibleRenderers.AddRange(occludedRenderers);
+            _visibleRenderers.AddRange(_occludedRenderersBuffer);
             ChunksRendered = _visibleRenderers.Count;
         }
 
@@ -217,6 +243,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             }
         }
 
+        TranslucentMeshes = translucentCount;
+
         foreach (SubChunkState state in _renderers.Values)
         {
             if (!IsChunkInRenderDistance(state.Renderer.Position, renderParams.ViewPos))
@@ -224,7 +252,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 _renderersToRemove.Add(state.Renderer);
             }
         }
-        TranslucentMeshes = translucentCount;
 
         foreach (SubChunkRenderer renderer in _renderersToRemove)
         {
@@ -277,12 +304,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _chunkShader.SetUniformMatrix4("projectionMatrix", _projection);
 
-        _translucentRenderers.Sort((a, b) =>
-        {
-            double distA = Vector3D.DistanceSquared(ToDoubleVec(a.Position), renderParams.ViewPos);
-            double distB = Vector3D.DistanceSquared(ToDoubleVec(b.Position), renderParams.ViewPos);
-            return distB.CompareTo(distA);
-        });
+        _translucentDistanceComparer.Origin = renderParams.ViewPos;
+        _translucentRenderers.Sort(_translucentDistanceComparer);
 
         foreach (SubChunkRenderer renderer in _translucentRenderers)
         {
@@ -416,12 +439,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     private void ProcessOneMeshUpdate(Culler camera)
     {
-        _dirtyChunks.Sort((a, b) =>
-        {
-            double distA = Vector3D.DistanceSquared(ToDoubleVec(a.Pos), _lastViewPos);
-            double distB = Vector3D.DistanceSquared(ToDoubleVec(b.Pos), _lastViewPos);
-            return distA.CompareTo(distB);
-        });
+        _chunkDistanceComparer.Origin = _lastViewPos;
+        _dirtyChunks.Sort(_chunkDistanceComparer);
 
         for (int i = 0; i < _dirtyChunks.Count; i++)
         {
@@ -454,12 +473,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     private void ProcessOneLightingMeshUpdate()
     {
-        _lightingUpdates.Sort((a, b) =>
-        {
-            double distA = Vector3D.DistanceSquared(ToDoubleVec(a.Pos), _lastViewPos);
-            double distB = Vector3D.DistanceSquared(ToDoubleVec(b.Pos), _lastViewPos);
-            return distA.CompareTo(distB);
-        });
+        _chunkDistanceComparer.Origin = _lastViewPos;
+        _lightingUpdates.Sort(_chunkDistanceComparer);
 
         for (int i = 0; i < _lightingUpdates.Count; i++)
         {
@@ -638,9 +653,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         int viewChunkX = (int)Math.Floor(viewPos.X / SubChunkRenderer.Size);
         int viewChunkZ = (int)Math.Floor(viewPos.Z / SubChunkRenderer.Size);
 
-        int dist = Vector2D.Distance(new Vector2D<int>(chunkX, chunkZ), new Vector2D<int>(viewChunkX, viewChunkZ));
-        bool isIn = dist <= _lastRenderDistance;
-        return isIn;
+        int dx = chunkX - viewChunkX;
+        int dz = chunkZ - viewChunkZ;
+        return dx * dx + dz * dz <= _lastRenderDistance * _lastRenderDistance;
     }
 
     private static Vector3D<double> ToDoubleVec(Vector3D<int> vec) => new(vec.X, vec.Y, vec.Z);

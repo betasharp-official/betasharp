@@ -31,7 +31,7 @@ public class GuiSleepMP : GuiChat
             string trimmed = _message.Trim();
             if (trimmed.Length > 0)
             {
-                mc.player.sendChatMessage(trimmed);
+                Game.player.sendChatMessage(trimmed);
             }
 
             _message = "";
@@ -64,10 +64,10 @@ public class GuiSleepMP : GuiChat
 
     private void sendStopSleepingCommand()
     {
-        if (mc.player is EntityClientPlayerMP)
+        if (Game.player is EntityClientPlayerMP)
         {
-            ClientNetworkHandler sendQueue = ((EntityClientPlayerMP)mc.player).sendQueue;
-            sendQueue.addToSendQueue(new ClientCommandC2SPacket(mc.player, 3));
+            ClientNetworkHandler sendQueue = ((EntityClientPlayerMP)Game.player).sendQueue;
+            sendQueue.addToSendQueue(new ClientCommandC2SPacket(Game.player, 3));
         }
 
     }

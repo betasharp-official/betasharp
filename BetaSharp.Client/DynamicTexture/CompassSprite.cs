@@ -13,19 +13,19 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
     private double _angle;
     private double _angleDelta;
     private int[] _compass = new int[256];
-    private Minecraft _mc;
+    private BetaSharp _game;
     private int _resolution = 16;
 
-    public CompassSprite(Minecraft mc) : base(Item.Compass.getTextureId(0))
+    public CompassSprite(BetaSharp game) : base(Item.Compass.getTextureId(0))
     {
-        _mc = mc;
+        _game = game;
         Atlas = FxImage.Items;
     }
 
-    public override void Setup(Minecraft mc)
+    public override void Setup(BetaSharp game)
     {
-        _mc = mc;
-        TextureManager tm = mc.textureManager;
+        _game = game;
+        TextureManager tm = game.textureManager;
         string atlasPath = "/gui/items.png";
 
         TextureHandle handle = tm.GetTextureId(atlasPath);
@@ -47,7 +47,7 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
 
         try
         {
-            using Stream? stream = mc.texturePackList.SelectedTexturePack.GetResourceAsStream("gui/items.png");
+            using Stream? stream = game.texturePackList.SelectedTexturePack.GetResourceAsStream("gui/items.png");
             if (stream != null)
             {
                 using Image<Rgba32> atlasImage = Image.Load<Rgba32>(stream);
@@ -91,15 +91,15 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
         }
 
         double targetAngle = 0.0D;
-        if (_mc.world != null && _mc.player != null)
+        if (_game.world != null && _game.player != null)
         {
-            Vec3i spawnPos = _mc.world.getSpawnPos();
-            double deltaX = spawnPos.X - _mc.player.x;
-            double deltaZ = spawnPos.Z - _mc.player.z;
+            Vec3i spawnPos = _game.world.getSpawnPos();
+            double deltaX = spawnPos.X - _game.player.x;
+            double deltaZ = spawnPos.Z - _game.player.z;
 
-            targetAngle = (_mc.player.yaw - 90.0F) * Math.PI / 180.0D - Math.Atan2(deltaZ, deltaX);
+            targetAngle = (_game.player.yaw - 90.0F) * Math.PI / 180.0D - Math.Atan2(deltaZ, deltaX);
 
-            if (_mc.world.dimension.IsNether)
+            if (_game.world.dimension.IsNether)
             {
                 targetAngle = Random.Shared.NextDouble() * (float)Math.PI * 2.0D;
             }

@@ -13,12 +13,12 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
     private readonly ILogger<BetaResourceDownloader> _logger = Log.Instance.For<BetaResourceDownloader>();
     private readonly HttpClient _httpClient;
     private readonly string _resourcesDirectory;
-    private readonly Minecraft _mc;
+    private readonly BetaSharp _game;
     private bool _cancelled;
 
-    public BetaResourceDownloader(Minecraft mc, string baseDirectory)
+    public BetaResourceDownloader(BetaSharp game, string baseDirectory)
     {
-        _mc = mc;
+        _game = game;
         _resourcesDirectory = System.IO.Path.Combine(baseDirectory, "resources");
         Directory.CreateDirectory(_resourcesDirectory);
 
@@ -47,7 +47,7 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
                 if (File.Exists(localFile))
                 {
                     loaded++;
-                    _mc.installResource(line, new FileInfo(localFile));
+                    _game.installResource(line, new FileInfo(localFile));
                 }
             }
 
@@ -160,7 +160,7 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
 
             if (localFile.Exists && localFile.Length == size)
             {
-                _mc.installResource(path, new FileInfo(localFile.FullName));
+                _game.installResource(path, new FileInfo(localFile.FullName));
                 return;
             }
 
@@ -173,7 +173,7 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
 
             if (!_cancelled)
             {
-                _mc.installResource(path, new FileInfo(localFile.FullName));
+                _game.installResource(path, new FileInfo(localFile.FullName));
             }
         }
         catch (Exception ex)

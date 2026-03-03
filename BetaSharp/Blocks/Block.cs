@@ -205,9 +205,9 @@ public class Block
         return true;
     }
 
-    public virtual int getRenderType()
+    public virtual BlockRendererType getRenderType()
     {
-        return 0;
+        return BlockRendererType.Standard;
     }
 
     protected Block setHardness(float hardness)
@@ -243,12 +243,12 @@ public class Block
         BoundingBox = new Box(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
-    public virtual float getLuminance(BlockView blockView, int x, int y, int z)
+    public virtual float getLuminance(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        return blockView.getNaturalBrightness(x, y, z, BlocksLightLuminance[id]);
+        return iBlockAccess.getNaturalBrightness(x, y, z, BlocksLightLuminance[id]);
     }
 
-    public virtual bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
+    public virtual bool isSideVisible(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
         var minX = BoundingBox.MinX;
         var minY = BoundingBox.MinY;
@@ -256,17 +256,17 @@ public class Block
         var maxX = BoundingBox.MaxX;
         var maxY = BoundingBox.MaxY;
         var maxZ = BoundingBox.MaxZ;
-        return side == 0 && minY > 0.0D ? true : (side == 1 && maxY < 1.0D ? true : (side == 2 && minZ > 0.0D ? true : (side == 3 && maxZ < 1.0D ? true : (side == 4 && minX > 0.0D ? true : (side == 5 && maxX < 1.0D ? true : !blockView.isOpaque(x, y, z))))));
+        return side == 0 && minY > 0.0D ? true : (side == 1 && maxY < 1.0D ? true : (side == 2 && minZ > 0.0D ? true : (side == 3 && maxZ < 1.0D ? true : (side == 4 && minX > 0.0D ? true : (side == 5 && maxX < 1.0D ? true : !iBlockAccess.isOpaque(x, y, z))))));
     }
 
-    public virtual bool isSolidFace(BlockView blockView, int x, int y, int z, int face)
+    public virtual bool isSolidFace(IBlockAccess iBlockAccess, int x, int y, int z, int face)
     {
-        return blockView.getMaterial(x, y, z).IsSolid;
+        return iBlockAccess.getMaterial(x, y, z).IsSolid;
     }
 
-    public virtual int getTextureId(BlockView blockView, int x, int y, int z, int side)
+    public virtual int getTextureId(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
-        return getTexture(side, blockView.getBlockMeta(x, y, z));
+        return getTexture(side, iBlockAccess.getBlockMeta(x, y, z));
     }
 
     public virtual int getTexture(int side, int meta)
@@ -461,7 +461,7 @@ public class Block
     {
     }
 
-    public virtual void updateBoundingBox(BlockView blockView, int x, int y, int z)
+    public virtual void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
     }
 
@@ -470,12 +470,14 @@ public class Block
         return 0xFFFFFF;
     }
 
-    public virtual int getColorMultiplier(BlockView blockView, int x, int y, int z)
+    public virtual int getColorForFace(int meta, int face) => getColor(meta);
+
+    public virtual int getColorMultiplier(IBlockAccess iBlockAccess, int x, int y, int z)
     {
         return 0xFFFFFF;
     }
 
-    public virtual bool isPoweringSide(BlockView blockView, int x, int y, int z, int side)
+    public virtual bool isPoweringSide(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
         return false;
     }
@@ -485,7 +487,7 @@ public class Block
         return false;
     }
 
-    public virtual bool isFlammable(BlockView blockView, int x, int y, int z)
+    public virtual bool isFlammable(IBlockAccess iBlockAccess, int x, int y, int z)
     {
         return false;
     }

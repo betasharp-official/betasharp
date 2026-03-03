@@ -91,7 +91,7 @@ public class SoundManager
         }
     }
 
-    public void CloseMinecraft()
+    public void CloseBetaSharp()
     {
         if (!_started) return;
 

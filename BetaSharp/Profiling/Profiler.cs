@@ -8,6 +8,13 @@ public static class Profiler
     public const int HistoryLength = 300;
     public static bool Enabled = false;
 
+    public static bool EnableLagSpikeDetection = false;
+    public static double LagSpikeThresholdMs = 50.0;
+    public static string LagSpikeDirectory = "";
+    public static double LagSpikeCooldownSeconds = 5.0;
+
+    private static DateTime s_lastSpikeTime = DateTime.MinValue;
+
     private class ProfilerData
     {
         public required string Name;
@@ -156,5 +163,69 @@ public static class Profiler
         }
 
         return allStats.OrderBy(x => x.Name);
+    }
+
+    public static void DetectLagSpike(double frameTimeMs, string additionalContext = "", bool currentThreadOnly = false)
+    {
+        if (!Enabled || !EnableLagSpikeDetection) return;
+
+        if (frameTimeMs >= LagSpikeThresholdMs && (DateTime.Now - s_lastSpikeTime).TotalSeconds >= LagSpikeCooldownSeconds)
+        {
+            s_lastSpikeTime = DateTime.Now;
+
+            List<(string Name, double Last, double Avg, double Max, double[] History, int HistoryIndex)> stats = currentThreadOnly
+                ? [.. s_localProfiler.Value!.Sections.Values.Select(x => (Name: $"[{s_localProfiler.Value.ThreadName}] {x.Name}", Last: x.LastExecutionTime, Avg: x.AverageExecutionTime, Max: Math.Max(x.CurrentPeriodMax, x.PreviousPeriodMax), History: x.History, HistoryIndex: x.HistoryIndex)).OrderBy(x => x.Name)]
+                : [.. GetStats()];
+            long memoryData = Process.GetCurrentProcess().WorkingSet64 / 1024 / 1024;
+            int threadData = Process.GetCurrentProcess().Threads.Count;
+            DateTime timeCaptured = DateTime.Now;
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    if (!Directory.Exists(LagSpikeDirectory))
+                    {
+                        Directory.CreateDirectory(LagSpikeDirectory);
+                    }
+
+                    string timestamp = timeCaptured.ToString("yyyy-MM-dd_HH-mm-ss-fff");
+                    string safeContext = string.IsNullOrWhiteSpace(additionalContext) ? "" : "_" + string.Join("_", additionalContext.Split(Path.GetInvalidFileNameChars()));
+                    string filePath = Path.Combine(LagSpikeDirectory, $"{timestamp}_{frameTimeMs:F1}ms{safeContext}.log");
+
+                    using StreamWriter writer = new(filePath);
+                    writer.WriteLine($"=== Lag Spike Detected ===");
+                    writer.WriteLine($"Timestamp:      {timeCaptured:O}");
+                    writer.WriteLine($"Frame Time:     {frameTimeMs:F2} ms");
+                    writer.WriteLine($"Threshold:      {LagSpikeThresholdMs:F2} ms");
+                    if (!string.IsNullOrWhiteSpace(additionalContext))
+                    {
+                        writer.WriteLine($"Context:        {additionalContext}");
+                    }
+
+                    writer.WriteLine($"Memory Usage:   {memoryData} MB");
+                    writer.WriteLine($"Thread Count:   {threadData}");
+
+                    writer.WriteLine();
+                    writer.WriteLine("=== Profiler Stats at time of spike ===");
+                    writer.WriteLine(string.Format("{0,-50} | {1,-12} | {2,-12} | {3,-12}", "Section Name", "Last (ms)", "Avg (ms)", "Max (ms)"));
+                    writer.WriteLine(new string('-', 95));
+
+                    foreach ((string Name, double Last, double Avg, double Max, double[] History, int HistoryIndex) stat in stats)
+                    {
+                        string marker = stat.Last > Math.Max(1.0, stat.Avg * 2.0) ? "*" : " ";
+                        writer.WriteLine(string.Format("{0,-50} | {1,-12:F4} | {2,-12:F4} | {3,-12:F4} {4}",
+                            stat.Name, stat.Last, stat.Avg, stat.Max, marker));
+                    }
+
+                    writer.WriteLine();
+                    writer.WriteLine($"=========================");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Profiler] Failed to write lag spike log: {ex.Message}");
+                }
+            });
+        }
     }
 }

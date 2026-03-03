@@ -9,21 +9,21 @@ public class TexturePacks
     private readonly TexturePack _defaultTexturePack = new BuiltInTexturePack();
     public TexturePack SelectedTexturePack;
     private readonly Dictionary<string, TexturePack> _texturePacks = [];
-    private readonly Minecraft _mc;
+    private readonly BetaSharp _game;
     private readonly DirectoryInfo _texturePackDir;
     private string? _currentTexturePack;
     public List<TexturePack> AvailableTexturePacks => _availTexturePacks;
-    
-    public TexturePacks(Minecraft mc, DirectoryInfo texturePackDir)
+
+    public TexturePacks(BetaSharp game, DirectoryInfo texturePackDir)
     {
-        _mc = mc;
+        _game = game;
         _texturePackDir = new DirectoryInfo(System.IO.Path.Combine(texturePackDir.FullName, "texturepacks"));
         if (!_texturePackDir.Exists)
         {
             _texturePackDir.Create();
         }
 
-        _currentTexturePack = mc.options.Skin;
+        _currentTexturePack = game.options.Skin;
         updateAvaliableTexturePacks();
         SelectedTexturePack.func_6482_a();
     }
@@ -39,8 +39,8 @@ public class TexturePacks
         _currentTexturePack = texturePack.TexturePackFileName;
         SelectedTexturePack = texturePack;
 
-        _mc.options.Skin = _currentTexturePack;
-        _mc.options.SaveOptions();
+        _game.options.Skin = _currentTexturePack;
+        _game.options.SaveOptions();
 
         SelectedTexturePack.func_6482_a();
         return true;
@@ -68,7 +68,7 @@ public class TexturePacks
                             Signature = signature
                         };
                         _texturePacks[signature] = newPack;
-                        newPack.func_6485_a(_mc);
+                        newPack.func_6485_a(_game);
                         cachedPack = newPack;
                     }
 
@@ -93,7 +93,7 @@ public class TexturePacks
         {
             if (!availablePacks.Contains(oldPack))
             {
-                oldPack.Unload(_mc);
+                oldPack.Unload(_game);
                 if (oldPack.Signature != null)
                 {
                     _texturePacks.Remove(oldPack.Signature);

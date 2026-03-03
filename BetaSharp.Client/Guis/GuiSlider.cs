@@ -28,7 +28,7 @@ public class GuiSlider : GuiButton
         return HoverState.Disabled;
     }
 
-    protected override void MouseDragged(Minecraft mc, int mouseX, int mouseY)
+    protected override void MouseDragged(BetaSharp game, int mouseX, int mouseY)
     {
         if (Enabled)
         {
@@ -55,9 +55,9 @@ public class GuiSlider : GuiButton
         }
     }
 
-    public override bool MousePressed(Minecraft mc, int mouseX, int mouseY)
+    public override bool MousePressed(BetaSharp game, int mouseX, int mouseY)
     {
-        if (base.MousePressed(mc, mouseX, mouseY))
+        if (base.MousePressed(game, mouseX, mouseY))
         {
             sliderValue = (mouseX - (XPosition + 4)) / (float)(_width - 8);
             if (sliderValue < 0.0F)

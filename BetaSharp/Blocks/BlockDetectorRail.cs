@@ -45,9 +45,9 @@ internal class BlockDetectorRail : BlockRail
         }
     }
 
-    public override bool isPoweringSide(BlockView blockView, int x, int y, int z, int side)
+    public override bool isPoweringSide(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
-        return (blockView.getBlockMeta(x, y, z) & 8) != 0;
+        return (iBlockAccess.getBlockMeta(x, y, z) & 8) != 0;
     }
 
     public override bool isStrongPoweringSide(World world, int x, int y, int z, int side)

@@ -18,7 +18,7 @@ public class ServerLoginNetworkHandler : NetHandler
     private static JavaRandom random = new();
     public Connection connection;
     public bool closed;
-    private MinecraftServer server;
+    private BetaSharpServer server;
     private int loginTicks;
     private string username;
     private LoginHelloPacket loginPacket;
@@ -26,14 +26,14 @@ public class ServerLoginNetworkHandler : NetHandler
 
     private readonly ILogger<ServerLoginNetworkHandler> _logger = Log.Instance.For<ServerLoginNetworkHandler>();
 
-    public ServerLoginNetworkHandler(MinecraftServer server, Socket socket, string name)
+    public ServerLoginNetworkHandler(BetaSharpServer server, Socket socket, string name)
     {
         this.server = server;
         connection = new Connection(socket, name, this);
         connection.lag = 0;
     }
 
-    public ServerLoginNetworkHandler(MinecraftServer server, Connection connection)
+    public ServerLoginNetworkHandler(BetaSharpServer server, Connection connection)
     {
         this.server = server;
         this.connection = connection;

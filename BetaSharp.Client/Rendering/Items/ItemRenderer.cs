@@ -13,8 +13,6 @@ namespace BetaSharp.Client.Rendering.Items;
 
 public class ItemRenderer : EntityRenderer
 {
-
-    private readonly BlockRenderer renderBlocks = new();
     private readonly JavaRandom random = new();
     public bool useCustomDisplayColor = true;
 
@@ -52,12 +50,13 @@ public class ItemRenderer : EntityRenderer
         float var16;
         float var17;
         float var18;
-        if (var10.itemId < 256 && BlockRenderer.isSideLit(Block.Blocks[var10.itemId].getRenderType()))
+        if (var10.itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[var10.itemId].getRenderType()))
         {
             GLManager.GL.Rotate(var12, 0.0F, 1.0F, 0.0F);
             loadTexture("/terrain.png");
             float var28 = 0.25F;
-            if (!Block.Blocks[var10.itemId].isFullCube() && var10.itemId != Block.Slab.id && Block.Blocks[var10.itemId].getRenderType() != 16)
+            if (!Block.Blocks[var10.itemId].isFullCube() && var10.itemId != Block.Slab.id
+                && Block.Blocks[var10.itemId].getRenderType() != BlockRendererType.PistonBase)
             {
                 var28 = 0.5F;
             }
@@ -75,7 +74,7 @@ public class ItemRenderer : EntityRenderer
                     GLManager.GL.Translate(var16, var17, var18);
                 }
 
-                renderBlocks.renderBlockOnInventory(Block.Blocks[var10.itemId], var10.getDamage(), var1.getBrightnessAtEyes(var9));
+                BlockRenderer.RenderBlockOnInventory(Block.Blocks[var10.itemId], var10.getDamage(), var1.getBrightnessAtEyes(var9), Tessellator.instance);
                 GLManager.GL.PopMatrix();
             }
         }
@@ -144,7 +143,7 @@ public class ItemRenderer : EntityRenderer
     public void drawItemIntoGui(TextRenderer var1, TextureManager var2, int var3, int var4, int var5, int var6, int var7)
     {
         float var11;
-        if (var3 < 256 && BlockRenderer.isSideLit(Block.Blocks[var3].getRenderType()))
+        if (var3 < 256 && BlockRenderer.IsSideLit(Block.Blocks[var3].getRenderType()))
         {
             var2.BindTexture(var2.GetTextureId("/terrain.png"));
             Block var14 = Block.Blocks[var3];
@@ -165,9 +164,7 @@ public class ItemRenderer : EntityRenderer
             }
 
             GLManager.GL.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);
-            renderBlocks.renderFromInside = useCustomDisplayColor;
-            renderBlocks.renderBlockOnInventory(var14, var4, 1.0F);
-            renderBlocks.renderFromInside = true;
+            BlockRenderer.RenderBlockOnInventory(var14, var4, 1.0F, Tessellator.instance);
             GLManager.GL.PopMatrix();
         }
         else if (var5 >= 0)

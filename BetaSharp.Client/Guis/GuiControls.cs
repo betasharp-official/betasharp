@@ -51,7 +51,7 @@ public class GuiControls : GuiScreen
         switch (button.Id)
         {
             case ButtonDone:
-                mc.displayGuiScreen(_parentScreen);
+                Game.displayGuiScreen(_parentScreen);
                 break;
             case InvertMouseId:
                 _options.InvertMouseOption.Toggle();

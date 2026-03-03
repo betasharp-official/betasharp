@@ -84,7 +84,7 @@ internal class BlockRedstoneTorch : BlockTorch
 
     }
 
-    public override bool isPoweringSide(BlockView blockView, int x, int y, int z, int side)
+    public override bool isPoweringSide(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
         if (!_lit)
         {
@@ -92,7 +92,7 @@ internal class BlockRedstoneTorch : BlockTorch
         }
         else
         {
-            int meta = blockView.getBlockMeta(x, y, z);
+            int meta = iBlockAccess.getBlockMeta(x, y, z);
             return (meta != 5 || side != 1) && ((meta != 3 || side != 3) && ((meta != 4 || side != 2) && ((meta != 1 || side != 5) && (meta != 2 || side != 4))));
         }
     }

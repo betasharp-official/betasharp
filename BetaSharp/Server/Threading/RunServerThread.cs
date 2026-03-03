@@ -2,9 +2,9 @@ namespace BetaSharp.Server.Threading;
 
 public class RunServerThread : java.lang.Thread
 {
-    private readonly MinecraftServer mcServer;
+    private readonly BetaSharpServer mcServer;
 
-    public RunServerThread(MinecraftServer server, string name) : base(name)
+    public RunServerThread(BetaSharpServer server, string name) : base(name)
     {
         mcServer = server;
     }

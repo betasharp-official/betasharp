@@ -22,7 +22,7 @@ public class GuiConflictWarning : GuiScreen
         {
             if (btt.Id == 0)
             {
-                mc.displayGuiScreen(new GuiMainMenu());
+                Game.displayGuiScreen(new GuiMainMenu());
             }
         }
     }
@@ -31,10 +31,10 @@ public class GuiConflictWarning : GuiScreen
     {
         DrawDefaultBackground();
         DrawCenteredString(FontRenderer, "Level save conflict", Width / 2, Height / 4 - 60 + 20, Color.White);
-        DrawString(FontRenderer, "Minecraft detected a conflict in the level save data.", Width / 2 - 140, Height / 4 - 60 + 60 + 0, Color.GrayA0);
-        DrawString(FontRenderer, "This could be caused by two copies of the game", Width / 2 - 140, Height / 4 - 60 + 60 + 18, Color.GrayA0);
+        DrawString(FontRenderer, "BetaSharp detected a conflict in the level save data.", Width / 2 - 140, Height / 4 - 60 + 60 + 0, Color.GrayA0);
+        DrawString(FontRenderer, "This could be caused by two copies of the Game", Width / 2 - 140, Height / 4 - 60 + 60 + 18, Color.GrayA0);
         DrawString(FontRenderer, "accessing the same level.", Width / 2 - 140, Height / 4 - 60 + 60 + 27, Color.GrayA0);
-        DrawString(FontRenderer, "To prevent level corruption, the current game has quit.", Width / 2 - 140, Height / 4 - 60 + 60 + 45, Color.GrayA0);
+        DrawString(FontRenderer, "To prevent level corruption, the current Game has quit.", Width / 2 - 140, Height / 4 - 60 + 60 + 45, Color.GrayA0);
         base.Render(mouseX, mouseY, parcialTick);
     }
 }

@@ -27,7 +27,7 @@ public abstract class GuiContainer : GuiScreen
     public override void InitGui()
     {
         base.InitGui();
-        mc.player.currentScreenHandler = InventorySlots;
+        Game.player.currentScreenHandler = InventorySlots;
     }
 
     public override void Render(int mouseX, int mouseY, float partialTicks)
@@ -70,7 +70,7 @@ public abstract class GuiContainer : GuiScreen
             }
         }
 
-        InventoryPlayer playerInv = mc.player.inventory;
+        InventoryPlayer playerInv = Game.player.inventory;
 
         GLManager.GL.Disable(GLEnum.RescaleNormal);
         Lighting.turnOff();
@@ -104,8 +104,8 @@ public abstract class GuiContainer : GuiScreen
             GLManager.GL.Enable(GLEnum.DepthTest);
 
             GLManager.GL.Translate(0.0F, 0.0F, 32.0F);
-            _itemRenderer.renderItemIntoGUI(FontRenderer, mc.textureManager, playerInv.getCursorStack(), mouseX - guiLeft - 8, mouseY - guiTop - 8);
-            _itemRenderer.renderItemOverlayIntoGUI(FontRenderer, mc.textureManager, playerInv.getCursorStack(), mouseX - guiLeft - 8, mouseY - guiTop - 8);
+            _itemRenderer.renderItemIntoGUI(FontRenderer, Game.textureManager, playerInv.getCursorStack(), mouseX - guiLeft - 8, mouseY - guiTop - 8);
+            _itemRenderer.renderItemOverlayIntoGUI(FontRenderer, Game.textureManager, playerInv.getCursorStack(), mouseX - guiLeft - 8, mouseY - guiTop - 8);
 
             Lighting.turnOff();
             GLManager.GL.Disable(GLEnum.Lighting);
@@ -135,15 +135,15 @@ public abstract class GuiContainer : GuiScreen
             if (iconIdx >= 0)
             {
                 GLManager.GL.Disable(GLEnum.Lighting);
-                mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/gui/items.png"));
+                Game.textureManager.BindTexture(Game.textureManager.GetTextureId("/gui/items.png"));
                 DrawTexturedModalRect(x, y, iconIdx % 16 * 16, iconIdx / 16 * 16, 16, 16);
                 GLManager.GL.Enable(GLEnum.Lighting);
                 return;
             }
         }
 
-        _itemRenderer.renderItemIntoGUI(FontRenderer, mc.textureManager, item, x, y);
-        _itemRenderer.renderItemOverlayIntoGUI(FontRenderer, mc.textureManager, item, x, y);
+        _itemRenderer.renderItemIntoGUI(FontRenderer, Game.textureManager, item, x, y);
+        _itemRenderer.renderItemOverlayIntoGUI(FontRenderer, Game.textureManager, item, x, y);
     }
 
     private Slot GetSlotAtPosition(int mouseX, int mouseY)
@@ -190,7 +190,7 @@ public abstract class GuiContainer : GuiScreen
             if (slotId != -1)
             {
                 bool isShiftClick = slotId != -999 && (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT));
-                mc.playerController.func_27174_a(InventorySlots.SyncId, slotId, button, isShiftClick, mc.player);
+                Game.playerController.func_27174_a(InventorySlots.SyncId, slotId, button, isShiftClick, Game.player);
             }
         }
 
@@ -200,18 +200,18 @@ public abstract class GuiContainer : GuiScreen
 
     protected override void KeyTyped(char eventChar, int eventKey)
     {
-        if (eventKey == Keyboard.KEY_ESCAPE || eventKey == mc.options.KeyBindInventory.keyCode)
+        if (eventKey == Keyboard.KEY_ESCAPE || eventKey == Game.options.KeyBindInventory.keyCode)
         {
-            mc.player.closeHandledScreen();
+            Game.player.closeHandledScreen();
         }
 
     }
 
     public override void OnGuiClosed()
     {
-        if (mc.player != null)
+        if (Game.player != null)
         {
-            mc.playerController.func_20086_a(InventorySlots.SyncId, mc.player);
+            Game.playerController.func_20086_a(InventorySlots.SyncId, Game.player);
         }
     }
 
@@ -219,9 +219,9 @@ public abstract class GuiContainer : GuiScreen
     public override void UpdateScreen()
     {
         base.UpdateScreen();
-        if (!mc.player.isAlive() || mc.player.dead)
+        if (!Game.player.isAlive() || Game.player.dead)
         {
-            mc.player.closeHandledScreen();
+            Game.player.closeHandledScreen();
         }
 
     }

@@ -49,9 +49,9 @@ internal class BlockFire : Block
         return false;
     }
 
-    public override int getRenderType()
+    public override BlockRendererType getRenderType()
     {
-        return 3;
+        return BlockRendererType.Fire;
     }
 
     public override int getDroppedItemCount(JavaRandom random)
@@ -207,9 +207,9 @@ internal class BlockFire : Block
         return false;
     }
 
-    public override bool isFlammable(BlockView blockView, int x, int y, int z)
+    public override bool isFlammable(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        return _burnChances[blockView.getBlockId(x, y, z)] > 0;
+        return _burnChances[iBlockAccess.getBlockId(x, y, z)] > 0;
     }
 
     public int getBurnChance(World world, int x, int y, int z, int currentChance)

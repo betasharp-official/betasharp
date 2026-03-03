@@ -16,13 +16,13 @@ internal class ChunkMap
     private readonly Dictionary<long, TrackedChunk> chunkMapping = new();
     private readonly List<TrackedChunk> chunksToUpdate = [];
     public readonly ChunkLoadingQueue loadQueue;
-    private MinecraftServer server;
+    private BetaSharpServer server;
     private readonly int dimensionId;
     private int viewDistance;
     private readonly int[][] DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
     private readonly ILogger<ChunkMap> _logger = Log.Instance.For<ChunkMap>();
 
-    public ChunkMap(MinecraftServer server, int dimensionId, int viewRadius)
+    public ChunkMap(BetaSharpServer server, int dimensionId, int viewRadius)
     {
         if (viewRadius > 32)
         {

@@ -54,8 +54,8 @@ public class GuiAudio : GuiScreen
 
             if (btn.Id == 200)
             {
-                mc.options.SaveOptions();
-                mc.displayGuiScreen(_parentScreen);
+                Game.options.SaveOptions();
+                Game.displayGuiScreen(_parentScreen);
             }
         }
     }

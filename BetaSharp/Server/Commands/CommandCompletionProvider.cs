@@ -7,7 +7,7 @@ internal static class CommandCompletionProvider
     /// <summary>
     /// Get tab completions for command arguments
     /// </summary>
-    public static List<string> GetCompletions(string commandName, int argIndex, string currentArgPrefix, MinecraftServer server)
+    public static List<string> GetCompletions(string commandName, int argIndex, string currentArgPrefix, BetaSharpServer server)
     {
         // Normalize command name
         commandName = commandName.ToLower().Substring(1); // Remove leading "/"
@@ -28,7 +28,7 @@ internal static class CommandCompletionProvider
             .ToList();
     }
 
-    private static List<string> GetGiveCompletions(int argIndex, string currentArgPrefix, MinecraftServer server)
+    private static List<string> GetGiveCompletions(int argIndex, string currentArgPrefix, BetaSharpServer server)
     {
         return argIndex switch
         {
@@ -39,7 +39,7 @@ internal static class CommandCompletionProvider
         };
     }
 
-    private static List<string> GetTeleportCompletions(int argIndex, string currentArgPrefix, MinecraftServer server)
+    private static List<string> GetTeleportCompletions(int argIndex, string currentArgPrefix, BetaSharpServer server)
     {
         return argIndex switch
         {
@@ -48,13 +48,13 @@ internal static class CommandCompletionProvider
         };
     }
 
-    private static List<string> GetSayCompletions(int argIndex, string currentArgPrefix, MinecraftServer server)
+    private static List<string> GetSayCompletions(int argIndex, string currentArgPrefix, BetaSharpServer server)
     {
         // /say doesn't really have meaningful completions
         return [];
     }
 
-    private static List<string> GetTellCompletions(int argIndex, string currentArgPrefix, MinecraftServer server)
+    private static List<string> GetTellCompletions(int argIndex, string currentArgPrefix, BetaSharpServer server)
     {
         return argIndex switch
         {
@@ -63,7 +63,7 @@ internal static class CommandCompletionProvider
         };
     }
 
-    private static List<string> GetPlayerCompletions(string prefix, MinecraftServer server)
+    private static List<string> GetPlayerCompletions(string prefix, BetaSharpServer server)
     {
         if (server?.playerManager?.players == null)
         {

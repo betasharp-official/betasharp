@@ -17,9 +17,9 @@ public class BlockLeavesBase : Block
         return false;
     }
 
-    public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
+    public override bool isSideVisible(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
-        int var6 = blockView.getBlockId(x, y, z);
-        return !graphicsLevel && var6 == id ? false : base.isSideVisible(blockView, x, y, z, side);
+        int var6 = iBlockAccess.getBlockId(x, y, z);
+        return !graphicsLevel && var6 == id ? false : base.isSideVisible(iBlockAccess, x, y, z, side);
     }
 }

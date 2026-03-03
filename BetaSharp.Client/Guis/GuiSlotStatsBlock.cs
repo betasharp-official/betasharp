@@ -14,12 +14,12 @@ public class GuiSlotStatsBlock : GuiSlotStats<StatCrafting, StatCrafting>
         ParentStatsGui = parent;
         StatSorter = new SorterStatsBlock(this, parent);
 
-        Stats = BetaSharp.Stats.Stats.BlocksMinedStats
+        Stats = global::BetaSharp.Stats.Stats.BlocksMinedStats
             .OfType<StatCrafting>()
             .Where(stat =>
                 parent.statFileWriter.GetStatValue(stat) > 0 ||
-                (BetaSharp.Stats.Stats.Used[stat.ItemId] is StatCrafting used && parent.statFileWriter.GetStatValue(used) > 0) ||
-                (BetaSharp.Stats.Stats.Crafted[stat.ItemId] is StatCrafting crafted && parent.statFileWriter.GetStatValue(crafted) > 0))
+                (global::BetaSharp.Stats.Stats.Used[stat.ItemId] is StatCrafting used && parent.statFileWriter.GetStatValue(used) > 0) ||
+                (global::BetaSharp.Stats.Stats.Crafted[stat.ItemId] is StatCrafting crafted && parent.statFileWriter.GetStatValue(crafted) > 0))
             .ToList();
     }
 
@@ -45,8 +45,8 @@ public class GuiSlotStatsBlock : GuiSlotStats<StatCrafting, StatCrafting>
         ParentStatsGui.drawItemSlot(x + 40, y, id);
 
         bool isBright = index % 2 == 0;
-        DrawStatValue(BetaSharp.Stats.Stats.Crafted[id] as StatCrafting, x + 115, y, isBright);
-        DrawStatValue(BetaSharp.Stats.Stats.Used[id] as StatCrafting, x + 165, y, isBright);
+        DrawStatValue(global::BetaSharp.Stats.Stats.Crafted[id] as StatCrafting, x + 115, y, isBright);
+        DrawStatValue(global::BetaSharp.Stats.Stats.Used[id] as StatCrafting, x + 165, y, isBright);
         DrawStatValue(stat, x + 215, y, isBright);
     }
 

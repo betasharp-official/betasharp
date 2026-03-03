@@ -10,7 +10,7 @@ internal class LavaSprite() : Rendering.Core.Textures.DynamicTexture(Block.Flowi
     private float[] _current = new float[256];
     private float[] _next = new float[256];
 
-    public override void Setup(Minecraft mc) => TryLoadCustomTexture(mc, "custom_lava_still.png");
+    public override void Setup(BetaSharp game) => TryLoadCustomTexture(game, "custom_lava_still.png");
 
     public override void tick()
     {

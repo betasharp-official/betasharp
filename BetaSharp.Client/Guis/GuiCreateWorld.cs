@@ -68,7 +68,7 @@ public class GuiCreateWorld : GuiScreen
             _folderName = "World";
         }
 
-        _folderName = GenerateUnusedFolderName(mc.getSaveLoader(), _folderName);
+        _folderName = GenerateUnusedFolderName(Game.getSaveLoader(), _folderName);
     }
 
     public static string GenerateUnusedFolderName(IWorldStorageSource worldStorage, string baseFolderName)
@@ -93,7 +93,7 @@ public class GuiCreateWorld : GuiScreen
             switch (button.Id)
             {
                 case ButtonCancel:
-                    mc.displayGuiScreen(_parentScreen);
+                    Game.displayGuiScreen(_parentScreen);
                     break;
                 case ButtonCreate:
                     {
@@ -127,9 +127,9 @@ public class GuiCreateWorld : GuiScreen
                             }
                         }
 
-                        mc.statFileWriter.ReadStat(Stats.Stats.CreateWorldStat, 1);
-                        mc.playerController = new PlayerControllerSP(mc);
-                        mc.startWorld(_folderName, _textboxWorldName.GetText(), worldSeed);
+                        Game.statFileWriter.ReadStat(Stats.Stats.CreateWorldStat, 1);
+                        Game.playerController = new PlayerControllerSP(Game);
+                        Game.startWorld(_folderName, _textboxWorldName.GetText(), worldSeed);
                         break;
                     }
             }

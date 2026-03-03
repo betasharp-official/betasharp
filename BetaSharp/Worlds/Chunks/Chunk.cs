@@ -484,7 +484,7 @@ public class Chunk
         Loaded = true;
         World.processBlockUpdates(BlockEntities.Values);
 
-        foreach (var list in Entities)
+        foreach (List<Entity> list in Entities)
         {
             World.addEntities(list);
         }
@@ -494,7 +494,7 @@ public class Chunk
     {
         Loaded = false;
 
-        foreach (var var2 in BlockEntities.Values)
+        foreach (BlockEntity var2 in BlockEntities.Values)
         {
             var2.markRemoved();
         }
@@ -518,7 +518,7 @@ public class Chunk
 
         for (int i = minSlice; i <= maxSlice; ++i)
         {
-            foreach (var entity in Entities[i])
+            foreach (Entity entity in Entities[i])
             {
                 if (entity != except && entity.boundingBox.Intersects(box))
                 {
@@ -538,7 +538,7 @@ public class Chunk
 
         for (int i = minSlice; i <= maxSlice; ++i)
         {
-            foreach (var entity in Entities[i])
+            foreach (Entity entity in Entities[i])
             {
                 if (entity is T typedEntity && entity.boundingBox.Intersects(box))
                 {

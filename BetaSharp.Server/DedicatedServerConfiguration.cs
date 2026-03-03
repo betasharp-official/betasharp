@@ -8,7 +8,7 @@ namespace BetaSharp.Server;
 
 internal class DedicatedServerConfiguration : IServerConfiguration
 {
-    public static Logger logger = Logger.getLogger("Minecraft");
+    public static Logger logger = Logger.getLogger("BetaSharp");
     private readonly Properties properties = new();
     private readonly java.io.File propertiesFile;
 
@@ -49,7 +49,7 @@ internal class DedicatedServerConfiguration : IServerConfiguration
     {
         try
         {
-            properties.store(new FileOutputStream(propertiesFile), "Minecraft server properties");
+            properties.store(new FileOutputStream(propertiesFile), "BetaSharp server properties");
         }
         catch (Exception ex)
         {

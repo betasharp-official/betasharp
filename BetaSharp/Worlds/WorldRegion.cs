@@ -6,7 +6,7 @@ using BetaSharp.Worlds.Chunks;
 
 namespace BetaSharp.Worlds;
 
-internal class WorldRegion : BlockView
+internal class WorldRegion : IBlockAccess
 {
     private readonly int _chunkX;
     private readonly int _chunkZ;

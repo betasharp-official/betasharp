@@ -17,11 +17,11 @@ public class BlockPortal : BlockBreakable
         return null;
     }
 
-    public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
+    public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
         float thickness;
         float halfExtent;
-        if (blockView.getBlockId(x - 1, y, z) != id && blockView.getBlockId(x + 1, y, z) != id)
+        if (iBlockAccess.getBlockId(x - 1, y, z) != id && iBlockAccess.getBlockId(x + 1, y, z) != id)
         {
             thickness = 2.0F / 16.0F;
             halfExtent = 0.5F;
@@ -158,18 +158,18 @@ public class BlockPortal : BlockBreakable
         }
     }
 
-    public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
+    public override bool isSideVisible(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
-        if (blockView.getBlockId(x, y, z) == id)
+        if (iBlockAccess.getBlockId(x, y, z) == id)
         {
             return false;
         }
         else
         {
-            bool edgeWest = blockView.getBlockId(x - 1, y, z) == id && blockView.getBlockId(x - 2, y, z) != id;
-            bool edgeEast = blockView.getBlockId(x + 1, y, z) == id && blockView.getBlockId(x + 2, y, z) != id;
-            bool edgeNorth = blockView.getBlockId(x, y, z - 1) == id && blockView.getBlockId(x, y, z - 2) != id;
-            bool edgeSouth = blockView.getBlockId(x, y, z + 1) == id && blockView.getBlockId(x, y, z + 2) != id;
+            bool edgeWest = iBlockAccess.getBlockId(x - 1, y, z) == id && iBlockAccess.getBlockId(x - 2, y, z) != id;
+            bool edgeEast = iBlockAccess.getBlockId(x + 1, y, z) == id && iBlockAccess.getBlockId(x + 2, y, z) != id;
+            bool edgeNorth = iBlockAccess.getBlockId(x, y, z - 1) == id && iBlockAccess.getBlockId(x, y, z - 2) != id;
+            bool edgeSouth = iBlockAccess.getBlockId(x, y, z + 1) == id && iBlockAccess.getBlockId(x, y, z + 2) != id;
             bool extendsInX = edgeWest || edgeEast;
             bool extendsInZ = edgeNorth || edgeSouth;
             return extendsInX && side == 4 ? true : (extendsInX && side == 5 ? true : (extendsInZ && side == 2 ? true : extendsInZ && side == 3));

@@ -23,9 +23,9 @@ public class BlockLeaves : BlockLeavesBase
         return (meta & 1) == 1 ? FoliageColors.getSpruceColor() : ((meta & 2) == 2 ? FoliageColors.getBirchColor() : FoliageColors.getDefaultColor());
     }
 
-    public override int getColorMultiplier(BlockView blockView, int x, int y, int z)
+    public override int getColorMultiplier(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        int meta = blockView.getBlockMeta(x, y, z);
+        int meta = iBlockAccess.getBlockMeta(x, y, z);
         if ((meta & 1) == 1)
         {
             return FoliageColors.getSpruceColor();
@@ -36,9 +36,9 @@ public class BlockLeaves : BlockLeavesBase
         }
         else
         {
-            blockView.getBiomeSource().GetBiomesInArea(x, z, 1, 1);
-            double temperature = blockView.getBiomeSource().TemperatureMap[0];
-            double downfall = blockView.getBiomeSource().DownfallMap[0];
+            iBlockAccess.getBiomeSource().GetBiomesInArea(x, z, 1, 1);
+            double temperature = iBlockAccess.getBiomeSource().TemperatureMap[0];
+            double downfall = iBlockAccess.getBiomeSource().DownfallMap[0];
             return FoliageColors.getFoliageColor(temperature, downfall);
         }
     }

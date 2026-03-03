@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Threading;
 
-public class ThreadConnectToServer(GuiConnecting connectingGui, Minecraft mc, string hostName, int port) : java.lang.Thread
+public class ThreadConnectToServer(GuiConnecting connectingGui, BetaSharp game, string hostName, int port) : java.lang.Thread
 {
     private readonly ILogger<ThreadConnectToServer> _logger = Log.Instance.For<ThreadConnectToServer>();
 
@@ -14,14 +14,14 @@ public class ThreadConnectToServer(GuiConnecting connectingGui, Minecraft mc, st
     {
         try
         {
-            GuiConnecting.setNetClientHandler(connectingGui, new ClientNetworkHandler(mc, hostName, port));
+            GuiConnecting.setNetClientHandler(connectingGui, new ClientNetworkHandler(game, hostName, port));
 
             if (GuiConnecting.isCancelled(connectingGui))
             {
                 return;
             }
 
-            GuiConnecting.getNetClientHandler(connectingGui).addToSendQueue(new HandshakePacket(mc.session.username));
+            GuiConnecting.getNetClientHandler(connectingGui).addToSendQueue(new HandshakePacket(game.session.username));
         }
         catch (UnknownHostException)
         {
@@ -30,7 +30,7 @@ public class ThreadConnectToServer(GuiConnecting connectingGui, Minecraft mc, st
                 return;
             }
 
-            mc.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", "Unknown host \'" + hostName + "\'"));
+            game.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", "Unknown host \'" + hostName + "\'"));
         }
         catch (ConnectException ex)
         {
@@ -39,7 +39,7 @@ public class ThreadConnectToServer(GuiConnecting connectingGui, Minecraft mc, st
                 return;
             }
 
-            mc.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", ex.getMessage()));
+            game.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", ex.getMessage()));
         }
         catch (Exception e)
         {
@@ -49,7 +49,7 @@ public class ThreadConnectToServer(GuiConnecting connectingGui, Minecraft mc, st
             }
 
             _logger.LogError(e, e.Message);
-            mc.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", e.ToString()));
+            game.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", e.ToString()));
         }
     }
 }

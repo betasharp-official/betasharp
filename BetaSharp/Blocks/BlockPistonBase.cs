@@ -23,15 +23,29 @@ public class BlockPistonBase : Block
         return sticky ? 106 : 107;
     }
 
+    public override int getTexture(int side)
+    {
+        return side switch
+        {
+            1 => getTopTexture(),
+            0 => 109,
+            _ => 108
+        };
+    }
+
     public override int getTexture(int side, int meta)
     {
         int var3 = getFacing(meta);
-        return var3 > 5 ? textureId : (side == var3 ? (!isExtended(meta) && BoundingBox.MinX <= 0.0D && BoundingBox.MinY <= 0.0D && BoundingBox.MinZ <= 0.0D && BoundingBox.MaxX >= 1.0D && BoundingBox.MaxY >= 1.0D && BoundingBox.MaxZ >= 1.0D ? textureId : 110) : (side == PistonConstants.field_31057_a[var3] ? 109 : 108));
+        return var3 > 5
+            ? textureId
+            : (side == var3
+                ? (!isExtended(meta) && BoundingBox.MinX <= 0.0D && BoundingBox.MinY <= 0.0D && BoundingBox.MinZ <= 0.0D && BoundingBox.MaxX >= 1.0D && BoundingBox.MaxY >= 1.0D && BoundingBox.MaxZ >= 1.0D ? textureId : 110)
+                : (side == PistonConstants.field_31057_a[var3] ? 109 : 108));
     }
 
-    public override int getRenderType()
+    public override BlockRendererType getRenderType()
     {
-        return 16;
+        return BlockRendererType.PistonBase;
     }
 
     public override bool isOpaque()
@@ -52,7 +66,6 @@ public class BlockPistonBase : Block
         {
             checkExtended(world, x, y, z);
         }
-
     }
 
     public override void neighborUpdate(World world, int x, int y, int z, int id)
@@ -61,7 +74,6 @@ public class BlockPistonBase : Block
         {
             checkExtended(world, x, y, z);
         }
-
     }
 
     public override void onPlaced(World world, int x, int y, int z)
@@ -70,7 +82,6 @@ public class BlockPistonBase : Block
         {
             checkExtended(world, x, y, z);
         }
-
     }
 
     private void checkExtended(World world, int x, int y, int z)
@@ -93,13 +104,30 @@ public class BlockPistonBase : Block
                 world.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, var6);
                 world.playNoteBlockActionAt(x, y, z, 1, var6);
             }
-
         }
     }
 
     private bool shouldExtend(World world, int x, int y, int z, int facing)
     {
-        return facing != 0 && world.isPoweringSide(x, y - 1, z, 0) ? true : (facing != 1 && world.isPoweringSide(x, y + 1, z, 1) ? true : (facing != 2 && world.isPoweringSide(x, y, z - 1, 2) ? true : (facing != 3 && world.isPoweringSide(x, y, z + 1, 3) ? true : (facing != 5 && world.isPoweringSide(x + 1, y, z, 5) ? true : (facing != 4 && world.isPoweringSide(x - 1, y, z, 4) ? true : (world.isPoweringSide(x, y, z, 0) ? true : (world.isPoweringSide(x, y + 2, z, 1) ? true : (world.isPoweringSide(x, y + 1, z - 1, 2) ? true : (world.isPoweringSide(x, y + 1, z + 1, 3) ? true : (world.isPoweringSide(x - 1, y + 1, z, 4) ? true : world.isPoweringSide(x + 1, y + 1, z, 5)))))))))));
+        return facing != 0 && world.isPoweringSide(x, y - 1, z, 0)
+            ? true
+            : (facing != 1 && world.isPoweringSide(x, y + 1, z, 1)
+                ? true
+                : (facing != 2 && world.isPoweringSide(x, y, z - 1, 2)
+                    ? true
+                    : (facing != 3 && world.isPoweringSide(x, y, z + 1, 3)
+                        ? true
+                        : (facing != 5 && world.isPoweringSide(x + 1, y, z, 5)
+                            ? true
+                            : (facing != 4 && world.isPoweringSide(x - 1, y, z, 4)
+                                ? true
+                                : (world.isPoweringSide(x, y, z, 0)
+                                    ? true
+                                    : (world.isPoweringSide(x, y + 2, z, 1)
+                                        ? true
+                                        : (world.isPoweringSide(x, y + 1, z - 1, 2)
+                                            ? true
+                                            : (world.isPoweringSide(x, y + 1, z + 1, 3) ? true : (world.isPoweringSide(x - 1, y + 1, z, 4) ? true : world.isPoweringSide(x + 1, y + 1, z, 5)))))))))));
     }
 
     public override void onBlockAction(World world, int x, int y, int z, int data1, int data2)
@@ -181,9 +209,9 @@ public class BlockPistonBase : Block
         deaf = false;
     }
 
-    public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
+    public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        int var5 = blockView.getBlockMeta(x, y, z);
+        int var5 = iBlockAccess.getBlockMeta(x, y, z);
         if (isExtended(var5))
         {
             switch (getFacing(var5))
@@ -212,7 +240,6 @@ public class BlockPistonBase : Block
         {
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         }
-
     }
 
     public override void setupRenderBoundingBox()

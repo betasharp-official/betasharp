@@ -6,7 +6,7 @@ namespace BetaSharp.Server.Commands;
 
 internal static class WorldCommands
 {
-    public static void Time(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void Time(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (args.Length < 1)
         {
@@ -59,7 +59,7 @@ internal static class WorldCommands
         output.SendMessage("Named values: sunrise, morning, noon, sunset, night, midnight");
     }
 
-    public static void Weather(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void Weather(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (args.Length < 1) { output.SendMessage("Usage: weather <clear|rain|storm>"); return; }
 
@@ -91,7 +91,7 @@ internal static class WorldCommands
         output.SendMessage($"Weather set to {weather}.");
     }
 
-    public static void Summon(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void Summon(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (args.Length < 1)
         {
@@ -140,7 +140,7 @@ internal static class WorldCommands
         }
     }
 
-    public static void KillAll(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void KillAll(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         string filter = args.Length > 0 ? args[0].ToLower() : "all";
         int count = 0;
@@ -200,7 +200,7 @@ internal static class WorldCommands
         return false;
     }
 
-    public static void GameRule(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void GameRule(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         ServerPlayerEntity player = server.playerManager.getPlayer(senderName);
         ServerWorld world = player != null ? server.getWorld(player.dimensionId) : server.worlds[0];

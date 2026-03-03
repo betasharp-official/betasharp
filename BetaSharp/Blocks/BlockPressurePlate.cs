@@ -148,9 +148,9 @@ internal class BlockPressurePlate : Block
         base.onBreak(world, x, y, z);
     }
 
-    public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
+    public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        bool isPressed = blockView.getBlockMeta(x, y, z) == 1;
+        bool isPressed = iBlockAccess.getBlockMeta(x, y, z) == 1;
         float edgeInset = 1.0F / 16.0F;
         if (isPressed)
         {
@@ -163,9 +163,9 @@ internal class BlockPressurePlate : Block
 
     }
 
-    public override bool isPoweringSide(BlockView blockView, int x, int y, int z, int side)
+    public override bool isPoweringSide(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
-        return blockView.getBlockMeta(x, y, z) > 0;
+        return iBlockAccess.getBlockMeta(x, y, z) > 0;
     }
 
     public override bool isStrongPoweringSide(World world, int x, int y, int z, int side)

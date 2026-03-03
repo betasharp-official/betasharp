@@ -9,7 +9,7 @@ namespace BetaSharp.Blocks;
 public class BlockRedstoneRepeater : Block
 {
 
-    public static readonly double[] RENDER_OFFSET = [-0.0625D, 1.0D / 16.0D, 0.1875D, 0.3125D];
+    public static readonly float[] RenderOffset = [-0.0625f, 1.0f / 16.0f, 0.1875f, 0.3125f];
     private static readonly int[] DELAY = [1, 2, 3, 4];
     private readonly bool lit;
 
@@ -59,14 +59,14 @@ public class BlockRedstoneRepeater : Block
         return side == 0 ? (lit ? 99 : 115) : (side == 1 ? (lit ? 147 : 131) : 5);
     }
 
-    public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
+    public override bool isSideVisible(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
         return side != 0 && side != 1;
     }
 
-    public override int getRenderType()
+    public override BlockRendererType getRenderType()
     {
-        return 15;
+        return BlockRendererType.Repeater;
     }
 
     public override int getTexture(int side)
@@ -79,7 +79,7 @@ public class BlockRedstoneRepeater : Block
         return isPoweringSide(world, x, y, z, side);
     }
 
-    public override bool isPoweringSide(BlockView blockView, int x, int y, int z, int side)
+    public override bool isPoweringSide(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
         if (!lit)
         {
@@ -87,7 +87,7 @@ public class BlockRedstoneRepeater : Block
         }
         else
         {
-            int facing = blockView.getBlockMeta(x, y, z) & 3;
+            int facing = iBlockAccess.getBlockMeta(x, y, z) & 3;
             return facing == 0 && side == 3 ? true : (facing == 1 && side == 4 ? true : (facing == 2 && side == 2 ? true : facing == 3 && side == 5));
         }
     }
@@ -214,16 +214,16 @@ public class BlockRedstoneRepeater : Block
                 switch (meta & 3)
                 {
                     case 0:
-                        offsetY = RENDER_OFFSET[delayIndex];
+                        offsetY = RenderOffset[delayIndex];
                         break;
                     case 1:
-                        offsetX = -RENDER_OFFSET[delayIndex];
+                        offsetX = -RenderOffset[delayIndex];
                         break;
                     case 2:
-                        offsetY = -RENDER_OFFSET[delayIndex];
+                        offsetY = -RenderOffset[delayIndex];
                         break;
                     case 3:
-                        offsetX = RENDER_OFFSET[delayIndex];
+                        offsetX = RenderOffset[delayIndex];
                         break;
                 }
             }

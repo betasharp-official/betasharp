@@ -7,6 +7,7 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Processing;
 using static BetaSharp.Client.Rendering.Core.Textures.TextureAtlasMipmapGenerator;
 using Microsoft.Extensions.Logging;
+using System.Buffers;
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
 
@@ -18,16 +19,18 @@ public class TextureManager : IDisposable
     private readonly Dictionary<uint, (Image<Rgba32> Image, TextureHandle Handle)> _images = [];
     private readonly List<DynamicTexture> _dynamicTextures = [];
     private readonly Dictionary<string, int> _atlasTileSizes = [];
+    private TextureHandle? _terrainHandle;
+    private TextureHandle? _itemsHandle;
     private readonly GameOptions _gameOptions;
     private bool _clamp;
     private bool _blur;
     private readonly TexturePacks _texturePacks;
-    private readonly Minecraft _mc;
+    private readonly BetaSharp _game;
     private readonly Image<Rgba32> _missingTextureImage = new(256, 256);
 
-    public TextureManager(Minecraft mc, TexturePacks texturePacks, GameOptions options)
+    public TextureManager(BetaSharp game, TexturePacks texturePacks, GameOptions options)
     {
-        _mc = mc;
+        _game = game;
         _texturePacks = texturePacks;
         _gameOptions = options;
         _missingTextureImage.Mutate(ctx =>
@@ -254,8 +257,11 @@ public class TextureManager : IDisposable
     public void AddDynamicTexture(DynamicTexture t)
     {
         _dynamicTextures.Add(t);
-        t.Setup(_mc);
+        t.Setup(_game);
         t.tick();
+
+        _terrainHandle = null;
+        _itemsHandle = null;
     }
 
     public void Reload()
@@ -298,22 +304,29 @@ public class TextureManager : IDisposable
 
         foreach (DynamicTexture dynamicTexture in _dynamicTextures)
         {
-            dynamicTexture.Setup(_mc);
+            dynamicTexture.Setup(_game);
         }
+
+        _terrainHandle = null;
+        _itemsHandle = null;
     }
 
     public unsafe void Tick()
     {
+        _terrainHandle ??= _textures.FirstOrDefault(x => x.Key.EndsWith("/terrain.png")).Value
+                           ?? GetTextureId("/terrain.png");
+        _itemsHandle ??= _textures.FirstOrDefault(x => x.Key.EndsWith("/gui/items.png")).Value
+                         ?? GetTextureId("/gui/items.png");
+
         foreach (DynamicTexture texture in _dynamicTextures)
         {
             texture.tick();
 
-            string atlasPath = texture.Atlas == DynamicTexture.FxImage.Terrain ? "/terrain.png" : "/gui/items.png";
+            TextureHandle atlasHandle = texture.Atlas == DynamicTexture.FxImage.Terrain
+                ? _terrainHandle
+                : _itemsHandle;
 
-            TextureHandle atlasHandle = _textures.FirstOrDefault(x => x.Key.EndsWith(atlasPath)).Value;
-            atlasHandle ??= GetTextureId(atlasPath);
-
-            GLTexture? atlasTexture = atlasHandle.Texture;
+            GLTexture? atlasTexture = atlasHandle?.Texture;
             if (atlasTexture == null) continue;
 
             int targetTileSize = atlasTexture.Width / 16;
@@ -409,43 +422,61 @@ public class TextureManager : IDisposable
             int newSize = currentSize >> 1;
             if (newSize < 1) newSize = 1;
 
-            byte[] downsampled = new byte[newSize * newSize * 4];
+            byte[] downsampled = ArrayPool<byte>.Shared.Rent(newSize * newSize * 4);
 
-            if (currentSize > 1)
+            try
             {
-                for (int y = 0; y < newSize; y++)
+                if (currentSize > 1)
                 {
-                    for (int x = 0; x < newSize; x++)
+                    for (int y = 0; y < newSize; y++)
                     {
-                        int src0 = ((y * 2) * currentSize + (x * 2)) * 4;
-                        int src1 = ((y * 2) * currentSize + (x * 2 + 1)) * 4;
-                        int src2 = ((y * 2 + 1) * currentSize + (x * 2)) * 4;
-                        int src3 = ((y * 2 + 1) * currentSize + (x * 2 + 1)) * 4;
+                        for (int x = 0; x < newSize; x++)
+                        {
+                            int src0 = ((y * 2) * currentSize + (x * 2)) * 4;
+                            int src1 = ((y * 2) * currentSize + (x * 2 + 1)) * 4;
+                            int src2 = ((y * 2 + 1) * currentSize + (x * 2)) * 4;
+                            int src3 = ((y * 2 + 1) * currentSize + (x * 2 + 1)) * 4;
 
-                        int dst = (y * newSize + x) * 4;
+                            int dst = (y * newSize + x) * 4;
 
-                        downsampled[dst] = (byte)((currentData[src0] + currentData[src1] + currentData[src2] + currentData[src3]) >> 2);
-                        downsampled[dst + 1] = (byte)((currentData[src0 + 1] + currentData[src1 + 1] + currentData[src2 + 1] + currentData[src3 + 1]) >> 2);
-                        downsampled[dst + 2] = (byte)((currentData[src0 + 2] + currentData[src1 + 2] + currentData[src2 + 2] + currentData[src3 + 2]) >> 2);
-                        downsampled[dst + 3] = (byte)((currentData[src0 + 3] + currentData[src1 + 3] + currentData[src2 + 3] + currentData[src3 + 3]) >> 2);
+                            downsampled[dst] = (byte)((currentData[src0] + currentData[src1] + currentData[src2] + currentData[src3]) >> 2);
+                            downsampled[dst + 1] = (byte)((currentData[src0 + 1] + currentData[src1 + 1] + currentData[src2 + 1] + currentData[src3 + 1]) >> 2);
+                            downsampled[dst + 2] = (byte)((currentData[src0 + 2] + currentData[src1 + 2] + currentData[src2 + 2] + currentData[src3 + 2]) >> 2);
+                            downsampled[dst + 3] = (byte)((currentData[src0 + 3] + currentData[src1 + 3] + currentData[src2 + 3] + currentData[src3 + 3]) >> 2);
+                        }
                     }
                 }
+                else
+                {
+                    for (int i = 0; i < 4; i++) downsampled[i] = currentData[i];
+                }
+
+                int mipX = baseX >> mipLevel;
+                int mipY = baseY >> mipLevel;
+
+                fixed (byte* ptr = downsampled)
+                {
+                    texture.UploadSubImage(mipX, mipY, newSize, newSize, ptr, mipLevel, PixelFormat.Rgba);
+                }
+
+                if (mipLevel > 1)
+                {
+                    ArrayPool<byte>.Shared.Return(currentData);
+                }
+
+                currentData = downsampled;
+                currentSize = newSize;
             }
-            else
+            catch
             {
-                for (int i = 0; i < 4; i++) downsampled[i] = currentData[i];
+                ArrayPool<byte>.Shared.Return(downsampled);
+                throw;
             }
+        }
 
-            int mipX = baseX >> mipLevel;
-            int mipY = baseY >> mipLevel;
-
-            fixed (byte* ptr = downsampled)
-            {
-                texture.UploadSubImage(mipX, mipY, newSize, newSize, ptr, mipLevel, PixelFormat.Rgba);
-            }
-
-            currentData = downsampled;
-            currentSize = newSize;
+        if (currentData != tileData)
+        {
+            ArrayPool<byte>.Shared.Return(currentData);
         }
     }
 

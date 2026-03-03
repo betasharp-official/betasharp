@@ -4,7 +4,7 @@ namespace BetaSharp.Server.Commands;
 
 public static class DataCommands
 {
-    public static void Data(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void Data(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (args.Length < 2)
         {
@@ -37,7 +37,7 @@ public static class DataCommands
         }
     }
 
-    private static void DataGet(MinecraftServer server, ServerPlayerEntity player, string[] args, CommandOutput output)
+    private static void DataGet(BetaSharpServer server, ServerPlayerEntity player, string[] args, CommandOutput output)
     {
         // convert short to the full string.
         switch (args[1] = args[1].ToLower())

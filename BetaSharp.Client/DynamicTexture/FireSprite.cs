@@ -7,11 +7,11 @@ internal class FireSprite(int index) : Rendering.Core.Textures.DynamicTexture(Bl
     private float[] _current = new float[320];
     private float[] _next = new float[320];
 
-    public override void Setup(Minecraft mc)
+    public override void Setup(BetaSharp game)
     {
         Array.Clear(_current);
         Array.Clear(_next);
-        TryLoadCustomTexture(mc, index == 0 ? "custom_fire_e_w.png" : "custom_fire_n_s.png");
+        TryLoadCustomTexture(game, index == 0 ? "custom_fire_e_w.png" : "custom_fire_n_s.png");
     }
 
     public override void tick()

@@ -4,7 +4,7 @@ using BetaSharp.Worlds.Biomes.Source;
 
 namespace BetaSharp.Worlds;
 
-public interface BlockView
+public interface IBlockAccess
 {
     int getBlockId(int x, int y, int z);
 

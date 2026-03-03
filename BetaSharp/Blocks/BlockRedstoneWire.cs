@@ -35,12 +35,12 @@ public class BlockRedstoneWire : Block
         return false;
     }
 
-    public override int getRenderType()
+    public override BlockRendererType getRenderType()
     {
-        return 5;
+        return BlockRendererType.RedstoneWire;
     }
 
-    public override int getColorMultiplier(BlockView var1, int var2, int var3, int var4)
+    public override int getColorMultiplier(IBlockAccess var1, int var2, int var3, int var4)
     {
         return 8388608;
     }
@@ -368,7 +368,7 @@ public class BlockRedstoneWire : Block
         return !s_wiresProvidePower.Value ? false : isPoweringSide(var1, var2, var3, var4, var5);
     }
 
-    public override bool isPoweringSide(BlockView var1, int var2, int var3, int var4, int var5)
+    public override bool isPoweringSide(IBlockAccess var1, int var2, int var3, int var4, int var5)
     {
         if (!s_wiresProvidePower.Value)
         {
@@ -452,7 +452,7 @@ public class BlockRedstoneWire : Block
 
     }
 
-    public static bool isPowerProviderOrWire(BlockView var0, int var1, int var2, int var3, int var4)
+    public static bool isPowerProviderOrWire(IBlockAccess var0, int var1, int var2, int var3, int var4)
     {
         int var5 = var0.getBlockId(var1, var2, var3);
         if (var5 == Block.RedstoneWire.id)

@@ -51,9 +51,9 @@ public class BlockPistonExtension : Block
         return side == var3 ? (pistonHeadSprite >= 0 ? pistonHeadSprite : ((meta & 8) != 0 ? textureId - 1 : textureId)) : (side == PistonConstants.field_31057_a[var3] ? 107 : 108);
     }
 
-    public override int getRenderType()
+    public override BlockRendererType getRenderType()
     {
-        return 17;
+        return BlockRendererType.PistonExtension;
     }
 
     public override bool isOpaque()
@@ -127,9 +127,9 @@ public class BlockPistonExtension : Block
         setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
+    public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        int var5 = blockView.getBlockMeta(x, y, z);
+        int var5 = iBlockAccess.getBlockMeta(x, y, z);
         switch (getFacing(var5))
         {
             case 0:

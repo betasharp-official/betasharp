@@ -12,7 +12,7 @@ public class GuiAchievement : Gui
     private static readonly string AltLocationWarningText = "(Or logged in from another location)";
     private static readonly string PurchasePromptText = "Purchase at minecraft.net";
 
-    private readonly Minecraft _theGame;
+    private readonly BetaSharp _theGame;
     private int _achievementWindowWidth;
     private int _achievementWindowHeight;
     private string _achievementTitle;
@@ -22,9 +22,9 @@ public class GuiAchievement : Gui
     private readonly ItemRenderer _itemRender;
     private bool _isAchievementInformation;
 
-    public GuiAchievement(Minecraft mc)
+    public GuiAchievement(BetaSharp game)
     {
-        _theGame = mc;
+        _theGame = game;
         _itemRender = new ItemRenderer();
     }
 
@@ -63,7 +63,7 @@ public class GuiAchievement : Gui
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
         GLManager.GL.MatrixMode(GLEnum.Projection);
         GLManager.GL.LoadIdentity();
-        GLManager.GL.Ortho(0.0D, _achievementWindowWidth, _achievementWindowHeight, 0.0D, 1000.0D, 3000.0D);
+        GLManager.GL.Ortho(0.0D, _achievementWindowWidth, _achievementWindowHeight, 0.0D, -3000.0D, 3000.0D);
         GLManager.GL.MatrixMode(GLEnum.Modelview);
         GLManager.GL.LoadIdentity();
         GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
@@ -71,15 +71,59 @@ public class GuiAchievement : Gui
 
     public void updateAchievementWindow()
     {
-        if (Minecraft.hasPaidCheckTime > 0L)
+        if (BetaSharp.hasPaidCheckTime > 0L)
         {
             displayLicenseWarning();
         }
+    }
 
-        if (_theAchievement != null && _achievementDisplayStartTime != 0L)
+    public void RenderAchievementOverlayIfAny(int scaledWidth, int scaledHeight)
+    {
+        if (_theAchievement == null || _achievementDisplayStartTime == 0L)
+            return;
+
+        double elapsedTime = (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _achievementDisplayStartTime) / (double)AchievementDisplayDuration;
+        if (!_isAchievementInformation && (elapsedTime < 0.0D || elapsedTime > 1.0D))
         {
-            displayAchievementNotification();
+            _achievementDisplayStartTime = 0L;
+            return;
         }
+
+        renderAchievementInCurrentState(scaledWidth, scaledHeight, elapsedTime);
+    }
+
+    private void renderAchievementInCurrentState(int scaledWidth, int scaledHeight, double elapsedTime)
+    {
+        GLManager.GL.Disable(GLEnum.DepthTest);
+        GLManager.GL.DepthMask(false);
+        GLManager.GL.Enable(GLEnum.Texture2D);
+        GLManager.GL.Enable(GLEnum.Blend);
+        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+
+        double animationProgress = calculateAnimationProgress(elapsedTime);
+        int achievementX = scaledWidth - 160;
+        int achievementY = 0 - (int)(animationProgress * 36.0D);
+
+        _theGame.textureManager.BindTexture(_theGame.textureManager.GetTextureId("/achievement/bg.png"));
+        _zLevel = -90.0F;
+        DrawTexturedModalRect(achievementX, achievementY, 96, 202, 160, 32);
+        drawAchievementText(achievementX, achievementY);
+
+        GLManager.GL.PushMatrix();
+        GLManager.GL.Rotate(180.0F, 1.0F, 0.0F, 0.0F);
+        Lighting.turnOn();
+        GLManager.GL.PopMatrix();
+        GLManager.GL.Disable(GLEnum.Lighting);
+        GLManager.GL.Enable(GLEnum.RescaleNormal);
+        GLManager.GL.Enable(GLEnum.ColorMaterial);
+        GLManager.GL.Enable(GLEnum.Lighting);
+
+        _itemRender.renderItemIntoGUI(_theGame.fontRenderer, _theGame.textureManager, _theAchievement.icon, achievementX + 8, achievementY + 8);
+
+        GLManager.GL.Disable(GLEnum.Lighting);
+        GLManager.GL.DepthMask(true);
+        GLManager.GL.Enable(GLEnum.DepthTest);
     }
 
     private void displayLicenseWarning()
@@ -93,57 +137,6 @@ public class GuiAchievement : Gui
         _theGame.fontRenderer.DrawStringWithShadow(AltLocationWarningText, 2, 11, Color.White);
         _theGame.fontRenderer.DrawStringWithShadow(PurchasePromptText, 2, 20, Color.White);
 
-        GLManager.GL.DepthMask(true);
-        GLManager.GL.Enable(GLEnum.DepthTest);
-    }
-
-    private void displayAchievementNotification()
-    {
-        double elapsedTime = (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _achievementDisplayStartTime) / AchievementDisplayDuration;
-
-        if (_isAchievementInformation || _isAchievementInformation || elapsedTime >= 0.0D && elapsedTime <= 1.0D)
-        {
-            renderAchievementNotification(elapsedTime);
-        }
-        else
-        {
-            _achievementDisplayStartTime = 0L;
-        }
-    }
-
-    private void renderAchievementNotification(double elapsedTime)
-    {
-        updateAchievementWindowScale();
-        GLManager.GL.Disable(GLEnum.DepthTest);
-        GLManager.GL.DepthMask(false);
-
-        double animationProgress = calculateAnimationProgress(elapsedTime);
-        int achievementX = _achievementWindowWidth - 160;
-        int achievementY = 0 - (int)(animationProgress * 36.0D);
-        int achievementTextureId = _theGame.textureManager.GetTextureId("/achievement/bg.png").Id;
-
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.GL.Enable(GLEnum.Lighting);
-        _theGame.textureManager.BindTexture(_theGame.textureManager.GetTextureId("/achievement/bg.png"));
-        GLManager.GL.Disable(GLEnum.Lighting);
-
-        DrawTexturedModalRect(achievementX, achievementY, 96, 202, 160, 32);
-        drawAchievementText(achievementX, achievementY);
-
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Rotate(180.0F, 1.0F, 0.0F, 0.0F);
-
-        Lighting.turnOn();
-
-        GLManager.GL.PopMatrix();
-        GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Enable(GLEnum.RescaleNormal);
-        GLManager.GL.Enable(GLEnum.ColorMaterial);
-        GLManager.GL.Enable(GLEnum.Lighting);
-
-        _itemRender.renderItemIntoGUI(_theGame.fontRenderer, _theGame.textureManager, _theAchievement.icon, achievementX + 8, achievementY + 8);
-
-        GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.DepthMask(true);
         GLManager.GL.Enable(GLEnum.DepthTest);
     }

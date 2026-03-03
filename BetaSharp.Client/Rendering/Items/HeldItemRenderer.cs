@@ -13,36 +13,35 @@ namespace BetaSharp.Client.Rendering.Items;
 
 public class HeldItemRenderer
 {
-    private readonly Minecraft mc;
+    private readonly BetaSharp _game;
     private ItemStack itemToRender;
     private float equippedProgress;
     private float prevEquippedProgress;
-    private readonly BlockRenderer renderBlocksInstance = new();
     private readonly MapItemRenderer field_28131_f;
     private int field_20099_f = -1;
 
-    public HeldItemRenderer(Minecraft var1)
+    public HeldItemRenderer(BetaSharp game)
     {
-        mc = var1;
-        field_28131_f = new MapItemRenderer(var1.fontRenderer, var1.options, var1.textureManager);
+        _game = game;
+        field_28131_f = new MapItemRenderer(game.fontRenderer, game.options, game.textureManager);
     }
 
-    public void renderItem(EntityLiving var1, ItemStack var2)
+    public void renderItem(EntityLiving entity, ItemStack item)
     {
         GLManager.GL.PushMatrix();
-        if (var2.itemId < 256 && BlockRenderer.isSideLit(Block.Blocks[var2.itemId].getRenderType()))
+        if (item.itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[item.itemId].getRenderType()))
         {
-            mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/terrain.png"));
-            renderBlocksInstance.renderBlockOnInventory(Block.Blocks[var2.itemId], var2.getDamage(), var1.getBrightnessAtEyes(1.0F));
+            _game.textureManager.BindTexture(_game.textureManager.GetTextureId("/terrain.png"));
+            BlockRenderer.RenderBlockOnInventory(Block.Blocks[item.itemId], item.getDamage(), entity.getBrightnessAtEyes(1.0F), Tessellator.instance);
         }
         else
         {
-            string texPath = var2.itemId < 256 ? "/terrain.png" : "/gui/items.png";
-            mc.textureManager.BindTexture(mc.textureManager.GetTextureId(texPath));
-            int tileSize = mc.textureManager.GetAtlasTileSize(texPath);
+            string texPath = item.itemId < 256 ? "/terrain.png" : "/gui/items.png";
+            _game.textureManager.BindTexture(_game.textureManager.GetTextureId(texPath));
+            int tileSize = _game.textureManager.GetAtlasTileSize(texPath);
 
             Tessellator var3 = Tessellator.instance;
-            int var4 = var1.getItemStackTextureId(var2);
+            int var4 = entity.getItemStackTextureId(item);
             float var5 = (var4 % 16 * 16 + 0.0F) / 256.0F;
             float var6 = (var4 % 16 * 16 + 15.99F) / 256.0F;
             float var7 = (var4 / 16 * 16 + 0.0F) / 256.0F;
@@ -145,7 +144,7 @@ public class HeldItemRenderer
     public void renderItemInFirstPerson(float var1)
     {
         float var2 = prevEquippedProgress + (equippedProgress - prevEquippedProgress) * var1;
-        ClientPlayerEntity var3 = mc.player;
+        ClientPlayerEntity var3 = _game.player;
         float var4 = var3.prevPitch + (var3.pitch - var3.prevPitch) * var1;
         GLManager.GL.PushMatrix();
         GLManager.GL.Rotate(var4, 1.0F, 0.0F, 0.0F);
@@ -153,7 +152,7 @@ public class HeldItemRenderer
         Lighting.turnOn();
         GLManager.GL.PopMatrix();
         ItemStack var5 = itemToRender;
-        float var6 = mc.world.getLuminance(MathHelper.Floor(var3.x), MathHelper.Floor(var3.y), MathHelper.Floor(var3.z));
+        float var6 = _game.world.getLuminance(MathHelper.Floor(var3.x), MathHelper.Floor(var3.y), MathHelper.Floor(var3.z));
         float var8;
         float var9;
         float var10;
@@ -206,7 +205,7 @@ public class HeldItemRenderer
                 GLManager.GL.Rotate(-90.0F, 0.0F, 0.0F, 1.0F);
                 GLManager.GL.Rotate(59.0F, 0.0F, 0.0F, 1.0F);
                 GLManager.GL.Rotate(-65 * var21, 0.0F, 1.0F, 0.0F);
-                EntityRenderer var11 = EntityRenderDispatcher.instance.GetEntityRenderObject(mc.player);
+                EntityRenderer var11 = EntityRenderDispatcher.instance.GetEntityRenderObject(_game.player);
                 PlayerEntityRenderer var12 = (PlayerEntityRenderer)var11;
                 float var13 = 1.0F;
                 GLManager.GL.Scale(var13, var13, var13);
@@ -227,7 +226,7 @@ public class HeldItemRenderer
             GLManager.GL.Translate(-1.0F, -1.0F, 0.0F);
             var10 = (1 / 64f);
             GLManager.GL.Scale(var10, var10, var10);
-            mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/misc/mapbg.png"));
+            _game.textureManager.BindTexture(_game.textureManager.GetTextureId("/misc/mapbg.png"));
             Tessellator var19 = Tessellator.instance;
             GLManager.GL.Normal3(0.0F, 0.0F, -1.0F);
             var19.startDrawingQuads();
@@ -237,8 +236,8 @@ public class HeldItemRenderer
             var19.addVertexWithUV(128 + var20, 0 - var20, 0.0D, 1.0D, 0.0D);
             var19.addVertexWithUV(0 - var20, 0 - var20, 0.0D, 0.0D, 0.0D);
             var19.draw();
-            MapState var22 = Item.Map.getSavedMapState(var5, mc.world);
-            field_28131_f.render(mc.player, mc.textureManager, var22);
+            MapState var22 = Item.Map.getSavedMapState(var5, _game.world);
+            field_28131_f.render(_game.player, _game.textureManager, var22);
             GLManager.GL.PopMatrix();
         }
         else if (var5 != null)
@@ -291,7 +290,7 @@ public class HeldItemRenderer
             GLManager.GL.Rotate(-135.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Scale(1.0F, 1.0F, 1.0F);
             GLManager.GL.Translate(5.6F, 0.0F, 0.0F);
-            EntityRenderer var15 = EntityRenderDispatcher.instance.GetEntityRenderObject(mc.player);
+            EntityRenderer var15 = EntityRenderDispatcher.instance.GetEntityRenderObject(_game.player);
             PlayerEntityRenderer var16 = (PlayerEntityRenderer)var15;
             var10 = 1.0F;
             GLManager.GL.Scale(var10, var10, var10);
@@ -307,20 +306,20 @@ public class HeldItemRenderer
     {
         GLManager.GL.Disable(GLEnum.AlphaTest);
         int var2;
-        if (mc.player.isOnFire())
+        if (_game.player.isOnFire())
         {
-            mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/terrain.png"));
+            _game.textureManager.BindTexture(_game.textureManager.GetTextureId("/terrain.png"));
             renderFireInFirstPerson(var1);
         }
 
-        if (mc.player.isInsideWall())
+        if (_game.player.isInsideWall())
         {
-            var2 = MathHelper.Floor(mc.player.x);
-            int var3 = MathHelper.Floor(mc.player.y);
-            int var4 = MathHelper.Floor(mc.player.z);
-            mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/terrain.png"));
-            int var6 = mc.world.getBlockId(var2, var3, var4);
-            if (mc.world.shouldSuffocate(var2, var3, var4))
+            var2 = MathHelper.Floor(_game.player.x);
+            int var3 = MathHelper.Floor(_game.player.y);
+            int var4 = MathHelper.Floor(_game.player.z);
+            _game.textureManager.BindTexture(_game.textureManager.GetTextureId("/terrain.png"));
+            int var6 = _game.world.getBlockId(var2, var3, var4);
+            if (_game.world.shouldSuffocate(var2, var3, var4))
             {
                 renderInsideOfBlock(var1, Block.Blocks[var6].getTexture(2));
             }
@@ -328,15 +327,15 @@ public class HeldItemRenderer
             {
                 for (int var7 = 0; var7 < 8; ++var7)
                 {
-                    float var8 = ((var7 >> 0) % 2 - 0.5F) * mc.player.width * 0.9F;
-                    float var9 = ((var7 >> 1) % 2 - 0.5F) * mc.player.height * 0.2F;
-                    float var10 = ((var7 >> 2) % 2 - 0.5F) * mc.player.width * 0.9F;
+                    float var8 = ((var7 >> 0) % 2 - 0.5F) * _game.player.width * 0.9F;
+                    float var9 = ((var7 >> 1) % 2 - 0.5F) * _game.player.height * 0.2F;
+                    float var10 = ((var7 >> 2) % 2 - 0.5F) * _game.player.width * 0.9F;
                     int var11 = MathHelper.Floor(var2 + var8);
                     int var12 = MathHelper.Floor(var3 + var9);
                     int var13 = MathHelper.Floor(var4 + var10);
-                    if (mc.world.shouldSuffocate(var11, var12, var13))
+                    if (_game.world.shouldSuffocate(var11, var12, var13))
                     {
-                        var6 = mc.world.getBlockId(var11, var12, var13);
+                        var6 = _game.world.getBlockId(var11, var12, var13);
                     }
                 }
             }
@@ -347,9 +346,9 @@ public class HeldItemRenderer
             }
         }
 
-        if (mc.player.isInFluid(Material.Water))
+        if (_game.player.isInFluid(Material.Water))
         {
-            mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/misc/water.png"));
+            _game.textureManager.BindTexture(_game.textureManager.GetTextureId("/misc/water.png"));
             renderWarpedTextureOverlay(var1);
         }
 
@@ -359,7 +358,7 @@ public class HeldItemRenderer
     private void renderInsideOfBlock(float var1, int var2)
     {
         Tessellator var3 = Tessellator.instance;
-        mc.player.getBrightnessAtEyes(var1);
+        _game.player.getBrightnessAtEyes(var1);
         float var4 = 0.1F;
         GLManager.GL.Color4(var4, var4, var4, 0.5F);
         GLManager.GL.PushMatrix();
@@ -386,7 +385,7 @@ public class HeldItemRenderer
     private void renderWarpedTextureOverlay(float var1)
     {
         Tessellator var2 = Tessellator.instance;
-        float var3 = mc.player.getBrightnessAtEyes(var1);
+        float var3 = _game.player.getBrightnessAtEyes(var1);
         GLManager.GL.Color4(var3, var3, var3, 0.5F);
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
@@ -397,8 +396,8 @@ public class HeldItemRenderer
         float var7 = -1.0F;
         float var8 = 1.0F;
         float var9 = -0.5F;
-        float var10 = -mc.player.yaw / 64.0F;
-        float var11 = mc.player.pitch / 64.0F;
+        float var10 = -_game.player.yaw / 64.0F;
+        float var11 = _game.player.pitch / 64.0F;
         var2.startDrawingQuads();
         var2.addVertexWithUV((double)var5, (double)var7, (double)var9, (double)(var4 + var10), (double)(var4 + var11));
         var2.addVertexWithUV((double)var6, (double)var7, (double)var9, (double)(0.0F + var10), (double)(var4 + var11));
@@ -451,7 +450,7 @@ public class HeldItemRenderer
     public void updateEquippedItem()
     {
         prevEquippedProgress = equippedProgress;
-        ClientPlayerEntity var1 = mc.player;
+        ClientPlayerEntity var1 = _game.player;
         ItemStack var2 = var1.inventory.getSelectedItem();
         bool var4 = field_20099_f == var1.inventory.selectedSlot && var2 == itemToRender;
         if (itemToRender == null && var2 == null)
@@ -499,13 +498,13 @@ public class HeldItemRenderer
 
     private void bindSkinTexture()
     {
-        var skinHandle = EntityRenderDispatcher.instance.skinManager?.GetTextureHandle(mc.player?.skinUrl);
+        var skinHandle = EntityRenderDispatcher.instance.skinManager?.GetTextureHandle(_game.player?.skinUrl);
         if (skinHandle != null)
         {
             skinHandle.Bind();
             return;
         }
 
-        mc.textureManager.BindTexture(mc.textureManager.GetTextureId(mc.player.getTexture()));
+        _game.textureManager.BindTexture(_game.textureManager.GetTextureId(_game.player.getTexture()));
     }
 }

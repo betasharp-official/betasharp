@@ -7,7 +7,7 @@ internal static class ChatCommands
 {
     private static readonly Logger logger = Logger.getLogger("Minecraft");
 
-    public static void Say(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void Say(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (args.Length == 0) return;
 
@@ -16,7 +16,7 @@ internal static class ChatCommands
         server.playerManager.sendToAll(new ChatMessagePacket("§d[Server] " + message));
     }
 
-    public static void Tell(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void Tell(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (args.Length < 2)
         {

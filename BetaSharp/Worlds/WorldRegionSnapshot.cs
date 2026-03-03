@@ -8,7 +8,7 @@ using BetaSharp.Worlds.Chunks;
 
 namespace BetaSharp.Worlds;
 
-public class WorldRegionSnapshot : BlockView, IDisposable
+public class WorldRegionSnapshot : IBlockAccess, IDisposable
 {
     private readonly int _chunkX;
     private readonly int _chunkZ;

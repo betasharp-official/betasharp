@@ -66,24 +66,24 @@ public class GuiOptions : GuiScreen
         switch (button.Id)
         {
             case ButtonVideoSettings:
-                mc.options.SaveOptions();
-                mc.displayGuiScreen(new GuiVideoSettings(this, _options));
+                Game.options.SaveOptions();
+                Game.displayGuiScreen(new GuiVideoSettings(this, _options));
                 break;
             case ButtonAudioSettings:
-                mc.options.SaveOptions();
-                mc.displayGuiScreen(new GuiAudio(this, _options));
+                Game.options.SaveOptions();
+                Game.displayGuiScreen(new GuiAudio(this, _options));
                 break;
             case ButtonDebugSettings:
-                mc.options.SaveOptions();
-                mc.displayGuiScreen(new GuiDebugOptions(this, _options));
+                Game.options.SaveOptions();
+                Game.displayGuiScreen(new GuiDebugOptions(this, _options));
                 break;
             case ButtonControls:
-                mc.options.SaveOptions();
-                mc.displayGuiScreen(new GuiControls(this, _options));
+                Game.options.SaveOptions();
+                Game.displayGuiScreen(new GuiControls(this, _options));
                 break;
             case ButtonDone:
-                mc.options.SaveOptions();
-                mc.displayGuiScreen(_parentScreen);
+                Game.options.SaveOptions();
+                Game.displayGuiScreen(_parentScreen);
                 break;
         }
 

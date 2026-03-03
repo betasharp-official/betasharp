@@ -1,5 +1,4 @@
 using BetaSharp;
-using BetaSharp.Client;
 using BetaSharp.Util;
 using Microsoft.Extensions.Logging;
 
@@ -7,7 +6,7 @@ Log.Instance.Initialize(PathHelper.GetAppDir(nameof(BetaSharp)));
 
 try
 {
-    Minecraft.Startup(args);
+    BetaSharp.Client.BetaSharp.Startup(args);
 }
 catch (Exception exception)
 {

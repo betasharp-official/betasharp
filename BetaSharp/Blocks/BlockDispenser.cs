@@ -65,7 +65,7 @@ internal class BlockDispenser : BlockWithEntity
         }
     }
 
-    public override int getTextureId(BlockView blockView, int x, int y, int z, int side)
+    public override int getTextureId(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
         if (side == 1)
         {
@@ -77,7 +77,7 @@ internal class BlockDispenser : BlockWithEntity
         }
         else
         {
-            int meta = blockView.getBlockMeta(x, y, z);
+            int meta = iBlockAccess.getBlockMeta(x, y, z);
             return side != meta ? textureId : textureId + 1;
         }
     }

@@ -2,14 +2,14 @@ namespace BetaSharp.Server.Commands;
 
 internal class ServerCommandHandler
 {
-    private readonly MinecraftServer server;
+    private readonly BetaSharpServer server;
 
-    private delegate void CommandAction(MinecraftServer server, string senderName, string[] args, CommandOutput output);
+    private delegate void CommandAction(BetaSharpServer server, string senderName, string[] args, CommandOutput output);
 
     private readonly Dictionary<string, CommandAction> commands = new();
     private readonly List<(string usage, string description)> helpEntries = [];
 
-    public ServerCommandHandler(MinecraftServer server)
+    public ServerCommandHandler(BetaSharpServer server)
     {
         this.server = server;
         ItemCommands.Initialize();

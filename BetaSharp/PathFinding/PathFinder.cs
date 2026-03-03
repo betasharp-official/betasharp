@@ -3,12 +3,13 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
+using javax.swing.text.html;
 
 namespace BetaSharp.PathFinding;
 
 internal class PathFinder
 {
-    private BlockView _worldMap;
+    private IBlockAccess _worldMap;
     private readonly Path _path = new();
     private readonly PathPoint[] _pointMap = new PathPoint[1024];
     private readonly PathPoint[] _pathOptions = new PathPoint[32];
@@ -25,7 +26,7 @@ internal class PathFinder
         }
     }
 
-    public void SetWorld(BlockView worldMap)
+    public void SetWorld(IBlockAccess worldMap)
     {
         _worldMap = worldMap;
     }

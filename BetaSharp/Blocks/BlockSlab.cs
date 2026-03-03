@@ -76,13 +76,13 @@ internal class BlockSlab : Block
         return doubleSlab;
     }
 
-    public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
+    public override bool isSideVisible(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
         if (this != Block.Slab)
         {
-            base.isSideVisible(blockView, x, y, z, side);
+            base.isSideVisible(iBlockAccess, x, y, z, side);
         }
 
-        return side == 1 ? true : (!base.isSideVisible(blockView, x, y, z, side) ? false : (side == 0 ? true : blockView.getBlockId(x, y, z) != id));
+        return side == 1 ? true : (!base.isSideVisible(iBlockAccess, x, y, z, side) ? false : (side == 0 ? true : iBlockAccess.getBlockId(x, y, z) != id));
     }
 }

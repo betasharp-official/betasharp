@@ -17,10 +17,10 @@ public class ServerWorld : World
     public ServerChunkCache chunkCache;
     public bool bypassSpawnProtection = false;
     public bool savingDisabled;
-    private readonly MinecraftServer server;
+    private readonly BetaSharpServer server;
     private readonly Dictionary<int, Entity> entitiesById = [];
 
-    public ServerWorld(MinecraftServer server, IWorldStorage storage, String name, int dimensionId, long seed) : base(storage, name, seed, Dimension.FromId(dimensionId))
+    public ServerWorld(BetaSharpServer server, IWorldStorage storage, String name, int dimensionId, long seed) : base(storage, name, seed, Dimension.FromId(dimensionId))
     {
         this.server = server;
     }

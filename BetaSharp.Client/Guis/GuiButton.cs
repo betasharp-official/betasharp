@@ -56,13 +56,13 @@ public class GuiButton : Gui
         return HoverState.Normal;
     }
 
-    public void DrawButton(Minecraft mc, int mouseX, int mouseY)
+    public void DrawButton(BetaSharp game, int mouseX, int mouseY)
     {
         if (!Visible) return;
 
-        TextRenderer font = mc.fontRenderer;
+        TextRenderer font = game.fontRenderer;
 
-        mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/gui/gui.png"));
+        game.textureManager.BindTexture(game.textureManager.GetTextureId("/gui/gui.png"));
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
 
         bool isHovered = mouseX >= XPosition && mouseY >= YPosition && mouseX < XPosition + _width && mouseY < YPosition + _height;
@@ -71,7 +71,7 @@ public class GuiButton : Gui
         DrawTexturedModalRect(XPosition, YPosition, 0, 46 + (int)hoverState * 20, _width / 2, _height);
         DrawTexturedModalRect(XPosition + _width / 2, YPosition, 200 - _width / 2, 46 + (int)hoverState * 20, _width / 2, _height);
 
-        MouseDragged(mc, mouseX, mouseY);
+        MouseDragged(game, mouseX, mouseY);
 
         if (!Enabled)
         {
@@ -87,7 +87,7 @@ public class GuiButton : Gui
         }
     }
 
-    protected virtual void MouseDragged(Minecraft mc, int mouseX, int mouseY)
+    protected virtual void MouseDragged(BetaSharp game, int mouseX, int mouseY)
     {
     }
 
@@ -95,7 +95,7 @@ public class GuiButton : Gui
     {
     }
 
-    public virtual bool MousePressed(Minecraft mc, int mouseX, int mouseY)
+    public virtual bool MousePressed(BetaSharp game, int mouseX, int mouseY)
     {
         return Enabled && mouseX >= XPosition && mouseY >= YPosition && mouseX < XPosition + _width && mouseY < YPosition + _height;
     }

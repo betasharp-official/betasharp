@@ -15,19 +15,19 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
     private int[] _clock = new int[256];
     private int[] _dial = new int[256];
     private int _dialResolution = 16;
-    private Minecraft _mc;
+    private BetaSharp _game;
     private int _resolution = 16;
 
-    public ClockSprite(Minecraft mc) : base(Item.Clock.getTextureId(0))
+    public ClockSprite(BetaSharp game) : base(Item.Clock.getTextureId(0))
     {
-        _mc = mc;
+        _game = game;
         Atlas = FxImage.Items;
     }
 
-    public override void Setup(Minecraft mc)
+    public override void Setup(BetaSharp game)
     {
-        _mc = mc;
-        TextureManager tm = mc.textureManager;
+        _game = game;
+        TextureManager tm = game.textureManager;
         string atlasPath = "/gui/items.png";
 
         TextureHandle handle = tm.GetTextureId(atlasPath);
@@ -50,7 +50,7 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
 
         try
         {
-            using Stream? stream = mc.texturePackList.SelectedTexturePack.GetResourceAsStream("gui/items.png");
+            using Stream? stream = game.texturePackList.SelectedTexturePack.GetResourceAsStream("gui/items.png");
             if (stream != null)
             {
                 using Image<Rgba32> atlasImage = Image.Load<Rgba32>(stream);
@@ -71,7 +71,7 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
                 }
             }
 
-            using Stream? dialStream = mc.texturePackList.SelectedTexturePack.GetResourceAsStream("misc/dial.png");
+            using Stream? dialStream = game.texturePackList.SelectedTexturePack.GetResourceAsStream("misc/dial.png");
             if (dialStream != null)
             {
                 using Image<Rgba32> dialImage = Image.Load<Rgba32>(dialStream);
@@ -102,11 +102,11 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
     public override void tick()
     {
         double targetAngle = 0.0D;
-        if (_mc.world != null && _mc.player != null)
+        if (_game.world != null && _game.player != null)
         {
-            float worldTime = _mc.world.getTime(1.0F);
+            float worldTime = _game.world.getTime(1.0F);
             targetAngle = -worldTime * (float)Math.PI * 2.0F;
-            if (_mc.world.dimension.IsNether)
+            if (_game.world.dimension.IsNether)
             {
                 targetAngle = Random.Shared.NextDouble() * (float)Math.PI * 2.0D;
             }

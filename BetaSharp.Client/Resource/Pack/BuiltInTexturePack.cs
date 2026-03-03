@@ -35,30 +35,30 @@ public class BuiltInTexturePack : TexturePack
 
     }
 
-    public override void Unload(Minecraft mc)
+    public override void Unload(BetaSharp game)
     {
         if (texturePackThumbnail != null && _texturePackName != null)
         {
-            mc.textureManager.Delete(_texturePackName);
+            game.textureManager.Delete(_texturePackName);
 
         }
 
     }
 
-    public override void BindThumbnailTexture(Minecraft mc)
+    public override void BindThumbnailTexture(BetaSharp game)
     {
         if (texturePackThumbnail != null && _texturePackName == null)
         {
-            _texturePackName = mc.textureManager.Load(texturePackThumbnail);
+            _texturePackName = game.textureManager.Load(texturePackThumbnail);
         }
 
         if (texturePackThumbnail != null && _texturePackName != null)
         {
-            mc.textureManager.BindTexture(_texturePackName);
+            game.textureManager.BindTexture(_texturePackName);
         }
         else
         {
-            mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/gui/unknown_pack.png"));
+            game.textureManager.BindTexture(game.textureManager.GetTextureId("/gui/unknown_pack.png"));
         }
 
     }

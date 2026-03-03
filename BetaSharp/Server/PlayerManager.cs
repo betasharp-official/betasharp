@@ -15,7 +15,7 @@ namespace BetaSharp.Server;
 public class PlayerManager
 {
     public List<ServerPlayerEntity> players = [];
-    private readonly MinecraftServer _server;
+    private readonly BetaSharpServer _server;
     private readonly ChunkMap[] _chunkMaps;
     private readonly int _maxPlayerCount;
     protected readonly HashSet<string> bannedPlayers = [];
@@ -26,7 +26,7 @@ public class PlayerManager
     private readonly bool _whitelistEnabled;
     private volatile int _pendingViewDistance = -1;
 
-    public PlayerManager(MinecraftServer server)
+    public PlayerManager(BetaSharpServer server)
     {
         _chunkMaps = new ChunkMap[2];
         _server = server;

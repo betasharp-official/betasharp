@@ -7,7 +7,7 @@ public class GuiSlotServer : GuiSlot
     private readonly GuiMultiplayer _parent;
 
     public GuiSlotServer(GuiMultiplayer parent)
-        : base(parent.mc, parent.Width, parent.Height, 32, parent.Height - 64, 36)
+        : base(parent.Game, parent.Width, parent.Height, 32, parent.Height - 64, 36)
     {
         _parent = parent;
     }

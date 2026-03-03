@@ -19,9 +19,9 @@ internal class BlockIce : BlockBreakable
         return 1;
     }
 
-    public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
+    public override bool isSideVisible(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
-        return base.isSideVisible(blockView, x, y, z, 1 - side);
+        return base.isSideVisible(iBlockAccess, x, y, z, 1 - side);
     }
 
     public override void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta)

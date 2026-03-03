@@ -32,7 +32,7 @@ public class GuiConnectFailed : GuiScreen
 
     public override void InitGui()
     {
-        mc.stopInternalServer();
+        Game.stopInternalServer();
         TranslationStorage translations = TranslationStorage.Instance;
         _controlList.Clear();
         _controlList.Add(new GuiButton(_buttonToMenu, Width / 2 - 100, Height / 4 + 120 + 12, translations.TranslateKey("gui.toMenu")));
@@ -43,7 +43,7 @@ public class GuiConnectFailed : GuiScreen
         switch (btt.Id)
         {
             case _buttonToMenu:
-                mc.displayGuiScreen(new GuiMainMenu());
+                Game.displayGuiScreen(new GuiMainMenu());
                 break;
         }
 

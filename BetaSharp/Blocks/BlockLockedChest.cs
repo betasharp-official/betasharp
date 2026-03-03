@@ -12,7 +12,7 @@ internal class BlockLockedChest : Block
         textureId = 26;
     }
 
-    public override int getTextureId(BlockView blockView, int x, int y, int z, int side)
+    public override int getTextureId(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
         if (side == 1)
         {
@@ -24,10 +24,10 @@ internal class BlockLockedChest : Block
         }
         else
         {
-            int var6 = blockView.getBlockId(x, y, z - 1);
-            int var7 = blockView.getBlockId(x, y, z + 1);
-            int var8 = blockView.getBlockId(x - 1, y, z);
-            int var9 = blockView.getBlockId(x + 1, y, z);
+            int var6 = iBlockAccess.getBlockId(x, y, z - 1);
+            int var7 = iBlockAccess.getBlockId(x, y, z + 1);
+            int var8 = iBlockAccess.getBlockId(x - 1, y, z);
+            int var9 = iBlockAccess.getBlockId(x + 1, y, z);
             sbyte var10 = 3;
             if (Block.BlocksOpaque[var6] && !Block.BlocksOpaque[var7])
             {

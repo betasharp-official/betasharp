@@ -68,7 +68,7 @@ public class GuiStats : GuiScreen
             switch (button.Id)
             {
                 case 0: // DONE
-                    mc.displayGuiScreen(parentScreen);
+                    Game.displayGuiScreen(parentScreen);
                     break;
                 case 1: // GENERAL
                     currentSlot = slotGeneral;
@@ -102,7 +102,7 @@ public class GuiStats : GuiScreen
         GLManager.GL.Rotate(180.0F, 1.0F, 0.0F, 0.0F);
         Lighting.turnOn();
         GLManager.GL.PopMatrix();
-        itemRenderer.drawItemIntoGui(FontRenderer, mc.textureManager, itemId, 0, Item.ITEMS[itemId].getTextureId(0), x + 2, y + 2);
+        itemRenderer.drawItemIntoGui(FontRenderer, Game.textureManager, itemId, 0, Item.ITEMS[itemId].getTextureId(0), x + 2, y + 2);
         Lighting.turnOff();
         GLManager.GL.Disable(GLEnum.RescaleNormal);
     }
@@ -115,7 +115,7 @@ public class GuiStats : GuiScreen
     private void drawSlotTexture(int x, int y, int u, int v)
     {
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/gui/slot.png"));
+        Game.textureManager.BindTexture(Game.textureManager.GetTextureId("/gui/slot.png"));
         Tessellator tessellator = Tessellator.instance;
         tessellator.startDrawingQuads();
         tessellator.addVertexWithUV(x + 0, y + 18, _zLevel, (double)((u + 0) * 0.0078125F), (double)((v + 18) * 0.0078125F));

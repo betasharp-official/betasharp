@@ -21,22 +21,22 @@ public class GuiLevelLoading(string worldDir, long seed) : GuiScreen
         if (!_serverStarted)
         {
             _serverStarted = true;
-            mc.internalServer = new InternalServer(System.IO.Path.Combine(Minecraft.getMinecraftDir().getAbsolutePath(), "saves"), _worldDir, _seed.ToString(), mc.options.renderDistance, mc.options.Difficulty);
-            new RunServerThread(mc.internalServer, "InternalServer").start();
+            Game.internalServer = new InternalServer(System.IO.Path.Combine(BetaSharp.getBetaSharpDir().getAbsolutePath(), "saves"), _worldDir, _seed.ToString(), Game.options.renderDistance, Game.options.Difficulty);
+            new RunServerThread(Game.internalServer, "InternalServer").start();
         }
     }
 
     public override void UpdateScreen()
     {
-        if (mc.internalServer != null)
+        if (Game.internalServer != null)
         {
-            if (mc.internalServer.stopped)
+            if (Game.internalServer.stopped)
             {
-                mc.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly"));
+                Game.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly"));
                 return;
             }
 
-            if (mc.internalServer.isReady)
+            if (Game.internalServer.isReady)
             {
                 InternalConnection clientConnection = new(null, "Internal-Client");
                 InternalConnection serverConnection = new(null, "Internal-Server");
@@ -44,14 +44,14 @@ public class GuiLevelLoading(string worldDir, long seed) : GuiScreen
                 clientConnection.AssignRemote(serverConnection);
                 serverConnection.AssignRemote(clientConnection);
 
-                mc.internalServer.connections.AddInternalConnection(serverConnection);
+                Game.internalServer.connections.AddInternalConnection(serverConnection);
                 _logger.LogInformation("[Internal-Client] Created internal connection");
 
-                ClientNetworkHandler clientHandler = new(mc, clientConnection);
+                ClientNetworkHandler clientHandler = new(Game, clientConnection);
                 clientConnection.setNetworkHandler(clientHandler);
-                clientHandler.addToSendQueue(new BetaSharp.Network.Packets.HandshakePacket(mc.session.username));
+                clientHandler.addToSendQueue(new global::BetaSharp.Network.Packets.HandshakePacket(Game.session.username));
 
-                mc.displayGuiScreen(new GuiConnecting(mc, clientHandler));
+                Game.displayGuiScreen(new GuiConnecting(Game, clientHandler));
             }
         }
     }
@@ -65,10 +65,10 @@ public class GuiLevelLoading(string worldDir, long seed) : GuiScreen
         string progressMsg = "";
         int progress = 0;
 
-        if (mc.internalServer != null)
+        if (Game.internalServer != null)
         {
-            progressMsg = mc.internalServer.progressMessage ?? "Starting server...";
-            progress = mc.internalServer.progress;
+            progressMsg = Game.internalServer.progressMessage ?? "Starting server...";
+            progress = Game.internalServer.progress;
         }
 
         DrawCenteredString(FontRenderer, title, Width / 2, Height / 2 - 50, Color.White);

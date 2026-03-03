@@ -27,9 +27,9 @@ internal class BlockWeb : Block
         return null;
     }
 
-    public override int getRenderType()
+    public override BlockRendererType getRenderType()
     {
-        return 1;
+        return BlockRendererType.Reed;
     }
 
     public override bool isFullCube()

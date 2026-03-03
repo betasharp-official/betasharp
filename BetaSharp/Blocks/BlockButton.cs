@@ -125,9 +125,9 @@ internal class BlockButton : Block
         }
     }
 
-    public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
+    public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        int meta = blockView.getBlockMeta(x, y, z);
+        int meta = iBlockAccess.getBlockMeta(x, y, z);
         int facing = meta & 7;
         bool isPressed = (meta & 8) > 0;
         float minY = 6.0F / 16.0F;
@@ -236,9 +236,9 @@ internal class BlockButton : Block
         base.onBreak(world, x, y, z);
     }
 
-    public override bool isPoweringSide(BlockView blockView, int x, int y, int z, int side)
+    public override bool isPoweringSide(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
-        return (blockView.getBlockMeta(x, y, z) & 8) > 0;
+        return (iBlockAccess.getBlockMeta(x, y, z) & 8) > 0;
     }
 
     public override bool isStrongPoweringSide(World world, int x, int y, int z, int side)

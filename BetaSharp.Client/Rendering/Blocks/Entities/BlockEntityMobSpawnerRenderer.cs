@@ -37,8 +37,8 @@ public class BlockEntityMobSpawnerRenderer : BlockEntitySpecialRenderer
         GLManager.GL.PopMatrix();
     }
 
-    public override void renderTileEntityAt(BlockEntity var1, double var2, double var4, double var6, float var8)
+    public override void renderTileEntityAt(BlockEntity blockEntity, double x, double y, double z, float tickDelta)
     {
-        renderTileEntityMobSpawner((BlockEntityMobSpawner)var1, var2, var4, var6, var8);
+        renderTileEntityMobSpawner((BlockEntityMobSpawner)blockEntity, x, y, z, tickDelta);
     }
 }

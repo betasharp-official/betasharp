@@ -20,7 +20,7 @@ using Silk.NET.Maths;
 
 namespace BetaSharp.Worlds;
 
-public abstract class World : BlockView
+public abstract class World : IBlockAccess
 {
     private readonly ILogger<World> _logger = Log.Instance.For<World>();
     protected readonly IWorldStorage Storage;
@@ -59,6 +59,14 @@ public abstract class World : BlockView
 
     [ThreadStatic]
     private static List<Entity>? _tempCollisionEntities;
+
+    // Reusable scratch list for GetEntityCollisionsScratch — avoids per-call List<Box> allocation.
+    [ThreadStatic]
+    private static List<Box>? _tempCollisionBoxes;
+
+    // Reusable scratch list for GetEntitiesScratch — avoids per-call List<Entity> allocation.
+    [ThreadStatic]
+    private static List<Entity>? _tempCollisionEntitiesResult;
 
     private readonly HashSet<ChunkPos> _activeChunks = new();
     public List<BlockEntity> blockEntities = [];
@@ -1012,6 +1020,18 @@ public abstract class World : BlockView
     public List<Box> GetEntityCollisions(Entity entity, Box area)
     {
         return GetEntityCollisions(entity, area, new List<Box>());
+    }
+
+    /// <summary>
+    /// Like <see cref="GetEntityCollisions(Entity,Box)"/> but writes into a reused thread-static
+    /// scratch list instead of allocating a new one. The returned list is only valid until the
+    /// next call to this method on the same thread — do not store it.
+    /// </summary>
+    internal List<Box> GetEntityCollisionsScratch(Entity entity, Box area)
+    {
+        _tempCollisionBoxes ??= new List<Box>();
+        _tempCollisionBoxes.Clear();
+        return GetEntityCollisions(entity, area, _tempCollisionBoxes);
     }
 
     private List<Box> GetEntityCollisions(Entity entity, Box area, List<Box> collidingBoundingBoxes)
@@ -2292,6 +2312,17 @@ public abstract class World : BlockView
     public List<Entity> getEntities(Entity? excludeEntity, Box area)
     {
         return getEntities(excludeEntity, area, new List<Entity>());
+    }
+
+    /// <summary>
+    /// Like <see cref="getEntities(Entity?,Box)"/> but writes into a reused thread-static
+    /// scratch list. The returned list is only valid until the next call on the same thread.
+    /// </summary>
+    internal List<Entity> GetEntitiesScratch(Entity? excludeEntity, Box area)
+    {
+        _tempCollisionEntitiesResult ??= new List<Entity>();
+        _tempCollisionEntitiesResult.Clear();
+        return getEntities(excludeEntity, area, _tempCollisionEntitiesResult);
     }
 
     public List<Entity> getEntities(Entity? excludeEntity, Box area, List<Entity> results)

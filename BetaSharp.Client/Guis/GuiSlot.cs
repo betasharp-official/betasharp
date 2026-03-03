@@ -6,7 +6,7 @@ namespace BetaSharp.Client.Guis;
 
 public abstract class GuiSlot
 {
-    private readonly Minecraft _mc;
+    private readonly BetaSharp _game;
     private readonly int _width;
     private readonly int _height;
     protected readonly int _top;
@@ -27,9 +27,9 @@ public abstract class GuiSlot
     private bool _hasHeader;
     private int _headerHeight;
 
-    public GuiSlot(Minecraft mc, int width, int height, int top, int bottom, int posZ)
+    public GuiSlot(BetaSharp game, int width, int height, int top, int bottom, int posZ)
     {
-        _mc = mc;
+        _game = game;
         _width = width;
         _height = height;
         _top = top;
@@ -189,7 +189,7 @@ public abstract class GuiSlot
         GLManager.GL.Disable(GLEnum.Fog);
         var tess = Tessellator.instance;
 
-        _mc.textureManager.BindTexture(_mc.textureManager.GetTextureId("/gui/background.png"));
+        _game.textureManager.BindTexture(_game.textureManager.GetTextureId("/gui/background.png"));
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
         const float textureScale = 32.0f;
 
@@ -319,9 +319,9 @@ public abstract class GuiSlot
     private void OverlayBackground(int startY, int endY, int alphaStart, int alphaEnd)
     {
         var tess = Tessellator.instance;
-        var textureId = (uint)_mc.textureManager.GetTextureId("/gui/background.png").Id;
+        var textureId = (uint)_game.textureManager.GetTextureId("/gui/background.png").Id;
 
-        _mc.textureManager.BindTexture(_mc.textureManager.GetTextureId("/gui/background.png"));
+        _game.textureManager.BindTexture(_game.textureManager.GetTextureId("/gui/background.png"));
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
         const float textureScale = 32.0f;

@@ -8,12 +8,12 @@ namespace BetaSharp.Client.Input;
 
 public class PlayerController
 {
-    protected readonly Minecraft mc;
+    protected readonly BetaSharp Game;
     public bool IsTestPlayer = false;
 
-    public PlayerController(Minecraft var1)
+    public PlayerController(BetaSharp var1)
     {
-        mc = var1;
+        Game = var1;
     }
 
     public virtual void func_717_a(World var1)
@@ -22,13 +22,13 @@ public class PlayerController
 
     public virtual void clickBlock(int var1, int var2, int var3, int var4)
     {
-        mc.world.extinguishFire(mc.player, var1, var2, var3, var4);
+        Game.world.extinguishFire(Game.player, var1, var2, var3, var4);
         sendBlockRemoved(var1, var2, var3, var4);
     }
 
     public virtual bool sendBlockRemoved(int var1, int var2, int var3, int var4)
     {
-        World var5 = mc.world;
+        World var5 = Game.world;
         Block var6 = Block.Blocks[var5.getBlockId(var1, var2, var3)];
         var5.worldEvent(2001, var1, var2, var3, var6.id + var5.getBlockMeta(var1, var2, var3) * 256);
         int var7 = var5.getBlockMeta(var1, var2, var3);
@@ -103,7 +103,7 @@ public class PlayerController
 
     public virtual EntityPlayer createPlayer(World var1)
     {
-        return new ClientPlayerEntity(mc, var1, mc.session, var1.dimension.Id);
+        return new ClientPlayerEntity(Game, var1, Game.session, var1.dimension.Id);
     }
 
     public virtual void interactWithEntity(EntityPlayer var1, Entity var2)

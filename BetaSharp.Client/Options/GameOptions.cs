@@ -119,7 +119,7 @@ public class GameOptions
     public KeyBinding KeyBindSneak = new("key.sneak", 42);
     public KeyBinding[] KeyBindings;
 
-    protected Minecraft _mc;
+    protected BetaSharp _game;
     private readonly string _optionsPath;
     public bool HideGUI = false;
     public EnumCameraMode CameraMode = EnumCameraMode.FirstPerson;
@@ -136,10 +136,10 @@ public class GameOptions
 
     private Dictionary<string, GameOption> _allOptions;
 
-    public GameOptions(Minecraft mc, string mcDataDir)
+    public GameOptions(BetaSharp game, string gameDataDir)
     {
-        _mc = mc;
-        _optionsPath = System.IO.Path.Combine(mcDataDir, "options.txt");
+        _game = game;
+        _optionsPath = System.IO.Path.Combine(gameDataDir, "options.txt");
 
         InitializeOptions();
 
@@ -172,12 +172,12 @@ public class GameOptions
         MusicVolumeOption = new FloatOption("options.music", "music", 1.0F)
         {
             Steps = 100,
-            OnChanged = _ => _mc?.sndManager.OnSoundOptionsChanged()
+            OnChanged = _ => _game?.sndManager.OnSoundOptionsChanged()
         };
         SoundVolumeOption = new FloatOption("options.sound", "sound", 1.0F)
         {
             Steps = 100,
-            OnChanged = _ => _mc?.sndManager.OnSoundOptionsChanged()
+            OnChanged = _ => _game?.sndManager.OnSoundOptionsChanged()
         };
         MouseSensitivityOption = new FloatOption("options.sensitivity", "mouseSensitivity", 0.5F)
         {
@@ -216,8 +216,8 @@ public class GameOptions
         {
             OnChanged = _ =>
             {
-                if (Minecraft.INSTANCE?.textureManager != null)
-                    Minecraft.INSTANCE.textureManager.Reload();
+                if (BetaSharp.INSTANCE?.textureManager != null)
+                    BetaSharp.INSTANCE.textureManager.Reload();
             }
         };
         DebugModeOption = new BoolOption("Debug Mode", "debugMode")
@@ -241,9 +241,9 @@ public class GameOptions
             Steps = 28,
             Formatter = (v, t) => $"{4 + (int)(v * 28.0f)} Chunks",
             OnChanged = _ => {
-                if (_mc?.internalServer != null)
+                if (_game?.internalServer != null)
                 {
-                    _mc.internalServer.SetViewDistance(this.renderDistance);
+                    _game.internalServer.SetViewDistance(this.renderDistance);
                 }
             }
         };
@@ -259,8 +259,8 @@ public class GameOptions
                 {
                     AnisotropicOption.Value = 0;
                 }
-                if (Minecraft.INSTANCE?.textureManager != null)
-                    Minecraft.INSTANCE.textureManager.Reload();
+                if (BetaSharp.INSTANCE?.textureManager != null)
+                    BetaSharp.INSTANCE.textureManager.Reload();
             }
         };
         MsaaOption = new CycleOption("MSAA", "msaaLevel", MSAALabels)
@@ -417,6 +417,6 @@ public class GameOptions
 
     public void OnSoundOptionsChanged()
     {
-        _mc?.sndManager.OnSoundOptionsChanged();
+        _game?.sndManager.OnSoundOptionsChanged();
     }
 }

@@ -1,70 +1,78 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
+using BetaSharp.Client.Rendering.Blocks.Renderers;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Worlds;
+using BetaSharp.Util.Maths;
 using Silk.NET.OpenGL.Legacy;
 
 namespace BetaSharp.Client.Rendering.Blocks.Entities;
 
 public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
 {
+    private readonly PistonBaseRenderer _pistonBaseRenderer = new();
+    private readonly PistonExtensionRenderer _pistonExtensionRenderer = new();
 
-    private BlockRenderer renderBlocks;
-
-    public void func_31070_a(BlockEntityPiston var1, double var2, double var4, double var6, float var8)
+    public override void renderTileEntityAt(BlockEntity blockEntity, double x, double y, double z, float tickDelta)
     {
-        Block var9 = Block.Blocks[var1.getPushedBlockId()];
-        if (var9 != null && var1.getProgress(var8) < 1.0F)
+        if (blockEntity is not BlockEntityPiston piston)
         {
-            Tessellator var10 = Tessellator.instance;
+            throw new ArgumentException("BlockEntity is not a Piston");
+        }
+
+        Block block = Block.Blocks[piston.getPushedBlockId()];
+        if (piston.getProgress(tickDelta) < 1.0F)
+        {
+            Tessellator tess = Tessellator.instance;
             bindTextureByName("/terrain.png");
             Lighting.turnOff();
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.Disable(GLEnum.CullFace);
-            if (Minecraft.isAmbientOcclusionEnabled())
+
+            GLManager.GL.ShadeModel(BetaSharp.isAmbientOcclusionEnabled() ? GLEnum.Smooth : GLEnum.Flat);
+
+            tess.startDrawingQuads();
+            tess.setTranslationD(
+                x - piston.X + piston.getRenderOffsetX(tickDelta),
+                y - piston.Y + piston.getRenderOffsetY(tickDelta),
+                z - piston.Z + piston.getRenderOffsetZ(tickDelta)
+            );
+
+            tess.setColorOpaque(1, 1, 1);
+
+            var baseCtx = new BlockRenderContext(
+                world: piston.World,
+                tess: tess,
+                renderAllFaces: true,
+                aoBlendMode: BetaSharp.isAmbientOcclusionEnabled() ? 1 : 0
+            );
+
+            BlockPos pos = new(piston.X, piston.Y, piston.Z);
+
+            if (block == Block.PistonHead && piston.getProgress(tickDelta) < 0.5F)
             {
-                GLManager.GL.ShadeModel(GLEnum.Smooth);
+                var ctx = baseCtx with { CustomFlag = true };
+                _pistonExtensionRenderer.Draw(block, pos, ref ctx);
+            }
+            else if (piston.isSource() && !piston.isExtending())
+            {
+                var headCtx = baseCtx with { OverrideTexture = ((BlockPistonBase)block).getTopTexture(), CustomFlag = piston.getProgress(tickDelta) < 0.5F };
+
+                _pistonExtensionRenderer.Draw(Block.PistonHead, pos, ref headCtx);
+
+                tess.setTranslationD(x - piston.X, y - piston.Y, z - piston.Z);
+
+                var basePartCtx = baseCtx with { CustomFlag = true };
+                _pistonBaseRenderer.Draw(block, pos, ref basePartCtx);
             }
             else
             {
-                GLManager.GL.ShadeModel(GLEnum.Flat);
+                baseCtx.DrawBlock(block, pos);
             }
 
-            var10.startDrawingQuads();
-            var10.setTranslationD((double)((float)var2 - var1.X + var1.getRenderOffsetX(var8)), (double)((float)var4 - var1.Y + var1.getRenderOffsetY(var8)), (double)((float)var6 - var1.Z + var1.getRenderOffsetZ(var8)));
-            var10.setColorOpaque(1, 1, 1);
-            if (var9 == Block.PistonHead && var1.getProgress(var8) < 0.5F)
-            {
-                renderBlocks.func_31079_a(var9, var1.X, var1.Y, var1.Z, false);
-            }
-            else if (var1.isSource() && !var1.isExtending())
-            {
-                Block.PistonHead.setSprite(((BlockPistonBase)var9).getTopTexture());
-                renderBlocks.func_31079_a(Block.PistonHead, var1.X, var1.Y, var1.Z, var1.getProgress(var8) < 0.5F);
-                Block.PistonHead.clearSprite();
-                var10.setTranslationD((double)((float)var2 - var1.X), (double)((float)var4 - var1.Y), (double)((float)var6 - var1.Z));
-                renderBlocks.func_31078_d(var9, var1.X, var1.Y, var1.Z);
-            }
-            else
-            {
-                renderBlocks.func_31075_a(var9, var1.X, var1.Y, var1.Z);
-            }
-
-            var10.setTranslationD(0.0D, 0.0D, 0.0D);
-            var10.draw();
+            tess.setTranslationD(0.0D, 0.0D, 0.0D);
+            tess.draw();
             Lighting.turnOn();
         }
-
-    }
-
-    public override void func_31069_a(World var1)
-    {
-        renderBlocks = new BlockRenderer(var1, Tessellator.instance);
-    }
-
-    public override void renderTileEntityAt(BlockEntity var1, double var2, double var4, double var6, float var8)
-    {
-        func_31070_a((BlockEntityPiston)var1, var2, var4, var6, var8);
     }
 }

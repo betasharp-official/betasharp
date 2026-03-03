@@ -117,9 +117,9 @@ public class BlockBed : Block
         }
     }
 
-    public override int getRenderType()
+    public override BlockRendererType getRenderType()
     {
-        return 14;
+        return BlockRendererType.Bed;
     }
 
     public override bool isFullCube()
@@ -132,7 +132,7 @@ public class BlockBed : Block
         return false;
     }
 
-    public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
+    public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
         setDefaultShape();
     }

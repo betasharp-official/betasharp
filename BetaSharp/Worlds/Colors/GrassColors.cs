@@ -16,4 +16,9 @@ public class GrassColors
         int var5 = (int)((1.0D - downfall) * 255.0D);
         return grassBuffer[var5 << 8 | var4];
     }
+
+    public static int getDefaultColor()
+    {
+        return 0x79C05A;
+    }
 }

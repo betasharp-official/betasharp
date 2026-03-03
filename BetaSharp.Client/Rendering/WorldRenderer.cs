@@ -24,7 +24,7 @@ public class WorldRenderer : IWorldAccess
 {
     private World world;
     private readonly TextureManager renderEngine;
-    private readonly Minecraft mc;
+    private readonly BetaSharp _game;
     private BlockRenderer globalRenderBlocks;
     private int cloudOffsetX;
     private readonly int starGLCallList;
@@ -39,9 +39,9 @@ public class WorldRenderer : IWorldAccess
     public ChunkRenderer chunkRenderer;
     public float damagePartialTime;
 
-    public WorldRenderer(Minecraft gameInstance, TextureManager textureManager)
+    public WorldRenderer(BetaSharp gameInstance, TextureManager textureManager)
     {
-        mc = gameInstance;
+        _game = gameInstance;
         renderEngine = textureManager;
         byte var3 = 64;
 
@@ -154,7 +154,7 @@ public class WorldRenderer : IWorldAccess
 
         EntityRenderDispatcher.instance.func_852_a(world);
         this.world = world;
-        globalRenderBlocks = new BlockRenderer(world);
+        globalRenderBlocks = new BlockRenderer();
         if (world != null)
         {
             world.addWorldAccess(this);
@@ -179,7 +179,7 @@ public class WorldRenderer : IWorldAccess
     public void loadRenderers()
     {
         Block.Leaves.setGraphicsLevel(true);
-        renderDistance = mc.options.renderDistance;
+        renderDistance = _game.options.renderDistance;
 
         chunkRenderer?.Dispose();
         chunkRenderer = new(world);
@@ -196,12 +196,12 @@ public class WorldRenderer : IWorldAccess
         }
         else
         {
-            BlockEntityRenderer.Instance.CacheActiveRenderInfo(world, renderEngine, mc.fontRenderer, mc.camera, var3);
-            EntityRenderDispatcher.instance.cacheActiveRenderInfo(world, renderEngine, mc.fontRenderer, mc.camera, mc.options, var3);
+            BlockEntityRenderer.Instance.CacheActiveRenderInfo(world, renderEngine, _game.fontRenderer, _game.camera, var3);
+            EntityRenderDispatcher.instance.cacheActiveRenderInfo(world, renderEngine, _game.fontRenderer, _game.camera, _game.options, var3);
             countEntitiesTotal = 0;
             countEntitiesRendered = 0;
             countEntitiesHidden = 0;
-            EntityLiving var4 = mc.camera;
+            EntityLiving var4 = _game.camera;
             EntityRenderDispatcher.offsetX = var4.lastTickX + (var4.x - var4.lastTickX) * (double)var3;
             EntityRenderDispatcher.offsetY = var4.lastTickY + (var4.y - var4.lastTickY) * (double)var3;
             EntityRenderDispatcher.offsetZ = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)var3;
@@ -242,7 +242,7 @@ public class WorldRenderer : IWorldAccess
                         continue;
                     }
                 }
-                if (var7.shouldRender(var1) && (var7.ignoreFrustumCheck || culler.isBoundingBoxInFrustum(var7.boundingBox)) && (var7 != mc.camera || mc.options.CameraMode != EnumCameraMode.FirstPerson || mc.camera.isSleeping()))
+                if (var7.shouldRender(var1) && (var7.ignoreFrustumCheck || culler.isBoundingBoxInFrustum(var7.boundingBox)) && (var7 != _game.camera || _game.options.CameraMode != EnumCameraMode.FirstPerson || _game.camera.isSleeping()))
                 {
                     int var8 = MathHelper.Floor(var7.y);
                     if (var8 < 0)
@@ -281,7 +281,7 @@ public class WorldRenderer : IWorldAccess
 
     public int sortAndRender(EntityLiving var1, int pass, double var3, Culler cam)
     {
-        if (mc.options.renderDistance != renderDistance)
+        if (_game.options.renderDistance != renderDistance)
         {
             loadRenderers();
         }
@@ -299,10 +299,10 @@ public class WorldRenderer : IWorldAccess
             RenderDistance = renderDistance,
             Ticks = world.getTime(),
             PartialTicks = (float)var3,
-            DeltaTime = mc.Timer.DeltaTime,
-            EnvironmentAnimation = mc.options.EnvironmentAnimation,
-            ChunkFade = mc.options.ChunkFade,
-            RenderOccluded = mc.options.RenderOccluded
+            DeltaTime = _game.Timer.DeltaTime,
+            EnvironmentAnimation = _game.options.EnvironmentAnimation,
+            ChunkFade = _game.options.ChunkFade,
+            RenderOccluded = _game.options.RenderOccluded
         };
 
         if (pass == 0)
@@ -324,10 +324,10 @@ public class WorldRenderer : IWorldAccess
 
     public void renderSky(float var1)
     {
-        if (!mc.world.dimension.IsNether)
+        if (!_game.world.dimension.IsNether)
         {
             GLManager.GL.Disable(GLEnum.Texture2D);
-            Vector3D<double> var2 = world.getSkyColor(mc.camera, var1);
+            Vector3D<double> var2 = world.getSkyColor(_game.camera, var1);
             float var3 = (float)var2.X;
             float var4 = (float)var2.Y;
             float var5 = (float)var2.Z;
@@ -441,7 +441,7 @@ public class WorldRenderer : IWorldAccess
     public void renderClouds(float var1)
     {
         Profiler.Start("renderClouds");
-        if (!mc.world.dimension.IsNether)
+        if (!_game.world.dimension.IsNether)
         {
             renderCloudsFancy(var1);
         }
@@ -551,11 +551,11 @@ public class WorldRenderer : IWorldAccess
     private void renderCloudsFancy(float var1)
     {
         GLManager.GL.Disable(GLEnum.CullFace);
-        float var2 = (float)(mc.camera.lastTickY + (mc.camera.y - mc.camera.lastTickY) * (double)var1);
+        float var2 = (float)(_game.camera.lastTickY + (_game.camera.y - _game.camera.lastTickY) * (double)var1);
         float var4 = 12.0F;
         float var5 = 4.0F;
-        double var6 = (mc.camera.prevX + (mc.camera.x - mc.camera.prevX) * (double)var1 + (double)((cloudOffsetX + var1) * 0.03F)) / (double)var4;
-        double var8 = (mc.camera.prevZ + (mc.camera.z - mc.camera.prevZ) * (double)var1) / (double)var4 + (double)0.33F;
+        double var6 = (_game.camera.prevX + (_game.camera.x - _game.camera.prevX) * (double)var1 + (double)((cloudOffsetX + var1) * 0.03F)) / (double)var4;
+        double var8 = (_game.camera.prevZ + (_game.camera.z - _game.camera.prevZ) * (double)var1) / (double)var4 + (double)0.33F;
         float var10 = world.dimension.CloudHeight - var2 + 0.33F;
         int var11 = MathHelper.Floor(var6 / 2048.0D);
         int var12 = MathHelper.Floor(var8 / 2048.0D);
@@ -657,7 +657,7 @@ public class WorldRenderer : IWorldAccess
                 var6.startDrawingQuads();
                 var6.setTranslationD(-var10, -var12, -var14);
                 var6.disableColor();
-                globalRenderBlocks.renderBlockUsingTexture(var9, var2.BlockX, var2.BlockY, var2.BlockZ, 240 + (int)(damagePartialTime * 10.0F));
+                BlockRenderer.RenderBlockByRenderType(world, var9, new BlockPos(var2.BlockX, var2.BlockY, var2.BlockZ), var6, 240 + (int)(damagePartialTime * 10.0F), true);
                 var6.draw();
                 var6.setTranslationD(0.0D, 0.0D, 0.0D);
                 GLManager.GL.Disable(GLEnum.AlphaTest);
@@ -806,10 +806,10 @@ public class WorldRenderer : IWorldAccess
     {
         if (var1 != null)
         {
-            mc.ingameGUI.setRecordPlayingMessage("C418 - " + var1);
+            _game.ingameGUI.setRecordPlayingMessage("C418 - " + var1);
         }
 
-        mc.sndManager.PlayStreaming(var1, var2, var3, var4, 1.0F, 1.0F);
+        _game.sndManager.PlayStreaming(var1, var2, var3, var4, 1.0F, 1.0F);
     }
 
     public void playSound(string var1, double var2, double var4, double var6, float var8, float var9)
@@ -820,82 +820,82 @@ public class WorldRenderer : IWorldAccess
             var10 *= var8;
         }
 
-        if (mc.camera.getSquaredDistance(var2, var4, var6) < (double)(var10 * var10))
+        if (_game.camera.getSquaredDistance(var2, var4, var6) < (double)(var10 * var10))
         {
-            mc.sndManager.PlaySound(var1, (float)var2, (float)var4, (float)var6, var8, var9);
+            _game.sndManager.PlaySound(var1, (float)var2, (float)var4, (float)var6, var8, var9);
         }
 
     }
 
     public void spawnParticle(string var1, double var2, double var4, double var6, double var8, double var10, double var12)
     {
-        if (mc != null && mc.camera != null && mc.particleManager != null)
+        if (_game != null && _game.camera != null && _game.particleManager != null)
         {
-            double var14 = mc.camera.x - var2;
-            double var16 = mc.camera.y - var4;
-            double var18 = mc.camera.z - var6;
+            double var14 = _game.camera.x - var2;
+            double var16 = _game.camera.y - var4;
+            double var18 = _game.camera.z - var6;
             double var20 = 16.0D;
             if (var14 * var14 + var16 * var16 + var18 * var18 <= var20 * var20)
             {
                 if (var1.Equals("bubble"))
                 {
-                    mc.particleManager.addEffect(new EntityBubbleFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntityBubbleFX(world, var2, var4, var6, var8, var10, var12));
                 }
                 else if (var1.Equals("smoke"))
                 {
-                    mc.particleManager.addEffect(new EntitySmokeFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntitySmokeFX(world, var2, var4, var6, var8, var10, var12));
                 }
                 else if (var1.Equals("note"))
                 {
-                    mc.particleManager.addEffect(new EntityNoteFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntityNoteFX(world, var2, var4, var6, var8, var10, var12));
                 }
                 else if (var1.Equals("portal"))
                 {
-                    mc.particleManager.addEffect(new EntityPortalFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntityPortalFX(world, var2, var4, var6, var8, var10, var12));
                 }
                 else if (var1.Equals("explode"))
                 {
-                    mc.particleManager.addEffect(new EntityExplodeFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntityExplodeFX(world, var2, var4, var6, var8, var10, var12));
                 }
                 else if (var1.Equals("flame"))
                 {
-                    mc.particleManager.addEffect(new EntityFlameFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntityFlameFX(world, var2, var4, var6, var8, var10, var12));
                 }
                 else if (var1.Equals("lava"))
                 {
-                    mc.particleManager.addEffect(new EntityLavaFX(world, var2, var4, var6));
+                    _game.particleManager.addEffect(new EntityLavaFX(world, var2, var4, var6));
                 }
                 else if (var1.Equals("footstep"))
                 {
-                    mc.particleManager.addEffect(new EntityFootStepFX(renderEngine, world, var2, var4, var6));
+                    _game.particleManager.addEffect(new EntityFootStepFX(renderEngine, world, var2, var4, var6));
                 }
                 else if (var1.Equals("splash"))
                 {
-                    mc.particleManager.addEffect(new EntitySplashFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntitySplashFX(world, var2, var4, var6, var8, var10, var12));
                 }
                 else if (var1.Equals("largesmoke"))
                 {
-                    mc.particleManager.addEffect(new EntitySmokeFX(world, var2, var4, var6, var8, var10, var12, 2.5F));
+                    _game.particleManager.addEffect(new EntitySmokeFX(world, var2, var4, var6, var8, var10, var12, 2.5F));
                 }
                 else if (var1.Equals("reddust"))
                 {
-                    mc.particleManager.addEffect(new EntityReddustFX(world, var2, var4, var6, (float)var8, (float)var10, (float)var12));
+                    _game.particleManager.addEffect(new EntityReddustFX(world, var2, var4, var6, (float)var8, (float)var10, (float)var12));
                 }
                 else if (var1.Equals("snowballpoof"))
                 {
-                    mc.particleManager.addEffect(new EntitySlimeFX(world, var2, var4, var6, Item.Snowball));
+                    _game.particleManager.addEffect(new EntitySlimeFX(world, var2, var4, var6, Item.Snowball));
                 }
                 else if (var1.Equals("snowshovel"))
                 {
-                    mc.particleManager.addEffect(new EntitySnowShovelFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntitySnowShovelFX(world, var2, var4, var6, var8, var10, var12));
                 }
                 else if (var1.Equals("slime"))
                 {
-                    mc.particleManager.addEffect(new EntitySlimeFX(world, var2, var4, var6, Item.Slimeball));
+                    _game.particleManager.addEffect(new EntitySlimeFX(world, var2, var4, var6, Item.Slimeball));
                 }
                 else if (var1.Equals("heart"))
                 {
-                    mc.particleManager.addEffect(new EntityHeartFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntityHeartFX(world, var2, var4, var6, var8, var10, var12));
                 }
 
             }
@@ -905,7 +905,7 @@ public class WorldRenderer : IWorldAccess
     public void notifyEntityAdded(Entity var1)
     {
         var1.updateCloak();
-        if (!string.IsNullOrEmpty(var1.skinUrl) && mc.session.skinUrl != null)
+        if (!string.IsNullOrEmpty(var1.skinUrl) && _game.session.skinUrl != null)
         {
             EntityRenderDispatcher.instance.skinManager?.RequestDownload(var1.skinUrl);
         }
@@ -988,10 +988,10 @@ public class WorldRenderer : IWorldAccess
                 if (var16 > 0)
                 {
                     Block var17 = Block.Blocks[var16];
-                    mc.sndManager.PlaySound(var17.soundGroup.BreakSound, var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, (var17.soundGroup.Volume + 1.0F) / 2.0F, var17.soundGroup.Pitch * 0.8F);
+                    _game.sndManager.PlaySound(var17.soundGroup.BreakSound, var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, (var17.soundGroup.Volume + 1.0F) / 2.0F, var17.soundGroup.Pitch * 0.8F);
                 }
 
-                mc.particleManager.addBlockDestroyEffects(var3, var4, var5, var6 & 255, var6 >> 8 & 255);
+                _game.particleManager.addBlockDestroyEffects(var3, var4, var5, var6 & 255, var6 >> 8 & 255);
                 break;
         }
 

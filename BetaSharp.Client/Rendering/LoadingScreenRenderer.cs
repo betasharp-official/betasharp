@@ -1,4 +1,4 @@
-﻿using BetaSharp.Client.Guis;
+using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core;
 using Silk.NET.OpenGL.Legacy;
 
@@ -8,15 +8,15 @@ public class LoadingScreenRenderer : LoadingDisplay
 {
 
     private string field_1004_a = "";
-    private readonly Minecraft mc;
+    private readonly BetaSharp _game;
     private string field_1007_c = "";
     private long field_1006_d = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
 ;
     private bool field_1005_e;
 
-    public LoadingScreenRenderer(Minecraft var1)
+    public LoadingScreenRenderer(BetaSharp var1)
     {
-        mc = var1;
+        _game = var1;
     }
 
     public void printText(string var1)
@@ -33,17 +33,17 @@ public class LoadingScreenRenderer : LoadingDisplay
 
     public void func_597_c(string var1)
     {
-        if (!mc.running)
+        if (!_game.running)
         {
             if (!field_1005_e)
             {
-                throw new MinecraftShutdownException();
+                throw new BetaSharpShutdownException();
             }
         }
         else
         {
             field_1007_c = var1;
-            ScaledResolution var2 = new(mc.options, mc.displayWidth, mc.displayHeight);
+            ScaledResolution var2 = new(_game.options, _game.displayWidth, _game.displayHeight);
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
             GLManager.GL.MatrixMode(GLEnum.Projection);
             GLManager.GL.LoadIdentity();
@@ -56,11 +56,11 @@ public class LoadingScreenRenderer : LoadingDisplay
 
     public void progressStage(string var1)
     {
-        if (!mc.running)
+        if (!_game.running)
         {
             if (!field_1005_e)
             {
-                throw new MinecraftShutdownException();
+                throw new BetaSharpShutdownException();
             }
         }
         else
@@ -74,11 +74,11 @@ public class LoadingScreenRenderer : LoadingDisplay
 
     public void setLoadingProgress(int var1)
     {
-        if (!mc.running)
+        if (!_game.running)
         {
             if (!field_1005_e)
             {
-                throw new MinecraftShutdownException();
+                throw new BetaSharpShutdownException();
             }
         }
         else
@@ -88,7 +88,7 @@ public class LoadingScreenRenderer : LoadingDisplay
             if (var2 - field_1006_d >= 20L)
             {
                 field_1006_d = var2;
-                ScaledResolution var4 = new(mc.options, mc.displayWidth, mc.displayHeight);
+                ScaledResolution var4 = new(_game.options, _game.displayWidth, _game.displayHeight);
                 int var5 = var4.ScaledWidth;
                 int var6 = var4.ScaledHeight;
                 GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
@@ -100,7 +100,7 @@ public class LoadingScreenRenderer : LoadingDisplay
                 GLManager.GL.Translate(0.0F, 0.0F, -200.0F);
                 GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
                 Tessellator var7 = Tessellator.instance;
-                mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/gui/background.png"));
+                _game.textureManager.BindTexture(_game.textureManager.GetTextureId("/gui/background.png"));
                 float var9 = 32.0F;
                 var7.startDrawingQuads();
                 var7.setColorOpaque_I(0x404040);
@@ -131,8 +131,8 @@ public class LoadingScreenRenderer : LoadingDisplay
                     GLManager.GL.Enable(GLEnum.Texture2D);
                 }
 
-                mc.fontRenderer.DrawStringWithShadow(field_1007_c, (var5 - mc.fontRenderer.GetStringWidth(field_1007_c)) / 2, var6 / 2 - 4 - 16, Color.White);
-                mc.fontRenderer.DrawStringWithShadow(field_1004_a, (var5 - mc.fontRenderer.GetStringWidth(field_1004_a)) / 2, var6 / 2 - 4 + 8, Color.White);
+                _game.fontRenderer.DrawStringWithShadow(field_1007_c, (var5 - _game.fontRenderer.GetStringWidth(field_1007_c)) / 2, var6 / 2 - 4 - 16, Color.White);
+                _game.fontRenderer.DrawStringWithShadow(field_1004_a, (var5 - _game.fontRenderer.GetStringWidth(field_1004_a)) / 2, var6 / 2 - 4 + 8, Color.White);
                 Display.update();
 
                 try

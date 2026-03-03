@@ -174,6 +174,8 @@ public class SubChunkRenderer : IDisposable
 
     public void Render(Shader shader, int pass, Vector3D<double> viewPos, Matrix4X4<float> modelViewMatrix)
     {
+        if (disposed) return;
+
         if (pass < 0 || pass > 1)
             throw new ArgumentException("Pass must be 0 or 1");
 
@@ -207,6 +209,9 @@ public class SubChunkRenderer : IDisposable
 
         vertexArrays[0]?.Dispose();
         vertexArrays[1]?.Dispose();
+
+        vertexCounts[0] = 0;
+        vertexCounts[1] = 0;
 
         disposed = true;
     }

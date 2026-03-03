@@ -18,7 +18,7 @@ internal class BlockStairs : Block
         setOpacity(255);
     }
 
-    public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
+    public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
         setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
     }
@@ -38,14 +38,14 @@ internal class BlockStairs : Block
         return false;
     }
 
-    public override int getRenderType()
+    public override BlockRendererType getRenderType()
     {
-        return 10;
+        return BlockRendererType.Stairs;
     }
 
-    public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
+    public override bool isSideVisible(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
-        return base.isSideVisible(blockView, x, y, z, side);
+        return base.isSideVisible(iBlockAccess, x, y, z, side);
     }
 
     public override void addIntersectingBoundingBox(World world, int x, int y, int z, Box box, List<Box> boxes)
@@ -98,9 +98,9 @@ internal class BlockStairs : Block
         baseBlock.onMetadataChange(world, x, y, z, meta);
     }
 
-    public override float getLuminance(BlockView blockView, int x, int y, int z)
+    public override float getLuminance(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        return baseBlock.getLuminance(blockView, x, y, z);
+        return baseBlock.getLuminance(iBlockAccess, x, y, z);
     }
 
     public override float getBlastResistance(Entity entity)
@@ -133,9 +133,9 @@ internal class BlockStairs : Block
         return baseBlock.getTexture(side);
     }
 
-    public override int getTextureId(BlockView blockView, int x, int y, int z, int side)
+    public override int getTextureId(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
-        return baseBlock.getTextureId(blockView, x, y, z, side);
+        return baseBlock.getTextureId(iBlockAccess, x, y, z, side);
     }
 
     public override int getTickRate()

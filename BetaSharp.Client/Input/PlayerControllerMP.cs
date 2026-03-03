@@ -22,7 +22,7 @@ public class PlayerControllerMP : PlayerController
     private readonly ClientNetworkHandler netClientHandler;
     private int currentPlayerItem;
 
-    public PlayerControllerMP(Minecraft var1, ClientNetworkHandler var2) : base(var1)
+    public PlayerControllerMP(BetaSharp var1, ClientNetworkHandler var2) : base(var1)
     {
         netClientHandler = var2;
     }
@@ -34,16 +34,16 @@ public class PlayerControllerMP : PlayerController
 
     public override bool sendBlockRemoved(int x, int y, int z, int var4)
     {
-        int blockId = mc.world.getBlockId(x, y, z);
+        int blockId = Game.world.getBlockId(x, y, z);
         bool var6 = base.sendBlockRemoved(x, y, z, var4);
-        ItemStack var7 = mc.player.getHand();
+        ItemStack var7 = Game.player.getHand();
         if (var7 != null)
         {
-            var7.postMine(blockId, x, y, z, mc.player);
+            var7.postMine(blockId, x, y, z, Game.player);
             if (var7.count == 0)
             {
-                var7.onRemoved(mc.player);
-                mc.player.clearStackInHand();
+                var7.onRemoved(Game.player);
+                Game.player.clearStackInHand();
             }
         }
 
@@ -55,13 +55,13 @@ public class PlayerControllerMP : PlayerController
         if (!isHittingBlock || var1 != currentBlockX || var2 != currentBlockY || var3 != currentblockZ)
         {
             netClientHandler.addToSendQueue(new PlayerActionC2SPacket(0, var1, var2, var3, var4));
-            int var5 = mc.world.getBlockId(var1, var2, var3);
+            int var5 = Game.world.getBlockId(var1, var2, var3);
             if (var5 > 0 && curBlockDamageMP == 0.0F)
             {
-                Block.Blocks[var5].onBlockBreakStart(mc.world, var1, var2, var3, mc.player);
+                Block.Blocks[var5].onBlockBreakStart(Game.world, var1, var2, var3, Game.player);
             }
 
-            if (var5 > 0 && Block.Blocks[var5].getHardness(mc.player) >= 1.0F)
+            if (var5 > 0 && Block.Blocks[var5].getHardness(Game.player) >= 1.0F)
             {
                 sendBlockRemoved(var1, var2, var3, var4);
             }
@@ -98,7 +98,7 @@ public class PlayerControllerMP : PlayerController
             {
                 if (var1 == currentBlockX && var2 == currentBlockY && var3 == currentblockZ)
                 {
-                    int var5 = mc.world.getBlockId(var1, var2, var3);
+                    int var5 = Game.world.getBlockId(var1, var2, var3);
                     if (var5 == 0)
                     {
                         isHittingBlock = false;
@@ -106,10 +106,10 @@ public class PlayerControllerMP : PlayerController
                     }
 
                     Block var6 = Block.Blocks[var5];
-                    curBlockDamageMP += var6.getHardness(mc.player);
+                    curBlockDamageMP += var6.getHardness(Game.player);
                     if (field_9441_h % 4.0F == 0.0F && var6 != null)
                     {
-                        mc.sndManager.PlaySound(var6.soundGroup.StepSound, (float)var1 + 0.5F, (float)var2 + 0.5F, (float)var3 + 0.5F, (var6.soundGroup.Volume + 1.0F) / 8.0F, var6.soundGroup.Pitch * 0.5F);
+                        Game.sndManager.PlaySound(var6.soundGroup.StepSound, (float)var1 + 0.5F, (float)var2 + 0.5F, (float)var3 + 0.5F, (var6.soundGroup.Volume + 1.0F) / 8.0F, var6.soundGroup.Pitch * 0.5F);
                     }
 
                     ++field_9441_h;
@@ -137,14 +137,14 @@ public class PlayerControllerMP : PlayerController
     {
         if (curBlockDamageMP <= 0.0F)
         {
-            mc.ingameGUI._damageGuiPartialTime = 0.0F;
-            mc.terrainRenderer.damagePartialTime = 0.0F;
+            Game.ingameGUI._damageGuiPartialTime = 0.0F;
+            Game.terrainRenderer.damagePartialTime = 0.0F;
         }
         else
         {
             float var2 = prevBlockDamageMP + (curBlockDamageMP - prevBlockDamageMP) * var1;
-            mc.ingameGUI._damageGuiPartialTime = var2;
-            mc.terrainRenderer.damagePartialTime = var2;
+            Game.ingameGUI._damageGuiPartialTime = var2;
+            Game.terrainRenderer.damagePartialTime = var2;
         }
 
     }
@@ -163,12 +163,12 @@ public class PlayerControllerMP : PlayerController
     {
         syncCurrentPlayItem();
         prevBlockDamageMP = curBlockDamageMP;
-        mc.sndManager.PlayRandomMusicIfReady(DefaultMusicCategories.Game);
+        Game.sndManager.PlayRandomMusicIfReady(DefaultMusicCategories.Game);
     }
 
     private void syncCurrentPlayItem()
     {
-        int var1 = mc.player.inventory.selectedSlot;
+        int var1 = Game.player.inventory.selectedSlot;
         if (var1 != currentPlayerItem)
         {
             currentPlayerItem = var1;
@@ -195,7 +195,7 @@ public class PlayerControllerMP : PlayerController
 
     public override EntityPlayer createPlayer(World var1)
     {
-        return new EntityClientPlayerMP(mc, var1, mc.session, netClientHandler);
+        return new EntityClientPlayerMP(Game, var1, Game.session, netClientHandler);
     }
 
     public override void attackEntity(EntityPlayer var1, Entity var2)

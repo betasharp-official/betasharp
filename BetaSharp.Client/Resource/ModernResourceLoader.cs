@@ -12,7 +12,7 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
     private readonly ILogger<ModernAssetDownloader> _logger = Log.Instance.For<ModernAssetDownloader>();
     private readonly HttpClient _httpClient;
     private readonly string _resourcesDirectory;
-    private readonly Minecraft _mc;
+    private readonly BetaSharp _game;
     private bool _cancelled;
     private readonly IEnumerable<string> _wantedAssets;
     private static readonly Dictionary<string, string> ExtensionToFolder = new()
@@ -20,10 +20,10 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
         { ".ogg", "music" }
     };
 
-    public ModernAssetDownloader(Minecraft mc, string baseDirectory, IEnumerable<string> wantedAssets)
+    public ModernAssetDownloader(BetaSharp game, string baseDirectory, IEnumerable<string> wantedAssets)
     {
         _wantedAssets = wantedAssets;
-        _mc = mc;
+        _game = game;
         _resourcesDirectory = System.IO.Path.Combine(baseDirectory, "resources");
         _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
     }
@@ -63,7 +63,7 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
 
                 if (localFile.Exists && localFile.Length == entry.Size)
                 {
-                    _mc.installResource(outputKey, localFile);
+                    _game.installResource(outputKey, localFile);
                     continue;
                 }
 
@@ -76,7 +76,7 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
 
                 if (!_cancelled)
                 {
-                    _mc.installResource(outputKey, localFile);
+                    _game.installResource(outputKey, localFile);
                 }
             }
         }

@@ -18,10 +18,10 @@ public class GuiIngameMenu : GuiScreen
         int centerX = Width / 2;
         int centerY = Height / 4;
 
-        string quitText = (mc.isMultiplayerWorld() && mc.internalServer == null) ? "Disconnect" : "Save and quit to title";
+        string quitText = (Game.isMultiplayerWorld() && Game.internalServer == null) ? "Disconnect" : "Save and quit to title";
 
         _controlList.Add(new GuiButton(1, centerX - 100, centerY + 120 + verticalOffset, quitText));
-        _controlList.Add(new GuiButton(4, centerX - 100, centerY + 24 + verticalOffset, "Back to game"));
+        _controlList.Add(new GuiButton(4, centerX - 100, centerY + 24 + verticalOffset, "Back to Game"));
         _controlList.Add(new GuiButton(0, centerX - 100, centerY + 96 + verticalOffset, "Options..."));
         _controlList.Add(new GuiButton(5, centerX - 100, centerY + 48 + verticalOffset, 98, 20, StatCollector.TranslateToLocal("gui.achievements")));
         _controlList.Add(new GuiButton(6, centerX + 2, centerY + 48 + verticalOffset, 98, 20, StatCollector.TranslateToLocal("gui.stats")));
@@ -31,37 +31,37 @@ public class GuiIngameMenu : GuiScreen
     {
         if (btt.Id == 0)
         {
-            mc.displayGuiScreen(new GuiOptions(this, mc.options));
+            Game.displayGuiScreen(new GuiOptions(this, Game.options));
         }
 
         if (btt.Id == 1)
         {
-            mc.statFileWriter.ReadStat(Stats.Stats.LeaveGameStat, 1);
-            if (mc.isMultiplayerWorld())
+            Game.statFileWriter.ReadStat(Stats.Stats.LeaveGameStat, 1);
+            if (Game.isMultiplayerWorld())
             {
-                mc.world.Disconnect();
+                Game.world.Disconnect();
             }
 
-            mc.stopInternalServer();
-            mc.changeWorld(null);
-            mc.options.ShowDebugInfo = false;
-            mc.displayGuiScreen(new GuiMainMenu());
+            Game.stopInternalServer();
+            Game.changeWorld(null);
+            Game.options.ShowDebugInfo = false;
+            Game.displayGuiScreen(new GuiMainMenu());
         }
 
         if (btt.Id == 4)
         {
-            mc.displayGuiScreen(null);
-            mc.setIngameFocus();
+            Game.displayGuiScreen(null);
+            Game.setIngameFocus();
         }
 
         if (btt.Id == 5)
         {
-            mc.displayGuiScreen(new GuiAchievements(mc.statFileWriter));
+            Game.displayGuiScreen(new GuiAchievements(Game.statFileWriter));
         }
 
         if (btt.Id == 6)
         {
-            mc.displayGuiScreen(new GuiStats(this, mc.statFileWriter));
+            Game.displayGuiScreen(new GuiStats(this, Game.statFileWriter));
         }
     }
 
@@ -75,7 +75,7 @@ public class GuiIngameMenu : GuiScreen
     {
         DrawDefaultBackground();
 
-        bool isSavingActive = !mc.world.attemptSaving(_saveStepTimer++);
+        bool isSavingActive = !Game.world.attemptSaving(_saveStepTimer++);
 
         if (isSavingActive || _menuTickCounter < 20)
         {

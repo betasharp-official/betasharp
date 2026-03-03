@@ -33,9 +33,9 @@ internal class BlockSnow : Block
         return false;
     }
 
-    public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
+    public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        int meta = blockView.getBlockMeta(x, y, z) & 7;
+        int meta = iBlockAccess.getBlockMeta(x, y, z) & 7;
         float height = (float)(2 * (1 + meta)) / 16.0F;
         setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, height, 1.0F);
     }
@@ -99,8 +99,8 @@ internal class BlockSnow : Block
 
     }
 
-    public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
+    public override bool isSideVisible(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
-        return side == 1 ? true : base.isSideVisible(blockView, x, y, z, side);
+        return side == 1 ? true : base.isSideVisible(iBlockAccess, x, y, z, side);
     }
 }

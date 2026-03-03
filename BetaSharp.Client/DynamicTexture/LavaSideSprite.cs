@@ -13,7 +13,7 @@ internal class LavaSideSprite : Rendering.Core.Textures.DynamicTexture
 
     public LavaSideSprite() : base(Block.FlowingLava.textureId + 1) => Replicate = 2;
 
-    public override void Setup(Minecraft mc) => TryLoadCustomTexture(mc, "custom_lava_flowing.png");
+    public override void Setup(BetaSharp game) => TryLoadCustomTexture(game, "custom_lava_flowing.png");
 
     public override void tick()
     {

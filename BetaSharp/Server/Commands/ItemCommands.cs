@@ -15,7 +15,7 @@ internal static class ItemCommands
         BuildItemLookupTables();
     }
 
-    public static void Give(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void Give(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (args.Length < 1) { output.SendMessage("Usage: give <item> [count]"); return; }
 

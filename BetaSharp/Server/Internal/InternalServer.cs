@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Internal;
 
-public class InternalServer : MinecraftServer
+public class InternalServer : BetaSharpServer
 {
     private readonly string _worldPath;
     private readonly Lock _difficultyLock = new();

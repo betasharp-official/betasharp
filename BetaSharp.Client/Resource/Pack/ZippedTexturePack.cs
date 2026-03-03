@@ -31,7 +31,7 @@ public class ZippedTexturePack : TexturePack
         return str ?? string.Empty;
     }
 
-    public override void func_6485_a(Minecraft mc)
+    public override void func_6485_a(BetaSharp game)
     {
         try
         {
@@ -59,11 +59,11 @@ public class ZippedTexturePack : TexturePack
         }
     }
 
-    public override void Unload(Minecraft mc)
+    public override void Unload(BetaSharp game)
     {
         if (_texturePackThumbnail != null && _texturePackName != null)
         {
-            mc.textureManager.Delete(_texturePackName);
+            game.textureManager.Delete(_texturePackName);
             _texturePackThumbnail.Dispose();
 
         }
@@ -71,20 +71,20 @@ public class ZippedTexturePack : TexturePack
         CloseTexturePackFile();
     }
 
-    public override void BindThumbnailTexture(Minecraft mc)
+    public override void BindThumbnailTexture(BetaSharp game)
     {
         if (_texturePackThumbnail != null && _texturePackName == null)
         {
-            _texturePackName = mc.textureManager.Load(_texturePackThumbnail);
+            _texturePackName = game.textureManager.Load(_texturePackThumbnail);
         }
 
         if (_texturePackThumbnail != null && _texturePackName != null)
         {
-            mc.textureManager.BindTexture(_texturePackName);
+            game.textureManager.BindTexture(_texturePackName);
         }
         else
         {
-            mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/gui/unknown_pack.png"));
+            game.textureManager.BindTexture(game.textureManager.GetTextureId("/gui/unknown_pack.png"));
         }
 
     }

@@ -93,6 +93,8 @@ public class AssetManager
         defineAsset("environment/rain.png", AssetType.Binary);
         defineAsset("environment/snow.png", AssetType.Binary);
 
+        defineAsset("font/default.png", AssetType.Binary);
+
         defineAsset("gui/background.png", AssetType.Binary);
         defineAsset("gui/container.png", AssetType.Binary);
         defineAsset("gui/crafting.png", AssetType.Binary);
@@ -252,7 +254,6 @@ public class AssetManager
                 {
                     _logger.LogError($"Failed to load text asset: {assetPath}, {e}");
                 }
-
             }
         }
 
@@ -286,22 +287,22 @@ public class AssetManager
             switch (type)
             {
                 case AssetType.Text:
-                {
-                    using var reader = new StreamReader(stream);
-                    string text = reader.ReadToEnd();
-                    loadedAssets[embeddedAssetPath] = new(text);
-                    embeddedAssetsLoaded++;
-                    break;
-                }
+                    {
+                        using var reader = new StreamReader(stream);
+                        string text = reader.ReadToEnd();
+                        loadedAssets[embeddedAssetPath] = new(text);
+                        embeddedAssetsLoaded++;
+                        break;
+                    }
 
                 case AssetType.Binary:
-                {
-                    using var ms = new MemoryStream();
-                    stream.CopyTo(ms);
-                    loadedAssets[embeddedAssetPath] = new(ms.ToArray());
-                    embeddedAssetsLoaded++;
-                    break;
-                }
+                    {
+                        using var ms = new MemoryStream();
+                        stream.CopyTo(ms);
+                        loadedAssets[embeddedAssetPath] = new(ms.ToArray());
+                        embeddedAssetsLoaded++;
+                        break;
+                    }
             }
         }
         catch (Exception e)
@@ -309,5 +310,4 @@ public class AssetManager
             _logger.LogError($"Exception while loading embedded asset: {e}");
         }
     }
-
 }

@@ -13,9 +13,9 @@ internal class BlockCake : Block
         setTickRandomly(true);
     }
 
-    public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
+    public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        int slicesEaten = blockView.getBlockMeta(x, y, z);
+        int slicesEaten = iBlockAccess.getBlockMeta(x, y, z);
         float edgeInset = 1.0F / 16.0F;
         float minX = (float)(1 + slicesEaten * 2) / 16.0F;
         float height = 0.5F;

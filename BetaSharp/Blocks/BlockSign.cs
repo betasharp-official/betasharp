@@ -32,11 +32,11 @@ internal class BlockSign : BlockWithEntity
         return base.getBoundingBox(world, x, y, z);
     }
 
-    public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
+    public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
         if (!_standing)
         {
-            int facing = blockView.getBlockMeta(x, y, z);
+            int facing = iBlockAccess.getBlockMeta(x, y, z);
             float topOffset = 9.0F / 32.0F;
             float bottomOffset = 25.0F / 32.0F;
             float minExtent = 0.0F;
@@ -65,9 +65,9 @@ internal class BlockSign : BlockWithEntity
         }
     }
 
-    public override int getRenderType()
+    public override BlockRendererType getRenderType()
     {
-        return -1;
+        return BlockRendererType.Entity;
     }
 
     public override bool isFullCube()

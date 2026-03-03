@@ -22,7 +22,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 {
     public Connection connection;
     public bool disconnected;
-    private MinecraftServer server;
+    private BetaSharpServer server;
     private ServerPlayerEntity player;
     private int ticks;
     private int lastKeepAliveTime;
@@ -36,7 +36,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 
     private readonly ILogger<ServerPlayNetworkHandler> _logger = Log.Instance.For<ServerPlayNetworkHandler>();
 
-    public ServerPlayNetworkHandler(MinecraftServer server, Connection connection, ServerPlayerEntity player)
+    public ServerPlayNetworkHandler(BetaSharpServer server, Connection connection, ServerPlayerEntity player)
     {
         this.server = server;
         this.connection = connection;

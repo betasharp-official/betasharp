@@ -16,7 +16,7 @@ public abstract class BlockFluid : Block
         setTickRandomly(true);
     }
 
-    public override int getColorMultiplier(BlockView blockView, int x, int y, int z)
+    public override int getColorMultiplier(IBlockAccess iBlockAccess, int x, int y, int z)
     {
         return 0xFFFFFF;
     }
@@ -42,15 +42,15 @@ public abstract class BlockFluid : Block
         return world.getMaterial(x, y, z) != material ? -1 : world.getBlockMeta(x, y, z);
     }
 
-    protected int getLiquidDepth(BlockView blockView, int x, int y, int z)
+    protected int getLiquidDepth(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        if (blockView.getMaterial(x, y, z) != material)
+        if (iBlockAccess.getMaterial(x, y, z) != material)
         {
             return -1;
         }
         else
         {
-            int depth = blockView.getBlockMeta(x, y, z);
+            int depth = iBlockAccess.getBlockMeta(x, y, z);
             if (depth >= 8)
             {
                 depth = 0;
@@ -75,20 +75,20 @@ public abstract class BlockFluid : Block
         return allowLiquids && meta == 0;
     }
 
-    public override bool isSolidFace(BlockView blockView, int x, int y, int z, int face)
+    public override bool isSolidFace(IBlockAccess iBlockAccess, int x, int y, int z, int face)
     {
-        Material material = blockView.getMaterial(x, y, z);
+        Material material = iBlockAccess.getMaterial(x, y, z);
         return material == base.material ?
             false :
-            (material == Material.Ice ? false : (face == 1 ? true : base.isSolidFace(blockView, x, y, z, face)));
+            (material == Material.Ice ? false : (face == 1 ? true : base.isSolidFace(iBlockAccess, x, y, z, face)));
     }
 
-    public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
+    public override bool isSideVisible(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
-        Material material = blockView.getMaterial(x, y, z);
+        Material material = iBlockAccess.getMaterial(x, y, z);
         return material == base.material ?
             false :
-            (material == Material.Ice ? false : (side == 1 ? true : base.isSideVisible(blockView, x, y, z, side)));
+            (material == Material.Ice ? false : (side == 1 ? true : base.isSideVisible(iBlockAccess, x, y, z, side)));
     }
 
     public override Box? getCollisionShape(World world, int x, int y, int z)
@@ -96,9 +96,9 @@ public abstract class BlockFluid : Block
         return null;
     }
 
-    public override int getRenderType()
+    public override BlockRendererType getRenderType()
     {
-        return 4;
+        return BlockRendererType.Fluids;
     }
 
     public override int getDroppedItemId(int blockMeta, JavaRandom random)
@@ -111,10 +111,10 @@ public abstract class BlockFluid : Block
         return 0;
     }
 
-    private Vector3D<double> getFlow(BlockView blockView, int x, int y, int z)
+    private Vector3D<double> getFlow(IBlockAccess iBlockAccess, int x, int y, int z)
     {
         Vector3D<double> flowVector = new(0.0);
-        int depth = getLiquidDepth(blockView, x, y, z);
+        int depth = getLiquidDepth(iBlockAccess, x, y, z);
 
         for (int direction = 0; direction < 4; ++direction)
         {
@@ -140,13 +140,13 @@ public abstract class BlockFluid : Block
                 ++neighborZ;
             }
 
-            int neighborDepth = getLiquidDepth(blockView, neighborX, y, neighborZ);
+            int neighborDepth = getLiquidDepth(iBlockAccess, neighborX, y, neighborZ);
             int depthDiff;
             if (neighborDepth < 0)
             {
-                if (!blockView.getMaterial(neighborX, y, neighborZ).BlocksMovement)
+                if (!iBlockAccess.getMaterial(neighborX, y, neighborZ).BlocksMovement)
                 {
-                    neighborDepth = getLiquidDepth(blockView, neighborX, y - 1, neighborZ);
+                    neighborDepth = getLiquidDepth(iBlockAccess, neighborX, y - 1, neighborZ);
                     if (neighborDepth >= 0)
                     {
                         depthDiff = neighborDepth - (depth - 8);
@@ -161,45 +161,45 @@ public abstract class BlockFluid : Block
             }
         }
 
-        if (blockView.getBlockMeta(x, y, z) >= 8)
+        if (iBlockAccess.getBlockMeta(x, y, z) >= 8)
         {
             bool hasAdjacentSolid = false;
-            if (hasAdjacentSolid || isSolidFace(blockView, x, y, z - 1, 2))
+            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x, y, z - 1, 2))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || isSolidFace(blockView, x, y, z + 1, 3))
+            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x, y, z + 1, 3))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || isSolidFace(blockView, x - 1, y, z, 4))
+            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x - 1, y, z, 4))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || isSolidFace(blockView, x + 1, y, z, 5))
+            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x + 1, y, z, 5))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || isSolidFace(blockView, x, y + 1, z - 1, 2))
+            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x, y + 1, z - 1, 2))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || isSolidFace(blockView, x, y + 1, z + 1, 3))
+            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x, y + 1, z + 1, 3))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || isSolidFace(blockView, x - 1, y + 1, z, 4))
+            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x - 1, y + 1, z, 4))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || isSolidFace(blockView, x + 1, y + 1, z, 5))
+            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x + 1, y + 1, z, 5))
             {
                 hasAdjacentSolid = true;
             }
@@ -227,10 +227,10 @@ public abstract class BlockFluid : Block
         return material == Material.Water ? 5 : (material == Material.Lava ? 30 : 0);
     }
 
-    public override float getLuminance(BlockView blockView, int x, int y, int z)
+    public override float getLuminance(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        float luminance = blockView.getLuminance(x, y, z);
-        float luminanceAbove = blockView.getLuminance(x, y + 1, z);
+        float luminance = iBlockAccess.getLuminance(x, y, z);
+        float luminanceAbove = iBlockAccess.getLuminance(x, y + 1, z);
         return luminance > luminanceAbove ? luminance : luminanceAbove;
     }
 
@@ -265,16 +265,16 @@ public abstract class BlockFluid : Block
 
     }
 
-    public static double getFlowingAngle(BlockView blockView, int x, int y, int z, Material material)
+    public static double getFlowingAngle(IBlockAccess iBlockAccess, int x, int y, int z, Material material)
     {
         Vector3D<double> flowVec = new(0.0);
         if (material == Material.Water)
         {
-            flowVec = ((BlockFluid)FlowingWater).getFlow(blockView, x, y, z);
+            flowVec = ((BlockFluid)FlowingWater).getFlow(iBlockAccess, x, y, z);
         }
         else if (material == Material.Lava)
         {
-            flowVec = ((BlockFluid)FlowingLava).getFlow(blockView, x, y, z);
+            flowVec = ((BlockFluid)FlowingLava).getFlow(iBlockAccess, x, y, z);
         }
 
         return flowVec.X == 0.0D && flowVec.Z == 0.0D ? -1000.0D : Math.Atan2(flowVec.Z, flowVec.X) - Math.PI * 0.5D;

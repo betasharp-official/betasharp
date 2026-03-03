@@ -32,9 +32,9 @@ internal class BlockTrapDoor : Block
         return false;
     }
 
-    public override int getRenderType()
+    public override BlockRendererType getRenderType()
     {
-        return 0;
+        return BlockRendererType.Standard;
     }
 
     public override Box getBoundingBox(World world, int x, int y, int z)
@@ -49,9 +49,9 @@ internal class BlockTrapDoor : Block
         return base.getCollisionShape(world, x, y, z);
     }
 
-    public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
+    public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        updateBoundingBox(blockView.getBlockMeta(x, y, z));
+        updateBoundingBox(iBlockAccess.getBlockMeta(x, y, z));
     }
 
     public override void setupRenderBoundingBox()

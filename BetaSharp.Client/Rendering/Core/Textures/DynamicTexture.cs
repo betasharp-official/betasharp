@@ -21,7 +21,7 @@ public class DynamicTexture(int iconIdx)
         Items
     }
 
-    public virtual void Setup(Minecraft mc)
+    public virtual void Setup(BetaSharp game)
     {
     }
 
@@ -29,13 +29,13 @@ public class DynamicTexture(int iconIdx)
     {
     }
 
-    protected virtual void TryLoadCustomTexture(Minecraft mc, string resourceName)
+    protected virtual void TryLoadCustomTexture(BetaSharp game, string resourceName)
     {
         CustomFrames = null;
         CustomFrameIndex = 0;
         CustomFrameCount = 0;
 
-        using Stream? stream = mc.texturePackList.SelectedTexturePack.GetResourceAsStream(resourceName);
+        using Stream? stream = game.texturePackList.SelectedTexturePack.GetResourceAsStream(resourceName);
         if (stream == null)
         {
             if (Pixels.Length != 1024) Pixels = new byte[1024];
@@ -45,7 +45,7 @@ public class DynamicTexture(int iconIdx)
         try
         {
             string atlasPath = Atlas == FxImage.Terrain ? "/terrain.png" : "/gui/items.png";
-            int targetWidth = mc.textureManager.GetTextureId(atlasPath).Texture?.Width ?? 256;
+            int targetWidth = game.textureManager.GetTextureId(atlasPath).Texture?.Width ?? 256;
             int targetTileSize = targetWidth / 16;
 
             if (targetTileSize < 1) targetTileSize = 1;

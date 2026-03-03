@@ -267,10 +267,6 @@ public class ServerChunkCache : ChunkSource
         return !_world.savingDisabled;
     }
 
-    public void markChunksForUnload(int renderDistanceChunks)
-    {
-    }
-
     public string GetDebugInfo()
     {
         return "NOP";
@@ -298,7 +294,7 @@ public class ServerChunkCache : ChunkSource
 
     // Runs the 4 decoration neighbour checks for a newly inserted chunk,
     // mirroring the logic in LoadChunk but without re-generating terrain.
-    
+
     public void DecorateIfReady(int chunkX, int chunkZ)
     {
         if (!IsChunkLoaded(chunkX, chunkZ)) return;

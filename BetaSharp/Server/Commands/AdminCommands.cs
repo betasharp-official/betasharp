@@ -6,14 +6,14 @@ namespace BetaSharp.Server.Commands;
 
 internal class AdminCommands
 {
-    private static readonly Logger logger = Logger.getLogger("Minecraft");
+    private static readonly Logger logger = Logger.getLogger("BetaSharp");
 
-    public static void List(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void List(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         output.SendMessage("Connected players: " + server.playerManager.getPlayerList());
     }
 
-    public static void Stop(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void Stop(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
 
@@ -21,7 +21,7 @@ internal class AdminCommands
         server.stop();
     }
 
-    public static void SaveAll(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void SaveAll(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         LogCommand(server, senderName, "Forcing save..");
         server.playerManager?.savePlayers();
@@ -34,7 +34,7 @@ internal class AdminCommands
         LogCommand(server, senderName, "Save complete.");
     }
 
-    public static void SaveToggle(MinecraftServer server, string senderName, bool disable)
+    public static void SaveToggle(BetaSharpServer server, string senderName, bool disable)
     {
         string action = disable ? "Disabling" : "Enabling";
         LogCommand(server, senderName, $"{action} level saving..");
@@ -45,7 +45,7 @@ internal class AdminCommands
         }
     }
 
-    public static void Op(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void Op(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1) { output.SendMessage("Usage: op <player>"); return; }
@@ -56,7 +56,7 @@ internal class AdminCommands
         server.playerManager.messagePlayer(target, "§eYou are now op!");
     }
 
-    public static void Deop(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void Deop(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1) { output.SendMessage("Usage: deop <player>"); return; }
@@ -67,7 +67,7 @@ internal class AdminCommands
         LogCommand(server, senderName, "De-opping " + target);
     }
 
-    public static void Ban(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void Ban(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1) { output.SendMessage("Usage: ban <player>"); return; }
@@ -78,7 +78,7 @@ internal class AdminCommands
         server.playerManager.getPlayer(target)?.networkHandler.disconnect("Banned by admin");
     }
 
-    public static void Pardon(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void Pardon(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1) { output.SendMessage("Usage: pardon <player>"); return; }
@@ -88,7 +88,7 @@ internal class AdminCommands
         LogCommand(server, senderName, "Pardoning " + target);
     }
 
-    public static void BanIp(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void BanIp(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1) { output.SendMessage("Usage: ban-ip <ip>"); return; }
@@ -98,7 +98,7 @@ internal class AdminCommands
         LogCommand(server, senderName, "Banning ip " + ip);
     }
 
-    public static void PardonIp(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void PardonIp(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1) { output.SendMessage("Usage: pardon-ip <ip>"); return; }
@@ -108,7 +108,7 @@ internal class AdminCommands
         LogCommand(server, senderName, "Pardoning ip " + ip);
     }
 
-    public static void Kick(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void Kick(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1) { output.SendMessage("Usage: kick <player>"); return; }
@@ -127,7 +127,7 @@ internal class AdminCommands
         }
     }
 
-    public static void Whitelist(MinecraftServer server, string senderName, string[] args, CommandOutput output)
+    public static void Whitelist(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1)
@@ -173,7 +173,7 @@ internal class AdminCommands
         }
     }
 
-    private static bool IsInternalServer(MinecraftServer server, CommandOutput output)
+    private static bool IsInternalServer(BetaSharpServer server, CommandOutput output)
     {
         if (server is InternalServer)
         {
@@ -183,7 +183,7 @@ internal class AdminCommands
         return false;
     }
 
-    internal static void LogCommand(MinecraftServer server, string senderName, string message)
+    internal static void LogCommand(BetaSharpServer server, string senderName, string message)
     {
         string logMessage = senderName + ": " + message;
         server.playerManager.broadcast("§7(" + logMessage + ")");

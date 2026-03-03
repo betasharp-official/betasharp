@@ -10,7 +10,7 @@ public class GuiWorldSlot : GuiSlot
     readonly GuiSelectWorld _parentWorldGui;
 
 
-    public GuiWorldSlot(GuiSelectWorld parent) : base(parent.mc, parent.Width, parent.Height, 32, parent.Height - 64, 36)
+    public GuiWorldSlot(GuiSelectWorld parent) : base(parent.Game, parent.Width, parent.Height, 32, parent.Height - 64, 36)
     {
         _parentWorldGui = parent;
     }

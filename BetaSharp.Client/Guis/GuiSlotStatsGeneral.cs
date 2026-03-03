@@ -8,7 +8,7 @@ public class GuiSlotStatsGeneral : GuiSlot
     readonly GuiStats parentStatsGui;
 
 
-    public GuiSlotStatsGeneral(GuiStats parent) : base(parent.mc, parent.Width, parent.Height, 32, parent.Height - 64, 10)
+    public GuiSlotStatsGeneral(GuiStats parent) : base(parent.Game, parent.Width, parent.Height, 32, parent.Height - 64, 10)
     {
         parentStatsGui = parent;
         SetShowSelectionHighlight(false);

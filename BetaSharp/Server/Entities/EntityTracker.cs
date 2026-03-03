@@ -10,11 +10,11 @@ public class EntityTracker
 {
     private HashSet<EntityTrackerEntry> entries = [];
     private Dictionary<int, EntityTrackerEntry> entriesById = new();
-    private MinecraftServer world;
+    private BetaSharpServer world;
     private int viewDistance;
     private int dimensionId;
 
-    public EntityTracker(MinecraftServer server, int dimensionId)
+    public EntityTracker(BetaSharpServer server, int dimensionId)
     {
         world = server;
         this.dimensionId = dimensionId;

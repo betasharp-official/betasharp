@@ -103,28 +103,28 @@ public record struct Vec3D
         }
     }
 
-    public void rotateAroundX(float var1)
+    public void rotateAroundX(float angleRadians)
     {
-        float var2 = MathHelper.Cos(var1);
-        float var3 = MathHelper.Sin(var1);
-        double var4 = x;
-        double var6 = y * (double)var2 + z * (double)var3;
-        double var8 = z * (double)var2 - y * (double)var3;
-        x = var4;
-        y = var6;
-        z = var8;
+        float cosAngle = MathHelper.Cos(angleRadians);
+        float sinAngle = MathHelper.Sin(angleRadians);
+
+        double rotatedY = y * cosAngle + z * sinAngle;
+        double rotatedZ = z * cosAngle - y * sinAngle;
+
+        y = rotatedY;
+        z = rotatedZ;
     }
 
-    public void rotateAroundY(float var1)
+    public void rotateAroundY(float angleRadians)
     {
-        float var2 = MathHelper.Cos(var1);
-        float var3 = MathHelper.Sin(var1);
-        double var4 = x * (double)var2 + z * (double)var3;
-        double var6 = y;
-        double var8 = z * (double)var2 - x * (double)var3;
-        x = var4;
-        y = var6;
-        z = var8;
+        float cosAngle = MathHelper.Cos(angleRadians);
+        float sinAngle = MathHelper.Sin(angleRadians);
+
+        double rotatedX = x * cosAngle + z * sinAngle;
+        double rotatedZ = z * cosAngle - x * sinAngle;
+
+        x = rotatedX;
+        z = rotatedZ;
     }
 
     public override string ToString()

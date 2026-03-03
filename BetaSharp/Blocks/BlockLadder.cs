@@ -75,9 +75,9 @@ internal class BlockLadder : Block
         return false;
     }
 
-    public override int getRenderType()
+    public override BlockRendererType getRenderType()
     {
-        return 8;
+        return BlockRendererType.Ladder;
     }
 
     public override bool canPlaceAt(World world, int x, int y, int z)

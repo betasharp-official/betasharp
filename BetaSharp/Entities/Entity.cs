@@ -112,7 +112,7 @@ public abstract class Entity
             while (y > 0.0D)
             {
                 setPosition(x, y, z);
-                if (world.GetEntityCollisions(this, boundingBox).Count == 0)
+                if (world.GetEntityCollisionsScratch(this, boundingBox).Count == 0)
                 {
                     break;
                 }
@@ -293,7 +293,7 @@ public abstract class Entity
     public bool getEntitiesInside(double x, double y, double z)
     {
         Box box = boundingBox.Offset(x, y, z);
-        var entitiesInbound = world.GetEntityCollisions(this, box);
+        var entitiesInbound = world.GetEntityCollisionsScratch(this, box);
         return entitiesInbound.Count > 0 ? false : !world.isBoxSubmergedInFluid(box);
     }
 
@@ -330,7 +330,7 @@ public abstract class Entity
             if (var18)
             {
                 double var19;
-                for (var19 = 0.05D; x != 0.0D && world.GetEntityCollisions(this, boundingBox.Offset(x, -1.0D, 0.0D)).Count == 0; var11 = x)
+                for (var19 = 0.05D; x != 0.0D && world.GetEntityCollisionsScratch(this, boundingBox.Offset(x, -1.0D, 0.0D)).Count == 0; var11 = x)
                 {
                     if (x < var19 && x >= -var19)
                     {
@@ -346,7 +346,7 @@ public abstract class Entity
                     }
                 }
 
-                for (; z != 0.0D && world.GetEntityCollisions(this, boundingBox.Offset(0.0D, -1.0D, z)).Count == 0; var15 = z)
+                for (; z != 0.0D && world.GetEntityCollisionsScratch(this, boundingBox.Offset(0.0D, -1.0D, z)).Count == 0; var15 = z)
                 {
                     if (z < var19 && z >= -var19)
                     {
@@ -363,7 +363,7 @@ public abstract class Entity
                 }
             }
 
-            var entitiesInbound = world.GetEntityCollisions(this, boundingBox.Stretch(x, y, z));
+            var entitiesInbound = world.GetEntityCollisionsScratch(this, boundingBox.Stretch(x, y, z));
 
             for (int var20 = 0; var20 < entitiesInbound.Count; ++var20)
             {
@@ -420,7 +420,7 @@ public abstract class Entity
                 z = var15;
                 Box var27 = boundingBox;
                 boundingBox = var17;
-                entitiesInbound = world.GetEntityCollisions(this, boundingBox.Stretch(var11, y, var15));
+                entitiesInbound = world.GetEntityCollisionsScratch(this, boundingBox.Stretch(var11, y, var15));
 
                 for (var28 = 0; var28 < entitiesInbound.Count; ++var28)
                 {
@@ -530,31 +530,31 @@ public abstract class Entity
 
                 if (onGround)
                 {
-	                var38 = MathHelper.Floor(this.x);
-	                var26 = MathHelper.Floor(this.y - (double)0.2F - (double)standingEyeHeight);
-	                var39 = MathHelper.Floor(this.z);
-	                var28 = world.getBlockId(var38, var26, var39);
-	                if (world.getBlockId(var38, var26 - 1, var39) == Block.Fence.id)
-	                {
-	                    var28 = world.getBlockId(var38, var26 - 1, var39);
-	                }
+                    var38 = MathHelper.Floor(this.x);
+                    var26 = MathHelper.Floor(this.y - (double)0.2F - (double)standingEyeHeight);
+                    var39 = MathHelper.Floor(this.z);
+                    var28 = world.getBlockId(var38, var26, var39);
+                    if (world.getBlockId(var38, var26 - 1, var39) == Block.Fence.id)
+                    {
+                        var28 = world.getBlockId(var38, var26 - 1, var39);
+                    }
 
-	                if (horizontalSpeed > (float)nextStepSoundDistance && var28 > 0)
-	                {
-	                    ++nextStepSoundDistance;
-	                    BlockSoundGroup soundGroup = Block.Blocks[var28].soundGroup;
-	                    if (world.getBlockId(var38, var26 + 1, var39) == Block.Snow.id)
-	                    {
-	                        soundGroup = Block.Snow.soundGroup;
-	                        world.playSound(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
-	                    }
-	                    else if (!Block.Blocks[var28].material.IsFluid)
-	                    {
-	                        world.playSound(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
-	                    }
+                    if (horizontalSpeed > (float)nextStepSoundDistance && var28 > 0)
+                    {
+                        ++nextStepSoundDistance;
+                        BlockSoundGroup soundGroup = Block.Blocks[var28].soundGroup;
+                        if (world.getBlockId(var38, var26 + 1, var39) == Block.Snow.id)
+                        {
+                            soundGroup = Block.Snow.soundGroup;
+                            world.playSound(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
+                        }
+                        else if (!Block.Blocks[var28].material.IsFluid)
+                        {
+                            world.playSound(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
+                        }
 
-	                    Block.Blocks[var28].onSteppedOn(world, var38, var26, var39, this);
-	                }
+                        Block.Blocks[var28].onSteppedOn(world, var38, var26, var39, this);
+                    }
                 }
             }
 
@@ -1192,7 +1192,7 @@ public abstract class Entity
     {
         setPosition(x, y, z);
         setRotation(var7, var8);
-        var var10 = world.GetEntityCollisions(this, boundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
+        var var10 = world.GetEntityCollisionsScratch(this, boundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
         if (var10.Count > 0)
         {
             double var11 = 0.0D;
