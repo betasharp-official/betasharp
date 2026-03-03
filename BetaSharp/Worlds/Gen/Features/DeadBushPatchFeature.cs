@@ -27,7 +27,7 @@ internal class DeadBushPatchFeature : Feature
                     int genZ = z + rand.NextInt(8) - rand.NextInt(8);
                     if (world.isAir(genX, genY, genZ) && ((BlockPlant)Block.Blocks[_deadBushBlockId]).canGrow(world, genX, genY, genZ))
                     {
-                        world.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, _deadBushBlockId);
+                        world.SetBlockRaw(genX, genY, genZ, _deadBushBlockId);
                     }
                 }
 

@@ -12,7 +12,7 @@ internal class GlowstoneClusterFeature : Feature
         if (world.getBlockId(x, y + 1, z) != Block.Netherrack.id)return false;
 
 
-        world.setBlock(x, y, z, Block.Glowstone.id);
+        world.SetBlockRaw(x, y, z, Block.Glowstone.id);
 
         for (int i = 0; i < 1500; ++i)
         {
@@ -39,7 +39,7 @@ internal class GlowstoneClusterFeature : Feature
 
                 if (GlowstoneNeighbors == 1)
                 {
-                    world.setBlock(genX, genY, genZ, Block.Glowstone.id);
+                    world.SetBlockRaw(genX, genY, genZ, Block.Glowstone.id);
                 }
             }
         }

@@ -58,18 +58,18 @@ internal class DungeonFeature : Feature
                                     cz != z + radiusZ + 1;
                     if (isInside)
                     {
-                        world.setBlock(cx, cy, cz, 0);
+                        world.SetBlockRaw(cx, cy, cz, 0);
                     }
                     else if (cy >= 0 && !world.getMaterial(cx, cy - 1, cz).IsSolid)
                     {
-                        world.setBlock(cx, cy, cz, 0);
+                        world.SetBlockRaw(cx, cy, cz, 0);
                     }
                     else if (world.getMaterial(cx, cy, cz).IsSolid)
                     {
                         if (cy == y - 1 && rand.NextInt(4) != 0)
-                            world.setBlock(cx, cy, cz, Block.MossyCobblestone.id);
+                            world.SetBlockRaw(cx, cy, cz, Block.MossyCobblestone.id);
                         else
-                            world.setBlock(cx, cy, cz, Block.Cobblestone.id);
+                            world.SetBlockRaw(cx, cy, cz, Block.Cobblestone.id);
                     }
                 }
             }
@@ -92,7 +92,7 @@ internal class DungeonFeature : Feature
 
                     if (neighbors != 1) continue;
 
-                    world.setBlock(chestX, y, chestZ, Block.Chest.id);
+                    world.SetBlockRaw(chestX, y, chestZ, Block.Chest.id);
 
                     BlockEntityChest chest = (BlockEntityChest)world.getBlockEntity(chestX, y, chestZ);
                     for (int k = 0; k < 8; ++k)
@@ -108,7 +108,7 @@ internal class DungeonFeature : Feature
             }
         }
 
-        world.setBlock(x, y, z, Block.Spawner.id);
+        world.SetBlockRaw(x, y, z, Block.Spawner.id);
         BlockEntityMobSpawner var19 = (BlockEntityMobSpawner)world.getBlockEntity(x, y, z);
         var19.SetSpawnedEntityId(PickMobSpawner(rand));
         return true;

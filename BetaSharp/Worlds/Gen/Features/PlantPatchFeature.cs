@@ -22,7 +22,7 @@ internal class PlantPatchFeature : Feature
             int genZ = z + rand.NextInt(8) - rand.NextInt(8);
             if (world.isAir(genX, genY, genZ) && ((BlockPlant)Block.Blocks[plantBlockId]).canGrow(world, genX, genY, genZ))
             {
-                world.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, plantBlockId);
+                world.SetBlockRaw(genX, genY, genZ, plantBlockId);
             }
         }
 

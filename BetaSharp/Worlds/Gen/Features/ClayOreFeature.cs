@@ -66,7 +66,7 @@ internal class ClayOreFeature : Feature
                             int var47 = world.getBlockId(blockX, blockY, blockZ);
                             if (var47 == Block.Sand.id)
                             {
-                                world.SetBlockWithoutNotifyingNeighbors(blockX, blockY, blockZ, _clayBlockId);
+                                world.SetBlockRaw(blockX, blockY, blockZ, _clayBlockId);
                             }
                         }
                     }

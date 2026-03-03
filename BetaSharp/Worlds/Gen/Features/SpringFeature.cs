@@ -38,7 +38,7 @@ internal class SpringFeature : Feature
 
         if (stoneNeighbors == 3 && airNeighbors == 1)
         {
-            world.setBlock(x, y, z, _liquidBlockId);
+            world.SetBlockRaw(x, y, z, _liquidBlockId);
 
             world.instantBlockUpdateEnabled = true;
             Block.Blocks[_liquidBlockId].onTick(world, x, y, z, rand);

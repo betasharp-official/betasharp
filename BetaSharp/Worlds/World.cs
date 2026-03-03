@@ -461,6 +461,26 @@ public abstract class World : IBlockAccess
         }
     }
 
+    public virtual bool SetBlockRaw(int x, int y, int z, int blockId)
+    {
+        if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000)
+        {
+            if (y < 0 || y >= 128) return false;
+
+            Chunk chunk = GetChunk(x >> 4, z >> 4);
+            return chunk.SetBlockRaw(x & 15, y, z & 15, blockId);
+        }
+        return false;
+    }
+
+    public virtual bool SetBlockRaw(int x, int y, int z, int blockId, int meta = 0)
+    {
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
+            return false;
+
+        return GetChunk(x >> 4, z >> 4).SetBlockRaw(x & 15, y, z & 15, blockId, meta);
+    }
+
     public bool setBlock(int x, int y, int z, int blockId, int meta)
     {
         if (SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta))

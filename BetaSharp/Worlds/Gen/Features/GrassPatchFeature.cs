@@ -5,7 +5,6 @@ namespace BetaSharp.Worlds.Gen.Features;
 
 internal class GrassPatchFeature : Feature
 {
-
     private readonly int _tallGrassBlockId;
     private readonly int _tallGrassBlockMeta;
 
@@ -29,7 +28,7 @@ internal class GrassPatchFeature : Feature
                     int genZ = z + rand.NextInt(8) - rand.NextInt(8);
                     if (world.isAir(genX, genY, genZ) && ((BlockPlant)Block.Blocks[_tallGrassBlockId]).canGrow(world, genX, genY, genZ))
                     {
-                        world.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, _tallGrassBlockId, _tallGrassBlockMeta);
+                        world.SetBlockRaw(genX, genY, genZ, _tallGrassBlockId, _tallGrassBlockMeta);
                     }
                 }
 

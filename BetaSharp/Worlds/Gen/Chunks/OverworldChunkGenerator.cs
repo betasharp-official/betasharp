@@ -383,7 +383,7 @@ internal class OverworldChunkGenerator : ChunkSource
         BuildTerrain(chunkX, chunkZ, blocks, _biomes, temperatureMap);
         BuildSurfaces(chunkX, chunkZ, blocks, _biomes);
         _cave.carve(this, _world, chunkX, chunkZ, blocks);
-        chunk.PopulateHeightMap();
+        chunk.PopulateHeightMapOnly();
         return chunk;
     }
 
@@ -920,7 +920,7 @@ internal class OverworldChunkGenerator : ChunkSource
                 double temperatureSample = _temperatures[offsetX * 16 + offsetZ] - (var22 - 64) / 64.0D * 0.3D;
                 if (temperatureSample < 0.5D && var22 > 0 && var22 < 128 && _world.isAir(x, var22, z) && _world.getMaterial(x, var22 - 1, z).BlocksMovement && _world.getMaterial(x, var22 - 1, z) != Material.Ice)
                 {
-                    _world.setBlock(x, var22, z, Block.Snow.id);
+                    _world.SetBlockRaw(x, var22, z, Block.Snow.id);
                 }
             }
         }

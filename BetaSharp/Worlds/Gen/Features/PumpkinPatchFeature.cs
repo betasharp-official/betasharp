@@ -17,7 +17,7 @@ internal class PumpkinPatchFeature : Feature
                 world.getBlockId(genX, genY - 1, genZ) == Block.GrassBlock.id &&
                 Block.Pumpkin.canPlaceAt(world, genX, genY, genZ))
             {
-                world.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, Block.Pumpkin.id, rand.NextInt(4));
+                world.SetBlockRaw(genX, genY, genZ, Block.Pumpkin.id, rand.NextInt(4));
             }
         }
 
