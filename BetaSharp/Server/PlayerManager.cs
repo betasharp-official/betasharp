@@ -301,7 +301,12 @@ public class PlayerManager
             var3.networkHandler.sendPacket(packet);
         }
 
-        if (packet is ChatMessagePacket message)
+        if (packet is not ChatMessagePacket message)
+        {
+            return;
+        }
+
+        if (!message.chatMessage[..message.chatMessage.IndexOf('>')].Contains(" Discord"))
             Discord.Channel!.SendMessageAsync(message.chatMessage);
     }
 
