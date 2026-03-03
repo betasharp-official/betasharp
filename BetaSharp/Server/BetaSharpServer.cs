@@ -106,7 +106,7 @@ public abstract class BetaSharpServer : CommandOutput
 
         if (logHelp)
         {
-            long elapsedNs = (long)((Stopwatch.GetTimestamp() - startTime) * 1_000_000_000.0 / Stopwatch.Frequency);
+            long elapsedNs = (Stopwatch.GetTimestamp() - startTime) * 1_000_000_000L / Stopwatch.Frequency;
             _logger.LogInformation($"Done ({elapsedNs}ns)! For help, type \"help\" or \"?\"");
         }
 
