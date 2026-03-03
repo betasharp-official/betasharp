@@ -2,16 +2,12 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class GameStateChangeS2CPacket : Packet
+public class GameStateChangeS2CPacket() : Packet(PacketId.GameStateChangeS2C)
 {
     public static readonly string[] REASONS = ["tile.bed.notValid", null, null];
     public int reason;
 
-    public GameStateChangeS2CPacket()
-    {
-    }
-
-    public GameStateChangeS2CPacket(int reason)
+    public GameStateChangeS2CPacket(int reason) : this()
     {
         this.reason = reason;
     }

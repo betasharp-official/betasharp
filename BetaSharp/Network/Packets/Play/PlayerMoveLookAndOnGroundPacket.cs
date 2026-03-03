@@ -4,17 +4,16 @@ namespace BetaSharp.Network.Packets.Play;
 
 public class PlayerMoveLookAndOnGroundPacket : PlayerMovePacket
 {
-    public PlayerMoveLookAndOnGroundPacket()
+    public PlayerMoveLookAndOnGroundPacket() : base(PacketId.PlayerMoveLookAndOnGround)
     {
         changeLook = true;
     }
 
-    public PlayerMoveLookAndOnGroundPacket(float yaw, float pitch, bool onGround)
+    public PlayerMoveLookAndOnGroundPacket(float yaw, float pitch, bool onGround) : this()
     {
         base.yaw = yaw;
         base.pitch = pitch;
         base.onGround = onGround;
-        changeLook = true;
     }
 
     public override void Read(NetworkStream stream)

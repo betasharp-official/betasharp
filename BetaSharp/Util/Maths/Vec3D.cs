@@ -32,6 +32,13 @@ public record struct Vec3D
         return Math.Sqrt(squareDistanceTo(other));
     }
 
+    public double squareDistance2DTo(Vec3D other)
+    {
+        double dx = other.x - x;
+        double dz = other.z - z;
+        return dx * dx + dz * dz;
+    }
+
     public double magnitude()
     {
         return distanceTo(Zero);
@@ -123,6 +130,11 @@ public record struct Vec3D
     public override string ToString()
     {
         return "(" + x + ", " + y + ", " + z + ")";
+    }
+
+    public string ToString(string format)
+    {
+        return "(" + x.ToString(format) + ", " + y.ToString(format) + ", " + z.ToString(format) + ")";
     }
 
     public static Vec3D operator +(Vec3D a, Vec3D b)

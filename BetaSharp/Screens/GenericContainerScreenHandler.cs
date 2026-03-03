@@ -23,7 +23,7 @@ public class GenericContainerScreenHandler : ScreenHandler
         {
             for (var5 = 0; var5 < 9; ++var5)
             {
-                addSlot(new Slot(inventory, var5 + var4 * 9, 8 + var5 * 18, 18 + var4 * 18));
+                AddSlot(new Slot(inventory, var5 + var4 * 9, 8 + var5 * 18, 18 + var4 * 18));
             }
         }
 
@@ -31,13 +31,13 @@ public class GenericContainerScreenHandler : ScreenHandler
         {
             for (var5 = 0; var5 < 9; ++var5)
             {
-                addSlot(new Slot(playerInventory, var5 + var4 * 9 + 9, 8 + var5 * 18, 103 + var4 * 18 + var3));
+                AddSlot(new Slot(playerInventory, var5 + var4 * 9 + 9, 8 + var5 * 18, 103 + var4 * 18 + var3));
             }
         }
 
         for (var4 = 0; var4 < 9; ++var4)
         {
-            addSlot(new Slot(playerInventory, var4, 8 + var4 * 18, 161 + var3));
+            AddSlot(new Slot(playerInventory, var4, 8 + var4 * 18, 161 + var3));
         }
 
     }
@@ -47,17 +47,17 @@ public class GenericContainerScreenHandler : ScreenHandler
         return inventory.canPlayerUse(player);
     }
 
-    public override ItemStack quickMove(int slot)
+    public override ItemStack quickMove(int slotNumber)
     {
         ItemStack var2 = null;
-        Slot var3 = (Slot)slots.get(slot);
+        Slot var3 = Slots[slotNumber];
         if (var3 != null && var3.hasStack())
         {
             ItemStack var4 = var3.getStack();
             var2 = var4.copy();
-            if (slot < rows * 9)
+            if (slotNumber < rows * 9)
             {
-                insertItem(var4, rows * 9, slots.size(), true);
+                insertItem(var4, rows * 9, Slots.Count, true);
             }
             else
             {

@@ -2,15 +2,11 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class CloseScreenS2CPacket : Packet
+public class CloseScreenS2CPacket() : Packet(PacketId.CloseScreenS2C)
 {
     public int windowId;
 
-    public CloseScreenS2CPacket()
-    {
-    }
-
-    public CloseScreenS2CPacket(int windowId)
+    public CloseScreenS2CPacket(int windowId) : this()
     {
         this.windowId = windowId;
     }

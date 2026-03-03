@@ -3,7 +3,7 @@ using BetaSharp.Entities;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class PaintingEntitySpawnS2CPacket : Packet
+public class PaintingEntitySpawnS2CPacket() : Packet(PacketId.PaintingEntitySpawnS2C)
 {
     public int entityId;
     public int xPosition;
@@ -12,11 +12,7 @@ public class PaintingEntitySpawnS2CPacket : Packet
     public int direction;
     public string title;
 
-    public PaintingEntitySpawnS2CPacket()
-    {
-    }
-
-    public PaintingEntitySpawnS2CPacket(EntityPainting paint)
+    public PaintingEntitySpawnS2CPacket(EntityPainting paint) : this()
     {
         entityId = paint.id;
         xPosition = paint.XPosition;

@@ -2,7 +2,7 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.Play;
 
-public class PlayerMovePacket : Packet
+public class PlayerMovePacket(PacketId id = PacketId.PlayerMove) : Packet(id)
 {
     public double x;
     public double y;
@@ -14,11 +14,7 @@ public class PlayerMovePacket : Packet
     public bool changePosition;
     public bool changeLook;
 
-    public PlayerMovePacket()
-    {
-    }
-
-    public PlayerMovePacket(bool onGround)
+    public PlayerMovePacket(bool onGround) : this()
     {
         this.onGround = onGround;
     }
@@ -30,7 +26,7 @@ public class PlayerMovePacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        onGround = stream.ReadByte() != 0;
+        onGround = stream.ReadBoolean();
     }
 
     public override void Write(NetworkStream stream)

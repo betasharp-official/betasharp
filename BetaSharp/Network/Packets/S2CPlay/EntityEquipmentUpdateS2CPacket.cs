@@ -3,20 +3,15 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class EntityEquipmentUpdateS2CPacket : Packet
+public class EntityEquipmentUpdateS2CPacket() : PacketBaseEntity(PacketId.EntityEquipmentUpdateS2C)
 {
-    public int id;
     public int slot;
     public int itemRawId;
     public int itemDamage;
 
-    public EntityEquipmentUpdateS2CPacket()
+    public EntityEquipmentUpdateS2CPacket(int entityId, int slot, ItemStack itemStack) : this()
     {
-    }
-
-    public EntityEquipmentUpdateS2CPacket(int id, int slot, ItemStack itemStack)
-    {
-        this.id = id;
+        EntityId = entityId;
         this.slot = slot;
         if (itemStack == null)
         {
@@ -32,7 +27,7 @@ public class EntityEquipmentUpdateS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        id = stream.ReadInt();
+        base.Read(stream);
         slot = stream.ReadShort();
         itemRawId = stream.ReadShort();
         itemDamage = stream.ReadShort();
@@ -40,7 +35,7 @@ public class EntityEquipmentUpdateS2CPacket : Packet
 
     public override void Write(NetworkStream stream)
     {
-        stream.WriteInt(id);
+        base.Write(stream);
         stream.WriteShort((short)slot);
         stream.WriteShort((short)itemRawId);
         stream.WriteShort((short)itemDamage);
@@ -53,6 +48,6 @@ public class EntityEquipmentUpdateS2CPacket : Packet
 
     public override int Size()
     {
-        return 8;
+        return 6 + PacketBaseEntitySize;
     }
 }

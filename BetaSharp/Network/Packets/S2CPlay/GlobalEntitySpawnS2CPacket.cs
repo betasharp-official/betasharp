@@ -4,19 +4,15 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class GlobalEntitySpawnS2CPacket : Packet
+public class GlobalEntitySpawnS2CPacket() : Packet(PacketId.GlobalEntitySpawnS2C)
 {
     public int id;
     public int x;
     public int y;
     public int z;
-    public int type;
+    public byte type;
 
-    public GlobalEntitySpawnS2CPacket()
-    {
-    }
-
-    public GlobalEntitySpawnS2CPacket(Entity ent)
+    public GlobalEntitySpawnS2CPacket(Entity ent) : this()
     {
         id = ent.id;
         x = MathHelper.Floor(ent.x * 32.0D);
@@ -32,7 +28,7 @@ public class GlobalEntitySpawnS2CPacket : Packet
     public override void Read(NetworkStream stream)
     {
         id = stream.ReadInt();
-        type = (sbyte)stream.ReadByte();
+        type = (byte)stream.ReadByte();
         x = stream.ReadInt();
         y = stream.ReadInt();
         z = stream.ReadInt();
@@ -41,7 +37,7 @@ public class GlobalEntitySpawnS2CPacket : Packet
     public override void Write(NetworkStream stream)
     {
         stream.WriteInt(id);
-        stream.WriteByte((byte)type);
+        stream.WriteByte(type);
         stream.WriteInt(x);
         stream.WriteInt(y);
         stream.WriteInt(z);

@@ -3,16 +3,12 @@ using BetaSharp.Entities;
 
 namespace BetaSharp.Network.Packets.C2SPlay;
 
-public class ClientCommandC2SPacket : Packet
+public class ClientCommandC2SPacket() : Packet(PacketId.ClientCommandC2S)
 {
     public int entityId;
     public int mode;
 
-    public ClientCommandC2SPacket()
-    {
-    }
-
-    public ClientCommandC2SPacket(Entity ent, int mode)
+    public ClientCommandC2SPacket(Entity ent, int mode) : this()
     {
         entityId = ent.id;
         this.mode = mode;

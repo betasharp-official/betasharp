@@ -3,17 +3,13 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class ScreenHandlerSlotUpdateS2CPacket : Packet
+public class ScreenHandlerSlotUpdateS2CPacket() : Packet(PacketId.ScreenHandlerSlotUpdateS2C)
 {
     public int syncId;
     public int slot;
     public ItemStack stack;
 
-    public ScreenHandlerSlotUpdateS2CPacket()
-    {
-    }
-
-    public ScreenHandlerSlotUpdateS2CPacket(int syncId, int slot, ItemStack stack)
+    public ScreenHandlerSlotUpdateS2CPacket(int syncId, int slot, ItemStack stack) : this()
     {
         this.syncId = syncId;
         this.slot = slot;

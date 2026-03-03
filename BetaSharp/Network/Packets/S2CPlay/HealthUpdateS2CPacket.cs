@@ -2,15 +2,11 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class HealthUpdateS2CPacket : Packet
+public class HealthUpdateS2CPacket() : Packet(PacketId.HealthUpdateS2C)
 {
     public int healthMP;
 
-    public HealthUpdateS2CPacket()
-    {
-    }
-
-    public HealthUpdateS2CPacket(int health)
+    public HealthUpdateS2CPacket(int health) : this()
     {
         healthMP = health;
     }

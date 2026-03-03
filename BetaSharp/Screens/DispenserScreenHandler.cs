@@ -19,7 +19,7 @@ public class DispenserScreenHandler : ScreenHandler
         {
             for (var4 = 0; var4 < 3; ++var4)
             {
-                addSlot(new Slot(dispenser, var4 + var3 * 3, 62 + var4 * 18, 17 + var3 * 18));
+                AddSlot(new Slot(dispenser, var4 + var3 * 3, 62 + var4 * 18, 17 + var3 * 18));
             }
         }
 
@@ -27,13 +27,13 @@ public class DispenserScreenHandler : ScreenHandler
         {
             for (var4 = 0; var4 < 9; ++var4)
             {
-                addSlot(new Slot(playerInventory, var4 + var3 * 9 + 9, 8 + var4 * 18, 84 + var3 * 18));
+                AddSlot(new Slot(playerInventory, var4 + var3 * 9 + 9, 8 + var4 * 18, 84 + var3 * 18));
             }
         }
 
         for (var3 = 0; var3 < 9; ++var3)
         {
-            addSlot(new Slot(playerInventory, var3, 8 + var3 * 18, 142));
+            AddSlot(new Slot(playerInventory, var3, 8 + var3 * 18, 142));
         }
 
     }

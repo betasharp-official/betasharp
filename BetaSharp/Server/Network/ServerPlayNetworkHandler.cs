@@ -32,7 +32,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
     private double teleportTargetY;
     private double teleportTargetZ;
     private bool teleported = true;
-    private Dictionary<int, short> transactions = new ();
+    private Dictionary<int, short> transactions = new();
 
     private readonly ILogger<ServerPlayNetworkHandler> _logger = Log.Instance.For<ServerPlayNetworkHandler>();
 
@@ -49,7 +49,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
     {
         moved = false;
         connection.tick();
-        if (ticks - lastKeepAliveTime > 20)
+        if (ticks++ - lastKeepAliveTime > 20)
         {
             sendPacket(new KeepAlivePacket());
         }
@@ -200,7 +200,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             }
 
             float var21 = (1 / 16f);
-            bool var22 = var2.getEntityCollisions(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
+            bool var22 = var2.GetEntityCollisions(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
             player.move(var32, var15, var17);
             var32 = var5 - player.x;
             var15 = var7 - player.y;
@@ -221,7 +221,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             }
 
             player.setPositionAndAngles(var5, var7, var9, var11, var12);
-            bool var24 = var2.getEntityCollisions(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
+            bool var24 = var2.GetEntityCollisions(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
             if (var22 && (var23 || !var24) && !player.isSleeping())
             {
                 teleport(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
@@ -415,12 +415,12 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 
         player.skipPacketSlotUpdates = true;
         player.inventory.main[player.inventory.selectedSlot] = ItemStack.clone(player.inventory.main[player.inventory.selectedSlot]);
-        Slot var13 = player.currentScreenHandler.getSlot(player.inventory, player.inventory.selectedSlot);
-        player.currentScreenHandler.sendContentUpdates();
+        Slot var13 = player.currentScreenHandler.GetSlot(player.inventory, player.inventory.selectedSlot);
+        player.currentScreenHandler.SendContentUpdates();
         player.skipPacketSlotUpdates = false;
         if (!ItemStack.areEqual(player.inventory.getSelectedItem(), packet.stack))
         {
-            sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.currentScreenHandler.syncId, var13.id, player.inventory.getSelectedItem()));
+            sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.currentScreenHandler.SyncId, var13.id, player.inventory.getSelectedItem()));
         }
 
         var2.bypassSpawnProtection = false;
@@ -477,7 +477,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
                     continue;
                 }
 
-                if (ChatAllowedCharacters.allowedCharacters.IndexOf(var2[var3]) < 0)
+                if (!ChatAllowedCharacters.IsAllowedCharacter(var2[var3]))
                 {
                     disconnect("Illegal characters in chat");
                     return;
@@ -596,30 +596,30 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 
     public override void onClickSlot(ClickSlotC2SPacket packet)
     {
-        if (player.currentScreenHandler.syncId == packet.syncId && player.currentScreenHandler.canOpen(player))
+        if (player.currentScreenHandler.SyncId == packet.syncId && player.currentScreenHandler.canOpen(player))
         {
             ItemStack var2 = player.currentScreenHandler.onSlotClick(packet.slot, packet.button, packet.holdingShift, player);
             if (ItemStack.areEqual(packet.stack, var2))
             {
                 player.networkHandler.sendPacket(new ScreenHandlerAcknowledgementPacket(packet.syncId, packet.actionType, true));
                 player.skipPacketSlotUpdates = true;
-                player.currentScreenHandler.sendContentUpdates();
+                player.currentScreenHandler.SendContentUpdates();
                 player.updateCursorStack();
                 player.skipPacketSlotUpdates = false;
             }
             else
             {
                 // should something be done adding fails?
-                transactions.TryAdd(player.currentScreenHandler.syncId, packet.actionType);
+                transactions.TryAdd(player.currentScreenHandler.SyncId, packet.actionType);
                 player.networkHandler.sendPacket(new ScreenHandlerAcknowledgementPacket(packet.syncId, packet.actionType, false));
                 player.currentScreenHandler.updatePlayerList(player, false);
 
-                int size = player.currentScreenHandler.slots.size();
-                ArrayList var3 = new ArrayList(size);
+                int size = player.currentScreenHandler.Slots.Count;
+                List<ItemStack> var3 = new List<ItemStack>(size);
 
                 for (int i = 0; i < size; i++)
                 {
-                    var3.add(((Slot)player.currentScreenHandler.slots.get(i)).getStack());
+                    var3.Add(((Slot)player.currentScreenHandler.Slots[i]).getStack());
                 }
 
                 player.onContentsUpdate(player.currentScreenHandler, var3);
@@ -629,9 +629,9 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 
     public override void onScreenHandlerAcknowledgement(ScreenHandlerAcknowledgementPacket packet)
     {
-        if (transactions.TryGetValue(player.currentScreenHandler.syncId, out short value)
+        if (transactions.TryGetValue(player.currentScreenHandler.SyncId, out short value)
             && packet.actionType == value
-            && player.currentScreenHandler.syncId == packet.syncId
+            && player.currentScreenHandler.SyncId == packet.syncId
             && !player.currentScreenHandler.canOpen(player))
         {
             player.currentScreenHandler.updatePlayerList(player, true);
@@ -664,7 +664,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
                 {
                     for (int var6 = 0; var6 < packet.text[var9].Length; var6++)
                     {
-                        if (ChatAllowedCharacters.allowedCharacters.IndexOf(packet.text[var9][var6]) < 0)
+                        if (!ChatAllowedCharacters.IsAllowedCharacter(packet.text[var9][var6]))
                         {
                             var5 = false;
                         }

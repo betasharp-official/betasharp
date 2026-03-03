@@ -17,41 +17,41 @@ public class FurnaceScreenHandler : ScreenHandler
     public FurnaceScreenHandler(InventoryPlayer playerInventory, BlockEntityFurnace furnace)
     {
         furnaceBlockEntity = furnace;
-        addSlot(new Slot(furnace, 0, 56, 17));
-        addSlot(new Slot(furnace, 1, 56, 53));
-        addSlot(new FurnaceOutputSlot(playerInventory.player, furnace, 2, 116, 35));
+        AddSlot(new Slot(furnace, 0, 56, 17));
+        AddSlot(new Slot(furnace, 1, 56, 53));
+        AddSlot(new FurnaceOutputSlot(playerInventory.player, furnace, 2, 116, 35));
 
         int var3;
         for (var3 = 0; var3 < 3; ++var3)
         {
             for (int var4 = 0; var4 < 9; ++var4)
             {
-                addSlot(new Slot(playerInventory, var4 + var3 * 9 + 9, 8 + var4 * 18, 84 + var3 * 18));
+                AddSlot(new Slot(playerInventory, var4 + var3 * 9 + 9, 8 + var4 * 18, 84 + var3 * 18));
             }
         }
 
         for (var3 = 0; var3 < 9; ++var3)
         {
-            addSlot(new Slot(playerInventory, var3, 8 + var3 * 18, 142));
+            AddSlot(new Slot(playerInventory, var3, 8 + var3 * 18, 142));
         }
 
     }
 
-    public override void addListener(ScreenHandlerListener listener)
+    public override void AddListener(ScreenHandlerListener listener)
     {
-        base.addListener(listener);
+        base.AddListener(listener);
         listener.onPropertyUpdate(this, 0, furnaceBlockEntity.cookTime);
         listener.onPropertyUpdate(this, 1, furnaceBlockEntity.burnTime);
         listener.onPropertyUpdate(this, 2, furnaceBlockEntity.fuelTime);
     }
 
-    public override void sendContentUpdates()
+    public override void SendContentUpdates()
     {
-        base.sendContentUpdates();
+        base.SendContentUpdates();
 
-        for (int var1 = 0; var1 < listeners.size(); ++var1)
+        for (int var1 = 0; var1 < Listeners.Count; ++var1)
         {
-            ScreenHandlerListener var2 = (ScreenHandlerListener)listeners.get(var1);
+            ScreenHandlerListener var2 = Listeners[var1];
             if (cookTime != furnaceBlockEntity.cookTime)
             {
                 var2.onPropertyUpdate(this, 0, furnaceBlockEntity.cookTime);
@@ -97,23 +97,23 @@ public class FurnaceScreenHandler : ScreenHandler
         return furnaceBlockEntity.canPlayerUse(player);
     }
 
-    public override ItemStack quickMove(int slot)
+    public override ItemStack quickMove(int slotNumber)
     {
         ItemStack var2 = null;
-        Slot var3 = (Slot)slots.get(slot);
+        Slot var3 = Slots[slotNumber];
         if (var3 != null && var3.hasStack())
         {
             ItemStack var4 = var3.getStack();
             var2 = var4.copy();
-            if (slot == 2)
+            if (slotNumber == 2)
             {
                 insertItem(var4, 3, 39, true);
             }
-            else if (slot >= 3 && slot < 30)
+            else if (slotNumber >= 3 && slotNumber < 30)
             {
                 insertItem(var4, 30, 39, false);
             }
-            else if (slot >= 30 && slot < 39)
+            else if (slotNumber >= 30 && slotNumber < 39)
             {
                 insertItem(var4, 3, 30, false);
             }

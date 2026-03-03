@@ -2,15 +2,11 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.C2SPlay;
 
-public class UpdateSelectedSlotC2SPacket : Packet
+public class UpdateSelectedSlotC2SPacket() : Packet(PacketId.UpdateSelectedSlotC2S)
 {
     public int selectedSlot;
 
-    public UpdateSelectedSlotC2SPacket()
-    {
-    }
-
-    public UpdateSelectedSlotC2SPacket(int selectedSlot)
+    public UpdateSelectedSlotC2SPacket(int selectedSlot) : this()
     {
         this.selectedSlot = selectedSlot;
     }

@@ -103,7 +103,7 @@ public class GuiMainMenu : GuiScreen
                 mc.displayGuiScreen(new GuiSelectWorld(this));
                 break;
             case ButtonMultiplayer:
-                mc.displayGuiScreen(new GuiMultiplayer(this));
+                mc.displayGuiScreen(new GuiMultiplayer(this, mc.options));
                 break;
             case ButtonTexturePacksAndMods:
                 mc.displayGuiScreen(new GuiTexturePacks(this));

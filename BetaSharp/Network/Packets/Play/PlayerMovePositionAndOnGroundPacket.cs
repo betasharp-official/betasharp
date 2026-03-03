@@ -4,19 +4,18 @@ namespace BetaSharp.Network.Packets.Play;
 
 public class PlayerMovePositionAndOnGroundPacket : PlayerMovePacket
 {
-    public PlayerMovePositionAndOnGroundPacket()
+    public PlayerMovePositionAndOnGroundPacket() : base(PacketId.PlayerMovePositionAndOnGround)
     {
         changePosition = true;
     }
 
-    public PlayerMovePositionAndOnGroundPacket(double x, double y, double eyeHeight, double z, bool onGround)
+    public PlayerMovePositionAndOnGroundPacket(double x, double y, double eyeHeight, double z, bool onGround) : this()
     {
         base.x = x;
         base.y = y;
         base.eyeHeight = eyeHeight;
         base.z = z;
         base.onGround = onGround;
-        changePosition = true;
     }
 
     public override void Read(NetworkStream stream)

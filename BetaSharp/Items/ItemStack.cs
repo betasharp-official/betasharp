@@ -221,7 +221,7 @@ public class ItemStack
         return new ItemStack(itemId, count, damage);
     }
 
-    public static bool areEqual(ItemStack a, ItemStack b)
+    public static bool areEqual(ItemStack? a, ItemStack? b)
     {
         return a == null && b == null ? true : (a != null && b != null ? a.equals2(b) : false);
     }

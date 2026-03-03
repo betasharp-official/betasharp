@@ -2,15 +2,11 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.Play;
 
-public class PlayerRespawnPacket : Packet
+public class PlayerRespawnPacket() : Packet(PacketId.PlayerRespawn)
 {
     public sbyte dimensionId;
 
-    public PlayerRespawnPacket()
-    {
-    }
-
-    public PlayerRespawnPacket(sbyte dimensionId)
+    public PlayerRespawnPacket(sbyte dimensionId) : this()
     {
         this.dimensionId = dimensionId;
     }

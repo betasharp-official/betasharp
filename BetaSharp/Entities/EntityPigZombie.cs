@@ -31,7 +31,7 @@ internal class EntityPigZombie : EntityZombie
 
     public override bool canSpawn()
     {
-        return world.difficulty > 0 && world.canSpawnEntity(boundingBox) && world.getEntityCollisions(this, boundingBox).Count == 0 && !world.isBoxSubmergedInFluid(boundingBox);
+        return world.difficulty > 0 && world.canSpawnEntity(boundingBox) && world.GetEntityCollisions(this, boundingBox).Count == 0 && !world.isBoxSubmergedInFluid(boundingBox);
     }
 
     public override void writeNbt(NBTTagCompound nbt)

@@ -2,17 +2,13 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.C2SPlay;
 
-public class PlayerInteractEntityC2SPacket : Packet
+public class PlayerInteractEntityC2SPacket() : Packet(PacketId.PlayerInteractEntityC2S)
 {
     public int playerId;
     public int entityId;
     public int isLeftClick;
 
-    public PlayerInteractEntityC2SPacket()
-    {
-    }
-
-    public PlayerInteractEntityC2SPacket(int playerId, int entityId, int isLeftClick)
+    public PlayerInteractEntityC2SPacket(int playerId, int entityId, int isLeftClick) : this()
     {
         this.playerId = playerId;
         this.entityId = entityId;

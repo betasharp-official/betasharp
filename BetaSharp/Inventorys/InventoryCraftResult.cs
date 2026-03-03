@@ -37,7 +37,7 @@ internal class InventoryCraftResult : IInventory
         }
     }
 
-    public void setStack(int slotIndex, ItemStack itemStack)
+    public void setStack(int slotIndex, ItemStack? itemStack)
     {
         stackResult[slotIndex] = itemStack;
     }

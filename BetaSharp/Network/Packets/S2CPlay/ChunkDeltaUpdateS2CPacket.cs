@@ -4,7 +4,7 @@ using BetaSharp.Worlds.Chunks;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class ChunkDeltaUpdateS2CPacket : Packet
+public class ChunkDeltaUpdateS2CPacket() : Packet(PacketId.ChunkDeltaUpdateS2C)
 {
     public int x;
     public int z;
@@ -13,14 +13,8 @@ public class ChunkDeltaUpdateS2CPacket : Packet
     public byte[] blockMetadata;
     public int _size;
 
-    public ChunkDeltaUpdateS2CPacket()
+    public ChunkDeltaUpdateS2CPacket(int x, int z, short[] positions, int size, World world) : this()
     {
-        WorldPacket = true;
-    }
-
-    public ChunkDeltaUpdateS2CPacket(int x, int z, short[] positions, int size, World world)
-    {
-        WorldPacket = true;
         this.x = x;
         this.z = z;
         this._size = size;

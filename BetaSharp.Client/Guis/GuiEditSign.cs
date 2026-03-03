@@ -17,7 +17,6 @@ public class GuiEditSign : GuiScreen
     private readonly BlockEntitySign _entitySign;
     private int _updateCounter;
     private int _editLine = 0;
-    private static readonly string s_allowedCharacters = ChatAllowedCharacters.allowedCharacters;
 
     public GuiEditSign(BlockEntitySign sign)
     {
@@ -84,7 +83,7 @@ public class GuiEditSign : GuiScreen
             return;
         }
 
-        if (s_allowedCharacters.IndexOf(eventChar) >= 0 && _entitySign.Texts[_editLine].Length < MaxLineLength)
+        if (ChatAllowedCharacters.IsAllowedCharacter(eventChar) && _entitySign.Texts[_editLine].Length < MaxLineLength)
         {
             _entitySign.Texts[_editLine] += eventChar;
         }

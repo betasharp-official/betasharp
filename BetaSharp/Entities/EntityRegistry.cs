@@ -43,6 +43,46 @@ public static class EntityRegistry
 	    return false;
     }
 
+    /// <summary>
+    /// Performed by first getting the id from a name, then getting by value in the typeToRawId dir.
+    /// If no name is found, try to find by type name.
+    /// As this is only used for the get command, the performance is not important enough to warrant a new registry.
+    /// </summary>
+    /// <param name="name">Entity or type name</param>
+    /// <param name="type">Type of the found Entity</param>
+    internal static bool TryGetTypeFromName(string name, [NotNullWhen(true)] out Type? type)
+    {
+        name = name.ToLower();
+        if (!namesToId.TryGetValue(name, out int v)) return TryGetTypeFromTypeName(name, out type);
+
+        foreach (KeyValuePair<Type, int> i in typeToRawId)
+        {
+            if (i.Value == v)
+            {
+                type = i.Key;
+                return true;
+            }
+        }
+
+        return TryGetTypeFromTypeName(name, out type);
+    }
+
+    private static bool TryGetTypeFromTypeName(string name, [NotNullWhen(true)] out Type? type)
+    {
+        type = null;
+
+        foreach (KeyValuePair<Type, int> i in typeToRawId)
+        {
+            if (i.Key.ToString().ToLower() == name)
+            {
+                type = i.Key;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static Entity? getEntityFromNbt(NBTTagCompound nbt, World world)
     {
 	    string id = nbt.GetString("id");

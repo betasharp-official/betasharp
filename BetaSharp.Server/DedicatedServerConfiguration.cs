@@ -135,4 +135,5 @@ internal class DedicatedServerConfiguration : IServerConfiguration
     public int GetMaxPlayers(int fallback) => GetProperty("max-players", fallback);
     public int GetViewDistance(int fallback) => GetProperty("view-distance", fallback);
     public bool GetWhiteList(bool fallback) => GetProperty("white-list", fallback);
+    public int GetSpawnRegionSize(int fallback) => GetProperty("spawn-region-size", fallback);
 }

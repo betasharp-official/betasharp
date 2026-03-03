@@ -139,7 +139,7 @@ public class EntityPainting : Entity
 
     public bool CanHangOnWall()
     {
-        if (world.getEntityCollisions(this, boundingBox).Count > 0)
+        if (world.GetEntityCollisions(this, boundingBox).Count > 0)
         {
             return false;
         }

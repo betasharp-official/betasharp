@@ -4,7 +4,7 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class LivingEntitySpawnS2CPacket : Packet
+public class LivingEntitySpawnS2CPacket() : Packet(PacketId.LivingEntitySpawnS2C)
 {
     public int entityId;
     public sbyte type;
@@ -16,9 +16,7 @@ public class LivingEntitySpawnS2CPacket : Packet
     private DataWatcher metaData;
     private List<WatchableObject> receivedMetadata;
 
-    public LivingEntitySpawnS2CPacket() { }
-
-    public LivingEntitySpawnS2CPacket(EntityLiving ent)
+    public LivingEntitySpawnS2CPacket(EntityLiving ent) : this()
     {
         entityId = ent.id;
         type = (sbyte)EntityRegistry.GetRawId(ent);

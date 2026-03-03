@@ -2,17 +2,13 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.Play;
 
-public class ScreenHandlerAcknowledgementPacket : Packet
+public class ScreenHandlerAcknowledgementPacket() : Packet(PacketId.ScreenHandlerAcknowledgement)
 {
     public int syncId;
     public short actionType;
     public bool accepted;
 
-    public ScreenHandlerAcknowledgementPacket()
-    {
-    }
-
-    public ScreenHandlerAcknowledgementPacket(int syncId, short actionType, bool accepted)
+    public ScreenHandlerAcknowledgementPacket(int syncId, short actionType, bool accepted) : this()
     {
         this.syncId = syncId;
         this.actionType = actionType;

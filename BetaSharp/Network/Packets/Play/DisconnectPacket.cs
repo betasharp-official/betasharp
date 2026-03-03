@@ -2,15 +2,11 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.Play;
 
-public class DisconnectPacket : Packet
+public class DisconnectPacket() : Packet(PacketId.Disconnect)
 {
     public string reason;
 
-    public DisconnectPacket()
-    {
-    }
-
-    public DisconnectPacket(string reason)
+    public DisconnectPacket(string reason) : this()
     {
         this.reason = reason;
     }
@@ -22,6 +18,7 @@ public class DisconnectPacket : Packet
 
     public override void Write(NetworkStream stream)
     {
+        // TODO: should have a index for common responses
         stream.WriteLongString(reason);
     }
 

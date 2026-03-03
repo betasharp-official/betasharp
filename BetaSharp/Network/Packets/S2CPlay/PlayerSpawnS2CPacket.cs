@@ -5,7 +5,7 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class PlayerSpawnS2CPacket : Packet
+public class PlayerSpawnS2CPacket() : Packet(PacketId.PlayerSpawnS2C)
 {
     public int entityId;
     public string name;
@@ -16,11 +16,7 @@ public class PlayerSpawnS2CPacket : Packet
     public sbyte pitch;
     public int currentItem;
 
-    public PlayerSpawnS2CPacket()
-    {
-    }
-
-    public PlayerSpawnS2CPacket(EntityPlayer ent)
+    public PlayerSpawnS2CPacket(EntityPlayer ent) : this()
     {
         entityId = ent.id;
         name = ent.name;

@@ -2,15 +2,11 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class WorldTimeUpdateS2CPacket : Packet
+public class WorldTimeUpdateS2CPacket() : Packet(PacketId.WorldTimeUpdateS2C)
 {
     public long time;
 
-    public WorldTimeUpdateS2CPacket()
-    {
-    }
-
-    public WorldTimeUpdateS2CPacket(long time)
+    public WorldTimeUpdateS2CPacket(long time) : this()
     {
         this.time = time;
     }

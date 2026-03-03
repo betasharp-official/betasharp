@@ -2,15 +2,11 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets;
 
-public class HandshakePacket : Packet
+public class HandshakePacket() : Packet(PacketId.Handshake)
 {
     public string username;
 
-    public HandshakePacket()
-    {
-    }
-
-    public HandshakePacket(string username)
+    public HandshakePacket(string username) : this()
     {
         this.username = username;
     }

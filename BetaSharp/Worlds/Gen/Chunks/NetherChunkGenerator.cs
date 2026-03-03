@@ -24,6 +24,13 @@ internal class NetherChunkGenerator : ChunkSource
     private double[] gravelBuffer = new double[256];
     private double[] depthBuffer = new double[256];
     private readonly Carver cave = new NetherCaveCarver();
+    private readonly long _seed;
+    private NetherLavaSpringFeature _featureNetherLavaSpring;
+    private NetherFirePatchFeature _featureNetherFire;
+    private GlowstoneClusterFeature _featureGlowstoneFull;
+    private GlowstoneClusterFeatureRare _featureGlowstoneRare;
+    private PlantPatchFeature _featureBrownMushroom;
+    private PlantPatchFeature _featureRedMushroom;
     double[] perlinNoiseBuffer;
     double[] minLimitPerlinNoiseBuffer;
     double[] maxLimitPerlinNoiseBuffer;
@@ -41,6 +48,20 @@ internal class NetherChunkGenerator : ChunkSource
         perlinNoise3 = new OctavePerlinNoiseSampler(random, 4);
         scaleNoise = new OctavePerlinNoiseSampler(random, 10);
         depthNoise = new OctavePerlinNoiseSampler(random, 16);
+        _seed = seed;
+        InitFeatures();
+    }
+
+    public ChunkSource CreateParallelInstance() => new NetherChunkGenerator(world, _seed);
+
+    private void InitFeatures()
+    {
+        _featureNetherLavaSpring = new NetherLavaSpringFeature(Block.FlowingLava.id);
+        _featureNetherFire = new NetherFirePatchFeature();
+        _featureGlowstoneFull = new GlowstoneClusterFeature();
+        _featureGlowstoneRare = new GlowstoneClusterFeatureRare();
+        _featureBrownMushroom = new PlantPatchFeature(Block.BrownMushroom.id);
+        _featureRedMushroom = new PlantPatchFeature(Block.RedMushroom.id);
     }
 
     public void BuildTerrain(int chunkX, int chunkZ, byte[] blocks)
@@ -384,7 +405,7 @@ internal class NetherChunkGenerator : ChunkSource
             var7 = var4 + random.NextInt(16) + 8;
             var8 = random.NextInt(120) + 4;
             var9 = var5 + random.NextInt(16) + 8;
-            new NetherLavaSpringFeature(Block.FlowingLava.id).Generate(world, random, var7, var8, var9);
+            _featureNetherLavaSpring.Generate(world, random, var7, var8, var9);
         }
 
         var6 = random.NextInt(random.NextInt(10) + 1) + 1;
@@ -395,7 +416,7 @@ internal class NetherChunkGenerator : ChunkSource
             var8 = var4 + random.NextInt(16) + 8;
             var9 = random.NextInt(120) + 4;
             var10 = var5 + random.NextInt(16) + 8;
-            new NetherFirePatchFeature().Generate(world, random, var8, var9, var10);
+            _featureNetherFire.Generate(world, random, var8, var9, var10);
         }
 
         var6 = random.NextInt(random.NextInt(10) + 1);
@@ -405,7 +426,7 @@ internal class NetherChunkGenerator : ChunkSource
             var8 = var4 + random.NextInt(16) + 8;
             var9 = random.NextInt(120) + 4;
             var10 = var5 + random.NextInt(16) + 8;
-            new GlowstoneClusterFeature().Generate(world, random, var8, var9, var10);
+            _featureGlowstoneFull.Generate(world, random, var8, var9, var10);
         }
 
         for (var7 = 0; var7 < 10; ++var7)
@@ -413,7 +434,7 @@ internal class NetherChunkGenerator : ChunkSource
             var8 = var4 + random.NextInt(16) + 8;
             var9 = random.NextInt(128);
             var10 = var5 + random.NextInt(16) + 8;
-            new GlowstoneClusterFeatureRare().Generate(world, random, var8, var9, var10);
+            _featureGlowstoneRare.Generate(world, random, var8, var9, var10);
         }
 
         if (random.NextInt(1) == 0)
@@ -421,7 +442,7 @@ internal class NetherChunkGenerator : ChunkSource
             var7 = var4 + random.NextInt(16) + 8;
             var8 = random.NextInt(128);
             var9 = var5 + random.NextInt(16) + 8;
-            new PlantPatchFeature(Block.BrownMushroom.id).Generate(world, random, var7, var8, var9);
+            _featureBrownMushroom.Generate(world, random, var7, var8, var9);
         }
 
         if (random.NextInt(1) == 0)
@@ -429,7 +450,7 @@ internal class NetherChunkGenerator : ChunkSource
             var7 = var4 + random.NextInt(16) + 8;
             var8 = random.NextInt(128);
             var9 = var5 + random.NextInt(16) + 8;
-            new PlantPatchFeature(Block.RedMushroom.id).Generate(world, random, var7, var8, var9);
+            _featureRedMushroom.Generate(world, random, var7, var8, var9);
         }
 
         BlockSand.fallInstantly = false;

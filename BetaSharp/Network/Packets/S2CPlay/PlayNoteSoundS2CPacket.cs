@@ -2,7 +2,7 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class PlayNoteSoundS2CPacket : Packet
+public class PlayNoteSoundS2CPacket() : Packet(PacketId.PlayNoteSoundS2C)
 {
     public int xLocation;
     public int yLocation;
@@ -10,11 +10,7 @@ public class PlayNoteSoundS2CPacket : Packet
     public int instrumentType;
     public int pitch;
 
-    public PlayNoteSoundS2CPacket()
-    {
-    }
-
-    public PlayNoteSoundS2CPacket(int x, int y, int z, int instrument, int pitch)
+    public PlayNoteSoundS2CPacket(int x, int y, int z, int instrument, int pitch) : this()
     {
         xLocation = x;
         yLocation = y;

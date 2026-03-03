@@ -2,20 +2,14 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class MapUpdateS2CPacket : Packet
+public class MapUpdateS2CPacket() : Packet(PacketId.MapUpdateS2C)
 {
     public short itemRawId;
     public short id;
     public byte[] updateData;
 
-    public MapUpdateS2CPacket()
+    public MapUpdateS2CPacket(short itemRawId, short id, byte[] updateData) : this()
     {
-        WorldPacket = true;
-    }
-
-    public MapUpdateS2CPacket(short itemRawId, short id, byte[] updateData)
-    {
-        WorldPacket = true;
         this.itemRawId = itemRawId;
         this.id = id;
         this.updateData = updateData;

@@ -7,7 +7,6 @@ using BetaSharp.NBT;
 using BetaSharp.PathFinding;
 using BetaSharp.Profiling;
 using BetaSharp.Rules;
-using BetaSharp.Util;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Biomes;
@@ -54,9 +53,12 @@ public abstract class World : BlockView
     public List<EntityPlayer> players = [];
     private bool _allPlayersSleeping;
     public List<Entity> entities = [];
+    private readonly Dictionary<int, Entity> _entitiesById = new();
     public List<Entity> globalEntities = [];
     private readonly List<Entity> _entitiesToUnload = [];
 
+    [ThreadStatic]
+    private static List<Entity>? _tempCollisionEntities;
 
     private readonly HashSet<ChunkPos> _activeChunks = new();
     public List<BlockEntity> blockEntities = [];
@@ -934,11 +936,9 @@ public abstract class World : BlockView
         }
 
         GetChunk(chunkX, chunkZ).AddEntity(entity);
-
         entities.Add(entity);
-
+        _entitiesById[entity.id] = entity;
         NotifyEntityAdded(entity);
-
         return true;
     }
 
@@ -995,6 +995,7 @@ public abstract class World : BlockView
         }
 
         entities.Remove(entity);
+        _entitiesById.Remove(entity.id);
         NotifyEntityRemoved(entity);
     }
 
@@ -1008,12 +1009,12 @@ public abstract class World : BlockView
         EventListeners.Remove(worldAccess);
     }
 
-    public List<Box> getEntityCollisions(Entity entity, Box area)
+    public List<Box> GetEntityCollisions(Entity entity, Box area)
     {
-        return getEntityCollisions(entity, area, new List<Box>());
+        return GetEntityCollisions(entity, area, new List<Box>());
     }
 
-    public List<Box> getEntityCollisions(Entity entity, Box area, List<Box> collidingBoundingBoxes)
+    private List<Box> GetEntityCollisions(Entity entity, Box area, List<Box> collidingBoundingBoxes)
     {
         int minX = MathHelper.Floor(area.MinX);
         int maxX = MathHelper.Floor(area.MaxX + 1.0D);
@@ -1041,21 +1042,33 @@ public abstract class World : BlockView
         }
 
         const double expansion = 0.25D;
-        List<Entity> nearbyEntities = new List<Entity>();
-        getEntities(entity, area.Expand(expansion, expansion, expansion), nearbyEntities);
+        _tempCollisionEntities ??= new List<Entity>();
+        _tempCollisionEntities.Clear();
 
-        for (int i = 0; i < nearbyEntities.Count; ++i)
+        getEntities(entity, area.Expand(expansion, expansion, expansion), _tempCollisionEntities);
+
+        int collisionCount = 0;
+        int maxCollisions = Rules.GetInt(DefaultRules.MaxCollisions);
+
+        for (int i = 0; i < _tempCollisionEntities.Count; ++i)
         {
-            Box? entityBox = nearbyEntities[i].getBoundingBox();
-            if (entityBox != null && entityBox.Value.Intersects(area))
+            if (collisionCount >= maxCollisions)
             {
-                collidingBoundingBoxes.Add(entityBox.Value);
+                break;
             }
 
-            entityBox = entity.getCollisionAgainstShape(nearbyEntities[i]);
+            Box? entityBox = _tempCollisionEntities[i].getBoundingBox();
             if (entityBox != null && entityBox.Value.Intersects(area))
             {
                 collidingBoundingBoxes.Add(entityBox.Value);
+                collisionCount++;
+            }
+
+            entityBox = entity.getCollisionAgainstShape(_tempCollisionEntities[i]);
+            if (entityBox != null && entityBox.Value.Intersects(area))
+            {
+                collidingBoundingBoxes.Add(entityBox.Value);
+                collisionCount++;
             }
         }
 
@@ -1273,11 +1286,6 @@ public abstract class World : BlockView
         Profiler.Stop("updateEntites.updateWeatherEffects");
 
         Profiler.Start("updateEntites.clearUnloadedEntities");
-        foreach (var entity in _entitiesToUnload)
-        {
-            entities.Remove(entity);
-        }
-
         for (int i = 0; i < _entitiesToUnload.Count; ++i)
         {
             Entity entityToUnload = _entitiesToUnload[i];
@@ -1330,6 +1338,7 @@ public abstract class World : BlockView
                 }
 
                 entities.RemoveAt(i--);
+                _entitiesById.Remove(entity.id);
                 NotifyEntityRemoved(entity);
             }
         }
@@ -2364,9 +2373,9 @@ public abstract class World : BlockView
     public void addEntities(List<Entity> entities)
     {
         this.entities.AddRange(entities);
-
         for (int i = 0; i < entities.Count; ++i)
         {
+            _entitiesById[entities[i].id] = entities[i];
             NotifyEntityAdded(entities[i]);
         }
     }
@@ -2697,13 +2706,9 @@ public abstract class World : BlockView
             {
                 GetChunk(chunkX, chunkZ).RemoveEntity(entity);
             }
+            _entitiesById.Remove(entity.id);
+            NotifyEntityRemoved(entity);
         }
-
-        for (int i = 0; i < _entitiesToUnload.Count; ++i)
-        {
-            NotifyEntityRemoved(_entitiesToUnload[i]);
-        }
-
         _entitiesToUnload.Clear();
 
         for (int i = 0; i < entities.Count; ++i)
@@ -2711,11 +2716,10 @@ public abstract class World : BlockView
             var entity = entities[i];
             if (entity.vehicle != null)
             {
-                if (!entity.vehicle.dead && Equals(entity.vehicle.passenger, entity))
+                if (!entity.vehicle.dead && entity.vehicle.passenger == entity)
                 {
                     continue;
                 }
-
                 entity.vehicle.passenger = null;
                 entity.vehicle = null;
             }
@@ -2730,6 +2734,7 @@ public abstract class World : BlockView
                 }
 
                 entities.RemoveAt(i--);
+                _entitiesById.Remove(entity.id);
                 NotifyEntityRemoved(entity);
             }
         }
@@ -2865,5 +2870,10 @@ public abstract class World : BlockView
         {
             EventListeners[index].worldEvent(player, @event, x, y, z, data);
         }
+    }
+
+    public Entity? getEntityByID(int id)
+    {
+        return _entitiesById.TryGetValue(id, out var entity) ? entity : null;
     }
 }

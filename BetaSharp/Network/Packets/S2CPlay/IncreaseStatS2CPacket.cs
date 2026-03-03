@@ -2,16 +2,12 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class IncreaseStatS2CPacket : Packet
+public class IncreaseStatS2CPacket() : Packet(PacketId.IncreaseStatS2C)
 {
     public int statId;
     public int amount;
 
-    public IncreaseStatS2CPacket()
-    {
-    }
-
-    public IncreaseStatS2CPacket(int statId, int amount)
+    public IncreaseStatS2CPacket(int statId, int amount) : this()
     {
         this.statId = statId;
         this.amount = amount;

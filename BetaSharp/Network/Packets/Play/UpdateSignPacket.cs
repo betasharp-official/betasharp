@@ -2,21 +2,15 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.Play;
 
-public class UpdateSignPacket : Packet
+public class UpdateSignPacket() : Packet(PacketId.UpdateSign)
 {
     public int x;
     public int y;
     public int z;
     public string[] text;
 
-    public UpdateSignPacket()
+    public UpdateSignPacket(int x, int y, int z, string[] text) : this()
     {
-        WorldPacket = true;
-    }
-
-    public UpdateSignPacket(int x, int y, int z, string[] text)
-    {
-        WorldPacket = true;
         this.x = x;
         this.y = y;
         this.z = z;

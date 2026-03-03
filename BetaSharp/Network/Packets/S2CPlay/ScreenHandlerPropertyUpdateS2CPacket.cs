@@ -2,17 +2,13 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class ScreenHandlerPropertyUpdateS2CPacket : Packet
+public class ScreenHandlerPropertyUpdateS2CPacket() : Packet(PacketId.ScreenHandlerPropertyUpdateS2C)
 {
     public int syncId;
     public int propertyId;
     public int value;
 
-    public ScreenHandlerPropertyUpdateS2CPacket()
-    {
-    }
-
-    public ScreenHandlerPropertyUpdateS2CPacket(int syncId, int propertyId, int value)
+    public ScreenHandlerPropertyUpdateS2CPacket(int syncId, int propertyId, int value) : this()
     {
         this.syncId = syncId;
         this.propertyId = propertyId;

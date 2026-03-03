@@ -2,7 +2,7 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class WorldEventS2CPacket : Packet
+public class WorldEventS2CPacket() : Packet(PacketId.WorldEventS2C)
 {
     public int eventId;
     public int data;
@@ -10,11 +10,7 @@ public class WorldEventS2CPacket : Packet
     public int y;
     public int z;
 
-    public WorldEventS2CPacket()
-    {
-    }
-
-    public WorldEventS2CPacket(int eventId, int x, int y, int z, int data)
+    public WorldEventS2CPacket(int eventId, int x, int y, int z, int data) : this()
     {
         this.eventId = eventId;
         this.x = x;

@@ -3,7 +3,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class BlockUpdateS2CPacket : Packet
+public class BlockUpdateS2CPacket() : Packet(PacketId.BlockUpdateS2C)
 {
     public int x;
     public int y;
@@ -11,14 +11,8 @@ public class BlockUpdateS2CPacket : Packet
     public int blockRawId;
     public int blockMetadata;
 
-    public BlockUpdateS2CPacket()
+    public BlockUpdateS2CPacket(int x, int y, int z, World world) : this()
     {
-        WorldPacket = false;
-    }
-
-    public BlockUpdateS2CPacket(int x, int y, int z, World world)
-    {
-        WorldPacket = false;
         this.x = x;
         this.y = y;
         this.z = z;

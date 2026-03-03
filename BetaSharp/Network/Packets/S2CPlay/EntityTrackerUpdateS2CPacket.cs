@@ -2,28 +2,25 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class EntityTrackerUpdateS2CPacket : Packet
+public class EntityTrackerUpdateS2CPacket() : PacketBaseEntity(PacketId.EntityTrackerUpdateS2C)
 {
-    public int id;
     private List<WatchableObject> trackedValues;
 
-    public EntityTrackerUpdateS2CPacket() { }
-
-    public EntityTrackerUpdateS2CPacket(int entityId, DataWatcher dataWatcher)
+    public EntityTrackerUpdateS2CPacket(int entityId, DataWatcher dataWatcher) : this()
     {
-        id = entityId;
+        EntityId = entityId;
         trackedValues = dataWatcher.GetDirtyEntries();
     }
 
     public override void Read(NetworkStream stream)
     {
-        id = stream.ReadInt();
+        base.Read(stream);
         trackedValues = DataWatcher.ReadWatchableObjects(stream);
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.WriteInt(id);
+        base.Write(stream);
         DataWatcher.WriteObjectsInListToStream(trackedValues, stream);
     }
 
@@ -34,6 +31,7 @@ public class EntityTrackerUpdateS2CPacket : Packet
 
     public override int Size()
     {
+        // TODO : this is wrong
         return 5;
     }
 

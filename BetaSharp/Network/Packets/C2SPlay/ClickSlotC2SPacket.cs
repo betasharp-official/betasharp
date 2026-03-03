@@ -3,7 +3,7 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Network.Packets.C2SPlay;
 
-public class ClickSlotC2SPacket : Packet
+public class ClickSlotC2SPacket() : Packet(PacketId.ClickSlotC2S)
 {
     public int syncId;
     public int slot;
@@ -12,11 +12,7 @@ public class ClickSlotC2SPacket : Packet
     public ItemStack stack;
     public bool holdingShift;
 
-    public ClickSlotC2SPacket()
-    {
-    }
-
-    public ClickSlotC2SPacket(int syncId, int slot, int button, bool holdingShift, ItemStack stack, short actionType)
+    public ClickSlotC2SPacket(int syncId, int slot, int button, bool holdingShift, ItemStack stack, short actionType) : this()
     {
         this.syncId = syncId;
         this.slot = slot;

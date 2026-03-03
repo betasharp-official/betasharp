@@ -936,7 +936,7 @@ public class EntityMinecart : Entity, IInventory
         }
     }
 
-    public void setStack(int slotIndex, ItemStack itemStack)
+    public void setStack(int slotIndex, ItemStack? itemStack)
     {
         cargoItems[slotIndex] = itemStack;
         if (itemStack != null && itemStack.count > getMaxCountPerStack())

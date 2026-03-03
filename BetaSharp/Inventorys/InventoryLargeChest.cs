@@ -37,7 +37,7 @@ internal class InventoryLargeChest : BlockEntity, IInventory
         return slotIndex >= upperChest.size() ? lowerChest.removeStack(slotIndex - upperChest.size(), amount) : upperChest.removeStack(slotIndex, amount);
     }
 
-    public void setStack(int slotIndex, ItemStack itemStack)
+    public void setStack(int slotIndex, ItemStack? itemStack)
     {
         if (slotIndex >= upperChest.size())
         {

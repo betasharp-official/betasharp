@@ -2,20 +2,14 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class ChunkStatusUpdateS2CPacket : Packet
+public class ChunkStatusUpdateS2CPacket() : Packet(PacketId.ChunkStatusUpdateS2C)
 {
     public int x;
     public int z;
     public bool load;
 
-    public ChunkStatusUpdateS2CPacket()
+    public ChunkStatusUpdateS2CPacket(int x, int z, bool load) : this()
     {
-        WorldPacket = false;
-    }
-
-    public ChunkStatusUpdateS2CPacket(int x, int z, bool load)
-    {
-        WorldPacket = false;
         this.x = x;
         this.z = z;
         this.load = load;

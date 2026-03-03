@@ -2,18 +2,14 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class OpenScreenS2CPacket : Packet
+public class OpenScreenS2CPacket() : Packet(PacketId.OpenScreenS2C)
 {
     public int syncId;
     public int screenHandlerId;
     public string name;
     public int slotsCount;
 
-    public OpenScreenS2CPacket()
-    {
-    }
-
-    public OpenScreenS2CPacket(int syncId, int screenHandlerId, String name, int size)
+    public OpenScreenS2CPacket(int syncId, int screenHandlerId, String name, int size) : this()
     {
         this.syncId = syncId;
         this.screenHandlerId = screenHandlerId;
@@ -38,6 +34,7 @@ public class OpenScreenS2CPacket : Packet
     {
         stream.WriteByte((byte)syncId);
         stream.WriteByte((byte)screenHandlerId);
+        // TODO: This writes a 16bit array. should index inventory, or write them as base64 or a 8bit string.
         stream.WriteString(name);
         stream.WriteByte((byte)slotsCount);
     }

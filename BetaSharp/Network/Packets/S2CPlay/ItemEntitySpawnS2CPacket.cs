@@ -4,7 +4,7 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class ItemEntitySpawnS2CPacket : Packet
+public class ItemEntitySpawnS2CPacket() : Packet(PacketId.ItemEntitySpawnS2C)
 {
     public int id;
     public int x;
@@ -17,11 +17,7 @@ public class ItemEntitySpawnS2CPacket : Packet
     public int itemCount;
     public int itemDamage;
 
-    public ItemEntitySpawnS2CPacket()
-    {
-    }
-
-    public ItemEntitySpawnS2CPacket(EntityItem item)
+    public ItemEntitySpawnS2CPacket(EntityItem item) : this()
     {
         id = item.id;
         itemRawId = item.stack.itemId;

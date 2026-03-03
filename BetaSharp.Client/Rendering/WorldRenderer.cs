@@ -226,6 +226,22 @@ public class WorldRenderer : IWorldAccess
             for (var6 = 0; var6 < var5.Count; ++var6)
             {
                 var7 = var5[var6];
+                if (var5[var6].dead)
+                {
+                    if (var5[var6] is EntityLiving living)
+                    {
+                        if (living.deathTime >= 20)
+                        {
+                            var5.RemoveAt(var6--);
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        var5.RemoveAt(var6--);
+                        continue;
+                    }
+                }
                 if (var7.shouldRender(var1) && (var7.ignoreFrustumCheck || culler.isBoundingBoxInFrustum(var7.boundingBox)) && (var7 != mc.camera || mc.options.CameraMode != EnumCameraMode.FirstPerson || mc.camera.isSleeping()))
                 {
                     int var8 = MathHelper.Floor(var7.y);

@@ -68,7 +68,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void initScreenHandler()
     {
-        currentScreenHandler.addListener(this);
+        currentScreenHandler.AddListener(this);
     }
 
     public override ItemStack[] getEquipment()
@@ -89,9 +89,11 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public override void tick()
     {
+        TickSleep();
+
         interactionManager.update();
         joinInvulnerabilityTicks--;
-        currentScreenHandler.sendContentUpdates();
+        currentScreenHandler.SendContentUpdates();
 
         for (int i = 0; i < 5; i++)
         {
@@ -144,7 +146,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void playerTick(bool shouldSendChunkUpdates)
     {
-        base.tick();
+        GenericTick();
 
         for (int slotIndex = 0; slotIndex < inventory.size(); slotIndex++)
         {
@@ -165,7 +167,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             {
                 ServerWorld world = server.getWorld(dimensionId);
                 if (!activeChunks.Contains(chunkPos)) continue;
-                if (!world.chunkCache.GetChunk(chunkPos.X, chunkPos.Z).TerrainPopulated) continue;
                 SendChunkData(world, chunkPos);
                 SendBlockEntityUpdates(world, chunkPos);
             }
@@ -278,7 +279,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         }
 
         base.sendPickup(item, count);
-        currentScreenHandler.sendContentUpdates();
+        currentScreenHandler.SendContentUpdates();
     }
 
     public override void swingHand()
@@ -288,7 +289,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             handSwingTicks = -1;
             handSwinging = true;
             EntityTracker et = server.getEntityTracker(dimensionId);
-            et.sendToListeners(this, new EntityAnimationPacket(this, 1));
+            et.sendToListeners(this, new EntityAnimationPacket(this, EntityAnimationPacket.EntityAnimation.SwingHand));
         }
     }
 
@@ -312,7 +313,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         if (isSleeping())
         {
             EntityTracker et = server.getEntityTracker(dimensionId);
-            et.sendToAround(this, new EntityAnimationPacket(this, 3));
+            et.sendToAround(this, new EntityAnimationPacket(this, EntityAnimationPacket.EntityAnimation.WakeUp));
         }
 
         base.wakeUp(resetSleepTimer, updateSleepingPlayers, setSpawnPos);
@@ -351,8 +352,8 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         incrementScreenHandlerSyncId();
         networkHandler.sendPacket(new OpenScreenS2CPacket(screenHandlerSyncId, 1, "Crafting", 9));
         currentScreenHandler = new CraftingScreenHandler(inventory, world, x, y, z);
-        currentScreenHandler.syncId = screenHandlerSyncId;
-        currentScreenHandler.addListener(this);
+        currentScreenHandler.SyncId = screenHandlerSyncId;
+        currentScreenHandler.AddListener(this);
     }
 
 
@@ -361,8 +362,8 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         incrementScreenHandlerSyncId();
         networkHandler.sendPacket(new OpenScreenS2CPacket(screenHandlerSyncId, 0, inventory.getName(), inventory.size()));
         currentScreenHandler = new GenericContainerScreenHandler(this.inventory, inventory);
-        currentScreenHandler.syncId = screenHandlerSyncId;
-        currentScreenHandler.addListener(this);
+        currentScreenHandler.SyncId = screenHandlerSyncId;
+        currentScreenHandler.AddListener(this);
     }
 
 
@@ -371,8 +372,8 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         incrementScreenHandlerSyncId();
         networkHandler.sendPacket(new OpenScreenS2CPacket(screenHandlerSyncId, 2, furnace.getName(), furnace.size()));
         currentScreenHandler = new FurnaceScreenHandler(inventory, furnace);
-        currentScreenHandler.syncId = screenHandlerSyncId;
-        currentScreenHandler.addListener(this);
+        currentScreenHandler.SyncId = screenHandlerSyncId;
+        currentScreenHandler.AddListener(this);
     }
 
 
@@ -381,46 +382,46 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         incrementScreenHandlerSyncId();
         networkHandler.sendPacket(new OpenScreenS2CPacket(screenHandlerSyncId, 3, dispenser.getName(), dispenser.size()));
         currentScreenHandler = new DispenserScreenHandler(inventory, dispenser);
-        currentScreenHandler.syncId = screenHandlerSyncId;
-        currentScreenHandler.addListener(this);
+        currentScreenHandler.SyncId = screenHandlerSyncId;
+        currentScreenHandler.AddListener(this);
     }
 
 
-    public void onSlotUpdate(ScreenHandler handler, int slot, ItemStack stack)
+    public void onSlotUpdate(ScreenHandler handler, int slot, ItemStack? stack)
     {
-        if (handler.getSlot(slot) is not CraftingResultSlot)
+        if (handler.GetSlot(slot) is not CraftingResultSlot)
         {
             if (!skipPacketSlotUpdates)
             {
-                networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(handler.syncId, slot, stack));
+                networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(handler.SyncId, slot, stack));
             }
         }
     }
 
     public void onContentsUpdate(ScreenHandler screenHandler)
     {
-        onContentsUpdate(screenHandler, screenHandler.getStacks());
+        onContentsUpdate(screenHandler, screenHandler.GetStacks());
     }
 
 
-    public void onContentsUpdate(ScreenHandler handler, List stacks)
+    public void onContentsUpdate(ScreenHandler handler, List<ItemStack> stacks)
     {
-        networkHandler.sendPacket(new InventoryS2CPacket(handler.syncId, stacks));
+        networkHandler.sendPacket(new InventoryS2CPacket(handler.SyncId, stacks));
         networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-1, -1, inventory.getCursorStack()));
     }
 
     public void onPropertyUpdate(ScreenHandler handler, int syncId, int trackedValue)
     {
-        networkHandler.sendPacket(new ScreenHandlerPropertyUpdateS2CPacket(handler.syncId, syncId, trackedValue));
+        networkHandler.sendPacket(new ScreenHandlerPropertyUpdateS2CPacket(handler.SyncId, syncId, trackedValue));
     }
 
-    public override void onCursorStackChanged(ItemStack stack)
+    public override void onCursorStackChanged(ItemStack? stack)
     {
     }
 
     public override void closeHandledScreen()
     {
-        networkHandler.sendPacket(new CloseScreenS2CPacket(currentScreenHandler.syncId));
+        networkHandler.sendPacket(new CloseScreenS2CPacket(currentScreenHandler.SyncId));
         onHandledScreenClosed();
     }
 

@@ -6,7 +6,7 @@ using BetaSharp.Screens.Slots;
 
 namespace BetaSharp.Screens;
 
-internal class PlayerScreenHandler : ScreenHandler
+public class PlayerScreenHandler : ScreenHandler
 {
 
     public InventoryCrafting craftingInput;
@@ -23,7 +23,7 @@ internal class PlayerScreenHandler : ScreenHandler
         craftingResult = new InventoryCraftResult();
         this.isLocal = false;
         this.isLocal = isLocal;
-        addSlot(new CraftingResultSlot(inventoryPlayer.player, craftingInput, craftingResult, 0, 144, 36));
+        AddSlot(new CraftingResultSlot(inventoryPlayer.player, craftingInput, craftingResult, 0, 144, 36));
 
         int var3;
         int var4;
@@ -31,26 +31,26 @@ internal class PlayerScreenHandler : ScreenHandler
         {
             for (var4 = 0; var4 < 2; ++var4)
             {
-                addSlot(new Slot(craftingInput, var4 + var3 * 2, 88 + var4 * 18, 26 + var3 * 18));
+                AddSlot(new Slot(craftingInput, var4 + var3 * 2, 88 + var4 * 18, 26 + var3 * 18));
             }
         }
 
         for (var3 = 0; var3 < 4; ++var3)
         {
-            addSlot(new SlotArmor(this, inventoryPlayer, inventoryPlayer.size() - 1 - var3, 8, 8 + var3 * 18, var3));
+            AddSlot(new SlotArmor(this, inventoryPlayer, inventoryPlayer.size() - 1 - var3, 8, 8 + var3 * 18, var3));
         }
 
         for (var3 = 0; var3 < 3; ++var3)
         {
             for (var4 = 0; var4 < 9; ++var4)
             {
-                addSlot(new Slot(inventoryPlayer, var4 + (var3 + 1) * 9, 8 + var4 * 18, 84 + var3 * 18));
+                AddSlot(new Slot(inventoryPlayer, var4 + (var3 + 1) * 9, 8 + var4 * 18, 84 + var3 * 18));
             }
         }
 
         for (var3 = 0; var3 < 9; ++var3)
         {
-            addSlot(new Slot(inventoryPlayer, var3, 8 + var3 * 18, 142));
+            AddSlot(new Slot(inventoryPlayer, var3, 8 + var3 * 18, 142));
         }
 
         onSlotUpdate(craftingInput);
@@ -82,23 +82,23 @@ internal class PlayerScreenHandler : ScreenHandler
         return true;
     }
 
-    public override ItemStack quickMove(int slot)
+    public override ItemStack quickMove(int slotNumber)
     {
         ItemStack var2 = null;
-        Slot var3 = (Slot)slots.get(slot);
+        Slot var3 = Slots[slotNumber];
         if (var3 != null && var3.hasStack())
         {
             ItemStack var4 = var3.getStack();
             var2 = var4.copy();
-            if (slot == 0)
+            if (slotNumber == 0)
             {
                 insertItem(var4, 9, 45, true);
             }
-            else if (slot >= 9 && slot < 36)
+            else if (slotNumber >= 9 && slotNumber < 36)
             {
                 insertItem(var4, 36, 45, false);
             }
-            else if (slot >= 36 && slot < 45)
+            else if (slotNumber >= 36 && slotNumber < 45)
             {
                 insertItem(var4, 9, 36, false);
             }

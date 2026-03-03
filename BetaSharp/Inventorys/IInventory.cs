@@ -11,7 +11,7 @@ public interface IInventory
 
     ItemStack removeStack(int slotIndex, int amount);
 
-    void setStack(int slotIndex, ItemStack itemStack);
+    void setStack(int slotIndex, ItemStack? itemStack);
 
     string getName();
 

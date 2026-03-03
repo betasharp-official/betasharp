@@ -44,8 +44,8 @@ public class PlayerManager
 
     public void updatePlayerAfterDimensionChange(ServerPlayerEntity player)
     {
-        _chunkMaps[0].removePlayer(player);
-        _chunkMaps[1].removePlayer(player);
+        // Removal from the source chunk map is handled by sendPlayerToDimension before coordinate scaling.
+        player.activeChunks.Clear();
         GetChunkMap(player.dimensionId).addPlayer(player);
         ServerWorld var2 = _server.getWorld(player.dimensionId);
         var2.chunkCache.LoadChunk((int)player.x >> 4, (int)player.z >> 4);
@@ -77,7 +77,7 @@ public class PlayerManager
         ServerWorld var2 = _server.getWorld(player.dimensionId);
         var2.chunkCache.LoadChunk((int)player.x >> 4, (int)player.z >> 4);
 
-        while (var2.getEntityCollisions(player, player.boundingBox).Count != 0)
+        while (var2.GetEntityCollisions(player, player.boundingBox).Count != 0)
         {
             player.setPosition(player.x, player.y + 1.0, player.z);
         }
@@ -177,7 +177,7 @@ public class PlayerManager
 
         var5.chunkCache.LoadChunk((int)var4.x >> 4, (int)var4.z >> 4);
 
-        while (var5.getEntityCollisions(var4, var4.boundingBox).Count != 0)
+        while (var5.GetEntityCollisions(var4, var4.boundingBox).Count != 0)
         {
             var4.setPosition(var4.x, var4.y + 1.0, var4.z);
         }
@@ -209,13 +209,18 @@ public class PlayerManager
 
     public void sendPlayerToDimension(ServerPlayerEntity player, int targetDim)
     {
-        ServerWorld currentWorld = _server.getWorld(player.dimensionId);
+        int sourceDim = player.dimensionId;
+        ServerWorld currentWorld = _server.getWorld(sourceDim);
         ServerWorld targetWorld = _server.getWorld(targetDim);
 
         if (targetWorld == null)
         {
             return;
         }
+
+        // Remove from source chunk map NOW, while player.x/z are still in
+        // source-dimension space. 
+        GetChunkMap(sourceDim).removePlayer(player);
 
         player.dimensionId = targetDim;
         player.networkHandler.sendPacket(new PlayerRespawnPacket((sbyte)player.dimensionId));
@@ -254,6 +259,10 @@ public class PlayerManager
             targetWorld.chunkCache.forceLoad = true;
             new PortalForcer().MoveToPortal(targetWorld, player);
             targetWorld.chunkCache.forceLoad = false;
+
+            // Fully drain lighting updates generated during portal chunk
+            // creation before the chunks are queued for the client. 
+            while (targetWorld.doLightingUpdates()) { }
         }
 
         updatePlayerAfterDimensionChange(player);
@@ -307,19 +316,7 @@ public class PlayerManager
 
     public string getPlayerList()
     {
-        string var1 = "";
-
-        for (int var2 = 0; var2 < players.Count; var2++)
-        {
-            if (var2 > 0)
-            {
-                var1 += ", ";
-            }
-
-            var1 += players[var2].name;
-        }
-
-        return var1;
+        return string.Join(", ", players.ConvertAll(p => p.name));
     }
 
     public void banPlayer(string name)

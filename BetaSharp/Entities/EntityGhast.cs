@@ -150,7 +150,7 @@ public class EntityGhast : EntityFlying, Monster
         for (int i = 1; (double)i < distance; ++i)
         {
             box.Translate(stepX, stepY, stepZ);
-            if (world.getEntityCollisions(this, box).Count > 0)
+            if (world.GetEntityCollisions(this, box).Count > 0)
             {
                 return false;
             }

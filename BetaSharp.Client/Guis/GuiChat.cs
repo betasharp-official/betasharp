@@ -9,7 +9,6 @@ public class GuiChat : GuiScreen
 {
     protected string _message = "";
     private int _updateCounter = 0;
-    private static readonly string s_allowedChars = ChatAllowedCharacters.allowedCharacters;
     private static readonly List<string> s_history = [];
     private int _historyIndex = 0;
 
@@ -116,7 +115,7 @@ public class GuiChat : GuiScreen
 
     protected override void CharTyped(char eventChar)
     {
-        if (s_allowedChars.Contains(eventChar) && _message.Length < 100)
+        if (ChatAllowedCharacters.IsAllowedCharacter(eventChar) && _message.Length < 100)
         {
             _message += eventChar;
         }

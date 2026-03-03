@@ -3,30 +3,31 @@ using BetaSharp.Entities;
 
 namespace BetaSharp.Network.Packets.Play;
 
-public class EntityAnimationPacket : Packet
+public class EntityAnimationPacket() : PacketBaseEntity(PacketId.EntityAnimation)
 {
-    public int id;
     public int animationId;
 
-    public EntityAnimationPacket()
+    public EntityAnimationPacket(Entity ent, int animationId) : this()
     {
+        EntityId = ent.id;
+        this.animationId = animationId;
     }
 
-    public EntityAnimationPacket(Entity ent, int animationId)
+    public EntityAnimationPacket(Entity ent, EntityAnimation animationId) : this()
     {
-        id = ent.id;
-        this.animationId = animationId;
+        EntityId = ent.id;
+        this.animationId = (int)animationId;
     }
 
     public override void Read(NetworkStream stream)
     {
-        id = stream.ReadInt();
+        base.Read(stream);
         animationId = (sbyte)stream.ReadByte();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.WriteInt(id);
+        base.Write(stream);
         stream.WriteByte((byte)animationId);
     }
 
@@ -37,6 +38,14 @@ public class EntityAnimationPacket : Packet
 
     public override int Size()
     {
-        return 5;
+        return PacketBaseEntitySize + 1;
+    }
+
+    public enum EntityAnimation : byte
+    {
+        SwingHand = 1,
+        Hurt = 2,
+        WakeUp = 3,
+        Spawn = 4
     }
 }

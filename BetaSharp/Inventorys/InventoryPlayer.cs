@@ -12,7 +12,7 @@ public class InventoryPlayer : IInventory
     public ItemStack[] armor = new ItemStack[4];
     public int selectedSlot;
     public EntityPlayer player;
-    private ItemStack cursorStack;
+    private ItemStack? cursorStack;
     public bool dirty;
 
     public InventoryPlayer(EntityPlayer player)
@@ -242,7 +242,7 @@ public class InventoryPlayer : IInventory
         }
     }
 
-    public void setStack(int slotIndex, ItemStack itemStack)
+    public void setStack(int slotIndex, ItemStack? itemStack)
     {
         ItemStack[] targetArray = main;
         if (slotIndex >= targetArray.Length)
@@ -446,7 +446,7 @@ public class InventoryPlayer : IInventory
         dirty = true;
     }
 
-    public void setItemStack(ItemStack itemStack)
+    public void setItemStack(ItemStack? itemStack)
     {
         cursorStack = itemStack;
         player.onCursorStackChanged(itemStack);

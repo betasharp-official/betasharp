@@ -1,4 +1,5 @@
 using BetaSharp.Client.Input;
+using BetaSharp.Client.Options;
 using BetaSharp.NBT;
 
 namespace BetaSharp.Client.Guis;
@@ -20,10 +21,12 @@ public class GuiMultiplayer : GuiScreen
     private ServerData _tempServer = null!;
 
     private readonly GuiScreen _parentScreen;
+    private readonly GameOptions _options;
 
-    public GuiMultiplayer(GuiScreen parentScreen)
+    public GuiMultiplayer(GuiScreen parentScreen, GameOptions options)
     {
         _parentScreen = parentScreen;
+        _options = options;
     }
 
     public List<ServerData> GetServerList()
@@ -148,7 +151,7 @@ public class GuiMultiplayer : GuiScreen
         {
             _directConnect = true;
             _tempServer = new ServerData("Minecraft Server", "");
-            mc.displayGuiScreen(new GuiDirectConnect(this, _tempServer));
+            mc.displayGuiScreen(new GuiDirectConnect(this, _tempServer, _options));
         }
         else if (button.Id == 3) // Add
         {

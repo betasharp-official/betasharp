@@ -2,138 +2,140 @@ using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Screens.Slots;
-using java.util;
 
 namespace BetaSharp.Screens;
 
 public abstract class ScreenHandler
 {
-    public List trackedStacks = new ArrayList();
-    public List slots = new ArrayList();
-    public int syncId = 0;
-    private short revision;
-    protected List listeners = new ArrayList();
-    private Set players = new HashSet();
+    protected List<ScreenHandlerListener> Listeners { get; private set; } = [];
+    private short _revision;
+    private HashSet<EntityPlayer> _players = new HashSet<EntityPlayer>();
 
-    protected void addSlot(Slot var1)
+
+
+    public List<ItemStack?> TrackedStacks { get; private set; } = [];
+    public List<Slot> Slots { get; private set; } = [];
+    public int SyncId { get; set; } = 0;
+
+
+    protected void AddSlot(Slot slot)
     {
-        var1.id = slots.size();
-        slots.add(var1);
-        trackedStacks.add(null);
+        slot.id = Slots.Count;
+        Slots.Add(slot);
+        TrackedStacks.Add(null);
     }
 
-    public virtual void addListener(ScreenHandlerListener listener)
+    public virtual void AddListener(ScreenHandlerListener listener)
     {
-        if (listeners.contains(listener))
+        if (Listeners.Contains(listener))
         {
             throw new ArgumentException("Listener already listening", nameof(listener));
         }
         else
         {
-            listeners.add(listener);
-            listener.onContentsUpdate(this, getStacks());
-            sendContentUpdates();
+            Listeners.Add(listener);
+            listener.onContentsUpdate(this, GetStacks());
+            SendContentUpdates();
         }
     }
 
-    public List getStacks()
+    public List<ItemStack> GetStacks()
     {
-        ArrayList var1 = new ArrayList();
+        List<ItemStack> stacks = new List<ItemStack>();
 
-        for (int var2 = 0; var2 < slots.size(); var2++)
+        for (int var2 = 0; var2 < Slots.Count; var2++)
         {
-            var1.add(((Slot)slots.get(var2)).getStack());
+            stacks.Add(Slots[var2].getStack());
         }
-
-        return var1;
+        return stacks;
     }
 
-    public virtual void sendContentUpdates()
+    public virtual void SendContentUpdates()
     {
-        for (int var1 = 0; var1 < slots.size(); ++var1)
+        for (int slotIndex = 0; slotIndex < Slots.Count; ++slotIndex)
         {
-            ItemStack var2 = ((Slot)slots.get(var1)).getStack();
-            ItemStack var3 = (ItemStack)trackedStacks.get(var1);
-            if (!ItemStack.areEqual(var3, var2))
+            ItemStack slotStack = Slots[slotIndex].getStack();
+            ItemStack? trackedStack = TrackedStacks[slotIndex];
+            if (!ItemStack.areEqual(trackedStack, slotStack))
             {
-                var3 = var2 == null ? null : var2.copy();
-                trackedStacks.set(var1, var3);
+                trackedStack = slotStack is null ? null : slotStack.copy();
+                TrackedStacks[slotIndex] = trackedStack;
 
-                for (int var4 = 0; var4 < listeners.size(); ++var4)
+                for (int listenerIndex = 0; listenerIndex < Listeners.Count; ++listenerIndex)
                 {
-                    ((ScreenHandlerListener)listeners.get(var4)).onSlotUpdate(this, var1, var3);
+                    Listeners[listenerIndex].onSlotUpdate(this, slotIndex, trackedStack);
                 }
             }
         }
-
     }
 
-    public Slot getSlot(IInventory inventory, int index)
+    public Slot? GetSlot(IInventory inventory, int index)
     {
-        for (int var3 = 0; var3 < slots.size(); var3++)
+        for (int slotIndex = 0; slotIndex < Slots.Count; slotIndex++)
         {
-            Slot var4 = (Slot)slots.get(var3);
-            if (var4.Equals(inventory, index))
+            Slot slot = Slots[slotIndex];
+            if (slot.Equals(inventory, index))
             {
-                return var4;
+                return slot;
             }
         }
-
         return null;
     }
 
-    public Slot getSlot(int index)
+    public Slot GetSlot(int index)
     {
-        return (Slot)slots.get(index);
+        return Slots[index];
     }
 
-    public virtual ItemStack quickMove(int slot)
+    public virtual ItemStack? quickMove(int index)
     {
-        Slot var2 = (Slot)slots.get(slot);
-        return var2 != null ? var2.getStack() : null;
+        if (index < 0 || index > Slots.Count)
+            return null;
+
+        return Slots[index].getStack();
     }
 
-    public ItemStack onSlotClick(int index, int button, bool shift, EntityPlayer player)
+    public ItemStack? onSlotClick(int index, int button, bool shift, EntityPlayer player)
     {
-        ItemStack var5 = null;
+        ItemStack? returnStack = null;
         if (button == 0 || button == 1)
         {
-            InventoryPlayer var6 = player.inventory;
+            InventoryPlayer playerInventory = player.inventory;
             if (index == -999)
             {
-                if (var6.getCursorStack() != null && index == -999)
+                if (playerInventory.getCursorStack() is not null && index == -999)
                 {
                     if (button == 0)
                     {
-                        player.dropItem(var6.getCursorStack());
-                        var6.setItemStack(null);
+                        player.dropItem(playerInventory.getCursorStack());
+                        playerInventory.setItemStack(null);
                     }
 
                     if (button == 1)
                     {
-                        player.dropItem(var6.getCursorStack().split(1));
-                        if (var6.getCursorStack().count == 0)
+                        player.dropItem(playerInventory.getCursorStack().split(1));
+                        if (playerInventory.getCursorStack().count == 0)
                         {
-                            var6.setItemStack(null);
+                            playerInventory.setItemStack(null);
                         }
                     }
                 }
             }
             else
             {
-                int var10;
+                int slotItemStackSize;
                 if (shift)
                 {
-                    ItemStack var7 = quickMove(index);
-                    if (var7 != null)
+                    ItemStack? itemStack = quickMove(index);
+                    if (itemStack is not null)
                     {
-                        int var8 = var7.count;
-                        var5 = var7.copy();
-                        Slot var9 = (Slot)slots.get(index);
-                        if (var9 != null && var9.getStack() != null)
+                        int itemStackSize = itemStack.count;
+                        returnStack = itemStack.copy();
+                        Slot slot = Slots[index];
+                        if (slot is not null && slot.getStack() is not null)
                         {
-                            var10 = var9.getStack().count;
-                            if (var10 < var8)
+                            slotItemStackSize = slot.getStack().count;
+                            if (slotItemStackSize < itemStackSize)
                             {
                                 onSlotClick(index, button, shift, player);
                             }
@@ -142,127 +144,126 @@ public abstract class ScreenHandler
                 }
                 else
                 {
-                    Slot var12 = (Slot)slots.get(index);
-                    if (var12 != null)
+                    Slot slot = Slots[index];
+                    if (slot is not null)
                     {
-                        var12.markDirty();
-                        ItemStack var13 = var12.getStack();
-                        ItemStack var14 = var6.getCursorStack();
-                        if (var13 != null)
+                        slot.markDirty();
+                        ItemStack slotStack = slot.getStack();
+                        ItemStack cursorStack = playerInventory.getCursorStack();
+                        if (slotStack is not null)
                         {
-                            var5 = var13.copy();
+                            returnStack = slotStack.copy();
                         }
 
-                        if (var13 == null)
+                        if (slotStack is null)
                         {
-                            if (var14 != null && var12.canInsert(var14))
+                            if (cursorStack is not null && slot.canInsert(cursorStack))
                             {
-                                var10 = button == 0 ? var14.count : 1;
-                                if (var10 > var12.getMaxItemCount())
+                                slotItemStackSize = button == 0 ? cursorStack.count : 1;
+                                if (slotItemStackSize > slot.getMaxItemCount())
                                 {
-                                    var10 = var12.getMaxItemCount();
+                                    slotItemStackSize = slot.getMaxItemCount();
                                 }
 
-                                var12.setStack(var14.split(var10));
-                                if (var14.count == 0)
+                                slot.setStack(cursorStack.split(slotItemStackSize));
+                                if (cursorStack.count == 0)
                                 {
-                                    var6.setItemStack(null);
+                                    playerInventory.setItemStack(null);
                                 }
                             }
                         }
-                        else if (var14 == null)
+                        else if (cursorStack is null)
                         {
-                            var10 = button == 0 ? var13.count : (var13.count + 1) / 2;
-                            ItemStack var11 = var12.takeStack(var10);
-                            var6.setItemStack(var11);
-                            if (var13.count == 0)
+                            slotItemStackSize = button == 0 ? slotStack.count : (slotStack.count + 1) / 2;
+                            ItemStack var11 = slot.takeStack(slotItemStackSize);
+                            playerInventory.setItemStack(var11);
+                            if (slotStack.count == 0)
                             {
-                                var12.setStack(null);
+                                slot.setStack(null);
                             }
 
-                            var12.onTakeItem(var6.getCursorStack());
+                            slot.onTakeItem(playerInventory.getCursorStack());
                         }
-                        else if (var12.canInsert(var14))
+                        else if (slot.canInsert(cursorStack))
                         {
-                            if (var13.itemId != var14.itemId || var13.getHasSubtypes() && var13.getDamage() != var14.getDamage())
+                            if (slotStack.itemId != cursorStack.itemId || slotStack.getHasSubtypes() && slotStack.getDamage() != cursorStack.getDamage())
                             {
-                                if (var14.count <= var12.getMaxItemCount())
+                                if (cursorStack.count <= slot.getMaxItemCount())
                                 {
-                                    var12.setStack(var14);
-                                    var6.setItemStack(var13);
+                                    slot.setStack(cursorStack);
+                                    playerInventory.setItemStack(slotStack);
                                 }
                             }
                             else
                             {
-                                var10 = button == 0 ? var14.count : 1;
-                                if (var10 > var12.getMaxItemCount() - var13.count)
+                                slotItemStackSize = button == 0 ? cursorStack.count : 1;
+                                if (slotItemStackSize > slot.getMaxItemCount() - slotStack.count)
                                 {
-                                    var10 = var12.getMaxItemCount() - var13.count;
+                                    slotItemStackSize = slot.getMaxItemCount() - slotStack.count;
                                 }
 
-                                if (var10 > var14.getMaxCount() - var13.count)
+                                if (slotItemStackSize > cursorStack.getMaxCount() - slotStack.count)
                                 {
-                                    var10 = var14.getMaxCount() - var13.count;
+                                    slotItemStackSize = cursorStack.getMaxCount() - slotStack.count;
                                 }
 
-                                var14.split(var10);
-                                if (var14.count == 0)
+                                cursorStack.split(slotItemStackSize);
+                                if (cursorStack.count == 0)
                                 {
-                                    var6.setItemStack(null);
+                                    playerInventory.setItemStack(null);
                                 }
 
-                                var13.count += var10;
+                                slotStack.count += slotItemStackSize;
                             }
                         }
-                        else if (var13.itemId == var14.itemId && var14.getMaxCount() > 1 && (!var13.getHasSubtypes() || var13.getDamage() == var14.getDamage()))
+                        else if (slotStack.itemId == cursorStack.itemId && cursorStack.getMaxCount() > 1 && (!slotStack.getHasSubtypes() || slotStack.getDamage() == cursorStack.getDamage()))
                         {
-                            var10 = var13.count;
-                            if (var10 > 0 && var10 + var14.count <= var14.getMaxCount())
+                            slotItemStackSize = slotStack.count;
+                            if (slotItemStackSize > 0 && slotItemStackSize + cursorStack.count <= cursorStack.getMaxCount())
                             {
-                                var14.count += var10;
-                                var13.split(var10);
-                                if (var13.count == 0)
+                                cursorStack.count += slotItemStackSize;
+                                slotStack.split(slotItemStackSize);
+                                if (slotStack.count == 0)
                                 {
-                                    var12.setStack(null);
+                                    slot.setStack(null);
                                 }
 
-                                var12.onTakeItem(var6.getCursorStack());
+                                slot.onTakeItem(playerInventory.getCursorStack());
                             }
                         }
                     }
                 }
             }
         }
-
-        return var5;
+        return returnStack;
     }
 
     public virtual void onClosed(EntityPlayer player)
     {
-        InventoryPlayer var2 = player.inventory;
-        if (var2.getCursorStack() != null)
+        InventoryPlayer playerInventory = player.inventory;
+        if (playerInventory.getCursorStack() is not null)
         {
-            player.dropItem(var2.getCursorStack());
-            var2.setItemStack(null);
+            player.dropItem(playerInventory.getCursorStack());
+            playerInventory.setItemStack(null);
         }
 
     }
 
     public virtual void onSlotUpdate(IInventory inventory)
     {
-        sendContentUpdates();
+        SendContentUpdates();
     }
 
     public void setStackInSlot(int index, ItemStack stack)
     {
-        getSlot(index).setStack(stack);
+        GetSlot(index).setStack(stack);
     }
 
     public void updateSlotStacks(ItemStack[] stacks)
     {
-        for (int var2 = 0; var2 < stacks.Length; ++var2)
+        for (int index = 0; index < stacks.Length; ++index)
         {
-            getSlot(var2).setStack(stacks[var2]);
+            GetSlot(index).setStack(stacks[index]);
         }
 
     }
@@ -273,8 +274,8 @@ public abstract class ScreenHandler
 
     public short nextRevision(InventoryPlayer inventory)
     {
-        ++revision;
-        return revision;
+        ++_revision;
+        return _revision;
     }
 
     public void onAcknowledgementAccepted(short actionType)
@@ -287,18 +288,18 @@ public abstract class ScreenHandler
 
     public bool canOpen(EntityPlayer player)
     {
-        return !players.contains(player);
+        return !_players.Contains(player);
     }
 
     public void updatePlayerList(EntityPlayer player, bool remove)
     {
         if (remove)
         {
-            players.remove(player);
+            _players.Remove(player);
         }
         else
         {
-            players.add(player);
+            _players.Add(player);
         }
     }
 
@@ -306,44 +307,44 @@ public abstract class ScreenHandler
 
     protected void insertItem(ItemStack stack, int start, int end, bool fromLast)
     {
-        int var5 = start;
+        int slotIndex = start;
         if (fromLast)
         {
-            var5 = end - 1;
+            slotIndex = end - 1;
         }
 
-        Slot var6;
-        ItemStack var7;
+        Slot slotToInsertStack;
+        ItemStack itemStackToInsert;
         if (stack.isStackable())
         {
-            while (stack.count > 0 && (!fromLast && var5 < end || fromLast && var5 >= start))
+            while (stack.count > 0 && (!fromLast && slotIndex < end || fromLast && slotIndex >= start))
             {
-                var6 = (Slot)slots.get(var5);
-                var7 = var6.getStack();
-                if (var7 != null && var7.itemId == stack.itemId && (!stack.getHasSubtypes() || stack.getDamage() == var7.getDamage()))
+                slotToInsertStack = Slots[slotIndex];
+                itemStackToInsert = slotToInsertStack.getStack();
+                if (itemStackToInsert is not null && itemStackToInsert.itemId == stack.itemId && (!stack.getHasSubtypes() || stack.getDamage() == itemStackToInsert.getDamage()))
                 {
-                    int var8 = var7.count + stack.count;
-                    if (var8 <= stack.getMaxCount())
+                    int newitemStackSize = itemStackToInsert.count + stack.count;
+                    if (newitemStackSize <= stack.getMaxCount())
                     {
                         stack.count = 0;
-                        var7.count = var8;
-                        var6.markDirty();
+                        itemStackToInsert.count = newitemStackSize;
+                        slotToInsertStack.markDirty();
                     }
-                    else if (var7.count < stack.getMaxCount())
+                    else if (itemStackToInsert.count < stack.getMaxCount())
                     {
-                        stack.count -= stack.getMaxCount() - var7.count;
-                        var7.count = stack.getMaxCount();
-                        var6.markDirty();
+                        stack.count -= stack.getMaxCount() - itemStackToInsert.count;
+                        itemStackToInsert.count = stack.getMaxCount();
+                        slotToInsertStack.markDirty();
                     }
                 }
 
                 if (fromLast)
                 {
-                    --var5;
+                    --slotIndex;
                 }
                 else
                 {
-                    ++var5;
+                    ++slotIndex;
                 }
             }
         }
@@ -352,35 +353,34 @@ public abstract class ScreenHandler
         {
             if (fromLast)
             {
-                var5 = end - 1;
+                slotIndex = end - 1;
             }
             else
             {
-                var5 = start;
+                slotIndex = start;
             }
 
-            while (!fromLast && var5 < end || fromLast && var5 >= start)
+            while (!fromLast && slotIndex < end || fromLast && slotIndex >= start)
             {
-                var6 = (Slot)slots.get(var5);
-                var7 = var6.getStack();
-                if (var7 == null)
+                slotToInsertStack = Slots[slotIndex];
+                itemStackToInsert = slotToInsertStack.getStack();
+                if (itemStackToInsert is null)
                 {
-                    var6.setStack(stack.copy());
-                    var6.markDirty();
+                    slotToInsertStack.setStack(stack.copy());
+                    slotToInsertStack.markDirty();
                     stack.count = 0;
                     break;
                 }
 
                 if (fromLast)
                 {
-                    --var5;
+                    --slotIndex;
                 }
                 else
                 {
-                    ++var5;
+                    ++slotIndex;
                 }
             }
         }
-
     }
 }

@@ -9,6 +9,7 @@ internal class AcceptConnectionThread : java.lang.Thread
 {
     private readonly ILogger<AcceptConnectionThread> _logger = Log.Instance.For<AcceptConnectionThread>();
     private readonly ConnectionListener _listener;
+    private const int MAX_CACHE_SIZE = 1000;
 
     public AcceptConnectionThread(ConnectionListener listener, string name) : base(name)
     {
@@ -40,9 +41,25 @@ internal class AcceptConnectionThread : java.lang.Thread
                 }
                 else
                 {
-                    map[address] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-;
-                    ServerLoginNetworkHandler handler = new(_listener.server, socket, "Connection # " + _listener.connectionCounter);
+                    map[address] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+                    // Prune oldest entry when the cache grows beyond the bounded limit.
+                    if (map.Count > MAX_CACHE_SIZE)
+                    {
+                        IPAddress? oldest = null;
+                        long oldestTime = long.MaxValue;
+                        foreach (var kv in map)
+                        {
+                            if (kv.Value < oldestTime)
+                            {
+                                oldestTime = kv.Value;
+                                oldest = kv.Key;
+                            }
+                        }
+                        if (oldest != null) map.Remove(oldest);
+                    }
+
+                    ServerLoginNetworkHandler handler = new(_listener.server, socket, "Connection # " + _listener.GetNextConnectionCounter());
                     _listener.AddPendingConnection(handler);
                 }
             }

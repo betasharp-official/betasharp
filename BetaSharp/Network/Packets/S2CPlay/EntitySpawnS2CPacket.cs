@@ -4,9 +4,8 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class EntitySpawnS2CPacket : Packet
+public class EntitySpawnS2CPacket() : PacketBaseEntity(PacketId.EntitySpawnS2C)
 {
-    public int id;
     public int x;
     public int y;
     public int z;
@@ -16,17 +15,9 @@ public class EntitySpawnS2CPacket : Packet
     public int entityType;
     public int entityData;
 
-    public EntitySpawnS2CPacket()
+    public EntitySpawnS2CPacket(Entity entity, int entityType, int entityData = 0) : this()
     {
-    }
-
-    public EntitySpawnS2CPacket(Entity entity, int entityType) : this(entity, entityType, 0)
-    {
-    }
-
-    public EntitySpawnS2CPacket(Entity entity, int entityType, int entityData)
-    {
-        id = entity.id;
+        EntityId = entity.id;
         x = MathHelper.Floor(entity.x * 32.0);
         y = MathHelper.Floor(entity.y * 32.0);
         z = MathHelper.Floor(entity.z * 32.0);
@@ -76,7 +67,7 @@ public class EntitySpawnS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        id = stream.ReadInt();
+        base.Read(stream);
         entityType = (sbyte)stream.ReadByte();
         x = stream.ReadInt();
         y = stream.ReadInt();
@@ -93,7 +84,7 @@ public class EntitySpawnS2CPacket : Packet
 
     public override void Write(NetworkStream stream)
     {
-        stream.WriteInt(id);
+        base.Write(stream);
         stream.WriteByte((byte)entityType);
         stream.WriteInt(x);
         stream.WriteInt(y);
@@ -115,6 +106,6 @@ public class EntitySpawnS2CPacket : Packet
 
     public override int Size()
     {
-        return 21 + entityData > 0 ? 6 : 0;
+        return 17 + PacketBaseEntitySize + entityData > 0 ? 6 : 0;
     }
 }

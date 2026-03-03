@@ -39,7 +39,7 @@ public class Slot
         return getStack() != null;
     }
 
-    public void setStack(ItemStack var1)
+    public void setStack(ItemStack? var1)
     {
         inventory.setStack(slotIndex, var1);
         markDirty();

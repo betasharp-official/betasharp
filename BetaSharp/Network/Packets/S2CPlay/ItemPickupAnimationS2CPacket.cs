@@ -2,16 +2,12 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class ItemPickupAnimationS2CPacket : Packet
+public class ItemPickupAnimationS2CPacket() : Packet(PacketId.ItemPickupAnimationS2C)
 {
     public int entityId;
     public int collectorEntityId;
 
-    public ItemPickupAnimationS2CPacket()
-    {
-    }
-
-    public ItemPickupAnimationS2CPacket(int entityId, int collectorId)
+    public ItemPickupAnimationS2CPacket(int entityId, int collectorId) : this()
     {
         this.entityId = entityId;
         collectorEntityId = collectorId;

@@ -16,6 +16,7 @@ public interface IServerConfiguration
     int GetMaxPlayers(int fallback);
     int GetViewDistance(int fallback);
     bool GetWhiteList(bool fallback);
+    int GetSpawnRegionSize(int fallback);
     void Save();
 
     bool GetProperty(string property, bool fallback);

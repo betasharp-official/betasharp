@@ -3,7 +3,7 @@ using BetaSharp.Entities;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class PlayerSleepUpdateS2CPacket : Packet
+public class PlayerSleepUpdateS2CPacket() : Packet(PacketId.PlayerSleepUpdateS2C)
 {
     public int id;
     public int x;
@@ -11,11 +11,7 @@ public class PlayerSleepUpdateS2CPacket : Packet
     public int z;
     public int status;
 
-    public PlayerSleepUpdateS2CPacket()
-    {
-    }
-
-    public PlayerSleepUpdateS2CPacket(Entity player, int status, int x, int y, int z)
+    public PlayerSleepUpdateS2CPacket(Entity player, int status, int x, int y, int z) : this()
     {
         this.status = status;
         this.x = x;

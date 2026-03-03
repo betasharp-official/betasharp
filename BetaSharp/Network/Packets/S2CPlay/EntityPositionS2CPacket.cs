@@ -4,22 +4,17 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class EntityPositionS2CPacket : Packet
+public class EntityPositionS2CPacket() : PacketBaseEntity(PacketId.EntityPositionS2C)
 {
-    public int id;
     public int x;
     public int y;
     public int z;
     public sbyte yaw;
     public sbyte pitch;
 
-    public EntityPositionS2CPacket()
+    public EntityPositionS2CPacket(int entityId, int x, int y, int z, byte yaw, byte pitch) : this()
     {
-    }
-
-    public EntityPositionS2CPacket(int entityId, int x, int y, int z, byte yaw, byte pitch)
-    {
-        this.id = entityId;
+        EntityId = entityId;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -27,19 +22,19 @@ public class EntityPositionS2CPacket : Packet
         this.pitch = (sbyte)pitch;
     }
 
-    public EntityPositionS2CPacket(Entity var1)
+    public EntityPositionS2CPacket(Entity entity) : this()
     {
-        id = var1.id;
-        x = MathHelper.Floor(var1.x * 32.0D);
-        y = MathHelper.Floor(var1.y * 32.0D);
-        z = MathHelper.Floor(var1.z * 32.0D);
-        yaw = (sbyte)(int)(var1.yaw * 256.0F / 360.0F);
-        pitch = (sbyte)(int)(var1.pitch * 256.0F / 360.0F);
+        EntityId = entity.id;
+        x = MathHelper.Floor(entity.x * 32.0D);
+        y = MathHelper.Floor(entity.y * 32.0D);
+        z = MathHelper.Floor(entity.z * 32.0D);
+        yaw = (sbyte)(int)(entity.yaw * 256.0F / 360.0F);
+        pitch = (sbyte)(int)(entity.pitch * 256.0F / 360.0F);
     }
 
     public override void Read(NetworkStream stream)
     {
-        id = stream.ReadInt();
+        base.Read(stream);
         x = stream.ReadInt();
         y = stream.ReadInt();
         z = stream.ReadInt();
@@ -49,7 +44,7 @@ public class EntityPositionS2CPacket : Packet
 
     public override void Write(NetworkStream stream)
     {
-        stream.WriteInt(id);
+        base.Write(stream);
         stream.WriteInt(x);
         stream.WriteInt(y);
         stream.WriteInt(z);
@@ -64,6 +59,6 @@ public class EntityPositionS2CPacket : Packet
 
     public override int Size()
     {
-        return 34;
+        return 30 + PacketBaseEntitySize;
     }
 }

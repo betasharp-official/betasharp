@@ -2,15 +2,11 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.Play;
 
-public class ChatMessagePacket : Packet
+public class ChatMessagePacket() : Packet(PacketId.ChatMessage)
 {
     public string chatMessage;
 
-    public ChatMessagePacket()
-    {
-    }
-
-    public ChatMessagePacket(string msg)
+    public ChatMessagePacket(string msg) : this()
     {
         if (msg.Length > 119)
         {

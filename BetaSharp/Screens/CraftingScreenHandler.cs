@@ -25,7 +25,7 @@ public class CraftingScreenHandler : ScreenHandler
         this.x = x;
         this.y = y;
         this.z = z;
-        addSlot(new CraftingResultSlot(playerInventory.player, input, result, 0, 124, 35));
+        AddSlot(new CraftingResultSlot(playerInventory.player, input, result, 0, 124, 35));
 
         int var6;
         int var7;
@@ -33,7 +33,7 @@ public class CraftingScreenHandler : ScreenHandler
         {
             for (var7 = 0; var7 < 3; ++var7)
             {
-                addSlot(new Slot(input, var7 + var6 * 3, 30 + var7 * 18, 17 + var6 * 18));
+                AddSlot(new Slot(input, var7 + var6 * 3, 30 + var7 * 18, 17 + var6 * 18));
             }
         }
 
@@ -41,13 +41,13 @@ public class CraftingScreenHandler : ScreenHandler
         {
             for (var7 = 0; var7 < 9; ++var7)
             {
-                addSlot(new Slot(playerInventory, var7 + var6 * 9 + 9, 8 + var7 * 18, 84 + var6 * 18));
+                AddSlot(new Slot(playerInventory, var7 + var6 * 9 + 9, 8 + var7 * 18, 84 + var6 * 18));
             }
         }
 
         for (var6 = 0; var6 < 9; ++var6)
         {
-            addSlot(new Slot(playerInventory, var6, 8 + var6 * 18, 142));
+            AddSlot(new Slot(playerInventory, var6, 8 + var6 * 18, 142));
         }
 
         onSlotUpdate(input);
@@ -80,23 +80,23 @@ public class CraftingScreenHandler : ScreenHandler
         return world.getBlockId(x, y, z) != Block.CraftingTable.id ? false : player.getSquaredDistance(x + 0.5D, y + 0.5D, z + 0.5D) <= 64.0D;
     }
 
-    public override ItemStack quickMove(int slot)
+    public override ItemStack quickMove(int slotNumber)
     {
         ItemStack var2 = null;
-        Slot var3 = (Slot)slots.get(slot);
+        Slot var3 = Slots[slotNumber];
         if (var3 != null && var3.hasStack())
         {
             ItemStack var4 = var3.getStack();
             var2 = var4.copy();
-            if (slot == 0)
+            if (slotNumber == 0)
             {
                 insertItem(var4, 10, 46, true);
             }
-            else if (slot >= 10 && slot < 37)
+            else if (slotNumber >= 10 && slotNumber < 37)
             {
                 insertItem(var4, 37, 46, false);
             }
-            else if (slot >= 37 && slot < 46)
+            else if (slotNumber >= 37 && slotNumber < 46)
             {
                 insertItem(var4, 10, 37, false);
             }

@@ -1,26 +1,21 @@
 using System.Net.Sockets;
 using BetaSharp.Items;
-using java.util;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class InventoryS2CPacket : Packet
+public class InventoryS2CPacket() : Packet(PacketId.InventoryS2C)
 {
     public int syncId;
     public ItemStack[] contents;
 
-    public InventoryS2CPacket()
-    {
-    }
-
-    public InventoryS2CPacket(int syncId, List contents)
+    public InventoryS2CPacket(int syncId, List<ItemStack> contents) : this()
     {
         this.syncId = syncId;
-        this.contents = new ItemStack[contents.size()];
+        this.contents = new ItemStack[contents.Count];
 
         for (int i = 0; i < this.contents.Length; i++)
         {
-            ItemStack itemStack = (ItemStack)contents.get(i);
+            ItemStack itemStack = contents[i];
             this.contents[i] = itemStack == null ? null : itemStack.copy();
         }
     }

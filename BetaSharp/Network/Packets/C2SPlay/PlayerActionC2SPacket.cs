@@ -2,7 +2,7 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.C2SPlay;
 
-public class PlayerActionC2SPacket : Packet
+public class PlayerActionC2SPacket() : Packet(PacketId.PlayerActionC2S)
 {
     public int x;
     public int y;
@@ -10,11 +10,7 @@ public class PlayerActionC2SPacket : Packet
     public int direction;
     public int action;
 
-    public PlayerActionC2SPacket()
-    {
-    }
-
-    public PlayerActionC2SPacket(int action, int x, int y, int z, int direction)
+    public PlayerActionC2SPacket(int action, int x, int y, int z, int direction) : this()
     {
         this.action = action;
         this.x = x;

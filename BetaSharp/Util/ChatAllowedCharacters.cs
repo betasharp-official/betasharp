@@ -15,4 +15,11 @@ public class ChatAllowedCharacters
                 .Where(line => !line.StartsWith('#'))
         );
     }
+
+    /// <summary>
+    /// Unlike using <see cref="allowedCharacters"/>,
+    /// this is faster and don't need to load asset
+    /// </summary>
+    public static bool IsAllowedCharacter(char c) =>
+        c is >= ' ' and <= '~' || "⌂ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜø£Ø×ƒáíóúñÑªº¿®¬½¼¡«»;".Contains(c);
 }

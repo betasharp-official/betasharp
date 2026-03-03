@@ -3,7 +3,7 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Network.Packets.C2SPlay;
 
-public class PlayerInteractBlockC2SPacket : Packet
+public class PlayerInteractBlockC2SPacket() : Packet(PacketId.PlayerInteractBlockC2S)
 {
     public int x;
     public int y;
@@ -11,11 +11,7 @@ public class PlayerInteractBlockC2SPacket : Packet
     public int side;
     public ItemStack stack;
 
-    public PlayerInteractBlockC2SPacket()
-    {
-    }
-
-    public PlayerInteractBlockC2SPacket(int x, int y, int z, int side, ItemStack stack)
+    public PlayerInteractBlockC2SPacket(int x, int y, int z, int side, ItemStack stack) : this()
     {
         this.x = x;
         this.y = y;

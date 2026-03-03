@@ -17,4 +17,8 @@ public interface ChunkSource
     bool CanSave();
 
     string GetDebugInfo();
+
+    // Creates a new generator instance that is safe to use on a separate thread.
+    // The default returns the same instance (not parallel-safe for stateful generators).
+    ChunkSource CreateParallelInstance() => this;
 }

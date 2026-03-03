@@ -150,11 +150,11 @@ public class ServerWorld : World
 
     protected override void UpdateWeatherCycles()
     {
-        bool var1 = isRaining();
+        bool raining = isRaining();
         base.UpdateWeatherCycles();
-        if (var1 != isRaining())
+        if (raining != isRaining())
         {
-            if (var1)
+            if (raining)
             {
                 server.playerManager.sendToAll(new GameStateChangeS2CPacket(2));
             }

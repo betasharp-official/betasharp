@@ -148,7 +148,7 @@ internal static class WorldCommands
         for (int w = 0; w < server.worlds.Length; w++)
         {
             ServerWorld world = server.worlds[w];
-            var entities = new System.Collections.Generic.List<Entity>(world.entities);
+            var entities = new List<Entity>(world.entities);
 
             foreach (Entity entity in entities)
             {

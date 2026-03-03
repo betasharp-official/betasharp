@@ -4,13 +4,13 @@ namespace BetaSharp.Network.Packets.Play;
 
 public class PlayerMoveFullPacket : PlayerMovePacket
 {
-    public PlayerMoveFullPacket()
+    public PlayerMoveFullPacket() : base(PacketId.PlayerMoveFull)
     {
         changeLook = true;
         changePosition = true;
     }
 
-    public PlayerMoveFullPacket(double x, double y, double eyeHeight, double z, float yaw, float pitch, bool onGround)
+    public PlayerMoveFullPacket(double x, double y, double eyeHeight, double z, float yaw, float pitch, bool onGround) : this()
     {
         base.x = x;
         base.y = y;
@@ -19,8 +19,6 @@ public class PlayerMoveFullPacket : PlayerMovePacket
         base.yaw = yaw;
         base.pitch = pitch;
         base.onGround = onGround;
-        changeLook = true;
-        changePosition = true;
     }
 
     public override void Read(NetworkStream stream)

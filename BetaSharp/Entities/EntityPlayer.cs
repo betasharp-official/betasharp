@@ -68,7 +68,7 @@ public abstract class EntityPlayer : EntityLiving
         dataWatcher.AddObject(16,(byte)0);
     }
 
-    public override void tick()
+    protected void TickSleep()
     {
         if (isSleeping())
         {
@@ -98,13 +98,35 @@ public abstract class EntityPlayer : EntityLiving
                 sleepTimer = 0;
             }
         }
+    }
 
-        base.tick();
+    /// <summary>
+    /// Primary Tick entry.
+    /// </summary>
+    /// <remarks>
+    /// Events that should occur on both client and server should go in <see cref="GenericTick"/>
+    /// </remarks>
+    public override void tick()
+    {
+        TickSleep();
+        GenericTick();
+
         if (!world.isRemote && currentScreenHandler != null && !currentScreenHandler.canUse(this))
         {
             closeHandledScreen();
             currentScreenHandler = playerScreenHandler;
         }
+    }
+
+    /// <summary>
+    /// Tick events that needs both server and client goes here.
+    /// </summary>
+    /// <remarks>
+    /// Called from both <see cref="tick"/> and <see cref="ServerPlayerEntity.playerTick"/>
+    /// </remarks>
+    protected void GenericTick()
+    {
+        base.tick();
 
         prevCapeX = capeX;
         prevCapeY = capeY;
@@ -624,7 +646,7 @@ public abstract class EntityPlayer : EntityLiving
 
     public abstract void spawn();
 
-    public virtual void onCursorStackChanged(ItemStack stack)
+    public virtual void onCursorStackChanged(ItemStack? stack)
     {
     }
 

@@ -52,9 +52,9 @@ public abstract class GuiContainer : GuiScreen
         Slot hoveredSlot = null;
 
 
-        for (int i = 0; i < InventorySlots.slots.size(); ++i)
+        for (int i = 0; i < InventorySlots.Slots.Count; ++i)
         {
-            Slot slot = (Slot)InventorySlots.slots.get(i);
+            Slot slot = InventorySlots.Slots[i];
             DrawSlotInventory(slot);
             if (GetIsMouseOverSlot(slot, mouseX, mouseY))
             {
@@ -148,9 +148,9 @@ public abstract class GuiContainer : GuiScreen
 
     private Slot GetSlotAtPosition(int mouseX, int mouseY)
     {
-        for (int i = 0; i < InventorySlots.slots.size(); ++i)
+        for (int i = 0; i < InventorySlots.Slots.Count; ++i)
         {
-            Slot slot = (Slot)InventorySlots.slots.get(i);
+            Slot slot = (Slot)InventorySlots.Slots[i];
             if (GetIsMouseOverSlot(slot, mouseX, mouseY))
             {
                 return slot;
@@ -190,7 +190,7 @@ public abstract class GuiContainer : GuiScreen
             if (slotId != -1)
             {
                 bool isShiftClick = slotId != -999 && (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT));
-                mc.playerController.func_27174_a(InventorySlots.syncId, slotId, button, isShiftClick, mc.player);
+                mc.playerController.func_27174_a(InventorySlots.SyncId, slotId, button, isShiftClick, mc.player);
             }
         }
 
@@ -211,7 +211,7 @@ public abstract class GuiContainer : GuiScreen
     {
         if (mc.player != null)
         {
-            mc.playerController.func_20086_a(InventorySlots.syncId, mc.player);
+            mc.playerController.func_20086_a(InventorySlots.SyncId, mc.player);
         }
     }
 

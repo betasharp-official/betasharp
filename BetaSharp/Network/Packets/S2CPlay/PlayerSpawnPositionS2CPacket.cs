@@ -2,17 +2,13 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class PlayerSpawnPositionS2CPacket : Packet
+public class PlayerSpawnPositionS2CPacket() : Packet(PacketId.PlayerSpawnPositionS2C)
 {
     public int x;
     public int y;
     public int z;
 
-    public PlayerSpawnPositionS2CPacket()
-    {
-    }
-
-    public PlayerSpawnPositionS2CPacket(int x, int y, int z)
+    public PlayerSpawnPositionS2CPacket(int x, int y, int z) : this()
     {
         this.x = x;
         this.y = y;

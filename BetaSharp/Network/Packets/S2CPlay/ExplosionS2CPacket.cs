@@ -3,7 +3,7 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class ExplosionS2CPacket : Packet
+public class ExplosionS2CPacket() : Packet(PacketId.ExplosionS2C)
 {
     public double explosionX;
     public double explosionY;
@@ -11,11 +11,7 @@ public class ExplosionS2CPacket : Packet
     public float explosionSize;
     public HashSet<BlockPos> destroyedBlockPositions;
 
-    public ExplosionS2CPacket()
-    {
-    }
-
-    public ExplosionS2CPacket(double x, double y, double z, float radius, HashSet<BlockPos> affectedBlocks)
+    public ExplosionS2CPacket(double x, double y, double z, float radius, HashSet<BlockPos> affectedBlocks) : this()
     {
         explosionX = x;
         explosionY = y;

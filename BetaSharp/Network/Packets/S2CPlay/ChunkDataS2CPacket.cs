@@ -4,7 +4,7 @@ using java.util.zip;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class ChunkDataS2CPacket : Packet
+public class ChunkDataS2CPacket() : Packet(PacketId.ChunkDataS2C)
 {
     public int x;
     public int y;
@@ -16,14 +16,8 @@ public class ChunkDataS2CPacket : Packet
     private int chunkDataSize;
     public byte[] rawData;
 
-    public ChunkDataS2CPacket()
+    public ChunkDataS2CPacket(int x, int y, int z, int sizeX, int sizeY, int sizeZ, World world) : this()
     {
-        WorldPacket = true;
-    }
-
-    public ChunkDataS2CPacket(int x, int y, int z, int sizeX, int sizeY, int sizeZ, World world)
-    {
-        WorldPacket = true;
         this.x = x;
         this.y = y;
         this.z = z;

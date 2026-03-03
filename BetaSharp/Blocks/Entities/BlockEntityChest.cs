@@ -49,7 +49,7 @@ internal class BlockEntityChest : BlockEntity, IInventory
         }
     }
 
-    public void setStack(int slot, ItemStack stack)
+    public void setStack(int slot, ItemStack? stack)
     {
         inventory[slot] = stack;
         if (stack != null && stack.count > getMaxCountPerStack())

@@ -40,11 +40,16 @@ public class ClientNetworkHandler : NetHandler
     public PersistentStateManager clientPersistentStateManager = new(null);
     readonly JavaRandom rand = new();
 
+    private int ticks;
+    private int lastKeepAliveTime;
+
     public ClientNetworkHandler(Minecraft mc, string address, int port)
     {
         this.mc = mc;
 
-        var endPoint = new IPEndPoint(Dns.GetHostAddresses(address)[0], port);
+        var addresses = Dns.GetHostAddresses(address);
+        var endPoint = new IPEndPoint(addresses.FirstOrDefault(a => a.AddressFamily is AddressFamily.InterNetwork) ?? addresses.First(), port);
+
         Socket socket = new(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
 
         socket.Connect(endPoint);
@@ -64,9 +69,23 @@ public class ClientNetworkHandler : NetHandler
         if (!disconnected)
         {
             netManager.tick();
+
+            if (ticks++ - lastKeepAliveTime > 200)
+            {
+                SendPacket(new KeepAlivePacket());
+            }
         }
 
         netManager.interrupt();
+    }
+
+    public void SendPacket(Packet packet)
+    {
+        if (!disconnected)
+        {
+            netManager.sendPacket(packet);
+            lastKeepAliveTime = ticks;
+        }
     }
 
     public override void onHello(LoginHelloPacket packet)
@@ -174,8 +193,8 @@ public class ClientNetworkHandler : NetHandler
             ((Entity)entity).trackedPosZ = packet.z;
             ((Entity)entity).yaw = 0.0F;
             ((Entity)entity).pitch = 0.0F;
-            ((Entity)entity).id = packet.id;
-            worldClient.ForceEntity(packet.id, (Entity)entity);
+            ((Entity)entity).id = packet.EntityId;
+            worldClient.ForceEntity(packet.EntityId, (Entity)entity);
             if (packet.entityData > 0)
             {
                 if (packet.entityType == 60)
@@ -225,7 +244,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntityVelocityUpdate(EntityVelocityUpdateS2CPacket packet)
     {
-        Entity ent = getEntityByID(packet.entityId);
+        Entity ent = getEntityByID(packet.EntityId);
         if (ent != null)
         {
             ent.setVelocityClient(packet.motionX / 8000.0D, packet.motionY / 8000.0D, packet.motionZ / 8000.0D);
@@ -234,7 +253,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntityTrackerUpdate(EntityTrackerUpdateS2CPacket packet)
     {
-        Entity ent = getEntityByID(packet.id);
+        Entity ent = getEntityByID(packet.EntityId);
         if (ent != null && packet.GetWatchedObjects() != null)
         {
             ent.getDataWatcher().UpdateWatchedObjectsFromList(packet.GetWatchedObjects());
@@ -269,7 +288,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntityPosition(EntityPositionS2CPacket packet)
     {
-        Entity ent = getEntityByID(packet.id);
+        Entity ent = getEntityByID(packet.EntityId);
         if (ent != null)
         {
             ent.trackedPosX = packet.x;
@@ -286,7 +305,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntity(EntityS2CPacket packet)
     {
-        Entity ent = getEntityByID(packet.id);
+        Entity ent = getEntityByID(packet.EntityId);
         if (ent != null)
         {
             ent.trackedPosX += packet.deltaX;
@@ -303,7 +322,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntityDestroy(EntityDestroyS2CPacket packet)
     {
-        worldClient.RemoveEntityFromWorld(packet.entityId);
+        worldClient.RemoveEntityFromWorld(packet.EntityId);
     }
 
     public override void onPlayerMove(PlayerMovePacket packet)
@@ -334,7 +353,7 @@ public class ClientNetworkHandler : NetHandler
         packet.y = ent.boundingBox.MinY;
         packet.z = ent.z;
         packet.eyeHeight = ent.y;
-        netManager.sendPacket(packet);
+        SendPacket(packet);
         if (!terrainLoaded)
         {
             mc.player.prevX = mc.player.x;
@@ -405,7 +424,7 @@ public class ClientNetworkHandler : NetHandler
     {
         if (!disconnected)
         {
-            netManager.sendPacket(packet);
+            SendPacket(packet);
             netManager.disconnect();
         }
     }
@@ -414,7 +433,7 @@ public class ClientNetworkHandler : NetHandler
     {
         if (!disconnected)
         {
-            netManager.sendPacket(packet);
+            SendPacket(packet);
         }
     }
 
@@ -440,7 +459,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntityAnimation(EntityAnimationPacket packet)
     {
-        Entity ent = getEntityByID(packet.id);
+        Entity ent = getEntityByID(packet.EntityId);
         if (ent != null)
         {
             EntityPlayer player;
@@ -557,9 +576,9 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntityVehicleSet(EntityVehicleSetS2CPacket packet)
     {
-        object rider = getEntityByID(packet.entityId);
-        Entity ent = getEntityByID(packet.vehicleEntityId);
-        if (packet.entityId == mc.player.id)
+        object rider = getEntityByID(packet.EntityId);
+        Entity ent = getEntityByID(packet.VehicleEntityId);
+        if (packet.EntityId == mc.player.id)
         {
             rider = mc.player;
         }
@@ -572,16 +591,21 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntityStatus(EntityStatusS2CPacket packet)
     {
-        Entity ent = getEntityByID(packet.entityId);
+        Entity ent = getEntityByID(packet.EntityId);
         if (ent != null)
         {
-            ent.processServerEntityStatus(packet.entityStatus);
+            ent.processServerEntityStatus(packet.EntityStatus);
         }
 
     }
 
     private Entity getEntityByID(int entityId)
     {
+        if (mc == null || mc.player == null || worldClient == null)
+        {
+            return null;
+        }
+
         return entityId == mc.player.id ? mc.player : worldClient.GetEntity(entityId);
     }
 
@@ -622,25 +646,25 @@ public class ClientNetworkHandler : NetHandler
         {
             InventoryBasic inventory = new(packet.name, packet.slotsCount);
             mc.player.openChestScreen(inventory);
-            mc.player.currentScreenHandler.syncId = packet.syncId;
+            mc.player.currentScreenHandler.SyncId = packet.syncId;
         }
         else if (packet.screenHandlerId == 2)
         {
             BlockEntityFurnace furnace = new();
             mc.player.openFurnaceScreen(furnace);
-            mc.player.currentScreenHandler.syncId = packet.syncId;
+            mc.player.currentScreenHandler.SyncId = packet.syncId;
         }
         else if (packet.screenHandlerId == 3)
         {
             BlockEntityDispenser dispenser = new();
             mc.player.openDispenserScreen(dispenser);
-            mc.player.currentScreenHandler.syncId = packet.syncId;
+            mc.player.currentScreenHandler.SyncId = packet.syncId;
         }
         else if (packet.screenHandlerId == 1)
         {
             ClientPlayerEntity player = mc.player;
             mc.player.openCraftingScreen(MathHelper.Floor(player.x), MathHelper.Floor(player.y), MathHelper.Floor(player.z));
-            mc.player.currentScreenHandler.syncId = packet.syncId;
+            mc.player.currentScreenHandler.SyncId = packet.syncId;
         }
 
     }
@@ -653,7 +677,7 @@ public class ClientNetworkHandler : NetHandler
         }
         else if (packet.syncId == 0 && packet.slot >= 36 && packet.slot < 45)
         {
-            ItemStack itemStack = mc.player.playerScreenHandler.getSlot(packet.slot).getStack();
+            ItemStack itemStack = mc.player.playerScreenHandler.GetSlot(packet.slot).getStack();
             if (packet.stack != null && (itemStack == null || itemStack.count < packet.stack.count))
             {
                 packet.stack.bobbingAnimationTime = 5;
@@ -661,7 +685,7 @@ public class ClientNetworkHandler : NetHandler
 
             mc.player.playerScreenHandler.setStackInSlot(packet.slot, packet.stack);
         }
-        else if (packet.syncId == mc.player.currentScreenHandler.syncId)
+        else if (packet.syncId == mc.player.currentScreenHandler.SyncId)
         {
             mc.player.currentScreenHandler.setStackInSlot(packet.slot, packet.stack);
         }
@@ -675,7 +699,7 @@ public class ClientNetworkHandler : NetHandler
         {
             screenHandler = mc.player.playerScreenHandler;
         }
-        else if (packet.syncId == mc.player.currentScreenHandler.syncId)
+        else if (packet.syncId == mc.player.currentScreenHandler.SyncId)
         {
             screenHandler = mc.player.currentScreenHandler;
         }
@@ -701,7 +725,7 @@ public class ClientNetworkHandler : NetHandler
         {
             mc.player.playerScreenHandler.updateSlotStacks(packet.contents);
         }
-        else if (packet.syncId == mc.player.currentScreenHandler.syncId)
+        else if (packet.syncId == mc.player.currentScreenHandler.SyncId)
         {
             mc.player.currentScreenHandler.updateSlotStacks(packet.contents);
         }
@@ -731,7 +755,7 @@ public class ClientNetworkHandler : NetHandler
     public override void onScreenHandlerPropertyUpdate(ScreenHandlerPropertyUpdateS2CPacket packet)
     {
         handle(packet);
-        if (mc.player.currentScreenHandler != null && mc.player.currentScreenHandler.syncId == packet.syncId)
+        if (mc.player.currentScreenHandler != null && mc.player.currentScreenHandler.SyncId == packet.syncId)
         {
             mc.player.currentScreenHandler.setProperty(packet.propertyId, packet.value);
         }
@@ -740,7 +764,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntityEquipmentUpdate(EntityEquipmentUpdateS2CPacket packet)
     {
-        Entity ent = getEntityByID(packet.id);
+        Entity ent = getEntityByID(packet.EntityId);
         if (ent != null)
         {
             ent.setEquipmentStack(packet.slot, packet.itemRawId, packet.itemDamage);

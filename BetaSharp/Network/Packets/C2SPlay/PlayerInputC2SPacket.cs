@@ -2,7 +2,7 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.C2SPlay;
 
-public class PlayerInputC2SPacket : Packet
+public class PlayerInputC2SPacket() : Packet(PacketId.PlayerInputC2S)
 {
     private float sideways;
     private float forward;

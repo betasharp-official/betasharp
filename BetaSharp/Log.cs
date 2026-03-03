@@ -27,13 +27,13 @@ public sealed class Log
         }
 
         _initialized = true;
-        _directory = System.IO.Path.Combine(directory, "logs");
+        _directory = Path.Combine(directory, "logs");
 
         Directory.CreateDirectory(_directory);
 
         // $"{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.log"
 
-        string path = System.IO.Path.Combine(
+        string path = Path.Combine(
             _directory,
             $"{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.log");
 
@@ -57,13 +57,13 @@ public sealed class Log
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(_directory);
 
-        string parent = System.IO.Path.Combine(
+        string parent = Path.Combine(
             _directory,
             "crashes");
 
         Directory.CreateDirectory(parent);
 
-        string path = System.IO.Path.Combine(parent, $"{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.log");
+        string path = Path.Combine(parent, $"{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.log");
 
         File.WriteAllText(path, exception.ToString());
     }

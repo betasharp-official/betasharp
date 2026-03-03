@@ -54,7 +54,7 @@ public class InventoryBasic : IInventory
         }
     }
 
-    public void setStack(int slotIndex, ItemStack itemStack)
+    public void setStack(int slotIndex, ItemStack? itemStack)
     {
         inventoryContents[slotIndex] = itemStack;
         if (itemStack != null && itemStack.count > getMaxCountPerStack())

@@ -3,24 +3,17 @@ using BetaSharp.Entities;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class EntityVelocityUpdateS2CPacket : Packet
+public class EntityVelocityUpdateS2CPacket() : PacketBaseEntity(PacketId.EntityVelocityUpdateS2C)
 {
-    public int entityId;
     public int motionX;
     public int motionY;
     public int motionZ;
 
-    public EntityVelocityUpdateS2CPacket()
-    {
-    }
+    public EntityVelocityUpdateS2CPacket(Entity ent) : this(ent.id, ent.velocityX, ent.velocityY, ent.velocityZ) { }
 
-    public EntityVelocityUpdateS2CPacket(Entity ent) : this(ent.id, ent.velocityX, ent.velocityY, ent.velocityZ)
+    public EntityVelocityUpdateS2CPacket(int entityId, double motionX, double motionY, double motionZ) : this()
     {
-    }
-
-    public EntityVelocityUpdateS2CPacket(int entityId, double motionX, double motionY, double motionZ)
-    {
-        this.entityId = entityId;
+        EntityId = entityId;
         double maxvelocity = 3.9D;
         if (motionX < -maxvelocity)
         {
@@ -59,7 +52,7 @@ public class EntityVelocityUpdateS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        entityId = stream.ReadInt();
+        base.Read(stream);
         motionX = stream.ReadShort();
         motionY = stream.ReadShort();
         motionZ = stream.ReadShort();
@@ -67,7 +60,7 @@ public class EntityVelocityUpdateS2CPacket : Packet
 
     public override void Write(NetworkStream stream)
     {
-        stream.WriteInt(entityId);
+        base.Write(stream);
         stream.WriteShort((short)motionX);
         stream.WriteShort((short)motionY);
         stream.WriteShort((short)motionZ);
@@ -80,6 +73,6 @@ public class EntityVelocityUpdateS2CPacket : Packet
 
     public override int Size()
     {
-        return 10;
+        return 6 + PacketBaseEntitySize;
     }
 }

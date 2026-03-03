@@ -22,7 +22,6 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     private float oldRotationPitch;
     private bool lastOnGround;
     private bool wasSneaking;
-    private int positionOnlyPacketCount;
 
     public EntityClientPlayerMP(Minecraft mc, World world, Session session, ClientNetworkHandler clientNetworkHandler) : base(mc, world, session, 0)
     {
@@ -94,29 +93,18 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         else if (positionChanged && rotationChanged)
         {
             sendQueue.addToSendQueue(new PlayerMoveFullPacket(x, boundingBox.MinY, y, z, yaw, pitch, onGround));
-            positionOnlyPacketCount = 0;
         }
         else if (positionChanged)
         {
             sendQueue.addToSendQueue(new PlayerMovePositionAndOnGroundPacket(x, boundingBox.MinY, y, z, onGround));
-            positionOnlyPacketCount = 0;
         }
         else if (rotationChanged)
         {
             sendQueue.addToSendQueue(new PlayerMoveLookAndOnGroundPacket(yaw, pitch, onGround));
-            positionOnlyPacketCount = 0;
         }
-        else
+        else if (lastOnGround != onGround)
         {
             sendQueue.addToSendQueue(new PlayerMovePacket(onGround));
-            if (lastOnGround == onGround && positionOnlyPacketCount <= 200)
-            {
-                ++positionOnlyPacketCount;
-            }
-            else
-            {
-                positionOnlyPacketCount = 0;
-            }
         }
 
         lastOnGround = onGround;
@@ -162,7 +150,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     public override void swingHand()
     {
         base.swingHand();
-        sendQueue.addToSendQueue(new EntityAnimationPacket(this, 1));
+        sendQueue.addToSendQueue(new EntityAnimationPacket(this, EntityAnimationPacket.EntityAnimation.SwingHand));
     }
 
     public override void respawn()
@@ -178,7 +166,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
 
     public override void closeHandledScreen()
     {
-        sendQueue.addToSendQueue(new CloseScreenS2CPacket(currentScreenHandler.syncId));
+        sendQueue.addToSendQueue(new CloseScreenS2CPacket(currentScreenHandler.SyncId));
         inventory.setItemStack(null);
         base.closeHandledScreen();
     }

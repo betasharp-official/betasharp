@@ -76,7 +76,7 @@ public class InventoryCrafting : IInventory
         }
     }
 
-    public void setStack(int slotIndex, ItemStack itemStack)
+    public void setStack(int slotIndex, ItemStack? itemStack)
     {
         stackList[slotIndex] = itemStack;
         eventHandler.onSlotUpdate(this);
