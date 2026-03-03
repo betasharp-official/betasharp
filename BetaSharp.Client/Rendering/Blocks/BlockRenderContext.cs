@@ -751,6 +751,8 @@ public ref struct BlockRenderContext
         float tipX = centerX + tiltX * tipOffsetBase;
         float tipZ = centerZ + tiltZ * tipOffsetBase;
 
+        Tess.setColorOpaque_F(1.0f, 1.0f, 1.0f);
+
         // TOP FACE
         Tess.addVertexWithUV(tipX - radius, yTip, tipZ - radius, topMinU, topMinV);
         Tess.addVertexWithUV(tipX - radius, yTip, tipZ + radius, topMinU, topMaxV);

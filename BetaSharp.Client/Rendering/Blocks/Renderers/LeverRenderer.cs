@@ -66,8 +66,8 @@ public class LeverRenderer : IBlockRenderer
             uvEast: ctx.UvRotateEast,
             uvWest: ctx.UvRotateWest,
             customFlag: ctx.CustomFlag,
-            enableAo: true,
-            aoBlendMode: 0
+            enableAo: false,
+            aoBlendMode: 1
         );
 
         // Determine texture for the handle itself
@@ -134,6 +134,15 @@ public class LeverRenderer : IBlockRenderer
         }
 
         // --- 4. Draw the Handle Faces ---
+        int colorMultiplier = block.getColorMultiplier(ctx.World, pos.x, pos.y, pos.z);
+        float r = (colorMultiplier >> 16 & 255) * 0.0039215686F;
+        float g = (colorMultiplier >> 8 & 255) * 0.0039215686F;
+        float b = (colorMultiplier & 255) * 0.0039215686F;
+
+        float luminance = block.getLuminance(ctx.World, pos.x, pos.y, pos.z);
+
+        handleCtx.Tess.setColorOpaque_F(r * luminance, g * luminance, b * luminance);
+
         for (int face = 0; face < 6; ++face)
         {
             // The handle uses specific tiny snippets of the texture atlas for its detail
