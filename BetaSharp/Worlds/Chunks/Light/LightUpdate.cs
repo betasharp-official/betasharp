@@ -37,6 +37,9 @@ internal struct LightUpdate
             return;
         }
 
+        int startY = _minY < 0 ? 0 : _minY;
+        int endY = _maxY >= 128 ? 127 : _maxY;
+
         int cachedChunkX = 0;
         int cachedChunkZ = 0;
         bool isCacheValid = false;
@@ -65,29 +68,6 @@ internal struct LightUpdate
                             isChunkLoaded = false;
                         }
                     }
-
-                    isCachedChunkLoaded = isChunkLoaded;
-                    cachedChunkX = chunkX;
-                    cachedChunkZ = chunkZ;
-                    isCacheValid = true;
-                }
-
-                if (isCacheValid && chunkX == cachedChunkX && chunkZ == cachedChunkZ)
-                {
-                    isChunkLoaded = isCachedChunkLoaded;
-                }
-                else
-                {
-                    isChunkLoaded = world.isRegionLoaded(x, 0, z, 1);
-                    if (isChunkLoaded)
-                    {
-                        Chunk chunk = world.GetChunk(chunkX, chunkZ);
-                        if (chunk.IsEmpty())
-                        {
-                            isChunkLoaded = false;
-                        }
-                    }
-
                     isCachedChunkLoaded = isChunkLoaded;
                     cachedChunkX = chunkX;
                     cachedChunkZ = chunkZ;
@@ -96,27 +76,18 @@ internal struct LightUpdate
 
                 if (isChunkLoaded)
                 {
-                    if (_minY < 0) _minY = 0;
-                    if (_maxY >= 128) _maxY = 127;
-
-                    for (int y = _minY; y <= _maxY; ++y)
+                    for (int y = startY; y <= endY; ++y)
                     {
                         int currentLight = world.getBrightness(LightType, x, y, z);
                         int blockId = world.getBlockId(x, y, z);
 
                         int opacity = Block.BlockLightOpacity[blockId];
-                        if (opacity == 0)
-                        {
-                            opacity = 1;
-                        }
+                        if (opacity == 0) opacity = 1;
 
                         int emittedLight = 0;
                         if (LightType == LightType.Sky)
                         {
-                            if (world.isTopY(x, y, z))
-                            {
-                                emittedLight = 15;
-                            }
+                            if (world.isTopY(x, y, z)) emittedLight = 15;
                         }
                         else if (LightType == LightType.Block)
                         {
@@ -124,56 +95,45 @@ internal struct LightUpdate
                         }
 
                         int targetLight;
-
                         if (opacity >= 15 && emittedLight == 0)
                         {
                             targetLight = 0;
                         }
                         else
                         {
-                            int lightNegX = world.getBrightness(LightType, x - 1, y, z);
-                            int lightPosX = world.getBrightness(LightType, x + 1, y, z);
-                            int lightNegY = world.getBrightness(LightType, x, y - 1, z);
-                            int lightPosY = world.getBrightness(LightType, x, y + 1, z);
-                            int lightNegZ = world.getBrightness(LightType, x, y, z - 1);
-                            int lightPosZ = world.getBrightness(LightType, x, y, z + 1);
+                            int l1 = world.getBrightness(LightType, x - 1, y, z);
+                            int l2 = world.getBrightness(LightType, x + 1, y, z);
+                            int l3 = world.getBrightness(LightType, x, y - 1, z);
+                            int l4 = world.getBrightness(LightType, x, y + 1, z);
+                            int l5 = world.getBrightness(LightType, x, y, z - 1);
+                            int l6 = world.getBrightness(LightType, x, y, z + 1);
 
-                            targetLight = lightNegX;
-                            if (lightPosX > targetLight) targetLight = lightPosX;
-                            if (lightNegY > targetLight) targetLight = lightNegY;
-                            if (lightPosY > targetLight) targetLight = lightPosY;
-                            if (lightNegZ > targetLight) targetLight = lightNegZ;
-                            if (lightPosZ > targetLight) targetLight = lightPosZ;
+                            targetLight = l1;
+                            if (l2 > targetLight) targetLight = l2;
+                            if (l3 > targetLight) targetLight = l3;
+                            if (l4 > targetLight) targetLight = l4;
+                            if (l5 > targetLight) targetLight = l5;
+                            if (l6 > targetLight) targetLight = l6;
 
                             targetLight -= opacity;
-                            if (targetLight < 0)
-                            {
-                                targetLight = 0;
-                            }
-
-                            if (emittedLight > targetLight)
-                            {
-                                targetLight = emittedLight;
-                            }
+                            if (targetLight < 0) targetLight = 0;
+                            if (emittedLight > targetLight) targetLight = emittedLight;
                         }
 
                         if (currentLight != targetLight)
                         {
                             world.setLight(LightType, x, y, z, targetLight);
 
-                            int propagationLight = targetLight - 1;
-                            if (propagationLight < 0)
-                            {
-                                propagationLight = 0;
-                            }
+                            int prop = targetLight - 1;
+                            if (prop < 0) prop = 0;
 
-                            world.updateLight(LightType, x - 1, y, z, propagationLight);
-                            world.updateLight(LightType, x, y - 1, z, propagationLight);
-                            world.updateLight(LightType, x, y, z - 1, propagationLight);
+                            world.updateLight(LightType, x - 1, y, z, prop);
+                            world.updateLight(LightType, x, y - 1, z, prop);
+                            world.updateLight(LightType, x, y, z - 1, prop);
 
-                            if (x + 1 >= _maxX) world.updateLight(LightType, x + 1, y, z, propagationLight);
-                            if (y + 1 >= _maxY) world.updateLight(LightType, x, y + 1, z, propagationLight);
-                            if (z + 1 >= _maxZ) world.updateLight(LightType, x, y, z + 1, propagationLight);
+                            if (x + 1 >= _maxX) world.updateLight(LightType, x + 1, y, z, prop);
+                            if (y + 1 >= _maxY) world.updateLight(LightType, x, y + 1, z, prop);
+                            if (z + 1 >= _maxZ) world.updateLight(LightType, x, y, z + 1, prop);
                         }
                     }
                 }
