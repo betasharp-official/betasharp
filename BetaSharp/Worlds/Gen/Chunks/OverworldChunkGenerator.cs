@@ -741,7 +741,7 @@ internal class OverworldChunkGenerator : ChunkSource
         }
 
         // ====================================================================
-        // Calculate vertical shadows so mushrooms know where the sun is.
+        // Calculate vertical shadows so mushrooms and sun natual light dependent stuff know where the sun is.
         _world.GetChunk(chunkX, chunkZ).PopulateHeightMap(false);
         _world.GetChunk(chunkX + 1, chunkZ).PopulateHeightMap(false);
         _world.GetChunk(chunkX, chunkZ + 1).PopulateHeightMap(false);
