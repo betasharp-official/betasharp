@@ -913,7 +913,6 @@ public class WorldRenderer : IWorldAccess
 
     public void notifyEntityRemoved(Entity var1)
     {
-        EntityRenderDispatcher.instance.skinManager?.Release(var1.skinUrl);
     }
 
     public void notifyAmbientDarknessChanged()

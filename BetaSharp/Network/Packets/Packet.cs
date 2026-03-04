@@ -159,6 +159,7 @@ public abstract class Packet
             New(PacketId.ScreenHandlerAcknowledgement, true, true, false, () => new ScreenHandlerAcknowledgementPacket()),
             New(PacketId.UpdateSign, true, true, true, () => new UpdateSignPacket()),
             New(PacketId.MapUpdateS2C, true, false, true, () => new MapUpdateS2CPacket()),
+            New(PacketId.PlayerConnectionUpdateS2C, true, false, false, () => new PlayerConnectionUpdateS2CPacket()),
             New(PacketId.IncreaseStatS2C, true, false, false, () => new IncreaseStatS2CPacket()),
             New(PacketId.Disconnect, true, true, false, () => new DisconnectPacket())
         ]);
