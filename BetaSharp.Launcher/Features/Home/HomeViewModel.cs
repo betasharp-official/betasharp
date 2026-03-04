@@ -64,5 +64,6 @@ internal sealed partial class HomeViewModel(
     {
         navigationService.Navigate<AuthenticationViewModel>();
         await accountsService.DeleteAsync();
+        Face?.Dispose();
     }
 }
