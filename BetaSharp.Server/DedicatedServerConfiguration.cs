@@ -1,14 +1,14 @@
 using java.io;
 using java.lang;
 using java.util;
-using java.util.logging;
+using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
 
 namespace BetaSharp.Server;
 
 internal class DedicatedServerConfiguration : IServerConfiguration
 {
-    public static Logger logger = Logger.getLogger("BetaSharp");
+    public static ILogger<DedicatedServerConfiguration> logger = Log.Instance.For<DedicatedServerConfiguration>();
     private readonly Properties properties = new();
     private readonly java.io.File propertiesFile;
 
@@ -23,20 +23,20 @@ internal class DedicatedServerConfiguration : IServerConfiguration
             }
             catch (Exception ex)
             {
-                logger.log(Level.WARNING, "Failed to load " + file, (Throwable)ex);
+                logger.LogWarning(ex, "Failed to load " + file);
                 generateNew();
             }
         }
         else
         {
-            logger.log(Level.WARNING, file + " does not exist");
+            logger.LogWarning(file + " does not exist");
             generateNew();
         }
     }
 
     public void generateNew()
     {
-        logger.log(Level.INFO, "Generating new properties file");
+        logger.LogInformation("Generating new properties file");
         save();
     }
 
@@ -53,7 +53,7 @@ internal class DedicatedServerConfiguration : IServerConfiguration
         }
         catch (Exception ex)
         {
-            logger.log(Level.WARNING, "Failed to save " + propertiesFile, ex);
+            logger.LogWarning(ex, "Failed to save " + propertiesFile);
             generateNew();
         }
     }

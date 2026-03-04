@@ -820,7 +820,6 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onIncreaseStat(IncreaseStatS2CPacket packet)
     {
-        _logger.LogDebug("Received IncreaseStatS2CPacket: statId={StatId}, amount={Amount}", packet.statId, packet.amount);
         try
         {
             StatBase stat = Stats.Stats.GetStatById(packet.statId);

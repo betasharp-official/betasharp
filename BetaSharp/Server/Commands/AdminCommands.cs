@@ -1,12 +1,12 @@
 using BetaSharp.Entities;
 using BetaSharp.Server.Internal;
-using java.util.logging;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Commands;
 
 internal class AdminCommands
 {
-    private static readonly Logger logger = Logger.getLogger("BetaSharp");
+    private static readonly ILogger s_logger = Log.Instance.For(nameof(AdminCommands));
 
     public static void List(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
     {
@@ -187,6 +187,6 @@ internal class AdminCommands
     {
         string logMessage = senderName + ": " + message;
         server.playerManager.broadcast("§7(" + logMessage + ")");
-        logger.info(logMessage);
+        s_logger.LogInformation(logMessage);
     }
 }
