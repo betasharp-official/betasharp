@@ -2,7 +2,7 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class PlayerConnectionUpdateS2CPacket() : Packet(PacketId.PlayerConnectionUpdateS2C)
+public class PlayerConnectionUpdateS2CPacket() : ExtendedProtocolPacket(PacketId.PlayerConnectionUpdateS2C)
 {
     public enum ConnectionUpdateType : byte
     {
