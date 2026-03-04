@@ -76,14 +76,14 @@ public class MapItemRenderer
         foreach (var icon in mapState.Icons)
         {
             GLManager.GL.PushMatrix();
-            GLManager.GL.Translate((sbyte)icon.x / 2.0F + 64.0F, (sbyte)icon.z / 2.0F + 64.0F, -0.02F);
-            GLManager.GL.Rotate((sbyte)icon.rotation * 360 / 16.0F, 0.0F, 0.0F, 1.0F);
+            GLManager.GL.Translate((sbyte)icon.X / 2.0F + 64.0F, (sbyte)icon.Z / 2.0F + 64.0F, -0.02F);
+            GLManager.GL.Rotate((sbyte)icon.Rotation * 360 / 16.0F, 0.0F, 0.0F, 1.0F);
             GLManager.GL.Scale(4.0F, 4.0F, 3.0F);
             GLManager.GL.Translate(-(2.0F / 16.0F), 2.0F / 16.0F, 0.0F);
-            float uMin = (icon.type % 4 + 0) / 4.0F;
-            float vMin = (icon.type / 4 + 0) / 4.0F;
-            float uMax = (icon.type % 4 + 1) / 4.0F;
-            float vMax = (icon.type / 4 + 1) / 4.0F;
+            float uMin = (icon.Type % 4 + 0) / 4.0F;
+            float vMin = (icon.Type / 4 + 0) / 4.0F;
+            float uMax = (icon.Type % 4 + 1) / 4.0F;
+            float vMax = (icon.Type / 4 + 1) / 4.0F;
             tess.startDrawingQuads();
             tess.addVertexWithUV(-1, 1, 0, uMin, vMin);
             tess.addVertexWithUV(1, 1, 0, uMax, vMin);

@@ -39,10 +39,10 @@ internal class MapInfo
 
             for (int iconIndex = 0; iconIndex < _mapDataObj.Icons.Count; iconIndex++)
             {
-                MapCoord icon = _mapDataObj.Icons[iconIndex];
-                data[iconIndex * 3 + 1] = (byte)(icon.type + (icon.rotation & 15) * 16);
-                data[iconIndex * 3 + 2] = icon.x;
-                data[iconIndex * 3 + 3] = icon.z;
+                MapIcon icon = _mapDataObj.Icons[iconIndex];
+                data[iconIndex * 3 + 1] = (byte)(icon.Type + (icon.Rotation & 15) * 16);
+                data[iconIndex * 3 + 2] = icon.X;
+                data[iconIndex * 3 + 3] = icon.Z;
             }
 
             bool isUnchanged = true;

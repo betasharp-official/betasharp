@@ -7,7 +7,7 @@ namespace BetaSharp.Worlds.Maps;
 public class MapState(string id) : PersistentState(id)
 {
     private readonly Dictionary<EntityPlayer, MapInfo> _updateTrackers = new();
-    public readonly List<MapCoord> Icons = [];
+    public readonly List<MapIcon> Icons = [];
     public int CenterX;
     public int CenterZ;
     public byte[] Colors = new byte[128 * 128];
@@ -108,7 +108,7 @@ public class MapState(string id) : PersistentState(id)
 
                     if (mapInfo.Player.dimensionId == Dimension)
                     {
-                        Icons.Add(new MapCoord(this, iconType, iconX, iconZ, iconRot));
+                        Icons.Add(new MapIcon(iconType, iconX, iconZ, iconRot));
                     }
                 }
             }
@@ -171,7 +171,7 @@ public class MapState(string id) : PersistentState(id)
                 byte x = packet[i * 3 + 2];
                 byte z = packet[i * 3 + 3];
                 byte rot = (byte)(packet[i * 3 + 1] / 16);
-                Icons.Add(new MapCoord(this, type, x, z, rot));
+                Icons.Add(new MapIcon(type, x, z, rot));
             }
         }
     }
