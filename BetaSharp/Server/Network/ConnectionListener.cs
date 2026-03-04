@@ -38,7 +38,7 @@ public class ConnectionListener
 
         this.port = port;
         open = true;
-        _acceptingTask = Task.Factory.StartNew(() => AcceptConnectionThread.run(this));
+        _acceptingTask = Task.Factory.StartNew(() => AcceptConnectionThread.run(this), TaskCreationOptions.LongRunning);
     }
 
     public ConnectionListener(BetaSharpServer server)

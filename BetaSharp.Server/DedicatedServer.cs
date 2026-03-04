@@ -88,7 +88,7 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
             DedicatedServerConfiguration config = new("server.properties");
             DedicatedServer server = new(config);
 
-            Task.Factory.StartNew(() => server.run());
+            Task.Factory.StartNew(() => server.run(), TaskCreationOptions.LongRunning);
         }
         catch (Exception e)
         {
