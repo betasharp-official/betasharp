@@ -130,6 +130,8 @@ public class Chunk
                         --currentY;
                     } while (currentY > 0 && lightLevel > 0);
                 }
+
+                LightGaps(localX, localZ);
             }
         }
 
