@@ -54,7 +54,6 @@ public readonly partial struct Color
         var prop = typeof(Color).GetProperty(name);
         if (prop == null)
         {
-            Console.WriteLine($"Color by name \"{name}\" not found");
             return;
         }
 

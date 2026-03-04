@@ -1,10 +1,13 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Profiling;
 
 public static class Profiler
 {
+    private static readonly ILogger s_logger = Log.Instance.For(nameof(Profiler));
+
     public const int HistoryLength = 300;
     public static bool Enabled = false;
 
@@ -221,9 +224,9 @@ public static class Profiler
                     writer.WriteLine();
                     writer.WriteLine($"=========================");
                 }
-                catch (Exception ex)
+                catch (Exception exception)
                 {
-                    Console.WriteLine($"[Profiler] Failed to write lag spike log: {ex.Message}");
+                    s_logger.LogError(exception, "An exception occured while writing a lag spike file");
                 }
             });
         }

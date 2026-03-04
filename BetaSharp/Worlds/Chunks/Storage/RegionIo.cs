@@ -1,7 +1,10 @@
+using Microsoft.Extensions.Logging;
+
 namespace BetaSharp.Worlds.Chunks.Storage;
 
 internal class RegionIo
 {
+    private static readonly ILogger s_logger = Log.Instance.For(nameof(RegionIo));
     private static readonly Dictionary<string, WeakReference<RegionFile>> cache = new(StringComparer.Ordinal);
     private static readonly object l = new();
 
@@ -44,9 +47,9 @@ internal class RegionIo
                     {
                         regionFile.func_22196_b();
                     }
-                    catch (IOException ex)
+                    catch (Exception exception)
                     {
-                        Console.Error.WriteLine(ex);
+                        s_logger.LogError(exception, "An exception occured while flushing a region file");
                     }
                 }
             }
