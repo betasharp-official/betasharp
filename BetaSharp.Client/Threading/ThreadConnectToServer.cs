@@ -6,21 +6,11 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Client.Threading;
 
-public class ThreadConnectToServer(GuiConnecting connectingGui, BetaSharp game, string hostName, int port)
+public static class ThreadConnectToServer
 {
-    private readonly ILogger<ThreadConnectToServer> _logger = Log.Instance.For<ThreadConnectToServer>();
+    private static readonly ILogger s_logger = Log.Instance.For(nameof(ThreadConnectToServer));
 
-    public void Start()
-    {
-        Thread thread = new Thread(Run)
-        {
-            IsBackground = true,
-            Name = $"Server Connector ({hostName}:{port})"
-        };
-        thread.Start();
-    }
-
-    private void Run()
+    public static void Run(GuiConnecting connectingGui, BetaSharp game, string hostName, int port)
     {
         try
         {
@@ -35,7 +25,7 @@ public class ThreadConnectToServer(GuiConnecting connectingGui, BetaSharp game, 
         }
         catch (SocketException ex) when (ex.SocketErrorCode == SocketError.HostNotFound)
         {
-        
+
             if (GuiConnecting.isCancelled(connectingGui))
             {
                 return;
@@ -45,12 +35,12 @@ public class ThreadConnectToServer(GuiConnecting connectingGui, BetaSharp game, 
         }
         catch (SocketException ex)
         {
-        
+
             if (GuiConnecting.isCancelled(connectingGui))
             {
                 return;
             }
-        
+
             game.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", ex.Message));
         }
         catch (Exception e)
@@ -60,7 +50,7 @@ public class ThreadConnectToServer(GuiConnecting connectingGui, BetaSharp game, 
                 return;
             }
 
-            _logger.LogError(e, e.Message);
+            s_logger.LogError(e, e.Message);
             game.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", e.ToString()));
         }
     }
