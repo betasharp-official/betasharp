@@ -31,7 +31,7 @@ public class GuiChat : Screen
         Keyboard.enableRepeatEvents(false);
     }
 
-    public override void UpdateScreen()
+    protected override void OnTick()
     {
         ++_updateCounter;
     }
@@ -118,7 +118,7 @@ public class GuiChat : Screen
     }
 
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         Gui.DrawRect(2, Height - 14, Width - 2, Height - 2, BackgroundColor);
 
@@ -141,7 +141,7 @@ public class GuiChat : Screen
         }
     }
 
-    protected override void OnClicked(MouseEventArgs e)
+    protected override void OnClick(MouseEventArgs e)
     {
         if (e.Button != 0) return;
 

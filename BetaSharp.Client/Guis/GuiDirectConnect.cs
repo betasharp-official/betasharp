@@ -39,17 +39,12 @@ public class GuiDirectConnect : Screen
         AddChildren(joinServerButton, cancelButton, _serverAddress);
     }
 
-    public override void UpdateScreen()
-    {
-        _serverAddress.UpdateCursorCounter();
-    }
-
     public override void OnGuiClosed()
     {
         Keyboard.enableRepeatEvents(false);
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
         Gui.DrawCenteredString(FontRenderer, "Direct Connect", Width / 2, 17, 0xFFFFFF);

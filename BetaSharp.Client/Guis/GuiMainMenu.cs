@@ -55,7 +55,7 @@ public class GuiMainMenu : Screen
         }
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
         Tessellator tess = Tessellator.instance;

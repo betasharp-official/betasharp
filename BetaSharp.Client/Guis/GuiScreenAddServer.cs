@@ -37,12 +37,6 @@ public class GuiScreenAddServer : Screen
         _doneButton.Enabled = _serverName.Text.Length > 0 && _serverAddress.Text.Length > 0 && _serverAddress.Text.Split(":").Length > 0;
     }
 
-    public override void UpdateScreen()
-    {
-        _serverName.UpdateCursorCounter();
-        _serverAddress.UpdateCursorCounter();
-    }
-
     public override void OnGuiClosed()
     {
         Keyboard.enableRepeatEvents(false);
@@ -52,13 +46,13 @@ public class GuiScreenAddServer : Screen
     {
         if (e.Key == Keyboard.KEY_RETURN)
         {
-            _doneButton.DoClicked((MouseEventArgs)EventArgs.Empty);
+            _doneButton.DoClick((MouseEventArgs)EventArgs.Empty);
         }
 
         _doneButton.Enabled = _serverName.Text.Length > 0 && _serverAddress.Text.Length > 0 && _serverAddress.Text.Split(":").Length > 0;
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
         Gui.DrawCenteredString(FontRenderer, "Edit Server Info", Width / 2, 17, 0xFFFFFF);

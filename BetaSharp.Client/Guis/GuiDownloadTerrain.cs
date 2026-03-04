@@ -15,7 +15,7 @@ public class GuiDownloadTerrain : Screen
         _networkHandler = networkHandler;
     }
 
-    public override void UpdateScreen()
+    protected override void OnTick()
     {
         ++_tickCounter;
         if (_tickCounter % 20 == 0)
@@ -29,7 +29,7 @@ public class GuiDownloadTerrain : Screen
         }
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         DrawBackground(0);
         TranslationStorage translations = TranslationStorage.Instance;

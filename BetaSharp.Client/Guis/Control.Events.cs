@@ -6,54 +6,62 @@ namespace BetaSharp.Client.Guis;
 public partial class Control
 {
     public event EventHandler<MouseEventArgs>? MousePressed;
-    protected virtual void OnMousePressed(MouseEventArgs e) { }
-    public void DoMousePressed(MouseEventArgs e)
+    protected virtual void OnMousePress(MouseEventArgs e) { }
+    public void DoMousePress(MouseEventArgs e)
     {
-        if (Focusable && !Focused)
+        if (Focusable)
         {
-            Focused = true;
+            var screen = ParentScreen;
+            if (screen != null)
+            {
+                screen.SetFocus(this); // Will do nothing if already focused
+            }
+            else
+            {
+                Focused = true;
+            }
         }
         _pressedInside = true;
-        OnMousePressed(e);
+        OnMousePress(e);
         MousePressed?.Invoke(this, e);
     }
 
     public event EventHandler<MouseEventArgs>? MouseReleased;
-    protected virtual void OnMouseReleased(MouseEventArgs e) { }
-    public void DoMouseReleased(MouseEventArgs e)
+    protected virtual void OnMouseRelease(MouseEventArgs e) { }
+    public void DoMouseRelease(MouseEventArgs e)
     {
-        OnMouseReleased(e);
+        OnMouseRelease(e);
         MouseReleased?.Invoke(this, e);
 
         if (_pressedInside && PointInBounds(e.X, e.Y))
         {
-            DoClicked(e);
+            DoClick(e);
         }
 
         _pressedInside = false;
     }
 
     public event EventHandler<MouseEventArgs>? Clicked;
-    protected virtual void OnClicked(MouseEventArgs e) { }
-    public void DoClicked(MouseEventArgs e)
+    protected virtual void OnClick(MouseEventArgs e) { }
+    public void DoClick(MouseEventArgs e)
     {
-        OnClicked(e);
+        OnClick(e);
         Clicked?.Invoke(this, e);
     }
 
     public event EventHandler<MouseEventArgs>? MouseMoved;
-    protected virtual void OnMouseMoved(MouseEventArgs e) { }
-    public void DoMouseMoved(MouseEventArgs e)
+    protected virtual void OnMouseMove(MouseEventArgs e) { }
+    public void DoMouseMove(MouseEventArgs e)
     {
-        OnMouseMoved(e);
+        OnMouseMove(e);
         MouseMoved?.Invoke(this, e);
     }
 
     public event EventHandler<MouseEventArgs>? MouseDragged;
-    protected virtual void OnMouseDragged(MouseEventArgs e) { }
-    public void DoMouseDragged(MouseEventArgs e)
+    protected virtual void OnMouseDrag(MouseEventArgs e) { }
+    public void DoMouseDrag(MouseEventArgs e)
     {
-        OnMouseDragged(e);
+        OnMouseDrag(e);
         MouseDragged?.Invoke(this, e);
     }
 
@@ -66,18 +74,18 @@ public partial class Control
     }
 
     public event EventHandler<RenderEventArgs>? Rendered;
-    protected virtual void OnRendered(RenderEventArgs e) { }
-    public void DoRendered(RenderEventArgs e)
+    protected virtual void OnRender(RenderEventArgs e) { }
+    public void DoRender(RenderEventArgs e)
     {
         if (!Visible) return;
 
-        OnRendered(e);
+        OnRender(e);
         Rendered?.Invoke(this, e);
 
         Point abs = AbsolutePosition;
 
         bool wasScissorEnabled = GLManager.GL.IsEnabled(EnableCap.ScissorTest);
-        int[] prevScissor = new int[4];
+        Span<int> prevScissor = stackalloc int[4];
         GLManager.GL.GetInteger(GetPName.ScissorBox, prevScissor);
 
         var mc = Minecraft.INSTANCE;
@@ -106,7 +114,7 @@ public partial class Control
         GLManager.GL.Translate(X, Y, ZLevel);
         foreach (Control child in Children.ToArray())
         {
-            child.DoRendered(e);
+            child.DoRender(e);
         }
         GLManager.GL.PopMatrix();
 
@@ -147,5 +155,18 @@ public partial class Control
     protected void SuppressTextChanged(bool suppress)
     {
         _suppressTextChangedCounter = Math.Max(_suppressTextChangedCounter + (suppress ? 1 : -1), 0);
+    }
+
+    public event EventHandler? Ticked;
+    protected virtual void OnTick() { }
+    public void DoTick()
+    {
+        OnTick();
+        Ticked?.Invoke(this, EventArgs.Empty);
+
+        foreach (Control child in Children)
+        {
+            child.DoTick();
+        }
     }
 }

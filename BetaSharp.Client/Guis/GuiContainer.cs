@@ -24,7 +24,7 @@ public abstract class GuiContainer : Screen
         MC.player.currentScreenHandler = InventorySlots;
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
 
@@ -165,7 +165,7 @@ public abstract class GuiContainer : Screen
                mouseY < slot.yDisplayPosition + 16 + 1;
     }
 
-    protected override void OnClicked(MouseEventArgs e)
+    protected override void OnClick(MouseEventArgs e)
     {
         if (e.Button is 0 or 1)
         {
@@ -188,7 +188,7 @@ public abstract class GuiContainer : Screen
 
     protected override void OnKeyInput(KeyboardEventArgs e)
     {
-        if (e.Key == Keyboard.KEY_ESCAPE || e.Key == MC.options.KeyBindInventory.keyCode)
+        if (e.IsKeyDown && (e.Key == Keyboard.KEY_ESCAPE || e.Key == MC.options.KeyBindInventory.keyCode))
         {
             MC.player.closeHandledScreen();
         }
@@ -203,7 +203,7 @@ public abstract class GuiContainer : Screen
     }
 
 
-    public override void UpdateScreen()
+    protected override void OnTick()
     {
         if (!MC.player.isAlive() || MC.player.dead)
         {

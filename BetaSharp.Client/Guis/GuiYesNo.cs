@@ -16,7 +16,7 @@ public class GuiYesNo : Screen
         AddChildren(confirmButton, cancelButton);
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
         Gui.DrawCenteredString(FontRenderer, _message1, Width / 2, 70, 0xFFFFFF);

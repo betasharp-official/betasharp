@@ -47,7 +47,7 @@ public class GuiTexturePacks : Screen
         AddChildren(_guiTexturePackList, openFolderButton, doneButton);
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         if (_refreshTimer <= 0)
         {
@@ -60,7 +60,7 @@ public class GuiTexturePacks : Screen
         Gui.DrawCenteredString(FontRenderer, translations.TranslateKey("texturePack.folderInfo"), Width / 2 - 77, Height - 26, 0x808080);
     }
 
-    public override void UpdateScreen()
+    protected override void OnTick()
     {
         --_refreshTimer;
     }

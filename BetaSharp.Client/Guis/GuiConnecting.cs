@@ -41,7 +41,7 @@ public class GuiConnecting : Screen
         AddChild(cancelButton);
     }
 
-    public override void UpdateScreen()
+    protected override void OnTick()
     {
         if (ClientHandler != null)
         {
@@ -49,7 +49,7 @@ public class GuiConnecting : Screen
         }
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
         TranslationStorage translations = TranslationStorage.Instance;

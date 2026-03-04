@@ -227,6 +227,12 @@ public unsafe class EmulatedGL : LegacyGL
         MarkActiveMatrixDirty();
     }
 
+    public override void LogicOp(LogicOp opcode)
+    {
+        if (_displayLists.IsCompiling) return;
+        SilkGL.LogicOp(opcode);
+    }
+
     public override void PushMatrix()
     {
         if (_displayLists.IsCompiling) return;

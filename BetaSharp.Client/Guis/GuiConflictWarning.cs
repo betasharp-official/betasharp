@@ -9,7 +9,7 @@ public class GuiConflictWarning : Screen
         AddChild(backButton);
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
         Gui.DrawCenteredString(FontRenderer, "Level save conflict", Width / 2, Height / 4 - 60 + 20, 0xFFFFFF);

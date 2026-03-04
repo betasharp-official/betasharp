@@ -32,6 +32,23 @@ public partial class Control
         }
     }
 
+    /// <summary>
+    /// Gets the Screen that contains this control, or null if no ancestor is a Screen.
+    /// </summary>
+    public Screen? ParentScreen
+    {
+        get
+        {
+            Control? current = this;
+            while (current != null)
+            {
+                if (current is Screen screen) return screen;
+                current = current._parent;
+            }
+            return null;
+        }
+    }
+
     public bool Enabled = true;
     public bool Focused
     {
@@ -277,38 +294,51 @@ public partial class Control
 
     public virtual void HandleMouseInput()
     {
-        if (!Enabled) return;
+        if (!Enabled || !Visible) return;
 
         var mc = Minecraft.INSTANCE;
         int button = Mouse.getEventButton();
+        int clicks = Mouse.getEventClickCount();
         bool isButtonDown = Mouse.getEventButtonState();
-        ScaledResolution var13 = new(mc.options, mc.displayWidth, mc.displayHeight);
-        int var14 = var13.ScaledWidth;
-        int var15 = var13.ScaledHeight;
-        int mouseX = Mouse.getEventX() * var14 / mc.displayWidth;
-        int mouseY = var15 - Mouse.getEventY() * var15 / mc.displayHeight - 1;
-
-        if (isButtonDown && button is >= 0 and < Mouse.MouseButtons && PointInBounds(mouseX, mouseY))
-        {
-            DoMousePressed(new(mouseX, mouseY, button, isButtonDown));
-        }
-        else if (!isButtonDown && button is >= 0 and < Mouse.MouseButtons && _pressedInside)
-        {
-            DoMouseReleased(new(mouseX, mouseY, button, isButtonDown));
-        }
-
-        if (PointInBounds(mouseX, mouseY))
-        {
-            DoMouseMoved(new(mouseX, mouseY, button, isButtonDown));
-        }
-        if (_pressedInside)
-        {
-            DoMouseDragged(new(mouseX, mouseY, button, isButtonDown));
-        }
+        ScaledResolution scaling = new(mc.options, mc.displayWidth, mc.displayHeight);
+        int scaledWidth = scaling.ScaledWidth;
+        int scaledHeight = scaling.ScaledHeight;
+        int windowX = Mouse.getEventX();
+        int windowY = Mouse.getEventY();
+        int mouseX = windowX * scaledWidth / mc.displayWidth;
+        int mouseY = scaledHeight - windowY * scaledHeight / mc.displayHeight - 1;
+        float pixelX = (float)windowX * scaledWidth / mc.displayWidth;
+        float pixelY = scaledHeight - (float)windowY * scaledHeight / mc.displayHeight - 1;
 
         foreach (Control child in Children.ToArray())
         {
             child.HandleMouseInput();
+        }
+
+        var mouseArgs = new MouseEventArgs(mouseX, mouseY, pixelX, pixelY, button, clicks, isButtonDown);
+
+        if (isButtonDown && button is >= 0 and < Mouse.MouseButtons && PointInBounds(mouseX, mouseY))
+        {
+            DoMousePress(mouseArgs);
+            if (mouseArgs.Handled) return;
+        }
+        else if (!isButtonDown && button is >= 0 and < Mouse.MouseButtons && _pressedInside)
+        {
+            DoMouseRelease(mouseArgs);
+            if (mouseArgs.Handled) return;
+        }
+
+        if (Mouse.getEventDX() != 0 || Mouse.getEventDX() != 0)
+        {
+            if (PointInBounds(mouseX, mouseY))
+            {
+                DoMouseMove(mouseArgs);
+            }
+
+            if (_pressedInside)
+            {
+                DoMouseDrag(mouseArgs);
+            }
         }
     }
 
@@ -320,24 +350,6 @@ public partial class Control
         bool isRepeat = Keyboard.isRepeatEvent();
 
         DoKeyInput(new(key, keyChar, isKeyDown, isRepeat));
-
-        foreach (Control child in Children.ToArray())
-        {
-            child.HandleKeyboardInput();
-        }
-    }
-
-    public void HandleInput()
-    {
-        while (Mouse.next())
-        {
-            HandleMouseInput();
-        }
-
-        while (Keyboard.Next())
-        {
-            HandleKeyboardInput();
-        }
     }
 
     public void AddChild(Control child)

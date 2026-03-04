@@ -51,7 +51,7 @@ public class Slider : Control
         UpdateText();
     }
 
-    protected override void OnMousePressed(MouseEventArgs e)
+    protected override void OnMousePress(MouseEventArgs e)
     {
         if (!Enabled) return;
         Minecraft.INSTANCE.sndManager.PlaySoundFX("random.click", 1.0F, 1.0F);
@@ -71,12 +71,12 @@ public class Slider : Control
         }
     }
 
-    protected override void OnMouseDragged(MouseEventArgs e)
+    protected override void OnMouseDrag(MouseEventArgs e)
     {
         SetValueFromMouseX(e.X);
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         var mc = Minecraft.INSTANCE;
         TextRenderer font = mc.fontRenderer;

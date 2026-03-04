@@ -41,7 +41,7 @@ public class GuiEditSign : Screen
         }
     }
 
-    public override void UpdateScreen()
+    protected override void OnTick()
     {
         ++_updateCounter;
     }
@@ -76,7 +76,7 @@ public class GuiEditSign : Screen
         }
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
 

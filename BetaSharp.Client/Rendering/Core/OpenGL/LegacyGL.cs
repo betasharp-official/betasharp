@@ -356,6 +356,11 @@ public unsafe class LegacyGL : IGL
         SilkGL.LoadIdentity();
     }
 
+    public virtual void LogicOp(LogicOp opcode)
+    {
+        SilkGL.LogicOp(opcode);
+    }
+
     public virtual void MatrixMode(GLEnum mode)
     {
         SilkGL.MatrixMode(mode);

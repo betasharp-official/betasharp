@@ -16,7 +16,7 @@ public class CycleButton : Button
         Size = new(150, 20);
     }
 
-    protected override void OnClicked(MouseEventArgs e)
+    protected override void OnClick(MouseEventArgs e)
     {
         long currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         if (currentTime - _lastClickTime < DoubleClickThresholdMs)

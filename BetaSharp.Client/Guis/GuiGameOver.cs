@@ -25,7 +25,7 @@ public class GuiGameOver : Screen
         AddChildren(respawnButton, titleButton);
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         Gui.DrawGradientRect(0, 0, Width, Height, 0x60500000, 0xA0803030);
         GLManager.GL.PushMatrix();

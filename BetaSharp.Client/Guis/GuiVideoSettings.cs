@@ -61,7 +61,7 @@ public class GuiVideoSettings : Screen
         AddChild(container);
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
     }

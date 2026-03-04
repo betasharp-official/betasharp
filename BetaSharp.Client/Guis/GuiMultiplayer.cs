@@ -204,7 +204,7 @@ public class GuiMultiplayer : Screen
         }
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
         Gui.DrawCenteredString(FontRenderer, "Play Multiplayer", Width / 2, 20, 0xFFFFFF);

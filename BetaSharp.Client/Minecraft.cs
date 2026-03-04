@@ -1179,7 +1179,7 @@ public partial class Minecraft
             if (currentScreen != null)
             {
                 currentScreen.ParticlesGui.updateParticles();
-                currentScreen.UpdateScreen();
+                currentScreen.DoTick();
             }
         }
 

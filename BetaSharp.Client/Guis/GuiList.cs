@@ -116,7 +116,7 @@ public abstract class GuiList : Control
 
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         (int mouseX, int mouseY) = (e.MouseX, e.MouseY);
         DrawBackground();

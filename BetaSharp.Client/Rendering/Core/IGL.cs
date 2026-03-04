@@ -73,6 +73,7 @@ public unsafe interface IGL
     void LineWidth(float width);
     void LinkProgram(uint program);
     void LoadIdentity();
+    void LogicOp(LogicOp opcode);
     void MatrixMode(GLEnum mode);
     void NewList(uint list, GLEnum mode);
     void Normal3(float nx, float ny, float nz);

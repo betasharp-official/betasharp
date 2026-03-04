@@ -23,7 +23,7 @@ public class GuiLevelLoading : Screen
         }
     }
 
-    public override void UpdateScreen()
+    protected override void OnTick()
     {
         if (MC.internalServer != null)
         {
@@ -54,7 +54,7 @@ public class GuiLevelLoading : Screen
         }
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
 

@@ -1,11 +1,13 @@
+using System.Runtime.InteropServices;
 using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.Input;
 
-public static class Mouse
+public static partial class Mouse
 {
     public const int EventSize = 1 + 1 + 4 + 4 + 4 + 8;
     public const int MouseButtons = 8;
+    private const int DoubleClickThresholdPixels = 4;
 
     private static bool created;
     private static Glfw glfw;
@@ -26,6 +28,13 @@ public static class Mouse
     private static int event_dx, event_dy, event_dwheel;
     private static int event_x, event_y;
     private static long event_nanos;
+    private static int eventClickCount;
+
+    // Click tracking for double-click/multi-click detection
+    private static readonly long[] lastClickTime = new long[MouseButtons];
+    private static readonly int[] lastClickX = new int[MouseButtons];
+    private static readonly int[] lastClickY = new int[MouseButtons];
+    private static readonly int[] clickCounts = new int[MouseButtons];
 
     // Last positions for delta calculation
     private static int last_event_raw_x, last_event_raw_y;
@@ -37,6 +46,34 @@ public static class Mouse
     // Display dimensions (set from outside)
     private static int displayWidth = 800;
     private static int displayHeight = 600;
+
+    private static readonly long DoubleClickDelayNanos = GetSystemDoubleClickTime() * 1_000_000L;
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    private static partial uint GetDoubleClickTime();
+
+    private static int GetSystemDoubleClickTime()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            try
+            {
+                return (int)GetDoubleClickTime();
+            }
+            catch
+            {
+                return 300;
+            }
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            // TODO: Unless someone knows of an easy way to do objc interop in C#, we'll have to use our default.
+            return 300;
+        }
+
+        return 300;
+    }
 
     public static unsafe void create(Glfw glfwApi, WindowHandle* windowHandle, int width, int height)
     {
@@ -82,7 +119,7 @@ public static class Mouse
             X = newX,
             Y = newY,
             DWheel = 0,
-            Nanos = GetNanos()
+            Nanos = GetNanos(),
         });
     }
 
@@ -94,6 +131,9 @@ public static class Mouse
         bool pressed = action == InputAction.Press;
 
         glfw.GetCursorPos(window, out double xpos, out double ypos);
+        int posX = (int)xpos;
+        int posY = (int)ypos;
+        long nanos = GetNanos();
 
         // Update button state
         if (buttonIndex >= 0 && buttonIndex < buttons.Length)
@@ -101,15 +141,41 @@ public static class Mouse
             buttons[buttonIndex] = pressed;
         }
 
+        // Calculate click count on button press
+        int clickCount = 1;
+        if (pressed && buttonIndex is >= 0 and < MouseButtons)
+        {
+            long timeSinceLastClick = nanos - lastClickTime[buttonIndex];
+            int distX = Math.Abs(posX - lastClickX[buttonIndex]);
+            int distY = Math.Abs(posY - lastClickY[buttonIndex]);
+
+            if (timeSinceLastClick <= DoubleClickDelayNanos &&
+                distX <= DoubleClickThresholdPixels &&
+                distY <= DoubleClickThresholdPixels)
+            {
+                clickCount = clickCounts[buttonIndex] + 1;
+            }
+            else
+            {
+                clickCount = 1;
+            }
+
+            lastClickTime[buttonIndex] = nanos;
+            lastClickX[buttonIndex] = posX;
+            lastClickY[buttonIndex] = posY;
+            clickCounts[buttonIndex] = clickCount;
+        }
+
         // Queue button event
         eventQueue.Enqueue(new MouseEvent
         {
             Button = buttonIndex,
             State = pressed,
-            X = (int)xpos,
-            Y = (int)ypos,
+            X = posX,
+            Y = posY,
             DWheel = 0,
-            Nanos = GetNanos()
+            Nanos = nanos,
+            ClickCount = pressed ? clickCount : 0,
         });
     }
 
@@ -142,6 +208,7 @@ public static class Mouse
             eventButton = evt.Button;
             eventState = evt.State;
             event_nanos = evt.Nanos;
+            eventClickCount = evt.ClickCount;
 
             if (_isGrabbed)
             {
@@ -186,6 +253,7 @@ public static class Mouse
     public static int getEventY() => displayHeight - event_y;
     public static int getEventDWheel() => event_dwheel;
     public static long getEventNanoseconds() => event_nanos;
+    public static int getEventClickCount() => eventClickCount;
 
     public static int getX() => x;
     public static int getY() => displayHeight - y;
@@ -281,5 +349,6 @@ public static class Mouse
         public int Y;
         public int DWheel;
         public long Nanos;
+        public int ClickCount;
     }
 }

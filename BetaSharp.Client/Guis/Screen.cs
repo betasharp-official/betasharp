@@ -79,7 +79,6 @@ public class Screen : Control
         Size = new(width, height);
     }
 
-    public virtual void UpdateScreen() { }
     public virtual void OnGuiClosed() { }
 
     public void DrawDefaultBackground()
@@ -123,10 +122,18 @@ public class Screen : Control
         if (_focusedControl == control) return;
 
         var oldFocused = _focusedControl;
-        oldFocused?.DoFocusChanged(new(false, control));
+        if (oldFocused != null)
+        {
+            oldFocused.Focused = false;
+            oldFocused.DoFocusChanged(new(false, control));
+        }
 
         _focusedControl = control;
-        control?.DoFocusChanged(new(true, oldFocused));
+        if (control != null)
+        {
+            control.Focused = true;
+            control.DoFocusChanged(new(true, oldFocused));
+        }
     }
 
     public virtual void DeleteWorld(bool confirmed, int index) { }
@@ -134,5 +141,35 @@ public class Screen : Control
     public virtual void SelectNextField()
     {
 
+    }
+
+    protected override void OnMousePress(MouseEventArgs e)
+    {
+
+    }
+
+    public void HandleInput()
+    {
+        while (Mouse.next())
+        {
+            HandleMouseInput();
+        }
+
+        while (Keyboard.Next())
+        {
+            if (Keyboard.getEventKeyState() && Keyboard.getEventKey() == Keyboard.KEY_ESCAPE)
+            {
+                MC.OpenScreen(null);
+                return;
+            }
+            if (_focusedControl != null)
+            {
+                _focusedControl.HandleKeyboardInput();
+            }
+            else
+            {
+                HandleKeyboardInput();
+            }
+        }
     }
 }

@@ -4,15 +4,21 @@ public class MouseEventArgs : EventArgs
 {
     public int X { get; }
     public int Y { get; }
+    public float PixelX { get; }
+    public float PixelY { get; }
     public int Button { get; }
+    public int Clicks { get; }
     public bool Pressed { get; }
     public bool Handled { get; set; }
 
-    public MouseEventArgs(int x, int y, int button, bool pressed)
+    public MouseEventArgs(int x, int y, float pixelX, float pixelY, int button, int clicks, bool pressed)
     {
         X = x;
         Y = y;
+        PixelX = pixelX;
+        PixelY = pixelY;
         Button = button;
+        Clicks = clicks;
         Pressed = pressed;
         Handled = false;
     }

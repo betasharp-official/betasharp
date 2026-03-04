@@ -2,7 +2,7 @@ namespace BetaSharp.Client.Guis;
 
 public class GuiOomScreen : Screen
 {
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
         int center = Width / 2;

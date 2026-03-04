@@ -1,21 +1,31 @@
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering;
+using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Util;
-using java.awt;
-using java.awt.datatransfer;
+using Silk.NET.OpenGL.Legacy;
 
 namespace BetaSharp.Client.Guis;
 
 public class TextField : Control
 {
+    private enum SelectingType
+    {
+        Character,
+        Word,
+        Line,
+    }
+    private const int LeftPad = 4;
     private readonly TextRenderer _fontRenderer;
     public override bool Focusable => true;
     public int MaxLength { get; init; }
+    private const int CursorPeriod = 5;
     private int _cursorCounter;
-    private int _cursorPosition;
+    private int _caretPosition;
     private int _selectionStart = -1;
     private int _selectionEnd = -1;
+    private int _initialSelectionPos = -1;
     private bool HasSelection => _selectionStart != -1 && _selectionEnd != -1 && _selectionStart != _selectionEnd;
+    private SelectingType _selectingType;
 
     public TextField(int x, int y, TextRenderer fontRenderer, string text) : base(x, y, 200, 20)
     {
@@ -23,200 +33,299 @@ public class TextField : Control
         Text = text;
     }
 
-    public void UpdateCursorCounter() => _cursorCounter++;
+    public void UpdateCursorCounter() =>
+        _cursorCounter = _cursorCounter > CursorPeriod ? -CursorPeriod : _cursorCounter + 1;
 
     protected override void OnKeyInput(KeyboardEventArgs e)
     {
         if (!e.IsKeyDown || !Enabled || !Focused) return;
-        Console.WriteLine("KeyInput for textbox with text '" + Text + "': " + e.KeyChar + " (code " + e.Key + ")");
 
-        // Check for Ctrl combos first
-        bool ctrlDown = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
-        bool shiftDown = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
-
-        if (ctrlDown)
+        bool ctrl = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
+        bool shift = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+        int[] acceptedKeys =
+        [
+            Keyboard.KEY_A, Keyboard.KEY_C, Keyboard.KEY_X, Keyboard.KEY_V,
+            Keyboard.KEY_LEFT, Keyboard.KEY_RIGHT, Keyboard.KEY_HOME, Keyboard.KEY_END,
+            Keyboard.KEY_DELETE, Keyboard.KEY_BACK,
+        ];
+        if (acceptedKeys.Contains(e.Key)
+            || (ChatAllowedCharacters.allowedCharacters.Contains(e.KeyChar)
+                && (Text.Length < MaxLength || MaxLength == 0)))
         {
-            switch (e.Key)
-            {
-                case Keyboard.KEY_A:
-                    // Select all
-                    _selectionStart = 0;
-                    _selectionEnd = Text.Length;
-                    _cursorPosition = _selectionEnd;
-                    return;
-                case Keyboard.KEY_C:
-                    // Copy
-                    CopySelectionToClipboard();
-                    return;
-                case Keyboard.KEY_X:
-                    // Cut
-                    CutSelectionToClipboard();
-                    return;
-                case Keyboard.KEY_V:
-                    // Paste
-                    PasteClipboardAtCursor();
-                    return;
-            }
+            ResetCursorFlash();
         }
 
-        // Handle Shift+Left/Right for selection
-        if (shiftDown)
-        {
-            switch (e.Key)
-            {
-                case Keyboard.KEY_LEFT:
-                    if (_selectionStart == -1)
-                    {
-                        _selectionStart = _cursorPosition;
-                    }
-                    if (_cursorPosition > 0) _cursorPosition--;
-                    _selectionEnd = _cursorPosition;
-                    return;
-                case Keyboard.KEY_RIGHT:
-                    if (_selectionStart == -1)
-                    {
-                        _selectionStart = _cursorPosition;
-                    }
-                    if (_cursorPosition < Text.Length) _cursorPosition++;
-                    _selectionEnd = _cursorPosition;
-                    return;
-            }
-        }
-
-        // Handle regular keys
         switch (e.Key)
         {
+            case Keyboard.KEY_A when ctrl:
+                // Select all
+                _selectionStart = 0;
+                _selectionEnd = Text.Length;
+                _caretPosition = _selectionEnd;
+                return;
+
+            case Keyboard.KEY_C when ctrl:
+                CopySelectionToClipboard();
+                return;
+
+            case Keyboard.KEY_X when ctrl:
+                CutSelectionToClipboard();
+                return;
+
+            case Keyboard.KEY_V when ctrl:
+                PasteClipboardAtCursor();
+                return;
+
+            case Keyboard.KEY_LEFT when ctrl && shift:
+                // Ctrl+Shift+Left: extend selection to start of previous word
+                if (_selectionStart == -1) _selectionStart = _caretPosition;
+                if (_caretPosition > 0)
+                {
+                    _caretPosition = GetNthWordFrom(-1, _caretPosition, true);
+                }
+                _selectionEnd = _caretPosition;
+                return;
+
+            case Keyboard.KEY_RIGHT when ctrl && shift:
+                // Ctrl+Shift+Right: extend selection to start of next word
+                if (_selectionStart == -1) _selectionStart = _caretPosition;
+                if (_caretPosition < Text.Length)
+                {
+                    _caretPosition = GetNthWordFrom(1, _caretPosition, true);
+                }
+                _selectionEnd = _caretPosition;
+                return;
+
+            case Keyboard.KEY_LEFT when ctrl:
+                // Ctrl+Left: move cursor to start of previous word
+                if (_caretPosition > 0)
+                {
+                    _caretPosition = GetNthWordFrom(-1, _caretPosition, true);
+                }
+                ClearSelection();
+                return;
+
+            case Keyboard.KEY_RIGHT when ctrl:
+                // Ctrl+Right: move cursor to start of next word
+                if (_caretPosition < Text.Length)
+                {
+                    _caretPosition = GetNthWordFrom(1, _caretPosition, true);
+                }
+                ClearSelection();
+                return;
+
+            case Keyboard.KEY_LEFT when shift:
+                // Shift+Left: extend selection left
+                if (_selectionStart == -1) _selectionStart = _caretPosition;
+                if (_caretPosition > 0) _caretPosition--;
+                _selectionEnd = _caretPosition;
+                return;
+
+            case Keyboard.KEY_RIGHT when shift:
+                // Shift+Right: extend selection right
+                if (_selectionStart == -1) _selectionStart = _caretPosition;
+                if (_caretPosition < Text.Length) _caretPosition++;
+                _selectionEnd = _caretPosition;
+                return;
+
+            case Keyboard.KEY_HOME when shift:
+                // Shift+Home: extend selection to start
+                if (_selectionStart == -1) _selectionStart = _caretPosition;
+                _caretPosition = 0;
+                _selectionEnd = _caretPosition;
+                return;
+
+            case Keyboard.KEY_END when shift:
+                // Shift+End: extend selection to end
+                if (_selectionStart == -1) _selectionStart = _caretPosition;
+                _caretPosition = Text.Length;
+                _selectionEnd = _caretPosition;
+                return;
+
             case Keyboard.KEY_LEFT:
-                if (_cursorPosition > 0) _cursorPosition--;
-                ClearSelection();
+                if (HasSelection)
+                {
+                    (int start, _) = GetSelectionRange();
+                    _caretPosition = start;
+                    ClearSelection();
+                }
+                else if (_caretPosition > 0)
+                {
+                    _caretPosition--;
+                }
                 return;
+
             case Keyboard.KEY_RIGHT:
-                if (_cursorPosition < Text.Length) _cursorPosition++;
-                ClearSelection();
+                if (HasSelection)
+                {
+                    (_, int end) = GetSelectionRange();
+                    _caretPosition = end;
+                    ClearSelection();
+                }
+                else if (_caretPosition < Text.Length)
+                {
+                    _caretPosition++;
+                }
                 return;
+
             case Keyboard.KEY_HOME:
-                _cursorPosition = 0;
+                _caretPosition = 0;
                 ClearSelection();
                 return;
+
             case Keyboard.KEY_END:
-                _cursorPosition = Text.Length;
+                _caretPosition = Text.Length;
                 ClearSelection();
                 return;
+
             case Keyboard.KEY_DELETE:
                 if (HasSelection)
                 {
                     DeleteSelection();
                 }
-                else if (_cursorPosition < Text.Length)
+                else if (_caretPosition < Text.Length)
                 {
-                    Text = Text.Remove(_cursorPosition, 1);
+                    SuppressTextChanged(true);
+                    Text = Text.Remove(_caretPosition, 1);
+                    SuppressTextChanged(false);
                 }
-                ClearSelection();
                 return;
+
             case Keyboard.KEY_BACK:
-                HandleBackspace();
+                if (HasSelection)
+                {
+                    DeleteSelection();
+                }
+                else if (_caretPosition > 0)
+                {
+                    _caretPosition--;
+                    SuppressTextChanged(true);
+                    Text = Text.Remove(_caretPosition, 1);
+                    SuppressTextChanged(false);
+                }
                 return;
-        }
 
-        // Regular character input
-        if (ChatAllowedCharacters.allowedCharacters.Contains(e.KeyChar) && (Text.Length < MaxLength || MaxLength == 0))
-        {
-            if (HasSelection)
-            {
-                DeleteSelection();
-            }
+            default:
+                // Regular character input
+                if (ChatAllowedCharacters.allowedCharacters.Contains(e.KeyChar) &&
+                    (Text.Length < MaxLength || MaxLength == 0))
+                {
+                    if (HasSelection)
+                    {
+                        DeleteSelection();
+                    }
 
-            SuppressTextChanged(true);
-            Text = Text.Insert(_cursorPosition, e.KeyChar.ToString());
-            SuppressTextChanged(false);
-            _cursorPosition++;
-            ClearSelection();
+                    SuppressTextChanged(true);
+                    Text = Text.Insert(_caretPosition, e.KeyChar.ToString());
+                    SuppressTextChanged(false);
+                    _caretPosition++;
+                }
+                return;
         }
     }
 
     protected override void OnFocusChanged(FocusEventArgs e)
     {
-        if (e.Focused && e.OtherControl != this)
+        if (!e.Focused)
         {
             _cursorCounter = 0;
         }
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         Gui.DrawRect(X - 1, Y - 1, X + Width + 1, Y + Height + 1, 0xFFA0A0A0);
         Gui.DrawRect(X, Y, X + Width, Y + Height, 0xFF000000);
 
         if (Enabled)
         {
-            bool showCaret = !Focused || _cursorCounter / 6 % 2 == 0;
-            int safePos = Math.Clamp(_cursorPosition, 0, Text.Length);
+            bool showCaret = !Focused || _cursorCounter <= 0;
+            int safePos = Math.Clamp(_caretPosition, 0, Text.Length);
 
             if (!HasSelection)
             {
-                Gui.DrawString(_fontRenderer, Text, X + 4, Y + (Height - 8) / 2, 0xE0E0E0);
+                Gui.DrawString(_fontRenderer, Text, X + LeftPad, Y + (Height - 8) / 2, 0xE0E0E0);
             }
             else
             {
                 (int start, int end) = GetSelectionRange();
                 string textBeforeSelection = Text[..start];
                 string selectedText = Text[start..end];
-                string textAfterSelection = Text[end..];
-                int textX = X + 4;
-                Gui.DrawString(_fontRenderer, textBeforeSelection, X + 4, Y + (Height - 8) / 2, 0xE0E0E0);
-                textX += _fontRenderer.GetStringWidth(textBeforeSelection);
+
+                int preSelectionWidth = _fontRenderer.GetStringWidth(textBeforeSelection);
                 int selectionWidth = _fontRenderer.GetStringWidth(selectedText);
-                Gui.DrawRect(textX - 1, Y + 5, textX + selectionWidth + 1, Y + Height - 4, 0xFFFFFFFF);
-                _fontRenderer.DrawString(selectedText, textX + 1, Y + (Height - 8) / 2 + 1, 0xC7C7FF);
-                _fontRenderer.DrawString(selectedText, textX, Y + (Height - 8) / 2, 0x1F1FFF);
-                textX += selectionWidth;
-                Gui.DrawString(_fontRenderer, textAfterSelection, textX, Y + (Height - 8) / 2, 0xE0E0E0);
+                int textY = Y + (Height - 8) / 2;
+
+                Gui.DrawString(_fontRenderer, Text, X + LeftPad, textY, 0xE0E0E0);
+
+                int selX1 = X + LeftPad + preSelectionWidth - 1;
+                int selX2 = selX1 + selectionWidth + 1;
+                int selY1 = Y + 5;
+                int selY2 = Y + Height - LeftPad;
+
+                Tessellator tess = Tessellator.instance;
+                GLManager.GL.Color4(0.0f, 0.0f, 1.0f, 1.0f);
+                GLManager.GL.Disable(EnableCap.Texture2D);
+                GLManager.GL.Enable(EnableCap.ColorLogicOp);
+                GLManager.GL.LogicOp(LogicOp.OrReverse);
+
+                tess.startDrawingQuads();
+                tess.addVertex(selX1, selY2, 0.0);
+                tess.addVertex(selX2, selY2, 0.0);
+                tess.addVertex(selX2, selY1, 0.0);
+                tess.addVertex(selX1, selY1, 0.0);
+                tess.draw();
+
+                GLManager.GL.Disable(EnableCap.ColorLogicOp);
+                GLManager.GL.Enable(EnableCap.Texture2D);
             }
 
             if (!showCaret)
                 return;
 
-            if (_cursorPosition != Text.Length)
+            if (_caretPosition != Text.Length)
             {
                 string textBeforeCursor = Text[..safePos];
-                int caretX = X + 4 + _fontRenderer.GetStringWidth(textBeforeCursor);
+                int caretX = X + LeftPad + _fontRenderer.GetStringWidth(textBeforeCursor);
 
-                Gui.DrawRect(caretX, Y + 5, caretX + 1, Y + Height - 4, 0xFFD0D0D0);
+                Gui.DrawRect(caretX - 1, Y + 5, caretX, Y + Height - LeftPad, 0xFFD0D0D0);
             }
             else
             {
                 int caretX;
                 if (Text.Length > 0) caretX = X + 5 + _fontRenderer.GetStringWidth(Text);
-                else caretX = X + 4;
+                else caretX = X + LeftPad;
 
                 Gui.DrawString(_fontRenderer, "_", caretX, Y + (Height - 8) / 2, 0xE0E0E0);
             }
         }
         else
         {
-            Gui.DrawString(_fontRenderer, Text, X + 4, Y + (Height - 8) / 2, 0x707070);
+            Gui.DrawString(_fontRenderer, Text, X + LeftPad, Y + (Height - 8) / 2, 0x707070);
         }
     }
 
     protected override void OnTextChanged(TextEventArgs e)
     {
         if (ShouldSuppressTextChanged) return;
-        _cursorPosition = e.Text.Length;
+        _caretPosition = e.Text.Length;
         _selectionStart = -1;
         _selectionEnd = -1;
     }
 
-    protected override void OnMousePressed(MouseEventArgs e)
+    /// <summary>
+    /// Calculates the character position in the text based on a pixel X coordinate.
+    /// </summary>
+    private int GetCharPositionFromPixelX(float pixelX)
     {
-        if (!Enabled) return;
-        _cursorCounter = 0;
-        int clickX = e.X - X - 4;
+        float relativeX = Math.Max(0, pixelX - X - LeftPad);
         int pos = 0;
 
-        while (pos < Text.Length)
+        int width = 0;
+        while (pos <= Text.Length)
         {
-            int width = _fontRenderer.GetStringWidth(Text.AsSpan()[..pos]);
-            if (width > clickX)
+            width = _fontRenderer.GetStringWidth(Text.AsSpan()[..pos]);
+            if (width > relativeX)
             {
                 break;
             }
@@ -224,13 +333,111 @@ public class TextField : Control
         }
         pos--;
 
-        if (_fontRenderer.GetStringWidth(Text) <= clickX)
+        // Put caret at the end of the character if click is past its middle
+        if (pos < Text.Length)
         {
-            pos++;
+            int charWidth = _fontRenderer.GetStringWidth(Text[pos].ToString()) - 1;
+            if (charWidth / 2f + relativeX >= width - 1)
+            {
+                pos++;
+            }
         }
 
-        _cursorPosition = pos;
-        ClearSelection();
+        return Math.Clamp(pos, 0, Text.Length);
+    }
+
+    protected override void OnMousePress(MouseEventArgs e)
+    {
+        if (!Enabled) return;
+        ResetCursorFlash();
+
+        int pos = GetCharPositionFromPixelX(e.PixelX);
+
+        if (e.Clicks == 2) // Double-click selects word
+        {
+            (_selectionStart, _selectionEnd) = GetLogicalWordBoundaries(pos);
+            _caretPosition = _selectionEnd;
+            _selectingType = SelectingType.Word;
+            return;
+        }
+        if (e.Clicks >= 3) // Triple-click selects all
+        {
+            _selectionStart = 0;
+            _selectionEnd = Text.Length;
+            _caretPosition = pos;
+            _selectingType = SelectingType.Line;
+            return;
+        }
+
+        if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
+        {
+            if (_selectionStart == -1)
+                _selectionStart = _caretPosition;
+            _selectionEnd = pos;
+        }
+        else
+        {
+            ClearSelection();
+        }
+        _caretPosition = pos;
+    }
+
+    protected override void OnMouseRelease(MouseEventArgs e)
+    {
+        _selectingType = SelectingType.Character;
+    }
+
+    protected override void OnMouseDrag(MouseEventArgs e)
+    {
+        if (!Enabled) return;
+        ResetCursorFlash();
+
+        int pos = GetCharPositionFromPixelX(e.PixelX);
+        switch (_selectingType)
+        {
+            case SelectingType.Character:
+                {
+                    if (_initialSelectionPos == -1)
+                        _initialSelectionPos = _caretPosition;
+                    _selectionStart = _initialSelectionPos;
+                    _selectionEnd = pos;
+                    _caretPosition = pos;
+                    break;
+                }
+            case SelectingType.Word:
+                {
+                    (int wordStart, int wordEnd) = GetLogicalWordBoundaries(pos);
+                    if (_initialSelectionPos == -1)
+                    {
+                        _initialSelectionPos = wordStart;
+                    }
+
+                    if (pos < _initialSelectionPos)
+                    {
+                        _selectionStart = GetLogicalWordBoundaries(_initialSelectionPos).end;
+                        _selectionEnd = wordStart;
+                        _caretPosition = wordStart;
+                    }
+                    else
+                    {
+                        _selectionStart = _initialSelectionPos;
+                        _selectionEnd = wordEnd;
+                        _caretPosition = wordEnd;
+                    }
+
+                    break;
+                }
+            case SelectingType.Line:
+                // TODO: Multiline support
+                _selectionStart = 0;
+                _selectionEnd = Text.Length;
+                break;
+        }
+    }
+
+    protected override void OnTick()
+    {
+        UpdateCursorCounter();
     }
 
     private (int start, int end) GetSelectionRange()
@@ -250,16 +457,19 @@ public class TextField : Control
         return Text[start..end];
     }
 
-    private void HandleBackspace()
+    private void DeleteChar(bool backspace)
     {
         if (HasSelection)
         {
             DeleteSelection();
         }
-        else if (_cursorPosition > 0)
+        else if (backspace ? (_caretPosition > 0) : (_caretPosition < Text.Length))
         {
-            _cursorPosition--;
-            Text = Text.Remove(_cursorPosition, 1);
+            if (backspace) _caretPosition--;
+
+            SuppressTextChanged(true);
+            Text = Text.Remove(_caretPosition, 1);
+            SuppressTextChanged(false);
         }
         ClearSelection();
     }
@@ -269,7 +479,7 @@ public class TextField : Control
         if (!HasSelection) return;
         (int start, int end) = GetSelectionRange();
         Text = Text[..start] + Text[end..];
-        _cursorPosition = start;
+        _caretPosition = start;
         ClearSelection();
     }
 
@@ -277,6 +487,7 @@ public class TextField : Control
     {
         _selectionStart = -1;
         _selectionEnd = -1;
+        _initialSelectionPos = -1;
     }
 
     private void CopySelectionToClipboard()
@@ -299,8 +510,117 @@ public class TextField : Control
         if (HasSelection) DeleteSelection();
         int maxInsert = Math.Max(0, (MaxLength > 0 ? MaxLength : 32) - Text.Length);
         if (clip.Length > maxInsert) clip = clip[..maxInsert];
-        Text = Text.Insert(_cursorPosition - 1, clip);
-        _cursorPosition += clip.Length;
+        SuppressTextChanged(true);
+        Text = Text.Insert(_caretPosition, clip);
+        SuppressTextChanged(false);
+        _caretPosition += clip.Length;
         ClearSelection();
+    }
+
+    /// <summary>
+    /// Returns the index of the start of the nth word from the given location.
+    /// If n is positive, it looks forward; if n is negative, it looks backward.
+    /// If skipEmptyWords is true, it will skip over consecutive spaces and return
+    /// the start of the next non-empty word. If false, it will treat spaces as words
+    /// and return their boundaries.
+    /// </summary>
+    /// <param name="n">The number of words to move (positive or negative)</param>
+    /// <param name="loc">The starting index to search from</param>
+    /// <param name="skipEmptyWords">Whether to skip over empty words (spaces)</param>
+    /// <returns>The index of the start of the nth word from the given location</returns>
+    public int GetNthWordFrom(int n, int loc, bool skipEmptyWords)
+    {
+        int i = loc;
+        bool forward = n < 0;
+        int absN = Math.Abs(n);
+
+        for (int k = 0; k < absN; k++)
+        {
+            if (!forward)
+            {
+                int length = Text.Length;
+                i = Text.IndexOf(' ', i);
+
+                if (i == -1)
+                {
+                    i = length;
+                }
+                else
+                {
+                    while (skipEmptyWords && i < length && Text[i] == ' ')
+                    {
+                        i++;
+                    }
+                }
+            }
+            else
+            {
+                while (skipEmptyWords && i > 0 && Text[i - 1] == ' ')
+                {
+                    i--;
+                }
+
+                while (i > 0 && Text[i - 1] != ' ')
+                {
+                    i--;
+                }
+            }
+        }
+
+        return i;
+    }
+
+    /// <summary>
+    /// Returns the start and end indices of the word at the given position.
+    /// If the position is between words, it returns the boundaries of the next word.
+    /// If the position is in the middle of multiple consecutive spaces,
+    /// it treats them as a word and returns their boundaries.
+    /// If the position is at the end of the text, it returns the boundaries of the last word.
+    /// If the last character is a space, it returns the boundaries of that space word, even
+    /// if there's only one space.
+    /// </summary>
+    /// <param name="pos">The index to find the word boundaries for</param>
+    /// <returns>A tuple of (start, end) indices of the word</returns>
+    private (int start, int end) GetLogicalWordBoundaries(int pos)
+    {
+        if (Text.Length == 0) return (0, 0);
+        if (pos >= Text.Length) pos = Text.Length - 1;
+
+        int start = pos;
+        int end = pos;
+
+        if (Text[pos] == ' ' && (
+                (pos > 0 && Text[pos - 1] == ' ')
+                || (pos < Text.Length - 1 && Text[pos + 1] == ' ')))
+        {
+            // If we're on a space, find the boundaries of this space word
+            while (start > 0 && Text[start - 1] == ' ')
+            {
+                start--;
+            }
+            while (end < Text.Length && Text[end] == ' ')
+            {
+                end++;
+            }
+        }
+        else
+        {
+            // If we're on a non-space, find the boundaries of this word
+            while (start > 0 && Text[start - 1] != ' ')
+            {
+                start--;
+            }
+            while (end < Text.Length && Text[end] != ' ')
+            {
+                end++;
+            }
+        }
+
+        return (start, end);
+    }
+
+    private void ResetCursorFlash()
+    {
+        _cursorCounter = -CursorPeriod * 4;
     }
 }

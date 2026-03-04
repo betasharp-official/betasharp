@@ -41,17 +41,12 @@ public class GuiRenameWorld : Screen
         AddChildren(renameButton, cancelButton, nameInputField);
     }
 
-    public override void UpdateScreen()
-    {
-        nameInputField.UpdateCursorCounter();
-    }
-
     public override void OnGuiClosed()
     {
         Keyboard.enableRepeatEvents(false);
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         TranslationStorage translations = TranslationStorage.Instance;
         DrawDefaultBackground();

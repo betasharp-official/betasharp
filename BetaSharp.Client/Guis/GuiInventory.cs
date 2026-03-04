@@ -22,8 +22,9 @@ public class GuiInventory : GuiContainer
         FontRenderer.DrawString("Crafting", 86, 16, 0x404040);
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
+        base.OnRender(e);
         _mouseX = e.MouseX;
         _mouseY = e.MouseY;
     }

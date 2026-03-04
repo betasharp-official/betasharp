@@ -36,7 +36,7 @@ public class GuiIngame : Control
         _gcMonitor = new GCMonitor();
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         ScaledResolution scaled = new(_mc.options, _mc.displayWidth, _mc.displayHeight);
         int scaledWidth = scaled.ScaledWidth;

@@ -52,7 +52,7 @@ public class GuiAchievements : Screen
         }
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         if (Mouse.isButtonDown(0))
         {
@@ -112,7 +112,7 @@ public class GuiAchievements : Screen
         GLManager.GL.Enable(GLEnum.DepthTest);
     }
 
-    public override void UpdateScreen()
+    protected override void OnTick()
     {
         field_27116_m = field_27114_o;
         field_27115_n = field_27113_p;

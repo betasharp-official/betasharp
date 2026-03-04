@@ -56,12 +56,12 @@ public class GuiIngameMenu : Screen
         MC.OpenScreen(new GuiMainMenu());
     }
 
-    public override void UpdateScreen()
+    protected override void OnTick()
     {
         ++_menuTickCounter;
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
 

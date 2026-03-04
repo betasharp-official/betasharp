@@ -13,12 +13,12 @@ public class Button : Control
         Text = text;
     }
 
-    protected override void OnClicked(MouseEventArgs e)
+    protected override void OnClick(MouseEventArgs e)
     {
         Minecraft.INSTANCE.sndManager.PlaySoundFX("random.click", 1.0F, 1.0F);
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         var mc = Minecraft.INSTANCE;
         TextRenderer font = mc.fontRenderer;

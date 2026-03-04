@@ -89,12 +89,6 @@ public class GuiCreateWorld : Screen
         MC.startWorld(_folderName, _textboxWorldName.Text, worldSeed);
     }
 
-    public override void UpdateScreen()
-    {
-        _textboxWorldName.UpdateCursorCounter();
-        _textboxSeed.UpdateCursorCounter();
-    }
-
     private void UpdateFolderName()
     {
         _folderName = _textboxWorldName.Text.Trim();
@@ -130,7 +124,7 @@ public class GuiCreateWorld : Screen
         Keyboard.enableRepeatEvents(false);
     }
 
-    protected override void OnRendered(RenderEventArgs e)
+    protected override void OnRender(RenderEventArgs e)
     {
         TranslationStorage translations = TranslationStorage.Instance;
 
