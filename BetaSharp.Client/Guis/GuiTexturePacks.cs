@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using BetaSharp.Client.Rendering;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Guis;
@@ -27,7 +26,10 @@ public class GuiTexturePacks : GuiScreen
         _controlList.Add(new GuiSmallButton(ButtonOpenFolder, Width / 2 - 154, Height - 48, translations.TranslateKey("texturePack.openFolder")));
         _controlList.Add(new GuiSmallButton(ButtonDone, Width / 2 + 4, Height - 48, translations.TranslateKey("gui.done")));
         Game.texturePackList.updateAvaliableTexturePacks();
-        _texturePackFolder = new java.io.File(BetaSharp.getBetaSharpDir(), "texturepacks").getAbsolutePath();
+
+        string baseDir = BetaSharp.getBetaSharpDir();
+        _texturePackFolder = Path.GetFullPath(Path.Combine(baseDir, "texturepacks"));
+        
         _guiTexturePackSlot = new GuiTexturePackSlot(this);
         _guiTexturePackSlot.RegisterScrollButtons(_controlList, 7, 8);
     }

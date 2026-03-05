@@ -1,7 +1,6 @@
 using System.IO.Compression;
 using BetaSharp.Client.Rendering.Core.Textures;
 using Microsoft.Extensions.Logging;
-using Silk.NET.OpenGL.Legacy;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -35,21 +34,21 @@ public class ZippedTexturePack : TexturePack
     {
         try
         {
-            using var archive = ZipFile.OpenRead(_texturePackFile.FullName);
+            using ZipArchive archive = ZipFile.OpenRead(_texturePackFile.FullName);
 
-            var packTxtEntry = archive.GetEntry("pack.txt");
+            ZipArchiveEntry? packTxtEntry = archive.GetEntry("pack.txt");
             if (packTxtEntry != null)
             {
-                using var stream = packTxtEntry.Open();
+                using Stream stream = packTxtEntry.Open();
                 using var reader = new StreamReader(stream); // Replaces BufferedReader
                 FirstDescriptionLine = TruncateString(reader.ReadLine());
                 SecondDescriptionLine = TruncateString(reader.ReadLine());
             }
 
-            var packPngEntry = archive.GetEntry("pack.png");
+            ZipArchiveEntry? packPngEntry = archive.GetEntry("pack.png");
             if (packPngEntry != null)
             {
-                using var stream = packPngEntry.Open();
+                using Stream stream = packPngEntry.Open();
                 _texturePackThumbnail = Image.Load<Rgba32>(stream); // Native ImageSharp load
             }
         }
@@ -114,11 +113,11 @@ public class ZippedTexturePack : TexturePack
         {
             string entryName = path.StartsWith("/") ? path[1..] : path;
 
-            var entry = _texturePackZipFile?.GetEntry(entryName);
+            ZipArchiveEntry? entry = _texturePackZipFile?.GetEntry(entryName);
             if (entry != null)
             {
                 var ms = new MemoryStream();
-                using (var entryStream = entry.Open())
+                using (Stream entryStream = entry.Open())
                 {
                     entryStream.CopyTo(ms);
                 }

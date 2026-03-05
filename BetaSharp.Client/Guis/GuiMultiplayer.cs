@@ -79,7 +79,7 @@ public class GuiMultiplayer : GuiScreen
     {
         try
         {
-            string path = System.IO.Path.Combine(BetaSharp.getBetaSharpDir().getAbsolutePath(), "servers.dat");
+            string path = Path.Combine(BetaSharp.getBetaSharpDir(), "servers.dat");
             if (!File.Exists(path)) return;
 
             using FileStream stream = File.OpenRead(path);
@@ -107,7 +107,7 @@ public class GuiMultiplayer : GuiScreen
             NBTTagCompound tag = new();
             tag.SetTag("servers", list);
 
-            string path = System.IO.Path.Combine(BetaSharp.getBetaSharpDir().getAbsolutePath(), "servers.dat");
+            string path = Path.Combine(BetaSharp.getBetaSharpDir(), "servers.dat");
             using FileStream stream = File.OpenWrite(path);
             NbtIo.WriteCompressed(tag, stream);
         }

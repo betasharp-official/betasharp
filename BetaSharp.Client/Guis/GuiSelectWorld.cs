@@ -1,9 +1,5 @@
 using BetaSharp.Client.Input;
-using BetaSharp.Stats;
-using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Storage;
-using java.text;
-using java.util;
 
 namespace BetaSharp.Client.Guis;
 
@@ -15,7 +11,8 @@ public class GuiSelectWorld : GuiScreen
     private const int BUTTON_CREATE = 3;
     private const int BUTTON_RENAME = 6;
 
-    private readonly DateFormat dateFormatter = new SimpleDateFormat();
+    private readonly string dateFormatter = "MMM d, yyyy HH:mm";
+    
     protected GuiScreen parentScreen;
     protected string screenTitle = "Select world";
     private bool selected;
@@ -62,7 +59,7 @@ public class GuiSelectWorld : GuiScreen
     protected string getSaveName(int worldIndex)
     {
         string worldName = saveList[worldIndex].DisplayName;
-        if (worldName == null || string.IsNullOrEmpty(worldName))
+        if (string.IsNullOrEmpty(worldName))
         {
             TranslationStorage translations = TranslationStorage.Instance;
             worldName = translations.TranslateKey("selectWorld.world") + " " + (worldIndex + 1);
@@ -135,9 +132,7 @@ public class GuiSelectWorld : GuiScreen
             selected = true;
             Game.statFileWriter.ReadStat(Stats.Stats.LoadWorldStat, 1);
             Game.playerController = new PlayerControllerSP(Game);
-            string worldFileName = getSaveFileName(worldIndex);
-            worldFileName ??= "World" + worldIndex;
-
+            string worldFileName = getSaveFileName(worldIndex) ?? $"World{worldIndex}";
             Game.startWorld(worldFileName, getSaveName(worldIndex), 0L);
         }
     }
@@ -154,7 +149,6 @@ public class GuiSelectWorld : GuiScreen
 
             Game.displayGuiScreen(this);
         }
-
     }
 
     private void performDelete(int worldIndex)
@@ -171,49 +165,15 @@ public class GuiSelectWorld : GuiScreen
         DrawCenteredString(FontRenderer, screenTitle, Width / 2, 20, Color.White);
         base.Render(mouseX, mouseY, partialTicks);
     }
+    
+    public static List<WorldSaveInfo> GetSize(GuiSelectWorld screen) => screen.saveList;
+    public static int onElementSelected(GuiSelectWorld screen, int worldIndex) => screen.selectedWorld = worldIndex;
+    public static int getSelectedWorld(GuiSelectWorld screen) => screen.selectedWorld;
+    public static GuiButton getSelectButton(GuiSelectWorld screen) => screen.buttonSelect;
+    public static GuiButton getRenameButton(GuiSelectWorld screen) => screen.buttonRename;
+    public static GuiButton getDeleteButton(GuiSelectWorld screen) => screen.buttonDelete;
+    public static string getWorldNameHeader(GuiSelectWorld screen) => screen.worldNameHeader;
+    public static string getUnsupportedFormatMessage(GuiSelectWorld screen) => screen.unsupportedFormatMessage;
 
-    public static List<WorldSaveInfo> GetSize(GuiSelectWorld screen)
-    {
-        return screen.saveList;
-    }
-
-    public static int onElementSelected(GuiSelectWorld screen, int worldIndex)
-    {
-        return screen.selectedWorld = worldIndex;
-    }
-
-    public static int getSelectedWorld(GuiSelectWorld screen)
-    {
-        return screen.selectedWorld;
-    }
-
-    public static GuiButton getSelectButton(GuiSelectWorld screen)
-    {
-        return screen.buttonSelect;
-    }
-
-    public static GuiButton getRenameButton(GuiSelectWorld screen)
-    {
-        return screen.buttonRename;
-    }
-
-    public static GuiButton getDeleteButton(GuiSelectWorld screen)
-    {
-        return screen.buttonDelete;
-    }
-
-    public static string getWorldNameHeader(GuiSelectWorld screen)
-    {
-        return screen.worldNameHeader;
-    }
-
-    public static DateFormat getDateFormatter(GuiSelectWorld screen)
-    {
-        return screen.dateFormatter;
-    }
-
-    public static string getUnsupportedFormatMessage(GuiSelectWorld screen)
-    {
-        return screen.unsupportedFormatMessage;
-    }
+    public static string getDateFormatter(GuiSelectWorld screen) => screen.dateFormatter;
 }

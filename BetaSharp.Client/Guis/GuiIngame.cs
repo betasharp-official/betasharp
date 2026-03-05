@@ -8,8 +8,8 @@ using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
-using java.awt;
-using Silk.NET.OpenGL.Legacy;
+using SixLabors.ImageSharp.PixelFormats;
+using BetaSharp.Client.Rendering.Core.OpenGL;
 
 namespace BetaSharp.Client.Guis;
 
@@ -34,6 +34,57 @@ public class GuiIngame : Gui
     {
         _game = gameInstance;
         _gcMonitor = new GCMonitor();
+    }
+
+    private static int HSBtoRGB(float hue, float saturation, float brightness)
+    {
+        int r = 0, g = 0, b = 0;
+        if (saturation == 0)
+        {
+            r = g = b = (int)(brightness * 255.0f + 0.5f);
+        }
+        else
+        {
+            float h = (hue - (float)Math.Floor(hue)) * 6.0f;
+            float f = h - (float)Math.Floor(h);
+            float p = brightness * (1.0f - saturation);
+            float q = brightness * (1.0f - saturation * f);
+            float t = brightness * (1.0f - (saturation * (1.0f - f)));
+            switch ((int)h)
+            {
+                case 0:
+                    r = (int)(brightness * 255.0f + 0.5f);
+                    g = (int)(t * 255.0f + 0.5f);
+                    b = (int)(p * 255.0f + 0.5f);
+                    break;
+                case 1:
+                    r = (int)(q * 255.0f + 0.5f);
+                    g = (int)(brightness * 255.0f + 0.5f);
+                    b = (int)(p * 255.0f + 0.5f);
+                    break;
+                case 2:
+                    r = (int)(p * 255.0f + 0.5f);
+                    g = (int)(brightness * 255.0f + 0.5f);
+                    b = (int)(t * 255.0f + 0.5f);
+                    break;
+                case 3:
+                    r = (int)(p * 255.0f + 0.5f);
+                    g = (int)(q * 255.0f + 0.5f);
+                    b = (int)(brightness * 255.0f + 0.5f);
+                    break;
+                case 4:
+                    r = (int)(t * 255.0f + 0.5f);
+                    g = (int)(p * 255.0f + 0.5f);
+                    b = (int)(brightness * 255.0f + 0.5f);
+                    break;
+                case 5:
+                    r = (int)(brightness * 255.0f + 0.5f);
+                    g = (int)(p * 255.0f + 0.5f);
+                    b = (int)(q * 255.0f + 0.5f);
+                    break;
+            }
+        }
+        return unchecked((int)(0xFF000000 | ((uint)r << 16) | ((uint)g << 8) | ((uint)b << 0)));
     }
 
     public void renderGameOverlay(float partialTicks, bool unusedFlag, int unusedA, int unusedB)
@@ -254,13 +305,14 @@ public class GuiIngame : Gui
                 GLManager.GL.Translate(scaledWidth / 2, scaledHeight - 48, 0.0F);
                 GLManager.GL.Enable(GLEnum.Blend);
                 GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-                j = 0xFFFFFF;
+
+                int rainbowColor = 0xFFFFFF;
                 if (_isRecordMessageRainbow)
                 {
-                    j = java.awt.Color.HSBtoRGB(t / 50.0F, 0.7F, 0.6F) & 0xFFFFFF;
+                    rainbowColor = HSBtoRGB(t / 50.0F, 0.7F, 0.6F) & 0xFFFFFF;
                 }
 
-                font.DrawString(_recordPlaying, -font.GetStringWidth(_recordPlaying) / 2, -4, Color.FromArgb((uint)(j + (i << 24))));
+                font.DrawString(_recordPlaying, -font.GetStringWidth(_recordPlaying) / 2, -4, Color.FromArgb((uint)(rainbowColor + (i << 24))));
                 GLManager.GL.Disable(GLEnum.Blend);
                 GLManager.GL.PopMatrix();
             }
@@ -557,5 +609,6 @@ public class GuiIngame : Gui
         if (_chatScrollPos < 0) _chatScrollPos = 0;
         if (_chatScrollPos > maxScroll) _chatScrollPos = maxScroll;
     }
+
 
 }

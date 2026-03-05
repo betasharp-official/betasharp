@@ -1,6 +1,7 @@
-using BetaSharp.Client.Options;
 using System.Diagnostics;
+using System.Runtime;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Achievements;
 using BetaSharp.Client.DynamicTexture;
@@ -8,8 +9,11 @@ using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Network;
+using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.OpenGL;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Client.Resource;
@@ -29,20 +33,17 @@ using BetaSharp.Worlds.Storage;
 using ImGuiNET;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Input;
-using Silk.NET.OpenGL.Legacy;
-using Silk.NET.OpenGL.Legacy.Extensions.ImGui;
+using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ImGui;
 using Exception = System.Exception;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.Core.OpenGL;
-using BetaSharp.Registry;
-using System.Runtime;
 using BetaSharp.Recipes;
+using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client;
 
 public partial class BetaSharp
 {
-    public static BetaSharp INSTANCE;
+    public static BetaSharp Instance = null!;
     private readonly ILogger<BetaSharp> _logger = Log.Instance.For<BetaSharp>();
     public PlayerController playerController;
     private bool fullscreen;
@@ -78,7 +79,7 @@ public partial class BetaSharp
     public SoundManager sndManager = new();
     public MouseHelper mouseHelper;
     public TexturePacks texturePackList;
-    private java.io.File gameDataDir;
+    private string gameDataDir;
     private IWorldStorageSource saveLoader;
     public static long[] frameTimes = new long[512];
     public static long[] tickTimes = new long[512];
@@ -112,7 +113,7 @@ public partial class BetaSharp
         displayWidth = width;
         displayHeight = height;
 
-        INSTANCE = this;
+        Instance = this;
     }
 
     [LibraryImport("winmm.dll", EntryPoint = "timeBeginPeriod")]
@@ -185,11 +186,11 @@ public partial class BetaSharp
         Display.setTitle("BetaSharp Beta 1.7.3");
 
         gameDataDir = getBetaSharpDir();
-        saveLoader = new RegionWorldStorageSource(Path.Combine(gameDataDir.getAbsolutePath(), "saves"));
-        options = new GameOptions(this, gameDataDir.getAbsolutePath());
+        saveLoader = new RegionWorldStorageSource(Path.Combine(gameDataDir, "saves"));
+        options = new GameOptions(this, gameDataDir);
         Profiler.Enabled = options.DebugMode;
         Profiler.EnableLagSpikeDetection = options.DebugMode;
-        Profiler.LagSpikeDirectory = Path.Combine(gameDataDir.getAbsolutePath(), "logs", "lag_spikes");
+        Profiler.LagSpikeDirectory = Path.Combine(gameDataDir, "logs", "lag_spikes");
 
         try
         {
@@ -213,7 +214,7 @@ public partial class BetaSharp
         {
             _logger.LogError(ex, "Exception");
         }
-        texturePackList = new TexturePacks(this, new DirectoryInfo(gameDataDir.getAbsolutePath()));
+        texturePackList = new TexturePacks(this, new DirectoryInfo(gameDataDir));
         textureManager = new TextureManager(this, texturePackList, options);
         fontRenderer = new TextRenderer(options, textureManager);
         skinManager = new SkinManager(textureManager);
@@ -223,7 +224,7 @@ public partial class BetaSharp
         gameRenderer = new GameRenderer(this);
         EntityRenderDispatcher.instance.skinManager = skinManager;
         EntityRenderDispatcher.instance.heldItemRenderer = new HeldItemRenderer(this);
-        statFileWriter = new StatFileWriter(session, gameDataDir.getAbsolutePath());
+        statFileWriter = new StatFileWriter(session, gameDataDir);
 
         StatStringFormatKeyInv format = new(this);
         global::BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () =>
@@ -308,7 +309,7 @@ public partial class BetaSharp
         GLManager.GL.Viewport(0, 0, (uint)displayWidth, (uint)displayHeight);
         particleManager = new ParticleManager(world, textureManager);
 
-        string dataDirPath = gameDataDir.getAbsolutePath();
+        string dataDirPath = gameDataDir;
 
         _ = new ResourceManager()
             .Add(new BetaResourceDownloader(this, dataDirPath))
@@ -385,9 +386,9 @@ public partial class BetaSharp
         tess.draw();
     }
 
-    public static java.io.File getBetaSharpDir()
+    public static string getBetaSharpDir()
     {
-        return new java.io.File(PathHelper.GetAppDir(nameof(BetaSharp)));
+        return PathHelper.GetAppDir(nameof(BetaSharp));
     }
 
     public IWorldStorageSource getSaveLoader()
@@ -554,7 +555,7 @@ public partial class BetaSharp
                         Timer.UpdateTimer();
                     }
 
-                    long tickStartTime = java.lang.System.nanoTime();
+                    long tickStartTime = Stopwatch.GetTimestamp();
                     if (options.DebugMode)
                     {
                         Profiler.PushGroup("runTicks");
@@ -581,7 +582,7 @@ public partial class BetaSharp
                         Profiler.PopGroup();
                     }
 
-                    long tickElapsedTime = java.lang.System.nanoTime() - tickStartTime;
+                    long tickElapsedTime = Stopwatch.GetTimestamp() - tickStartTime;
                     checkGLError("Pre render");
                     sndManager.UpdateListener(player, Timer.renderPartialTicks);
                     GLManager.GL.Enable(GLEnum.Texture2D);
@@ -636,6 +637,41 @@ public partial class BetaSharp
                         ImGui.Text($"Chunk Vertex Buffer Allocated MB: {VertexBuffer<ChunkVertex>.Allocated / 1000000.0}");
                         ImGui.Text($"ChunkMeshVersion Allocated: {ChunkMeshVersion.TotalAllocated}");
                         ImGui.Text($"ChunkMeshVersion Released: {ChunkMeshVersion.TotalReleased}");
+
+                        terrainRenderer.chunkRenderer.GetMeshSizeStats(out int minSize, out int maxSize, out int avgSize, out Dictionary<int, int> buckets);
+                        ImGui.Separator();
+                        int activeMeshes = 0;
+                        foreach (int v in buckets.Values) activeMeshes += v;
+                        ImGui.Text($"Active Meshes: {activeMeshes}");
+                        ImGui.Text($"Min Mesh Size: {minSize} bytes");
+                        ImGui.Text($"Max Mesh Size: {maxSize} bytes");
+                        ImGui.Text($"Avg Mesh Size: {avgSize} bytes");
+                        if (ImGui.TreeNode("Mesh Size Buckets (KB)"))
+                        {
+                            var sortedBuckets = buckets.Keys.ToList();
+                            sortedBuckets.Sort();
+                            foreach (int po2 in sortedBuckets)
+                            {
+                                ImGui.Text($"{po2}KB: {buckets[po2]} meshes");
+                            }
+                            ImGui.TreePop();
+                        }
+
+                        if (ImGui.Button("Export Mesh Stats to JSON"))
+                        {
+                            var exportData = new
+                            {
+                                minSize,
+                                maxSize,
+                                avgSize,
+                                totalMeshes = activeMeshes,
+                                buckets = buckets.ToDictionary(k => k.Key.ToString(), v => v.Value)
+                            };
+                            string json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions { WriteIndented = true });
+                            File.WriteAllText(Path.Combine(getBetaSharpDir(), "mesh_stats.json"), json);
+                            _logger.LogInformation($"Exported mesh stats to {Path.Combine(getBetaSharpDir(), "mesh_stats.json")}");
+                        }
+
                         ImGui.Separator();
                         ImGui.Text($"Texture Binds: {TextureStats.BindsLastFrame} (Avg: {TextureStats.AverageBindsPerFrame:F1}/f)");
                         ImGui.Text($"Active Textures: {GLTexture.ActiveTextureCount}");
@@ -651,9 +687,7 @@ public partial class BetaSharp
                             toggleFullscreen();
                         }
 
-                        if (options.DebugMode) Profiler.Start("wait");
-                        java.lang.Thread.sleep(10L);
-                        if (options.DebugMode) Profiler.Stop("wait");
+                        Thread.Sleep(10);
                     }
 
                     if (options.ShowDebugInfo)
@@ -662,7 +696,7 @@ public partial class BetaSharp
                     }
                     else
                     {
-                        prevFrameTime = java.lang.System.nanoTime();
+                        prevFrameTime = Stopwatch.GetTimestamp();
                     }
 
                     guiAchievement.updateAchievementWindow();
@@ -792,7 +826,7 @@ public partial class BetaSharp
                         GLManager.GL.ReadPixels(0, 0, (uint)displayWidth, (uint)displayHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
                     }
                 }
-                string result = ScreenShotHelper.saveScreenshot(gameDataDir.getAbsolutePath(), displayWidth, displayHeight, pixels);
+                string result = ScreenShotHelper.saveScreenshot(gameDataDir, displayWidth, displayHeight, pixels);
                 ingameGUI.addChatMessage(result);
             }
         }
@@ -807,10 +841,10 @@ public partial class BetaSharp
         long targetFrameTime = 16666666L;
         if (prevFrameTime == -1L)
         {
-            prevFrameTime = java.lang.System.nanoTime();
+            prevFrameTime = Stopwatch.GetTimestamp();
         }
 
-        long currentNanoTime = java.lang.System.nanoTime();
+        long currentNanoTime = Stopwatch.GetTimestamp();
         tickTimes[numRecordedFrameTimes & frameTimes.Length - 1] = tickElapsedTime;
         frameTimes[numRecordedFrameTimes++ & frameTimes.Length - 1] = currentNanoTime - prevFrameTime;
         prevFrameTime = currentNanoTime;
@@ -1797,22 +1831,22 @@ public partial class BetaSharp
 
     public static bool isGuiEnabled()
     {
-        return INSTANCE == null || !INSTANCE.options.HideGUI;
+        return Instance == null || !Instance.options.HideGUI;
     }
 
     public static bool isFancyGraphicsEnabled()
     {
-        return INSTANCE != null;
+        return Instance != null;
     }
 
     public static bool isAmbientOcclusionEnabled()
     {
-        return INSTANCE != null;
+        return Instance != null;
     }
 
     public static bool isDebugInfoEnabled()
     {
-        return INSTANCE != null && INSTANCE.options.ShowDebugInfo;
+        return Instance != null && Instance.options.ShowDebugInfo;
     }
 
     public static bool lineIsCommand(string var1) => (var1.StartsWith("/"));

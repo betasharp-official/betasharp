@@ -10,6 +10,11 @@ public class ObjectFactory<T1, T2>(int initialSize = 0) : ObjectRegistry<Func<T1
     public static ObjectFactory<T, FactoryItem<T>> New<T>(int initialSize = 0) where T : class => new(initialSize);
 }
 
+public class ObjectFactoryPool<T1, T2>(int initialSize = 0) : ObjectRegistry<ObjectPool<T1>, T2>(initialSize) where T1 : class where T2 : FactoryPoolItem<T1>
+{
+    public static ObjectFactoryPool<T, FactoryPoolItem<T>> New<T>(int initialSize = 0) where T : class => new(initialSize);
+}
+
 public class ObjectRegistry<T1, T2>(int initialSize = 0)
     where T1 : class
     where T2 : RegistryItem<T1>
@@ -164,4 +169,11 @@ public class RegistryItem<T>(int id, T item)
 public class FactoryItem<T>(int id, Func<T> item) : RegistryItem<Func<T>>(id, item)
 {
     public virtual T New() => Item.Invoke();
+}
+
+public class FactoryPoolItem<T>(int id, Func<T> item, int capacity = 32) : RegistryItem<ObjectPool<T>>(id, new ObjectPool<T>(item, capacity)), IDisposable where T : class
+{
+    public T Get() => Item.Get();
+    public void Return(T obj) => Item.Return(obj);
+    public void Dispose() => Item.Dispose();
 }

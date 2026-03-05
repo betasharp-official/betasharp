@@ -17,8 +17,8 @@
     <PackageReference Include="IKVM" Version="8.15.0"/>
     <PackageReference Include="Silk.NET.GLFW" Version="2.23.0"/>
     <PackageReference Include="Silk.NET.Input.Glfw" Version="2.23.0"/>
-    <PackageReference Include="Silk.NET.OpenGL.Legacy" Version="2.23.0"/>
-    <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.ImGui" Version="2.23.0"/>
+    <PackageReference Include="Silk.NET.OpenGL" Version="2.23.0"/>
+    <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.23.0"/>
     <PackageReference Include="Silk.NET.Windowing" Version="2.23.0"/>
     <PackageReference Include="Silk.NET.Windowing.Glfw" Version="2.23.0"/>
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12"/>

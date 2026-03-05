@@ -1,11 +1,13 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Util.Maths;
-using java.io;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Guis;
 
 public class GuiMainMenu : GuiScreen
 {
+
+    private readonly ILogger<GuiMainMenu> _logger = Log.Instance.For<GuiMainMenu>();
     private const int ButtonOptions = 0;
     private const int ButtonSingleplayer = 1;
     private const int ButtonMultiplayer = 2;
@@ -21,29 +23,28 @@ public class GuiMainMenu : GuiScreen
         try
         {
             List<string> splashLines = [];
-            BufferedReader reader =
-                new(new java.io.StringReader(AssetManager.Instance.getAsset("title/splashes.txt")
-                    .getTextContent()));
-            string line = "";
-
-            while (true)
+            string splashesText = AssetManager.Instance.getAsset("title/splashes.txt").getTextContent();
+            using (StringReader reader = new(splashesText))
             {
-                line = reader.readLine();
-                if (line == null)
+                string? line;
+                while ((line = reader.ReadLine()) != null)
                 {
-                    _splashText = splashLines[s_rand.NextInt(splashLines.Count)];
-                    break;
-                }
-
-                line = line.Trim();
-                if (line.Length > 0)
-                {
-                    splashLines.Add(line);
+                    line = line.Trim();
+                    if (line.Length > 0)
+                    {
+                        splashLines.Add(line);
+                    }
                 }
             }
+
+            if (splashLines.Count > 0)
+            {
+                _splashText = splashLines[s_rand.NextInt(splashLines.Count)];
+            }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Error loading splash text");
         }
     }
 

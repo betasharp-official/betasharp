@@ -1,5 +1,6 @@
-using Silk.NET.OpenGL.Legacy;
 using Microsoft.Extensions.Logging;
+using Silk.NET.OpenGL;
+using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
 
@@ -79,7 +80,7 @@ public class GLTexture : IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        
+
         if (Id != 0)
         {
             GLManager.GL.DeleteTexture(Id);

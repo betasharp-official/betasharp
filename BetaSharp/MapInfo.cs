@@ -34,12 +34,12 @@ internal class MapInfo
         if (--colorsUpdateInterval < 0)
         {
             colorsUpdateInterval = 4;
-            byte[] var2 = new byte[mapDataObj.icons.size() * 3 + 1];
+            byte[] var2 = new byte[mapDataObj.icons.Count * 3 + 1];
             var2[0] = 1;
 
-            for (int var3 = 0; var3 < mapDataObj.icons.size(); var3++)
+            for (int var3 = 0; var3 < mapDataObj.icons.Count; var3++)
             {
-                MapCoord var4 = (MapCoord)mapDataObj.icons.get(var3);
+                MapCoord var4 = mapDataObj.icons[var3];
                 var2[var3 * 3 + 1] = (byte)(var4.type + (var4.rotation & 15) * 16);
                 var2[var3 * 3 + 2] = var4.x;
                 var2[var3 * 3 + 3] = var4.z;

@@ -3,11 +3,12 @@ using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
 using Microsoft.Extensions.Logging;
+using Silk.NET.OpenGL;
+using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.Fonts;
 
 namespace BetaSharp.Client.Rendering;
 
@@ -142,11 +143,11 @@ public class TextRenderer
         ClearAtlasRegion(0, 0, AtlasSize, AtlasSize);
 
         fontTextureName = textureManager.Load(_atlasImage);
-        fontTextureName.Texture?.SetFilter(Silk.NET.OpenGL.Legacy.TextureMinFilter.Nearest, Silk.NET.OpenGL.Legacy.TextureMagFilter.Nearest);
+        fontTextureName.Texture?.SetFilter(TextureMinFilter.Nearest, TextureMagFilter.Nearest);
 
         try
         {
-            var asset = AssetManager.Instance.getAsset("font/default.png");
+            AssetManager.Asset asset = AssetManager.Instance.getAsset("font/default.png");
             using var stream = new MemoryStream(asset.getBinaryContent());
             using var classicFontImage = Image.Load<Rgba32>(stream);
 
@@ -194,7 +195,7 @@ public class TextRenderer
             _atlasX = 0;
             _atlasY = 0;
 
-            var asset = AssetManager.Instance.getAsset("font/default.png");
+            AssetManager.Asset asset = AssetManager.Instance.getAsset("font/default.png");
             using var stream = new MemoryStream(asset.getBinaryContent());
             using var classicFontImage = Image.Load<Rgba32>(stream);
             LoadClassicFontIntoAtlas(classicFontImage);

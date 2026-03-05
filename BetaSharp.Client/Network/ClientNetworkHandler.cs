@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Blocks;
@@ -21,7 +20,6 @@ using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Storage;
-using java.net;
 using Microsoft.Extensions.Logging;
 using Socket = System.Net.Sockets.Socket;
 
@@ -30,6 +28,8 @@ namespace BetaSharp.Client.Network;
 public class ClientNetworkHandler : NetHandler
 {
     private readonly ILogger<ClientNetworkHandler> _logger = Log.Instance.For<ClientNetworkHandler>();
+
+    private static readonly HttpClient _httpClient = new();
 
     private bool disconnected;
     private readonly Connection netManager;
@@ -439,14 +439,13 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onItemPickupAnimation(ItemPickupAnimationS2CPacket packet)
     {
-        Entity ent = getEntityByID(packet.entityId);
-        object collector = (EntityLiving)getEntityByID(packet.collectorEntityId);
-        collector ??= _game.player;
+        Entity? ent = getEntityByID(packet.entityId);
+        Entity collector = getEntityByID(packet.collectorEntityId) as EntityLiving ?? _game.player;
 
-        if (ent != null)
+        if (ent != null && collector != null)
         {
             worldClient.playSound(ent, "random.pop", 0.2F, ((rand.NextFloat() - rand.NextFloat()) * 0.7F + 1.0F) * 2.0F);
-            _game.particleManager.addEffect(new EntityPickupFX(_game.world, ent, (Entity)collector, -0.5F));
+            _game.particleManager.addEffect(new EntityPickupFX(_game.world, ent, collector, -0.5F));
             worldClient.RemoveEntityFromWorld(packet.entityId);
         }
 
@@ -462,11 +461,10 @@ public class ClientNetworkHandler : NetHandler
         Entity ent = getEntityByID(packet.EntityId);
         if (ent != null)
         {
-            EntityPlayer player;
             if (packet.animationId == 1)
             {
-                player = (EntityPlayer)ent;
-                player.swingHand();
+                if (ent is EntityPlayer player)
+                    player.swingHand();
             }
             else if (packet.animationId == 2)
             {
@@ -474,13 +472,13 @@ public class ClientNetworkHandler : NetHandler
             }
             else if (packet.animationId == 3)
             {
-                player = (EntityPlayer)ent;
-                player.wakeUp(false, false, false);
+                if (ent is EntityPlayer player)
+                    player.wakeUp(false, false, false);
             }
             else if (packet.animationId == 4)
             {
-                player = (EntityPlayer)ent;
-                player.spawn();
+                if (ent is EntityPlayer player)
+                    player.spawn();
             }
 
         }
@@ -488,12 +486,11 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onPlayerSleepUpdate(PlayerSleepUpdateS2CPacket packet)
     {
-        Entity ent = getEntityByID(packet.id);
-        if (ent != null)
+        Entity? ent = getEntityByID(packet.id);
+        if (ent is EntityPlayer player)
         {
             if (packet.status == 0)
             {
-                EntityPlayer player = (EntityPlayer)ent;
                 player.trySleep(packet.x, packet.y, packet.z);
             }
 
@@ -510,12 +507,13 @@ public class ClientNetworkHandler : NetHandler
         {
             try
             {
-                URL authUrl = new("http://www.minecraft.net/Game/joinserver.jsp?user=" + _game.session.username + "&sessionId=" + _game.session.sessionId + "&serverId=" + packet.username);
-                java.io.BufferedReader reader = new(new java.io.InputStreamReader(authUrl.openStream()));
-                string response = reader.readLine();
-                reader.close();
                 //TODO: AUTH
-                if (response == null || response.Equals("ok", StringComparison.OrdinalIgnoreCase))
+                string authUrl = "http://www.minecraft.net/game/joinserver.jsp?user=" + _game.session.username + "&sessionId=" + _game.session.sessionId + "&serverId=" + packet.username;
+
+                string? response = _httpClient.GetStringAsync(authUrl).GetAwaiter().GetResult();
+                response = response?.Trim();
+
+                if (string.IsNullOrEmpty(response) || response.Equals("ok", StringComparison.OrdinalIgnoreCase))
                 {
                     addToSendQueue(new LoginHelloPacket(_game.session.username, 14, LoginHelloPacket.BETASHARP_CLIENT_SIGNATURE, 0));
                 }
@@ -527,10 +525,9 @@ public class ClientNetworkHandler : NetHandler
             catch (Exception e)
             {
                 _logger.LogError(e, e.Message);
-                netManager.disconnect("disconnect.genericReason", "Internal client error: " + e);
+                netManager.disconnect("disconnect.genericReason", "Internal client error: " + e.Message);
             }
         }
-
     }
 
     public void disconnect()
@@ -583,9 +580,9 @@ public class ClientNetworkHandler : NetHandler
             rider = _game.player;
         }
 
-        if (rider != null)
+        if (rider is Entity riderEntity)
         {
-            ((Entity)rider).setVehicle(ent);
+            riderEntity.setVehicle(ent);
         }
     }
 
@@ -599,7 +596,7 @@ public class ClientNetworkHandler : NetHandler
 
     }
 
-    private Entity getEntityByID(int entityId)
+    private Entity? getEntityByID(int entityId)
     {
         if (_game == null || _game.player == null || worldClient == null)
         {
@@ -823,7 +820,6 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onIncreaseStat(IncreaseStatS2CPacket packet)
     {
-        _logger.LogDebug("Received IncreaseStatS2CPacket: statId={StatId}, amount={Amount}", packet.statId, packet.amount);
         try
         {
             StatBase stat = Stats.Stats.GetStatById(packet.statId);

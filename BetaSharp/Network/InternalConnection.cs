@@ -53,6 +53,7 @@ public class InternalConnection : Connection
         {
             Packet packet = (Packet)readQueue.remove(0);
             packet.Apply(networkHandler);
+            packet.Return();
             count++;
         }
         if (count > 0)

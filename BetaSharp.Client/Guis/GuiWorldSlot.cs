@@ -1,7 +1,5 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Storage;
-using java.util;
 
 namespace BetaSharp.Client.Guis;
 
@@ -54,15 +52,21 @@ public class GuiWorldSlot : GuiSlot
     {
         WorldSaveInfo worldInfo = GuiSelectWorld.GetSize(_parentWorldGui)[slotIndex];
         string displayName = worldInfo.DisplayName;
-        if (displayName == null || string.IsNullOrEmpty(displayName))
+        
+        if (string.IsNullOrEmpty(displayName))
         {
             displayName = GuiSelectWorld.getWorldNameHeader(_parentWorldGui) + " " + (slotIndex + 1);
         }
 
         string fileInfo = worldInfo.FileName;
-        fileInfo = fileInfo + " (" + GuiSelectWorld.getDateFormatter(_parentWorldGui).format(new Date(worldInfo.LastPlayed));
+        string dateFormatPattern = GuiSelectWorld.getDateFormatter(_parentWorldGui);
+        DateTime lastPlayed = DateTimeOffset.FromUnixTimeMilliseconds(worldInfo.LastPlayed).ToLocalTime().DateTime;
+        
+        fileInfo += " (" + lastPlayed.ToString(dateFormatPattern);
+        
         long size = worldInfo.Size;
-        fileInfo = fileInfo + ", " + size / 1024L * 100L / 1024L / 100.0F + " MB)";
+        fileInfo += ", " + size / 1024L * 100L / 1024L / 100.0F + " MB)";
+        
         string extraStatus = "";
         if (worldInfo.IsUnsupported)
         {

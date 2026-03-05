@@ -5,170 +5,169 @@ namespace BetaSharp.Worlds.Gen.Carvers;
 
 internal class NetherCaveCarver : Carver
 {
-
     protected void CarveNetherCavesInChunk(int chunkX, int chunkZ, byte[] blocks, double x, double y, double z)
     {
-        CarveNetherCaves(chunkX, chunkZ, blocks, x, y, z, 1.0F + rand.NextFloat() * 6.0F, 0.0F, 0.0F, -1, -1, 0.5D);
+        CarveNetherCaves(chunkX, chunkZ, blocks, x, y, z, 1.0F + Rand.NextFloat() * 6.0F, 0.0F, 0.0F, -1, -1, 0.5D);
     }
 
-    protected void CarveNetherCaves(int chunkX, int chunkZ, byte[] blocks, double x, double y, double z, float var10, float var11, float var12, int var13, int var14, double var15)
+    protected void CarveNetherCaves(int chunkX, int chunkZ, byte[] blocks, double x, double y, double z, float tunnelRadius, float yaw, float pitch, int tunnelStep, int tunnelLength, double verticalScale)
     {
-        double var17 = chunkX * 16 + 8;
-        double var19 = chunkZ * 16 + 8;
-        float var21 = 0.0F;
-        float var22 = 0.0F;
-        JavaRandom var23 = new(rand.NextLong());
-        if (var14 <= 0)
+        double chunkCenterX = chunkX * 16 + 8;
+        double chunkCenterZ = chunkZ * 16 + 8;
+        float yawSpeed = 0.0F;
+        float pitchSpeed = 0.0F;
+        JavaRandom caveRand = new(Rand.NextLong());
+        if (tunnelLength <= 0)
         {
-            int var24 = radius * 16 - 16;
-            var14 = var24 - var23.NextInt(var24 / 4);
+            int range = Radius * 16 - 16;
+            tunnelLength = range - caveRand.NextInt(range / 4);
         }
 
-        bool var51 = false;
-        if (var13 == -1)
+        bool isStartingPoint = false;
+        if (tunnelStep == -1)
         {
-            var13 = var14 / 2;
-            var51 = true;
+            tunnelStep = tunnelLength / 2;
+            isStartingPoint = true;
         }
 
-        int var25 = var23.NextInt(var14 / 2) + var14 / 4;
+        int branchStep = caveRand.NextInt(tunnelLength / 2) + tunnelLength / 4;
 
-        for (bool var26 = var23.NextInt(6) == 0; var13 < var14; ++var13)
+        for (bool isLargeRoom = caveRand.NextInt(6) == 0; tunnelStep < tunnelLength; ++tunnelStep)
         {
-            double var27 = 1.5D + (double)(MathHelper.Sin(var13 * (float)Math.PI / var14) * var10 * 1.0F);
-            double var29 = var27 * var15;
-            float var31 = MathHelper.Cos(var12);
-            float var32 = MathHelper.Sin(var12);
-            x += (double)(MathHelper.Cos(var11) * var31);
-            y += (double)var32;
-            z += (double)(MathHelper.Sin(var11) * var31);
-            if (var26)
+            double horizontalRadius = 1.5D + (double)(MathHelper.Sin(tunnelStep * (float)Math.PI / tunnelLength) * tunnelRadius * 1.0F);
+            double verticalRadius = horizontalRadius * verticalScale;
+            float cosPitch = MathHelper.Cos(pitch);
+            float sinPitch = MathHelper.Sin(pitch);
+            x += (double)(MathHelper.Cos(yaw) * cosPitch);
+            y += (double)sinPitch;
+            z += (double)(MathHelper.Sin(yaw) * cosPitch);
+            if (isLargeRoom)
             {
-                var12 *= 0.92F;
+                pitch *= 0.92F;
             }
             else
             {
-                var12 *= 0.7F;
+                pitch *= 0.7F;
             }
 
-            var12 += var22 * 0.1F;
-            var11 += var21 * 0.1F;
-            var22 *= 0.9F;
-            var21 *= 12.0F / 16.0F;
-            var22 += (var23.NextFloat() - var23.NextFloat()) * var23.NextFloat() * 2.0F;
-            var21 += (var23.NextFloat() - var23.NextFloat()) * var23.NextFloat() * 4.0F;
-            if (!var51 && var13 == var25 && var10 > 1.0F)
+            pitch += pitchSpeed * 0.1F;
+            yaw += yawSpeed * 0.1F;
+            pitchSpeed *= 0.9F;
+            yawSpeed *= 12.0F / 16.0F;
+            pitchSpeed += (caveRand.NextFloat() - caveRand.NextFloat()) * caveRand.NextFloat() * 2.0F;
+            yawSpeed += (caveRand.NextFloat() - caveRand.NextFloat()) * caveRand.NextFloat() * 4.0F;
+            if (!isStartingPoint && tunnelStep == branchStep && tunnelRadius > 1.0F)
             {
-                CarveNetherCaves(chunkX, chunkZ, blocks, x, y, z, var23.NextFloat() * 0.5F + 0.5F, var11 - (float)Math.PI * 0.5F, var12 / 3.0F, var13, var14, 1.0D);
-                CarveNetherCaves(chunkX, chunkZ, blocks, x, y, z, var23.NextFloat() * 0.5F + 0.5F, var11 + (float)Math.PI * 0.5F, var12 / 3.0F, var13, var14, 1.0D);
+                CarveNetherCaves(chunkX, chunkZ, blocks, x, y, z, caveRand.NextFloat() * 0.5F + 0.5F, yaw - (float)Math.PI * 0.5F, pitch / 3.0F, tunnelStep, tunnelLength, 1.0D);
+                CarveNetherCaves(chunkX, chunkZ, blocks, x, y, z, caveRand.NextFloat() * 0.5F + 0.5F, yaw + (float)Math.PI * 0.5F, pitch / 3.0F, tunnelStep, tunnelLength, 1.0D);
                 return;
             }
 
-            if (var51 || var23.NextInt(4) != 0)
+            if (isStartingPoint || caveRand.NextInt(4) != 0)
             {
-                double var33 = x - var17;
-                double var35 = z - var19;
-                double var37 = var14 - var13;
-                double var39 = (double)(var10 + 2.0F + 16.0F);
-                if (var33 * var33 + var35 * var35 - var37 * var37 > var39 * var39)
+                double distX = x - chunkCenterX;
+                double distZ = z - chunkCenterZ;
+                double stepsRemaining = tunnelLength - tunnelStep;
+                double boundRadius = (double)(tunnelRadius + 2.0F + 16.0F);
+                if (distX * distX + distZ * distZ - stepsRemaining * stepsRemaining > boundRadius * boundRadius)
                 {
                     return;
                 }
 
-                if (x >= var17 - 16.0D - var27 * 2.0D && z >= var19 - 16.0D - var27 * 2.0D && x <= var17 + 16.0D + var27 * 2.0D && z <= var19 + 16.0D + var27 * 2.0D)
+                if (x >= chunkCenterX - 16.0D - horizontalRadius * 2.0D && z >= chunkCenterZ - 16.0D - horizontalRadius * 2.0D && x <= chunkCenterX + 16.0D + horizontalRadius * 2.0D && z <= chunkCenterZ + 16.0D + horizontalRadius * 2.0D)
                 {
-                    int var52 = MathHelper.Floor(x - var27) - chunkX * 16 - 1;
-                    int var34 = MathHelper.Floor(x + var27) - chunkX * 16 + 1;
-                    int var53 = MathHelper.Floor(y - var29) - 1;
-                    int var36 = MathHelper.Floor(y + var29) + 1;
-                    int var54 = MathHelper.Floor(z - var27) - chunkZ * 16 - 1;
-                    int var38 = MathHelper.Floor(z + var27) - chunkZ * 16 + 1;
-                    if (var52 < 0)
+                    int xMin = MathHelper.Floor(x - horizontalRadius) - chunkX * 16 - 1;
+                    int xMax = MathHelper.Floor(x + horizontalRadius) - chunkX * 16 + 1;
+                    int yMin = MathHelper.Floor(y - verticalRadius) - 1;
+                    int yMax = MathHelper.Floor(y + verticalRadius) + 1;
+                    int zMin = MathHelper.Floor(z - horizontalRadius) - chunkZ * 16 - 1;
+                    int zMax = MathHelper.Floor(z + horizontalRadius) - chunkZ * 16 + 1;
+                    if (xMin < 0)
                     {
-                        var52 = 0;
+                        xMin = 0;
                     }
 
-                    if (var34 > 16)
+                    if (xMax > 16)
                     {
-                        var34 = 16;
+                        xMax = 16;
                     }
 
-                    if (var53 < 1)
+                    if (yMin < 1)
                     {
-                        var53 = 1;
+                        yMin = 1;
                     }
 
-                    if (var36 > 120)
+                    if (yMax > 120)
                     {
-                        var36 = 120;
+                        yMax = 120;
                     }
 
-                    if (var54 < 0)
+                    if (zMin < 0)
                     {
-                        var54 = 0;
+                        zMin = 0;
                     }
 
-                    if (var38 > 16)
+                    if (zMax > 16)
                     {
-                        var38 = 16;
+                        zMax = 16;
                     }
 
-                    bool var55 = false;
+                    bool lavaIsPresent = false;
 
-                    int var40;
-                    int var43;
-                    for (var40 = var52; !var55 && var40 < var34; ++var40)
+                    int blockX;
+                    int indexOrBlockZ;
+                    for (blockX = xMin; !lavaIsPresent && blockX < xMax; ++blockX)
                     {
-                        for (int var41 = var54; !var55 && var41 < var38; ++var41)
+                        for (int blockZ = zMin; !lavaIsPresent && blockZ < zMax; ++blockZ)
                         {
-                            for (int var42 = var36 + 1; !var55 && var42 >= var53 - 1; --var42)
+                            for (int blockY = yMax + 1; !lavaIsPresent && blockY >= yMin - 1; --blockY)
                             {
-                                var43 = (var40 * 16 + var41) * 128 + var42;
-                                if (var42 >= 0 && var42 < 128)
+                                indexOrBlockZ = (blockX * 16 + blockZ) * 128 + blockY;
+                                if (blockY >= 0 && blockY < 128)
                                 {
-                                    if (blocks[var43] == Block.FlowingLava.id || blocks[var43] == Block.Lava.id)
+                                    if (blocks[indexOrBlockZ] == Block.FlowingLava.id || blocks[indexOrBlockZ] == Block.Lava.id)
                                     {
-                                        var55 = true;
+                                        lavaIsPresent = true;
                                     }
 
-                                    if (var42 != var53 - 1 && var40 != var52 && var40 != var34 - 1 && var41 != var54 && var41 != var38 - 1)
+                                    if (blockY != yMin - 1 && blockX != xMin && blockX != xMax - 1 && blockZ != zMin && blockZ != zMax - 1)
                                     {
-                                        var42 = var53;
+                                        blockY = yMin;
                                     }
                                 }
                             }
                         }
                     }
 
-                    if (!var55)
+                    if (!lavaIsPresent)
                     {
-                        for (var40 = var52; var40 < var34; ++var40)
+                        for (blockX = xMin; blockX < xMax; ++blockX)
                         {
-                            double var56 = (var40 + chunkX * 16 + 0.5D - x) / var27;
+                            double localX = (blockX + chunkX * 16 + 0.5D - x) / horizontalRadius;
 
-                            for (var43 = var54; var43 < var38; ++var43)
+                            for (indexOrBlockZ = zMin; indexOrBlockZ < zMax; ++indexOrBlockZ)
                             {
-                                double var44 = (var43 + chunkZ * 16 + 0.5D - z) / var27;
-                                int var46 = (var40 * 16 + var43) * 128 + var36;
+                                double localZ = (indexOrBlockZ + chunkZ * 16 + 0.5D - z) / horizontalRadius;
+                                int blockIndex = (blockX * 16 + indexOrBlockZ) * 128 + yMax;
 
-                                for (int var47 = var36 - 1; var47 >= var53; --var47)
+                                for (int blockY = yMax - 1; blockY >= yMin; --blockY)
                                 {
-                                    double var48 = (var47 + 0.5D - y) / var29;
-                                    if (var48 > -0.7D && var56 * var56 + var48 * var48 + var44 * var44 < 1.0D)
+                                    double localY = (blockY + 0.5D - y) / verticalRadius;
+                                    if (localY > -0.7D && localX * localX + localY * localY + localZ * localZ < 1.0D)
                                     {
-                                        byte var50 = blocks[var46];
-                                        if (var50 == Block.Netherrack.id || var50 == Block.Dirt.id || var50 == Block.GrassBlock.id)
+                                        byte blockType = blocks[blockIndex];
+                                        if (blockType == Block.Netherrack.id || blockType == Block.Dirt.id || blockType == Block.GrassBlock.id)
                                         {
-                                            blocks[var46] = 0;
+                                            blocks[blockIndex] = 0;
                                         }
                                     }
 
-                                    --var46;
+                                    --blockIndex;
                                 }
                             }
                         }
 
-                        if (var51)
+                        if (isStartingPoint)
                         {
                             break;
                         }
@@ -176,37 +175,35 @@ internal class NetherCaveCarver : Carver
                 }
             }
         }
-
     }
 
     protected override void CarveCaves(World world, int chunkX, int chunkZ, int centerChunkX, int centerChunkZ, byte[] blocks)
     {
-        int var7 = rand.NextInt(rand.NextInt(rand.NextInt(10) + 1) + 1);
-        if (rand.NextInt(5) != 0)
+        int numCaves = Rand.NextInt(Rand.NextInt(Rand.NextInt(10) + 1) + 1);
+        if (Rand.NextInt(5) != 0)
         {
-            var7 = 0;
+            numCaves = 0;
         }
 
-        for (int var8 = 0; var8 < var7; ++var8)
+        for (int i = 0; i < numCaves; ++i)
         {
-            double randX = chunkX * 16 + rand.NextInt(16);
-            double randY = rand.NextInt(128);
-            double randZ = chunkZ * 16 + rand.NextInt(16);
-            int var15 = 1;
-            if (rand.NextInt(4) == 0)
+            double randX = chunkX * 16 + Rand.NextInt(16);
+            double randY = Rand.NextInt(128);
+            double randZ = chunkZ * 16 + Rand.NextInt(16);
+            int branchCount = 1;
+            if (Rand.NextInt(4) == 0)
             {
                 CarveNetherCavesInChunk(centerChunkX, centerChunkZ, blocks, randX, randY, randZ);
-                var15 += rand.NextInt(4);
+                branchCount += Rand.NextInt(4);
             }
 
-            for (int var16 = 0; var16 < var15; ++var16)
+            for (int branch = 0; branch < branchCount; ++branch)
             {
-                float var17 = rand.NextFloat() * (float)Math.PI * 2.0F;
-                float var18 = (rand.NextFloat() - 0.5F) * 2.0F / 8.0F;
-                float var19 = rand.NextFloat() * 2.0F + rand.NextFloat();
-                CarveNetherCaves(centerChunkX, centerChunkZ, blocks, randX, randY, randZ, var19 * 2.0F, var17, var18, 0, 0, 0.5D);
+                float yaw = Rand.NextFloat() * (float)Math.PI * 2.0F;
+                float pitch = (Rand.NextFloat() - 0.5F) * 2.0F / 8.0F;
+                float tunnelRadius = Rand.NextFloat() * 2.0F + Rand.NextFloat();
+                CarveNetherCaves(centerChunkX, centerChunkZ, blocks, randX, randY, randZ, tunnelRadius * 2.0F, yaw, pitch, 0, 0, 0.5D);
             }
         }
-
     }
 }

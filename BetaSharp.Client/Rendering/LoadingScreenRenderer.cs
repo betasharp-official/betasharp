@@ -1,6 +1,7 @@
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core;
-using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL;
+using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering;
 
@@ -118,15 +119,15 @@ public class LoadingScreenRenderer : LoadingDisplay
                     GLManager.GL.Disable(GLEnum.Texture2D);
                     var7.startDrawingQuads();
                     var7.setColorOpaque_I(0x808080);
-                    var7.addVertex((double)var12, (double)var13, 0.0D);
-                    var7.addVertex((double)var12, (double)(var13 + var11), 0.0D);
-                    var7.addVertex((double)(var12 + var10), (double)(var13 + var11), 0.0D);
-                    var7.addVertex((double)(var12 + var10), (double)var13, 0.0D);
+                    var7.addVertex(var12, var13, 0.0D);
+                    var7.addVertex(var12, (var13 + var11), 0.0D);
+                    var7.addVertex((var12 + var10), (var13 + var11), 0.0D);
+                    var7.addVertex((var12 + var10), var13, 0.0D);
                     var7.setColorOpaque_I(0x80FF80);
-                    var7.addVertex((double)var12, (double)var13, 0.0D);
-                    var7.addVertex((double)var12, (double)(var13 + var11), 0.0D);
-                    var7.addVertex((double)(var12 + var1), (double)(var13 + var11), 0.0D);
-                    var7.addVertex((double)(var12 + var1), (double)var13, 0.0D);
+                    var7.addVertex(var12, var13, 0.0D);
+                    var7.addVertex(var12, (var13 + var11), 0.0D);
+                    var7.addVertex((var12 + var1), (var13 + var11), 0.0D);
+                    var7.addVertex((var12 + var1), var13, 0.0D);
                     var7.draw();
                     GLManager.GL.Enable(GLEnum.Texture2D);
                 }
@@ -137,7 +138,7 @@ public class LoadingScreenRenderer : LoadingDisplay
 
                 try
                 {
-                    java.lang.Thread.yield();
+                    Thread.Yield();
                 }
                 catch (Exception) { }
 

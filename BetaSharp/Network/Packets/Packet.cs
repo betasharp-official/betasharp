@@ -9,7 +9,7 @@ namespace BetaSharp.Network.Packets;
 
 public abstract class Packet
 {
-    public static readonly ObjectFactory<Packet, PacketRegisterItem> Registry = new(256);
+    public static readonly ObjectFactoryPool<Packet, PacketRegisterItem> Registry = new(256);
     private static readonly ILogger<Packet> s_logger = Log.Instance.For<Packet>();
 
     private static readonly Dictionary<int, PacketTracker> s_trackers = new();
@@ -28,14 +28,24 @@ public abstract class Packet
         Id = (byte)id;
     }
 
-    public static Packet? Create(int rawId)
+    public void Return()
     {
-        if (Registry.TryGet(rawId, out PacketRegisterItem? item))
+        if (Registry.TryGet(Id, out PacketRegisterItem? item))
         {
-            return item.New();
+            item.Return(this);
+            return;
         }
+        s_logger.LogError("Packet id " + Id + " not found");
+    }
 
-        return null;
+    public static void Return(Packet packet)
+    {
+        if (Registry.TryGet(packet.Id, out PacketRegisterItem? item))
+        {
+            item.Return(packet);
+            return;
+        }
+        s_logger.LogError("Packet id " + packet.Id + " not found");
     }
 
     public static Packet? Read(NetworkStream stream, bool server)
@@ -64,7 +74,7 @@ public abstract class Packet
                 if (!packetR.ClientBound) throw new IOException("Bad client bound packet id " + rawId);
             }
 
-            packet = packetR.New();
+            packet = packetR.Get();
 
             packet.Read(stream);
         }
@@ -164,7 +174,7 @@ public abstract class Packet
         ]);
     }
 
-    public class PacketRegisterItem(byte rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) : FactoryItem<Packet>(rawId, item: factory)
+    public class PacketRegisterItem(byte rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) : FactoryPoolItem<Packet>(rawId, item: factory)
     {
         public readonly bool ClientBound = clientBound;
         public readonly bool ServerBound = serverBound;

@@ -1,8 +1,8 @@
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL.Legacy;
 using Shader = BetaSharp.Client.Rendering.Core.Shader;
 using VertexArray = BetaSharp.Client.Rendering.Core.VertexArray;
 
@@ -21,6 +21,9 @@ public class SubChunkRenderer : IDisposable
     public float Age { get; private set; } = 0.0f;
     public bool HasFadedIn => Age >= FadeDuration;
     public const float FadeDuration = 1.0f;
+
+    public int SolidMeshSizeBytes => vertexCounts[0] * 16;
+    public int TranslucentMeshSizeBytes => vertexCounts[1] * 16;
 
     public Occlusion.ChunkVisibilityStore VisibilityData;
     public Occlusion.ChunkDirectionMask IncomingDirections;

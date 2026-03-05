@@ -1,7 +1,7 @@
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
-using Silk.NET.OpenGL.Legacy;
 
 namespace BetaSharp.Client.Rendering.Entities;
 
@@ -20,7 +20,7 @@ public class SlimeEntityRenderer : LivingEntityRenderer
         if (var2 == 0)
         {
             setRenderPassModel(scaleAmount);
-            GLManager.GL.Enable(GLEnum.Normalize);
+            //GLManager.GL.Enable(GLEnum.Normalize);
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
             return true;

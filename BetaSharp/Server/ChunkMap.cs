@@ -26,11 +26,11 @@ internal class ChunkMap
     {
         if (viewRadius > 32)
         {
-            throw new ArgumentException("Too big view radius! Max is 32.", nameof(viewRadius));
+            throw new ArgumentException("Too big view Radius! Max is 32.", nameof(viewRadius));
         }
         if (viewRadius < 4)
         {
-            throw new ArgumentException("Too small view radius! Min is 4.", nameof(viewRadius));
+            throw new ArgumentException("Too small view Radius! Min is 4.", nameof(viewRadius));
         }
 
         viewDistance = viewRadius;

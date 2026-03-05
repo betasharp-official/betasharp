@@ -18,7 +18,7 @@ public class GuiConnecting : GuiScreen
     {
         _logger.LogInformation($"Connecting to {host}, {port}");
         game.changeWorld(null);
-        new ThreadConnectToServer(this, game, host, port).start();
+        new ThreadConnectToServer(this, game, host, port).Start();
     }
 
     public GuiConnecting(BetaSharp game, ClientNetworkHandler clientHandler)

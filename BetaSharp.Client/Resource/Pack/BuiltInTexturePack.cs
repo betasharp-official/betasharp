@@ -1,9 +1,5 @@
 using BetaSharp.Client.Rendering.Core.Textures;
-using java.awt.image;
-using java.io;
-using javax.imageio;
 using Microsoft.Extensions.Logging;
-using Silk.NET.OpenGL.Legacy;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 

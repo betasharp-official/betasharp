@@ -1,18 +1,18 @@
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL;
 
 namespace BetaSharp.Client.Rendering.Core;
 
 public class Shader : IDisposable
 {
     private readonly ILogger<Shader> _logger = Log.Instance.For<Shader>();
-    private readonly uint id;
-    private readonly Dictionary<string, int> uniformLocations = [];
+    private readonly uint _id;
+    private readonly Dictionary<string, int> _uniformLocations = [];
 
     public Shader(string vertexShaderSource, string fragmentShaderSource)
     {
-        var gl = GLManager.GL;
+        IGL gl = GLManager.GL;
 
         uint vertexShader = gl.CreateShader(ShaderType.VertexShader);
         gl.ShaderSource(vertexShader, vertexShaderSource);
@@ -24,11 +24,11 @@ public class Shader : IDisposable
         gl.CompileShader(fragmentShader);
         CheckShaderCompilation(fragmentShader, "Fragment");
 
-        id = gl.CreateProgram();
-        gl.AttachShader(id, vertexShader);
-        gl.AttachShader(id, fragmentShader);
-        gl.LinkProgram(id);
-        CheckProgramLinking(id);
+        _id = gl.CreateProgram();
+        gl.AttachShader(_id, vertexShader);
+        gl.AttachShader(_id, fragmentShader);
+        gl.LinkProgram(_id);
+        CheckProgramLinking(_id);
 
         gl.DeleteShader(vertexShader);
         gl.DeleteShader(fragmentShader);
@@ -36,7 +36,7 @@ public class Shader : IDisposable
 
     public void Bind()
     {
-        GLManager.GL.UseProgram(id);
+        GLManager.GL.UseProgram(_id);
     }
 
     public void SetUniform3(string name, Vector3D<float> vec)
@@ -92,13 +92,13 @@ public class Shader : IDisposable
 
     private int GetUniformLocation(string name)
     {
-        if (uniformLocations.TryGetValue(name, out int location))
+        if (_uniformLocations.TryGetValue(name, out int location))
         {
             return location;
         }
 
-        location = GLManager.GL.GetUniformLocation(id, name);
-        uniformLocations[name] = location;
+        location = GLManager.GL.GetUniformLocation(_id, name);
+        _uniformLocations[name] = location;
 
         if (location == -1)
         {
@@ -110,7 +110,7 @@ public class Shader : IDisposable
 
     private static void CheckShaderCompilation(uint shader, string type)
     {
-        var gl = GLManager.GL;
+        IGL gl = GLManager.GL;
         gl.GetShader(shader, ShaderParameterName.CompileStatus, out int success);
         if (success == 0)
         {
@@ -121,7 +121,7 @@ public class Shader : IDisposable
 
     private static void CheckProgramLinking(uint program)
     {
-        var gl = GLManager.GL;
+        IGL gl = GLManager.GL;
         gl.GetProgram(program, ProgramPropertyARB.LinkStatus, out int success);
         if (success == 0)
         {
@@ -132,7 +132,7 @@ public class Shader : IDisposable
 
     public void Dispose()
     {
-        GLManager.GL.DeleteProgram(id);
+        GLManager.GL.DeleteProgram(_id);
         GC.SuppressFinalize(this);
     }
 }

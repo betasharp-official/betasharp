@@ -1,8 +1,9 @@
-using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL;
+using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering.Core.OpenGL;
 
-public unsafe class LegacyGL : IGL
+public abstract unsafe class LegacyGL : IGL
 {
     public GL SilkGL { get; }
 
@@ -11,10 +12,7 @@ public unsafe class LegacyGL : IGL
         SilkGL = gl;
     }
 
-    public virtual void AlphaFunc(GLEnum func, float refValue)
-    {
-        SilkGL.AlphaFunc(func, refValue);
-    }
+    public abstract void AlphaFunc(GLEnum func, float refValue);
 
     public void AttachShader(uint program, uint shader)
     {
@@ -23,12 +21,12 @@ public unsafe class LegacyGL : IGL
 
     public void BindBuffer(GLEnum target, uint buffer)
     {
-        SilkGL.BindBuffer(target, buffer);
+        SilkGL.BindBuffer(target.ToModern(), buffer);
     }
 
-    public virtual void BindTexture(GLEnum target, uint texture)
+    public void BindTexture(GLEnum target, uint texture)
     {
-        SilkGL.BindTexture(target, texture);
+        SilkGL.BindTexture(target.ToModern(), texture);
     }
 
     public void BindVertexArray(uint array)
@@ -38,28 +36,19 @@ public unsafe class LegacyGL : IGL
 
     public void BlendFunc(GLEnum sfactor, GLEnum dfactor)
     {
-        SilkGL.BlendFunc(sfactor, dfactor);
+        SilkGL.BlendFunc(sfactor.ToModern(), dfactor.ToModern());
     }
 
     public void BufferData<T0>(GLEnum target, ReadOnlySpan<T0> data, GLEnum usage) where T0 : unmanaged
     {
-        SilkGL.BufferData<T0>(target, data, usage);
+        SilkGL.BufferData<T0>(target.ToModern(), data, usage.ToModern());
     }
 
-    public virtual void BufferData(GLEnum target, nuint size, void* data, GLEnum usage)
-    {
-        SilkGL.BufferData(target, size, data, usage);
-    }
+    public abstract void BufferData(GLEnum target, nuint size, void* data, GLEnum usage);
 
-    public virtual void CallList(uint list)
-    {
-        SilkGL.CallList(list);
-    }
+    public abstract void CallList(uint list);
 
-    public virtual void CallLists(uint n, GLEnum type, void* lists)
-    {
-        SilkGL.CallLists(n, type, lists);
-    }
+    public abstract void CallLists(uint n, GLEnum type, void* lists);
 
     public void Clear(ClearBufferMask mask)
     {
@@ -76,35 +65,20 @@ public unsafe class LegacyGL : IGL
         SilkGL.ClearDepth(depth);
     }
 
-    public virtual void Color3(float red, float green, float blue)
-    {
-        SilkGL.Color3(red, green, blue);
-    }
+    public abstract void Color3(float red, float green, float blue);
 
-    public virtual void Color3(byte red, byte green, byte blue)
-    {
-        SilkGL.Color3(red, green, blue);
-    }
+    public abstract void Color3(byte red, byte green, byte blue);
 
-    public virtual void Color4(float red, float green, float blue, float alpha)
-    {
-        SilkGL.Color4(red, green, blue, alpha);
-    }
+    public abstract void Color4(float red, float green, float blue, float alpha);
 
-    public virtual void ColorMask(bool red, bool green, bool blue, bool alpha)
+    public void ColorMask(bool red, bool green, bool blue, bool alpha)
     {
         SilkGL.ColorMask(red, green, blue, alpha);
     }
 
-    public virtual void ColorMaterial(GLEnum face, GLEnum mode)
-    {
-        SilkGL.ColorMaterial(face, mode);
-    }
+    public abstract void ColorMaterial(GLEnum face, GLEnum mode);
 
-    public virtual void ColorPointer(int size, ColorPointerType type, uint stride, void* pointer)
-    {
-        SilkGL.ColorPointer(size, type, stride, pointer);
-    }
+    public abstract void ColorPointer(int size, ColorPointerType type, uint stride, void* pointer);
 
     public void CompileShader(uint shader)
     {
@@ -123,7 +97,7 @@ public unsafe class LegacyGL : IGL
 
     public void CullFace(GLEnum mode)
     {
-        SilkGL.CullFace(mode);
+        SilkGL.CullFace(mode.ToModern());
     }
 
     public void DeleteBuffer(uint buffer)
@@ -131,10 +105,7 @@ public unsafe class LegacyGL : IGL
         SilkGL.DeleteBuffer(buffer);
     }
 
-    public virtual void DeleteLists(uint list, uint range)
-    {
-        SilkGL.DeleteLists(list, range);
-    }
+    public abstract void DeleteLists(uint list, uint range);
 
     public void DeleteProgram(uint program)
     {
@@ -168,7 +139,7 @@ public unsafe class LegacyGL : IGL
 
     public void DepthFunc(GLEnum func)
     {
-        SilkGL.DepthFunc(func);
+        SilkGL.DepthFunc(func.ToModern());
     }
 
     public void DepthMask(bool flag)
@@ -183,53 +154,29 @@ public unsafe class LegacyGL : IGL
 
     public virtual void Disable(GLEnum cap)
     {
-        SilkGL.Disable(cap);
+        SilkGL.Disable(cap.ToModern());
     }
 
-    public virtual void DisableClientState(GLEnum array)
-    {
-        SilkGL.DisableClientState(array);
-    }
+    public abstract void DisableClientState(GLEnum array);
 
-    public virtual void DrawArrays(GLEnum mode, int first, uint count)
-    {
-        SilkGL.DrawArrays(mode, first, count);
-    }
+    public abstract void DrawArrays(GLEnum mode, int first, uint count);
 
-    public virtual void Enable(GLEnum cap)
-    {
-        SilkGL.Enable(cap);
-    }
+    public abstract void Enable(GLEnum cap);
 
-    public virtual void EnableClientState(GLEnum array)
-    {
-        SilkGL.EnableClientState(array);
-    }
+    public abstract void EnableClientState(GLEnum array);
 
     public virtual void EnableVertexAttribArray(uint index)
     {
         SilkGL.EnableVertexAttribArray(index);
     }
 
-    public virtual void EndList()
-    {
-        SilkGL.EndList();
-    }
+    public abstract void EndList();
 
-    public virtual void Fog(GLEnum pname, float param)
-    {
-        SilkGL.Fog(pname, param);
-    }
+    public abstract void Fog(GLEnum pname, float param);
 
-    public virtual void Fog(GLEnum pname, ReadOnlySpan<float> params_)
-    {
-        SilkGL.Fog(pname, params_);
-    }
+    public abstract void Fog(GLEnum pname, ReadOnlySpan<float> params_);
 
-    public virtual void Frustum(double left, double right, double bottom, double top, double zNear, double zFar)
-    {
-        SilkGL.Frustum(left, right, bottom, top, zNear, zFar);
-    }
+    public abstract void Frustum(double left, double right, double bottom, double top, double zNear, double zFar);
 
     public uint GenBuffer()
     {
@@ -246,10 +193,7 @@ public unsafe class LegacyGL : IGL
         SilkGL.GenBuffers(buffers);
     }
 
-    public virtual uint GenLists(uint range)
-    {
-        return SilkGL.GenLists(range);
-    }
+    public abstract uint GenLists(uint range);
 
     public uint GenTexture()
     {
@@ -268,24 +212,23 @@ public unsafe class LegacyGL : IGL
 
     public GLEnum GetError()
     {
-        return SilkGL.GetError();
+        return (GLEnum)SilkGL.GetError();
     }
 
     public virtual void GetFloat(GLEnum pname, Span<float> data)
     {
-        SilkGL.GetFloat(pname, data);
+        SilkGL.GetFloat(pname.ToModern(), data);
     }
 
     public virtual void GetFloat(GLEnum pname, out float data)
     {
-        fixed (float* ptr = &data) { SilkGL.GetFloat(pname, ptr); }
+        fixed(float* ptr = &data) { SilkGL.GetFloat(pname.ToModern(), ptr); }
     }
 
     public virtual void GetFloat(GLEnum pname, float* data)
     {
-        SilkGL.GetFloat(pname, data);
+        SilkGL.GetFloat(pname.ToModern(), data);
     }
-
 
     public void GetProgram(uint program, ProgramPropertyARB pname, out int params_)
     {
@@ -317,15 +260,9 @@ public unsafe class LegacyGL : IGL
         return SilkGL.IsExtensionPresent(extension);
     }
 
-    public virtual void Light(GLEnum light, GLEnum pname, float* params_)
-    {
-        SilkGL.Light(light, pname, params_);
-    }
+    public abstract void Light(GLEnum light, GLEnum pname, float* params_);
 
-    public virtual void LightModel(GLEnum pname, float* params_)
-    {
-        SilkGL.LightModel(pname, params_);
-    }
+    public abstract void LightModel(GLEnum pname, float* params_);
 
     public virtual void LineWidth(float width)
     {
@@ -337,35 +274,17 @@ public unsafe class LegacyGL : IGL
         SilkGL.LinkProgram(program);
     }
 
-    public virtual void LoadIdentity()
-    {
-        SilkGL.LoadIdentity();
-    }
+    public abstract void LoadIdentity();
 
-    public virtual void MatrixMode(GLEnum mode)
-    {
-        SilkGL.MatrixMode(mode);
-    }
+    public abstract void MatrixMode(GLEnum mode);
 
-    public virtual void NewList(uint list, GLEnum mode)
-    {
-        SilkGL.NewList(list, mode);
-    }
+    public abstract void NewList(uint list, GLEnum mode);
 
-    public virtual void Normal3(float nx, float ny, float nz)
-    {
-        SilkGL.Normal3(nx, ny, nz);
-    }
+    public abstract void Normal3(float nx, float ny, float nz);
 
-    public virtual void NormalPointer(NormalPointerType type, uint stride, void* pointer)
-    {
-        SilkGL.NormalPointer(type, stride, pointer);
-    }
+    public abstract void NormalPointer(NormalPointerType type, uint stride, void* pointer);
 
-    public virtual void Ortho(double left, double right, double bottom, double top, double zNear, double zFar)
-    {
-        SilkGL.Ortho(left, right, bottom, top, zNear, zFar);
-    }
+    public abstract void Ortho(double left, double right, double bottom, double top, double zNear, double zFar);
 
     public void PixelStore(PixelStoreParameter pname, int param)
     {
@@ -377,50 +296,29 @@ public unsafe class LegacyGL : IGL
         SilkGL.PolygonOffset(factor, units);
     }
 
-    public virtual void PopMatrix()
-    {
-        SilkGL.PopMatrix();
-    }
+    public abstract void PopMatrix();
 
-    public virtual void PushMatrix()
-    {
-        SilkGL.PushMatrix();
-    }
+    public abstract void PushMatrix();
 
     public void ReadPixels(int x, int y, uint width, uint height, PixelFormat format, PixelType type, void* pixels)
     {
         SilkGL.ReadPixels(x, y, width, height, format, type, pixels);
     }
 
-    public virtual void Rotate(float angle, float x, float y, float z)
-    {
-        SilkGL.Rotate(angle, x, y, z);
-    }
+    public abstract void Rotate(float angle, float x, float y, float z);
 
-    public virtual void Scale(float x, float y, float z)
-    {
-        SilkGL.Scale(x, y, z);
-    }
+    public abstract void Scale(float x, float y, float z);
 
-    public virtual void Scale(double x, double y, double z)
-    {
-        SilkGL.Scale(x, y, z);
-    }
+    public abstract void Scale(double x, double y, double z);
 
-    public virtual void ShadeModel(GLEnum mode)
-    {
-        SilkGL.ShadeModel(mode);
-    }
+    public abstract void ShadeModel(GLEnum mode);
 
     public void ShaderSource(uint shader, string string_)
     {
         SilkGL.ShaderSource(shader, string_);
     }
 
-    public virtual void TexCoordPointer(int size, GLEnum type, uint stride, void* pointer)
-    {
-        SilkGL.TexCoordPointer(size, type, stride, pointer);
-    }
+    public abstract void TexCoordPointer(int size, GLEnum type, uint stride, void* pointer);
 
     public void TexImage2D(TextureTarget target, int level, InternalFormat internalformat, uint width, uint height, int border, PixelFormat format, PixelType type, void* pixels)
     {
@@ -429,7 +327,7 @@ public unsafe class LegacyGL : IGL
 
     public void TexImage2D(GLEnum target, int level, int internalformat, uint width, uint height, int border, GLEnum format, GLEnum type, void* pixels)
     {
-        SilkGL.TexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
+        SilkGL.TexImage2D(target.ToModern(), level, internalformat, width, height, border, format.ToModern(), type.ToModern(), pixels);
     }
 
     public void TexParameter(TextureTarget target, TextureParameterName pname, int param)
@@ -439,23 +337,20 @@ public unsafe class LegacyGL : IGL
 
     public void TexParameter(GLEnum target, GLEnum pname, int param)
     {
-        SilkGL.TexParameter(target, pname, param);
+        SilkGL.TexParameter(target.ToModern(), pname.ToModern(), param);
     }
 
     public void TexParameter(GLEnum target, GLEnum pname, float param)
     {
-        SilkGL.TexParameter(target, pname, param);
+        SilkGL.TexParameter(target.ToModern(), pname.ToModern(), param);
     }
 
     public void TexSubImage2D(GLEnum target, int level, int xoffset, int yoffset, uint width, uint height, GLEnum format, GLEnum type, void* pixels)
     {
-        SilkGL.TexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
+        SilkGL.TexSubImage2D(target.ToModern(), level, xoffset, yoffset, width, height, format.ToModern(), type.ToModern(), pixels);
     }
 
-    public virtual void Translate(float x, float y, float z)
-    {
-        SilkGL.Translate(x, y, z);
-    }
+    public abstract void Translate(float x, float y, float z);
 
     public void Uniform1(int location, int v0)
     {
@@ -492,20 +387,17 @@ public unsafe class LegacyGL : IGL
         SilkGL.UseProgram(program);
     }
 
-    public virtual void VertexAttribIPointer(uint index, int size, GLEnum type, uint stride, void* pointer)
+    public void VertexAttribIPointer(uint index, int size, GLEnum type, uint stride, void* pointer)
     {
-        SilkGL.VertexAttribIPointer(index, size, type, stride, pointer);
+        SilkGL.VertexAttribIPointer(index, size, type.ToModern(), stride, pointer);
     }
 
-    public virtual void VertexAttribPointer(uint index, int size, GLEnum type, bool normalized, uint stride, void* pointer)
+    public void VertexAttribPointer(uint index, int size, GLEnum type, bool normalized, uint stride, void* pointer)
     {
-        SilkGL.VertexAttribPointer(index, size, type, normalized, stride, pointer);
+        SilkGL.VertexAttribPointer(index, size, type.ToModern(), normalized, stride, pointer);
     }
 
-    public virtual void VertexPointer(int size, GLEnum type, uint stride, void* pointer)
-    {
-        SilkGL.VertexPointer(size, type, stride, pointer);
-    }
+    public abstract void VertexPointer(int size, GLEnum type, uint stride, void* pointer);
 
     public void Viewport(int x, int y, uint width, uint height)
     {

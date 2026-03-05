@@ -5,8 +5,8 @@ namespace BetaSharp.Worlds.Gen.Carvers;
 
 internal class Carver
 {
-    protected int radius = 8;
-    protected JavaRandom rand = new();
+    protected int Radius = 8;
+    protected JavaRandom Rand = new();
 
     /// <summary>
     /// Attempts to generate a cave in the current chunk
@@ -18,15 +18,15 @@ internal class Carver
     /// <param name="blocks">1D Array of Blocks within this chunk</param>
     public virtual void carve(ChunkSource source, World world, int chunkX, int chunkZ, byte[] blocks)
     {
-        rand.SetSeed(world.getSeed());
-        long xOffset = rand.NextLong() / 2L * 2L + 1L;
-        long yOffset = rand.NextLong() / 2L * 2L + 1L;
+        Rand.SetSeed(world.getSeed());
+        long xOffset = Rand.NextLong() / 2L * 2L + 1L;
+        long yOffset = Rand.NextLong() / 2L * 2L + 1L;
 
-        for (int currentX = chunkX - radius; currentX <= chunkX + radius; ++currentX)
+        for (int currentX = chunkX - Radius; currentX <= chunkX + Radius; ++currentX)
         {
-            for (int currentZ = chunkZ - radius; currentZ <= chunkZ + radius; ++currentZ)
+            for (int currentZ = chunkZ - Radius; currentZ <= chunkZ + Radius; ++currentZ)
             {
-                rand.SetSeed(currentX * xOffset + currentZ * yOffset ^ world.getSeed());
+                Rand.SetSeed(currentX * xOffset + currentZ * yOffset ^ world.getSeed());
                 CarveCaves(world, currentX, currentZ, chunkX, chunkZ, blocks);
             }
         }

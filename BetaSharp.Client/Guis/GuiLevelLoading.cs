@@ -21,7 +21,7 @@ public class GuiLevelLoading(string worldDir, long seed) : GuiScreen
         if (!_serverStarted)
         {
             _serverStarted = true;
-            Game.internalServer = new InternalServer(System.IO.Path.Combine(BetaSharp.getBetaSharpDir().getAbsolutePath(), "saves"), _worldDir, _seed.ToString(), Game.options.renderDistance, Game.options.Difficulty);
+            Game.internalServer = new InternalServer(Path.Combine(BetaSharp.getBetaSharpDir(), "saves"), _worldDir, _seed.ToString(), Game.options.renderDistance, Game.options.Difficulty);
             new RunServerThread(Game.internalServer, "InternalServer").start();
         }
     }

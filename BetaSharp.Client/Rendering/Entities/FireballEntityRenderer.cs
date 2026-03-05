@@ -1,7 +1,7 @@
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Entities;
 using BetaSharp.Items;
-using Silk.NET.OpenGL.Legacy;
 
 namespace BetaSharp.Client.Rendering.Entities;
 

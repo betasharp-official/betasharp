@@ -18,8 +18,8 @@ public class MouseHelper
 
     public void ungrabMouseCursor()
     {
-        Mouse.setCursorPosition(Display.getWidth() / 2, Display.getHeight() / 2);
         Mouse.setGrabbed(false);
+        Mouse.setCursorPosition(Display.getWidth() / 2, Display.getHeight() / 2);
     }
 
     public void mouseXYChange()

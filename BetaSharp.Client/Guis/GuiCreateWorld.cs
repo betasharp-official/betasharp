@@ -1,9 +1,7 @@
 using BetaSharp.Client.Input;
-using BetaSharp.Stats;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Storage;
-using java.lang;
 
 namespace BetaSharp.Client.Guis;
 
@@ -109,13 +107,13 @@ public class GuiCreateWorld : GuiScreen
                         {
                             try
                             {
-                                long parsedSeed = Long.parseLong(seedInput);
+                                long parsedSeed = long.Parse(seedInput);
                                 if (parsedSeed != 0L)
                                 {
                                     worldSeed = parsedSeed;
                                 }
                             }
-                            catch (NumberFormatException)
+                            catch (Exception)
                             {
                                 // Java based string hashing
                                 int hash = 0;

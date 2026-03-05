@@ -5,15 +5,13 @@ using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
-using java.util;
-using Silk.NET.OpenGL.Legacy;
 
 namespace BetaSharp.Client.Rendering;
 
 public class ParticleManager
 {
     protected World worldObj;
-    private readonly List[] _fxLayers = new List[4];
+    private readonly List<EntityFX>[] _fxLayers = new List<EntityFX>[4];
     private readonly TextureManager _renderer;
     private readonly JavaRandom _rand = new();
 
@@ -26,9 +24,9 @@ public class ParticleManager
 
         _renderer = var2;
 
-        for (int var3 = 0; var3 < 4; ++var3)
+        for (int i = 0; i < 4; i++)
         {
-            _fxLayers[var3] = new ArrayList();
+            _fxLayers[i] = new List<EntityFX>();
         }
 
     }
@@ -36,25 +34,25 @@ public class ParticleManager
     public void addEffect(EntityFX var1)
     {
         int var2 = var1.getFXLayer();
-        if (_fxLayers[var2].size() >= 4000)
+        if (_fxLayers[var2].Count >= 4000)
         {
-            _fxLayers[var2].remove(0);
+            _fxLayers[var2].RemoveAt(0);
         }
 
-        _fxLayers[var2].add(var1);
+        _fxLayers[var2].Add(var1);
     }
 
     public void updateEffects()
     {
         for (int var1 = 0; var1 < 4; ++var1)
         {
-            for (int var2 = 0; var2 < _fxLayers[var1].size(); ++var2)
+            for (int var2 = 0; var2 < _fxLayers[var1].Count; ++var2)
             {
-                EntityFX var3 = (EntityFX)_fxLayers[var1].get(var2);
+                EntityFX var3 = _fxLayers[var1][var2];
                 var3.tick();
                 if (var3.dead)
                 {
-                    _fxLayers[var1].remove(var2--);
+                    _fxLayers[var1].RemoveAt(var2--);
                 }
             }
         }
@@ -74,7 +72,7 @@ public class ParticleManager
 
         for (int var8 = 0; var8 < 3; ++var8)
         {
-            if (_fxLayers[var8].size() != 0)
+            if (_fxLayers[var8].Count != 0)
             {
                 TextureHandle texture = null;
                 if (var8 == 0) texture = _renderer.GetTextureId("/particles.png");
@@ -85,9 +83,9 @@ public class ParticleManager
                 Tessellator var10 = Tessellator.instance;
                 var10.startDrawingQuads();
 
-                for (int var11 = 0; var11 < _fxLayers[var8].size(); ++var11)
+                for (int var11 = 0; var11 < _fxLayers[var8].Count; ++var11)
                 {
-                    EntityFX var12 = (EntityFX)_fxLayers[var8].get(var11);
+                    EntityFX var12 = _fxLayers[var8][var11];
                     var12.renderParticle(var10, var2, var3, var7, var4, var5, var6);
                 }
 
@@ -100,13 +98,13 @@ public class ParticleManager
     public void func_1187_b(Entity var1, float var2)
     {
         byte var3 = 3;
-        if (_fxLayers[var3].size() != 0)
+        if (_fxLayers[var3].Count != 0)
         {
             Tessellator var4 = Tessellator.instance;
 
-            for (int var5 = 0; var5 < _fxLayers[var3].size(); ++var5)
+            for (int var5 = 0; var5 < _fxLayers[var3].Count; ++var5)
             {
-                EntityFX var6 = (EntityFX)_fxLayers[var3].get(var5);
+                EntityFX var6 = _fxLayers[var3][var5];
                 var6.renderParticle(var4, var2, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
             }
 
@@ -119,7 +117,7 @@ public class ParticleManager
 
         for (int var2 = 0; var2 < 4; ++var2)
         {
-            _fxLayers[var2].clear();
+            _fxLayers[var2].Clear();
         }
 
     }
@@ -137,9 +135,9 @@ public class ParticleManager
                 {
                     for (int var10 = 0; var10 < var7; ++var10)
                     {
-                        double var11 = (double)var1 + ((double)var8 + 0.5D) / (double)var7;
-                        double var13 = (double)var2 + ((double)var9 + 0.5D) / (double)var7;
-                        double var15 = (double)var3 + ((double)var10 + 0.5D) / (double)var7;
+                        double var11 = var1 + (var8 + 0.5D) / var7;
+                        double var13 = var2 + (var9 + 0.5D) / var7;
+                        double var15 = var3 + (var10 + 0.5D) / var7;
                         int var17 = _rand.NextInt(6);
                         addEffect((new EntityDiggingFX(worldObj, var11, var13, var15, var11 - (double)var1 - 0.5D, var13 - (double)var2 - 0.5D, var15 - (double)var3 - 0.5D, var6, var17, var5)).func_4041_a(var1, var2, var3));
                     }
@@ -196,6 +194,6 @@ public class ParticleManager
 
     public string getStatistics()
     {
-        return "" + (_fxLayers[0].size() + _fxLayers[1].size() + _fxLayers[2].size());
+        return "" + (_fxLayers[0].Count + _fxLayers[1].Count + _fxLayers[2].Count);
     }
 }

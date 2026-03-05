@@ -216,8 +216,8 @@ public class GameOptions
         {
             OnChanged = _ =>
             {
-                if (BetaSharp.INSTANCE?.textureManager != null)
-                    BetaSharp.INSTANCE.textureManager.Reload();
+                if (BetaSharp.Instance?.textureManager != null)
+                    BetaSharp.Instance.textureManager.Reload();
             }
         };
         DebugModeOption = new BoolOption("Debug Mode", "debugMode")
@@ -259,8 +259,8 @@ public class GameOptions
                 {
                     AnisotropicOption.Value = 0;
                 }
-                if (BetaSharp.INSTANCE?.textureManager != null)
-                    BetaSharp.INSTANCE.textureManager.Reload();
+                if (BetaSharp.Instance?.textureManager != null)
+                    BetaSharp.Instance.textureManager.Reload();
             }
         };
         MsaaOption = new CycleOption("MSAA", "msaaLevel", MSAALabels)

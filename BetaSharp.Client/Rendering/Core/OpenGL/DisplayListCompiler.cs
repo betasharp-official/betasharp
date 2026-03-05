@@ -1,5 +1,6 @@
 using BetaSharp.Util;
-using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL;
+using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering.Core.OpenGL;
 
@@ -147,22 +148,22 @@ public unsafe class DisplayListCompiler
         uint vbo = _gl.GenBuffer();
 
         _gl.BindVertexArray(vao);
-        _gl.BindBuffer(GLEnum.ArrayBuffer, vbo);
+        _gl.BindBuffer(GLEnum.ArrayBuffer.ToModern(), vbo);
 
         fixed (byte* ptr = &_stagingBuffer[0])
         {
-            _gl.BufferData(GLEnum.ArrayBuffer, (nuint)_stagingBufferCount, ptr, GLEnum.StaticDraw);
+            _gl.BufferData(GLEnum.ArrayBuffer.ToModern(), (nuint)_stagingBufferCount, ptr, GLEnum.StaticDraw.ToModern());
         }
 
         uint stride = _compiledStride;
 
         _gl.EnableVertexAttribArray(0);
-        _gl.VertexAttribPointer(0, 3, GLEnum.Float, false, stride, (void*)0);
+        _gl.VertexAttribPointer(0, 3, GLEnum.Float.ToModern(), false, stride, (void*)0);
 
         if (_compiledHasColor)
         {
             _gl.EnableVertexAttribArray(1);
-            _gl.VertexAttribPointer(1, 4, GLEnum.UnsignedByte, true, stride, (void*)20);
+            _gl.VertexAttribPointer(1, 4, GLEnum.UnsignedByte.ToModern(), true, stride, (void*)20);
         }
         else
         {
@@ -173,7 +174,7 @@ public unsafe class DisplayListCompiler
         if (_compiledHasTexture)
         {
             _gl.EnableVertexAttribArray(2);
-            _gl.VertexAttribPointer(2, 2, GLEnum.Float, false, stride, (void*)12);
+            _gl.VertexAttribPointer(2, 2, GLEnum.Float.ToModern(), false, stride, (void*)12);
         }
         else
         {
@@ -183,7 +184,7 @@ public unsafe class DisplayListCompiler
         if (_compiledHasNormals)
         {
             _gl.EnableVertexAttribArray(3);
-            _gl.VertexAttribPointer(3, 3, GLEnum.Byte, true, stride, (void*)24);
+            _gl.VertexAttribPointer(3, 3, GLEnum.Byte.ToModern(), true, stride, (void*)24);
         }
         else
         {
@@ -227,7 +228,7 @@ public unsafe class DisplayListCompiler
                 case DLCommandType.DrawChunk:
                     emuGl.ActivateShader();
                     emuGl.SilkGL.BindVertexArray(cmd.Vao);
-                    emuGl.SilkGL.DrawArrays(cmd.DrawMode, 0, (uint)cmd.VertexCount);
+                    emuGl.SilkGL.DrawArrays(cmd.DrawMode.ToModern(), 0, (uint)cmd.VertexCount);
                     break;
                 case DLCommandType.Translate:
                     emuGl.ActiveStack.Translate(cmd.X_R, cmd.Y_G, cmd.Z_B);

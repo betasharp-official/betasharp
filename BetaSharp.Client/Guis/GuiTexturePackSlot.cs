@@ -1,6 +1,4 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Resource.Pack;
-using java.util;
 
 namespace BetaSharp.Client.Guis;
 

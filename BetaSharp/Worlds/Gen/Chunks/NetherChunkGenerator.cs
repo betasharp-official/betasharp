@@ -9,21 +9,20 @@ namespace BetaSharp.Worlds.Gen.Chunks;
 
 internal class NetherChunkGenerator : ChunkSource
 {
-
     private readonly JavaRandom random;
-    private readonly OctavePerlinNoiseSampler minLimitPerlinNoise;
-    private readonly OctavePerlinNoiseSampler maxLimitPerlinNoise;
-    private readonly OctavePerlinNoiseSampler perlinNoise1;
-    private readonly OctavePerlinNoiseSampler perlinNoise2;
-    private readonly OctavePerlinNoiseSampler perlinNoise3;
-    public OctavePerlinNoiseSampler scaleNoise;
-    public OctavePerlinNoiseSampler depthNoise;
-    private readonly World world;
-    private double[] heightMap;
-    private double[] sandBuffer = new double[256];
-    private double[] gravelBuffer = new double[256];
-    private double[] depthBuffer = new double[256];
-    private readonly Carver cave = new NetherCaveCarver();
+    private readonly OctavePerlinNoiseSampler _minLimitPerlinNoise;
+    private readonly OctavePerlinNoiseSampler _maxLimitPerlinNoise;
+    private readonly OctavePerlinNoiseSampler _perlinNoise1;
+    private readonly OctavePerlinNoiseSampler _perlinNoise2;
+    private readonly OctavePerlinNoiseSampler _perlinNoise3;
+    private OctavePerlinNoiseSampler _scaleNoise;
+    private OctavePerlinNoiseSampler _depthNoise;
+    private readonly World _world;
+    private double[] _heightMap;
+    private double[] _sandBuffer = new double[256];
+    private double[] _gravelBuffer = new double[256];
+    private double[] _depthBuffer = new double[256];
+    private readonly Carver _cave = new NetherCaveCarver();
     private readonly long _seed;
     private NetherLavaSpringFeature _featureNetherLavaSpring;
     private NetherFirePatchFeature _featureNetherFire;
@@ -31,28 +30,28 @@ internal class NetherChunkGenerator : ChunkSource
     private GlowstoneClusterFeatureRare _featureGlowstoneRare;
     private PlantPatchFeature _featureBrownMushroom;
     private PlantPatchFeature _featureRedMushroom;
-    double[] perlinNoiseBuffer;
-    double[] minLimitPerlinNoiseBuffer;
-    double[] maxLimitPerlinNoiseBuffer;
-    double[] scaleNoiseBuffer;
-    double[] depthNoiseBuffer;
+    private double[] _perlinNoiseBuffer;
+    private double[] _minLimitPerlinNoiseBuffer;
+    private double[] _maxLimitPerlinNoiseBuffer;
+    private double[] _scaleNoiseBuffer;
+    private double[] _depthNoiseBuffer;
 
     public NetherChunkGenerator(World world, long seed)
     {
-        this.world = world;
+        this._world = world;
         random = new(seed);
-        minLimitPerlinNoise = new OctavePerlinNoiseSampler(random, 16);
-        maxLimitPerlinNoise = new OctavePerlinNoiseSampler(random, 16);
-        perlinNoise1 = new OctavePerlinNoiseSampler(random, 8);
-        perlinNoise2 = new OctavePerlinNoiseSampler(random, 4);
-        perlinNoise3 = new OctavePerlinNoiseSampler(random, 4);
-        scaleNoise = new OctavePerlinNoiseSampler(random, 10);
-        depthNoise = new OctavePerlinNoiseSampler(random, 16);
+        _minLimitPerlinNoise = new OctavePerlinNoiseSampler(random, 16);
+        _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(random, 16);
+        _perlinNoise1 = new OctavePerlinNoiseSampler(random, 8);
+        _perlinNoise2 = new OctavePerlinNoiseSampler(random, 4);
+        _perlinNoise3 = new OctavePerlinNoiseSampler(random, 4);
+        _scaleNoise = new OctavePerlinNoiseSampler(random, 10);
+        _depthNoise = new OctavePerlinNoiseSampler(random, 16);
         _seed = seed;
         InitFeatures();
     }
 
-    public ChunkSource CreateParallelInstance() => new NetherChunkGenerator(world, _seed);
+    public ChunkSource CreateParallelInstance() => new NetherChunkGenerator(_world, _seed);
 
     private void InitFeatures()
     {
@@ -66,318 +65,313 @@ internal class NetherChunkGenerator : ChunkSource
 
     public void BuildTerrain(int chunkX, int chunkZ, byte[] blocks)
     {
-        byte var4 = 4;
-        byte var5 = 32;
-        int var6 = var4 + 1;
-        byte var7 = 17;
-        int var8 = var4 + 1;
-        heightMap = GenerateHeightMap(heightMap, chunkX * var4, 0, chunkZ * var4, var6, var7, var8);
+        byte horiScale = 4;
+        byte lavaLevel = 32;
+        int xMax = horiScale + 1;
+        byte yMax = 17;
+        int zMax = horiScale + 1;
+        _heightMap = GenerateHeightMap(_heightMap, chunkX * horiScale, 0, chunkZ * horiScale, xMax, yMax, zMax);
 
-        for (int var9 = 0; var9 < var4; ++var9)
+        for (int sampleX = 0; sampleX < horiScale; ++sampleX)
         {
-            for (int var10 = 0; var10 < var4; ++var10)
+            for (int sampleZ = 0; sampleZ < horiScale; ++sampleZ)
             {
-                for (int var11 = 0; var11 < 16; ++var11)
+                for (int sampleY = 0; sampleY < 16; ++sampleY)
                 {
-                    double var12 = 0.125D;
-                    double var14 = heightMap[((var9 + 0) * var8 + var10 + 0) * var7 + var11 + 0];
-                    double var16 = heightMap[((var9 + 0) * var8 + var10 + 1) * var7 + var11 + 0];
-                    double var18 = heightMap[((var9 + 1) * var8 + var10 + 0) * var7 + var11 + 0];
-                    double var20 = heightMap[((var9 + 1) * var8 + var10 + 1) * var7 + var11 + 0];
-                    double var22 = (heightMap[((var9 + 0) * var8 + var10 + 0) * var7 + var11 + 1] - var14) * var12;
-                    double var24 = (heightMap[((var9 + 0) * var8 + var10 + 1) * var7 + var11 + 1] - var16) * var12;
-                    double var26 = (heightMap[((var9 + 1) * var8 + var10 + 0) * var7 + var11 + 1] - var18) * var12;
-                    double var28 = (heightMap[((var9 + 1) * var8 + var10 + 1) * var7 + var11 + 1] - var20) * var12;
+                    double verticalLerpStep = 0.125D;
+                    double corner000 = _heightMap[((sampleX + 0) * zMax + sampleZ + 0) * yMax + sampleY + 0];
+                    double corner010 = _heightMap[((sampleX + 0) * zMax + sampleZ + 1) * yMax + sampleY + 0];
+                    double corner100 = _heightMap[((sampleX + 1) * zMax + sampleZ + 0) * yMax + sampleY + 0];
+                    double corner110 = _heightMap[((sampleX + 1) * zMax + sampleZ + 1) * yMax + sampleY + 0];
+                    double corner001 = (_heightMap[((sampleX + 0) * zMax + sampleZ + 0) * yMax + sampleY + 1] - corner000) * verticalLerpStep;
+                    double corner011 = (_heightMap[((sampleX + 0) * zMax + sampleZ + 1) * yMax + sampleY + 1] - corner010) * verticalLerpStep;
+                    double corner101 = (_heightMap[((sampleX + 1) * zMax + sampleZ + 0) * yMax + sampleY + 1] - corner100) * verticalLerpStep;
+                    double corner111 = (_heightMap[((sampleX + 1) * zMax + sampleZ + 1) * yMax + sampleY + 1] - corner110) * verticalLerpStep;
 
-                    for (int var30 = 0; var30 < 8; ++var30)
+                    for (int subY = 0; subY < 8; ++subY)
                     {
-                        double var31 = 0.25D;
-                        double var33 = var14;
-                        double var35 = var16;
-                        double var37 = (var18 - var14) * var31;
-                        double var39 = (var20 - var16) * var31;
+                        double horizontalLerpStep = 0.25D;
+                        double terrainX0 = corner000;
+                        double terrainX1 = corner010;
+                        double terrainStepX0 = (corner100 - corner000) * horizontalLerpStep;
+                        double terrainStepX1 = (corner110 - corner010) * horizontalLerpStep;
 
-                        for (int var41 = 0; var41 < 4; ++var41)
+                        for (int subX = 0; subX < 4; ++subX)
                         {
-                            int var42 = var41 + var9 * 4 << 11 | 0 + var10 * 4 << 7 | var11 * 8 + var30;
-                            short var43 = 128;
-                            double var44 = 0.25D;
-                            double var46 = var33;
-                            double var48 = (var35 - var33) * var44;
+                            int blockIndex = subX + sampleX * 4 << 11 | 0 + sampleZ * 4 << 7 | sampleY * 8 + subY;
+                            short chunkHeight = 128;
+                            double horizontalLerpStepZ = 0.25D;
+                            double terrainDensity = terrainX0;
+                            double densityStepZ = (terrainX1 - terrainX0) * horizontalLerpStepZ;
 
-                            for (int var50 = 0; var50 < 4; ++var50)
+                            for (int subZ = 0; subZ < 4; ++subZ)
                             {
-                                int var51 = 0;
-                                if (var11 * 8 + var30 < var5)
+                                int blockType = 0;
+                                if (sampleY * 8 + subY < lavaLevel)
                                 {
-                                    var51 = Block.Lava.id;
+                                    blockType = Block.Lava.id;
                                 }
 
-                                if (var46 > 0.0D)
+                                if (terrainDensity > 0.0D)
                                 {
-                                    var51 = Block.Netherrack.id;
+                                    blockType = Block.Netherrack.id;
                                 }
 
-                                blocks[var42] = (byte)var51;
-                                var42 += var43;
-                                var46 += var48;
+                                blocks[blockIndex] = (byte)blockType;
+                                blockIndex += chunkHeight;
+                                terrainDensity += densityStepZ;
                             }
 
-                            var33 += var37;
-                            var35 += var39;
+                            terrainX0 += terrainStepX0;
+                            terrainX1 += terrainStepX1;
                         }
 
-                        var14 += var22;
-                        var16 += var24;
-                        var18 += var26;
-                        var20 += var28;
+                        corner000 += corner001;
+                        corner010 += corner011;
+                        corner100 += corner101;
+                        corner110 += corner111;
                     }
                 }
             }
         }
-
     }
 
     public void BuildSurfaces(int chunkX, int chunkZ, byte[] blocks)
     {
-        byte var4 = 64;
-        double var5 = 1.0D / 32.0D;
-        sandBuffer = perlinNoise2.create(sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, var5, var5, 1.0D);
-        gravelBuffer = perlinNoise2.create(gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, var5, 1.0D, var5);
-        depthBuffer = perlinNoise3.create(depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, var5 * 2.0D, var5 * 2.0D, var5 * 2.0D);
+        byte seaLevel = 64;
+        double noiseScale = 1.0D / 32.0D;
+        _sandBuffer = _perlinNoise2.create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, noiseScale, noiseScale, 1.0D);
+        _gravelBuffer = _perlinNoise2.create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, noiseScale, 1.0D, noiseScale);
+        _depthBuffer = _perlinNoise3.create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, noiseScale * 2.0D, noiseScale * 2.0D, noiseScale * 2.0D);
 
-        for (int var7 = 0; var7 < 16; ++var7)
+        for (int localX = 0; localX < 16; ++localX)
         {
-            for (int var8 = 0; var8 < 16; ++var8)
+            for (int localZ = 0; localZ < 16; ++localZ)
             {
-                bool var9 = sandBuffer[var7 + var8 * 16] + random.NextDouble() * 0.2D > 0.0D;
-                bool var10 = gravelBuffer[var7 + var8 * 16] + random.NextDouble() * 0.2D > 0.0D;
-                int var11 = (int)(depthBuffer[var7 + var8 * 16] / 3.0D + 3.0D + random.NextDouble() * 0.25D);
-                int var12 = -1;
-                byte var13 = (byte)Block.Netherrack.id;
-                byte var14 = (byte)Block.Netherrack.id;
+                bool isSoulsand = _sandBuffer[localX + localZ * 16] + random.NextDouble() * 0.2D > 0.0D;
+                bool isGravel = _gravelBuffer[localX + localZ * 16] + random.NextDouble() * 0.2D > 0.0D;
+                int surfaceDepth = (int)(_depthBuffer[localX + localZ * 16] / 3.0D + 3.0D + random.NextDouble() * 0.25D);
+                int currentDepth = -1;
+                byte topBlock = (byte)Block.Netherrack.id;
+                byte soilBlock = (byte)Block.Netherrack.id;
 
-                for (int var15 = 127; var15 >= 0; --var15)
+                for (int blockY = 127; blockY >= 0; --blockY)
                 {
-                    int var16 = (var8 * 16 + var7) * 128 + var15;
-                    if (var15 >= 127 - random.NextInt(5))
+                    int blockIndex = (localZ * 16 + localX) * 128 + blockY;
+                    if (blockY >= 127 - random.NextInt(5))
                     {
-                        blocks[var16] = (byte)Block.Bedrock.id;
+                        blocks[blockIndex] = (byte)Block.Bedrock.id;
                     }
-                    else if (var15 <= 0 + random.NextInt(5))
+                    else if (blockY <= 0 + random.NextInt(5))
                     {
-                        blocks[var16] = (byte)Block.Bedrock.id;
+                        blocks[blockIndex] = (byte)Block.Bedrock.id;
                     }
                     else
                     {
-                        byte var17 = blocks[var16];
-                        if (var17 == 0)
+                        byte currentBlock = blocks[blockIndex];
+                        if (currentBlock == 0)
                         {
-                            var12 = -1;
+                            currentDepth = -1;
                         }
-                        else if (var17 == Block.Netherrack.id)
+                        else if (currentBlock == Block.Netherrack.id)
                         {
-                            if (var12 == -1)
+                            if (currentDepth == -1)
                             {
-                                if (var11 <= 0)
+                                if (surfaceDepth <= 0)
                                 {
-                                    var13 = 0;
-                                    var14 = (byte)Block.Netherrack.id;
+                                    topBlock = 0;
+                                    soilBlock = (byte)Block.Netherrack.id;
                                 }
-                                else if (var15 >= var4 - 4 && var15 <= var4 + 1)
+                                else if (blockY >= seaLevel - 4 && blockY <= seaLevel + 1)
                                 {
-                                    var13 = (byte)Block.Netherrack.id;
-                                    var14 = (byte)Block.Netherrack.id;
-                                    if (var10)
+                                    topBlock = (byte)Block.Netherrack.id;
+                                    soilBlock = (byte)Block.Netherrack.id;
+                                    if (isGravel)
                                     {
-                                        var13 = (byte)Block.Gravel.id;
+                                        topBlock = (byte)Block.Gravel.id;
                                     }
 
-                                    if (var10)
+                                    if (isGravel)
                                     {
-                                        var14 = (byte)Block.Netherrack.id;
+                                        soilBlock = (byte)Block.Netherrack.id;
                                     }
 
-                                    if (var9)
+                                    if (isSoulsand)
                                     {
-                                        var13 = (byte)Block.Soulsand.id;
+                                        topBlock = (byte)Block.Soulsand.id;
                                     }
 
-                                    if (var9)
+                                    if (isSoulsand)
                                     {
-                                        var14 = (byte)Block.Soulsand.id;
+                                        soilBlock = (byte)Block.Soulsand.id;
                                     }
-                                }
-
-                                if (var15 < var4 && var13 == 0)
-                                {
-                                    var13 = (byte)Block.Lava.id;
                                 }
 
-                                var12 = var11;
-                                if (var15 >= var4 - 1)
+                                if (blockY < seaLevel && topBlock == 0)
                                 {
-                                    blocks[var16] = var13;
+                                    topBlock = (byte)Block.Lava.id;
+                                }
+
+                                currentDepth = surfaceDepth;
+                                if (blockY >= seaLevel - 1)
+                                {
+                                    blocks[blockIndex] = topBlock;
                                 }
                                 else
                                 {
-                                    blocks[var16] = var14;
+                                    blocks[blockIndex] = soilBlock;
                                 }
                             }
-                            else if (var12 > 0)
+                            else if (currentDepth > 0)
                             {
-                                --var12;
-                                blocks[var16] = var14;
+                                --currentDepth;
+                                blocks[blockIndex] = soilBlock;
                             }
                         }
                     }
                 }
             }
         }
-
     }
 
-    public Chunk LoadChunk(int x, int z)
-    {
-        return GetChunk(x, z);
-    }
+    public Chunk LoadChunk(int x, int z) => GetChunk(x, z);
 
     public Chunk GetChunk(int chunkX, int chunkZ)
     {
         random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
-        byte[] var3 = new byte[-short.MinValue];
-        BuildTerrain(chunkX, chunkZ, var3);
-        BuildSurfaces(chunkX, chunkZ, var3);
-        cave.carve(this, world, chunkX, chunkZ, var3);
-        Chunk var4 = new Chunk(world, var3, chunkX, chunkZ);
-        return var4;
+        byte[] blocks = new byte[-short.MinValue];
+        BuildTerrain(chunkX, chunkZ, blocks);
+        BuildSurfaces(chunkX, chunkZ, blocks);
+        _cave.carve(this, _world, chunkX, chunkZ, blocks);
+        Chunk chunk = new Chunk(_world, blocks, chunkX, chunkZ);
+        return chunk;
     }
 
-    private double[] GenerateHeightMap(double[] heightMap, int x, int y, int z, int sizeX, int sizeY, int sizeZ)
+    private double[] GenerateHeightMap(double[]? heightMap, int x, int y, int z, int sizeX, int sizeY, int sizeZ)
     {
         if (heightMap == null)
         {
             heightMap = new double[sizeX * sizeY * sizeZ];
         }
 
-        double var8 = 684.412D;
-        double var10 = 2053.236D;
-        scaleNoiseBuffer = scaleNoise.create(scaleNoiseBuffer, x, y, z, sizeX, 1, sizeZ, 1.0D, 0.0D, 1.0D);
-        depthNoiseBuffer = depthNoise.create(depthNoiseBuffer, x, y, z, sizeX, 1, sizeZ, 100.0D, 0.0D, 100.0D);
-        perlinNoiseBuffer = perlinNoise1.create(perlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, var8 / 80.0D, var10 / 60.0D, var8 / 80.0D);
-        minLimitPerlinNoiseBuffer = minLimitPerlinNoise.create(minLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, var8, var10, var8);
-        maxLimitPerlinNoiseBuffer = maxLimitPerlinNoise.create(maxLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, var8, var10, var8);
-        int var12 = 0;
-        int var13 = 0;
-        double[] var14 = new double[sizeY];
+        double horizontalScale = 684.412D;
+        double verticalScale = 2053.236D;
+        _scaleNoiseBuffer = _scaleNoise.create(_scaleNoiseBuffer, x, y, z, sizeX, 1, sizeZ, 1.0D, 0.0D, 1.0D);
+        _depthNoiseBuffer = _depthNoise.create(_depthNoiseBuffer, x, y, z, sizeX, 1, sizeZ, 100.0D, 0.0D, 100.0D);
+        _perlinNoiseBuffer = _perlinNoise1.create(_perlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale / 80.0D, verticalScale / 60.0D, horizontalScale / 80.0D);
+        _minLimitPerlinNoiseBuffer = _minLimitPerlinNoise.create(_minLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
+        _maxLimitPerlinNoiseBuffer = _maxLimitPerlinNoise.create(_maxLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
+        int xyzIndex = 0;
+        int xzIndex = 0;
+        double[] heightModifiers = new double[sizeY];
 
-        int var15;
-        for (var15 = 0; var15 < sizeY; ++var15)
+        int iY;
+        for (iY = 0; iY < sizeY; ++iY)
         {
-            var14[var15] = Math.Cos(var15 * Math.PI * 6.0D / sizeY) * 2.0D;
-            double var16 = var15;
-            if (var15 > sizeY / 2)
+            heightModifiers[iY] = Math.Cos(iY * Math.PI * 6.0D / sizeY) * 2.0D;
+            double modifier = iY;
+            if (iY > sizeY / 2)
             {
-                var16 = sizeY - 1 - var15;
+                modifier = sizeY - 1 - iY;
             }
 
-            if (var16 < 4.0D)
+            if (modifier < 4.0D)
             {
-                var16 = 4.0D - var16;
-                var14[var15] -= var16 * var16 * var16 * 10.0D;
+                modifier = 4.0D - modifier;
+                heightModifiers[iY] -= modifier * modifier * modifier * 10.0D;
             }
         }
 
-        for (var15 = 0; var15 < sizeX; ++var15)
+        for (int iX = 0; iX < sizeX; ++iX)
         {
-            for (int var36 = 0; var36 < sizeZ; ++var36)
+            for (int iZ = 0; iZ < sizeZ; ++iZ)
             {
-                double var17 = (scaleNoiseBuffer[var13] + 256.0D) / 512.0D;
-                if (var17 > 1.0D)
+                double scaleNoiseSample = (_scaleNoiseBuffer[xzIndex] + 256.0D) / 512.0D;
+                if (scaleNoiseSample > 1.0D)
                 {
-                    var17 = 1.0D;
+                    scaleNoiseSample = 1.0D;
                 }
 
-                double var19 = 0.0D;
-                double var21 = depthNoiseBuffer[var13] / 8000.0D;
-                if (var21 < 0.0D)
+                double densityOffset = 0.0D;
+                double depthNoiseSample = _depthNoiseBuffer[xzIndex] / 8000.0D;
+                if (depthNoiseSample < 0.0D)
                 {
-                    var21 = -var21;
+                    depthNoiseSample = -depthNoiseSample;
                 }
 
-                var21 = var21 * 3.0D - 3.0D;
-                if (var21 < 0.0D)
+                depthNoiseSample = depthNoiseSample * 3.0D - 3.0D;
+                if (depthNoiseSample < 0.0D)
                 {
-                    var21 /= 2.0D;
-                    if (var21 < -1.0D)
+                    depthNoiseSample /= 2.0D;
+                    if (depthNoiseSample < -1.0D)
                     {
-                        var21 = -1.0D;
+                        depthNoiseSample = -1.0D;
                     }
 
-                    var21 /= 1.4D;
-                    var21 /= 2.0D;
-                    var17 = 0.0D;
+                    depthNoiseSample /= 1.4D;
+                    depthNoiseSample /= 2.0D;
+                    scaleNoiseSample = 0.0D;
                 }
                 else
                 {
-                    if (var21 > 1.0D)
+                    if (depthNoiseSample > 1.0D)
                     {
-                        var21 = 1.0D;
+                        depthNoiseSample = 1.0D;
                     }
 
-                    var21 /= 6.0D;
+                    depthNoiseSample /= 6.0D;
                 }
 
-                var17 += 0.5D;
-                var21 = var21 * sizeY / 16.0D;
-                ++var13;
+                scaleNoiseSample += 0.5D;
+                depthNoiseSample = depthNoiseSample * sizeY / 16.0D;
+                ++xzIndex;
 
-                for (int var23 = 0; var23 < sizeY; ++var23)
+                for (iY = 0; iY < sizeY; ++iY)
                 {
-                    double var24 = 0.0D;
-                    double var26 = var14[var23];
-                    double var28 = minLimitPerlinNoiseBuffer[var12] / 512.0D;
-                    double var30 = maxLimitPerlinNoiseBuffer[var12] / 512.0D;
-                    double var32 = (perlinNoiseBuffer[var12] / 10.0D + 1.0D) / 2.0D;
-                    if (var32 < 0.0D)
+                    double terrainDensity = 0.0D;
+                    double shapeModifier = heightModifiers[iY];
+                    double lowNoiseSample = _minLimitPerlinNoiseBuffer[xyzIndex] / 512.0D;
+                    double highNoiseSample = _maxLimitPerlinNoiseBuffer[xyzIndex] / 512.0D;
+                    double selectorNoiseSample = (_perlinNoiseBuffer[xyzIndex] / 10.0D + 1.0D) / 2.0D;
+                    if (selectorNoiseSample < 0.0D)
                     {
-                        var24 = var28;
+                        terrainDensity = lowNoiseSample;
                     }
-                    else if (var32 > 1.0D)
+                    else if (selectorNoiseSample > 1.0D)
                     {
-                        var24 = var30;
+                        terrainDensity = highNoiseSample;
                     }
                     else
                     {
-                        var24 = var28 + (var30 - var28) * var32;
+                        terrainDensity = lowNoiseSample + (highNoiseSample - lowNoiseSample) * selectorNoiseSample;
                     }
 
-                    var24 -= var26;
-                    double var34;
-                    if (var23 > sizeY - 4)
+                    terrainDensity -= shapeModifier;
+                    double fadeout;
+                    if (iY > sizeY - 4)
                     {
-                        var34 = (double)((var23 - (sizeY - 4)) / 3.0F);
-                        var24 = var24 * (1.0D - var34) + -10.0D * var34;
+                        fadeout = (iY - (sizeY - 4)) / 3.0F;
+                        terrainDensity = terrainDensity * (1.0D - fadeout) + -10.0D * fadeout;
                     }
 
-                    if (var23 < var19)
+                    if (iY < densityOffset)
                     {
-                        var34 = (var19 - var23) / 4.0D;
-                        if (var34 < 0.0D)
+                        fadeout = (densityOffset - iY) / 4.0D;
+                        if (fadeout < 0.0D)
                         {
-                            var34 = 0.0D;
+                            fadeout = 0.0D;
                         }
 
-                        if (var34 > 1.0D)
+                        if (fadeout > 1.0D)
                         {
-                            var34 = 1.0D;
+                            fadeout = 1.0D;
                         }
 
-                        var24 = var24 * (1.0D - var34) + -10.0D * var34;
+                        terrainDensity = terrainDensity * (1.0D - fadeout) + -10.0D * fadeout;
                     }
 
-                    heightMap[var12] = var24;
-                    ++var12;
+                    heightMap[xyzIndex] = terrainDensity;
+                    ++xyzIndex;
                 }
             }
         }
@@ -385,96 +379,78 @@ internal class NetherChunkGenerator : ChunkSource
         return heightMap;
     }
 
-    public bool IsChunkLoaded(int x, int z)
-    {
-        return true;
-    }
+    public bool IsChunkLoaded(int x, int z) => true;
 
     public void DecorateTerrain(ChunkSource source, int x, int z)
     {
         BlockSand.fallInstantly = true;
-        int var4 = x * 16;
-        int var5 = z * 16;
+        int blockX = x * 16;
+        int blockZ = z * 16;
 
-        int var6;
-        int var7;
-        int var8;
-        int var9;
-        for (var6 = 0; var6 < 8; ++var6)
+        int numIterations;
+        int featureX;
+        int featureY;
+        int featureZ;
+        for (numIterations = 0; numIterations < 8; ++numIterations)
         {
-            var7 = var4 + random.NextInt(16) + 8;
-            var8 = random.NextInt(120) + 4;
-            var9 = var5 + random.NextInt(16) + 8;
-            _featureNetherLavaSpring.Generate(world, random, var7, var8, var9);
+            featureX = blockX + random.NextInt(16) + 8;
+            featureY = random.NextInt(120) + 4;
+            featureZ = blockZ + random.NextInt(16) + 8;
+            _featureNetherLavaSpring.Generate(_world, random, featureX, featureY, featureZ);
         }
 
-        var6 = random.NextInt(random.NextInt(10) + 1) + 1;
+        numIterations = random.NextInt(random.NextInt(10) + 1) + 1;
 
-        int var10;
-        for (var7 = 0; var7 < var6; ++var7)
+        int featureZFallback;
+        for (featureX = 0; featureX < numIterations; ++featureX)
         {
-            var8 = var4 + random.NextInt(16) + 8;
-            var9 = random.NextInt(120) + 4;
-            var10 = var5 + random.NextInt(16) + 8;
-            _featureNetherFire.Generate(world, random, var8, var9, var10);
+            featureY = blockX + random.NextInt(16) + 8;
+            featureZ = random.NextInt(120) + 4;
+            featureZFallback = blockZ + random.NextInt(16) + 8;
+            _featureNetherFire.Generate(_world, random, featureY, featureZ, featureZFallback);
         }
 
-        var6 = random.NextInt(random.NextInt(10) + 1);
+        numIterations = random.NextInt(random.NextInt(10) + 1);
 
-        for (var7 = 0; var7 < var6; ++var7)
+        for (featureX = 0; featureX < numIterations; ++featureX)
         {
-            var8 = var4 + random.NextInt(16) + 8;
-            var9 = random.NextInt(120) + 4;
-            var10 = var5 + random.NextInt(16) + 8;
-            _featureGlowstoneFull.Generate(world, random, var8, var9, var10);
+            featureY = blockX + random.NextInt(16) + 8;
+            featureZ = random.NextInt(120) + 4;
+            featureZFallback = blockZ + random.NextInt(16) + 8;
+            _featureGlowstoneFull.Generate(_world, random, featureY, featureZ, featureZFallback);
         }
 
-        for (var7 = 0; var7 < 10; ++var7)
+        for (featureX = 0; featureX < 10; ++featureX)
         {
-            var8 = var4 + random.NextInt(16) + 8;
-            var9 = random.NextInt(128);
-            var10 = var5 + random.NextInt(16) + 8;
-            _featureGlowstoneRare.Generate(world, random, var8, var9, var10);
-        }
-
-        if (random.NextInt(1) == 0)
-        {
-            var7 = var4 + random.NextInt(16) + 8;
-            var8 = random.NextInt(128);
-            var9 = var5 + random.NextInt(16) + 8;
-            _featureBrownMushroom.Generate(world, random, var7, var8, var9);
+            featureY = blockX + random.NextInt(16) + 8;
+            featureZ = random.NextInt(128);
+            featureZFallback = blockZ + random.NextInt(16) + 8;
+            _featureGlowstoneRare.Generate(_world, random, featureY, featureZ, featureZFallback);
         }
 
         if (random.NextInt(1) == 0)
         {
-            var7 = var4 + random.NextInt(16) + 8;
-            var8 = random.NextInt(128);
-            var9 = var5 + random.NextInt(16) + 8;
-            _featureRedMushroom.Generate(world, random, var7, var8, var9);
+            featureX = blockX + random.NextInt(16) + 8;
+            featureY = random.NextInt(128);
+            featureZ = blockZ + random.NextInt(16) + 8;
+            _featureBrownMushroom.Generate(_world, random, featureX, featureY, featureZ);
+        }
+
+        if (random.NextInt(1) == 0)
+        {
+            featureX = blockX + random.NextInt(16) + 8;
+            featureY = random.NextInt(128);
+            featureZ = blockZ + random.NextInt(16) + 8;
+            _featureRedMushroom.Generate(_world, random, featureX, featureY, featureZ);
         }
 
         BlockSand.fallInstantly = false;
     }
 
-    public bool Save(bool bl, LoadingDisplay display)
-    {
-        return true;
-    }
-
-    public bool Tick()
-    {
-        return false;
-    }
-
-    public bool CanSave()
-    {
-        return true;
-    }
-
-    public string GetDebugInfo()
-    {
-        return "HellRandomLevelSource";
-    }
+    public bool Save(bool bl, LoadingDisplay display) => true;
+    public bool Tick() => false;
+    public bool CanSave() => true;
+    public string GetDebugInfo() => "HellRandomLevelSource";
 
     public void markChunksForUnload(int _)
     {

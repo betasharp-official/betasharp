@@ -1,11 +1,11 @@
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Screens;
 using BetaSharp.Screens.Slots;
-using Silk.NET.OpenGL.Legacy;
 
 namespace BetaSharp.Client.Guis;
 

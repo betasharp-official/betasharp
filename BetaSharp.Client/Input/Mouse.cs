@@ -32,6 +32,7 @@ public static class Mouse
     // Grab state
     private static bool _isGrabbed;
     private static int grab_x, grab_y;
+    private static bool _discardNextMove = false;
 
     // Display dimensions (set from outside)
     private static int displayWidth = 800;
@@ -62,6 +63,11 @@ public static class Mouse
     private static unsafe void OnCursorPos(WindowHandle* window, double xpos, double ypos)
     {
         if (!created) return;
+
+        if (_discardNextMove) {
+            _discardNextMove = false;
+            return;
+        }
 
         int newX = (int)xpos;
         int newY = (int)ypos;
@@ -249,7 +255,9 @@ public static class Mouse
 
     public static unsafe void setCursorPosition(int x, int y)
     {
+        OnCursorPos(window, x, y);
         glfw.SetCursorPos(window, x, y);
+        _discardNextMove = true;
     }
 
     public static bool isCreated() => created;

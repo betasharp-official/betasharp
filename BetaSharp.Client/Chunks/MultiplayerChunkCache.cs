@@ -4,31 +4,12 @@ using BetaSharp.Worlds.Chunks;
 
 namespace BetaSharp.Client.Chunks;
 
-public class MultiplayerChunkCache : ChunkSource
+public class MultiplayerChunkCache(World world) : ChunkSource
 {
-
-    private readonly Chunk _empty;
+    private readonly Chunk _empty = new EmptyChunk(world, new byte[-short.MinValue], 0, 0);
     private readonly Dictionary<ChunkPos, Chunk> _chunkByPos = [];
-    private readonly World _world;
 
-    public MultiplayerChunkCache(World world)
-    {
-        _empty = new EmptyChunk(world, new byte[32768], 0, 0);
-        _world = world;
-    }
-
-    public bool IsChunkLoaded(int x, int y)
-    {
-        if (this != null)
-        {
-            return true;
-        }
-        else
-        {
-            ChunkPos key = new(x, y);
-            return _chunkByPos.ContainsKey(key);
-        }
-    }
+    public bool IsChunkLoaded(int x, int y) => _chunkByPos.ContainsKey(new ChunkPos(x, y));
 
     public void UnloadChunk(int x, int z)
     {
@@ -44,14 +25,11 @@ public class MultiplayerChunkCache : ChunkSource
     public Chunk LoadChunk(int x, int z)
     {
         ChunkPos key = new(x, z);
-        byte[] blocks = new byte[32768];
-        Chunk chunk = new(_world, blocks, x, z);
-        Array.Fill<byte>(chunk.SkyLight.Bytes, 255);
+        byte[] blocks = new byte[-short.MinValue];
+        Chunk chunk = new(world, blocks, x, z);
 
-        if (!_chunkByPos.TryAdd(key, chunk))
-        {
-            _chunkByPos[key] = chunk;
-        }
+        Array.Fill(chunk.SkyLight.Bytes, (byte)255);
+        _chunkByPos[key] = chunk;
 
         chunk.Loaded = true;
         return chunk;
@@ -59,32 +37,19 @@ public class MultiplayerChunkCache : ChunkSource
 
     public Chunk GetChunk(int x, int z)
     {
-        ChunkPos key = new(x, z);
-        _chunkByPos.TryGetValue(key, out Chunk? chunk);
+        _chunkByPos.TryGetValue(new ChunkPos(x, z), out Chunk? chunk);
         return chunk ?? _empty;
     }
 
-    public bool Save(bool bl, LoadingDisplay display)
-    {
-        return true;
-    }
+    public bool Save(bool bl, LoadingDisplay display) => true;
 
-    public bool Tick()
-    {
-        return false;
-    }
+    public bool Tick() => false;
 
-    public bool CanSave()
-    {
-        return false;
-    }
+    public bool CanSave() => false;
 
-    public void DecorateTerrain(ChunkSource source, int x, int y)
-    {
-    }
+    public void DecorateTerrain(ChunkSource source, int x, int y){ }
 
-    public string GetDebugInfo()
-    {
-        return "MultiplayerChunkCache: " + _chunkByPos.Count;
-    }
+    public void markChunksForUnload(int _) { }
+
+    public string GetDebugInfo() => $"MultiplayerChunkCache: {_chunkByPos.Count}";
 }

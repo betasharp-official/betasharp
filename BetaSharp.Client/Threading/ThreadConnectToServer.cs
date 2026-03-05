@@ -1,16 +1,26 @@
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Network;
 using BetaSharp.Network.Packets;
-using java.net;
 using Microsoft.Extensions.Logging;
+using System.Net.Sockets;
 
 namespace BetaSharp.Client.Threading;
 
-public class ThreadConnectToServer(GuiConnecting connectingGui, BetaSharp game, string hostName, int port) : java.lang.Thread
+public class ThreadConnectToServer(GuiConnecting connectingGui, BetaSharp game, string hostName, int port)
 {
     private readonly ILogger<ThreadConnectToServer> _logger = Log.Instance.For<ThreadConnectToServer>();
 
-    public override void run()
+    public void Start()
+    {
+        Thread thread = new Thread(Run)
+        {
+            IsBackground = true,
+            Name = $"Server Connector ({hostName}:{port})"
+        };
+        thread.Start();
+    }
+
+    private void Run()
     {
         try
         {
@@ -23,8 +33,9 @@ public class ThreadConnectToServer(GuiConnecting connectingGui, BetaSharp game, 
 
             GuiConnecting.getNetClientHandler(connectingGui).addToSendQueue(new HandshakePacket(game.session.username));
         }
-        catch (UnknownHostException)
+        catch (SocketException ex) when (ex.SocketErrorCode == SocketError.HostNotFound)
         {
+        
             if (GuiConnecting.isCancelled(connectingGui))
             {
                 return;
@@ -32,14 +43,15 @@ public class ThreadConnectToServer(GuiConnecting connectingGui, BetaSharp game, 
 
             game.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", "Unknown host \'" + hostName + "\'"));
         }
-        catch (ConnectException ex)
+        catch (SocketException ex)
         {
+        
             if (GuiConnecting.isCancelled(connectingGui))
             {
                 return;
             }
-
-            game.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", ex.getMessage()));
+        
+            game.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", ex.Message));
         }
         catch (Exception e)
         {

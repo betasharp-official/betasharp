@@ -1,7 +1,6 @@
-using BetaSharp.Client.Options;
 using Silk.NET.GLFW;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 
 namespace BetaSharp.Client;
@@ -441,7 +440,7 @@ public static unsafe class Display
             options.IsVisible = true;
             options.Samples = MSAA_Samples;
             options.API = new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Core, DebugMode ? ContextFlags.Debug : ContextFlags.Default, new APIVersion(4, 1));
-            
+
             if (_x >= 0 && _y >= 0)
                 options.Position = new Vector2D<int>(_x, _y);
 

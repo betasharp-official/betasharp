@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
-using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL;
 
 namespace BetaSharp.Client.Rendering.Core.OpenGL;
 
@@ -27,19 +27,19 @@ internal class GLErrorHandler
     }
 
     private void DebugCallback(
-        GLEnum source,
-        GLEnum type,
+        Silk.NET.OpenGL.GLEnum source,
+        Silk.NET.OpenGL.GLEnum type,
         int id,
-        GLEnum severity,
+        Silk.NET.OpenGL.GLEnum severity,
         int length,
         nint message,
-        nint userParam)
+        nint _)
     {
-        if (severity == GLEnum.DebugSeverityNotification) return;
+        if (severity == Silk.NET.OpenGL.GLEnum.DebugSeverityNotification) return;
 
         string msg = Marshal.PtrToStringAnsi(message, length) ?? "(null)";
 
-        LogLevel logLevel = type == GLEnum.DebugTypeError
+        LogLevel logLevel = type == Silk.NET.OpenGL.GLEnum.DebugTypeError
             ? LogLevel.Error
             : LogLevel.Warning;
 

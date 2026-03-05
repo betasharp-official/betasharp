@@ -1,11 +1,10 @@
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
-using java.lang;
 using Microsoft.Extensions.Logging;
-using Silk.NET.OpenGL.Legacy;
 using Exception = System.Exception;
 
 namespace BetaSharp.Client.Rendering.Entities;
@@ -205,7 +204,7 @@ public class LivingEntityRenderer : EntityRenderer
     {
         if (BetaSharp.isDebugInfoEnabled())
         {
-            renderLivingLabel(var1, Integer.toString(var1.id), var2, var4, var6, 64);
+            renderLivingLabel(var1, var1.id.ToString(), var2, var4, var6, 64);
         }
 
     }
