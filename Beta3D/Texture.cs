@@ -2,6 +2,7 @@ namespace Beta3D;
 
 public abstract class Texture : IDisposable
 {
+    [Flags]
     public enum TextureUsage
     {
         CopyDst = 1,
