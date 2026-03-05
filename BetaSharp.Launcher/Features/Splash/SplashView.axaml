@@ -4,11 +4,5 @@
 
              x:Class="BetaSharp.Launcher.Features.Splash.SplashView" x:DataType="local:SplashViewModel">
 
-    <Interaction.Behaviors>
-        <EventTriggerBehavior EventName="AttachedToVisualTree">
-            <InvokeCommandAction Command="{Binding InitializeCommand}" />
-        </EventTriggerBehavior>
-    </Interaction.Behaviors>
-
-    <Image Source="../../logo.png" VerticalAlignment="Center" Width="175" />
+    <Image Source="../../logo.png" Width="175" VerticalAlignment="Center" />
 </UserControl>

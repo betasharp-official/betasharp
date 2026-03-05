@@ -14,6 +14,7 @@
     <ApplicationIcon>logo.ico</ApplicationIcon>
     <Company>BetaSharp</Company>
     <Product>BetaSharp Launcher</Product>
+    <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
   </PropertyGroup>
 
   <ItemGroup>
@@ -67,8 +68,6 @@
     <PackageReference Include="CommunityToolkit.Labs.Extensions.DependencyInjection" Version="0.1.251217-build.2433"/>
 
     <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0"/>
-
-    <PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.9.5"/>
 
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0"/>
 

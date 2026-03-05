@@ -4,23 +4,17 @@
 
              x:Class="BetaSharp.Launcher.Features.Home.HomeView" x:DataType="local:HomeViewModel">
 
-    <Interaction.Behaviors>
-        <EventTriggerBehavior EventName="AttachedToVisualTree">
-            <InvokeCommandAction Command="{Binding InitializeCommand}" />
-        </EventTriggerBehavior>
-    </Interaction.Behaviors>
-
-    <Grid RowDefinitions="Auto *" IsVisible="{CompiledBinding Account, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-        <Grid ColumnDefinitions="* Auto">
-            <StackPanel HorizontalAlignment="Stretch" Orientation="Horizontal" Spacing="25" Grid.Row="0">
-                <Border Width="50" Height="50" CornerRadius="{StaticResource ControlCornerRadius}" ClipToBounds="True">
+    <Grid RowDefinitions="Auto *" IsVisible="{CompiledBinding Session, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <Grid ColumnDefinitions="* Auto" Grid.Row="0">
+            <StackPanel Spacing="25" HorizontalAlignment="Stretch" Orientation="Horizontal" Grid.Row="0">
+                <Border Width="50" Height="50" ClipToBounds="True" CornerRadius="{StaticResource ControlCornerRadius}">
                     <Image Source="{CompiledBinding Face}" RenderOptions.BitmapInterpolationMode="None" Stretch="UniformToFill" />
                 </Border>
 
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="Welcome" Opacity="0.5" />
 
-                    <TextBlock Text="{CompiledBinding Account.Name, FallbackValue='...'}"
+                    <TextBlock Text="{CompiledBinding Session.Name, FallbackValue='...'}"
                                FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </StackPanel>
             </StackPanel>
