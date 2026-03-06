@@ -27,6 +27,7 @@ public class EnvironmentManager
 
     public event Action<bool> OnRainingStateChanged;
 
+    // TODO: Replace 'World' dependency with specific scoped interfaces/deps to prevent circular dependencies.
     public void PrepareWeather()
     {
         WorldProperties props = _world.Properties;

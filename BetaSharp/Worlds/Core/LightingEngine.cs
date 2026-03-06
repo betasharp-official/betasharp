@@ -19,6 +19,7 @@ public class LightingEngine
     private int _lightingUpdatesCounter;
     private int _lightingUpdatesScheduled;
 
+    // TODO: Replace 'World' dependency with specific scoped interfaces/deps to prevent circular dependencies.
     public LightingEngine(World world)
     {
         _world = world;
