@@ -41,7 +41,7 @@ internal class ItemPainting : Item
             EntityPainting painting = new EntityPainting(world, x, y, z, direction);
             if (painting.CanHangOnWall())
             {
-                if (!world.isRemote)
+                if (!world.IsRemote)
                 {
                     world.Entities.SpawnEntity(painting);
                 }

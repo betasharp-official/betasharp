@@ -158,7 +158,7 @@ public class EntityFish : Entity
         }
         else
         {
-            if (!world.isRemote)
+            if (!world.IsRemote)
             {
                 ItemStack var1 = angler.getHand();
                 if (angler.dead || !angler.isAlive() || var1 == null || var1.getItem() != Item.FishingRod || getSquaredDistance(angler) > 1024.0D)

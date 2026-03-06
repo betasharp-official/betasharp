@@ -210,7 +210,7 @@ internal class BlockDoor : Block
 
             if (wasBroken)
             {
-                if (!world.isRemote)
+                if (!world.IsRemote)
                 {
                     dropStacks(world, x, y, z, meta);
                 }

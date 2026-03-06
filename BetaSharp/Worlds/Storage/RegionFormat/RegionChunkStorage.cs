@@ -4,18 +4,16 @@ using BetaSharp.NBT;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core;
 using Microsoft.Extensions.Logging;
+using File = java.io.File;
 
 namespace BetaSharp.Worlds.Storage.RegionFormat;
 
 internal class RegionChunkStorage : IChunkStorage
 {
     private readonly ILogger<RegionChunkStorage> _logger = Log.Instance.For<RegionChunkStorage>();
-    private readonly java.io.File dir;
+    private readonly File dir;
 
-    public RegionChunkStorage(string dir)
-    {
-        this.dir = new java.io.File(dir);
-    }
+    public RegionChunkStorage(string dir) => this.dir = new File(dir);
 
     public Chunk LoadChunk(World world, int chunkX, int chunkZ)
     {
@@ -35,30 +33,27 @@ internal class RegionChunkStorage : IChunkStorage
                 _logger.LogInformation($"Chunk file at {chunkX},{chunkZ} is missing level data, skipping");
                 return null;
             }
-            else if (!var5.GetCompoundTag("Level").HasKey("Blocks"))
+
+            if (!var5.GetCompoundTag("Level").HasKey("Blocks"))
             {
                 _logger.LogInformation($"Chunk file at {chunkX},{chunkZ} is missing block data, skipping");
                 return null;
             }
-            else
-            {
-                Chunk var6 = LoadChunkFromNbt(world, var5.GetCompoundTag("Level"));
-                if (!var6.ChunkPosEquals(chunkX, chunkZ))
-                {
-                    _logger.LogInformation($"Chunk file at {chunkX},{chunkZ} is in the wrong location; relocating. (Expected {chunkX}, {chunkZ}, got {var6.X}, {var6.Z})");
-                    var5.SetInteger("xPos", chunkX);
-                    var5.SetInteger("zPos", chunkZ);
-                    var6 = LoadChunkFromNbt(world, var5.GetCompoundTag("Level"));
-                }
 
-                var6.Fill();
-                return var6;
+            Chunk var6 = LoadChunkFromNbt(world, var5.GetCompoundTag("Level"));
+            if (!var6.ChunkPosEquals(chunkX, chunkZ))
+            {
+                _logger.LogInformation($"Chunk file at {chunkX},{chunkZ} is in the wrong location; relocating. (Expected {chunkX}, {chunkZ}, got {var6.X}, {var6.Z})");
+                var5.SetInteger("xPos", chunkX);
+                var5.SetInteger("zPos", chunkZ);
+                var6 = LoadChunkFromNbt(world, var5.GetCompoundTag("Level"));
             }
+
+            var6.Fill();
+            return var6;
         }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
 
     public void SaveChunk(World world, Chunk chunk, Action unused1, long unused2)
@@ -71,13 +66,29 @@ internal class RegionChunkStorage : IChunkStorage
             tag.SetTag("Level", var5);
             storeChunkInCompound(chunk, world, var5);
             NbtIo.Write(tag, stream);
-            WorldProperties var6 = world.getProperties();
-            var6.SizeOnDisk = var6.SizeOnDisk + (long)RegionIo.getSizeDelta(dir, chunk.X, chunk.Z);
+            WorldProperties var6 = world.Properties;
+            var6.SizeOnDisk = var6.SizeOnDisk + RegionIo.getSizeDelta(dir, chunk.X, chunk.Z);
         }
         catch (Exception var7)
         {
             _logger.LogError(var7, "Exception");
         }
+    }
+
+    public void SaveEntities(World world, Chunk chunk)
+    {
+    }
+
+    public void Tick()
+    {
+    }
+
+    public void Flush()
+    {
+    }
+
+    public void FlushToDisk()
+    {
     }
 
     public static void storeChunkInCompound(Chunk chunk, World world, NBTTagCompound nbt)
@@ -180,21 +191,5 @@ internal class RegionChunkStorage : IChunkStorage
         }
 
         return var4;
-    }
-
-    public void SaveEntities(World world, Chunk chunk)
-    {
-    }
-
-    public void Tick()
-    {
-    }
-
-    public void Flush()
-    {
-    }
-
-    public void FlushToDisk()
-    {
     }
 }

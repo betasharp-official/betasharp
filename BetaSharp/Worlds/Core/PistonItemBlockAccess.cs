@@ -5,8 +5,8 @@ using BetaSharp.Worlds.Generation.Biomes.Source;
 namespace BetaSharp.Worlds.Core;
 
 /// <summary>
-/// IBlockAccess implementation for rendering a single piston block in item form.
-/// Reports a fixed (blockId, metadata) at (0,0,0) and open-air defaults elsewhere.
+///     IBlockAccess implementation for rendering a single piston block in item form.
+///     Reports a fixed (blockId, metadata) at (0,0,0) and open-air defaults elsewhere.
 /// </summary>
 public sealed class PistonItemBlockAccess : IBlockAccess
 {
@@ -19,10 +19,7 @@ public sealed class PistonItemBlockAccess : IBlockAccess
         _metadata = metadata;
     }
 
-    public int getBlockId(int x, int y, int z)
-    {
-        return x == 0 && y == 0 && z == 0 ? _blockId : 0;
-    }
+    public int getBlockId(int x, int y, int z) => x == 0 && y == 0 && z == 0 ? _blockId : 0;
 
     public BlockEntity? getBlockEntity(int x, int y, int z) => null;
 
@@ -30,10 +27,7 @@ public sealed class PistonItemBlockAccess : IBlockAccess
 
     public float getLuminance(int x, int y, int z) => 1.0f;
 
-    public int getBlockMeta(int x, int y, int z)
-    {
-        return x == 0 && y == 0 && z == 0 ? _metadata : 0;
-    }
+    public int getBlockMeta(int x, int y, int z) => x == 0 && y == 0 && z == 0 ? _metadata : 0;
 
     public Material getMaterial(int x, int y, int z) => Material.Air;
 
@@ -43,4 +37,3 @@ public sealed class PistonItemBlockAccess : IBlockAccess
 
     public BiomeSource getBiomeSource() => null!;
 }
-

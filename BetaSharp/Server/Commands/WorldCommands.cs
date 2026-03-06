@@ -71,16 +71,16 @@ internal static class WorldCommands
             {
                 case "clear":
                     world.Entities.GlobalEntities.Clear();
-                    world.getProperties().IsRaining = false;
-                    world.getProperties().IsThundering = false;
+                    world.Properties.IsRaining = false;
+                    world.Properties.IsThundering = false;
                     break;
                 case "rain":
-                    world.getProperties().IsRaining = true;
-                    world.getProperties().IsThundering = false;
+                    world.Properties.IsRaining = true;
+                    world.Properties.IsThundering = false;
                     break;
                 case "storm":
-                    world.getProperties().IsRaining = true;
-                    world.getProperties().IsThundering = true;
+                    world.Properties.IsRaining = true;
+                    world.Properties.IsThundering = true;
                     break;
                 default:
                     output.SendMessage("Unknown weather type. Use: clear, rain, or storm");

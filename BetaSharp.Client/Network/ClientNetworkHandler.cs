@@ -95,7 +95,7 @@ public class ClientNetworkHandler : NetHandler
         _game.statFileWriter.ReadStat(Stats.Stats.JoinMultiplayerStat, 1);
         worldClient = new ClientWorld(this, packet.worldSeed, packet.dimensionId)
         {
-            isRemote = true
+            IsRemote = true
         };
         _game.changeWorld(worldClient);
         _game.player.dimensionId = packet.dimensionId;
@@ -569,7 +569,7 @@ public class ClientNetworkHandler : NetHandler
     public override void onPlayerSpawnPosition(PlayerSpawnPositionS2CPacket packet)
     {
         _game.player.setSpawnPos(new Vec3i(packet.x, packet.y, packet.z));
-        _game.world.getProperties().SetSpawn(packet.x, packet.y, packet.z);
+        _game.world.Properties.SetSpawn(packet.x, packet.y, packet.z);
     }
 
     public override void onEntityVehicleSet(EntityVehicleSetS2CPacket packet)
@@ -617,9 +617,9 @@ public class ClientNetworkHandler : NetHandler
         if (packet.dimensionId != _game.player.dimensionId)
         {
             terrainLoaded = false;
-            worldClient = new ClientWorld(this, worldClient.getProperties().RandomSeed, packet.dimensionId)
+            worldClient = new ClientWorld(this, worldClient.Properties.RandomSeed, packet.dimensionId)
             {
-                isRemote = true
+                IsRemote = true
             };
             _game.changeWorld(worldClient);
             _game.player.dimensionId = packet.dimensionId;
@@ -790,22 +790,22 @@ public class ClientNetworkHandler : NetHandler
 
         if (reason == 1)
         {
-            worldClient.getProperties().IsRaining = true;
+            worldClient.Properties.IsRaining = true;
             worldClient.Environment.SetRainGradient(1.0F);
         }
         else if (reason == 2)
         {
-            worldClient.getProperties().IsRaining = false;
+            worldClient.Properties.IsRaining = false;
             worldClient.Environment.SetRainGradient(0.0F);
         }
         else if (reason == 7)
         {
-            worldClient.getProperties().IsThundering = true;
+            worldClient.Properties.IsThundering = true;
             worldClient.Environment.SetThunderGradient(1.0F);
         }
         else if (reason == 8)
         {
-            worldClient.getProperties().IsThundering = false;
+            worldClient.Properties.IsThundering = false;
             worldClient.Environment.SetThunderGradient(0.0F);
         }
     }

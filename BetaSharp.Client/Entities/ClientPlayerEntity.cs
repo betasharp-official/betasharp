@@ -55,7 +55,7 @@ public class ClientPlayerEntity : EntityPlayer
         lastScreenDistortion = changeDimensionCooldown;
         if (inTeleportationState)
         {
-            if (!world.isRemote && vehicle != null)
+            if (!world.IsRemote && vehicle != null)
             {
                 setVehicle((Entity)null);
             }

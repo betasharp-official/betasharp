@@ -131,7 +131,7 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
             }
 
             worlds[i].addWorldAccess(new ServerWorldEventListener(this, worlds[i]));
-            worlds[i].difficulty = config.GetSpawnMonsters(true) ? 1 : 0;
+            worlds[i].Difficulty = config.GetSpawnMonsters(true) ? 1 : 0;
             worlds[i].allowSpawning(config.GetSpawnMonsters(true), spawnAnimals);
             playerManager.saveAllPlayers(worlds);
         }
@@ -407,7 +407,7 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
                 ServerWorld world = worlds[i];
                 if (ticks % 20 == 0)
                 {
-                    playerManager.sendToDimension(new WorldTimeUpdateS2CPacket(world.getTime()), world.dimension.Id);
+                    playerManager.sendToDimension(new WorldTimeUpdateS2CPacket(world.getTime()), world.Dimension.Id);
                 }
 
                 world.Tick();

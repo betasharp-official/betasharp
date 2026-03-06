@@ -6,7 +6,6 @@ namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class SpruceTreeFeature : Feature
 {
-
     public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
     {
         int totalHeight = rand.NextInt(4) + 6;
@@ -16,13 +15,22 @@ internal class SpruceTreeFeature : Feature
 
         bool canPlace = true;
 
-        if (!(y >= 1 && y + totalHeight + 1 <= 128)) return false;
+        if (!(y >= 1 && y + totalHeight + 1 <= 128))
+        {
+            return false;
+        }
 
         for (int cy = y; cy <= y + 1 + totalHeight && canPlace; ++cy)
         {
             int checkRadius;
-            if (cy - y < topTrunkNoLeaves) checkRadius = 0;
-            else checkRadius = maxLeafRadius;
+            if (cy - y < topTrunkNoLeaves)
+            {
+                checkRadius = 0;
+            }
+            else
+            {
+                checkRadius = maxLeafRadius;
+            }
 
             for (int cx = x - checkRadius; cx <= x + checkRadius && canPlace; ++cx)
             {
@@ -44,10 +52,16 @@ internal class SpruceTreeFeature : Feature
             }
         }
 
-        if (!canPlace) return false;
+        if (!canPlace)
+        {
+            return false;
+        }
 
         int groundId = world.getBlockId(x, y - 1, z);
-        if (!((groundId == Block.GrassBlock.id || groundId == Block.Dirt.id) && y < 128 - totalHeight - 1)) return false;
+        if (!((groundId == Block.GrassBlock.id || groundId == Block.Dirt.id) && y < 128 - totalHeight - 1))
+        {
+            return false;
+        }
 
         world.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id);
         int currentRadius = rand.NextInt(2);
@@ -102,5 +116,4 @@ internal class SpruceTreeFeature : Feature
 
         return true;
     }
-
 }

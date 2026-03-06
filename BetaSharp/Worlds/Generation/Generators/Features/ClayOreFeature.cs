@@ -7,14 +7,10 @@ namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class ClayOreFeature : Feature
 {
-
     private readonly int _clayBlockId = Block.Clay.id;
     private readonly int _numberOfBlocks;
 
-    public ClayOreFeature(int numberOfBlocks)
-    {
-        _numberOfBlocks = numberOfBlocks;
-    }
+    public ClayOreFeature(int numberOfBlocks) => _numberOfBlocks = numberOfBlocks;
 
     public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
     {
@@ -42,8 +38,8 @@ internal class ClayOreFeature : Feature
             double centerZ = startZ + (enZ - startZ) * lerp;
 
             double sizeMultiplier = rand.NextDouble() * _numberOfBlocks / 16.0D;
-            double radiusH = (double)(MathHelper.Sin(i * (float)Math.PI / _numberOfBlocks) + 1.0F) * sizeMultiplier + 1.0D;
-            double radiusV = (double)(MathHelper.Sin(i * (float)Math.PI / _numberOfBlocks) + 1.0F) * sizeMultiplier + 1.0D;
+            double radiusH = (MathHelper.Sin(i * (float)Math.PI / _numberOfBlocks) + 1.0F) * sizeMultiplier + 1.0D;
+            double radiusV = (MathHelper.Sin(i * (float)Math.PI / _numberOfBlocks) + 1.0F) * sizeMultiplier + 1.0D;
 
             int minX = MathHelper.Floor(centerX - radiusH / 2.0D);
             int minY = MathHelper.Floor(centerY - radiusV / 2.0D);

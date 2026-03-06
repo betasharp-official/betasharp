@@ -6,7 +6,6 @@ namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class NetherFirePatchFeature : Feature
 {
-
     public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
     {
         for (int i = 0; i < 64; ++i)

@@ -74,7 +74,7 @@ public class EntityBoat : Entity
 
     public override bool damage(Entity entity, int amount)
     {
-        if (!world.isRemote && !dead)
+        if (!world.IsRemote && !dead)
         {
             boatRockDirection = -boatRockDirection;
             boatTimeSinceHit = 10;
@@ -175,7 +175,7 @@ public class EntityBoat : Entity
         double var8;
         double var10;
         double var21;
-        if (world.isRemote)
+        if (world.IsRemote)
         {
             if (lerpSteps > 0)
             {
@@ -298,7 +298,7 @@ public class EntityBoat : Entity
 
             if (horizontalCollison && var6 > 0.15D)
             {
-                if (!world.isRemote)
+                if (!world.IsRemote)
                 {
                     markDead();
 
@@ -416,7 +416,7 @@ public class EntityBoat : Entity
         }
         else
         {
-            if (!world.isRemote)
+            if (!world.IsRemote)
             {
                 player.setVehicle(this);
             }

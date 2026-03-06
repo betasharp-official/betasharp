@@ -6,20 +6,16 @@ namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class DeadBushPatchFeature : Feature
 {
-
     private readonly int _deadBushBlockId;
 
-    public DeadBushPatchFeature(int deadBushBlockId)
-    {
-        _deadBushBlockId = deadBushBlockId;
-    }
+    public DeadBushPatchFeature(int deadBushBlockId) => _deadBushBlockId = deadBushBlockId;
 
     public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
     {
         while (true)
         {
             int blockId = world.getBlockId(x, y, z);
-            if (blockId != 0 && blockId != Block.Leaves.id || y <= 0)
+            if ((blockId != 0 && blockId != Block.Leaves.id) || y <= 0)
             {
                 for (int i = 0; i < 4; ++i)
                 {

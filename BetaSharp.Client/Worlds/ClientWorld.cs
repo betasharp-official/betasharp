@@ -22,7 +22,7 @@ public class ClientWorld : World
     {
         _networkHandler = netHandler;
         setSpawnPos(new Vec3i(8, 64, 8));
-        persistentStateManager = netHandler.clientPersistentStateManager;
+        PersistentStateManager = netHandler.clientPersistentStateManager;
 
         Entities.OnEntityAdded += HandleEntityAdded;
         Entities.OnEntityRemoved += HandleEntityRemoved;

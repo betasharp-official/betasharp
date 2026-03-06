@@ -10,7 +10,7 @@ internal class Carver
     protected JavaRandom Rand = new();
 
     /// <summary>
-    /// Attempts to generate a cave in the current chunk
+    ///     Attempts to generate a cave in the current chunk
     /// </summary>
     /// <param name="source">The chunk source</param>
     /// <param name="world">The world this cave is being generated in</param>
@@ -27,11 +27,10 @@ internal class Carver
         {
             for (int currentZ = chunkZ - Radius; currentZ <= chunkZ + Radius; ++currentZ)
             {
-                Rand.SetSeed(currentX * xOffset + currentZ * yOffset ^ world.getSeed());
+                Rand.SetSeed((currentX * xOffset + currentZ * yOffset) ^ world.getSeed());
                 CarveCaves(world, currentX, currentZ, chunkX, chunkZ, blocks);
             }
         }
-
     }
 
     protected virtual void CarveCaves(World world, int chunkX, int chunkZ, int centerChunkX, int centerChunkZ, byte[] blocks)

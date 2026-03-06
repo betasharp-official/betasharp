@@ -25,7 +25,7 @@ internal class ItemHoe : Item
         {
             Block block = Block.Farmland;
             world.playSound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), block.soundGroup.StepSound, (block.soundGroup.Volume + 1.0F) / 2.0F, block.soundGroup.Pitch * 0.8F);
-            if (world.isRemote)
+            if (world.IsRemote)
             {
                 return true;
             }

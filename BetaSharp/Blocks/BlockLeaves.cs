@@ -71,7 +71,7 @@ public class BlockLeaves : BlockLeavesBase
 
     public override void onTick(World world, int x, int y, int z, JavaRandom random)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             int meta = world.getBlockMeta(x, y, z);
             if ((meta & 8) != 0)
@@ -204,7 +204,7 @@ public class BlockLeaves : BlockLeavesBase
 
     public override void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta)
     {
-        if (!world.isRemote && player.getHand() != null && player.getHand().itemId == Item.Shears.id)
+        if (!world.IsRemote && player.getHand() != null && player.getHand().itemId == Item.Shears.id)
         {
             player.increaseStat(Stats.Stats.MineBlockStatArray[id], 1);
             dropStack(world, x, y, z, new ItemStack(Block.Leaves.id, 1, meta & 3));

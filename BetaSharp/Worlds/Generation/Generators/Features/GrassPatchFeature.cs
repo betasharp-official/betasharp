@@ -6,7 +6,6 @@ namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class GrassPatchFeature : Feature
 {
-
     private readonly int _tallGrassBlockId;
     private readonly int _tallGrassBlockMeta;
 
@@ -21,7 +20,7 @@ internal class GrassPatchFeature : Feature
         while (true)
         {
             int blockId = world.getBlockId(x, y, z);
-            if (blockId != 0 && blockId != Block.Leaves.id || y <= 0)
+            if ((blockId != 0 && blockId != Block.Leaves.id) || y <= 0)
             {
                 for (int i = 0; i < 128; ++i)
                 {

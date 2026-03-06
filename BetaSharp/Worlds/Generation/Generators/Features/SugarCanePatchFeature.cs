@@ -7,7 +7,6 @@ namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class SugarCanePatchFeature : Feature
 {
-
     public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
     {
         for (int i = 0; i < 20; ++i)
@@ -15,12 +14,15 @@ internal class SugarCanePatchFeature : Feature
             int genX = x + rand.NextInt(4) - rand.NextInt(4);
             int genZ = z + rand.NextInt(4) - rand.NextInt(4);
 
-            if (!world.isAir(genX, y, genZ)) continue;
+            if (!world.isAir(genX, y, genZ))
+            {
+                continue;
+            }
 
             bool hasWaterNearby = world.getMaterial(genX - 1, y - 1, genZ) == Material.Water ||
-                world.getMaterial(genX + 1, y - 1, genZ) == Material.Water ||
-                world.getMaterial(genX, y - 1, genZ - 1) == Material.Water ||
-                world.getMaterial(genX, y - 1, genZ + 1) == Material.Water;
+                                  world.getMaterial(genX + 1, y - 1, genZ) == Material.Water ||
+                                  world.getMaterial(genX, y - 1, genZ - 1) == Material.Water ||
+                                  world.getMaterial(genX, y - 1, genZ + 1) == Material.Water;
 
             if (hasWaterNearby)
             {

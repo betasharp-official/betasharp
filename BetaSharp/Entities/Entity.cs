@@ -231,7 +231,7 @@ public abstract class Entity
             inWater = false;
         }
 
-        if (world.isRemote)
+        if (world.IsRemote)
         {
             fireTicks = 0;
         }
@@ -266,7 +266,7 @@ public abstract class Entity
             tickInVoid();
         }
 
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             setFlag(0, fireTicks > 0);
             setFlag(2, vehicle != null);

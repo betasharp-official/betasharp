@@ -99,7 +99,7 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
 
             targetAngle = (_game.player.yaw - 90.0F) * Math.PI / 180.0D - Math.Atan2(deltaZ, deltaX);
 
-            if (_game.world.dimension.IsNether)
+            if (_game.world.Dimension.IsNether)
             {
                 targetAngle = Random.Shared.NextDouble() * (float)Math.PI * 2.0D;
             }

@@ -10,31 +10,27 @@ namespace BetaSharp.Worlds.Core;
 
 public class EntityManager
 {
-    private readonly World _world;
-
-    public List<EntityPlayer> Players = [];
-    public List<Entity> Entities = [];
-    private readonly Dictionary<int, Entity> _entitiesById = new();
-    public List<Entity> GlobalEntities = [];
-    private readonly List<Entity> _entitiesToUnload = [];
-
     [ThreadStatic] internal static List<Entity>? _tempCollisionEntities;
     [ThreadStatic] internal static List<Box>? _tempCollisionBoxes;
     [ThreadStatic] internal static List<Entity>? _tempCollisionEntitiesResult;
+    private readonly List<BlockEntity> _blockEntityUpdateQueue = [];
+    private readonly Dictionary<int, Entity> _entitiesById = new();
+    private readonly List<Entity> _entitiesToUnload = [];
+    private readonly World _world;
+    private bool _processingDeferred;
 
     public List<BlockEntity> BlockEntities = [];
-    private readonly List<BlockEntity> _blockEntityUpdateQueue = [];
-    private bool _processingDeferred;
+    public List<Entity> Entities = [];
+    public List<Entity> GlobalEntities = [];
+
+    public List<EntityPlayer> Players = [];
+
+    public EntityManager(World world) => _world = world;
 
     public event Action<Entity>? OnEntityAdded;
     public event Action<Entity>? OnEntityRemoved;
     public event Action<Entity>? OnGlobalEntityAdded;
     public event Func<Entity, bool>? OnEntityUpdating;
-
-    public EntityManager(World world)
-    {
-        _world = world;
-    }
 
     public bool SpawnGlobalEntity(Entity entity)
     {
@@ -46,16 +42,16 @@ public class EntityManager
     public void UpdateEntityLists()
     {
         // 1. Clean up unloaded entities
-        foreach (var entity in _entitiesToUnload)
+        foreach (Entity entity in _entitiesToUnload)
         {
             Entities.Remove(entity);
         }
 
         for (int i = 0; i < _entitiesToUnload.Count; ++i)
         {
-            var entity = _entitiesToUnload[i];
-            var chunkX = entity.chunkX;
-            var chunkZ = entity.chunkZ;
+            Entity entity = _entitiesToUnload[i];
+            int chunkX = entity.chunkX;
+            int chunkZ = entity.chunkZ;
 
             if (entity.isPersistent && _world.GetChunkSource().IsChunkLoaded(chunkX, chunkZ))
             {
@@ -71,7 +67,7 @@ public class EntityManager
         // 2. Process active entities and clean up dead ones
         for (int i = 0; i < Entities.Count; ++i)
         {
-            var entity = Entities[i];
+            Entity entity = Entities[i];
 
             if (entity.vehicle != null)
             {
@@ -128,8 +124,15 @@ public class EntityManager
 
     public void Remove(Entity entity)
     {
-        if (entity.passenger != null) entity.passenger.setVehicle(null);
-        if (entity.vehicle != null) entity.setVehicle(null);
+        if (entity.passenger != null)
+        {
+            entity.passenger.setVehicle(null);
+        }
+
+        if (entity.vehicle != null)
+        {
+            entity.setVehicle(null);
+        }
 
         entity.markDead();
         if (entity is EntityPlayer player)
@@ -160,15 +163,9 @@ public class EntityManager
         NotifyEntityRemoved(entity);
     }
 
-    private void NotifyEntityAdded(Entity entity)
-    {
-        OnEntityAdded?.Invoke(entity);
-    }
+    private void NotifyEntityAdded(Entity entity) => OnEntityAdded?.Invoke(entity);
 
-    private void NotifyEntityRemoved(Entity entity)
-    {
-        OnEntityRemoved?.Invoke(entity);
-    }
+    private void NotifyEntityRemoved(Entity entity) => OnEntityRemoved?.Invoke(entity);
 
     public void TickEntities()
     {
@@ -177,7 +174,10 @@ public class EntityManager
         {
             Entity globalEntity = GlobalEntities[i];
             globalEntity.tick();
-            if (globalEntity.dead) GlobalEntities.RemoveAt(i--);
+            if (globalEntity.dead)
+            {
+                GlobalEntities.RemoveAt(i--);
+            }
         }
 
         Profiler.Stop("updateEntites.updateWeatherEffects");
@@ -195,7 +195,11 @@ public class EntityManager
             }
         }
 
-        for (int i = 0; i < _entitiesToUnload.Count; ++i) NotifyEntityRemoved(_entitiesToUnload[i]);
+        for (int i = 0; i < _entitiesToUnload.Count; ++i)
+        {
+            NotifyEntityRemoved(_entitiesToUnload[i]);
+        }
+
         _entitiesToUnload.Clear();
         Profiler.Stop("updateEntites.clearUnloadedEntities");
 
@@ -206,12 +210,19 @@ public class EntityManager
 
             if (entity.vehicle != null)
             {
-                if (!entity.vehicle.dead && entity.vehicle.passenger == entity) continue;
+                if (!entity.vehicle.dead && entity.vehicle.passenger == entity)
+                {
+                    continue;
+                }
+
                 entity.vehicle.passenger = null;
                 entity.vehicle = null;
             }
 
-            if (!entity.dead) UpdateEntity(entity, true);
+            if (!entity.dead)
+            {
+                UpdateEntity(entity, true);
+            }
 
             if (entity.dead)
             {
@@ -237,7 +248,10 @@ public class EntityManager
         for (int i = BlockEntities.Count - 1; i >= 0; i--)
         {
             BlockEntity blockEntity = BlockEntities[i];
-            if (!blockEntity.isRemoved()) blockEntity.tick();
+            if (!blockEntity.isRemoved())
+            {
+                blockEntity.tick();
+            }
 
             if (blockEntity.isRemoved())
             {
@@ -255,7 +269,10 @@ public class EntityManager
             {
                 if (!queuedBlockEntity.isRemoved())
                 {
-                    if (!BlockEntities.Contains(queuedBlockEntity)) BlockEntities.Add(queuedBlockEntity);
+                    if (!BlockEntities.Contains(queuedBlockEntity))
+                    {
+                        BlockEntities.Add(queuedBlockEntity);
+                    }
 
                     Chunk chunk = _world.GetChunk(queuedBlockEntity.X >> 4, queuedBlockEntity.Z >> 4);
                     chunk?.SetBlockEntity(queuedBlockEntity.X & 15, queuedBlockEntity.Y, queuedBlockEntity.Z & 15, queuedBlockEntity);
@@ -271,9 +288,15 @@ public class EntityManager
 
     public void UpdateEntity(Entity entity, bool requireLoaded)
     {
-        if (OnEntityUpdating != null && !OnEntityUpdating.Invoke(entity)) return;
+        if (OnEntityUpdating != null && !OnEntityUpdating.Invoke(entity))
+        {
+            return;
+        }
 
-        if (entity.dead) return;
+        if (entity.dead)
+        {
+            return;
+        }
 
         int blockX = MathHelper.Floor(entity.x);
         int blockZ = MathHelper.Floor(entity.z);
@@ -289,15 +312,40 @@ public class EntityManager
 
             if (requireLoaded && entity.isPersistent)
             {
-                if (entity.vehicle != null) entity.tickRiding();
-                else entity.tick();
+                if (entity.vehicle != null)
+                {
+                    entity.tickRiding();
+                }
+                else
+                {
+                    entity.tick();
+                }
             }
 
-            if (double.IsNaN(entity.x) || double.IsInfinity(entity.x)) entity.x = entity.lastTickX;
-            if (double.IsNaN(entity.y) || double.IsInfinity(entity.y)) entity.y = entity.lastTickY;
-            if (double.IsNaN(entity.z) || double.IsInfinity(entity.z)) entity.z = entity.lastTickZ;
-            if (double.IsNaN(entity.pitch) || double.IsInfinity(entity.pitch)) entity.pitch = entity.prevPitch;
-            if (double.IsNaN(entity.yaw) || double.IsInfinity(entity.yaw)) entity.yaw = entity.prevYaw;
+            if (double.IsNaN(entity.x) || double.IsInfinity(entity.x))
+            {
+                entity.x = entity.lastTickX;
+            }
+
+            if (double.IsNaN(entity.y) || double.IsInfinity(entity.y))
+            {
+                entity.y = entity.lastTickY;
+            }
+
+            if (double.IsNaN(entity.z) || double.IsInfinity(entity.z))
+            {
+                entity.z = entity.lastTickZ;
+            }
+
+            if (double.IsNaN(entity.pitch) || double.IsInfinity(entity.pitch))
+            {
+                entity.pitch = entity.prevPitch;
+            }
+
+            if (double.IsNaN(entity.yaw) || double.IsInfinity(entity.yaw))
+            {
+                entity.yaw = entity.prevYaw;
+            }
 
             int newChunkX = MathHelper.Floor(entity.x / 16.0D);
             int newChunkY = MathHelper.Floor(entity.y / 16.0D);
@@ -336,10 +384,7 @@ public class EntityManager
         }
     }
 
-    public List<Box> GetEntityCollisions(Entity entity, Box area)
-    {
-        return GetEntityCollisions(entity, area, new List<Box>());
-    }
+    public List<Box> GetEntityCollisions(Entity entity, Box area) => GetEntityCollisions(entity, area, new List<Box>());
 
     internal List<Box> GetEntityCollisionsScratch(Entity entity, Box area)
     {
@@ -366,7 +411,10 @@ public class EntityManager
                     for (int y = minY - 1; y < maxY; ++y)
                     {
                         Block block = Block.Blocks[_world.getBlockId(x, y, z)];
-                        if (block != null) block.addIntersectingBoundingBox(_world, x, y, z, area, collidingBoundingBoxes);
+                        if (block != null)
+                        {
+                            block.addIntersectingBoundingBox(_world, x, y, z, area, collidingBoundingBoxes);
+                        }
                     }
                 }
             }
@@ -383,7 +431,10 @@ public class EntityManager
 
         for (int i = 0; i < _tempCollisionEntities.Count; ++i)
         {
-            if (collisionCount >= maxCollisions) break;
+            if (collisionCount >= maxCollisions)
+            {
+                break;
+            }
 
             Box? entityBox = _tempCollisionEntities[i].getBoundingBox();
             if (entityBox != null && entityBox.Value.Intersects(area))
@@ -403,10 +454,7 @@ public class EntityManager
         return collidingBoundingBoxes;
     }
 
-    public List<Entity> GetEntities(Entity? excludeEntity, Box area)
-    {
-        return GetEntities(excludeEntity, area, new List<Entity>());
-    }
+    public List<Entity> GetEntities(Entity? excludeEntity, Box area) => GetEntities(excludeEntity, area, new List<Entity>());
 
     internal List<Entity> GetEntitiesScratch(Entity? excludeEntity, Box area)
     {
@@ -439,9 +487,12 @@ public class EntityManager
     public int CountEntitiesOfType(Type type)
     {
         int res = 0;
-        foreach (var entity in Entities)
+        foreach (Entity entity in Entities)
         {
-            if (type.IsInstanceOfType(entity)) res++;
+            if (type.IsInstanceOfType(entity))
+            {
+                res++;
+            }
         }
 
         return res;
@@ -485,17 +536,16 @@ public class EntityManager
     public EntityPlayer? GetPlayer(string name) => Players.FirstOrDefault(p => p.name == name);
 
     public Entity? GetEntityByID(int id) // unused
-    {
-        return _entitiesById.TryGetValue(id, out var entity) ? entity : null;
-    }
+        =>
+            _entitiesById.TryGetValue(id, out Entity? entity) ? entity : null;
 
     /// <summary>
-    /// Like <see cref="getEntities(Entity?,Box)"/> but writes into a reused thread-static
-    /// scratch list. The returned list is only valid until the next call on the same thread.
+    ///     Like <see cref="getEntities(Entity?,Box)" /> but writes into a reused thread-static
+    ///     scratch list. The returned list is only valid until the next call on the same thread.
     /// </summary>
     public bool CanSpawnEntity(Box spawnArea)
     {
-        var nearbyEntities = GetEntitiesScratch(null, spawnArea);
+        List<Entity> nearbyEntities = GetEntitiesScratch(null, spawnArea);
         return nearbyEntities.All(entity => entity.dead || !entity.preventEntitySpawning);
     }
 
@@ -513,7 +563,10 @@ public class EntityManager
             }
         }
 
-        if (!Entities.Contains(entity)) Entities.Add(entity);
+        if (!Entities.Contains(entity))
+        {
+            Entities.Add(entity);
+        }
     }
 
     public BlockEntity? GetBlockEntity(int x, int y, int z)
@@ -551,13 +604,22 @@ public class EntityManager
         else
         {
             _world.GetChunk(x >> 4, z >> 4)?.RemoveBlockEntityAt(x & 15, y, z & 15);
-            if (entity != null) BlockEntities.Remove(entity);
+            if (entity != null)
+            {
+                BlockEntities.Remove(entity);
+            }
         }
     }
 
     public void ProcessBlockUpdates(IEnumerable<BlockEntity> updates)
     {
-        if (_processingDeferred) _blockEntityUpdateQueue.AddRange(updates);
-        else BlockEntities.AddRange(updates);
+        if (_processingDeferred)
+        {
+            _blockEntityUpdateQueue.AddRange(updates);
+        }
+        else
+        {
+            BlockEntities.AddRange(updates);
+        }
     }
 }

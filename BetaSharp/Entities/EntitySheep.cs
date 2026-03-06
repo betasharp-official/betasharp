@@ -46,7 +46,7 @@ public class EntitySheep : EntityAnimal
         ItemStack heldItem = player.inventory.getSelectedItem();
         if (heldItem != null && heldItem.itemId == Item.Shears.id && !getSheared())
         {
-            if (!world.isRemote)
+            if (!world.IsRemote)
             {
                 setSheared(true);
                 int woolCount = 2 + random.NextInt(3);

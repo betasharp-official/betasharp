@@ -6,13 +6,13 @@ namespace BetaSharp.Worlds.Generation.Biomes.Source;
 
 public class BiomeSource
 {
-    private readonly OctaveSimplexNoiseSampler _temperatureSampler;
     private readonly OctaveSimplexNoiseSampler _downfallSampler;
+    private readonly OctaveSimplexNoiseSampler _temperatureSampler;
     private readonly OctaveSimplexNoiseSampler _weirdnessSampler;
-    public double[] TemperatureMap;
-    public double[] DownfallMap;
-    public double[] WeirdnessMap;
     public Biome[] Biomes;
+    public double[] DownfallMap;
+    public double[] TemperatureMap;
+    public double[] WeirdnessMap;
 
     protected BiomeSource()
     {
@@ -25,19 +25,13 @@ public class BiomeSource
         _weirdnessSampler = new OctaveSimplexNoiseSampler(new JavaRandom(world.getSeed() * 543321L), 2);
     }
 
-    public virtual Biome GetBiome(ChunkPos chunkPos)
-    {
-        return GetBiome(chunkPos.X << 4, chunkPos.Z << 4);
-    }
+    public virtual Biome GetBiome(ChunkPos chunkPos) => GetBiome(chunkPos.X << 4, chunkPos.Z << 4);
 
-    public virtual Biome GetBiome(int x, int z)
-    {
-        return GetBiomesInArea(x, z, 1, 1)[0];
-    }
+    public virtual Biome GetBiome(int x, int z) => GetBiomesInArea(x, z, 1, 1)[0];
 
     public virtual double GetTemperature(int x, int z)
     {
-        TemperatureMap = _temperatureSampler.sample(TemperatureMap, x, z, 1, 1, (double)0.025F, (double)0.025F, 0.5D);
+        TemperatureMap = _temperatureSampler.sample(TemperatureMap, x, z, 1, 1, 0.025F, 0.025F, 0.5D);
         return TemperatureMap[0];
     }
 
@@ -55,7 +49,7 @@ public class BiomeSource
             map = new double[size];
         }
 
-        map = _temperatureSampler.sample(map, x, z, width, depth, (double)0.025F, (double)0.025F, 0.25D);
+        map = _temperatureSampler.sample(map, x, z, width, depth, 0.025F, 0.025F, 0.25D);
         WeirdnessMap = _weirdnessSampler.sample(WeirdnessMap, x, z, width, depth, 0.25D, 0.25D, 10 / 17d);
         int index = 0;
 
@@ -94,8 +88,8 @@ public class BiomeSource
             biomes = new Biome[size];
         }
 
-        TemperatureMap = _temperatureSampler.sample(TemperatureMap, x, z, width, width, (double)0.025F, (double)0.025F, 0.25D);
-        DownfallMap = _downfallSampler.sample(DownfallMap, x, z, width, width, (double)0.05F, (double)0.05F, 1.0D / 3.0D);
+        TemperatureMap = _temperatureSampler.sample(TemperatureMap, x, z, width, width, 0.025F, 0.025F, 0.25D);
+        DownfallMap = _downfallSampler.sample(DownfallMap, x, z, width, width, 0.05F, 0.05F, 1.0D / 3.0D);
         WeirdnessMap = _weirdnessSampler.sample(WeirdnessMap, x, z, width, width, 0.25D, 0.25D, 0.5882352941176471D);
         int index = 0;
 

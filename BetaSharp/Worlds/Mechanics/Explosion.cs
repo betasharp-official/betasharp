@@ -7,15 +7,15 @@ namespace BetaSharp.Worlds.Mechanics;
 
 public class Explosion
 {
-    public bool isFlaming = false;
-    private JavaRandom ExplosionRNG = new();
-    private World worldObj;
+    private readonly JavaRandom ExplosionRNG = new();
+    private readonly World worldObj;
+    public HashSet<BlockPos> destroyedBlockPositions = new();
+    public Entity exploder;
+    public float explosionSize;
     public double explosionX;
     public double explosionY;
     public double explosionZ;
-    public Entity exploder;
-    public float explosionSize;
-    public HashSet<BlockPos> destroyedBlockPositions = new();
+    public bool isFlaming = false;
 
     public Explosion(World var1, Entity var2, double var3, double var5, double var7, float var9)
     {
@@ -46,9 +46,9 @@ public class Explosion
                 {
                     if (var3 == 0 || var3 == var2 - 1 || var4 == 0 || var4 == var2 - 1 || var5 == 0 || var5 == var2 - 1)
                     {
-                        double var6 = (double)(var3 / (var2 - 1.0F) * 2.0F - 1.0F);
-                        double var8 = (double)(var4 / (var2 - 1.0F) * 2.0F - 1.0F);
-                        double var10 = (double)(var5 / (var2 - 1.0F) * 2.0F - 1.0F);
+                        double var6 = var3 / (var2 - 1.0F) * 2.0F - 1.0F;
+                        double var8 = var4 / (var2 - 1.0F) * 2.0F - 1.0F;
+                        double var10 = var5 / (var2 - 1.0F) * 2.0F - 1.0F;
                         double var12 = Math.Sqrt(var6 * var6 + var8 * var8 + var10 * var10);
                         var6 /= var12;
                         var8 /= var12;
@@ -74,9 +74,9 @@ public class Explosion
                                 destroyedBlockPositions.Add(new BlockPos(var22, var23, var24));
                             }
 
-                            var15 += var6 * (double)var21;
-                            var17 += var8 * (double)var21;
-                            var19 += var10 * (double)var21;
+                            var15 += var6 * var21;
+                            var17 += var8 * var21;
+                            var19 += var10 * var21;
                         }
                     }
                 }
@@ -90,8 +90,8 @@ public class Explosion
         int var29 = MathHelper.Floor(explosionY + explosionSize + 1.0D);
         int var7 = MathHelper.Floor(explosionZ - explosionSize - 1.0D);
         int var30 = MathHelper.Floor(explosionZ + explosionSize + 1.0D);
-        var var9 = worldObj.getEntities(exploder, new Box(var3, var5, var7, var4, var29, var30));
-        Vec3D var31 = new Vec3D(explosionX, explosionY, explosionZ);
+        List<Entity> var9 = worldObj.getEntities(exploder, new Box(var3, var5, var7, var4, var29, var30));
+        Vec3D var31 = new(explosionX, explosionY, explosionZ);
 
         for (int var11 = 0; var11 < var9.Count; ++var11)
         {
@@ -102,11 +102,11 @@ public class Explosion
                 var15 = var33.x - explosionX;
                 var17 = var33.y - explosionY;
                 var19 = var33.z - explosionZ;
-                double var39 = (double)MathHelper.Sqrt(var15 * var15 + var17 * var17 + var19 * var19);
+                double var39 = MathHelper.Sqrt(var15 * var15 + var17 * var17 + var19 * var19);
                 var15 /= var39;
                 var17 /= var39;
                 var19 /= var39;
-                double var40 = (double)worldObj.getVisibilityRatio(var31, var33.boundingBox);
+                double var40 = worldObj.getVisibilityRatio(var31, var33.boundingBox);
                 double var41 = (1.0D - var13) * var40;
                 var33.damage(exploder, (int)((var41 * var41 + var41) / 2.0D * 8.0D * explosionSize + 1.0D));
                 var33.velocityX += var15 * var41;
@@ -133,13 +133,12 @@ public class Explosion
                 }
             }
         }
-
     }
 
     public void doExplosionB(bool var1)
     {
         worldObj.playSound(explosionX, explosionY, explosionZ, "random.explode", 4.0F, (1.0F + (worldObj.random.NextFloat() - worldObj.random.NextFloat()) * 0.2F) * 0.7F);
-        List<BlockPos> var2 = new (destroyedBlockPositions);
+        List<BlockPos> var2 = new(destroyedBlockPositions);
 
         for (int var3 = var2.Count - 1; var3 >= 0; --var3)
         {
@@ -150,18 +149,18 @@ public class Explosion
             int var8 = worldObj.getBlockId(var5, var6, var7);
             if (var1)
             {
-                double var9 = (double)(var5 + worldObj.random.NextFloat());
-                double var11 = (double)(var6 + worldObj.random.NextFloat());
-                double var13 = (double)(var7 + worldObj.random.NextFloat());
+                double var9 = var5 + worldObj.random.NextFloat();
+                double var11 = var6 + worldObj.random.NextFloat();
+                double var13 = var7 + worldObj.random.NextFloat();
                 double var15 = var9 - explosionX;
                 double var17 = var11 - explosionY;
                 double var19 = var13 - explosionZ;
-                double var21 = (double)MathHelper.Sqrt(var15 * var15 + var17 * var17 + var19 * var19);
+                double var21 = MathHelper.Sqrt(var15 * var15 + var17 * var17 + var19 * var19);
                 var15 /= var21;
                 var17 /= var21;
                 var19 /= var21;
                 double var23 = 0.5D / (var21 / explosionSize + 0.1D);
-                var23 *= (double)(worldObj.random.NextFloat() * worldObj.random.NextFloat() + 0.3F);
+                var23 *= worldObj.random.NextFloat() * worldObj.random.NextFloat() + 0.3F;
                 var15 *= var23;
                 var17 *= var23;
                 var19 *= var23;
@@ -176,6 +175,5 @@ public class Explosion
                 Block.Blocks[var8].onDestroyedByExplosion(worldObj, var5, var6, var7);
             }
         }
-
     }
 }

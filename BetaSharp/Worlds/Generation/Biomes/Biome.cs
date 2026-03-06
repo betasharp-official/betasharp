@@ -22,19 +22,11 @@ public class Biome
     public static readonly Biome Hell = new BiomeGenHell().SetColor(0xFF0000).SetName("Hell").DisableRain();
     public static readonly Biome Sky = new BiomeGenSky().SetColor(0x8080FF).SetName("Sky").DisableRain();
 
-    private static Biome[] Biomes = new Biome[4096];
-
-    public string Name { get; private set; } = "";
-    public int GrassColor { get; private set; }
-    public byte TopBlockId = (byte)Block.GrassBlock.id;
+    private static readonly Biome[] Biomes = new Biome[4096];
     public byte SoilBlockId = (byte)Block.Dirt.id;
-    public int FoliageColor { get; private set; } = 0x4EE031;
-    protected WeightedRandomSelector<SpawnListEntry> MonsterList { get; } = new();
-    protected WeightedRandomSelector<SpawnListEntry> CreatureList { get; } = new();
-    protected WeightedRandomSelector<SpawnListEntry> WaterCreatureList { get; } = new();
+    public byte TopBlockId = (byte)Block.GrassBlock.id;
 
-    public bool HasSnow { get; private set; }
-    public bool HasRain { get; private set; } = true;
+    static Biome() => Init();
 
     protected Biome()
     {
@@ -52,11 +44,45 @@ public class Biome
         WaterCreatureList.Add(new SpawnListEntry(w => new EntitySquid(w)), 10);
     }
 
-    protected Biome DisableRain() { HasRain = false; return this; }
-    protected Biome EnableSnow() { HasSnow = true; return this; }
-    protected Biome SetName(string name) { Name = name; return this; }
-    protected Biome SetFoliageColor(int color) { FoliageColor = color; return this; }
-    protected Biome SetColor(int color) { GrassColor = color; return this; }
+    public string Name { get; private set; } = "";
+    public int GrassColor { get; private set; }
+    public int FoliageColor { get; private set; } = 0x4EE031;
+    protected WeightedRandomSelector<SpawnListEntry> MonsterList { get; } = new();
+    protected WeightedRandomSelector<SpawnListEntry> CreatureList { get; } = new();
+    protected WeightedRandomSelector<SpawnListEntry> WaterCreatureList { get; } = new();
+
+    public bool HasSnow { get; private set; }
+    public bool HasRain { get; private set; } = true;
+
+    protected Biome DisableRain()
+    {
+        HasRain = false;
+        return this;
+    }
+
+    protected Biome EnableSnow()
+    {
+        HasSnow = true;
+        return this;
+    }
+
+    protected Biome SetName(string name)
+    {
+        Name = name;
+        return this;
+    }
+
+    protected Biome SetFoliageColor(int color)
+    {
+        FoliageColor = color;
+        return this;
+    }
+
+    protected Biome SetColor(int color)
+    {
+        GrassColor = color;
+        return this;
+    }
 
     public static void Init()
     {
@@ -72,10 +98,7 @@ public class Biome
         IceDesert.TopBlockId = IceDesert.SoilBlockId = (byte)Block.Sand.id;
     }
 
-    public virtual Feature GetRandomWorldGenForTrees(JavaRandom rand)
-    {
-        return rand.NextInt(10) == 0 ? new LargeOakTreeFeature() : new OakTreeFeature();
-    }
+    public virtual Feature GetRandomWorldGenForTrees(JavaRandom rand) => rand.NextInt(10) == 0 ? new LargeOakTreeFeature() : new OakTreeFeature();
 
 
     public static Biome GetBiome(double temp, double downfall)
@@ -88,16 +111,41 @@ public class Biome
     public static Biome LocateBiome(float temperature, float downfall)
     {
         downfall *= temperature;
-        if (temperature < 0.1f) return Tundra;
+        if (temperature < 0.1f)
+        {
+            return Tundra;
+        }
+
         if (downfall < 0.2f)
         {
-            if (temperature < 0.5f) return Tundra;
+            if (temperature < 0.5f)
+            {
+                return Tundra;
+            }
+
             return temperature < 0.95f ? Savanna : Desert;
         }
-        if (downfall > 0.5f && temperature < 0.7f) return Swampland;
-        if (temperature < 0.5f) return Taiga;
-        if (temperature < 0.97f) return downfall < 0.35f ? Shrubland : Forest;
-        if (downfall < 0.45f) return Plains;
+
+        if (downfall > 0.5f && temperature < 0.7f)
+        {
+            return Swampland;
+        }
+
+        if (temperature < 0.5f)
+        {
+            return Taiga;
+        }
+
+        if (temperature < 0.97f)
+        {
+            return downfall < 0.35f ? Shrubland : Forest;
+        }
+
+        if (downfall < 0.45f)
+        {
+            return Plains;
+        }
+
         return downfall < 0.9f ? SeasonalForest : Rainforest;
     }
 
@@ -119,18 +167,25 @@ public class Biome
 
     public WeightedRandomSelector<SpawnListEntry> GetSpawnableList(CreatureKind kind)
     {
-        if (kind == CreatureKind.Monster) return MonsterList;
-        if (kind == CreatureKind.Creature) return CreatureList;
-        if (kind == CreatureKind.WaterCreature) return WaterCreatureList;
+        if (kind == CreatureKind.Monster)
+        {
+            return MonsterList;
+        }
+
+        if (kind == CreatureKind.Creature)
+        {
+            return CreatureList;
+        }
+
+        if (kind == CreatureKind.WaterCreature)
+        {
+            return WaterCreatureList;
+        }
+
         throw new ArgumentException("Invalid creature kind: " + kind);
     }
 
-    public bool GetEnableSnow()
-    {
-        return HasSnow;
-    }
+    public bool GetEnableSnow() => HasSnow;
 
     public bool CanSpawnLightningBolt() => !HasSnow && HasRain;
-
-    static Biome() => Init();
 }

@@ -44,7 +44,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         int x = spawnPos.X;
         int y = spawnPos.Z;
         int z = spawnPos.Y;
-        if (!world.dimension.HasCeiling)
+        if (!world.Dimension.HasCeiling)
         {
             x += random.NextInt(20) - 10;
             z = world.getSpawnPositionValidityY(x, y);

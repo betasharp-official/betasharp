@@ -14,7 +14,7 @@ internal class BlockSapling : BlockPlant
 
     public override void onTick(World world, int x, int y, int z, JavaRandom random)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             base.onTick(world, x, y, z, random);
             if (world.getLightLevel(x, y + 1, z) >= 9 && random.NextInt(30) == 0)

@@ -5,23 +5,22 @@ namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class LargeOakTreeFeature : Feature
 {
+    private static readonly sbyte[] MINOR_AXES = [2, 0, 0, 1, 2, 1];
+    private readonly double branchSlope = 0.381D;
+    private readonly int[] origin = [0, 0, 0];
+    private readonly JavaRandom random = new();
+    private readonly double trunkScale = 0.618D;
+    private readonly int trunkWidth = 1;
+    private int[][] branches;
+    private double branchLengthScale = 1.0D;
+    private int foliageClusterHeight = 4;
+    private double foliageDensity = 1.0D;
+    private int height;
+    private int maxTrunkHeight = 12;
+    private int trunkHeight;
+    private World world;
 
-    static readonly sbyte[] MINOR_AXES = [2, 0, 0, 1, 2, 1];
-    JavaRandom random = new();
-    World world;
-    int[] origin = [0, 0, 0];
-    int height;
-    int trunkHeight;
-    double trunkScale = 0.618D;
-    double branchSlope = 0.381D;
-    double branchLengthScale = 1.0D;
-    double foliageDensity = 1.0D;
-    int trunkWidth = 1;
-    int maxTrunkHeight = 12;
-    int foliageClusterHeight = 4;
-    int[][] branches;
-
-    void makeBranches()
+    private void makeBranches()
     {
         trunkHeight = (int)(height * trunkScale);
         if (trunkHeight >= height)
@@ -41,6 +40,7 @@ internal class LargeOakTreeFeature : Feature
         {
             var2[i] = new int[4];
         }
+
         int var3 = origin[1] + height - foliageClusterHeight;
         int var4 = 1;
         int var5 = origin[1] + trunkHeight;
@@ -66,8 +66,8 @@ internal class LargeOakTreeFeature : Feature
                 {
                     for (double var9 = 0.5D; var7 < var1; ++var7)
                     {
-                        double var11 = branchLengthScale * (double)var8 * ((double)random.NextFloat() + 0.328D);
-                        double var13 = (double)random.NextFloat() * 2.0D * 3.14159D;
+                        double var11 = branchLengthScale * var8 * (random.NextFloat() + 0.328D);
+                        double var13 = random.NextFloat() * 2.0D * 3.14159D;
                         int var15 = MathHelper.Floor(var11 * Math.Sin(var13) + origin[0] + var9);
                         int var16 = MathHelper.Floor(var11 * Math.Cos(var13) + origin[2] + var9);
                         int[] var17 = [var15, var3, var16];
@@ -108,14 +108,15 @@ internal class LargeOakTreeFeature : Feature
             {
                 branches[i] = new int[4];
             }
+
             java.lang.System.arraycopy(var2, 0, branches, 0, var4);
             return;
         }
     }
 
-    void placeCluster(int var1, int var2, int var3, float var4, sbyte var5, int var6)
+    private void placeCluster(int var1, int var2, int var3, float var4, sbyte var5, int var6)
     {
-        int var7 = (int)((double)var4 + 0.618D);
+        int var7 = (int)(var4 + 0.618D);
         sbyte var8 = MINOR_AXES[var5];
         sbyte var9 = MINOR_AXES[var5 + 3];
         int[] var10 = [var1, var2, var3];
@@ -135,7 +136,7 @@ internal class LargeOakTreeFeature : Feature
                     Math.Pow(Math.Abs(var13) + 0.5D, 2.0D)
                 );
 
-                if (var15 > (double)var4)
+                if (var15 > var4)
                 {
                     ++var13;
                     continue;
@@ -156,41 +157,36 @@ internal class LargeOakTreeFeature : Feature
         }
     }
 
-    float getTreeShape(int var1)
+    private float getTreeShape(int var1)
     {
-        if (var1 < (double)(float)height * 0.3D)
+        if (var1 < (float)height * 0.3D)
         {
             return -1.618F;
         }
+
+        float var2 = height / 2.0F;
+        float var3 = height / 2.0F - var1;
+        float var4;
+        if (var3 == 0.0F)
+        {
+            var4 = var2;
+        }
+        else if (Math.Abs(var3) >= var2)
+        {
+            var4 = 0.0F;
+        }
         else
         {
-            float var2 = height / 2.0F;
-            float var3 = height / 2.0F - var1;
-            float var4;
-            if (var3 == 0.0F)
-            {
-                var4 = var2;
-            }
-            else if (Math.Abs(var3) >= var2)
-            {
-                var4 = 0.0F;
-            }
-            else
-            {
-                var4 = (float)Math.Sqrt(Math.Pow((double)Math.Abs(var2), 2.0D) - Math.Pow((double)Math.Abs(var3), 2.0D));
-            }
-
-            var4 *= 0.5F;
-            return var4;
+            var4 = (float)Math.Sqrt(Math.Pow(Math.Abs(var2), 2.0D) - Math.Pow(Math.Abs(var3), 2.0D));
         }
+
+        var4 *= 0.5F;
+        return var4;
     }
 
-    float getClusterShape(int var1)
-    {
-        return var1 >= 0 && var1 < foliageClusterHeight ? var1 != 0 && var1 != foliageClusterHeight - 1 ? 3.0F : 2.0F : -1.0F;
-    }
+    private float getClusterShape(int var1) => var1 >= 0 && var1 < foliageClusterHeight ? var1 != 0 && var1 != foliageClusterHeight - 1 ? 3.0F : 2.0F : -1.0F;
 
-    void placeFoliageCluster(int var1, int var2, int var3)
+    private void placeFoliageCluster(int var1, int var2, int var3)
     {
         int var4 = var2;
 
@@ -199,10 +195,9 @@ internal class LargeOakTreeFeature : Feature
             float var6 = getClusterShape(var4 - var2);
             placeCluster(var1, var4, var3, var6, 1, 18);
         }
-
     }
 
-    void placeBranch(int[] var1, int[] var2, int var3)
+    private void placeBranch(int[] var1, int[] var2, int var3)
     {
         int[] var4 = [0, 0, 0];
         sbyte var5 = 0;
@@ -243,11 +238,10 @@ internal class LargeOakTreeFeature : Feature
                 var14[var8] = MathHelper.Floor(var1[var8] + var15 * var12 + 0.5D);
                 world.SetBlockWithoutNotifyingNeighbors(var14[0], var14[1], var14[2], var3);
             }
-
         }
     }
 
-    void placeFoliage()
+    private void placeFoliage()
     {
         int var1 = 0;
 
@@ -258,15 +252,11 @@ internal class LargeOakTreeFeature : Feature
             int var5 = branches[var1][2];
             placeFoliageCluster(var3, var4, var5);
         }
-
     }
 
-    bool shouldPlaceBranch(int var1)
-    {
-        return var1 >= height * 0.2D;
-    }
+    private bool shouldPlaceBranch(int var1) => var1 >= height * 0.2D;
 
-    void placeTrunk()
+    private void placeTrunk()
     {
         int var1 = origin[0];
         int var2 = origin[1];
@@ -287,10 +277,9 @@ internal class LargeOakTreeFeature : Feature
             var6[0] += -1;
             placeBranch(var5, var6, 17);
         }
-
     }
 
-    void placeBranches()
+    private void placeBranches()
     {
         int var1 = 0;
         int var2 = branches.Length;
@@ -306,10 +295,9 @@ internal class LargeOakTreeFeature : Feature
                 placeBranch(var3, var5, 17);
             }
         }
-
     }
 
-    int tryBranch(int[] var1, int[] var2)
+    private int tryBranch(int[] var1, int[] var2)
     {
         int[] var3 = [0, 0, 0];
         sbyte var4 = 0;
@@ -328,43 +316,41 @@ internal class LargeOakTreeFeature : Feature
         {
             return -1;
         }
+
+        sbyte var6 = MINOR_AXES[var5];
+        sbyte var7 = MINOR_AXES[var5 + 3];
+        sbyte var8;
+        if (var3[var5] > 0)
+        {
+            var8 = 1;
+        }
         else
         {
-            sbyte var6 = MINOR_AXES[var5];
-            sbyte var7 = MINOR_AXES[var5 + 3];
-            sbyte var8;
-            if (var3[var5] > 0)
-            {
-                var8 = 1;
-            }
-            else
-            {
-                var8 = -1;
-            }
-
-            double var9 = var3[var6] / (double)var3[var5];
-            double var11 = var3[var7] / (double)var3[var5];
-            int[] var13 = [0, 0, 0];
-            int var14 = 0;
-
-            int var15;
-            for (var15 = var3[var5] + var8; var14 != var15; var14 += var8)
-            {
-                var13[var5] = var1[var5] + var14;
-                var13[var6] = MathHelper.Floor(var1[var6] + var14 * var9);
-                var13[var7] = MathHelper.Floor(var1[var7] + var14 * var11);
-                int var16 = world.getBlockId(var13[0], var13[1], var13[2]);
-                if (var16 != 0 && var16 != 18)
-                {
-                    break;
-                }
-            }
-
-            return var14 == var15 ? -1 : Math.Abs(var14);
+            var8 = -1;
         }
+
+        double var9 = var3[var6] / (double)var3[var5];
+        double var11 = var3[var7] / (double)var3[var5];
+        int[] var13 = [0, 0, 0];
+        int var14 = 0;
+
+        int var15;
+        for (var15 = var3[var5] + var8; var14 != var15; var14 += var8)
+        {
+            var13[var5] = var1[var5] + var14;
+            var13[var6] = MathHelper.Floor(var1[var6] + var14 * var9);
+            var13[var7] = MathHelper.Floor(var1[var7] + var14 * var11);
+            int var16 = world.getBlockId(var13[0], var13[1], var13[2]);
+            if (var16 != 0 && var16 != 18)
+            {
+                break;
+            }
+        }
+
+        return var14 == var15 ? -1 : Math.Abs(var14);
     }
 
-    bool canPlace()
+    private bool canPlace()
     {
         int[] var1 = [origin[0], origin[1], origin[2]];
         int[] var2 = [origin[0], origin[1] + height - 1, origin[2]];
@@ -373,23 +359,20 @@ internal class LargeOakTreeFeature : Feature
         {
             return false;
         }
-        else
+
+        int var4 = tryBranch(var1, var2);
+        if (var4 == -1)
         {
-            int var4 = tryBranch(var1, var2);
-            if (var4 == -1)
-            {
-                return true;
-            }
-            else if (var4 < 6)
-            {
-                return false;
-            }
-            else
-            {
-                height = var4;
-                return true;
-            }
+            return true;
         }
+
+        if (var4 < 6)
+        {
+            return false;
+        }
+
+        height = var4;
+        return true;
     }
 
     public override void prepare(double d0, double d1, double d2)
@@ -421,13 +404,11 @@ internal class LargeOakTreeFeature : Feature
         {
             return false;
         }
-        else
-        {
-            makeBranches();
-            placeFoliage();
-            placeTrunk();
-            placeBranches();
-            return true;
-        }
+
+        makeBranches();
+        placeFoliage();
+        placeTrunk();
+        placeBranches();
+        return true;
     }
 }

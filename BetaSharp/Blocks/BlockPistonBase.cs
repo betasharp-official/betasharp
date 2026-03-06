@@ -62,7 +62,7 @@ public class BlockPistonBase : Block
     {
         int var6 = getFacingForPlacement(world, x, y, z, (EntityPlayer)placer);
         world.setBlockMeta(x, y, z, var6);
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             checkExtended(world, x, y, z);
         }
@@ -70,7 +70,7 @@ public class BlockPistonBase : Block
 
     public override void neighborUpdate(World world, int x, int y, int z, int id)
     {
-        if (!world.isRemote && !deaf)
+        if (!world.IsRemote && !deaf)
         {
             checkExtended(world, x, y, z);
         }
@@ -78,7 +78,7 @@ public class BlockPistonBase : Block
 
     public override void onPlaced(World world, int x, int y, int z)
     {
-        if (!world.isRemote && world.getBlockEntity(x, y, z) == null)
+        if (!world.IsRemote && world.getBlockEntity(x, y, z) == null)
         {
             checkExtended(world, x, y, z);
         }

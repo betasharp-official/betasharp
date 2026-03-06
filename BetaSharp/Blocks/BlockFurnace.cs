@@ -33,7 +33,7 @@ internal class BlockFurnace : BlockWithEntity
 
     private void updateDirection(World world, int x, int y, int z)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             int blockNorth = world.getBlockId(x, y, z - 1);
             int blockSouth = world.getBlockId(x, y, z + 1);
@@ -122,7 +122,7 @@ internal class BlockFurnace : BlockWithEntity
 
     public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
     {
-        if (world.isRemote)
+        if (world.IsRemote)
         {
             return true;
         }

@@ -5,10 +5,9 @@ namespace BetaSharp.Worlds.Generation.Biomes.Source;
 
 internal class FixedBiomeSource : BiomeSource
 {
-
-    private Biome _biome;
-    private double _temperature;
-    private double _downfall;
+    private readonly Biome _biome;
+    private readonly double _downfall;
+    private readonly double _temperature;
 
     public FixedBiomeSource(Biome biome, double temperature, double downfall)
     {

@@ -65,7 +65,7 @@ internal class BlockPressurePlate : Block
 
     public override void onTick(World world, int x, int y, int z, JavaRandom random)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             if (world.getBlockMeta(x, y, z) != 0)
             {
@@ -76,7 +76,7 @@ internal class BlockPressurePlate : Block
 
     public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             if (world.getBlockMeta(x, y, z) != 1)
             {

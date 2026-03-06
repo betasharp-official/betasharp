@@ -6,15 +6,11 @@ public class ChunkNibbleArray
 {
     public readonly byte[] Bytes;
 
-    public ChunkNibbleArray(int size)
-    {
-        Bytes = new byte[size >> 1];
-    }
+    public ChunkNibbleArray(int size) => Bytes = new byte[size >> 1];
 
-    public ChunkNibbleArray(byte[] bytes)
-    {
-        Bytes = bytes;
-    }
+    public ChunkNibbleArray(byte[] bytes) => Bytes = bytes;
+
+    public bool IsInitialized => Bytes != null;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetNibble(int x, int y, int z)
@@ -42,6 +38,4 @@ public class ChunkNibbleArray
             Bytes[byteIndex] = (byte)((Bytes[byteIndex] & 0x0F) | ((value & 0x0F) << 4));
         }
     }
-
-    public bool IsInitialized => Bytes != null;
 }

@@ -63,7 +63,7 @@ public class BlockPistonMoving : BlockWithEntity
 
     public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
     {
-        if (!world.isRemote && world.getBlockEntity(x, y, z) == null)
+        if (!world.IsRemote && world.getBlockEntity(x, y, z) == null)
         {
             world.setBlock(x, y, z, 0);
             return true;
@@ -81,7 +81,7 @@ public class BlockPistonMoving : BlockWithEntity
 
     public override void dropStacks(World world, int x, int y, int z, int meta, float luck)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             BlockEntityPiston var7 = getPistonBlockEntity(world, x, y, z);
             if (var7 != null)
@@ -93,7 +93,7 @@ public class BlockPistonMoving : BlockWithEntity
 
     public override void neighborUpdate(World world, int x, int y, int z, int id)
     {
-        if (!world.isRemote && world.getBlockEntity(x, y, z) == null)
+        if (!world.IsRemote && world.getBlockEntity(x, y, z) == null)
         {
         }
 

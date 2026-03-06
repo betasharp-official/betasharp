@@ -10,15 +10,15 @@ namespace BetaSharp.Worlds.Dimensions;
 
 public abstract class Dimension
 {
-    public World World { get; set; } = null!;
-    public BiomeSource BiomeSource { get; set; } = null!;
-    public bool IsNether = false;
+    private readonly float[] _backgroundColor = new float[4];
     public bool EvaporatesWater = false;
     public bool HasCeiling = false;
     public int Id = 0;
+    public bool IsNether = false;
 
     public float[] LightLevelToLuminance = new float[16];
-    private readonly float[] _backgroundColor = new float[4];
+    public World World { get; set; } = null!;
+    public BiomeSource BiomeSource { get; set; } = null!;
 
     public virtual float CloudHeight { get; } = 108.0F;
     public virtual bool HasGround => true;
@@ -40,31 +40,28 @@ public abstract class Dimension
             float factor = 1.0F - i / 15.0F;
             LightLevelToLuminance[i] = (1.0F - factor) / (factor * 3.0F + 1.0F) * (1.0F - offset) + offset;
         }
-
     }
 
-    public virtual void InitBiomeSource()
-    {
-        BiomeSource = new BiomeSource(World);
-    }
+    public virtual void InitBiomeSource() => BiomeSource = new BiomeSource(World);
 
-    public virtual ChunkSource CreateChunkGenerator()
-    {
-        return new OverworldChunkGenerator(World, World.getSeed());
-    }
+    public virtual ChunkSource CreateChunkGenerator() => new OverworldChunkGenerator(World, World.getSeed());
 
-    public virtual bool IsValidSpawnPoint(int x, int y)
-    {
-        return World.getSpawnBlockId(x, y) == Block.Sand.id;
-    }
+    public virtual bool IsValidSpawnPoint(int x, int y) => World.getSpawnBlockId(x, y) == Block.Sand.id;
 
     public virtual float GetTimeOfDay(long time, float tickDelta)
     {
         int ticks = (int)(time % 24000L);
         float phase = (ticks + tickDelta) / 24000.0F - 0.25F;
 
-        if (phase < 0.0F) phase++;
-        if (phase > 1.0F) phase--;
+        if (phase < 0.0F)
+        {
+            phase++;
+        }
+
+        if (phase > 1.0F)
+        {
+            phase--;
+        }
 
         float phaseCopy = phase;
 

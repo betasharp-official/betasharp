@@ -52,7 +52,7 @@ internal class BlockTNT : Block
 
     public override void onMetadataChange(World world, int x, int y, int z, int meta)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             if ((meta & 1) == 0)
             {

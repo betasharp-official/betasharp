@@ -141,7 +141,7 @@ public class EntityEgg : Entity
             var2 = new Vec3D(var3.Pos.x, var3.Pos.y, var3.Pos.z);
         }
 
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             Entity var4 = null;
             var var5 = world.getEntities(this, boundingBox.Stretch(velocityX, velocityY, velocityZ).Expand(1.0D, 1.0D, 1.0D));
@@ -179,7 +179,7 @@ public class EntityEgg : Entity
             {
             }
 
-            if (!world.isRemote && random.NextInt(8) == 0)
+            if (!world.IsRemote && random.NextInt(8) == 0)
             {
                 byte var16 = 1;
                 if (random.NextInt(32) == 0)

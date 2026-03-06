@@ -17,7 +17,7 @@ public class EntityLightningBolt : EntityWeatherEffect
         flashTimer = 2;
         renderSeed = random.NextLong();
         flashCount = random.NextInt(3) + 1;
-        if (world.difficulty >= 2 && world.isRegionLoaded(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z), 10))
+        if (world.Difficulty >= 2 && world.isRegionLoaded(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z), 10))
         {
             int strikeX = MathHelper.Floor(x);
             int strikeY = MathHelper.Floor(y);

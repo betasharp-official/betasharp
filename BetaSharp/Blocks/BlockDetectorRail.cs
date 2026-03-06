@@ -23,7 +23,7 @@ internal class BlockDetectorRail : BlockRail
 
     public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             int meta = world.getBlockMeta(x, y, z);
             if ((meta & 8) == 0)
@@ -35,7 +35,7 @@ internal class BlockDetectorRail : BlockRail
 
     public override void onTick(World world, int x, int y, int z, JavaRandom random)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             int meta = world.getBlockMeta(x, y, z);
             if ((meta & 8) != 0)

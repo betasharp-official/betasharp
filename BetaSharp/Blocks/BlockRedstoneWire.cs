@@ -226,7 +226,7 @@ public class BlockRedstoneWire : Block
     public override void onPlaced(World world, int x, int y, int z)
     {
         base.onPlaced(world, x, y, z);
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             updateAndPropagateCurrentStrength(world, x, y, z);
             world.notifyNeighbors(x, y + 1, z, id);
@@ -277,7 +277,7 @@ public class BlockRedstoneWire : Block
     public override void onBreak(World world, int x, int y, int z)
     {
         base.onBreak(world, x, y, z);
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             world.notifyNeighbors(x, y + 1, z, id);
             world.notifyNeighbors(x, y - 1, z, id);
@@ -340,7 +340,7 @@ public class BlockRedstoneWire : Block
 
     public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
     {
-        if (!var1.isRemote)
+        if (!var1.IsRemote)
         {
             int var6 = var1.getBlockMeta(var2, var3, var4);
             bool var7 = canPlaceAt(var1, var2, var3, var4);

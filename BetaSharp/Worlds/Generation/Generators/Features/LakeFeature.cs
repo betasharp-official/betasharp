@@ -7,13 +7,9 @@ namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class LakeFeature : Feature
 {
-
     private readonly int _waterBlockId;
 
-    public LakeFeature(int waterBlockId)
-    {
-        _waterBlockId = waterBlockId;
-    }
+    public LakeFeature(int waterBlockId) => _waterBlockId = waterBlockId;
 
     public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
     {
@@ -60,14 +56,14 @@ internal class LakeFeature : Feature
         }
 
 
-
         for (int dx = 0; dx < 16; ++dx)
         {
             for (int dz = 0; dz < 16; ++dz)
             {
                 for (int dy = 0; dy < 8; ++dy)
                 {
-                    bool isEdge = !lakeMask[(dx * 16 + dz) * 8 + dy] && (dx < 15 && lakeMask[((dx + 1) * 16 + dz) * 8 + dy] || dx > 0 && lakeMask[((dx - 1) * 16 + dz) * 8 + dy] || dz < 15 && lakeMask[(dx * 16 + dz + 1) * 8 + dy] || dz > 0 && lakeMask[(dx * 16 + (dz - 1)) * 8 + dy] || dy < 7 && lakeMask[(dx * 16 + dz) * 8 + dy + 1] || dy > 0 && lakeMask[(dx * 16 + dz) * 8 + (dy - 1)]);
+                    bool isEdge = !lakeMask[(dx * 16 + dz) * 8 + dy] && ((dx < 15 && lakeMask[((dx + 1) * 16 + dz) * 8 + dy]) || (dx > 0 && lakeMask[((dx - 1) * 16 + dz) * 8 + dy]) || (dz < 15 && lakeMask[(dx * 16 + dz + 1) * 8 + dy]) ||
+                                                                         (dz > 0 && lakeMask[(dx * 16 + (dz - 1)) * 8 + dy]) || (dy < 7 && lakeMask[(dx * 16 + dz) * 8 + dy + 1]) || (dy > 0 && lakeMask[(dx * 16 + dz) * 8 + (dy - 1)]));
                     if (isEdge)
                     {
                         Material mat = world.getMaterial(x + dx, y + dy, z + dz);
@@ -93,7 +89,7 @@ internal class LakeFeature : Feature
                 {
                     if (lakeMask[(dx * 16 + dy) * 8 + dz])
                     {
-                        var blockId = dz >= 4 ? 0 : _waterBlockId;
+                        int blockId = dz >= 4 ? 0 : _waterBlockId;
                         world.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, blockId);
                     }
                 }
@@ -125,14 +121,14 @@ internal class LakeFeature : Feature
                     for (int dz = 0; dz < 8; ++dz)
                     {
                         bool isEdge = !lakeMask[(dx * 16 + dy) * 8 + dz] &&
-                            (
-                                dx < 15 && lakeMask[((dx + 1) * 16 + dy) * 8 + dz] ||
-                                dx > 0 && lakeMask[((dx - 1) * 16 + dy) * 8 + dz] ||
-                                dy < 15 && lakeMask[(dx * 16 + dy + 1) * 8 + dz] ||
-                                dy > 0 && lakeMask[(dx * 16 + (dy - 1)) * 8 + dz] ||
-                                dz < 7 && lakeMask[(dx * 16 + dy) * 8 + dz + 1] ||
-                                dz > 0 && lakeMask[(dx * 16 + dy) * 8 + (dz - 1)]
-                            );
+                                      (
+                                          (dx < 15 && lakeMask[((dx + 1) * 16 + dy) * 8 + dz]) ||
+                                          (dx > 0 && lakeMask[((dx - 1) * 16 + dy) * 8 + dz]) ||
+                                          (dy < 15 && lakeMask[(dx * 16 + dy + 1) * 8 + dz]) ||
+                                          (dy > 0 && lakeMask[(dx * 16 + (dy - 1)) * 8 + dz]) ||
+                                          (dz < 7 && lakeMask[(dx * 16 + dy) * 8 + dz + 1]) ||
+                                          (dz > 0 && lakeMask[(dx * 16 + dy) * 8 + (dz - 1)])
+                                      );
                         if (isEdge && (dz < 4 || rand.NextInt(2) != 0) && world.getMaterial(x + dx, y + dz, z + dy).IsSolid)
                         {
                             world.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, Block.Stone.id);

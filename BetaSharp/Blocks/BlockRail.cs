@@ -96,7 +96,7 @@ public class BlockRail : Block
 
     public override void onPlaced(World world, int x, int y, int z)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             updateShape(world, x, y, z, true);
         }
@@ -105,7 +105,7 @@ public class BlockRail : Block
 
     public override void neighborUpdate(World world, int x, int y, int z, int id)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             int meta = world.getBlockMeta(x, y, z);
             int railMeta = meta;
@@ -180,7 +180,7 @@ public class BlockRail : Block
 
     private void updateShape(World world, int x, int y, int z, bool force)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             new RailLogic(this, world, new Vec3i(x, y, z)).UpdateState(world.isPowered(x, y, z), force);
         }

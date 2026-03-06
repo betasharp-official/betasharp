@@ -15,14 +15,23 @@ internal class PineTreeFeature : Feature
 
         bool canPlace = true;
 
-        if (!(y >= 1 && y + treeHeight + 1 <= 128)) return false;
+        if (!(y >= 1 && y + treeHeight + 1 <= 128))
+        {
+            return false;
+        }
 
 
         for (int cy = y; cy <= y + 1 + treeHeight && canPlace; ++cy)
         {
             int checkRadius;
-            if (cy - y < trunkWithNoLeaves) checkRadius = 0;
-            else checkRadius = maxLeafRadius;
+            if (cy - y < trunkWithNoLeaves)
+            {
+                checkRadius = 0;
+            }
+            else
+            {
+                checkRadius = maxLeafRadius;
+            }
 
             for (int cx = x - checkRadius; cx <= x + checkRadius && canPlace; ++cx)
             {
@@ -44,7 +53,10 @@ internal class PineTreeFeature : Feature
             }
         }
 
-        if (!canPlace) return false;
+        if (!canPlace)
+        {
+            return false;
+        }
 
         int groundId = world.getBlockId(x, y - 1, z);
         if ((groundId == Block.GrassBlock.id || groundId == Block.Dirt.id) && y < 128 - treeHeight - 1)
@@ -76,7 +88,9 @@ internal class PineTreeFeature : Feature
                 {
                     ++currentLeafRadius;
                 }
-            };
+            }
+
+            ;
 
             for (int trunkY = 0; trunkY < treeHeight - 1; ++trunkY)
             {
@@ -89,6 +103,7 @@ internal class PineTreeFeature : Feature
 
             return true;
         }
+
         return false;
     }
 }

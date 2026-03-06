@@ -61,7 +61,7 @@ public class CraftingScreenHandler : ScreenHandler
     public override void onClosed(EntityPlayer player)
     {
         base.onClosed(player);
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             for (int var2 = 0; var2 < 9; ++var2)
             {

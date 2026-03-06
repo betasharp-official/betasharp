@@ -262,7 +262,7 @@ internal class BlockButton : Block
 
     public override void onTick(World world, int x, int y, int z, JavaRandom random)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             int meta = world.getBlockMeta(x, y, z);
             if ((meta & 8) != 0)

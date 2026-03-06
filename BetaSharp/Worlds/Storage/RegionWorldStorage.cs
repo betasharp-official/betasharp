@@ -10,23 +10,29 @@ namespace BetaSharp.Worlds.Storage;
 
 internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
 {
-    private readonly DirectoryInfo _saveDirectory;
-    private readonly DirectoryInfo _playersDirectory;
     private readonly DirectoryInfo _dataDir;
+    private readonly ILogger<RegionWorldStorage> _logger = Log.Instance.For<RegionWorldStorage>();
 
 
     private readonly long _now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-    private readonly ILogger<RegionWorldStorage> _logger = Log.Instance.For<RegionWorldStorage>();
+    private readonly DirectoryInfo _playersDirectory;
+    private readonly DirectoryInfo _saveDirectory;
 
     public RegionWorldStorage(string baseDir, string worldName, bool createPlayersDir)
     {
-        _saveDirectory = new DirectoryInfo(System.IO.Path.Combine(baseDir, worldName));
-        if (!_saveDirectory.Exists) _saveDirectory.Create();
+        _saveDirectory = new DirectoryInfo(Path.Combine(baseDir, worldName));
+        if (!_saveDirectory.Exists)
+        {
+            _saveDirectory.Create();
+        }
 
-        _playersDirectory = new DirectoryInfo(System.IO.Path.Combine(_saveDirectory.FullName, "players"));
+        _playersDirectory = new DirectoryInfo(Path.Combine(_saveDirectory.FullName, "players"));
 
-        _dataDir = new DirectoryInfo(System.IO.Path.Combine(_saveDirectory.FullName, "data"));
-        if (!_dataDir.Exists) _dataDir.Create();
+        _dataDir = new DirectoryInfo(Path.Combine(_saveDirectory.FullName, "data"));
+        if (!_dataDir.Exists)
+        {
+            _dataDir.Create();
+        }
 
         if (createPlayersDir && !_playersDirectory.Exists)
         {
@@ -36,21 +42,35 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         WriteSessionLock();
     }
 
-    private void WriteSessionLock()
+    public void SavePlayerData(EntityPlayer player)
     {
         try
         {
-            string lockFile = System.IO.Path.Combine(_saveDirectory.FullName, "session.lock");
+            NBTTagCompound tag = new();
+            player.write(tag);
 
-            // Replaced DataOutputStream with native BinaryWriter
-            using var stream = File.OpenWrite(lockFile);
-            using var writer = new BinaryWriter(stream);
-            writer.Write(_now);
+            string tempFile = Path.Combine(_playersDirectory.FullName, "_tmp_.dat");
+            string finalFile = Path.Combine(_playersDirectory.FullName, $"{player.name}.dat");
+
+            using (FileStream stream = File.OpenWrite(tempFile))
+            {
+                NbtIo.WriteCompressed(tag, stream);
+            }
+
+            File.Move(tempFile, finalFile, true);
         }
-        catch (IOException ex)
+        catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to check session lock, aborting.");
-            throw new InvalidOperationException("Failed to check session lock, aborting", ex);
+            _logger.LogWarning(ex, $"Failed to save player data for {player.name}");
+        }
+    }
+
+    public void LoadPlayerData(EntityPlayer player)
+    {
+        NBTTagCompound tag = loadPlayerData(player.name);
+        if (tag != null)
+        {
+            player.read(tag);
         }
     }
 
@@ -58,9 +78,9 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
     {
         try
         {
-            string lockFile = System.IO.Path.Combine(_saveDirectory.FullName, "session.lock");
-            using var stream = File.OpenRead(lockFile);
-            using var reader = new BinaryReader(stream);
+            string lockFile = Path.Combine(_saveDirectory.FullName, "session.lock");
+            using FileStream stream = File.OpenRead(lockFile);
+            using BinaryReader reader = new(stream);
 
             if (reader.ReadInt64() != _now)
             {
@@ -77,8 +97,11 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
     {
         if (dimension is NetherDimension)
         {
-            var netherDir = new DirectoryInfo(System.IO.Path.Combine(_saveDirectory.FullName, "DIM-1"));
-            if (!netherDir.Exists) netherDir.Create();
+            DirectoryInfo netherDir = new(Path.Combine(_saveDirectory.FullName, "DIM-1"));
+            if (!netherDir.Exists)
+            {
+                netherDir.Create();
+            }
 
             return new RegionChunkStorage(netherDir.FullName);
         }
@@ -106,43 +129,23 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         WriteLevelDat(rootTag);
     }
 
-    private void WriteLevelDat(NBTTagCompound rootTag)
-    {
-        try
-        {
-            string levelDatNew = System.IO.Path.Combine(_saveDirectory.FullName, "level.dat_new");
-            string levelDatOld = System.IO.Path.Combine(_saveDirectory.FullName, "level.dat_old");
-            string levelDat = System.IO.Path.Combine(_saveDirectory.FullName, "level.dat");
-
-            using (var stream = File.OpenWrite(levelDatNew))
-            {
-                NbtIo.WriteCompressed(rootTag, stream);
-            }
-
-            if (File.Exists(levelDatOld)) File.Delete(levelDatOld);
-            if (File.Exists(levelDat)) File.Move(levelDat, levelDatOld);
-            if (File.Exists(levelDatNew)) File.Move(levelDatNew, levelDat);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Exception writing level.dat");
-        }
-    }
-
     public WorldProperties? LoadProperties()
     {
-        string levelDat = System.IO.Path.Combine(_saveDirectory.FullName, "level.dat");
-        string levelDatOld = System.IO.Path.Combine(_saveDirectory.FullName, "level.dat_old");
+        string levelDat = Path.Combine(_saveDirectory.FullName, "level.dat");
+        string levelDatOld = Path.Combine(_saveDirectory.FullName, "level.dat_old");
 
         string[] filesToTry = { levelDat, levelDatOld };
 
-        foreach (var file in filesToTry)
+        foreach (string file in filesToTry)
         {
-            if (!File.Exists(file)) continue;
+            if (!File.Exists(file))
+            {
+                continue;
+            }
 
             try
             {
-                using var stream = File.OpenRead(file);
+                using FileStream stream = File.OpenRead(file);
                 NBTTagCompound root = NbtIo.ReadCompressed(stream);
                 NBTTagCompound data = root.GetCompoundTag("Data");
                 return new WorldProperties(data);
@@ -156,40 +159,63 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         return null;
     }
 
-    public FileInfo GetWorldPropertiesFile(string name)
+    public FileInfo GetWorldPropertiesFile(string name) => new(Path.Combine(_dataDir.FullName, $"{name}.dat"));
+
+    public IPlayerStorage GetPlayerStorage() => this;
+
+    public void ForceSave()
     {
-        return new FileInfo(System.IO.Path.Combine(_dataDir.FullName, $"{name}.dat"));
     }
 
-    public void SavePlayerData(EntityPlayer player)
+    private void WriteSessionLock()
     {
         try
         {
-            NBTTagCompound tag = new();
-            player.write(tag);
+            string lockFile = Path.Combine(_saveDirectory.FullName, "session.lock");
 
-            string tempFile = System.IO.Path.Combine(_playersDirectory.FullName, "_tmp_.dat");
-            string finalFile = System.IO.Path.Combine(_playersDirectory.FullName, $"{player.name}.dat");
-
-            using (var stream = File.OpenWrite(tempFile))
-            {
-                NbtIo.WriteCompressed(tag, stream);
-            }
-
-            File.Move(tempFile, finalFile, overwrite: true);
+            // Replaced DataOutputStream with native BinaryWriter
+            using FileStream stream = File.OpenWrite(lockFile);
+            using BinaryWriter writer = new(stream);
+            writer.Write(_now);
         }
-        catch (Exception ex)
+        catch (IOException ex)
         {
-            _logger.LogWarning(ex, $"Failed to save player data for {player.name}");
+            _logger.LogError(ex, "Failed to check session lock, aborting.");
+            throw new InvalidOperationException("Failed to check session lock, aborting", ex);
         }
     }
 
-    public void LoadPlayerData(EntityPlayer player)
+    private void WriteLevelDat(NBTTagCompound rootTag)
     {
-        NBTTagCompound tag = loadPlayerData(player.name);
-        if (tag != null)
+        try
         {
-            player.read(tag);
+            string levelDatNew = Path.Combine(_saveDirectory.FullName, "level.dat_new");
+            string levelDatOld = Path.Combine(_saveDirectory.FullName, "level.dat_old");
+            string levelDat = Path.Combine(_saveDirectory.FullName, "level.dat");
+
+            using (FileStream stream = File.OpenWrite(levelDatNew))
+            {
+                NbtIo.WriteCompressed(rootTag, stream);
+            }
+
+            if (File.Exists(levelDatOld))
+            {
+                File.Delete(levelDatOld);
+            }
+
+            if (File.Exists(levelDat))
+            {
+                File.Move(levelDat, levelDatOld);
+            }
+
+            if (File.Exists(levelDatNew))
+            {
+                File.Move(levelDatNew, levelDat);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception writing level.dat");
         }
     }
 
@@ -197,20 +223,20 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
     {
         try
         {
-            string playerFile = System.IO.Path.Combine(_playersDirectory.FullName, $"{playerName}.dat");
+            string playerFile = Path.Combine(_playersDirectory.FullName, $"{playerName}.dat");
             if (File.Exists(playerFile))
             {
-                using var stream = File.OpenRead(playerFile);
+                using FileStream stream = File.OpenRead(playerFile);
                 return NbtIo.ReadCompressed(stream);
             }
 
             // Fallback: Migrate single-player data from level.dat
-            string levelFile = System.IO.Path.Combine(_saveDirectory.FullName, "level.dat");
+            string levelFile = Path.Combine(_saveDirectory.FullName, "level.dat");
             if (File.Exists(levelFile))
             {
                 try
                 {
-                    using var stream = File.OpenRead(levelFile);
+                    using FileStream stream = File.OpenRead(levelFile);
                     NBTTagCompound levelDat = NbtIo.ReadCompressed(stream);
                     NBTTagCompound data = levelDat.GetCompoundTag("Data");
 
@@ -218,7 +244,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
                     {
                         NBTTagCompound playerTag = data.GetCompoundTag("Player");
 
-                        using var writeStream = File.OpenWrite(playerFile);
+                        using FileStream writeStream = File.OpenWrite(playerFile);
                         NbtIo.WriteCompressed(playerTag, writeStream);
 
                         _logger.LogInformation($"Migrated singleplayer player data from level.dat to {playerName}.dat");
@@ -238,8 +264,4 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
 
         return null;
     }
-
-    public IPlayerStorage GetPlayerStorage() => this;
-
-    public void ForceSave() { }
 }

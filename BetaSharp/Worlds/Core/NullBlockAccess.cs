@@ -5,15 +5,17 @@ using BetaSharp.Worlds.Generation.Biomes.Source;
 namespace BetaSharp.Worlds.Core;
 
 /// <summary>
-/// Null Object implementation of IBlockAccess for use in contexts where no world is
-/// available (inventory rendering, held-item rendering, entity block rendering).
-/// Returns safe open-air defaults so all block renderers function without modification.
+///     Null Object implementation of IBlockAccess for use in contexts where no world is
+///     available (inventory rendering, held-item rendering, entity block rendering).
+///     Returns safe open-air defaults so all block renderers function without modification.
 /// </summary>
 public sealed class NullBlockAccess : IBlockAccess
 {
     public static readonly NullBlockAccess Instance = new();
 
-    private NullBlockAccess() { }
+    private NullBlockAccess()
+    {
+    }
 
     public int getBlockId(int x, int y, int z) => 0;
 

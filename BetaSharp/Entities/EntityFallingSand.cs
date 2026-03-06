@@ -74,12 +74,12 @@ public class EntityFallingSand : Entity
                 velocityZ *= (double)0.7F;
                 velocityY *= -0.5D;
                 markDead();
-                if ((!world.canPlace(blockId, floorX, floorY, floorZ, true, 1) || BlockSand.canFallThrough(world, floorX, floorY - 1, floorZ) || !world.setBlock(floorX, floorY, floorZ, blockId)) && !world.isRemote)
+                if ((!world.canPlace(blockId, floorX, floorY, floorZ, true, 1) || BlockSand.canFallThrough(world, floorX, floorY - 1, floorZ) || !world.setBlock(floorX, floorY, floorZ, blockId)) && !world.IsRemote)
                 {
                     dropItem(blockId, 1);
                 }
             }
-            else if (fallTime > 100 && !world.isRemote)
+            else if (fallTime > 100 && !world.IsRemote)
             {
                 dropItem(blockId, 1);
                 markDead();

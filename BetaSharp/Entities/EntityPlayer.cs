@@ -51,7 +51,7 @@ public abstract class EntityPlayer : EntityLiving
     public EntityPlayer(World world) : base(world)
     {
         inventory = new InventoryPlayer(this);
-        playerScreenHandler = new PlayerScreenHandler(inventory, !world.isRemote);
+        playerScreenHandler = new PlayerScreenHandler(inventory, !world.IsRemote);
         currentScreenHandler = playerScreenHandler;
         standingEyeHeight = 1.62F;
         Vec3i var2 = world.getSpawnPos();
@@ -79,7 +79,7 @@ public abstract class EntityPlayer : EntityLiving
                 sleepTimer = 100;
             }
 
-            if (!world.isRemote)
+            if (!world.IsRemote)
             {
                 if (!isSleepingInBed())
                 {
@@ -112,7 +112,7 @@ public abstract class EntityPlayer : EntityLiving
         TickSleep();
         GenericTick();
 
-        if (!world.isRemote && currentScreenHandler != null && !currentScreenHandler.canUse(this))
+        if (!world.IsRemote && currentScreenHandler != null && !currentScreenHandler.canUse(this))
         {
             closeHandledScreen();
             currentScreenHandler = playerScreenHandler;
@@ -239,7 +239,7 @@ public abstract class EntityPlayer : EntityLiving
 
     public override void tickMovement()
     {
-        if (world.difficulty == 0 && health < 20 && age % 20 * 12 == 0)
+        if (world.Difficulty == 0 && health < 20 && age % 20 * 12 == 0)
         {
             heal(1);
         }
@@ -473,14 +473,14 @@ public abstract class EntityPlayer : EntityLiving
         }
         else
         {
-            if (isSleeping() && !world.isRemote)
+            if (isSleeping() && !world.IsRemote)
             {
                 wakeUp(true, true, false);
             }
 
             if (damageSource is EntityMonster || damageSource is EntityArrow)
             {
-                switch (world.difficulty)
+                switch (world.Difficulty)
                 {
                     case 0:
                         amount = 0;
@@ -669,14 +669,14 @@ public abstract class EntityPlayer : EntityLiving
 
     public virtual SleepAttemptResult trySleep(int x, int y, int z)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             if (isSleeping() || !isAlive())
             {
                 return SleepAttemptResult.OTHER_PROBLEM;
             }
 
-            if (world.dimension.IsNether)
+            if (world.Dimension.IsNether)
             {
                 return SleepAttemptResult.NOT_POSSIBLE_HERE;
             }
@@ -728,7 +728,7 @@ public abstract class EntityPlayer : EntityLiving
         sleepTimer = 0;
         sleepingPos = new Vec3i(x, y, z);
         velocityX = velocityZ = velocityY = 0.0D;
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             world.Environment.UpdateSleepingPlayers();
         }
@@ -776,7 +776,7 @@ public abstract class EntityPlayer : EntityLiving
         }
 
         sleeping = false;
-        if (!world.isRemote && updateSleepingPlayers)
+        if (!world.IsRemote && updateSleepingPlayers)
         {
             world.Environment.UpdateSleepingPlayers();
         }

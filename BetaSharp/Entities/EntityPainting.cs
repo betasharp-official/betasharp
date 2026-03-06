@@ -127,7 +127,7 @@ public class EntityPainting : Entity
 
     public override void tick()
     {
-        if (_tickCounter++ == 100 && !world.isRemote)
+        if (_tickCounter++ == 100 && !world.IsRemote)
         {
             _tickCounter = 0;
             if (!CanHangOnWall())
@@ -201,7 +201,7 @@ public class EntityPainting : Entity
 
     public override bool damage(Entity entity, int amount)
     {
-        if (!dead && !world.isRemote)
+        if (!dead && !world.IsRemote)
         {
             scheduleVelocityUpdate();
             DropAsItem();
@@ -233,7 +233,7 @@ public class EntityPainting : Entity
 
     public override void move(double dx, double dy, double dz)
     {
-        if (!world.isRemote && dx * dx + dy * dy + dz * dz > 0.0D)
+        if (!world.IsRemote && dx * dx + dy * dy + dz * dz > 0.0D)
         {
             DropAsItem();
         }
@@ -241,7 +241,7 @@ public class EntityPainting : Entity
 
     public override void addVelocity(double dx, double dy, double dz)
     {
-        if (!world.isRemote && dx * dx + dy * dy + dz * dz > 0.0D)
+        if (!world.IsRemote && dx * dx + dy * dy + dz * dz > 0.0D)
         {
             DropAsItem();
         }
@@ -249,7 +249,7 @@ public class EntityPainting : Entity
 
     private void DropAsItem()
     {
-        if (dead || world.isRemote) return;
+        if (dead || world.IsRemote) return;
 
         markDead();
         world.Entities.SpawnEntity(new EntityItem(world, x, y, z, new ItemStack(Item.Painting)));

@@ -249,7 +249,7 @@ internal class BlockChest : BlockWithEntity
                 chestInventory = new InventoryLargeChest("Large chest", (IInventory)chestInventory, (BlockEntityChest)world.getBlockEntity(x, y, z + 1));
             }
 
-            if (world.isRemote)
+            if (world.IsRemote)
             {
                 return true;
             }

@@ -143,7 +143,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             --burnTime;
         }
 
-        if (!World.isRemote)
+        if (!World.IsRemote)
         {
             if (burnTime == 0 && canAcceptRecipeOutput())
             {

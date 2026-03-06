@@ -4,7 +4,6 @@ namespace BetaSharp.Worlds.Generation.Biomes;
 
 internal class BiomeGenSky : Biome
 {
-
     public BiomeGenSky()
     {
         MonsterList.Clear();
@@ -14,8 +13,5 @@ internal class BiomeGenSky : Biome
         CreatureList.Add(new SpawnListEntry(w => new EntityChicken(w)), 10);
     }
 
-    public override int GetSkyColorByTemp(float rand)
-    {
-        return 0xC0C0FF;
-    }
+    public override int GetSkyColorByTemp(float rand) => 0xC0C0FF;
 }

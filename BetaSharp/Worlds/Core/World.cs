@@ -22,64 +22,59 @@ namespace BetaSharp.Worlds.Core;
 
 public abstract class World : IBlockAccess
 {
-    private readonly ILogger<World> _logger = Log.Instance.For<World>();
-    protected readonly IWorldStorage Storage;
-    public readonly Dimension dimension;
-    private ChunkSource _chunkSource;
-    public PersistentStateManager persistentStateManager;
-    protected WorldProperties Properties;
-    protected List<IWorldAccess> EventListeners = [];
+    private static readonly int s_autosavePeriod = 40;
 
-    public readonly EnvironmentManager Environment;
+    private readonly HashSet<ChunkPos> _activeChunks = new();
+    private readonly ChunkSource _chunkSource;
+    private readonly List<LightUpdate> _lightingQueue = [];
+    private readonly ILogger<World> _logger = Log.Instance.For<World>();
+
+    private readonly PathFinder _pathFinder;
+    private readonly PriorityQueue<BlockUpdate, (long, long)> _scheduledUpdates = new();
+
+    private readonly long _worldTimeMask = 0xFFFFFFL;
+    public readonly Dimension Dimension;
     public readonly EntityManager Entities;
 
-    public RuleSet Rules { get; protected set; }
-    public bool isNewWorld;
-    public bool isRemote = false;
-    public int difficulty;
+    public readonly EnvironmentManager Environment;
+    protected readonly List<IWorldAccess> EventListeners = [];
+    protected readonly IWorldStorage Storage;
+
+    private long _eventDeltaTime; // difference between world time and the scheduled time of the block events so things don't break when using the time command
+    private int _lcgBlockSeed = Random.Shared.Next();
+    private int _lightingUpdatesCounter;
+    private int _lightingUpdatesScheduled;
+    private int _soundCounter = Random.Shared.Next(12000);
     private bool _spawnHostileMobs = true;
     private bool _spawnPeacefulMobs = true;
 
-
-    private static readonly int s_autosavePeriod = 40;
+    public int ambientDarkness;
     protected int AutosavePeriod = s_autosavePeriod;
-    public bool pauseTicking = false;
+    public int Difficulty;
     public bool eventProcessingEnabled;
-    private bool _processingDeferred;
     public bool instantBlockUpdateEnabled = false;
-    private readonly PriorityQueue<BlockUpdate, (long, long)> _scheduledUpdates = new();
-
-    private long _eventDeltaTime = 0; // difference between world time and the scheduled time of the block events so things don't break when using the time command
-
-    private readonly long _worldTimeMask = 0xFFFFFFL;
-
-    private readonly HashSet<ChunkPos> _activeChunks = new();
-
-    public int ambientDarkness = 0;
-    private readonly List<LightUpdate> _lightingQueue = [];
-    private int _lightingUpdatesCounter = 0;
-    private int _lightingUpdatesScheduled;
+    public bool IsNewWorld;
+    public bool IsRemote = false;
+    public int lightningTicksLeft = 0;
+    public bool pauseTicking = false;
+    public PersistentStateManager PersistentStateManager;
 
     protected float PrevRainingStrength;
-    protected float RainingStrength;
     protected float PrevThunderingStrength;
-    protected float ThunderingStrength;
-    protected int TicksSinceLightning = 0;
-    public int lightningTicksLeft = 0;
+    public WorldProperties Properties { get; protected set; }
+    protected float RainingStrength;
 
     public JavaRandom random = new();
-    private int _lcgBlockSeed = Random.Shared.Next();
-    private int _soundCounter = Random.Shared.Next(12000);
-
-    private PathFinder _pathFinder;
+    protected float ThunderingStrength;
+    protected int TicksSinceLightning;
 
     protected World(IWorldStorage worldStorage, string levelName, Dimension dim, long seed)
     {
-        _pathFinder = new(this);
+        _pathFinder = new PathFinder(this);
         Storage = worldStorage;
-        persistentStateManager = new PersistentStateManager(worldStorage);
+        PersistentStateManager = new PersistentStateManager(worldStorage);
         Properties = new WorldProperties(seed, levelName);
-        dimension = dim;
+        Dimension = dim;
         dim.SetWorld(this);
         _chunkSource = CreateChunkCache();
         Rules = Properties.RulesTag != null
@@ -92,50 +87,44 @@ public abstract class World : IBlockAccess
         Environment.PrepareWeather();
         Environment.UpdateSkyBrightness();
 
-        Entities.OnEntityAdded += (ent) =>
+        Entities.OnEntityAdded += ent =>
         {
-            for (int i = 0; i < EventListeners.Count; ++i) EventListeners[i].notifyEntityAdded(ent);
+            for (int i = 0; i < EventListeners.Count; ++i)
+            {
+                EventListeners[i].notifyEntityAdded(ent);
+            }
         };
-        Entities.OnEntityRemoved += (ent) =>
+        Entities.OnEntityRemoved += ent =>
         {
-            for (int i = 0; i < EventListeners.Count; ++i) EventListeners[i].notifyEntityRemoved(ent);
+            for (int i = 0; i < EventListeners.Count; ++i)
+            {
+                EventListeners[i].notifyEntityRemoved(ent);
+            }
         };
     }
 
     protected World(IWorldStorage worldStorage, string levelName, long seed, Dimension? dim)
     {
-        _pathFinder = new(this);
+        _pathFinder = new PathFinder(this);
         Storage = worldStorage;
-        persistentStateManager = new PersistentStateManager(worldStorage);
+        PersistentStateManager = new PersistentStateManager(worldStorage);
+
         Properties = worldStorage.LoadProperties();
-
-        isNewWorld = Properties == null;
-
-        if (dim != null)
-        {
-            dimension = dim;
-        }
-        else if (Properties != null && Properties.Dimension == -1)
-        {
-            dimension = Dimension.FromId(-1);
-        }
-        else
-        {
-            dimension = Dimension.FromId(0);
-        }
-
-        bool shouldInitializeSpawn = false;
-        if (Properties == null)
+        IsNewWorld = Properties == null;
+        bool shouldInitializeSpawn = IsNewWorld;
+        if (IsNewWorld)
         {
             Properties = new WorldProperties(seed, levelName);
-            shouldInitializeSpawn = true;
         }
         else
         {
             Properties.LevelName = levelName;
         }
 
-        dimension.SetWorld(this);
+        Dimension = dim ?? Dimension.FromId(Properties.Dimension == -1 ? -1 : 0);
+        Dimension.SetWorld(this);
+
+        Dimension.SetWorld(this);
         _chunkSource = CreateChunkCache();
 
         Rules = Properties.RulesTag != null
@@ -153,25 +142,86 @@ public abstract class World : IBlockAccess
         Environment.PrepareWeather();
         Environment.UpdateSkyBrightness();
 
-        Entities.OnEntityAdded += (ent) =>
+        Entities.OnEntityAdded += ent =>
         {
-            for (int i = 0; i < EventListeners.Count; ++i) EventListeners[i].notifyEntityAdded(ent);
+            for (int i = 0; i < EventListeners.Count; ++i)
+            {
+                EventListeners[i].notifyEntityAdded(ent);
+            }
         };
-        Entities.OnEntityRemoved += (ent) =>
+        Entities.OnEntityRemoved += ent =>
         {
-            for (int i = 0; i < EventListeners.Count; ++i) EventListeners[i].notifyEntityRemoved(ent);
+            for (int i = 0; i < EventListeners.Count; ++i)
+            {
+                EventListeners[i].notifyEntityRemoved(ent);
+            }
         };
     }
 
-    public BiomeSource getBiomeSource()
+    public RuleSet Rules { get; protected set; }
+
+    public BiomeSource getBiomeSource() => Dimension.BiomeSource;
+
+    public int getBlockId(int x, int y, int z)
     {
-        return dimension.BiomeSource;
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
+        {
+            return 0;
+        }
+
+        return GetChunk(x >> 4, z >> 4).GetBlockId(x & 15, y, z & 15);
     }
 
-    public IWorldStorage getWorldStorage()
+    public Material getMaterial(int x, int y, int z)
     {
-        return Storage;
+        int blockId = getBlockId(x, y, z);
+        return blockId == 0 ? Material.Air : Block.Blocks[blockId].material;
     }
+
+    public int getBlockMeta(int x, int y, int z)
+    {
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
+        {
+            return 0;
+        }
+
+        return GetChunk(x >> 4, z >> 4).GetBlockMeta(x & 15, y, z & 15);
+    }
+
+    public float getNaturalBrightness(int x, int y, int z, int blockLight)
+    {
+        int lightLevel = getLightLevel(x, y, z);
+        if (lightLevel < blockLight)
+        {
+            lightLevel = blockLight;
+        }
+
+        return Dimension.LightLevelToLuminance[lightLevel];
+    }
+
+    public float getLuminance(int x, int y, int z) => Dimension.LightLevelToLuminance[getLightLevel(x, y, z)];
+
+    public BlockEntity? getBlockEntity(int x, int y, int z)
+    {
+        Chunk? chunk = GetChunk(x >> 4, z >> 4);
+        BlockEntity? entity = chunk?.GetBlockEntity(x & 15, y, z & 15) ?? Entities.BlockEntities.FirstOrDefault(e => e.X == x && e.Y == y && e.Z == z);
+
+        return entity;
+    }
+
+    public bool isOpaque(int x, int y, int z)
+    {
+        Block? block = Block.Blocks[getBlockId(x, y, z)];
+        return block == null ? false : block.isOpaque();
+    }
+
+    public bool shouldSuffocate(int x, int y, int z)
+    {
+        Block? block = Block.Blocks[getBlockId(x, y, z)];
+        return block == null ? false : block.material.Suffocates && block.isFullCube();
+    }
+
+    public IWorldStorage getWorldStorage() => Storage;
 
     protected abstract ChunkSource CreateChunkCache();
 
@@ -184,7 +234,7 @@ public abstract class World : IBlockAccess
         int z;
         for (
             z = 0;
-            !dimension.IsValidSpawnPoint(x, z);
+            !Dimension.IsValidSpawnPoint(x, z);
             z += random.NextInt(64) - random.NextInt(64))
         {
             x += random.NextInt(64) - random.NextInt(64);
@@ -284,7 +334,7 @@ public abstract class World : IBlockAccess
         Profiler.Stop("saveWorldInfoAndPlayer");
 
         Profiler.Start("saveAllData");
-        persistentStateManager.SaveAllData();
+        PersistentStateManager.SaveAllData();
         Profiler.Stop("saveAllData");
     }
 
@@ -294,37 +344,20 @@ public abstract class World : IBlockAccess
         {
             return true;
         }
-        else
+
+        if (i == 0)
         {
-            if (i == 0)
-            {
-                save();
-            }
-
-            return _chunkSource.Save(false, null);
+            save();
         }
+
+        return _chunkSource.Save(false, null);
     }
 
-    public int getBlockId(int x, int y, int z)
-    {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128) return 0;
-        return GetChunk(x >> 4, z >> 4).GetBlockId(x & 15, y, z & 15);
-    }
+    public bool isAir(int x, int y, int z) => getBlockId(x, y, z) == 0;
 
-    public bool isAir(int x, int y, int z)
-    {
-        return getBlockId(x, y, z) == 0;
-    }
+    public bool isPosLoaded(int x, int y, int z) => y >= 0 && y < 128 ? hasChunk(x >> 4, z >> 4) : false;
 
-    public bool isPosLoaded(int x, int y, int z)
-    {
-        return y >= 0 && y < 128 ? hasChunk(x >> 4, z >> 4) : false;
-    }
-
-    public bool isRegionLoaded(int x, int y, int z, int range)
-    {
-        return isRegionLoaded(x - range, y - range, z - range, x + range, y + range, z + range);
-    }
+    public bool isRegionLoaded(int x, int y, int z, int range) => isRegionLoaded(x - range, y - range, z - range, x + range, y + range, z + range);
 
     public bool isRegionLoaded(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
@@ -350,30 +383,23 @@ public abstract class World : IBlockAccess
 
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
-    private bool hasChunk(int x, int z)
-    {
-        return _chunkSource.IsChunkLoaded(x, z);
-    }
+    private bool hasChunk(int x, int z) => _chunkSource.IsChunkLoaded(x, z);
 
-    public Chunk GetChunkFromPos(int x, int z)
-    {
-        return GetChunk(x >> 4, z >> 4);
-    }
+    public Chunk GetChunkFromPos(int x, int z) => GetChunk(x >> 4, z >> 4);
 
-    public Chunk GetChunk(int chunkX, int chunkZ)
-    {
-        return _chunkSource.GetChunk(chunkX, chunkZ);
-    }
+    public Chunk GetChunk(int chunkX, int chunkZ) => _chunkSource.GetChunk(chunkX, chunkZ);
 
     public virtual bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, int meta)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128) return false;
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
+        {
+            return false;
+        }
+
         return GetChunk(x >> 4, z >> 4).SetBlock(x & 15, y, z & 15, blockId, meta);
     }
 
@@ -385,32 +411,17 @@ public abstract class World : IBlockAccess
             {
                 return false;
             }
-            else if (y >= 128)
+
+            if (y >= 128)
             {
                 return false;
             }
-            else
-            {
-                Chunk chunk = GetChunk(x >> 4, z >> 4);
-                return chunk.SetBlock(x & 15, y, z & 15, blockId);
-            }
-        }
-        else
-        {
-            return false;
-        }
-    }
 
-    public Material getMaterial(int x, int y, int z)
-    {
-        int blockId = getBlockId(x, y, z);
-        return blockId == 0 ? Material.Air : Block.Blocks[blockId].material;
-    }
+            Chunk chunk = GetChunk(x >> 4, z >> 4);
+            return chunk.SetBlock(x & 15, y, z & 15, blockId);
+        }
 
-    public int getBlockMeta(int x, int y, int z)
-    {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128) return 0;
-        return GetChunk(x >> 4, z >> 4).GetBlockMeta(x & 15, y, z & 15);
+        return false;
     }
 
     public void setBlockMeta(int x, int y, int z, int meta)
@@ -437,23 +448,20 @@ public abstract class World : IBlockAccess
             {
                 return false;
             }
-            else if (y >= 128)
+
+            if (y >= 128)
             {
                 return false;
             }
-            else
-            {
-                Chunk chunk = GetChunk(x >> 4, z >> 4);
-                x &= 15;
-                z &= 15;
-                chunk.SetBlockMeta(x, y, z, meta);
-                return true;
-            }
+
+            Chunk chunk = GetChunk(x >> 4, z >> 4);
+            x &= 15;
+            z &= 15;
+            chunk.SetBlockMeta(x, y, z, meta);
+            return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
     public bool setBlock(int x, int y, int z, int blockId)
@@ -463,10 +471,8 @@ public abstract class World : IBlockAccess
             blockUpdate(x, y, z, blockId);
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
     public bool setBlock(int x, int y, int z, int blockId, int meta)
@@ -476,10 +482,8 @@ public abstract class World : IBlockAccess
             blockUpdate(x, y, z, blockId);
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
     public void blockUpdateEvent(int x, int y, int z)
@@ -534,7 +538,7 @@ public abstract class World : IBlockAccess
 
     private void notifyUpdate(int x, int y, int z, int blockId)
     {
-        if (!pauseTicking && !isRemote)
+        if (!pauseTicking && !IsRemote)
         {
             Block block = Block.Blocks[getBlockId(x, y, z)];
             if (block != null)
@@ -544,10 +548,7 @@ public abstract class World : IBlockAccess
         }
     }
 
-    public bool hasSkyLight(int x, int y, int z)
-    {
-        return GetChunk(x >> 4, z >> 4).IsAboveMaxHeight(x & 15, y, z & 15);
-    }
+    public bool hasSkyLight(int x, int y, int z) => GetChunk(x >> 4, z >> 4).IsAboveMaxHeight(x & 15, y, z & 15);
 
     public int getBrightness(int x, int y, int z)
     {
@@ -555,21 +556,16 @@ public abstract class World : IBlockAccess
         {
             return 0;
         }
-        else
+
+        if (y >= 128)
         {
-            if (y >= 128)
-            {
-                return !dimension.HasCeiling ? 15 : 0;
-            }
-
-            return GetChunk(x >> 4, z >> 4).GetLight(x & 15, y, z & 15, 0);
+            return !Dimension.HasCeiling ? 15 : 0;
         }
+
+        return GetChunk(x >> 4, z >> 4).GetLight(x & 15, y, z & 15, 0);
     }
 
-    public int getLightLevel(int x, int y, int z)
-    {
-        return getLightLevel(x, y, z, true);
-    }
+    public int getLightLevel(int x, int y, int z) => getLightLevel(x, y, z, true);
 
     public int getLightLevel(int x, int y, int z, bool checkNeighbors)
     {
@@ -591,20 +587,38 @@ public abstract class World : IBlockAccess
                 int lightPosZ = getLightLevel(x, y, z + 1, false);
                 int lightNegZ = getLightLevel(x, y, z - 1, false);
 
-                if (lightPosX > neighborMaxLight) neighborMaxLight = lightPosX;
-                if (lightNegX > neighborMaxLight) neighborMaxLight = lightNegX;
-                if (lightPosZ > neighborMaxLight) neighborMaxLight = lightPosZ;
-                if (lightNegZ > neighborMaxLight) neighborMaxLight = lightNegZ;
+                if (lightPosX > neighborMaxLight)
+                {
+                    neighborMaxLight = lightPosX;
+                }
+
+                if (lightNegX > neighborMaxLight)
+                {
+                    neighborMaxLight = lightNegX;
+                }
+
+                if (lightPosZ > neighborMaxLight)
+                {
+                    neighborMaxLight = lightPosZ;
+                }
+
+                if (lightNegZ > neighborMaxLight)
+                {
+                    neighborMaxLight = lightNegZ;
+                }
 
                 return neighborMaxLight;
             }
         }
 
-        if (y < 0) return 0;
+        if (y < 0)
+        {
+            return 0;
+        }
 
         if (y >= 128)
         {
-            return !dimension.HasCeiling ? 15 - ambientDarkness : 0;
+            return !Dimension.HasCeiling ? 15 - ambientDarkness : 0;
         }
 
         Chunk chunk = GetChunk(x >> 4, z >> 4);
@@ -619,26 +633,24 @@ public abstract class World : IBlockAccess
             {
                 return false;
             }
-            else if (y >= 128)
+
+            if (y >= 128)
             {
                 return true;
             }
-            else if (!hasChunk(x >> 4, z >> 4))
+
+            if (!hasChunk(x >> 4, z >> 4))
             {
                 return false;
             }
-            else
-            {
-                Chunk chunk = GetChunk(x >> 4, z >> 4);
-                x &= 15;
-                z &= 15;
-                return chunk.IsAboveMaxHeight(x, y, z);
-            }
+
+            Chunk chunk = GetChunk(x >> 4, z >> 4);
+            x &= 15;
+            z &= 15;
+            return chunk.IsAboveMaxHeight(x, y, z);
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
     public int getTopY(int x, int z)
@@ -662,7 +674,7 @@ public abstract class World : IBlockAccess
 
     public void updateLight(LightType lightType, int x, int y, int z, int targetLuminance)
     {
-        if (dimension.HasCeiling && lightType == LightType.Sky)
+        if (Dimension.HasCeiling && lightType == LightType.Sky)
         {
             return;
         }
@@ -743,36 +755,11 @@ public abstract class World : IBlockAccess
         }
     }
 
-    public float getNaturalBrightness(int x, int y, int z, int blockLight)
-    {
-        int lightLevel = getLightLevel(x, y, z);
-        if (lightLevel < blockLight)
-        {
-            lightLevel = blockLight;
-        }
+    public bool canMonsterSpawn() => ambientDarkness < 4;
 
-        return dimension.LightLevelToLuminance[lightLevel];
-    }
+    public HitResult raycast(Vec3D start, Vec3D end) => raycast(start, end, false, false);
 
-    public float getLuminance(int x, int y, int z)
-    {
-        return dimension.LightLevelToLuminance[getLightLevel(x, y, z)];
-    }
-
-    public bool canMonsterSpawn()
-    {
-        return ambientDarkness < 4;
-    }
-
-    public HitResult raycast(Vec3D start, Vec3D end)
-    {
-        return raycast(start, end, false, false);
-    }
-
-    public HitResult raycast(Vec3D start, Vec3D end, bool bl)
-    {
-        return raycast(start, end, bl, false);
-    }
+    public HitResult raycast(Vec3D start, Vec3D end, bool bl) => raycast(start, end, bl, false);
 
     public HitResult raycast(Vec3D start, Vec3D target, bool includeFluids, bool ignoreNonSolid)
     {
@@ -798,40 +785,86 @@ public abstract class World : IBlockAccess
             initialId > 0 && initialBlock.hasCollision(initialMeta, includeFluids))
         {
             HitResult result = initialBlock.raycast(this, currentX, currentY, currentZ, start, target);
-            if (result.Type != HitResultType.MISS) return result;
+            if (result.Type != HitResultType.MISS)
+            {
+                return result;
+            }
         }
 
         int iterationsRemaining = 200;
         while (iterationsRemaining-- >= 0)
         {
             if (double.IsNaN(start.x) || double.IsNaN(start.y) || double.IsNaN(start.z))
+            {
                 return new HitResult(HitResultType.MISS);
+            }
+
             if (currentX == targetX && currentY == targetY && currentZ == targetZ)
+            {
                 return new HitResult(HitResultType.MISS);
+            }
 
             bool canMoveX = true, canMoveY = true, canMoveZ = true;
             double nextBoundaryX = 999.0D, nextBoundaryY = 999.0D, nextBoundaryZ = 999.0D;
 
-            if (targetX > currentX) nextBoundaryX = currentX + 1.0D;
-            else if (targetX < currentX) nextBoundaryX = currentX + 0.0D;
-            else canMoveX = false;
+            if (targetX > currentX)
+            {
+                nextBoundaryX = currentX + 1.0D;
+            }
+            else if (targetX < currentX)
+            {
+                nextBoundaryX = currentX + 0.0D;
+            }
+            else
+            {
+                canMoveX = false;
+            }
 
-            if (targetY > currentY) nextBoundaryY = currentY + 1.0D;
-            else if (targetY < currentY) nextBoundaryY = currentY + 0.0D;
-            else canMoveY = false;
+            if (targetY > currentY)
+            {
+                nextBoundaryY = currentY + 1.0D;
+            }
+            else if (targetY < currentY)
+            {
+                nextBoundaryY = currentY + 0.0D;
+            }
+            else
+            {
+                canMoveY = false;
+            }
 
-            if (targetZ > currentZ) nextBoundaryZ = currentZ + 1.0D;
-            else if (targetZ < currentZ) nextBoundaryZ = currentZ + 0.0D;
-            else canMoveZ = false;
+            if (targetZ > currentZ)
+            {
+                nextBoundaryZ = currentZ + 1.0D;
+            }
+            else if (targetZ < currentZ)
+            {
+                nextBoundaryZ = currentZ + 0.0D;
+            }
+            else
+            {
+                canMoveZ = false;
+            }
 
             double deltaX = target.x - start.x;
             double deltaY = target.y - start.y;
             double deltaZ = target.z - start.z;
 
             double scaleX = 999.0D, scaleY = 999.0D, scaleZ = 999.0D;
-            if (canMoveX) scaleX = (nextBoundaryX - start.x) / deltaX;
-            if (canMoveY) scaleY = (nextBoundaryY - start.y) / deltaY;
-            if (canMoveZ) scaleZ = (nextBoundaryZ - start.z) / deltaZ;
+            if (canMoveX)
+            {
+                scaleX = (nextBoundaryX - start.x) / deltaX;
+            }
+
+            if (canMoveY)
+            {
+                scaleY = (nextBoundaryY - start.y) / deltaY;
+            }
+
+            if (canMoveZ)
+            {
+                scaleZ = (nextBoundaryZ - start.z) / deltaZ;
+            }
 
             byte hitSide;
             if (scaleX < scaleY && scaleX < scaleZ)
@@ -856,7 +889,7 @@ public abstract class World : IBlockAccess
                 start.z = nextBoundaryZ;
             }
 
-            Vec3D currentStepPos = new Vec3D(start.x, start.y, start.z);
+            Vec3D currentStepPos = new(start.x, start.y, start.z);
             currentX = (int)(currentStepPos.x = MathHelper.Floor(start.x));
             if (hitSide == 5)
             {
@@ -887,7 +920,10 @@ public abstract class World : IBlockAccess
                 blockIdAtStep > 0 && blockAtStep.hasCollision(metaAtStep, includeFluids))
             {
                 HitResult hit = blockAtStep.raycast(this, currentX, currentY, currentZ, start, target);
-                if (hit.Type != HitResultType.MISS) return hit;
+                if (hit.Type != HitResultType.MISS)
+                {
+                    return hit;
+                }
             }
         }
 
@@ -928,26 +964,17 @@ public abstract class World : IBlockAccess
         }
     }
 
-    public void addWorldAccess(IWorldAccess worldAccess)
-    {
-        EventListeners.Add(worldAccess);
-    }
+    public void addWorldAccess(IWorldAccess worldAccess) => EventListeners.Add(worldAccess);
 
-    public void removeWorldAccess(IWorldAccess worldAccess)
-    {
-        EventListeners.Remove(worldAccess);
-    }
+    public void removeWorldAccess(IWorldAccess worldAccess) => EventListeners.Remove(worldAccess);
 
-    public float getTime(float delta)
-    {
-        return dimension.GetTimeOfDay(Properties.WorldTime, delta);
-    }
+    public float getTime(float delta) => Dimension.GetTimeOfDay(Properties.WorldTime, delta);
 
 
     public Vector3D<double> getFogColor(float partialTicks)
     {
         float timeOfDay = getTime(partialTicks);
-        return dimension.GetFogColor(timeOfDay, partialTicks);
+        return Dimension.GetFogColor(timeOfDay, partialTicks);
     }
 
     public int getTopSolidBlockY(int x, int z)
@@ -1021,6 +1048,7 @@ public abstract class World : IBlockAccess
             }
         }
     }
+
     public bool isAnyBlockInBox(Box area)
     {
         int minX = MathHelper.Floor(area.MinX);
@@ -1030,9 +1058,20 @@ public abstract class World : IBlockAccess
         int minZ = MathHelper.Floor(area.MinZ);
         int maxZ = MathHelper.Floor(area.MaxZ + 1.0);
 
-        if (area.MinX < 0.0) minX--;
-        if (area.MinY < 0.0) minY--;
-        if (area.MinZ < 0.0) minZ--;
+        if (area.MinX < 0.0)
+        {
+            minX--;
+        }
+
+        if (area.MinY < 0.0)
+        {
+            minY--;
+        }
+
+        if (area.MinZ < 0.0)
+        {
+            minZ--;
+        }
 
         for (int x = minX; x < maxX; x++)
         {
@@ -1040,7 +1079,10 @@ public abstract class World : IBlockAccess
             {
                 for (int z = minZ; z < maxZ; z++)
                 {
-                    if (getBlockId(x, y, z) > 0) return true;
+                    if (getBlockId(x, y, z) > 0)
+                    {
+                        return true;
+                    }
                 }
             }
         }
@@ -1057,9 +1099,20 @@ public abstract class World : IBlockAccess
         int minZ = MathHelper.Floor(area.MinZ);
         int maxZ = MathHelper.Floor(area.MaxZ + 1.0D);
 
-        if (area.MinX < 0.0D) minX--;
-        if (area.MinY < 0.0D) minY--;
-        if (area.MinZ < 0.0D) minZ--;
+        if (area.MinX < 0.0D)
+        {
+            minX--;
+        }
+
+        if (area.MinY < 0.0D)
+        {
+            minY--;
+        }
+
+        if (area.MinZ < 0.0D)
+        {
+            minZ--;
+        }
 
         for (int x = minX; x < maxX; ++x)
         {
@@ -1068,7 +1121,10 @@ public abstract class World : IBlockAccess
                 for (int z = minZ; z < maxZ; ++z)
                 {
                     Block block = Block.Blocks[getBlockId(x, y, z)];
-                    if (block != null && block.material.IsFluid) return true;
+                    if (block != null && block.material.IsFluid)
+                    {
+                        return true;
+                    }
                 }
             }
         }
@@ -1115,10 +1171,13 @@ public abstract class World : IBlockAccess
         int minZ = MathHelper.Floor(entityBox.MinZ);
         int maxZ = MathHelper.Floor(entityBox.MaxZ + 1.0D);
 
-        if (!isRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ)) return false;
+        if (!isRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
+        {
+            return false;
+        }
 
         bool isSubmerged = false;
-        Vec3D flowVector = new Vec3D(0.0D, 0.0D, 0.0D);
+        Vec3D flowVector = new(0.0D, 0.0D, 0.0D);
 
         for (int x = minX; x < maxX; ++x)
         {
@@ -1169,7 +1228,10 @@ public abstract class World : IBlockAccess
                 for (int z = minZ; z < maxZ; ++z)
                 {
                     Block block = Block.Blocks[getBlockId(x, y, z)];
-                    if (block != null && block.material == material) return true;
+                    if (block != null && block.material == material)
+                    {
+                        return true;
+                    }
                 }
             }
         }
@@ -1196,13 +1258,16 @@ public abstract class World : IBlockAccess
                     if (block != null && block.material == fluid)
                     {
                         int meta = getBlockMeta(x, y, z);
-                        double waterLevel = (y + 1);
+                        double waterLevel = y + 1;
                         if (meta < 8)
                         {
-                            waterLevel = (y + 1) - meta / 8.0D;
+                            waterLevel = y + 1 - meta / 8.0D;
                         }
 
-                        if (waterLevel >= area.MinY) return true;
+                        if (waterLevel >= area.MinY)
+                        {
+                            return true;
+                        }
                     }
                 }
             }
@@ -1211,10 +1276,7 @@ public abstract class World : IBlockAccess
         return false;
     }
 
-    public Explosion createExplosion(Entity source, double x, double y, double z, float power)
-    {
-        return createExplosion(source, x, y, z, power, false);
-    }
+    public Explosion createExplosion(Entity source, double x, double y, double z, float power) => createExplosion(source, x, y, z, power, false);
 
     public virtual Explosion createExplosion(Entity source, double x, double y, double z, float power, bool fire)
     {
@@ -1295,43 +1357,12 @@ public abstract class World : IBlockAccess
         }
     }
 
-    public Entity? getPlayerForProxy(Type type)
-    {
-        return null;
-    }
+    public Entity? getPlayerForProxy(Type type) => null;
 
 
+    public string getDebugInfo() => _chunkSource.GetDebugInfo();
 
-
-    public string getDebugInfo()
-    {
-        return _chunkSource.GetDebugInfo();
-    }
-
-    public BlockEntity? getBlockEntity(int x, int y, int z)
-    {
-        Chunk? chunk = GetChunk(x >> 4, z >> 4);
-        var entity = chunk?.GetBlockEntity(x & 15, y, z & 15) ?? Entities.BlockEntities.FirstOrDefault(e => e.X == x && e.Y == y && e.Z == z);
-
-        return entity;
-    }
-
-    public bool isOpaque(int x, int y, int z)
-    {
-        Block? block = Block.Blocks[getBlockId(x, y, z)];
-        return block == null ? false : block.isOpaque();
-    }
-
-    public bool shouldSuffocate(int x, int y, int z)
-    {
-        Block? block = Block.Blocks[getBlockId(x, y, z)];
-        return block == null ? false : block.material.Suffocates && block.isFullCube();
-    }
-
-    public void savingProgress(LoadingDisplay display)
-    {
-        saveWithLoadingDisplay(true, display);
-    }
+    public void savingProgress(LoadingDisplay display) => saveWithLoadingDisplay(true, display);
 
     public bool doLightingUpdates()
     {
@@ -1370,15 +1401,12 @@ public abstract class World : IBlockAccess
         }
     }
 
-    public void queueLightUpdate(LightType type, int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
-    {
-        queueLightUpdate(type, minX, minY, minZ, maxX, maxY, maxZ, true);
-    }
+    public void queueLightUpdate(LightType type, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) => queueLightUpdate(type, minX, minY, minZ, maxX, maxY, maxZ, true);
 
     public void queueLightUpdate(LightType type, int minX, int minY, int minZ, int maxX, int maxY, int maxZ,
         bool attemptMerge)
     {
-        if (dimension.HasCeiling && type == LightType.Sky)
+        if (Dimension.HasCeiling && type == LightType.Sky)
         {
             return;
         }
@@ -1403,7 +1431,7 @@ public abstract class World : IBlockAccess
                 }
 
                 int queueSize = _lightingQueue.Count;
-                var span = CollectionsMarshal.AsSpan(_lightingQueue);
+                Span<LightUpdate> span = CollectionsMarshal.AsSpan(_lightingQueue);
 
                 if (attemptMerge)
                 {
@@ -1452,7 +1480,7 @@ public abstract class World : IBlockAccess
         {
             bool wasSpawnInterrupted = false;
 
-            if (_spawnHostileMobs && difficulty >= 1)
+            if (_spawnHostileMobs && Difficulty >= 1)
             {
                 wasSpawnInterrupted = NaturalSpawner.SpawnMonstersAndWakePlayers(this, _pathFinder, Entities.Players);
             }
@@ -1460,7 +1488,7 @@ public abstract class World : IBlockAccess
             if (!wasSpawnInterrupted)
             {
                 nextWorldTime = Properties.WorldTime + 24000L;
-                Properties.WorldTime = nextWorldTime - (nextWorldTime % 24000L);
+                Properties.WorldTime = nextWorldTime - nextWorldTime % 24000L;
                 Environment.AfterSkipNight();
             }
         }
@@ -1529,7 +1557,7 @@ public abstract class World : IBlockAccess
             --_soundCounter;
         }
 
-        foreach (var chunkPos in _activeChunks)
+        foreach (ChunkPos chunkPos in _activeChunks)
         {
             int worldXBase = chunkPos.X * 16;
             int worldZBase = chunkPos.Z * 16;
@@ -1540,8 +1568,8 @@ public abstract class World : IBlockAccess
                 _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
                 int randomVal = _lcgBlockSeed >> 2;
                 int localX = randomVal & 15;
-                int localZ = randomVal >> 8 & 15;
-                int localY = randomVal >> 16 & 127;
+                int localZ = (randomVal >> 8) & 15;
+                int localY = (randomVal >> 16) & 127;
 
                 int blockId = currentChunk.GetBlockId(localX, localY, localZ);
                 int worldX = localX + worldXBase;
@@ -1565,7 +1593,7 @@ public abstract class World : IBlockAccess
                 _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
                 int randomVal = _lcgBlockSeed >> 2;
                 int worldX = worldXBase + (randomVal & 15);
-                int worldZ = worldZBase + (randomVal >> 8 & 15);
+                int worldZ = worldZBase + ((randomVal >> 8) & 15);
                 int worldY = getTopSolidBlockY(worldX, worldZ);
 
                 if (Environment.IsRainingAt(worldX, worldY, worldZ))
@@ -1580,7 +1608,7 @@ public abstract class World : IBlockAccess
                 _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
                 int randomVal = _lcgBlockSeed >> 2;
                 int localX = randomVal & 15;
-                int localZ = randomVal >> 8 & 15;
+                int localZ = (randomVal >> 8) & 15;
                 int worldX = localX + worldXBase;
                 int worldZ = localZ + worldZBase;
                 int worldY = getTopSolidBlockY(worldX, worldZ);
@@ -1610,10 +1638,10 @@ public abstract class World : IBlockAccess
                 _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
                 int randomTickVal = _lcgBlockSeed >> 2;
                 int localX = randomTickVal & 15;
-                int localZ = randomTickVal >> 8 & 15;
-                int localY = randomTickVal >> 16 & 127;
+                int localZ = (randomTickVal >> 8) & 15;
+                int localY = (randomTickVal >> 16) & 127;
 
-                int blockId = currentChunk.Blocks[localX << 11 | localZ << 7 | localY] & 255;
+                int blockId = currentChunk.Blocks[(localX << 11) | (localZ << 7) | localY] & 255;
                 if (Block.BlocksRandomTick[blockId])
                 {
                     Block.Blocks[blockId].onTick(this, localX + worldXBase, localY, localZ + worldZBase, random);
@@ -1626,11 +1654,17 @@ public abstract class World : IBlockAccess
     {
         for (int i = 0; i < 1000; ++i)
         {
-            if (_scheduledUpdates.Count == 0) break;
+            if (_scheduledUpdates.Count == 0)
+            {
+                break;
+            }
 
-            if (!forceFlush && _scheduledUpdates.Peek().ScheduledTime > GetEventTime()) break;
+            if (!forceFlush && _scheduledUpdates.Peek().ScheduledTime > GetEventTime())
+            {
+                break;
+            }
 
-            var blockUpdate = _scheduledUpdates.Dequeue();
+            BlockUpdate blockUpdate = _scheduledUpdates.Dequeue();
 
             const byte loadRadius = 8;
             if (isRegionLoaded(blockUpdate.X - loadRadius, blockUpdate.Y - loadRadius, blockUpdate.Z - loadRadius,
@@ -1664,10 +1698,7 @@ public abstract class World : IBlockAccess
         }
     }
 
-    public List<Entity> getEntities(Entity? excludeEntity, Box area)
-    {
-        return getEntities(excludeEntity, area, new List<Entity>());
-    }
+    public List<Entity> getEntities(Entity? excludeEntity, Box area) => getEntities(excludeEntity, area, new List<Entity>());
 
     public List<Entity> getEntities(Entity? excludeEntity, Box area, List<Entity> results)
     {
@@ -1816,11 +1847,31 @@ public abstract class World : IBlockAccess
 
     public bool isStrongPowered(int x, int y, int z)
     {
-        if (isStrongPoweringSide(x, y - 1, z, 0)) return true; // Down
-        if (isStrongPoweringSide(x, y + 1, z, 1)) return true; // Up
-        if (isStrongPoweringSide(x, y, z - 1, 2)) return true; // North
-        if (isStrongPoweringSide(x, y, z + 1, 3)) return true; // South
-        if (isStrongPoweringSide(x - 1, y, z, 4)) return true; // West
+        if (isStrongPoweringSide(x, y - 1, z, 0))
+        {
+            return true; // Down
+        }
+
+        if (isStrongPoweringSide(x, y + 1, z, 1))
+        {
+            return true; // Up
+        }
+
+        if (isStrongPoweringSide(x, y, z - 1, 2))
+        {
+            return true; // North
+        }
+
+        if (isStrongPoweringSide(x, y, z + 1, 3))
+        {
+            return true; // South
+        }
+
+        if (isStrongPoweringSide(x - 1, y, z, 4))
+        {
+            return true; // West
+        }
+
         return isStrongPoweringSide(x + 1, y, z, 5); // East
     }
 
@@ -1837,18 +1888,35 @@ public abstract class World : IBlockAccess
 
     public bool isPowered(int x, int y, int z)
     {
-        if (isPoweringSide(x, y - 1, z, 0)) return true; // Down
-        if (isPoweringSide(x, y + 1, z, 1)) return true; // Up
-        if (isPoweringSide(x, y, z - 1, 2)) return true; // North
-        if (isPoweringSide(x, y, z + 1, 3)) return true; // South
-        if (isPoweringSide(x - 1, y, z, 4)) return true; // West
+        if (isPoweringSide(x, y - 1, z, 0))
+        {
+            return true; // Down
+        }
+
+        if (isPoweringSide(x, y + 1, z, 1))
+        {
+            return true; // Up
+        }
+
+        if (isPoweringSide(x, y, z - 1, 2))
+        {
+            return true; // North
+        }
+
+        if (isPoweringSide(x, y, z + 1, 3))
+        {
+            return true; // South
+        }
+
+        if (isPoweringSide(x - 1, y, z, 4))
+        {
+            return true; // West
+        }
+
         return isPoweringSide(x + 1, y, z, 5); // East
     }
 
-    public EntityPlayer getClosestPlayer(Entity entity, double range)
-    {
-        return Entities.GetClosestPlayer(entity.x, entity.y, entity.z, range);
-    }
+    public EntityPlayer getClosestPlayer(Entity entity, double range) => Entities.GetClosestPlayer(entity.x, entity.y, entity.z, range);
 
     public void handleChunkDataUpdate(int x, int y, int z, int sizeX, int sizeY, int sizeZ, byte[] chunkData)
     {
@@ -1863,13 +1931,13 @@ public abstract class World : IBlockAccess
 
         for (int chunkX = startChunkX; chunkX <= endChunkX; ++chunkX)
         {
-            int localStartX = Math.Max(0, x - (chunkX * 16));
-            int localEndX = Math.Min(16, x + sizeX - (chunkX * 16));
+            int localStartX = Math.Max(0, x - chunkX * 16);
+            int localEndX = Math.Min(16, x + sizeX - chunkX * 16);
 
             for (int chunkZ = startChunkZ; chunkZ <= endChunkZ; ++chunkZ)
             {
-                int localStartZ = Math.Max(0, z - (chunkZ * 16));
-                int localEndZ = Math.Min(16, z + sizeZ - (chunkZ * 16));
+                int localStartZ = Math.Max(0, z - chunkZ * 16);
+                int localEndZ = Math.Min(16, z + sizeZ - chunkZ * 16);
 
                 currentBufferOffset = GetChunk(chunkX, chunkZ).LoadFromPacket(
                     chunkData,
@@ -1878,8 +1946,8 @@ public abstract class World : IBlockAccess
                     currentBufferOffset);
 
                 setBlocksDirty(
-                    (chunkX * 16) + localStartX, minY, (chunkZ * 16) + localStartZ,
-                    (chunkX * 16) + localEndX, maxY, (chunkZ * 16) + localEndZ);
+                    chunkX * 16 + localStartX, minY, chunkZ * 16 + localStartZ,
+                    chunkX * 16 + localEndX, maxY, chunkZ * 16 + localEndZ);
             }
         }
     }
@@ -1903,13 +1971,13 @@ public abstract class World : IBlockAccess
 
         for (int chunkX = startChunkX; chunkX <= endChunkX; chunkX++)
         {
-            int localStartX = Math.Max(0, x - (chunkX * 16));
-            int localEndX = Math.Min(16, x + sizeX - (chunkX * 16));
+            int localStartX = Math.Max(0, x - chunkX * 16);
+            int localEndX = Math.Min(16, x + sizeX - chunkX * 16);
 
             for (int chunkZ = startChunkZ; chunkZ <= endChunkZ; chunkZ++)
             {
-                int localStartZ = Math.Max(0, z - (chunkZ * 16));
-                int localEndZ = Math.Min(16, z + sizeZ - (chunkZ * 16));
+                int localStartZ = Math.Max(0, z - chunkZ * 16);
+                int localEndZ = Math.Min(16, z + sizeZ - chunkZ * 16);
 
                 currentBufferOffset = GetChunk(chunkX, chunkZ).ToPacket(
                     chunkData,
@@ -1922,15 +1990,9 @@ public abstract class World : IBlockAccess
         return chunkData;
     }
 
-    public void checkSessionLock()
-    {
-        Storage.CheckSessionLock();
-    }
+    public void checkSessionLock() => Storage.CheckSessionLock();
 
-    public void setTime(long time)
-    {
-        Properties.WorldTime = time;
-    }
+    public void setTime(long time) => Properties.WorldTime = time;
 
     public void synchronizeTimeAndUpdates(long time)
     {
@@ -1939,43 +2001,23 @@ public abstract class World : IBlockAccess
         setTime(time);
     }
 
-    public long getSeed()
-    {
-        return Properties.RandomSeed;
-    }
+    public long getSeed() => Properties.RandomSeed;
 
-    public long getTime()
-    {
-        return Properties.WorldTime;
-    }
+    public long getTime() => Properties.WorldTime;
 
-    private long GetEventTime()
-    {
-        return Properties.WorldTime + _eventDeltaTime;
-    }
+    private long GetEventTime() => Properties.WorldTime + _eventDeltaTime;
 
-    public Vec3i getSpawnPos()
-    {
-        return new Vec3i(Properties.SpawnX, Properties.SpawnY, Properties.SpawnZ);
-    }
+    public Vec3i getSpawnPos() => new(Properties.SpawnX, Properties.SpawnY, Properties.SpawnZ);
 
-    public void setSpawnPos(Vec3i pos)
-    {
-        Properties.SetSpawn(pos.X, pos.Y, pos.Z);
-    }
+    public void setSpawnPos(Vec3i pos) => Properties.SetSpawn(pos.X, pos.Y, pos.Z);
 
-    public virtual bool canInteract(EntityPlayer player, int x, int y, int z)
-    {
-        return true;
-    }
+    public virtual bool canInteract(EntityPlayer player, int x, int y, int z) => true;
 
     public virtual void broadcastEntityEvent(Entity entity, byte @event)
     {
     }
-    public ChunkSource GetChunkSource()
-    {
-        return _chunkSource;
-    }
+
+    public ChunkSource GetChunkSource() => _chunkSource;
 
     public virtual void playNoteBlockActionAt(int x, int y, int z, int soundType, int pitch)
     {
@@ -1986,30 +2028,13 @@ public abstract class World : IBlockAccess
         }
     }
 
-    public WorldProperties getProperties()
-    {
-        return Properties;
-    }
+    public void setState(string id, PersistentState state) => PersistentStateManager.SetData(id, state);
 
-    public void setState(string id, PersistentState state)
-    {
-        persistentStateManager.SetData(id, state);
-    }
+    public PersistentState? getOrCreateState(Type type, string id) => PersistentStateManager.LoadData(type, id);
 
-    public PersistentState? getOrCreateState(Type type, string id)
-    {
-        return persistentStateManager.LoadData(type, id);
-    }
+    public int getIdCount(string id) => PersistentStateManager.GetUniqueDataId(id);
 
-    public int getIdCount(string id)
-    {
-        return persistentStateManager.GetUniqueDataId(id);
-    }
-
-    public void worldEvent(int @event, int x, int y, int z, int data)
-    {
-        worldEvent(null, @event, x, y, z, data);
-    }
+    public void worldEvent(int @event, int x, int y, int z, int data) => worldEvent(null, @event, x, y, z, data);
 
     public void worldEvent(EntityPlayer player, int @event, int x, int y, int z, int data)
     {
@@ -2018,5 +2043,4 @@ public abstract class World : IBlockAccess
             EventListeners[index].worldEvent(player, @event, x, y, z, data);
         }
     }
-
 }

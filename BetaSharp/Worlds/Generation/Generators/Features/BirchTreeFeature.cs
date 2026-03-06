@@ -6,19 +6,28 @@ namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class BirchTreeFeature : Feature
 {
-
     public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
     {
         int treeHeight = rand.NextInt(3) + 5;
         bool canPlace = true;
-        if (!(y >= 1 && y + treeHeight + 1 <= 128)) return false;
+        if (!(y >= 1 && y + treeHeight + 1 <= 128))
+        {
+            return false;
+        }
 
 
         for (int cy = y; cy <= y + 1 + treeHeight; ++cy)
         {
             byte checkRadius = 1;
-            if (cy == y) checkRadius = 0;
-            if (cy >= y + 1 + treeHeight - 2) checkRadius = 2;
+            if (cy == y)
+            {
+                checkRadius = 0;
+            }
+
+            if (cy >= y + 1 + treeHeight - 2)
+            {
+                checkRadius = 2;
+            }
 
 
             for (int cx = x - checkRadius; cx <= x + checkRadius && canPlace; ++cx)
@@ -41,7 +50,10 @@ internal class BirchTreeFeature : Feature
             }
         }
 
-        if (!canPlace) return false;
+        if (!canPlace)
+        {
+            return false;
+        }
 
         int soilId = world.getBlockId(x, y - 1, z);
         if ((soilId == Block.GrassBlock.id || soilId == Block.Dirt.id) && y < 128 - treeHeight - 1)
@@ -62,7 +74,7 @@ internal class BirchTreeFeature : Feature
                         int offsetZ = leafZ - z;
                         bool isCorner = (Math.Abs(offsetX) != leafRadius ||
                                          Math.Abs(offsetZ) != leafRadius ||
-                                        rand.NextInt(2) != 0 && relativeY != 0) && !Block.BlocksOpaque[world.getBlockId(leafX, leafY, leafZ)];
+                                         (rand.NextInt(2) != 0 && relativeY != 0)) && !Block.BlocksOpaque[world.getBlockId(leafX, leafY, leafZ)];
                         if (isCorner)
                         {
                             world.SetBlockWithoutNotifyingNeighbors(leafX, leafY, leafZ, Block.Leaves.id, 2);
@@ -73,7 +85,7 @@ internal class BirchTreeFeature : Feature
 
             for (int trunkY = 0; trunkY < treeHeight; ++trunkY)
             {
-                var blockAtTrunk = world.getBlockId(x, y + trunkY, z);
+                int blockAtTrunk = world.getBlockId(x, y + trunkY, z);
                 if (blockAtTrunk == 0 || blockAtTrunk == Block.Leaves.id)
                 {
                     world.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, Block.Log.id, 2);

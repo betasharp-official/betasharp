@@ -9,6 +9,8 @@ namespace BetaSharp.Worlds.Dimensions;
 
 internal class NetherDimension : Dimension
 {
+    public override bool HasWorldSpawn => false;
+
     public override void InitBiomeSource()
     {
         BiomeSource = new FixedBiomeSource(Biome.Hell, 1.0D, 0.0D);
@@ -18,12 +20,7 @@ internal class NetherDimension : Dimension
         Id = -1;
     }
 
-    public override bool HasWorldSpawn => false;
-
-    public override Vector3D<double> GetFogColor(float celestialAngle, float partialTicks)
-    {
-        return new Vector3D<double>(0.2, 0.03, 0.03);
-    }
+    public override Vector3D<double> GetFogColor(float celestialAngle, float partialTicks) => new(0.2, 0.03, 0.03);
 
     protected override void InitBrightnessTable()
     {
@@ -36,10 +33,7 @@ internal class NetherDimension : Dimension
         }
     }
 
-    public override ChunkSource CreateChunkGenerator()
-    {
-        return new NetherChunkGenerator(World, World.getSeed());
-    }
+    public override ChunkSource CreateChunkGenerator() => new NetherChunkGenerator(World, World.getSeed());
 
     public override bool IsValidSpawnPoint(int x, int z)
     {

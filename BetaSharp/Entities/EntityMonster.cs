@@ -27,7 +27,7 @@ public class EntityMonster : EntityCreature, Monster
     public override void tick()
     {
         base.tick();
-        if (!world.isRemote && world.difficulty == 0)
+        if (!world.IsRemote && world.Difficulty == 0)
         {
             markDead();
         }

@@ -43,7 +43,7 @@ public class InternalServer : BetaSharpServer
             {
                 if (worlds[i] != null)
                 {
-                    worlds[i].difficulty = _initialDifficulty;
+                    worlds[i].Difficulty = _initialDifficulty;
                     worlds[i].allowSpawning(_initialDifficulty > 0, true);
                 }
             }
@@ -69,7 +69,7 @@ public class InternalServer : BetaSharpServer
                 {
                     if (worlds[i] != null)
                     {
-                        worlds[i].difficulty = difficulty;
+                        worlds[i].Difficulty = difficulty;
                         worlds[i].allowSpawning(difficulty > 0, true);
                     }
                 }

@@ -6,10 +6,7 @@ namespace BetaSharp.Worlds.Generation.Generators.Carvers;
 
 internal class NetherCaveCarver : Carver
 {
-    protected void CarveNetherCavesInChunk(int chunkX, int chunkZ, byte[] blocks, double x, double y, double z)
-    {
-        CarveNetherCaves(chunkX, chunkZ, blocks, x, y, z, 1.0F + Rand.NextFloat() * 6.0F, 0.0F, 0.0F, -1, -1, 0.5D);
-    }
+    protected void CarveNetherCavesInChunk(int chunkX, int chunkZ, byte[] blocks, double x, double y, double z) => CarveNetherCaves(chunkX, chunkZ, blocks, x, y, z, 1.0F + Rand.NextFloat() * 6.0F, 0.0F, 0.0F, -1, -1, 0.5D);
 
     protected void CarveNetherCaves(int chunkX, int chunkZ, byte[] blocks, double x, double y, double z, float tunnelRadius, float yaw, float pitch, int tunnelStep, int tunnelLength, double verticalScale)
     {
@@ -35,13 +32,13 @@ internal class NetherCaveCarver : Carver
 
         for (bool isLargeRoom = caveRand.NextInt(6) == 0; tunnelStep < tunnelLength; ++tunnelStep)
         {
-            double horizontalRadius = 1.5D + (double)(MathHelper.Sin(tunnelStep * (float)Math.PI / tunnelLength) * tunnelRadius * 1.0F);
+            double horizontalRadius = 1.5D + MathHelper.Sin(tunnelStep * (float)Math.PI / tunnelLength) * tunnelRadius * 1.0F;
             double verticalRadius = horizontalRadius * verticalScale;
             float cosPitch = MathHelper.Cos(pitch);
             float sinPitch = MathHelper.Sin(pitch);
-            x += (double)(MathHelper.Cos(yaw) * cosPitch);
-            y += (double)sinPitch;
-            z += (double)(MathHelper.Sin(yaw) * cosPitch);
+            x += MathHelper.Cos(yaw) * cosPitch;
+            y += sinPitch;
+            z += MathHelper.Sin(yaw) * cosPitch;
             if (isLargeRoom)
             {
                 pitch *= 0.92F;
@@ -69,7 +66,7 @@ internal class NetherCaveCarver : Carver
                 double distX = x - chunkCenterX;
                 double distZ = z - chunkCenterZ;
                 double stepsRemaining = tunnelLength - tunnelStep;
-                double boundRadius = (double)(tunnelRadius + 2.0F + 16.0F);
+                double boundRadius = tunnelRadius + 2.0F + 16.0F;
                 if (distX * distX + distZ * distZ - stepsRemaining * stepsRemaining > boundRadius * boundRadius)
                 {
                     return;

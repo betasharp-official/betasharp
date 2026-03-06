@@ -137,7 +137,7 @@ public class EntityLiving : Entity
             damage(null, 1);
         }
 
-        if (isImmuneToFire || world.isRemote)
+        if (isImmuneToFire || world.IsRemote)
         {
             fireTicks = 0;
         }
@@ -372,7 +372,7 @@ public class EntityLiving : Entity
 
     public override bool damage(Entity entity, int amount)
     {
-        if (world.isRemote)
+        if (world.IsRemote)
         {
             return false;
         }
@@ -511,7 +511,7 @@ public class EntityLiving : Entity
         }
 
         unused_flag = true;
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             dropFewItems();
         }

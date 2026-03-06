@@ -1,17 +1,19 @@
+using System.Text.RegularExpressions;
 using java.lang;
+using File = java.io.File;
 
 namespace BetaSharp.Worlds.Storage.RegionFormat;
 
 internal class DataFile : Comparable
 {
-    private readonly java.io.File file;
     private readonly int chunkX;
     private readonly int chunkZ;
+    private readonly File file;
 
-    public DataFile(java.io.File var1)
+    public DataFile(File var1)
     {
         file = var1;
-        var match = DataFilenameFilter.ChunkFilePattern().Match(var1.getName());
+        Match match = DataFilenameFilter.ChunkFilePattern().Match(var1.getName());
         if (match.Success)
         {
             chunkX = Integer.parseInt(match.Groups[1].Value, 36);
@@ -22,8 +24,9 @@ internal class DataFile : Comparable
             chunkX = 0;
             chunkZ = 0;
         }
-
     }
+
+    public int CompareTo(object? var1) => comp((DataFile)var1!);
 
     public int comp(DataFile var1)
     {
@@ -35,29 +38,13 @@ internal class DataFile : Comparable
             int var5 = var1.chunkZ >> 5;
             return var4 - var5;
         }
-        else
-        {
-            return var2 - var3;
-        }
+
+        return var2 - var3;
     }
 
-    public java.io.File getFile()
-    {
-        return file;
-    }
+    public File getFile() => file;
 
-    public int GetChunkX()
-    {
-        return chunkX;
-    }
+    public int GetChunkX() => chunkX;
 
-    public int GetChunkZ()
-    {
-        return chunkZ;
-    }
-
-    public int CompareTo(object? var1)
-    {
-        return comp((DataFile)var1!);
-    }
+    public int GetChunkZ() => chunkZ;
 }

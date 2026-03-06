@@ -135,7 +135,7 @@ public class EntityWolf : EntityAnimal
             setWolfSitting(false);
         }
 
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             dataWatcher.UpdateObject(18, health);
         }
@@ -412,7 +412,7 @@ public class EntityWolf : EntityAnimal
                     player.inventory.setStack(player.inventory.selectedSlot, (ItemStack)null);
                 }
 
-                if (!world.isRemote)
+                if (!world.IsRemote)
                 {
                     if (random.NextInt(3) == 0)
                     {
@@ -454,7 +454,7 @@ public class EntityWolf : EntityAnimal
 
             if (player.name.Equals(getWolfOwner(), StringComparison.OrdinalIgnoreCase))
             {
-                if (!world.isRemote)
+                if (!world.IsRemote)
                 {
                     setWolfSitting(!isWolfSitting());
                     jumping = false;

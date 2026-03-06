@@ -37,7 +37,7 @@ internal class BlockNote : BlockWithEntity
 
     public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
     {
-        if (world.isRemote)
+        if (world.IsRemote)
         {
             return true;
         }
@@ -52,7 +52,7 @@ internal class BlockNote : BlockWithEntity
 
     public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             BlockEntityNote blockEntity = (BlockEntityNote)world.getBlockEntity(x, y, z);
             blockEntity.playNote(world, x, y, z);

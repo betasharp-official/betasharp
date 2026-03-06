@@ -8,9 +8,9 @@ namespace BetaSharp.Worlds.Core;
 
 internal class WorldRegion : IBlockAccess
 {
+    private readonly Chunk[][] _chunks;
     private readonly int _chunkX;
     private readonly int _chunkZ;
-    private readonly Chunk[][] _chunks;
     private readonly World _world;
 
     public WorldRegion(World world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
@@ -37,12 +37,14 @@ internal class WorldRegion : IBlockAccess
                 _chunks[cx - _chunkX][cz - _chunkZ] = world.GetChunk(cx, cz);
             }
         }
-
     }
 
     public int getBlockId(int x, int y, int z)
     {
-        if (y is < 0 or >= 128) return 0;
+        if (y is < 0 or >= 128)
+        {
+            return 0;
+        }
 
         int cx = (x >> 4) - _chunkX;
         int cz = (z >> 4) - _chunkZ;
@@ -62,7 +64,9 @@ internal class WorldRegion : IBlockAccess
         int cz = (z >> 4) - _chunkZ;
 
         if (cx < 0 || cx >= _chunks.Length || cz < 0 || cz < 0 || cz >= _chunks[cx].Length)
+        {
             return null;
+        }
 
         return _chunks[cx][cz]?.GetBlockEntity(x & 15, y, z & 15);
     }
@@ -70,49 +74,17 @@ internal class WorldRegion : IBlockAccess
     public float getNaturalBrightness(int x, int y, int z, int blockLight)
     {
         int finalLight = Math.Max(getRawBrightness(x, y, z), blockLight);
-        return _world.dimension.LightLevelToLuminance[finalLight];
+        return _world.Dimension.LightLevelToLuminance[finalLight];
     }
 
-    public float getLuminance(int x, int y, int z)
-    {
-        return _world.dimension.LightLevelToLuminance[getRawBrightness(x, y, z)];
-    }
-
-    public int getRawBrightness(int x, int y, int z)
-    {
-        return getRawBrightness(x, y, z, true);
-    }
-
-    public int getRawBrightness(int x, int y, int z, bool useNeighborLight)
-    {
-        // World bounds check
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000) return 15;
-        if (useNeighborLight)
-        {
-            int id = getBlockId(x, y, z);
-            if (id == Block.Slab.id || id == Block.Farmland.id || id == Block.WoodenStairs.id || id == Block.CobblestoneStairs.id)
-            {
-                int max = getRawBrightness(x, y + 1, z, false);
-                max = Math.Max(max, getRawBrightness(x + 1, y, z, false));
-                max = Math.Max(max, getRawBrightness(x - 1, y, z, false));
-                max = Math.Max(max, getRawBrightness(x, y, z + 1, false));
-                max = Math.Max(max, getRawBrightness(x, y, z - 1, false));
-                return max;
-            }
-        }
-
-        if (y < 0) return 0;
-        if (y >= 128) return Math.Max(0, 15 - _world.ambientDarkness);
-
-        int cIdxX = (x >> 4) - _chunkX;
-        int cIdxZ = (z >> 4) - _chunkZ;
-
-        return _chunks[cIdxX][cIdxZ].GetLight(x & 15, y, z & 15, _world.ambientDarkness);
-    }
+    public float getLuminance(int x, int y, int z) => _world.Dimension.LightLevelToLuminance[getRawBrightness(x, y, z)];
 
     public int getBlockMeta(int x, int y, int z)
     {
-        if (y is < 0 or >= 128) return 0;
+        if (y is < 0 or >= 128)
+        {
+            return 0;
+        }
 
         int cx = (x >> 4) - _chunkX;
         int cz = (z >> 4) - _chunkZ;
@@ -137,5 +109,45 @@ internal class WorldRegion : IBlockAccess
     {
         Block block = Block.Blocks[getBlockId(x, y, z)];
         return block != null && block.material.BlocksMovement && block.isFullCube();
+    }
+
+    public int getRawBrightness(int x, int y, int z) => getRawBrightness(x, y, z, true);
+
+    public int getRawBrightness(int x, int y, int z, bool useNeighborLight)
+    {
+        // World bounds check
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000)
+        {
+            return 15;
+        }
+
+        if (useNeighborLight)
+        {
+            int id = getBlockId(x, y, z);
+            if (id == Block.Slab.id || id == Block.Farmland.id || id == Block.WoodenStairs.id || id == Block.CobblestoneStairs.id)
+            {
+                int max = getRawBrightness(x, y + 1, z, false);
+                max = Math.Max(max, getRawBrightness(x + 1, y, z, false));
+                max = Math.Max(max, getRawBrightness(x - 1, y, z, false));
+                max = Math.Max(max, getRawBrightness(x, y, z + 1, false));
+                max = Math.Max(max, getRawBrightness(x, y, z - 1, false));
+                return max;
+            }
+        }
+
+        if (y < 0)
+        {
+            return 0;
+        }
+
+        if (y >= 128)
+        {
+            return Math.Max(0, 15 - _world.ambientDarkness);
+        }
+
+        int cIdxX = (x >> 4) - _chunkX;
+        int cIdxZ = (z >> 4) - _chunkZ;
+
+        return _chunks[cIdxX][cIdxZ].GetLight(x & 15, y, z & 15, _world.ambientDarkness);
     }
 }

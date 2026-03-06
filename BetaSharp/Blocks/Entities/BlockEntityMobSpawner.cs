@@ -50,7 +50,7 @@ public class BlockEntityMobSpawner : BlockEntity
                 Rotation -= 360.0D;
             }
 
-            if (!World.isRemote)
+            if (!World.IsRemote)
             {
                 if (SpawnDelay == -1)
                 {

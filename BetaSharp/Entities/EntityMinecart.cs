@@ -101,7 +101,7 @@ public class EntityMinecart : Entity, IInventory
 
     public override bool damage(Entity entity, int amount)
     {
-        if (!world.isRemote && !dead)
+        if (!world.IsRemote && !dead)
         {
             minecartRockDirection = -minecartRockDirection;
             minecartTimeSinceHit = 10;
@@ -223,7 +223,7 @@ public class EntityMinecart : Entity, IInventory
         }
 
         double var7;
-        if (world.isRemote && field_9415_k > 0)
+        if (world.IsRemote && field_9415_k > 0)
         {
             if (field_9415_k > 0)
             {
@@ -815,7 +815,7 @@ public class EntityMinecart : Entity, IInventory
 
     public override void onCollision(Entity entity)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             if (entity != passenger)
             {
@@ -969,14 +969,14 @@ public class EntityMinecart : Entity, IInventory
                 return true;
             }
 
-            if (!world.isRemote)
+            if (!world.IsRemote)
             {
                 player.setVehicle(this);
             }
         }
         else if (type == 1)
         {
-            if (!world.isRemote)
+            if (!world.IsRemote)
             {
                 player.openChestScreen(this);
             }

@@ -9,7 +9,6 @@ namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class DungeonFeature : Feature
 {
-
     public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
     {
         byte height = 3;
@@ -43,7 +42,10 @@ internal class DungeonFeature : Feature
             }
         }
 
-        if (openingsCount < 1 || openingsCount > 5) return false;
+        if (openingsCount < 1 || openingsCount > 5)
+        {
+            return false;
+        }
 
         for (int cx = x - radiusX - 1; cx <= x + radiusX + 1; ++cx)
         {
@@ -68,9 +70,13 @@ internal class DungeonFeature : Feature
                     else if (world.getMaterial(cx, cy, cz).IsSolid)
                     {
                         if (cy == y - 1 && rand.NextInt(4) != 0)
+                        {
                             world.setBlock(cx, cy, cz, Block.MossyCobblestone.id);
+                        }
                         else
+                        {
                             world.setBlock(cx, cy, cz, Block.Cobblestone.id);
+                        }
                     }
                 }
             }
@@ -86,12 +92,30 @@ internal class DungeonFeature : Feature
                 if (world.isAir(chestX, y, chestZ))
                 {
                     int neighbors = 0;
-                    if (world.getMaterial(chestX - 1, y, chestZ).IsSolid) ++neighbors;
-                    if (world.getMaterial(chestX + 1, y, chestZ).IsSolid) ++neighbors;
-                    if (world.getMaterial(chestX, y, chestZ - 1).IsSolid) ++neighbors;
-                    if (world.getMaterial(chestX, y, chestZ + 1).IsSolid) ++neighbors;
+                    if (world.getMaterial(chestX - 1, y, chestZ).IsSolid)
+                    {
+                        ++neighbors;
+                    }
 
-                    if (neighbors != 1) continue;
+                    if (world.getMaterial(chestX + 1, y, chestZ).IsSolid)
+                    {
+                        ++neighbors;
+                    }
+
+                    if (world.getMaterial(chestX, y, chestZ - 1).IsSolid)
+                    {
+                        ++neighbors;
+                    }
+
+                    if (world.getMaterial(chestX, y, chestZ + 1).IsSolid)
+                    {
+                        ++neighbors;
+                    }
+
+                    if (neighbors != 1)
+                    {
+                        continue;
+                    }
 
                     world.setBlock(chestX, y, chestZ, Block.Chest.id);
 
@@ -104,7 +128,6 @@ internal class DungeonFeature : Feature
                             chest.setStack(rand.NextInt(chest.size()), loot);
                         }
                     }
-
                 }
             }
         }
@@ -113,8 +136,6 @@ internal class DungeonFeature : Feature
         BlockEntityMobSpawner var19 = (BlockEntityMobSpawner)world.getBlockEntity(x, y, z);
         var19.SetSpawnedEntityId(PickMobSpawner(rand));
         return true;
-
-
     }
 
     private ItemStack? PickCheckLootItem(JavaRandom rand)
@@ -134,13 +155,12 @@ internal class DungeonFeature : Feature
             8 => rand.NextInt(2) == 0 ? new ItemStack(Item.Redstone, rand.NextInt(4) + 1) : null,
             9 => rand.NextInt(10) == 0 ? new ItemStack(Item.ITEMS[Item.RecordThirteen.id + rand.NextInt(2)]) : null,
             10 => new ItemStack(Item.Dye, 1, 3),
-            _ => null,
+            _ => null
         };
     }
 
-    private string PickMobSpawner(JavaRandom rand)
-    {
-        return rand.NextInt(4) switch
+    private string PickMobSpawner(JavaRandom rand) =>
+        rand.NextInt(4) switch
         {
             0 => "Skeleton",
             1 => "Zombie",
@@ -148,5 +168,4 @@ internal class DungeonFeature : Feature
             3 => "Spider",
             _ => "Zombie"
         };
-    }
 }

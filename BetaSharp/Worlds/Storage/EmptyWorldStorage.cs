@@ -10,20 +10,25 @@ public class EmptyWorldStorage : IWorldStorage
 {
     public WorldProperties? LoadProperties() => null;
 
-    public void CheckSessionLock() { }
+    public void CheckSessionLock()
+    {
+    }
 
     public IChunkStorage? GetChunkStorage(Dimension dimension) => null;
 
-    public void Save(WorldProperties properties, List<EntityPlayer> players) { }
+    public void Save(WorldProperties properties, List<EntityPlayer> players)
+    {
+    }
 
-    public void Save(WorldProperties properties) { }
+    public void Save(WorldProperties properties)
+    {
+    }
 
     public FileInfo? GetWorldPropertiesFile(string name) => null;
 
-    public void ForceSave() { }
-
-    public IPlayerStorage? GetPlayerStorage()
+    public void ForceSave()
     {
-        throw new NotImplementedException();
     }
+
+    public IPlayerStorage? GetPlayerStorage() => throw new NotImplementedException();
 }

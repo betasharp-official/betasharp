@@ -10,19 +10,19 @@ namespace BetaSharp.Worlds.Core;
 
 public class WorldRegionSnapshot : IBlockAccess, IDisposable
 {
+    private readonly BiomeSource _biomeSource;
+    private readonly ChunkSnapshot[][] _chunks;
     private readonly int _chunkX;
     private readonly int _chunkZ;
-    private readonly ChunkSnapshot[][] _chunks;
     private readonly float[] _lightTable;
     private readonly int _skylightSubtracted;
-    private readonly BiomeSource _biomeSource;
-    private bool _isLit;
     private readonly Dictionary<BlockPos, BlockEntity> _tileEntityCache = [];
+    private bool _isLit;
 
     public WorldRegionSnapshot(World world, int minX, int var3, int minZ, int maxX, int var6, int maxZ)
     {
         //TODO: OPTIMIZE THIS
-        _biomeSource = new(world);
+        _biomeSource = new BiomeSource(world);
 
         _chunkX = minX >> 4;
         _chunkZ = minZ >> 4;
@@ -43,17 +43,20 @@ public class WorldRegionSnapshot : IBlockAccess, IDisposable
             for (int cz = _chunkZ; cz <= maxChunkZ; ++cz)
             {
                 Chunk originalChunk = world.GetChunk(cx, cz);
-                _chunks[cx - _chunkX][cz - _chunkZ] = new(originalChunk);
+                _chunks[cx - _chunkX][cz - _chunkZ] = new ChunkSnapshot(originalChunk);
             }
         }
 
-        _lightTable = (float[])world.dimension.LightLevelToLuminance.Clone();
+        _lightTable = (float[])world.Dimension.LightLevelToLuminance.Clone();
         _skylightSubtracted = world.ambientDarkness;
     }
 
     public int getBlockId(int x, int y, int z)
     {
-        if (y is < 0 or >= 128) return 0;
+        if (y is < 0 or >= 128)
+        {
+            return 0;
+        }
 
         int chunkIdxX = (x >> 4) - _chunkX;
         int chunkIdxZ = (z >> 4) - _chunkZ;
@@ -76,7 +79,10 @@ public class WorldRegionSnapshot : IBlockAccess, IDisposable
 
     public int getBlockMeta(int x, int y, int z)
     {
-        if (y is < 0 or >= 128) return 0;
+        if (y is < 0 or >= 128)
+        {
+            return 0;
+        }
 
         int chunkIdxX = (x >> 4) - _chunkX;
         int chunkIdxZ = (z >> 4) - _chunkZ;
@@ -85,9 +91,12 @@ public class WorldRegionSnapshot : IBlockAccess, IDisposable
 
     public BlockEntity? getBlockEntity(int x, int y, int z)
     {
-        if (y is < 0 or >= 128) return null;
+        if (y is < 0 or >= 128)
+        {
+            return null;
+        }
 
-        var pos = new BlockPos(x, y, z);
+        BlockPos pos = new(x, y, z);
         if (_tileEntityCache.TryGetValue(pos, out BlockEntity? entity))
         {
             return entity;
@@ -100,12 +109,15 @@ public class WorldRegionSnapshot : IBlockAccess, IDisposable
             chunkIdxZ >= 0 && chunkIdxZ < _chunks[chunkIdxX].Length)
         {
             ChunkSnapshot chunk = _chunks[chunkIdxX][chunkIdxZ];
-            if (chunk == null) return null;
+            if (chunk == null)
+            {
+                return null;
+            }
 
             NBTTagCompound? nbt = chunk.GetTileEntityNbt(x & 15, y, z & 15);
             if (nbt != null)
             {
-                var newEntity = BlockEntity.CreateFromNbt(nbt);
+                BlockEntity? newEntity = BlockEntity.CreateFromNbt(nbt);
                 if (newEntity != null)
                 {
                     _tileEntityCache[pos] = newEntity;
@@ -123,9 +135,38 @@ public class WorldRegionSnapshot : IBlockAccess, IDisposable
         return _lightTable[Math.Max(light, minLight)];
     }
 
-    public float getLuminance(int x, int y, int z)
+    public float getLuminance(int x, int y, int z) => _lightTable[getLightValue(x, y, z)];
+
+    public BiomeSource getBiomeSource() => _biomeSource;
+
+    public bool shouldSuffocate(int x, int y, int z)
     {
-        return _lightTable[getLightValue(x, y, z)];
+        Block block = Block.Blocks[getBlockId(x, y, z)];
+        return block != null && block.material.BlocksMovement && block.isFullCube();
+    }
+
+    public bool isOpaque(int x, int y, int z)
+    {
+        Block block = Block.Blocks[getBlockId(x, y, z)];
+        return block != null && block.isOpaque();
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+
+        foreach (ChunkSnapshot[] column in _chunks)
+        {
+            if (column == null)
+            {
+                continue;
+            }
+
+            foreach (ChunkSnapshot snapshot in column)
+            {
+                snapshot?.Dispose();
+            }
+        }
     }
 
     public int getLightValue(int x, int y, int z) => GetLightValueExt(x, y, z, true);
@@ -133,7 +174,11 @@ public class WorldRegionSnapshot : IBlockAccess, IDisposable
     public int GetLightValueExt(int x, int y, int z, bool checkStairs)
     {
         // World bounds check
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000) return 15;
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000)
+        {
+            return 15;
+        }
+
         if (checkStairs)
         {
             int blockId = getBlockId(x, y, z);
@@ -148,7 +193,11 @@ public class WorldRegionSnapshot : IBlockAccess, IDisposable
             }
         }
 
-        if (y < 0) return 0;
+        if (y < 0)
+        {
+            return 0;
+        }
+
         if (y >= 128)
         {
             return Math.Max(0, 15 - _skylightSubtracted);
@@ -169,40 +218,5 @@ public class WorldRegionSnapshot : IBlockAccess, IDisposable
         return lightValue;
     }
 
-    public BiomeSource getBiomeSource()
-    {
-        return _biomeSource;
-    }
-
-    public bool shouldSuffocate(int x, int y, int z)
-    {
-        Block block = Block.Blocks[getBlockId(x, y, z)];
-        return block != null && block.material.BlocksMovement && block.isFullCube();
-    }
-
-    public bool isOpaque(int x, int y, int z)
-    {
-        Block block = Block.Blocks[getBlockId(x, y, z)];
-        return block != null && block.isOpaque();
-    }
-
-    public bool getIsLit()
-    {
-        return _isLit;
-    }
-
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-
-        foreach (ChunkSnapshot[] column in _chunks)
-        {
-            if (column == null) continue;
-
-            foreach (ChunkSnapshot snapshot in column)
-            {
-                snapshot?.Dispose();
-            }
-        }
-    }
+    public bool getIsLit() => _isLit;
 }

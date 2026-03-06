@@ -17,7 +17,7 @@ public class BlockBed : Block
 
     public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
     {
-        if (world.isRemote)
+        if (world.IsRemote)
         {
             return true;
         }
@@ -37,7 +37,7 @@ public class BlockBed : Block
                 meta = world.getBlockMeta(x, y, z);
             }
 
-            if (!world.dimension.HasWorldSpawn)
+            if (!world.Dimension.HasWorldSpawn)
             {
                 double posX = (double)x + 0.5D;
                 double posY = (double)y + 0.5D;
@@ -151,7 +151,7 @@ public class BlockBed : Block
         else if (world.getBlockId(x + BED_OFFSETS[direction][0], y, z + BED_OFFSETS[direction][1]) != this.id)
         {
             world.setBlock(x, y, z, 0);
-            if (!world.isRemote)
+            if (!world.IsRemote)
             {
                 dropStacks(world, x, y, z, blockMeta);
             }

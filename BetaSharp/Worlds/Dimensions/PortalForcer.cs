@@ -68,10 +68,25 @@ internal class PortalForcer
             double targetZ = foundZ + 0.5D;
 
             // Offset the player so they don't spawn inside the obsidian frame
-            if (world.getBlockId(foundX - 1, foundY, foundZ) == Block.NetherPortal.id) targetX -= 0.5D;
-            if (world.getBlockId(foundX + 1, foundY, foundZ) == Block.NetherPortal.id) targetX += 0.5D;
-            if (world.getBlockId(foundX, foundY, foundZ - 1) == Block.NetherPortal.id) targetZ -= 0.5D;
-            if (world.getBlockId(foundX, foundY, foundZ + 1) == Block.NetherPortal.id) targetZ += 0.5D;
+            if (world.getBlockId(foundX - 1, foundY, foundZ) == Block.NetherPortal.id)
+            {
+                targetX -= 0.5D;
+            }
+
+            if (world.getBlockId(foundX + 1, foundY, foundZ) == Block.NetherPortal.id)
+            {
+                targetX += 0.5D;
+            }
+
+            if (world.getBlockId(foundX, foundY, foundZ - 1) == Block.NetherPortal.id)
+            {
+                targetZ -= 0.5D;
+            }
+
+            if (world.getBlockId(foundX, foundY, foundZ + 1) == Block.NetherPortal.id)
+            {
+                targetZ += 0.5D;
+            }
 
             entity.setPositionAndAnglesKeepPrevAngles(targetX, targetY, targetZ, entity.yaw, 0.0F);
             entity.velocityX = entity.velocityY = entity.velocityZ = 0.0D;
@@ -136,7 +151,7 @@ internal class PortalForcer
                                         int checkY = y + height;
                                         int checkZ = z + (widthDepth - 1) * dirZ - width * dirX;
 
-                                        if (height < 0 && !world.getMaterial(checkX, checkY, checkZ).IsSolid || height >= 0 && !world.isAir(checkX, checkY, checkZ))
+                                        if ((height < 0 && !world.getMaterial(checkX, checkY, checkZ).IsSolid) || (height >= 0 && !world.isAir(checkX, checkY, checkZ)))
                                         {
                                             validLocation = false;
                                         }
@@ -197,7 +212,7 @@ internal class PortalForcer
                                         int checkY = y + height;
                                         int checkZ = z + (widthDepth - 1) * dirZ;
 
-                                        if (height < 0 && !world.getMaterial(checkX, checkY, checkZ).IsSolid || height >= 0 && !world.isAir(checkX, checkY, checkZ))
+                                        if ((height < 0 && !world.getMaterial(checkX, checkY, checkZ).IsSolid) || (height >= 0 && !world.isAir(checkX, checkY, checkZ)))
                                         {
                                             validLocation = false;
                                         }

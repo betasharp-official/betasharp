@@ -1,5 +1,7 @@
 using java.lang.@ref;
 using java.util;
+using File = java.io.File;
+using IOException = java.io.IOException;
 
 namespace BetaSharp.Worlds.Storage.RegionFormat;
 
@@ -8,12 +10,12 @@ internal class RegionIo
     private static readonly Map cache = new HashMap();
     private static readonly object l = new();
 
-    public static RegionFile func_22193_a(java.io.File var0, int var1, int var2)
+    public static RegionFile func_22193_a(File var0, int var1, int var2)
     {
         lock (l)
         {
-            java.io.File var3 = new(var0, "region");
-            java.io.File var4 = new(var3, "r." + (var1 >> 5) + "." + (var2 >> 5) + ".mcr");
+            File var3 = new(var0, "region");
+            File var4 = new(var3, "r." + (var1 >> 5) + "." + (var2 >> 5) + ".mcr");
             Reference var5 = (Reference)cache.get(var4);
             RegionFile var6;
             if (var5 != null)
@@ -59,7 +61,7 @@ internal class RegionIo
                         var2.func_22196_b();
                     }
                 }
-                catch (java.io.IOException ex)
+                catch (IOException ex)
                 {
                     ex.printStackTrace();
                 }
@@ -69,19 +71,19 @@ internal class RegionIo
         }
     }
 
-    public static int getSizeDelta(java.io.File var0, int var1, int var2)
+    public static int getSizeDelta(File var0, int var1, int var2)
     {
         RegionFile var3 = func_22193_a(var0, var1, var2);
         return var3.func_22209_a();
     }
 
-    public static ChunkDataStream GetChunkInputStream(java.io.File var0, int var1, int var2)
+    public static ChunkDataStream GetChunkInputStream(File var0, int var1, int var2)
     {
         RegionFile var3 = func_22193_a(var0, var1, var2);
         return var3.GetChunkDataInputStream(var1 & 31, var2 & 31);
     }
 
-    public static Stream GetChunkOutputStream(java.io.File var0, int var1, int var2)
+    public static Stream GetChunkOutputStream(File var0, int var1, int var2)
     {
         RegionFile var3 = func_22193_a(var0, var1, var2);
         return var3.GetChunkDataOutputStream(var1 & 31, var2 & 31);

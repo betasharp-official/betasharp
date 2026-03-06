@@ -140,7 +140,7 @@ public class EntityFireball : Entity
 
         if (var3.Type != HitResultType.MISS)
         {
-            if (!world.isRemote)
+            if (!world.IsRemote)
             {
                 if (var3.Entity != null && var3.Entity.damage(owner, 0))
                 {

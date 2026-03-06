@@ -63,7 +63,7 @@ public class EntityTNTPrimed : Entity
 
         if (fuse-- <= 0)
         {
-            if (!world.isRemote)
+            if (!world.IsRemote)
             {
                 markDead();
                 explode();

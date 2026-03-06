@@ -6,13 +6,9 @@ namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class PlantPatchFeature : Feature
 {
+    private readonly int plantBlockId;
 
-    private int plantBlockId;
-
-    public PlantPatchFeature(int plantBlockId)
-    {
-        this.plantBlockId = plantBlockId;
-    }
+    public PlantPatchFeature(int plantBlockId) => this.plantBlockId = plantBlockId;
 
     public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
     {

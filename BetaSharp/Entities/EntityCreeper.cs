@@ -40,7 +40,7 @@ public class EntityCreeper : EntityMonster
 
     protected override void attackBlockedEntity(Entity entity, float distance)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             if (timeSinceIgnited > 0)
             {
@@ -58,7 +58,7 @@ public class EntityCreeper : EntityMonster
     public override void tick()
     {
         lastActiveTime = timeSinceIgnited;
-        if (world.isRemote)
+        if (world.IsRemote)
         {
             int state = getCreeperState();
             if (state > 0 && timeSinceIgnited == 0)
@@ -113,7 +113,7 @@ public class EntityCreeper : EntityMonster
 
     protected override void attackEntity(Entity entity, float distance)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             int state = getCreeperState();
             if (state <= 0 && distance < 3.0F || state > 0 && distance < 7.0F)

@@ -6,7 +6,6 @@ namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class OreFeature : Feature
 {
-
     private readonly int _minableBlockId;
     private readonly int _numberOfBlocks;
 
@@ -49,12 +48,18 @@ internal class OreFeature : Feature
             for (int blockX = minX; blockX <= maxX; ++blockX)
             {
                 double dx = (blockX + 0.5 - centerX) / (radiusH / 2.0);
-                if (dx * dx >= 1.0) continue;
+                if (dx * dx >= 1.0)
+                {
+                    continue;
+                }
 
                 for (int blockY = minY; blockY <= maxY; ++blockY)
                 {
                     double dy = (blockY + 0.5 - centerY) / (radiusV / 2.0);
-                    if (dx * dx + dy * dy >= 1.0) continue;
+                    if (dx * dx + dy * dy >= 1.0)
+                    {
+                        continue;
+                    }
 
                     for (int blockZ = minZ; blockZ <= maxZ; ++blockZ)
                     {

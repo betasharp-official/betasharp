@@ -10,8 +10,8 @@ internal sealed class RegionFileChunkBuffer(RegionFile region, int var2, int var
             {
                 return;
             }
-            
-            var buffer = ToArray();
+
+            byte[] buffer = ToArray();
             region.write(var2, var3, buffer, buffer.Length);
         }
         finally

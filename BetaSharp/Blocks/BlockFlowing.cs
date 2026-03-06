@@ -26,7 +26,7 @@ internal class BlockFlowing : BlockFluid
     {
         int currentState = getLiquidState(world, x, y, z);
         sbyte spreadRate = 1;
-        if (material == Material.Lava && !world.dimension.EvaporatesWater)
+        if (material == Material.Lava && !world.Dimension.EvaporatesWater)
         {
             spreadRate = 2;
         }

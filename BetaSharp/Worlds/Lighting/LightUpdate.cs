@@ -190,7 +190,6 @@ internal struct LightUpdate
                     }
                 }
             }
-
         }
     }
 
@@ -200,62 +199,60 @@ internal struct LightUpdate
         {
             return true;
         }
-        else
+
+        byte var7 = 1;
+        if (var1 >= minX - var7 && var2 >= minY - var7 && var3 >= minZ - var7 && var4 <= maxX + var7 && var5 <= maxY + var7 && var6 <= maxZ + var7)
         {
-            byte var7 = 1;
-            if (var1 >= minX - var7 && var2 >= minY - var7 && var3 >= minZ - var7 && var4 <= maxX + var7 && var5 <= maxY + var7 && var6 <= maxZ + var7)
+            int var8 = maxX - minX;
+            int var9 = maxY - minY;
+            int var10 = maxZ - minZ;
+            if (var1 > minX)
             {
-                int var8 = maxX - minX;
-                int var9 = maxY - minY;
-                int var10 = maxZ - minZ;
-                if (var1 > minX)
-                {
-                    var1 = minX;
-                }
-
-                if (var2 > minY)
-                {
-                    var2 = minY;
-                }
-
-                if (var3 > minZ)
-                {
-                    var3 = minZ;
-                }
-
-                if (var4 < maxX)
-                {
-                    var4 = maxX;
-                }
-
-                if (var5 < maxY)
-                {
-                    var5 = maxY;
-                }
-
-                if (var6 < maxZ)
-                {
-                    var6 = maxZ;
-                }
-
-                int var11 = var4 - var1;
-                int var12 = var5 - var2;
-                int var13 = var6 - var3;
-                int var14 = var8 * var9 * var10;
-                int var15 = var11 * var12 * var13;
-                if (var15 - var14 <= 2)
-                {
-                    minX = var1;
-                    minY = var2;
-                    minZ = var3;
-                    maxX = var4;
-                    maxY = var5;
-                    maxZ = var6;
-                    return true;
-                }
+                var1 = minX;
             }
 
-            return false;
+            if (var2 > minY)
+            {
+                var2 = minY;
+            }
+
+            if (var3 > minZ)
+            {
+                var3 = minZ;
+            }
+
+            if (var4 < maxX)
+            {
+                var4 = maxX;
+            }
+
+            if (var5 < maxY)
+            {
+                var5 = maxY;
+            }
+
+            if (var6 < maxZ)
+            {
+                var6 = maxZ;
+            }
+
+            int var11 = var4 - var1;
+            int var12 = var5 - var2;
+            int var13 = var6 - var3;
+            int var14 = var8 * var9 * var10;
+            int var15 = var11 * var12 * var13;
+            if (var15 - var14 <= 2)
+            {
+                minX = var1;
+                minY = var2;
+                minZ = var3;
+                maxX = var4;
+                maxY = var5;
+                maxZ = var6;
+                return true;
+            }
         }
+
+        return false;
     }
 }

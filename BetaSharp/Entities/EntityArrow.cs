@@ -297,7 +297,7 @@ public class EntityArrow : Entity
 
     public override void onPlayerInteraction(EntityPlayer player)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             if (inGround && doesArrowBelongToPlayer && arrowShake <= 0 && player.inventory.addItemStackToInventory(new ItemStack(Item.ARROW, 1)))
             {

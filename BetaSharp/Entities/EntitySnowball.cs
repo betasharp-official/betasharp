@@ -141,7 +141,7 @@ public class EntitySnowball : Entity
             var2 = new Vec3D(var3.Pos.x, var3.Pos.y, var3.Pos.z);
         }
 
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             Entity var4 = null;
             var var5 = world.getEntities(this, boundingBox.Stretch(velocityX, velocityY, velocityZ).Expand(1.0D, 1.0D, 1.0D));

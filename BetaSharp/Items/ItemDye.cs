@@ -69,7 +69,7 @@ internal class ItemDye : Item
             int blockId = world.getBlockId(x, y, z);
             if (blockId == Block.Sapling.id)
             {
-                if (!world.isRemote)
+                if (!world.IsRemote)
                 {
                     ((BlockSapling)Block.Sapling).generate(world, x, y, z, world.random);
                     --itemStack.count;
@@ -78,7 +78,7 @@ internal class ItemDye : Item
             }
             if (blockId == Block.Wheat.id)
             {
-                if (!world.isRemote)
+                if (!world.IsRemote)
                 {
                     ((BlockCrops)Block.Wheat).applyFullGrowth(world, x, y, z);
                     --itemStack.count;
@@ -87,7 +87,7 @@ internal class ItemDye : Item
             }
             if (blockId == Block.GrassBlock.id)
             {
-                if (!world.isRemote)
+                if (!world.IsRemote)
                 {
                     --itemStack.count;
 

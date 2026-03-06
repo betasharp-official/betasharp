@@ -1238,7 +1238,7 @@ public partial class BetaSharp
             {
                 displayGuiScreen((GuiScreen)null);
             }
-            else if (player.isSleeping() && world != null && world.isRemote)
+            else if (player.isSleeping() && world != null && world.IsRemote)
             {
                 displayGuiScreen(new GuiSleepMP());
             }
@@ -1281,15 +1281,15 @@ public partial class BetaSharp
                 }
             }
 
-            world.difficulty = options.Difficulty;
+            world.Difficulty = options.Difficulty;
             if (internalServer != null)
             {
                 internalServer.SetDifficulty(options.Difficulty);
             }
 
-            if (world.isRemote)
+            if (world.IsRemote)
             {
-                world.difficulty = 3;
+                world.Difficulty = 3;
             }
 
             Profiler.Start("entityRendererUpdate");
@@ -1535,7 +1535,7 @@ public partial class BetaSharp
 
     public bool isMultiplayerWorld()
     {
-        return world != null && world.isRemote;
+        return world != null && world.IsRemote;
     }
 
     public void startWorld(string worldName, string mainMenuText, long seed)
@@ -1595,7 +1595,7 @@ public partial class BetaSharp
                 skinManager.RequestDownload(session.skinUrl);
             }
 
-            if (newWorld.isNewWorld)
+            if (newWorld.IsNewWorld)
             {
                 newWorld.savingProgress(loadingScreen);
             }
@@ -1698,7 +1698,7 @@ public partial class BetaSharp
 
     public string getParticleAndEntityCountDebugInfo()
     {
-        return $"P: {particleManager.getStatistics()}. T: {world.Entities.Count}";
+        return $"P: {particleManager.getStatistics()}. T: {world.Entities.Entities.Count}";
     }
 
     public void respawn(bool ignoreSpawnPosition, int newDimensionId)

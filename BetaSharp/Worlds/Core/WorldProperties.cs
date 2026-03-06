@@ -5,23 +5,6 @@ namespace BetaSharp.Worlds.Core;
 
 public class WorldProperties
 {
-    public virtual long RandomSeed { get; }
-    public virtual int SpawnX { get; set; }
-    public virtual int SpawnY { get; set; }
-    public virtual int SpawnZ { get; set; }
-    public virtual long WorldTime { get; set; }
-    public virtual long LastTimePlayed { get; }
-    public virtual long SizeOnDisk { get; set; }
-    public virtual NBTTagCompound? PlayerTag { get; set; }
-    public virtual NBTTagCompound? RulesTag { get; set; }
-    public virtual int Dimension { get; }
-    public virtual string LevelName { get; set; }
-    public virtual int SaveVersion { get; set; }
-    public virtual bool IsRaining { get; set; }
-    public virtual int RainTime { get; set; }
-    public virtual bool IsThundering { get; set; }
-    public virtual int ThunderTime { get; set; }
-
     protected WorldProperties()
     {
     }
@@ -45,11 +28,11 @@ public class WorldProperties
             PlayerTag = nbt.GetCompoundTag("Player");
             Dimension = PlayerTag.GetInteger("Dimension");
         }
+
         if (nbt.HasKey("GameRules"))
         {
             RulesTag = nbt.GetCompoundTag("GameRules");
         }
-
     }
 
     public WorldProperties(long randomSeed, string levelName)
@@ -77,6 +60,23 @@ public class WorldProperties
         ThunderTime = WorldProp.ThunderTime;
         IsThundering = WorldProp.IsThundering;
     }
+
+    public virtual long RandomSeed { get; }
+    public virtual int SpawnX { get; set; }
+    public virtual int SpawnY { get; set; }
+    public virtual int SpawnZ { get; set; }
+    public virtual long WorldTime { get; set; }
+    public virtual long LastTimePlayed { get; }
+    public virtual long SizeOnDisk { get; set; }
+    public virtual NBTTagCompound? PlayerTag { get; set; }
+    public virtual NBTTagCompound? RulesTag { get; set; }
+    public virtual int Dimension { get; }
+    public virtual string LevelName { get; set; }
+    public virtual int SaveVersion { get; set; }
+    public virtual bool IsRaining { get; set; }
+    public virtual int RainTime { get; set; }
+    public virtual bool IsThundering { get; set; }
+    public virtual int ThunderTime { get; set; }
 
     public NBTTagCompound getNBTTagCompound()
     {
@@ -119,10 +119,14 @@ public class WorldProperties
         worldNbt.SetBoolean("thundering", IsThundering);
 
         if (playerNbt != null)
+        {
             worldNbt.SetCompoundTag("Player", playerNbt);
+        }
 
         if (RulesTag != null)
+        {
             worldNbt.SetCompoundTag("GameRules", RulesTag);
+        }
     }
 
     public virtual void SetSpawn(int x, int y, int z)

@@ -122,7 +122,7 @@ internal class BlockTrapDoor : Block
 
     public override void neighborUpdate(World world, int x, int y, int z, int id)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             int meta = world.getBlockMeta(x, y, z);
             int xPos = x;

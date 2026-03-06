@@ -33,7 +33,7 @@ internal class BlockJukeBox : BlockWithEntity
 
     public void insertRecord(World world, int x, int y, int z, int id)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             BlockEntityRecordPlayer jukebox = (BlockEntityRecordPlayer)world.getBlockEntity(x, y, z);
             jukebox.recordId = id;
@@ -44,7 +44,7 @@ internal class BlockJukeBox : BlockWithEntity
 
     public void tryEjectRecord(World world, int x, int y, int z)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             BlockEntityRecordPlayer jukebox = (BlockEntityRecordPlayer)world.getBlockEntity(x, y, z);
             int recordId = jukebox.recordId;
@@ -74,7 +74,7 @@ internal class BlockJukeBox : BlockWithEntity
 
     public override void dropStacks(World world, int x, int y, int z, int meta, float luck)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             base.dropStacks(world, x, y, z, meta, luck);
         }
