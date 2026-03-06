@@ -42,15 +42,15 @@ internal class BlockSlab : Block
             base.onPlaced(world, x, y, z);
         }
 
-        int blockBelowId = world.getBlockId(x, y - 1, z);
-        int slabMeta = world.getBlockMeta(x, y, z);
-        int blockBelowMeta = world.getBlockMeta(x, y - 1, z);
+        int blockBelowId = world.GetBlockId(x, y - 1, z);
+        int slabMeta = world.GetBlockMeta(x, y, z);
+        int blockBelowMeta = world.GetBlockMeta(x, y - 1, z);
         if (slabMeta == blockBelowMeta)
         {
             if (blockBelowId == Slab.id)
             {
-                world.setBlock(x, y, z, 0);
-                world.setBlock(x, y - 1, z, Block.DoubleSlab.id, slabMeta);
+                world.SetBlock(x, y, z, 0);
+                world.SetBlock(x, y - 1, z, Block.DoubleSlab.id, slabMeta);
             }
 
         }
@@ -83,6 +83,6 @@ internal class BlockSlab : Block
             base.isSideVisible(iBlockAccess, x, y, z, side);
         }
 
-        return side == 1 ? true : (!base.isSideVisible(iBlockAccess, x, y, z, side) ? false : (side == 0 ? true : iBlockAccess.getBlockId(x, y, z) != id));
+        return side == 1 ? true : (!base.isSideVisible(iBlockAccess, x, y, z, side) ? false : (side == 0 ? true : iBlockAccess.GetBlockId(x, y, z) != id));
     }
 }

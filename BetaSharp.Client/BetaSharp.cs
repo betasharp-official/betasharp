@@ -573,7 +573,7 @@ public partial class BetaSharp
                     if (world != null)
                     {
                         if (options.DebugMode) Profiler.Start("updateLighting");
-                        world.doLightingUpdates();
+                        world.DoLightingUpdates();
                         if (options.DebugMode) Profiler.Stop("updateLighting");
                     }
 
@@ -1162,7 +1162,7 @@ public partial class BetaSharp
     {
         if (objectMouseOver.Type != HitResultType.MISS)
         {
-            int blockId = world.getBlockId(objectMouseOver.BlockX, objectMouseOver.BlockY, objectMouseOver.BlockZ);
+            int blockId = world.GetBlockId(objectMouseOver.BlockX, objectMouseOver.BlockY, objectMouseOver.BlockZ);
             if (blockId == Block.GrassBlock.id)
             {
                 blockId = Block.Dirt.id;
@@ -1561,7 +1561,7 @@ public partial class BetaSharp
             {
                 if (targetEntity == null)
                 {
-                    player = (ClientPlayerEntity)newWorld.getPlayerForProxy(typeof(ClientPlayerEntity));
+                    player = (ClientPlayerEntity)newWorld.GetPlayerForProxy(typeof(ClientPlayerEntity));
                 }
             }
             else if (player != null)
@@ -1585,10 +1585,10 @@ public partial class BetaSharp
             playerController.fillHotbar(player);
             if (targetEntity != null)
             {
-                newWorld.saveWorldData();
+                newWorld.SaveWorldData();
             }
 
-            newWorld.addPlayer(player);
+            newWorld.AddPlayer(player);
 
             if (!string.IsNullOrEmpty(session?.skinUrl))
             {
@@ -1597,7 +1597,7 @@ public partial class BetaSharp
 
             if (newWorld.IsNewWorld)
             {
-                newWorld.savingProgress(loadingScreen);
+                newWorld.SavingProgress(loadingScreen);
             }
 
             camera = player;
@@ -1618,7 +1618,7 @@ public partial class BetaSharp
         int loadedChunkCount = 0;
         int totalChunksToLoad = loadingRadius * 2 / 16 + 1;
         totalChunksToLoad *= totalChunksToLoad;
-        Vec3i centerPos = world.getSpawnPos();
+        Vec3i centerPos = world.GetSpawnPos();
         if (player != null)
         {
             centerPos.X = (int)player.x;
@@ -1630,9 +1630,9 @@ public partial class BetaSharp
             for (int zOffset = -loadingRadius; zOffset <= loadingRadius; zOffset += 16)
             {
                 loadingScreen.setLoadingProgress(loadedChunkCount++ * 100 / totalChunksToLoad);
-                world.getBlockId(centerPos.X + xOffset, 64, centerPos.Z + zOffset);
+                world.GetBlockId(centerPos.X + xOffset, 64, centerPos.Z + zOffset);
 
-                while (world.doLightingUpdates())
+                while (world.DoLightingUpdates())
                 {
                 }
             }
@@ -1693,7 +1693,7 @@ public partial class BetaSharp
 
     public string getWorldDebugInfo()
     {
-        return world.getDebugInfo();
+        return world.GetDebugInfo();
     }
 
     public string getParticleAndEntityCountDebugInfo()
@@ -1722,7 +1722,7 @@ public partial class BetaSharp
         }
 
         bool useBedSpawn = respawnPos is not null;
-        Vec3i finalRespawnPos = respawnPos ?? world.getSpawnPos();
+        Vec3i finalRespawnPos = respawnPos ?? world.GetSpawnPos();
 
         world.UpdateSpawnPosition();
         world.Entities.UpdateEntityLists();
@@ -1754,7 +1754,7 @@ public partial class BetaSharp
         }
 
         playerController.flipPlayer(player);
-        world.addPlayer(player);
+        world.AddPlayer(player);
         player.movementInput = new MovementInputFromOptions(options);
         player.id = previousPlayerId;
         player.spawn();

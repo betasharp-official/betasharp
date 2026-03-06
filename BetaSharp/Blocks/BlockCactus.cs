@@ -15,19 +15,19 @@ internal class BlockCactus : Block
 
     public override void onTick(World world, int x, int y, int z, JavaRandom random)
     {
-        if (world.isAir(x, y + 1, z))
+        if (world.IsAir(x, y + 1, z))
         {
             int heightBelow;
-            for (heightBelow = 1; world.getBlockId(x, y - heightBelow, z) == id; ++heightBelow)
+            for (heightBelow = 1; world.GetBlockId(x, y - heightBelow, z) == id; ++heightBelow)
             {
             }
 
             if (heightBelow < 3)
             {
-                int growthStage = world.getBlockMeta(x, y, z);
+                int growthStage = world.GetBlockMeta(x, y, z);
                 if (growthStage == 15)
                 {
-                    world.setBlock(x, y + 1, z, id);
+                    world.SetBlock(x, y + 1, z, id);
                     world.setBlockMeta(x, y, z, 0);
                 }
                 else
@@ -80,33 +80,33 @@ internal class BlockCactus : Block
     {
         if (!canGrow(world, x, y, z))
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            dropStacks(world, x, y, z, world.GetBlockMeta(x, y, z));
+            world.SetBlock(x, y, z, 0);
         }
 
     }
 
     public override bool canGrow(World world, int x, int y, int z)
     {
-        if (world.getMaterial(x - 1, y, z).IsSolid)
+        if (world.GetMaterial(x - 1, y, z).IsSolid)
         {
             return false;
         }
-        else if (world.getMaterial(x + 1, y, z).IsSolid)
+        else if (world.GetMaterial(x + 1, y, z).IsSolid)
         {
             return false;
         }
-        else if (world.getMaterial(x, y, z - 1).IsSolid)
+        else if (world.GetMaterial(x, y, z - 1).IsSolid)
         {
             return false;
         }
-        else if (world.getMaterial(x, y, z + 1).IsSolid)
+        else if (world.GetMaterial(x, y, z + 1).IsSolid)
         {
             return false;
         }
         else
         {
-            int blockBelowId = world.getBlockId(x, y - 1, z);
+            int blockBelowId = world.GetBlockId(x, y - 1, z);
             return blockBelowId == Block.Cactus.id || blockBelowId == Block.Sand.id;
         }
     }

@@ -32,7 +32,7 @@ public class ServerPlayerInteractionManager
         if (mining)
         {
             int miningTicks = tickCounter - startMiningTime;
-            int blockId = world.getBlockId(miningX, miningY, miningZ);
+            int blockId = world.GetBlockId(miningX, miningY, miningZ);
             if (blockId != 0)
             {
                 Block block = Block.Blocks[blockId];
@@ -52,9 +52,9 @@ public class ServerPlayerInteractionManager
 
     public void onBlockBreakingAction(int x, int y, int z, int direction)
     {
-        world.extinguishFire(null, x, y, z, direction);
+        world.ExtinguishFire(null, x, y, z, direction);
         failedMiningStartTime = tickCounter;
-        int blockId = world.getBlockId(x, y, z);
+        int blockId = world.GetBlockId(x, y, z);
         if (blockId > 0)
         {
             Block.Blocks[blockId].onBlockBreakStart(world, x, y, z, player);
@@ -77,7 +77,7 @@ public class ServerPlayerInteractionManager
         if (x == failedMiningX && y == failedMiningY && z == failedMiningZ)
         {
             int ticksSinceFailedStart = tickCounter - failedMiningStartTime;
-            int blockId = world.getBlockId(x, y, z);
+            int blockId = world.GetBlockId(x, y, z);
             if (blockId != 0)
             {
                 Block block = Block.Blocks[blockId];
@@ -100,9 +100,9 @@ public class ServerPlayerInteractionManager
 
     public bool finishMining(int x, int y, int z)
     {
-        Block block = Block.Blocks[world.getBlockId(x, y, z)];
-        int blockMeta = world.getBlockMeta(x, y, z);
-        bool success = world.setBlock(x, y, z, 0);
+        Block block = Block.Blocks[world.GetBlockId(x, y, z)];
+        int blockMeta = world.GetBlockMeta(x, y, z);
+        bool success = world.SetBlock(x, y, z, 0);
         if (block != null && success)
         {
             block.onMetadataChange(world, x, y, z, blockMeta);
@@ -113,9 +113,9 @@ public class ServerPlayerInteractionManager
 
     public bool tryBreakBlock(int x, int y, int z)
     {
-        int blockId = world.getBlockId(x, y, z);
-        int blockMeta = world.getBlockMeta(x, y, z);
-        world.worldEvent(player, 2001, x, y, z, blockId + world.getBlockMeta(x, y, z) * 256);
+        int blockId = world.GetBlockId(x, y, z);
+        int blockMeta = world.GetBlockMeta(x, y, z);
+        world.WorldEvent(player, 2001, x, y, z, blockId + world.GetBlockMeta(x, y, z) * 256);
         bool success = finishMining(x, y, z);
 
         if (success && player.canHarvest(Block.Blocks[blockId]))
@@ -160,7 +160,7 @@ public class ServerPlayerInteractionManager
 
     public bool interactBlock(EntityPlayer player, World world, ItemStack stack, int x, int y, int z, int side)
     {
-        int blockId = world.getBlockId(x, y, z);
+        int blockId = world.GetBlockId(x, y, z);
         if (blockId > 0 && Block.Blocks[blockId].onUse(world, x, y, z, player))
         {
             return true;

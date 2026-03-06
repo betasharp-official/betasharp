@@ -27,19 +27,19 @@ public class BlockPistonExtension : Block
     public override void onBreak(World world, int x, int y, int z)
     {
         base.onBreak(world, x, y, z);
-        int var5 = world.getBlockMeta(x, y, z);
+        int var5 = world.GetBlockMeta(x, y, z);
         int var6 = PistonConstants.field_31057_a[getFacing(var5)];
         x += PistonConstants.HEAD_OFFSET_X[var6];
         y += PistonConstants.HEAD_OFFSET_Y[var6];
         z += PistonConstants.HEAD_OFFSET_Z[var6];
-        int var7 = world.getBlockId(x, y, z);
+        int var7 = world.GetBlockId(x, y, z);
         if (var7 == Block.Piston.id || var7 == Block.StickyPiston.id)
         {
-            var5 = world.getBlockMeta(x, y, z);
+            var5 = world.GetBlockMeta(x, y, z);
             if (BlockPistonBase.isExtended(var5))
             {
                 Block.Blocks[var7].dropStacks(world, x, y, z, var5);
-                world.setBlock(x, y, z, 0);
+                world.SetBlock(x, y, z, 0);
             }
         }
 
@@ -83,7 +83,7 @@ public class BlockPistonExtension : Block
 
     public override void addIntersectingBoundingBox(World world, int x, int y, int z, Box box, List<Box> boxes)
     {
-        int var7 = world.getBlockMeta(x, y, z);
+        int var7 = world.GetBlockMeta(x, y, z);
         switch (getFacing(var7))
         {
             case 0:
@@ -129,7 +129,7 @@ public class BlockPistonExtension : Block
 
     public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        int var5 = iBlockAccess.getBlockMeta(x, y, z);
+        int var5 = iBlockAccess.GetBlockMeta(x, y, z);
         switch (getFacing(var5))
         {
             case 0:
@@ -156,11 +156,11 @@ public class BlockPistonExtension : Block
 
     public override void neighborUpdate(World world, int x, int y, int z, int id)
     {
-        int var6 = getFacing(world.getBlockMeta(x, y, z));
-        int var7 = world.getBlockId(x - PistonConstants.HEAD_OFFSET_X[var6], y - PistonConstants.HEAD_OFFSET_Y[var6], z - PistonConstants.HEAD_OFFSET_Z[var6]);
+        int var6 = getFacing(world.GetBlockMeta(x, y, z));
+        int var7 = world.GetBlockId(x - PistonConstants.HEAD_OFFSET_X[var6], y - PistonConstants.HEAD_OFFSET_Y[var6], z - PistonConstants.HEAD_OFFSET_Z[var6]);
         if (var7 != Block.Piston.id && var7 != Block.StickyPiston.id)
         {
-            world.setBlock(x, y, z, 0);
+            world.SetBlock(x, y, z, 0);
         }
         else
         {

@@ -39,7 +39,7 @@ public class PlayerManager
 
     public void saveAllPlayers(ServerWorld[] world)
     {
-        _saveHandler = world[0].getWorldStorage().GetPlayerStorage();
+        _saveHandler = world[0].GetWorldStorage().GetPlayerStorage();
     }
 
     public void updatePlayerAfterDimensionChange(ServerPlayerEntity player)
@@ -262,7 +262,7 @@ public class PlayerManager
 
             // Fully drain lighting updates generated during portal chunk
             // creation before the chunks are queued for the client.
-            while (targetWorld.doLightingUpdates()) { }
+            while (targetWorld.DoLightingUpdates()) { }
         }
 
         updatePlayerAfterDimensionChange(player);
@@ -508,7 +508,7 @@ public class PlayerManager
 
     public void sendWorldInfo(ServerPlayerEntity player, ServerWorld world)
     {
-        player.networkHandler.sendPacket(new WorldTimeUpdateS2CPacket(world.getTime()));
+        player.networkHandler.sendPacket(new WorldTimeUpdateS2CPacket(world.GetTime()));
         if (world.Environment.IsRaining)
         {
             player.networkHandler.sendPacket(new GameStateChangeS2CPacket(1));

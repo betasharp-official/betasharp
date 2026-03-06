@@ -270,11 +270,11 @@ public class EntityMinecart : Entity, IInventory
             double var4 = 0.4D;
             bool var6 = false;
             var7 = 1.0D / 128.0D;
-            int var9 = world.getBlockId(floorX, floorY, floorZ);
+            int var9 = world.GetBlockId(floorX, floorY, floorZ);
             if (BlockRail.isRail(var9))
             {
                 Vec3D? var10 = func_514_g(x, y, z);
-                int var11 = world.getBlockMeta(floorX, floorY, floorZ);
+                int var11 = world.GetBlockMeta(floorX, floorY, floorZ);
                 y = (double)floorY;
                 bool var12 = false;
                 bool var13 = false;
@@ -506,22 +506,22 @@ public class EntityMinecart : Entity, IInventory
                     }
                     else if (var11 == 1)
                     {
-                        if (world.shouldSuffocate(floorX - 1, floorY, floorZ))
+                        if (world.ShouldSuffocate(floorX - 1, floorY, floorZ))
                         {
                             velocityX = 0.02D;
                         }
-                        else if (world.shouldSuffocate(floorX + 1, floorY, floorZ))
+                        else if (world.ShouldSuffocate(floorX + 1, floorY, floorZ))
                         {
                             velocityX = -0.02D;
                         }
                     }
                     else if (var11 == 0)
                     {
-                        if (world.shouldSuffocate(floorX, floorY, floorZ - 1))
+                        if (world.ShouldSuffocate(floorX, floorY, floorZ - 1))
                         {
                             velocityZ = 0.02D;
                         }
-                        else if (world.shouldSuffocate(floorX, floorY, floorZ + 1))
+                        else if (world.ShouldSuffocate(floorX, floorY, floorZ + 1))
                         {
                             velocityZ = -0.02D;
                         }
@@ -595,7 +595,7 @@ public class EntityMinecart : Entity, IInventory
             }
 
             setRotation(yaw, pitch);
-            var var16 = world.getEntities(this, boundingBox.Expand((double)0.2F, 0.0D, (double)0.2F));
+            var var16 = world.Entities.GetEntities(this, boundingBox.Expand((double)0.2F, 0.0D, (double)0.2F));
             if (var16 != null && var16.Count > 0)
             {
                 for (int var51 = 0; var51 < var16.Count; ++var51)
@@ -621,7 +621,7 @@ public class EntityMinecart : Entity, IInventory
                     pushX = pushZ = 0.0D;
                 }
 
-                world.addParticle("largesmoke", x, y + 0.8D, z, 0.0D, 0.0D, 0.0D);
+                world.AddParticle("largesmoke", x, y + 0.8D, z, 0.0D, 0.0D, 0.0D);
             }
 
         }
@@ -637,14 +637,14 @@ public class EntityMinecart : Entity, IInventory
             --var10;
         }
 
-        int var12 = world.getBlockId(var9, var10, var11);
+        int var12 = world.GetBlockId(var9, var10, var11);
         if (!BlockRail.isRail(var12))
         {
             return null;
         }
         else
         {
-            int var13 = world.getBlockMeta(var9, var10, var11);
+            int var13 = world.GetBlockMeta(var9, var10, var11);
             if (((BlockRail)Block.Blocks[var12]).isAlwaysStraight())
             {
                 var13 &= 7;
@@ -687,10 +687,10 @@ public class EntityMinecart : Entity, IInventory
             --floorY;
         }
 
-        int blockId = world.getBlockId(floorX, floorY, floorZ);
+        int blockId = world.GetBlockId(floorX, floorY, floorZ);
         if (BlockRail.isRail(blockId))
         {
-            int meta = world.getBlockMeta(floorX, floorY, floorZ);
+            int meta = world.GetBlockMeta(floorX, floorY, floorZ);
             y = (double)floorY;
             if (((BlockRail)Block.Blocks[blockId]).isAlwaysStraight())
             {

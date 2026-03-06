@@ -19,7 +19,7 @@ internal class Carver
     /// <param name="blocks">1D Array of Blocks within this chunk</param>
     public virtual void carve(ChunkSource source, World world, int chunkX, int chunkZ, byte[] blocks)
     {
-        Rand.SetSeed(world.getSeed());
+        Rand.SetSeed(world.GetSeed());
         long xOffset = Rand.NextLong() / 2L * 2L + 1L;
         long yOffset = Rand.NextLong() / 2L * 2L + 1L;
 
@@ -27,7 +27,7 @@ internal class Carver
         {
             for (int currentZ = chunkZ - Radius; currentZ <= chunkZ + Radius; ++currentZ)
             {
-                Rand.SetSeed((currentX * xOffset + currentZ * yOffset) ^ world.getSeed());
+                Rand.SetSeed((currentX * xOffset + currentZ * yOffset) ^ world.GetSeed());
                 CarveCaves(world, currentX, currentZ, chunkX, chunkZ, blocks);
             }
         }

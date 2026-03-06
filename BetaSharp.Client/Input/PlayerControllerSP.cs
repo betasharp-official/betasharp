@@ -27,8 +27,8 @@ public class PlayerControllerSP : PlayerController
 
     public override bool sendBlockRemoved(int x, int y, int z, int var4)
     {
-        int blockId = Game.world.getBlockId(x, y, z);
-        int var6 = Game.world.getBlockMeta(x, y, z);
+        int blockId = Game.world.GetBlockId(x, y, z);
+        int var6 = Game.world.GetBlockMeta(x, y, z);
         bool var7 = base.sendBlockRemoved(x, y, z, var4);
         ItemStack var8 = Game.player.getHand();
         bool var9 = Game.player.canHarvest(Block.Blocks[blockId]);
@@ -52,8 +52,8 @@ public class PlayerControllerSP : PlayerController
 
     public override void clickBlock(int var1, int var2, int var3, int var4)
     {
-        Game.world.extinguishFire(Game.player, var1, var2, var3, var4);
-        int var5 = Game.world.getBlockId(var1, var2, var3);
+        Game.world.ExtinguishFire(Game.player, var1, var2, var3, var4);
+        int var5 = Game.world.GetBlockId(var1, var2, var3);
         if (var5 > 0 && curBlockDamage == 0.0F)
         {
             Block.Blocks[var5].onBlockBreakStart(Game.world, var1, var2, var3, Game.player);
@@ -82,7 +82,7 @@ public class PlayerControllerSP : PlayerController
         {
             if (var1 == field_1074_c && var2 == field_1073_d && var3 == field_1072_e)
             {
-                int var5 = Game.world.getBlockId(var1, var2, var3);
+                int var5 = Game.world.GetBlockId(var1, var2, var3);
                 if (var5 == 0)
                 {
                     return;

@@ -24,10 +24,10 @@ internal class BlockLockedChest : Block
         }
         else
         {
-            int var6 = iBlockAccess.getBlockId(x, y, z - 1);
-            int var7 = iBlockAccess.getBlockId(x, y, z + 1);
-            int var8 = iBlockAccess.getBlockId(x - 1, y, z);
-            int var9 = iBlockAccess.getBlockId(x + 1, y, z);
+            int var6 = iBlockAccess.GetBlockId(x, y, z - 1);
+            int var7 = iBlockAccess.GetBlockId(x, y, z + 1);
+            int var8 = iBlockAccess.GetBlockId(x - 1, y, z);
+            int var9 = iBlockAccess.GetBlockId(x + 1, y, z);
             sbyte var10 = 3;
             if (Block.BlocksOpaque[var6] && !Block.BlocksOpaque[var7])
             {
@@ -65,6 +65,6 @@ internal class BlockLockedChest : Block
 
     public override void onTick(World world, int x, int y, int z, JavaRandom random)
     {
-        world.setBlock(x, y, z, 0);
+        world.SetBlock(x, y, z, 0);
     }
 }

@@ -13,7 +13,7 @@ internal class BlockLadder : Block
 
     public override Box? getCollisionShape(World world, int x, int y, int z)
     {
-        int meta = world.getBlockMeta(x, y, z);
+        int meta = world.GetBlockMeta(x, y, z);
         float thickness = 2.0F / 16.0F;
         if (meta == 2)
         {
@@ -40,7 +40,7 @@ internal class BlockLadder : Block
 
     public override Box getBoundingBox(World world, int x, int y, int z)
     {
-        int meta = world.getBlockMeta(x, y, z);
+        int meta = world.GetBlockMeta(x, y, z);
         float thickness = 2.0F / 16.0F;
         if (meta == 2)
         {
@@ -82,28 +82,28 @@ internal class BlockLadder : Block
 
     public override bool canPlaceAt(World world, int x, int y, int z)
     {
-        return world.shouldSuffocate(x - 1, y, z) ? true : (world.shouldSuffocate(x + 1, y, z) ? true : (world.shouldSuffocate(x, y, z - 1) ? true : world.shouldSuffocate(x, y, z + 1)));
+        return world.ShouldSuffocate(x - 1, y, z) ? true : (world.ShouldSuffocate(x + 1, y, z) ? true : (world.ShouldSuffocate(x, y, z - 1) ? true : world.ShouldSuffocate(x, y, z + 1)));
     }
 
     public override void onPlaced(World world, int x, int y, int z, int direction)
     {
-        int meta = world.getBlockMeta(x, y, z);
-        if ((meta == 0 || direction == 2) && world.shouldSuffocate(x, y, z + 1))
+        int meta = world.GetBlockMeta(x, y, z);
+        if ((meta == 0 || direction == 2) && world.ShouldSuffocate(x, y, z + 1))
         {
             meta = 2;
         }
 
-        if ((meta == 0 || direction == 3) && world.shouldSuffocate(x, y, z - 1))
+        if ((meta == 0 || direction == 3) && world.ShouldSuffocate(x, y, z - 1))
         {
             meta = 3;
         }
 
-        if ((meta == 0 || direction == 4) && world.shouldSuffocate(x + 1, y, z))
+        if ((meta == 0 || direction == 4) && world.ShouldSuffocate(x + 1, y, z))
         {
             meta = 4;
         }
 
-        if ((meta == 0 || direction == 5) && world.shouldSuffocate(x - 1, y, z))
+        if ((meta == 0 || direction == 5) && world.ShouldSuffocate(x - 1, y, z))
         {
             meta = 5;
         }
@@ -113,24 +113,24 @@ internal class BlockLadder : Block
 
     public override void neighborUpdate(World world, int x, int y, int z, int id)
     {
-        int meta = world.getBlockMeta(x, y, z);
+        int meta = world.GetBlockMeta(x, y, z);
         bool hasSupport = false;
-        if (meta == 2 && world.shouldSuffocate(x, y, z + 1))
+        if (meta == 2 && world.ShouldSuffocate(x, y, z + 1))
         {
             hasSupport = true;
         }
 
-        if (meta == 3 && world.shouldSuffocate(x, y, z - 1))
+        if (meta == 3 && world.ShouldSuffocate(x, y, z - 1))
         {
             hasSupport = true;
         }
 
-        if (meta == 4 && world.shouldSuffocate(x + 1, y, z))
+        if (meta == 4 && world.ShouldSuffocate(x + 1, y, z))
         {
             hasSupport = true;
         }
 
-        if (meta == 5 && world.shouldSuffocate(x - 1, y, z))
+        if (meta == 5 && world.ShouldSuffocate(x - 1, y, z))
         {
             hasSupport = true;
         }
@@ -138,7 +138,7 @@ internal class BlockLadder : Block
         if (!hasSupport)
         {
             dropStacks(world, x, y, z, meta);
-            world.setBlock(x, y, z, 0);
+            world.SetBlock(x, y, z, 0);
         }
 
         base.neighborUpdate(world, x, y, z, id);

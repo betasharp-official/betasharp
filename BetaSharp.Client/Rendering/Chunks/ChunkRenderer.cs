@@ -616,7 +616,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     public bool MarkDirty(Vector3D<int> chunkPos, bool priority = false)
     {
-        if (!_world.isRegionLoaded(chunkPos.X - 1, chunkPos.Y - 1, chunkPos.Z - 1, chunkPos.X + SubChunkRenderer.Size + 1, chunkPos.Y + SubChunkRenderer.Size + 1, chunkPos.Z + SubChunkRenderer.Size + 1) | !IsChunkInRenderDistance(chunkPos, _lastViewPos))
+        if (!_world.IsRegionLoaded(chunkPos.X - 1, chunkPos.Y - 1, chunkPos.Z - 1, chunkPos.X + SubChunkRenderer.Size + 1, chunkPos.Y + SubChunkRenderer.Size + 1, chunkPos.Z + SubChunkRenderer.Size + 1) | !IsChunkInRenderDistance(chunkPos, _lastViewPos))
             return false;
 
         if (!_chunkVersions.TryGetValue(chunkPos, out ChunkMeshVersion? version))

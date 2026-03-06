@@ -7,7 +7,7 @@ public class LeverRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.World.getBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.World.GetBlockMeta(pos.x, pos.y, pos.z);
         int orientation = metadata & 7;
         bool isActivated = (metadata & 8) > 0;
 

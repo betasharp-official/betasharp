@@ -122,7 +122,7 @@ public static class ChunkVisibilityComputer
 
     private static bool IsAir(WorldRegionSnapshot cache, int x, int y, int z)
     {
-        int id = cache.getBlockId(x, y, z);
+        int id = cache.GetBlockId(x, y, z);
         if (id <= 0) return true;
         return !Block.BlocksOpaque[id];
     }

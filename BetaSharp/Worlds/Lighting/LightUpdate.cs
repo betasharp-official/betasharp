@@ -56,7 +56,7 @@ internal struct LightUpdate
                     }
                     else
                     {
-                        var14 = world.isRegionLoaded(var10, 0, var11, 1);
+                        var14 = world.IsRegionLoaded(var10, 0, var11, 1);
                         if (var14)
                         {
                             Chunk var15 = world.GetChunk(var10 >> 4, var11 >> 4);
@@ -85,9 +85,9 @@ internal struct LightUpdate
 
                         for (int var27 = minY; var27 <= maxY; ++var27)
                         {
-                            int var16 = world.getBrightness(lightType, var10, var27, var11);
+                            int var16 = world.GetBrightness(lightType, var10, var27, var11);
                             bool var17 = false;
-                            int var18 = world.getBlockId(var10, var27, var11);
+                            int var18 = world.GetBlockId(var10, var27, var11);
                             int var19 = Block.BlockLightOpacity[var18];
                             if (var19 == 0)
                             {
@@ -97,7 +97,7 @@ internal struct LightUpdate
                             int var20 = 0;
                             if (lightType == LightType.Sky)
                             {
-                                if (world.isTopY(var10, var27, var11))
+                                if (world.IsTopY(var10, var27, var11))
                                 {
                                     var20 = 15;
                                 }
@@ -115,12 +115,12 @@ internal struct LightUpdate
                             }
                             else
                             {
-                                var21 = world.getBrightness(lightType, var10 - 1, var27, var11);
-                                int var22 = world.getBrightness(lightType, var10 + 1, var27, var11);
-                                int var23 = world.getBrightness(lightType, var10, var27 - 1, var11);
-                                int var24 = world.getBrightness(lightType, var10, var27 + 1, var11);
-                                int var25 = world.getBrightness(lightType, var10, var27, var11 - 1);
-                                int var26 = world.getBrightness(lightType, var10, var27, var11 + 1);
+                                var21 = world.GetBrightness(lightType, var10 - 1, var27, var11);
+                                int var22 = world.GetBrightness(lightType, var10 + 1, var27, var11);
+                                int var23 = world.GetBrightness(lightType, var10, var27 - 1, var11);
+                                int var24 = world.GetBrightness(lightType, var10, var27 + 1, var11);
+                                int var25 = world.GetBrightness(lightType, var10, var27, var11 - 1);
+                                int var26 = world.GetBrightness(lightType, var10, var27, var11 + 1);
                                 var28 = var21;
                                 if (var22 > var21)
                                 {
@@ -161,29 +161,29 @@ internal struct LightUpdate
 
                             if (var16 != var28)
                             {
-                                world.setLight(lightType, var10, var27, var11, var28);
+                                world.SetLight(lightType, var10, var27, var11, var28);
                                 var21 = var28 - 1;
                                 if (var21 < 0)
                                 {
                                     var21 = 0;
                                 }
 
-                                world.updateLight(lightType, var10 - 1, var27, var11, var21);
-                                world.updateLight(lightType, var10, var27 - 1, var11, var21);
-                                world.updateLight(lightType, var10, var27, var11 - 1, var21);
+                                world.UpdateLight(lightType, var10 - 1, var27, var11, var21);
+                                world.UpdateLight(lightType, var10, var27 - 1, var11, var21);
+                                world.UpdateLight(lightType, var10, var27, var11 - 1, var21);
                                 if (var10 + 1 >= maxX)
                                 {
-                                    world.updateLight(lightType, var10 + 1, var27, var11, var21);
+                                    world.UpdateLight(lightType, var10 + 1, var27, var11, var21);
                                 }
 
                                 if (var27 + 1 >= maxY)
                                 {
-                                    world.updateLight(lightType, var10, var27 + 1, var11, var21);
+                                    world.UpdateLight(lightType, var10, var27 + 1, var11, var21);
                                 }
 
                                 if (var11 + 1 >= maxZ)
                                 {
-                                    world.updateLight(lightType, var10, var27, var11 + 1, var21);
+                                    world.UpdateLight(lightType, var10, var27, var11 + 1, var21);
                                 }
                             }
                         }

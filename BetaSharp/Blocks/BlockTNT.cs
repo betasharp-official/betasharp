@@ -20,20 +20,20 @@ internal class BlockTNT : Block
     public override void onPlaced(World world, int x, int y, int z)
     {
         base.onPlaced(world, x, y, z);
-        if (world.isPowered(x, y, z))
+        if (world.IsPowered(x, y, z))
         {
             onMetadataChange(world, x, y, z, 1);
-            world.setBlock(x, y, z, 0);
+            world.SetBlock(x, y, z, 0);
         }
 
     }
 
     public override void neighborUpdate(World world, int x, int y, int z, int id)
     {
-        if (id > 0 && Block.Blocks[id].canEmitRedstonePower() && world.isPowered(x, y, z))
+        if (id > 0 && Block.Blocks[id].canEmitRedstonePower() && world.IsPowered(x, y, z))
         {
             onMetadataChange(world, x, y, z, 1);
-            world.setBlock(x, y, z, 0);
+            world.SetBlock(x, y, z, 0);
         }
 
     }
@@ -62,7 +62,7 @@ internal class BlockTNT : Block
             {
                 EntityTNTPrimed entityTNTPrimed = new EntityTNTPrimed(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F));
                 world.Entities.SpawnEntity(entityTNTPrimed);
-                world.playSound(entityTNTPrimed, "random.fuse", 1.0F, 1.0F);
+                world.PlaySound(entityTNTPrimed, "random.fuse", 1.0F, 1.0F);
             }
 
         }

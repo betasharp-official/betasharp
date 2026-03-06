@@ -51,7 +51,7 @@ internal class BlockTrapDoor : Block
 
     public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        updateBoundingBox(iBlockAccess.getBlockMeta(x, y, z));
+        updateBoundingBox(iBlockAccess.GetBlockMeta(x, y, z));
     }
 
     public override void setupRenderBoundingBox()
@@ -102,21 +102,21 @@ internal class BlockTrapDoor : Block
         }
         else
         {
-            int meta = world.getBlockMeta(x, y, z);
+            int meta = world.GetBlockMeta(x, y, z);
             world.setBlockMeta(x, y, z, meta ^ 4);
-            world.worldEvent(player, 1003, x, y, z, 0);
+            world.WorldEvent(player, 1003, x, y, z, 0);
             return true;
         }
     }
 
     public void setOpen(World world, int x, int y, int z, bool open)
     {
-        int meta = world.getBlockMeta(x, y, z);
+        int meta = world.GetBlockMeta(x, y, z);
         bool isOpen = (meta & 4) > 0;
         if (isOpen != open)
         {
             world.setBlockMeta(x, y, z, meta ^ 4);
-            world.worldEvent((EntityPlayer)null, 1003, x, y, z, 0);
+            world.WorldEvent((EntityPlayer)null, 1003, x, y, z, 0);
         }
     }
 
@@ -124,7 +124,7 @@ internal class BlockTrapDoor : Block
     {
         if (!world.IsRemote)
         {
-            int meta = world.getBlockMeta(x, y, z);
+            int meta = world.GetBlockMeta(x, y, z);
             int xPos = x;
             int zPos = z;
             if ((meta & 3) == 0)
@@ -147,15 +147,15 @@ internal class BlockTrapDoor : Block
                 --xPos;
             }
 
-            if (!world.shouldSuffocate(xPos, y, zPos))
+            if (!world.ShouldSuffocate(xPos, y, zPos))
             {
-                world.setBlock(x, y, z, 0);
+                world.SetBlock(x, y, z, 0);
                 dropStacks(world, x, y, z, meta);
             }
 
             if (id > 0 && Block.Blocks[id].canEmitRedstonePower())
             {
-                bool isPowered = world.isPowered(x, y, z);
+                bool isPowered = world.IsPowered(x, y, z);
                 setOpen(world, x, y, z, isPowered);
             }
 
@@ -226,7 +226,7 @@ internal class BlockTrapDoor : Block
                 --x;
             }
 
-            return world.shouldSuffocate(x, y, z);
+            return world.ShouldSuffocate(x, y, z);
         }
     }
 

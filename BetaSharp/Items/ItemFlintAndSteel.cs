@@ -45,11 +45,11 @@ internal class ItemFlintAndSteel : Item
             ++x;
         }
 
-        int blockId = world.getBlockId(x, y, z);
+        int blockId = world.GetBlockId(x, y, z);
         if (blockId == 0)
         {
-            world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "fire.ignite", 1.0F, itemRand.NextFloat() * 0.4F + 0.8F);
-            world.setBlock(x, y, z, Block.Fire.id);
+            world.PlaySound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "fire.ignite", 1.0F, itemRand.NextFloat() * 0.4F + 0.8F);
+            world.SetBlock(x, y, z, Block.Fire.id);
         }
 
         itemStack.damageItem(1, entityPlayer);

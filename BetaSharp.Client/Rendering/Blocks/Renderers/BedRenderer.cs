@@ -8,7 +8,7 @@ public class BedRenderer : IBlockRenderer
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
         Box bounds = ctx.OverrideBounds ?? block.BoundingBox;
-        int metadata = ctx.World.getBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.World.GetBlockMeta(pos.x, pos.y, pos.z);
         int direction = BlockBed.getDirection(metadata);
         bool isHead = BlockBed.isHeadOfBed(metadata);
 

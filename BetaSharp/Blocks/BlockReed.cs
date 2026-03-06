@@ -18,19 +18,19 @@ internal class BlockReed : Block
 
     public override void onTick(World world, int x, int y, int z, JavaRandom random)
     {
-        if (world.isAir(x, y + 1, z))
+        if (world.IsAir(x, y + 1, z))
         {
             int heightBelow;
-            for (heightBelow = 1; world.getBlockId(x, y - heightBelow, z) == id; ++heightBelow)
+            for (heightBelow = 1; world.GetBlockId(x, y - heightBelow, z) == id; ++heightBelow)
             {
             }
 
             if (heightBelow < 3)
             {
-                int meta = world.getBlockMeta(x, y, z);
+                int meta = world.GetBlockMeta(x, y, z);
                 if (meta == 15)
                 {
-                    world.setBlock(x, y + 1, z, id);
+                    world.SetBlock(x, y + 1, z, id);
                     world.setBlockMeta(x, y, z, 0);
                 }
                 else
@@ -44,8 +44,8 @@ internal class BlockReed : Block
 
     public override bool canPlaceAt(World world, int x, int y, int z)
     {
-        int blockBelowId = world.getBlockId(x, y - 1, z);
-        return blockBelowId == id ? true : (blockBelowId != Block.GrassBlock.id && blockBelowId != Block.Dirt.id ? false : (world.getMaterial(x - 1, y - 1, z) == Material.Water ? true : (world.getMaterial(x + 1, y - 1, z) == Material.Water ? true : (world.getMaterial(x, y - 1, z - 1) == Material.Water ? true : world.getMaterial(x, y - 1, z + 1) == Material.Water))));
+        int blockBelowId = world.GetBlockId(x, y - 1, z);
+        return blockBelowId == id ? true : (blockBelowId != Block.GrassBlock.id && blockBelowId != Block.Dirt.id ? false : (world.GetMaterial(x - 1, y - 1, z) == Material.Water ? true : (world.GetMaterial(x + 1, y - 1, z) == Material.Water ? true : (world.GetMaterial(x, y - 1, z - 1) == Material.Water ? true : world.GetMaterial(x, y - 1, z + 1) == Material.Water))));
     }
 
     public override void neighborUpdate(World world, int x, int y, int z, int id)
@@ -57,8 +57,8 @@ internal class BlockReed : Block
     {
         if (!canGrow(world, x, y, z))
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            dropStacks(world, x, y, z, world.GetBlockMeta(x, y, z));
+            world.SetBlock(x, y, z, 0);
         }
 
     }

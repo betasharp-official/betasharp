@@ -42,14 +42,14 @@ internal class BlockFarmland : Block
         {
             if (!isWaterNearby(world, x, y, z) && !world.Environment.IsRainingAt(x, y + 1, z))
             {
-                int meta = world.getBlockMeta(x, y, z);
+                int meta = world.GetBlockMeta(x, y, z);
                 if (meta > 0)
                 {
                     world.setBlockMeta(x, y, z, meta - 1);
                 }
                 else if (!hasCrop(world, x, y, z))
                 {
-                    world.setBlock(x, y, z, Block.Dirt.id);
+                    world.SetBlock(x, y, z, Block.Dirt.id);
                 }
             }
             else
@@ -64,7 +64,7 @@ internal class BlockFarmland : Block
     {
         if (world.random.NextInt(4) == 0)
         {
-            world.setBlock(x, y, z, Block.Dirt.id);
+            world.SetBlock(x, y, z, Block.Dirt.id);
         }
 
     }
@@ -77,7 +77,7 @@ internal class BlockFarmland : Block
         {
             for (int var7 = z - cropRadius; var7 <= z + cropRadius; ++var7)
             {
-                if (world.getBlockId(var6, y + 1, var7) == Block.Wheat.id)
+                if (world.GetBlockId(var6, y + 1, var7) == Block.Wheat.id)
                 {
                     return true;
                 }
@@ -95,7 +95,7 @@ internal class BlockFarmland : Block
             {
                 for (int checkZ = z - 4; checkZ <= z + 4; ++checkZ)
                 {
-                    if (world.getMaterial(checkX, checkY, checkZ) == Material.Water)
+                    if (world.GetMaterial(checkX, checkY, checkZ) == Material.Water)
                     {
                         return true;
                     }
@@ -109,10 +109,10 @@ internal class BlockFarmland : Block
     public override void neighborUpdate(World world, int x, int y, int z, int id)
     {
         base.neighborUpdate(world, x, y, z, id);
-        Material material = world.getMaterial(x, y + 1, z);
+        Material material = world.GetMaterial(x, y + 1, z);
         if (material.IsSolid)
         {
-            world.setBlock(x, y, z, Block.Dirt.id);
+            world.SetBlock(x, y, z, Block.Dirt.id);
         }
 
     }

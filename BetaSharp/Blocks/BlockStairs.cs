@@ -50,7 +50,7 @@ internal class BlockStairs : Block
 
     public override void addIntersectingBoundingBox(World world, int x, int y, int z, Box box, List<Box> boxes)
     {
-        int meta = world.getBlockMeta(x, y, z);
+        int meta = world.GetBlockMeta(x, y, z);
         if (meta == 0)
         {
             setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F);

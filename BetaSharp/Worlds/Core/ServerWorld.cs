@@ -91,7 +91,7 @@ public class ServerWorld : World
         return var7;
     }
 
-    public override bool canInteract(EntityPlayer player, int x, int y, int z)
+    public override bool CanInteract(EntityPlayer player, int x, int y, int z)
     {
         int var5 = (int)MathHelper.Abs(x - Properties.SpawnX);
         int var6 = (int)MathHelper.Abs(z - Properties.SpawnZ);
@@ -103,13 +103,13 @@ public class ServerWorld : World
         return var6 > 16 || server.playerManager.isOperator(player.name) || server is InternalServer;
     }
 
-    public override void broadcastEntityEvent(Entity entity, byte @event)
+    public override void BroadcastEntityEvent(Entity entity, byte @event)
     {
         EntityStatusS2CPacket var3 = new(entity.id, @event);
         server.getEntityTracker(Dimension.Id).sendToAround(entity, var3);
     }
 
-    public override Explosion createExplosion(Entity source, double x, double y, double z, float power, bool fire)
+    public override Explosion CreateExplosion(Entity source, double x, double y, double z, float power, bool fire)
     {
         Explosion var10 = new(this, source, x, y, z, power) { isFlaming = fire };
         var10.doExplosionA();
@@ -118,9 +118,9 @@ public class ServerWorld : World
         return var10;
     }
 
-    public override void playNoteBlockActionAt(int x, int y, int z, int soundType, int pitch)
+    public override void PlayNoteBlockActionAt(int x, int y, int z, int soundType, int pitch)
     {
-        base.playNoteBlockActionAt(x, y, z, soundType, pitch);
+        base.PlayNoteBlockActionAt(x, y, z, soundType, pitch);
         server.playerManager.sendToAround(x, y, z, 64.0, Dimension.Id, new PlayNoteSoundS2CPacket(x, y, z, soundType, pitch));
     }
 

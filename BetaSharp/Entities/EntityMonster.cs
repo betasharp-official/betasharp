@@ -36,7 +36,7 @@ public class EntityMonster : EntityCreature, Monster
 
     protected override Entity findPlayerToAttack()
     {
-        EntityPlayer player = world.getClosestPlayer(this, 16.0D);
+        EntityPlayer player = world.GetClosestPlayer(this, 16.0D);
         return player != null && canSee(player) ? player : null;
     }
 
@@ -76,7 +76,7 @@ public class EntityMonster : EntityCreature, Monster
 
     protected override float getBlockPathWeight(int x, int y, int z)
     {
-        return 0.5F - world.getLuminance(x, y, z);
+        return 0.5F - world.GetLuminance(x, y, z);
     }
 
     public override void writeNbt(NBTTagCompound nbt)
@@ -94,18 +94,18 @@ public class EntityMonster : EntityCreature, Monster
         int x = MathHelper.Floor(base.x);
         int y = MathHelper.Floor(boundingBox.MinY);
         int z = MathHelper.Floor(base.z);
-        if (world.getBrightness(LightType.Sky, x, y, z) > random.NextInt(32))
+        if (world.GetBrightness(LightType.Sky, x, y, z) > random.NextInt(32))
         {
             return false;
         }
         else
         {
-            int lightLevel = world.getLightLevel(x, y, z);
+            int lightLevel = world.GetLightLevel(x, y, z);
             if (world.Environment.IsThundering())
             {
                 int ambientDarkness = world.ambientDarkness;
                 world.ambientDarkness = 10;
-                lightLevel = world.getLightLevel(x, y, z);
+                lightLevel = world.GetLightLevel(x, y, z);
                 world.ambientDarkness = ambientDarkness;
             }
 

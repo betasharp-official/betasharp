@@ -23,7 +23,7 @@ internal class DungeonFeature : Feature
             {
                 for (int cz = z - radiusZ - 1; cz <= z + radiusZ + 1; ++cz)
                 {
-                    Material mat = world.getMaterial(cx, cy, cz);
+                    Material mat = world.GetMaterial(cx, cy, cz);
                     if ((cy == y - 1 || cy == y + height + 1) && !mat.IsSolid)
                     {
                         return false;
@@ -34,7 +34,7 @@ internal class DungeonFeature : Feature
                                   cz == z - radiusZ - 1 ||
                                   cz == z + radiusZ + 1;
 
-                    if (isWall && cy == y && world.isAir(cx, cy, cz) && world.isAir(cx, cy + 1, cz))
+                    if (isWall && cy == y && world.IsAir(cx, cy, cz) && world.IsAir(cx, cy + 1, cz))
                     {
                         ++openingsCount;
                     }
@@ -61,21 +61,21 @@ internal class DungeonFeature : Feature
                                     cz != z + radiusZ + 1;
                     if (isInside)
                     {
-                        world.setBlock(cx, cy, cz, 0);
+                        world.SetBlock(cx, cy, cz, 0);
                     }
-                    else if (cy >= 0 && !world.getMaterial(cx, cy - 1, cz).IsSolid)
+                    else if (cy >= 0 && !world.GetMaterial(cx, cy - 1, cz).IsSolid)
                     {
-                        world.setBlock(cx, cy, cz, 0);
+                        world.SetBlock(cx, cy, cz, 0);
                     }
-                    else if (world.getMaterial(cx, cy, cz).IsSolid)
+                    else if (world.GetMaterial(cx, cy, cz).IsSolid)
                     {
                         if (cy == y - 1 && rand.NextInt(4) != 0)
                         {
-                            world.setBlock(cx, cy, cz, Block.MossyCobblestone.id);
+                            world.SetBlock(cx, cy, cz, Block.MossyCobblestone.id);
                         }
                         else
                         {
-                            world.setBlock(cx, cy, cz, Block.Cobblestone.id);
+                            world.SetBlock(cx, cy, cz, Block.Cobblestone.id);
                         }
                     }
                 }
@@ -89,25 +89,25 @@ internal class DungeonFeature : Feature
             {
                 int chestX = x + rand.NextInt(radiusX * 2 + 1) - radiusX;
                 int chestZ = z + rand.NextInt(radiusZ * 2 + 1) - radiusZ;
-                if (world.isAir(chestX, y, chestZ))
+                if (world.IsAir(chestX, y, chestZ))
                 {
                     int neighbors = 0;
-                    if (world.getMaterial(chestX - 1, y, chestZ).IsSolid)
+                    if (world.GetMaterial(chestX - 1, y, chestZ).IsSolid)
                     {
                         ++neighbors;
                     }
 
-                    if (world.getMaterial(chestX + 1, y, chestZ).IsSolid)
+                    if (world.GetMaterial(chestX + 1, y, chestZ).IsSolid)
                     {
                         ++neighbors;
                     }
 
-                    if (world.getMaterial(chestX, y, chestZ - 1).IsSolid)
+                    if (world.GetMaterial(chestX, y, chestZ - 1).IsSolid)
                     {
                         ++neighbors;
                     }
 
-                    if (world.getMaterial(chestX, y, chestZ + 1).IsSolid)
+                    if (world.GetMaterial(chestX, y, chestZ + 1).IsSolid)
                     {
                         ++neighbors;
                     }
@@ -117,9 +117,9 @@ internal class DungeonFeature : Feature
                         continue;
                     }
 
-                    world.setBlock(chestX, y, chestZ, Block.Chest.id);
+                    world.SetBlock(chestX, y, chestZ, Block.Chest.id);
 
-                    BlockEntityChest chest = (BlockEntityChest)world.getBlockEntity(chestX, y, chestZ);
+                    BlockEntityChest chest = (BlockEntityChest)world.GetBlockEntity(chestX, y, chestZ);
                     for (int k = 0; k < 8; ++k)
                     {
                         ItemStack? loot = PickCheckLootItem(rand);
@@ -132,8 +132,8 @@ internal class DungeonFeature : Feature
             }
         }
 
-        world.setBlock(x, y, z, Block.Spawner.id);
-        BlockEntityMobSpawner var19 = (BlockEntityMobSpawner)world.getBlockEntity(x, y, z);
+        world.SetBlock(x, y, z, Block.Spawner.id);
+        BlockEntityMobSpawner var19 = (BlockEntityMobSpawner)world.GetBlockEntity(x, y, z);
         var19.SetSpawnedEntityId(PickMobSpawner(rand));
         return true;
     }

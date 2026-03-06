@@ -23,7 +23,7 @@ internal class EntityPigZombie : EntityZombie
         movementSpeed = playerToAttack != null ? 0.95F : 0.5F;
         if (randomSoundDelay > 0 && --randomSoundDelay == 0)
         {
-            world.playSound(this, "mob.zombiepig.zpigangry", getSoundVolume() * 2.0F, ((random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F) * 1.8F);
+            world.PlaySound(this, "mob.zombiepig.zpigangry", getSoundVolume() * 2.0F, ((random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F) * 1.8F);
         }
 
         base.tick();
@@ -31,7 +31,7 @@ internal class EntityPigZombie : EntityZombie
 
     public override bool canSpawn()
     {
-        return world.Difficulty > 0 && world.Entities.CanSpawnEntity(boundingBox) && world.Entities.GetEntityCollisions(this, boundingBox).Count == 0 && !world.isBoxSubmergedInFluid(boundingBox);
+        return world.Difficulty > 0 && world.Entities.CanSpawnEntity(boundingBox) && world.Entities.GetEntityCollisions(this, boundingBox).Count == 0 && !world.IsBoxSubmergedInFluid(boundingBox);
     }
 
     public override void writeNbt(NBTTagCompound nbt)
@@ -60,7 +60,7 @@ internal class EntityPigZombie : EntityZombie
     {
         if (entity is EntityPlayer)
         {
-            var entities = world.getEntities(this, boundingBox.Expand(32.0D, 32.0D, 32.0D));
+            var entities = world.Entities.GetEntities(this, boundingBox.Expand(32.0D, 32.0D, 32.0D));
 
             for (int i = 0; i < entities.Count; ++i)
             {

@@ -12,7 +12,7 @@ public class BlockRail : Block
 
     public static bool isRail(World world, int x, int y, int z)
     {
-        int blockId = world.getBlockId(x, y, z);
+        int blockId = world.GetBlockId(x, y, z);
         return blockId == Block.Rail.id || blockId == Block.PoweredRail.id || blockId == Block.DetectorRail.id;
     }
 
@@ -50,7 +50,7 @@ public class BlockRail : Block
 
     public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        int meta = iBlockAccess.getBlockMeta(x, y, z);
+        int meta = iBlockAccess.GetBlockMeta(x, y, z);
         if (meta >= 2 && meta <= 5)
         {
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 10.0F / 16.0F, 1.0F);
@@ -91,7 +91,7 @@ public class BlockRail : Block
 
     public override bool canPlaceAt(World world, int x, int y, int z)
     {
-        return world.shouldSuffocate(x, y - 1, z);
+        return world.ShouldSuffocate(x, y - 1, z);
     }
 
     public override void onPlaced(World world, int x, int y, int z)
@@ -107,7 +107,7 @@ public class BlockRail : Block
     {
         if (!world.IsRemote)
         {
-            int meta = world.getBlockMeta(x, y, z);
+            int meta = world.GetBlockMeta(x, y, z);
             int railMeta = meta;
             if (alwaysStraight)
             {
@@ -115,39 +115,39 @@ public class BlockRail : Block
             }
 
             bool shouldBreak = false;
-            if (!world.shouldSuffocate(x, y - 1, z))
+            if (!world.ShouldSuffocate(x, y - 1, z))
             {
                 shouldBreak = true;
             }
 
-            if (railMeta == 2 && !world.shouldSuffocate(x + 1, y, z))
+            if (railMeta == 2 && !world.ShouldSuffocate(x + 1, y, z))
             {
                 shouldBreak = true;
             }
 
-            if (railMeta == 3 && !world.shouldSuffocate(x - 1, y, z))
+            if (railMeta == 3 && !world.ShouldSuffocate(x - 1, y, z))
             {
                 shouldBreak = true;
             }
 
-            if (railMeta == 4 && !world.shouldSuffocate(x, y, z - 1))
+            if (railMeta == 4 && !world.ShouldSuffocate(x, y, z - 1))
             {
                 shouldBreak = true;
             }
 
-            if (railMeta == 5 && !world.shouldSuffocate(x, y, z + 1))
+            if (railMeta == 5 && !world.ShouldSuffocate(x, y, z + 1))
             {
                 shouldBreak = true;
             }
 
             if (shouldBreak)
             {
-                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-                world.setBlock(x, y, z, 0);
+                dropStacks(world, x, y, z, world.GetBlockMeta(x, y, z));
+                world.SetBlock(x, y, z, 0);
             }
             else if (base.id == Block.PoweredRail.id)
             {
-                bool isPowered = world.isPowered(x, y, z) || world.isPowered(x, y + 1, z);
+                bool isPowered = world.IsPowered(x, y, z) || world.IsPowered(x, y + 1, z);
                 isPowered = isPowered || isPoweredByConnectedRails(world, x, y, z, meta, true, 0) || isPoweredByConnectedRails(world, x, y, z, meta, false, 0);
                 bool stateChanged = false;
                 if (isPowered && (meta & 8) == 0)
@@ -163,10 +163,10 @@ public class BlockRail : Block
 
                 if (stateChanged)
                 {
-                    world.notifyNeighbors(x, y - 1, z, base.id);
+                    world.NotifyNeighbors(x, y - 1, z, base.id);
                     if (railMeta == 2 || railMeta == 3 || railMeta == 4 || railMeta == 5)
                     {
-                        world.notifyNeighbors(x, y + 1, z, base.id);
+                        world.NotifyNeighbors(x, y + 1, z, base.id);
                     }
                 }
             }
@@ -182,7 +182,7 @@ public class BlockRail : Block
     {
         if (!world.IsRemote)
         {
-            new RailLogic(this, world, new Vec3i(x, y, z)).UpdateState(world.isPowered(x, y, z), force);
+            new RailLogic(this, world, new Vec3i(x, y, z)).UpdateState(world.IsPowered(x, y, z), force);
         }
     }
 
@@ -282,10 +282,10 @@ public class BlockRail : Block
 
     private bool isPoweredByRail(World world, int x, int y, int z, bool towardsNegative, int depth, int shape)
     {
-        int blockId = world.getBlockId(x, y, z);
+        int blockId = world.GetBlockId(x, y, z);
         if (blockId == Block.PoweredRail.id)
         {
-            int meta = world.getBlockMeta(x, y, z);
+            int meta = world.GetBlockMeta(x, y, z);
             int railMeta = meta & 7;
             if (shape == 1 && (railMeta == 0 || railMeta == 4 || railMeta == 5))
             {
@@ -299,7 +299,7 @@ public class BlockRail : Block
 
             if ((meta & 8) != 0)
             {
-                if (!world.isPowered(x, y, z) && !world.isPowered(x, y + 1, z))
+                if (!world.IsPowered(x, y, z) && !world.IsPowered(x, y + 1, z))
                 {
                     return isPoweredByConnectedRails(world, x, y, z, meta, towardsNegative, depth + 1);
                 }

@@ -276,7 +276,7 @@ public class EntityManager
 
                     Chunk chunk = _world.GetChunk(queuedBlockEntity.X >> 4, queuedBlockEntity.Z >> 4);
                     chunk?.SetBlockEntity(queuedBlockEntity.X & 15, queuedBlockEntity.Y, queuedBlockEntity.Z & 15, queuedBlockEntity);
-                    _world.blockUpdateEvent(queuedBlockEntity.X, queuedBlockEntity.Y, queuedBlockEntity.Z);
+                    _world.BlockUpdateEvent(queuedBlockEntity.X, queuedBlockEntity.Y, queuedBlockEntity.Z);
                 }
             }
 
@@ -302,7 +302,7 @@ public class EntityManager
         int blockZ = MathHelper.Floor(entity.z);
         const byte loadRadius = 32;
 
-        if (!requireLoaded || _world.isRegionLoaded(blockX - loadRadius, 0, blockZ - loadRadius, blockX + loadRadius, 128, blockZ + loadRadius))
+        if (!requireLoaded || _world.IsRegionLoaded(blockX - loadRadius, 0, blockZ - loadRadius, blockX + loadRadius, 128, blockZ + loadRadius))
         {
             entity.lastTickX = entity.x;
             entity.lastTickY = entity.y;
@@ -406,11 +406,11 @@ public class EntityManager
         {
             for (int z = minZ; z < maxZ; ++z)
             {
-                if (_world.isPosLoaded(x, 64, z))
+                if (_world.IsPosLoaded(x, 64, z))
                 {
                     for (int y = minY - 1; y < maxY; ++y)
                     {
-                        Block block = Block.Blocks[_world.getBlockId(x, y, z)];
+                        Block block = Block.Blocks[_world.GetBlockId(x, y, z)];
                         if (block != null)
                         {
                             block.addIntersectingBoundingBox(_world, x, y, z, area, collidingBoundingBoxes);
@@ -477,6 +477,29 @@ public class EntityManager
                 if (_world.GetChunkSource().IsChunkLoaded(chunkX, chunkZ))
                 {
                     _world.GetChunk(chunkX, chunkZ).CollectOtherEntities(excludeEntity, area, results);
+                }
+            }
+        }
+
+        return results;
+    }
+
+    public List<T> CollectEntitiesOfType<T>(Box area) where T : Entity
+    {
+        List<T> results = new();
+
+        int minChunkX = MathHelper.Floor((area.MinX - 2.0D) / 16.0D);
+        int maxChunkX = MathHelper.Floor((area.MaxX + 2.0D) / 16.0D);
+        int minChunkZ = MathHelper.Floor((area.MinZ - 2.0D) / 16.0D);
+        int maxChunkZ = MathHelper.Floor((area.MaxZ + 2.0D) / 16.0D);
+
+        for (int chunkX = minChunkX; chunkX <= maxChunkX; ++chunkX)
+        {
+            for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ)
+            {
+                if (_world.HasChunk(chunkX, chunkZ))
+                {
+                    _world.GetChunk(chunkX, chunkZ).CollectEntitiesOfType(area, results);
                 }
             }
         }

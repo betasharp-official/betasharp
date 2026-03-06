@@ -65,7 +65,7 @@ internal class OreFeature : Feature
                     {
                         double dz = (blockZ + 0.5 - centerZ) / (radiusH / 2.0);
 
-                        if (dx * dx + dy * dy + dz * dz < 1.0 && world.getBlockId(blockX, blockY, blockZ) == Block.Stone.id)
+                        if (dx * dx + dy * dy + dz * dz < 1.0 && world.GetBlockId(blockX, blockY, blockZ) == Block.Stone.id)
                         {
                             world.SetBlockWithoutNotifyingNeighbors(blockX, blockY, blockZ, _minableBlockId);
                         }

@@ -48,7 +48,7 @@ public class EntityLavaFX : EntityFX
         float lifeProgress = (float)particleAge / (float)particleMaxAge;
         if (random.NextFloat() > lifeProgress)
         {
-            world.addParticle("smoke", x, y, z, velocityX, velocityY, velocityZ);
+            world.AddParticle("smoke", x, y, z, velocityX, velocityY, velocityZ);
         }
 
         velocityY -= 0.03D;

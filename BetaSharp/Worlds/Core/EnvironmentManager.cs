@@ -143,12 +143,12 @@ public class EnvironmentManager
 
     public bool IsRainingAt(int x, int y, int z)
     {
-        if (!IsRaining || !_world.hasSkyLight(x, y, z) || _world.getTopSolidBlockY(x, z) > y)
+        if (!IsRaining || !_world.HasSkyLight(x, y, z) || _world.GetTopSolidBlockY(x, z) > y)
         {
             return false;
         }
 
-        Biome biome = _world.getBiomeSource().GetBiome(x, z);
+        Biome biome = _world.GetBiomeSource().GetBiome(x, z);
         return !biome.GetEnableSnow() && biome.CanSpawnLightningBolt();
     }
 
@@ -177,7 +177,7 @@ public class EnvironmentManager
 
     public Vector3D<double> GetCloudColor(float partialTicks)
     {
-        float timeOfDay = _world.getTime(partialTicks);
+        float timeOfDay = _world.GetTime(partialTicks);
 
         float sunIntensity = MathHelper.Cos(timeOfDay * (float)Math.PI * 2.0F) * 2.0F + 0.5F;
         sunIntensity = Math.Clamp(sunIntensity, 0.0F, 1.0F);
@@ -217,15 +217,15 @@ public class EnvironmentManager
 
     public Vector3D<double> GetSkyColor(Entity entity, float partialTicks)
     {
-        float timeOfDay = _world.getTime(partialTicks);
+        float timeOfDay = _world.GetTime(partialTicks);
 
         float sunIntensity = MathHelper.Cos(timeOfDay * (float)Math.PI * 2.0F) * 2.0F + 0.5F;
         sunIntensity = Math.Clamp(sunIntensity, 0.0F, 1.0F);
 
         int blockX = MathHelper.Floor(entity.x);
         int blockZ = MathHelper.Floor(entity.z);
-        float temperature = (float)_world.getBiomeSource().GetTemperature(blockX, blockZ);
-        int biomeSkyColorInt = _world.getBiomeSource().GetBiome(blockX, blockZ).GetSkyColorByTemp(temperature);
+        float temperature = (float)_world.GetBiomeSource().GetTemperature(blockX, blockZ);
+        int biomeSkyColorInt = _world.GetBiomeSource().GetBiome(blockX, blockZ).GetSkyColorByTemp(temperature);
 
         float red = ((biomeSkyColorInt >> 16) & 255) / 255.0F;
         float green = ((biomeSkyColorInt >> 8) & 255) / 255.0F;

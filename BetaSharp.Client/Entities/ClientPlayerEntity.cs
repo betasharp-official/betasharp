@@ -248,7 +248,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     private bool isBlockTranslucent(int x, int y, int z)
     {
-        return world.shouldSuffocate(x, y, z);
+        return world.ShouldSuffocate(x, y, z);
     }
 
     protected override bool pushOutOfBlocks(double posX, double posY, double posZ)

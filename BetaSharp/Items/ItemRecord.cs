@@ -17,7 +17,7 @@ public class ItemRecord : Item
 
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
     {
-        if (world.getBlockId(x, y, z) == Block.Jukebox.id && world.getBlockMeta(x, y, z) == 0)
+        if (world.GetBlockId(x, y, z) == Block.Jukebox.id && world.GetBlockMeta(x, y, z) == 0)
         {
             if (world.IsRemote)
             {
@@ -26,7 +26,7 @@ public class ItemRecord : Item
             else
             {
                 ((BlockJukeBox)Block.Jukebox).insertRecord(world, x, y, z, id);
-                world.worldEvent((EntityPlayer)null, 1005, x, y, z, id);
+                world.WorldEvent((EntityPlayer)null, 1005, x, y, z, id);
                 --itemStack.count;
                 return true;
             }

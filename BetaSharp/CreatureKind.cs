@@ -16,12 +16,12 @@ public sealed record CreatureKind(Type EntityType, int MobCap, Material SpawnMat
     {
         if (SpawnMaterial == Material.Water)
         {
-            return world.getMaterial(x, y, z).IsFluid && !world.shouldSuffocate(x, y + 1, z);
+            return world.GetMaterial(x, y, z).IsFluid && !world.ShouldSuffocate(x, y + 1, z);
         }
         else
         {
-            return world.shouldSuffocate(x, y - 1, z) && !world.shouldSuffocate(x, y, z) &&
-                   !world.getMaterial(x, y, z).IsFluid && !world.shouldSuffocate(x, y + 1, z);
+            return world.ShouldSuffocate(x, y - 1, z) && !world.ShouldSuffocate(x, y, z) &&
+                   !world.GetMaterial(x, y, z).IsFluid && !world.ShouldSuffocate(x, y + 1, z);
         }
     }
 }

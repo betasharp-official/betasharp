@@ -26,7 +26,7 @@ public class BlockTallGrass : BlockPlant
 
     public override int getColorMultiplier(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        int meta = iBlockAccess.getBlockMeta(x, y, z);
+        int meta = iBlockAccess.GetBlockMeta(x, y, z);
         if (meta == 0)
         {
             return 0xFFFFFF;
@@ -38,9 +38,9 @@ public class BlockTallGrass : BlockPlant
             x = (int)((long)x + (positionSeed >> 14 & 31L));
             y = (int)((long)y + (positionSeed >> 19 & 31L));
             z = (int)((long)z + (positionSeed >> 24 & 31L));
-            iBlockAccess.getBiomeSource().GetBiomesInArea(x, z, 1, 1);
-            double temperature = iBlockAccess.getBiomeSource().TemperatureMap[0];
-            double downfall = iBlockAccess.getBiomeSource().DownfallMap[0];
+            iBlockAccess.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
+            double temperature = iBlockAccess.GetBiomeSource().TemperatureMap[0];
+            double downfall = iBlockAccess.GetBiomeSource().DownfallMap[0];
             return GrassColors.getColor(temperature, downfall);
         }
     }

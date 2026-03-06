@@ -63,7 +63,7 @@ public class EntityCreeper : EntityMonster
             int state = getCreeperState();
             if (state > 0 && timeSinceIgnited == 0)
             {
-                world.playSound(this, "random.fuse", 1.0F, 0.5F);
+                world.PlaySound(this, "random.fuse", 1.0F, 0.5F);
             }
 
             timeSinceIgnited += state;
@@ -120,7 +120,7 @@ public class EntityCreeper : EntityMonster
             {
                 if (timeSinceIgnited == 0)
                 {
-                    world.playSound(this, "random.fuse", 1.0F, 0.5F);
+                    world.PlaySound(this, "random.fuse", 1.0F, 0.5F);
                 }
 
                 setCreeperState(1);
@@ -129,11 +129,11 @@ public class EntityCreeper : EntityMonster
                 {
                     if (getPowered())
                     {
-                        world.createExplosion(this, x, y, z, 6.0F);
+                        world.CreateExplosion(this, x, y, z, 6.0F);
                     }
                     else
                     {
-                        world.createExplosion(this, x, y, z, 3.0F);
+                        world.CreateExplosion(this, x, y, z, 3.0F);
                     }
 
                     markDead();

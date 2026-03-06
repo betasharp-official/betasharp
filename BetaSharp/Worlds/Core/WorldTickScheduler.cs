@@ -28,11 +28,11 @@ public class WorldTickScheduler
         if (_world.IsRemote) return;
 
         const byte loadRadius = 8;
-        if (_world.isRegionLoaded(x - loadRadius, y - loadRadius, z - loadRadius, x + loadRadius, y + loadRadius, z + loadRadius))
+        if (_world.IsRegionLoaded(x - loadRadius, y - loadRadius, z - loadRadius, x + loadRadius, y + loadRadius, z + loadRadius))
         {
             if (instantBlockUpdateEnabled)
             {
-                int currentBlockId = _world.getBlockId(x, y, z);
+                int currentBlockId = _world.GetBlockId(x, y, z);
                 if (currentBlockId == blockId && currentBlockId > 0)
                 {
                     Block.Blocks[currentBlockId].onTick(_world, x, y, z, _world.random);
@@ -60,7 +60,7 @@ public class WorldTickScheduler
             var blockUpdate = _scheduledUpdates.Dequeue();
 
             const byte loadRadius = 8;
-            if (_world.isRegionLoaded(
+            if (_world.IsRegionLoaded(
                     blockUpdate.X - loadRadius,
                     blockUpdate.Y - loadRadius,
                     blockUpdate.Z - loadRadius,
@@ -70,7 +70,7 @@ public class WorldTickScheduler
                 )
                )
             {
-                int currentBlockId = _world.getBlockId(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
+                int currentBlockId = _world.GetBlockId(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
                 if (currentBlockId == blockUpdate.BlockId && currentBlockId > 0)
                 {
                     Block.Blocks[currentBlockId].onTick(_world, blockUpdate.X, blockUpdate.Y, blockUpdate.Z, _world.random);

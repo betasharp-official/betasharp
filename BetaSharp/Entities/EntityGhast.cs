@@ -79,7 +79,7 @@ public class EntityGhast : EntityFlying, Monster
 
         if (targetedEntity == null || aggroCooldown-- <= 0)
         {
-            targetedEntity = world.getClosestPlayer(this, 100.0D);
+            targetedEntity = world.GetClosestPlayer(this, 100.0D);
             if (targetedEntity != null)
             {
                 aggroCooldown = 20;
@@ -97,13 +97,13 @@ public class EntityGhast : EntityFlying, Monster
             {
                 if (attackCounter == 10)
                 {
-                    world.playSound(this, "mob.ghast.charge", getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
+                    world.PlaySound(this, "mob.ghast.charge", getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
                 }
 
                 ++attackCounter;
                 if (attackCounter == 20)
                 {
-                    world.playSound(this, "mob.ghast.fireball", getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
+                    world.PlaySound(this, "mob.ghast.fireball", getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
                     EntityFireball fireball = new EntityFireball(world, this, dx2, dy2, dz2);
                     double spawnOffset = 4.0D;
                     Vec3D lookDir = getLook(1.0F);

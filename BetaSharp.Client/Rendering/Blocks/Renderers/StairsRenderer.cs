@@ -8,7 +8,7 @@ public class StairsRenderer : IBlockRenderer
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
         bool hasRendered = false;
-        int direction = ctx.World.getBlockMeta(pos.x, pos.y, pos.z);
+        int direction = ctx.World.GetBlockMeta(pos.x, pos.y, pos.z);
 
         if (direction == 0) // Ascending East (Stairs face West)
         {

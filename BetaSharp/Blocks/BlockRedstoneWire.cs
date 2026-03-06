@@ -47,7 +47,7 @@ public class BlockRedstoneWire : Block
 
     public override bool canPlaceAt(World var1, int var2, int var3, int var4)
     {
-        return var1.shouldSuffocate(var2, var3 - 1, var4);
+        return var1.ShouldSuffocate(var2, var3 - 1, var4);
     }
 
     private void updateAndPropagateCurrentStrength(World world, int var2, int var3, int var4)
@@ -59,17 +59,17 @@ public class BlockRedstoneWire : Block
 
         foreach (BlockPos n in neighborsCopy)
         {
-            world.notifyNeighbors(n.x, n.y, n.z, id);
+            world.NotifyNeighbors(n.x, n.y, n.z, id);
         }
 
     }
 
     private void func_21030_a(World world, int var2, int var3, int var4, int var5, int var6, int var7, HashSet<BlockPos> neighbors)
     {
-        int var8 = world.getBlockMeta(var2, var3, var4);
+        int var8 = world.GetBlockMeta(var2, var3, var4);
         int var9 = 0;
         s_wiresProvidePower.Value = false;
-        bool var10 = world.isPowered(var2, var3, var4);
+        bool var10 = world.IsPowered(var2, var3, var4);
         s_wiresProvidePower.Value = true;
         int var11;
         int var12;
@@ -109,14 +109,14 @@ public class BlockRedstoneWire : Block
                     var9 = getMaxCurrentStrength(world, var12, var3, var13, var9);
                 }
 
-                if (world.shouldSuffocate(var12, var3, var13) && !world.shouldSuffocate(var2, var3 + 1, var4))
+                if (world.ShouldSuffocate(var12, var3, var13) && !world.ShouldSuffocate(var2, var3 + 1, var4))
                 {
                     if (var12 != var5 || var3 + 1 != var6 || var13 != var7)
                     {
                         var9 = getMaxCurrentStrength(world, var12, var3 + 1, var13, var9);
                     }
                 }
-                else if (!world.shouldSuffocate(var12, var3, var13) && (var12 != var5 || var3 - 1 != var6 || var13 != var7))
+                else if (!world.ShouldSuffocate(var12, var3, var13) && (var12 != var5 || var3 - 1 != var6 || var13 != var7))
                 {
                     var9 = getMaxCurrentStrength(world, var12, var3 - 1, var13, var9);
                 }
@@ -136,7 +136,7 @@ public class BlockRedstoneWire : Block
         {
             world.pauseTicking = true;
             world.setBlockMeta(var2, var3, var4, var9);
-            world.setBlocksDirty(var2, var3, var4, var2, var3, var4);
+            world.SetBlocksDirty(var2, var3, var4, var2, var3, var4);
             world.pauseTicking = false;
 
             for (var11 = 0; var11 < 4; ++var11)
@@ -164,14 +164,14 @@ public class BlockRedstoneWire : Block
                     ++var13;
                 }
 
-                if (world.shouldSuffocate(var12, var3, var13))
+                if (world.ShouldSuffocate(var12, var3, var13))
                 {
                     var14 += 2;
                 }
 
                 bool var15 = false;
                 int var16 = getMaxCurrentStrength(world, var12, var3, var13, -1);
-                var9 = world.getBlockMeta(var2, var3, var4);
+                var9 = world.GetBlockMeta(var2, var3, var4);
                 if (var9 > 0)
                 {
                     --var9;
@@ -183,7 +183,7 @@ public class BlockRedstoneWire : Block
                 }
 
                 var16 = getMaxCurrentStrength(world, var12, var14, var13, -1);
-                var9 = world.getBlockMeta(var2, var3, var4);
+                var9 = world.GetBlockMeta(var2, var3, var4);
                 if (var9 > 0)
                 {
                     --var9;
@@ -211,15 +211,15 @@ public class BlockRedstoneWire : Block
 
     private void notifyWireNeighborsOfNeighborChange(World var1, int var2, int var3, int var4)
     {
-        if (var1.getBlockId(var2, var3, var4) == id)
+        if (var1.GetBlockId(var2, var3, var4) == id)
         {
-            var1.notifyNeighbors(var2, var3, var4, id);
-            var1.notifyNeighbors(var2 - 1, var3, var4, id);
-            var1.notifyNeighbors(var2 + 1, var3, var4, id);
-            var1.notifyNeighbors(var2, var3, var4 - 1, id);
-            var1.notifyNeighbors(var2, var3, var4 + 1, id);
-            var1.notifyNeighbors(var2, var3 - 1, var4, id);
-            var1.notifyNeighbors(var2, var3 + 1, var4, id);
+            var1.NotifyNeighbors(var2, var3, var4, id);
+            var1.NotifyNeighbors(var2 - 1, var3, var4, id);
+            var1.NotifyNeighbors(var2 + 1, var3, var4, id);
+            var1.NotifyNeighbors(var2, var3, var4 - 1, id);
+            var1.NotifyNeighbors(var2, var3, var4 + 1, id);
+            var1.NotifyNeighbors(var2, var3 - 1, var4, id);
+            var1.NotifyNeighbors(var2, var3 + 1, var4, id);
         }
     }
 
@@ -229,13 +229,13 @@ public class BlockRedstoneWire : Block
         if (!world.IsRemote)
         {
             updateAndPropagateCurrentStrength(world, x, y, z);
-            world.notifyNeighbors(x, y + 1, z, id);
-            world.notifyNeighbors(x, y - 1, z, id);
+            world.NotifyNeighbors(x, y + 1, z, id);
+            world.NotifyNeighbors(x, y - 1, z, id);
             notifyWireNeighborsOfNeighborChange(world, x - 1, y, z);
             notifyWireNeighborsOfNeighborChange(world, x + 1, y, z);
             notifyWireNeighborsOfNeighborChange(world, x, y, z - 1);
             notifyWireNeighborsOfNeighborChange(world, x, y, z + 1);
-            if (world.shouldSuffocate(x - 1, y, z))
+            if (world.ShouldSuffocate(x - 1, y, z))
             {
                 notifyWireNeighborsOfNeighborChange(world, x - 1, y + 1, z);
             }
@@ -244,7 +244,7 @@ public class BlockRedstoneWire : Block
                 notifyWireNeighborsOfNeighborChange(world, x - 1, y - 1, z);
             }
 
-            if (world.shouldSuffocate(x + 1, y, z))
+            if (world.ShouldSuffocate(x + 1, y, z))
             {
                 notifyWireNeighborsOfNeighborChange(world, x + 1, y + 1, z);
             }
@@ -253,7 +253,7 @@ public class BlockRedstoneWire : Block
                 notifyWireNeighborsOfNeighborChange(world, x + 1, y - 1, z);
             }
 
-            if (world.shouldSuffocate(x, y, z - 1))
+            if (world.ShouldSuffocate(x, y, z - 1))
             {
                 notifyWireNeighborsOfNeighborChange(world, x, y + 1, z - 1);
             }
@@ -262,7 +262,7 @@ public class BlockRedstoneWire : Block
                 notifyWireNeighborsOfNeighborChange(world, x, y - 1, z - 1);
             }
 
-            if (world.shouldSuffocate(x, y, z + 1))
+            if (world.ShouldSuffocate(x, y, z + 1))
             {
                 notifyWireNeighborsOfNeighborChange(world, x, y + 1, z + 1);
             }
@@ -279,14 +279,14 @@ public class BlockRedstoneWire : Block
         base.onBreak(world, x, y, z);
         if (!world.IsRemote)
         {
-            world.notifyNeighbors(x, y + 1, z, id);
-            world.notifyNeighbors(x, y - 1, z, id);
+            world.NotifyNeighbors(x, y + 1, z, id);
+            world.NotifyNeighbors(x, y - 1, z, id);
             updateAndPropagateCurrentStrength(world, x, y, z);
             notifyWireNeighborsOfNeighborChange(world, x - 1, y, z);
             notifyWireNeighborsOfNeighborChange(world, x + 1, y, z);
             notifyWireNeighborsOfNeighborChange(world, x, y, z - 1);
             notifyWireNeighborsOfNeighborChange(world, x, y, z + 1);
-            if (world.shouldSuffocate(x - 1, y, z))
+            if (world.ShouldSuffocate(x - 1, y, z))
             {
                 notifyWireNeighborsOfNeighborChange(world, x - 1, y + 1, z);
             }
@@ -295,7 +295,7 @@ public class BlockRedstoneWire : Block
                 notifyWireNeighborsOfNeighborChange(world, x - 1, y - 1, z);
             }
 
-            if (world.shouldSuffocate(x + 1, y, z))
+            if (world.ShouldSuffocate(x + 1, y, z))
             {
                 notifyWireNeighborsOfNeighborChange(world, x + 1, y + 1, z);
             }
@@ -304,7 +304,7 @@ public class BlockRedstoneWire : Block
                 notifyWireNeighborsOfNeighborChange(world, x + 1, y - 1, z);
             }
 
-            if (world.shouldSuffocate(x, y, z - 1))
+            if (world.ShouldSuffocate(x, y, z - 1))
             {
                 notifyWireNeighborsOfNeighborChange(world, x, y + 1, z - 1);
             }
@@ -313,7 +313,7 @@ public class BlockRedstoneWire : Block
                 notifyWireNeighborsOfNeighborChange(world, x, y - 1, z - 1);
             }
 
-            if (world.shouldSuffocate(x, y, z + 1))
+            if (world.ShouldSuffocate(x, y, z + 1))
             {
                 notifyWireNeighborsOfNeighborChange(world, x, y + 1, z + 1);
             }
@@ -327,13 +327,13 @@ public class BlockRedstoneWire : Block
 
     private int getMaxCurrentStrength(World var1, int var2, int var3, int var4, int var5)
     {
-        if (var1.getBlockId(var2, var3, var4) != id)
+        if (var1.GetBlockId(var2, var3, var4) != id)
         {
             return var5;
         }
         else
         {
-            int var6 = var1.getBlockMeta(var2, var3, var4);
+            int var6 = var1.GetBlockMeta(var2, var3, var4);
             return var6 > var5 ? var6 : var5;
         }
     }
@@ -342,12 +342,12 @@ public class BlockRedstoneWire : Block
     {
         if (!var1.IsRemote)
         {
-            int var6 = var1.getBlockMeta(var2, var3, var4);
+            int var6 = var1.GetBlockMeta(var2, var3, var4);
             bool var7 = canPlaceAt(var1, var2, var3, var4);
             if (!var7)
             {
                 dropStacks(var1, var2, var3, var4, var6);
-                var1.setBlock(var2, var3, var4, 0);
+                var1.SetBlock(var2, var3, var4, 0);
             }
             else
             {
@@ -374,7 +374,7 @@ public class BlockRedstoneWire : Block
         {
             return false;
         }
-        else if (var1.getBlockMeta(var2, var3, var4) == 0)
+        else if (var1.GetBlockMeta(var2, var3, var4) == 0)
         {
             return false;
         }
@@ -384,28 +384,28 @@ public class BlockRedstoneWire : Block
         }
         else
         {
-            bool var6 = isPowerProviderOrWire(var1, var2 - 1, var3, var4, 1) || !var1.shouldSuffocate(var2 - 1, var3, var4) && isPowerProviderOrWire(var1, var2 - 1, var3 - 1, var4, -1);
-            bool var7 = isPowerProviderOrWire(var1, var2 + 1, var3, var4, 3) || !var1.shouldSuffocate(var2 + 1, var3, var4) && isPowerProviderOrWire(var1, var2 + 1, var3 - 1, var4, -1);
-            bool var8 = isPowerProviderOrWire(var1, var2, var3, var4 - 1, 2) || !var1.shouldSuffocate(var2, var3, var4 - 1) && isPowerProviderOrWire(var1, var2, var3 - 1, var4 - 1, -1);
-            bool var9 = isPowerProviderOrWire(var1, var2, var3, var4 + 1, 0) || !var1.shouldSuffocate(var2, var3, var4 + 1) && isPowerProviderOrWire(var1, var2, var3 - 1, var4 + 1, -1);
-            if (!var1.shouldSuffocate(var2, var3 + 1, var4))
+            bool var6 = isPowerProviderOrWire(var1, var2 - 1, var3, var4, 1) || !var1.ShouldSuffocate(var2 - 1, var3, var4) && isPowerProviderOrWire(var1, var2 - 1, var3 - 1, var4, -1);
+            bool var7 = isPowerProviderOrWire(var1, var2 + 1, var3, var4, 3) || !var1.ShouldSuffocate(var2 + 1, var3, var4) && isPowerProviderOrWire(var1, var2 + 1, var3 - 1, var4, -1);
+            bool var8 = isPowerProviderOrWire(var1, var2, var3, var4 - 1, 2) || !var1.ShouldSuffocate(var2, var3, var4 - 1) && isPowerProviderOrWire(var1, var2, var3 - 1, var4 - 1, -1);
+            bool var9 = isPowerProviderOrWire(var1, var2, var3, var4 + 1, 0) || !var1.ShouldSuffocate(var2, var3, var4 + 1) && isPowerProviderOrWire(var1, var2, var3 - 1, var4 + 1, -1);
+            if (!var1.ShouldSuffocate(var2, var3 + 1, var4))
             {
-                if (var1.shouldSuffocate(var2 - 1, var3, var4) && isPowerProviderOrWire(var1, var2 - 1, var3 + 1, var4, -1))
+                if (var1.ShouldSuffocate(var2 - 1, var3, var4) && isPowerProviderOrWire(var1, var2 - 1, var3 + 1, var4, -1))
                 {
                     var6 = true;
                 }
 
-                if (var1.shouldSuffocate(var2 + 1, var3, var4) && isPowerProviderOrWire(var1, var2 + 1, var3 + 1, var4, -1))
+                if (var1.ShouldSuffocate(var2 + 1, var3, var4) && isPowerProviderOrWire(var1, var2 + 1, var3 + 1, var4, -1))
                 {
                     var7 = true;
                 }
 
-                if (var1.shouldSuffocate(var2, var3, var4 - 1) && isPowerProviderOrWire(var1, var2, var3 + 1, var4 - 1, -1))
+                if (var1.ShouldSuffocate(var2, var3, var4 - 1) && isPowerProviderOrWire(var1, var2, var3 + 1, var4 - 1, -1))
                 {
                     var8 = true;
                 }
 
-                if (var1.shouldSuffocate(var2, var3, var4 + 1) && isPowerProviderOrWire(var1, var2, var3 + 1, var4 + 1, -1))
+                if (var1.ShouldSuffocate(var2, var3, var4 + 1) && isPowerProviderOrWire(var1, var2, var3 + 1, var4 + 1, -1))
                 {
                     var9 = true;
                 }
@@ -422,7 +422,7 @@ public class BlockRedstoneWire : Block
 
     public override void randomDisplayTick(World var1, int var2, int var3, int var4, JavaRandom var5)
     {
-        int var6 = var1.getBlockMeta(var2, var3, var4);
+        int var6 = var1.GetBlockMeta(var2, var3, var4);
         if (var6 > 0)
         {
             double var7 = (double)var2 + 0.5D + ((double)var5.NextFloat() - 0.5D) * 0.2D;
@@ -447,14 +447,14 @@ public class BlockRedstoneWire : Block
                 var16 = 0.0F;
             }
 
-            var1.addParticle("reddust", var7, var9, var11, (double)var14, (double)var15, (double)var16);
+            var1.AddParticle("reddust", var7, var9, var11, (double)var14, (double)var15, (double)var16);
         }
 
     }
 
     public static bool isPowerProviderOrWire(IBlockAccess var0, int var1, int var2, int var3, int var4)
     {
-        int var5 = var0.getBlockId(var1, var2, var3);
+        int var5 = var0.GetBlockId(var1, var2, var3);
         if (var5 == Block.RedstoneWire.id)
         {
             return true;
@@ -473,7 +473,7 @@ public class BlockRedstoneWire : Block
         }
         else
         {
-            int var6 = var0.getBlockMeta(var1, var2, var3);
+            int var6 = var0.GetBlockMeta(var1, var2, var3);
             return var4 == Facings.OPPOSITE[var6 & 3];
         }
     }

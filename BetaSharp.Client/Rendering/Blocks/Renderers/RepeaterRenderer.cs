@@ -7,7 +7,7 @@ public class RepeaterRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.World.getBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.World.GetBlockMeta(pos.x, pos.y, pos.z);
         int direction = metadata & 3;
         int delay = (metadata & 12) >> 2;
         // 1. Base Rendering

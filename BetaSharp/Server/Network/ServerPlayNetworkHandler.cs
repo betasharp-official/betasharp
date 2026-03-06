@@ -228,7 +228,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             }
 
             Box var25 = player.boundingBox.Expand(var21, var21, var21).Stretch(0.0, -0.55, 0.0);
-            if (server.flightEnabled || var2.isAnyBlockInBox(var25))
+            if (server.flightEnabled || var2.IsAnyBlockInBox(var25))
             {
                 floatingTime = 0;
             }
@@ -296,7 +296,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
                 }
             }
 
-            Vec3i var19 = var2.getSpawnPos();
+            Vec3i var19 = var2.GetSpawnPos();
             int var9 = (int)MathHelper.Abs(var5 - var19.X);
             int var20 = (int)MathHelper.Abs(var7 - var19.Z);
             if (var9 > var20)
@@ -318,7 +318,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             else if (packet.action == 2)
             {
                 player.interactionManager.continueMining(var5, var6, var7);
-                if (var2.getBlockId(var5, var6, var7) != 0)
+                if (var2.GetBlockId(var5, var6, var7) != 0)
                 {
                     player.networkHandler.sendPacket(new BlockUpdateS2CPacket(var5, var6, var7, var2));
                 }
@@ -359,7 +359,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             int var6 = packet.y;
             int var7 = packet.z;
             int var8 = packet.side;
-            Vec3i var9 = var2.getSpawnPos();
+            Vec3i var9 = var2.GetSpawnPos();
             int var10 = (int)MathHelper.Abs(var5 - var9.X);
             int var11 = (int)MathHelper.Abs(var7 - var9.Z);
             if (var10 > var11)
@@ -640,9 +640,9 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
     public override void handleUpdateSign(UpdateSignPacket packet)
     {
         ServerWorld var2 = server.getWorld(player.dimensionId);
-        if (var2.isPosLoaded(packet.x, packet.y, packet.z))
+        if (var2.IsPosLoaded(packet.x, packet.y, packet.z))
         {
-            BlockEntity var3 = var2.getBlockEntity(packet.x, packet.y, packet.z);
+            BlockEntity var3 = var2.GetBlockEntity(packet.x, packet.y, packet.z);
             if (var3 is BlockEntitySign var4)
             {
                 if (!var4.IsEditable())
@@ -689,7 +689,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 
                 var7.SetEditable(false);
                 var7.markDirty();
-                var2.blockUpdateEvent(var10, var11, var12);
+                var2.BlockUpdateEvent(var10, var11, var12);
             }
         }
     }

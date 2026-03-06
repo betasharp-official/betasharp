@@ -201,7 +201,7 @@ public abstract class Entity
                     var1 = 1.0F;
                 }
 
-                world.playSound(this, "random.splash", var1, 1.0F + (random.NextFloat() - random.NextFloat()) * 0.4F);
+                world.PlaySound(this, "random.splash", var1, 1.0F + (random.NextFloat() - random.NextFloat()) * 0.4F);
                 float var2 = (float)MathHelper.Floor(boundingBox.MinY);
 
                 int var3;
@@ -211,14 +211,14 @@ public abstract class Entity
                 {
                     var4 = (random.NextFloat() * 2.0F - 1.0F) * width;
                     var5 = (random.NextFloat() * 2.0F - 1.0F) * width;
-                    world.addParticle("bubble", x + (double)var4, (double)(var2 + 1.0F), z + (double)var5, velocityX, velocityY - (double)(random.NextFloat() * 0.2F), velocityZ);
+                    world.AddParticle("bubble", x + (double)var4, (double)(var2 + 1.0F), z + (double)var5, velocityX, velocityY - (double)(random.NextFloat() * 0.2F), velocityZ);
                 }
 
                 for (var3 = 0; (float)var3 < 1.0F + width * 20.0F; ++var3)
                 {
                     var4 = (random.NextFloat() * 2.0F - 1.0F) * width;
                     var5 = (random.NextFloat() * 2.0F - 1.0F) * width;
-                    world.addParticle("splash", x + (double)var4, (double)(var2 + 1.0F), z + (double)var5, velocityX, velocityY, velocityZ);
+                    world.AddParticle("splash", x + (double)var4, (double)(var2 + 1.0F), z + (double)var5, velocityX, velocityY, velocityZ);
                 }
             }
 
@@ -294,7 +294,7 @@ public abstract class Entity
     {
         Box box = boundingBox.Offset(x, y, z);
         var entitiesInbound = world.Entities.GetEntityCollisionsScratch(this, box);
-        return entitiesInbound.Count > 0 ? false : !world.isBoxSubmergedInFluid(box);
+        return entitiesInbound.Count > 0 ? false : !world.IsBoxSubmergedInFluid(box);
     }
 
     public virtual void move(double x, double y, double z)
@@ -533,24 +533,24 @@ public abstract class Entity
                     var38 = MathHelper.Floor(this.x);
                     var26 = MathHelper.Floor(this.y - (double)0.2F - (double)standingEyeHeight);
                     var39 = MathHelper.Floor(this.z);
-                    var28 = world.getBlockId(var38, var26, var39);
-                    if (world.getBlockId(var38, var26 - 1, var39) == Block.Fence.id)
+                    var28 = world.GetBlockId(var38, var26, var39);
+                    if (world.GetBlockId(var38, var26 - 1, var39) == Block.Fence.id)
                     {
-                        var28 = world.getBlockId(var38, var26 - 1, var39);
+                        var28 = world.GetBlockId(var38, var26 - 1, var39);
                     }
 
                     if (horizontalSpeed > (float)nextStepSoundDistance && var28 > 0)
                     {
                         ++nextStepSoundDistance;
                         BlockSoundGroup soundGroup = Block.Blocks[var28].soundGroup;
-                        if (world.getBlockId(var38, var26 + 1, var39) == Block.Snow.id)
+                        if (world.GetBlockId(var38, var26 + 1, var39) == Block.Snow.id)
                         {
                             soundGroup = Block.Snow.soundGroup;
-                            world.playSound(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
+                            world.PlaySound(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
                         }
                         else if (!Block.Blocks[var28].material.IsFluid)
                         {
-                            world.playSound(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
+                            world.PlaySound(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
                         }
 
                         Block.Blocks[var28].onSteppedOn(world, var38, var26, var39, this);
@@ -564,7 +564,7 @@ public abstract class Entity
             var28 = MathHelper.Floor(boundingBox.MaxX - 0.001D);
             int var40 = MathHelper.Floor(boundingBox.MaxY - 0.001D);
             int var30 = MathHelper.Floor(boundingBox.MaxZ - 0.001D);
-            if (world.isRegionLoaded(var38, var26, var39, var28, var40, var30))
+            if (world.IsRegionLoaded(var38, var26, var39, var28, var40, var30))
             {
                 for (int var31 = var38; var31 <= var28; ++var31)
                 {
@@ -572,7 +572,7 @@ public abstract class Entity
                     {
                         for (int var33 = var39; var33 <= var30; ++var33)
                         {
-                            int var34 = world.getBlockId(var31, var32, var33);
+                            int var34 = world.GetBlockId(var31, var32, var33);
                             if (var34 > 0)
                             {
                                 Block.Blocks[var34].onEntityCollision(world, var31, var32, var33, this);
@@ -583,7 +583,7 @@ public abstract class Entity
             }
 
             bool var42 = isWet();
-            if (world.isFireOrLavaInBox(boundingBox.Contract(0.001D, 0.001D, 0.001D)))
+            if (world.IsFireOrLavaInBox(boundingBox.Contract(0.001D, 0.001D, 0.001D)))
             {
                 damage(1);
                 if (!var42)
@@ -602,7 +602,7 @@ public abstract class Entity
 
             if (var42 && fireTicks > 0)
             {
-                world.playSound(this, "random.fizz", 0.7F, 1.6F + (random.NextFloat() - random.NextFloat()) * 0.4F);
+                world.PlaySound(this, "random.fizz", 0.7F, 1.6F + (random.NextFloat() - random.NextFloat()) * 0.4F);
                 fireTicks = -fireImmunityTicks;
             }
 
@@ -666,7 +666,7 @@ public abstract class Entity
 
     public virtual bool checkWaterCollisions()
     {
-        return world.updateMovementInFluid(boundingBox.Expand(0.0D, (double)-0.4F, 0.0D).Contract(0.001D, 0.001D, 0.001D), Material.Water, this);
+        return world.UpdateMovementInFluid(boundingBox.Expand(0.0D, (double)-0.4F, 0.0D).Contract(0.001D, 0.001D, 0.001D), Material.Water, this);
     }
 
     public bool isInFluid(Material var1)
@@ -675,10 +675,10 @@ public abstract class Entity
         int var4 = MathHelper.Floor(x);
         int var5 = MathHelper.Floor((float)MathHelper.Floor(var2));
         int var6 = MathHelper.Floor(z);
-        int var7 = world.getBlockId(var4, var5, var6);
+        int var7 = world.GetBlockId(var4, var5, var6);
         if (var7 != 0 && Block.Blocks[var7].material == var1)
         {
-            float var8 = BlockFluid.getFluidHeightFromMeta(world.getBlockMeta(var4, var5, var6)) - 1.0F / 9.0F;
+            float var8 = BlockFluid.getFluidHeightFromMeta(world.GetBlockMeta(var4, var5, var6)) - 1.0F / 9.0F;
             float var9 = (float)(var5 + 1) - var8;
             return var2 < (double)var9;
         }
@@ -695,7 +695,7 @@ public abstract class Entity
 
     public bool isTouchingLava()
     {
-        return world.isMaterialInBox(boundingBox.Expand((double)-0.1F, (double)-0.4F, (double)-0.1F), Material.Lava);
+        return world.IsMaterialInBox(boundingBox.Expand((double)-0.1F, (double)-0.4F, (double)-0.1F), Material.Lava);
     }
 
     public void moveNonSolid(float strafe, float forward, float speed)
@@ -735,9 +735,9 @@ public abstract class Entity
         minY = Math.Min(127, Math.Max(0, minY));
         maxY = Math.Min(127, Math.Max(0, maxY));
 
-        if (world.isRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
+        if (world.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
         {
-            float var7 = world.getLuminance(var2, var5, var6);
+            float var7 = world.GetLuminance(var2, var5, var6);
             if (var7 < minBrightness)
             {
                 var7 = minBrightness;
@@ -1050,7 +1050,7 @@ public abstract class Entity
             int var5 = MathHelper.Floor(x + (double)var2);
             int var6 = MathHelper.Floor(y + (double)getEyeHeight() + (double)var3);
             int var7 = MathHelper.Floor(z + (double)var4);
-            if (world.shouldSuffocate(var5, var6, var7))
+            if (world.ShouldSuffocate(var5, var6, var7))
             {
                 return true;
             }
@@ -1318,14 +1318,14 @@ public abstract class Entity
         double fracX = x - (double)floorX;
         double fracY = y - (double)floorY;
         double fracZ = z - (double)floorZ;
-        if (world.shouldSuffocate(floorX, floorY, floorZ))
+        if (world.ShouldSuffocate(floorX, floorY, floorZ))
         {
-            bool canPushWest = !world.shouldSuffocate(floorX - 1, floorY, floorZ);
-            bool canPushEast = !world.shouldSuffocate(floorX + 1, floorY, floorZ);
-            bool canPushDown = !world.shouldSuffocate(floorX, floorY - 1, floorZ);
-            bool canPushUp = !world.shouldSuffocate(floorX, floorY + 1, floorZ);
-            bool canPushNorth = !world.shouldSuffocate(floorX, floorY, floorZ - 1);
-            bool canPushSouth = !world.shouldSuffocate(floorX, floorY, floorZ + 1);
+            bool canPushWest = !world.ShouldSuffocate(floorX - 1, floorY, floorZ);
+            bool canPushEast = !world.ShouldSuffocate(floorX + 1, floorY, floorZ);
+            bool canPushDown = !world.ShouldSuffocate(floorX, floorY - 1, floorZ);
+            bool canPushUp = !world.ShouldSuffocate(floorX, floorY + 1, floorZ);
+            bool canPushNorth = !world.ShouldSuffocate(floorX, floorY, floorZ - 1);
+            bool canPushSouth = !world.ShouldSuffocate(floorX, floorY, floorZ + 1);
             int pushDirection = -1;
             double closestEdgeDistance = 9999.0D;
             if (canPushWest && fracX < closestEdgeDistance)

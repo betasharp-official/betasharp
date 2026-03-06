@@ -36,7 +36,7 @@ internal class BlockSign : BlockWithEntity
     {
         if (!_standing)
         {
-            int facing = iBlockAccess.getBlockMeta(x, y, z);
+            int facing = iBlockAccess.GetBlockMeta(x, y, z);
             float topOffset = 9.0F / 32.0F;
             float bottomOffset = 25.0F / 32.0F;
             float minExtent = 0.0F;
@@ -102,31 +102,31 @@ internal class BlockSign : BlockWithEntity
         bool shouldBreak = false;
         if (_standing)
         {
-            if (!world.getMaterial(x, y - 1, z).IsSolid)
+            if (!world.GetMaterial(x, y - 1, z).IsSolid)
             {
                 shouldBreak = true;
             }
         }
         else
         {
-            int facing = world.getBlockMeta(x, y, z);
+            int facing = world.GetBlockMeta(x, y, z);
             shouldBreak = true;
-            if (facing == 2 && world.getMaterial(x, y, z + 1).IsSolid)
+            if (facing == 2 && world.GetMaterial(x, y, z + 1).IsSolid)
             {
                 shouldBreak = false;
             }
 
-            if (facing == 3 && world.getMaterial(x, y, z - 1).IsSolid)
+            if (facing == 3 && world.GetMaterial(x, y, z - 1).IsSolid)
             {
                 shouldBreak = false;
             }
 
-            if (facing == 4 && world.getMaterial(x + 1, y, z).IsSolid)
+            if (facing == 4 && world.GetMaterial(x + 1, y, z).IsSolid)
             {
                 shouldBreak = false;
             }
 
-            if (facing == 5 && world.getMaterial(x - 1, y, z).IsSolid)
+            if (facing == 5 && world.GetMaterial(x - 1, y, z).IsSolid)
             {
                 shouldBreak = false;
             }
@@ -134,8 +134,8 @@ internal class BlockSign : BlockWithEntity
 
         if (shouldBreak)
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            dropStacks(world, x, y, z, world.GetBlockMeta(x, y, z));
+            world.SetBlock(x, y, z, 0);
         }
 
         base.neighborUpdate(world, x, y, z, id);

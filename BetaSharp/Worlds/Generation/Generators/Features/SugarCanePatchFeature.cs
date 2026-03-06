@@ -14,15 +14,15 @@ internal class SugarCanePatchFeature : Feature
             int genX = x + rand.NextInt(4) - rand.NextInt(4);
             int genZ = z + rand.NextInt(4) - rand.NextInt(4);
 
-            if (!world.isAir(genX, y, genZ))
+            if (!world.IsAir(genX, y, genZ))
             {
                 continue;
             }
 
-            bool hasWaterNearby = world.getMaterial(genX - 1, y - 1, genZ) == Material.Water ||
-                                  world.getMaterial(genX + 1, y - 1, genZ) == Material.Water ||
-                                  world.getMaterial(genX, y - 1, genZ - 1) == Material.Water ||
-                                  world.getMaterial(genX, y - 1, genZ + 1) == Material.Water;
+            bool hasWaterNearby = world.GetMaterial(genX - 1, y - 1, genZ) == Material.Water ||
+                                  world.GetMaterial(genX + 1, y - 1, genZ) == Material.Water ||
+                                  world.GetMaterial(genX, y - 1, genZ - 1) == Material.Water ||
+                                  world.GetMaterial(genX, y - 1, genZ + 1) == Material.Water;
 
             if (hasWaterNearby)
             {

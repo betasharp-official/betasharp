@@ -31,7 +31,7 @@ internal class BlockLog : Block
     {
         sbyte searchRadius = 4;
         int regionExtent = searchRadius + 1;
-        if (world.isRegionLoaded(x - regionExtent, y - regionExtent, z - regionExtent, x + regionExtent, y + regionExtent, z + regionExtent))
+        if (world.IsRegionLoaded(x - regionExtent, y - regionExtent, z - regionExtent, x + regionExtent, y + regionExtent, z + regionExtent))
         {
             for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
             {
@@ -39,10 +39,10 @@ internal class BlockLog : Block
                 {
                     for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                     {
-                        int neighborBlockId = world.getBlockId(x + offsetX, y + offsetY, z + offsetZ);
+                        int neighborBlockId = world.GetBlockId(x + offsetX, y + offsetY, z + offsetZ);
                         if (neighborBlockId == Block.Leaves.id)
                         {
-                            int leavesMeta = world.getBlockMeta(x + offsetX, y + offsetY, z + offsetZ);
+                            int leavesMeta = world.GetBlockMeta(x + offsetX, y + offsetY, z + offsetZ);
                             if ((leavesMeta & 8) == 0)
                             {
                                 world.SetBlockMetaWithoutNotifyingNeighbors(x + offsetX, y + offsetY, z + offsetZ, leavesMeta | 8);

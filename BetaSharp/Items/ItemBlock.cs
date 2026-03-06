@@ -17,7 +17,7 @@ internal class ItemBlock : Item
 
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
     {
-        if (world.getBlockId(x, y, z) == Block.Snow.id)
+        if (world.GetBlockId(x, y, z) == Block.Snow.id)
         {
             meta = 0;
         }
@@ -62,14 +62,14 @@ internal class ItemBlock : Item
         {
             return false;
         }
-        else if (world.canPlace(blockID, x, y, z, false, meta))
+        else if (world.CanPlace(blockID, x, y, z, false, meta))
         {
             Block block = Block.Blocks[blockID];
-            if (world.setBlock(x, y, z, blockID, getPlacementMetadata(itemStack.getDamage())))
+            if (world.SetBlock(x, y, z, blockID, getPlacementMetadata(itemStack.getDamage())))
             {
                 Block.Blocks[blockID].onPlaced(world, x, y, z, meta);
                 Block.Blocks[blockID].onPlaced(world, x, y, z, entityPlayer);
-                world.playSound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), block.soundGroup.StepSound, (block.soundGroup.Volume + 1.0F) / 2.0F, block.soundGroup.Pitch * 0.8F);
+                world.PlaySound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), block.soundGroup.StepSound, (block.soundGroup.Volume + 1.0F) / 2.0F, block.soundGroup.Pitch * 0.8F);
                 --itemStack.count;
             }
 

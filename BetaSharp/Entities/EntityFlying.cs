@@ -38,7 +38,7 @@ public class EntityFlying : EntityLiving
             if (onGround)
             {
                 friction = 546.0F * 0.1F * 0.1F * 0.1F;
-                int groundBlockId = world.getBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
+                int groundBlockId = world.GetBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
                 if (groundBlockId > 0)
                 {
                     friction = Block.Blocks[groundBlockId].slipperiness * 0.91F;
@@ -51,7 +51,7 @@ public class EntityFlying : EntityLiving
             if (onGround)
             {
                 friction = 546.0F * 0.1F * 0.1F * 0.1F;
-                int groundBlockId = world.getBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
+                int groundBlockId = world.GetBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
                 if (groundBlockId > 0)
                 {
                     friction = Block.Blocks[groundBlockId].slipperiness * 0.91F;

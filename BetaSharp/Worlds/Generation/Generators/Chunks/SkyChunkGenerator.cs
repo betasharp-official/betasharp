@@ -56,8 +56,8 @@ internal class SkyChunkGenerator : ChunkSource
         _random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
         byte[] blocks = new byte[-short.MinValue];
         Chunk chunk = new(_world, blocks, chunkX, chunkZ);
-        _biomes = _world.getBiomeSource().GetBiomesInArea(_biomes, chunkX * 16, chunkZ * 16, 16, 16);
-        double[] temperatureMap = _world.getBiomeSource().TemperatureMap;
+        _biomes = _world.GetBiomeSource().GetBiomesInArea(_biomes, chunkX * 16, chunkZ * 16, 16, 16);
+        double[] temperatureMap = _world.GetBiomeSource().TemperatureMap;
         BuildTerrain(chunkX, chunkZ, blocks, _biomes, temperatureMap);
         BuildSurfaces(chunkX, chunkZ, blocks, _biomes);
         _carver.carve(this, _world, chunkX, chunkZ, blocks);
@@ -72,11 +72,11 @@ internal class SkyChunkGenerator : ChunkSource
         BlockSand.fallInstantly = true;
         int blockX = chunkX * 16;
         int blockZ = chunkZ * 16;
-        Biome chunkBiome = _world.getBiomeSource().GetBiome(blockX + 16, blockZ + 16);
-        _random.SetSeed(_world.getSeed());
+        Biome chunkBiome = _world.GetBiomeSource().GetBiome(blockX + 16, blockZ + 16);
+        _random.SetSeed(_world.GetSeed());
         long xOffset = _random.NextLong() / 2L * 2L + 1L;
         long zOffset = _random.NextLong() / 2L * 2L + 1L;
-        _random.SetSeed((chunkX * xOffset + chunkZ * zOffset) ^ _world.getSeed());
+        _random.SetSeed((chunkX * xOffset + chunkZ * zOffset) ^ _world.GetSeed());
         double fraction = 0.25D;
         int featureX;
         int featureY;
@@ -231,7 +231,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureZ = blockZ + _random.NextInt(16) + 8;
             Feature treeFeature = chunkBiome.GetRandomWorldGenForTrees(_random);
             treeFeature.prepare(1.0D, 1.0D, 1.0D);
-            treeFeature.Generate(_world, _random, featureX, _world.getTopY(featureX, featureZ), featureZ);
+            treeFeature.Generate(_world, _random, featureX, _world.GetTopY(featureX, featureZ), featureZ);
         }
 
         for (int i = 0; i < 2; ++i)
@@ -312,7 +312,7 @@ internal class SkyChunkGenerator : ChunkSource
             new SpringFeature(Block.FlowingLava.id).Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        _temperatures = _world.getBiomeSource().GetTemperatures(_temperatures, blockX + 8, blockZ + 8, 16, 16);
+        _temperatures = _world.GetBiomeSource().GetTemperatures(_temperatures, blockX + 8, blockZ + 8, 16, 16);
 
         for (int x = blockX + 8; x < blockX + 8 + 16; ++x)
         {
@@ -320,12 +320,12 @@ internal class SkyChunkGenerator : ChunkSource
             {
                 int offsetX = x - (blockX + 8);
                 int offsetZ = z - (blockZ + 8);
-                int topBlockY = _world.getTopSolidBlockY(x, z);
+                int topBlockY = _world.GetTopSolidBlockY(x, z);
                 double temperatureSample = _temperatures[offsetX * 16 + offsetZ] - (topBlockY - 64) / 64.0D * 0.3D;
 
-                if (temperatureSample < 0.5D && topBlockY > 0 && topBlockY < 128 && _world.isAir(x, topBlockY, z) && _world.getMaterial(x, topBlockY - 1, z).BlocksMovement && _world.getMaterial(x, topBlockY - 1, z) != Material.Ice)
+                if (temperatureSample < 0.5D && topBlockY > 0 && topBlockY < 128 && _world.IsAir(x, topBlockY, z) && _world.GetMaterial(x, topBlockY - 1, z).BlocksMovement && _world.GetMaterial(x, topBlockY - 1, z) != Material.Ice)
                 {
-                    _world.setBlock(x, topBlockY, z, Block.Snow.id);
+                    _world.SetBlock(x, topBlockY, z, Block.Snow.id);
                 }
             }
         }
@@ -478,8 +478,8 @@ internal class SkyChunkGenerator : ChunkSource
 
         double horizontalScale = 684.412D;
         double verticalScale = 684.412D;
-        double[] temperatureBuffer = _world.getBiomeSource().TemperatureMap;
-        double[] downfallBuffer = _world.getBiomeSource().DownfallMap;
+        double[] temperatureBuffer = _world.GetBiomeSource().TemperatureMap;
+        double[] downfallBuffer = _world.GetBiomeSource().DownfallMap;
         _scaleNoiseBuffer = _floatingIslandScale.create(_scaleNoiseBuffer, x, z, sizeX, sizeZ, 1.121D, 1.121D, 0.5D);
         _depthNoiseBuffer = _floatingIslandNoise.create(_depthNoiseBuffer, x, z, sizeX, sizeZ, 200.0D, 200.0D, 0.5D);
         horizontalScale *= 2.0D;

@@ -189,7 +189,7 @@ public class EntityFish : Entity
 
             if (inGround)
             {
-                int var19 = world.getBlockId(xTile, yTile, zTile);
+                int var19 = world.GetBlockId(xTile, yTile, zTile);
                 if (var19 == inTile)
                 {
                     ++ticksInGround;
@@ -215,7 +215,7 @@ public class EntityFish : Entity
 
             Vec3D var20 = new Vec3D(x, y, z);
             Vec3D var2 = new Vec3D(x + base.velocityX, y + base.velocityY, z + base.velocityZ);
-            HitResult var3 = world.raycast(var20, var2);
+            HitResult var3 = world.Raycast(var20, var2);
             var20 = new Vec3D(x, y, z);
             var2 = new Vec3D(x + base.velocityX, y + base.velocityY, z + base.velocityZ);
             if (var3.Type != HitResultType.MISS)
@@ -224,7 +224,7 @@ public class EntityFish : Entity
             }
 
             Entity var4 = null;
-            var var5 = world.getEntities(this, boundingBox.Stretch(base.velocityX, base.velocityY, base.velocityZ).Expand(1.0D, 1.0D, 1.0D));
+            var var5 = world.Entities.GetEntities(this, boundingBox.Stretch(base.velocityX, base.velocityY, base.velocityZ).Expand(1.0D, 1.0D, 1.0D));
             double var6 = 0.0D;
 
             double var13;
@@ -309,7 +309,7 @@ public class EntityFish : Entity
                     double var14 = boundingBox.MinY + (boundingBox.MaxY - boundingBox.MinY) * (double)(var28 + 0) / (double)var26 - 0.125D + 0.125D;
                     double var16 = boundingBox.MinY + (boundingBox.MaxY - boundingBox.MinY) * (double)(var28 + 1) / (double)var26 - 0.125D + 0.125D;
                     Box var18 = new Box(boundingBox.MinX, var14, boundingBox.MinZ, boundingBox.MaxX, var16, boundingBox.MaxZ);
-                    if (world.isFluidInBox(var18, Material.Water))
+                    if (world.IsFluidInBox(var18, Material.Water))
                     {
                         var27 += 1.0D / (double)var26;
                     }
@@ -333,7 +333,7 @@ public class EntityFish : Entity
                         {
                             ticksCatchable = random.NextInt(30) + 10;
                             base.velocityY -= (double)0.2F;
-                            world.playSound(this, "random.splash", 0.25F, 1.0F + (random.NextFloat() - random.NextFloat()) * 0.4F);
+                            world.PlaySound(this, "random.splash", 0.25F, 1.0F + (random.NextFloat() - random.NextFloat()) * 0.4F);
                             float var30 = (float)MathHelper.Floor(boundingBox.MinY);
 
                             int var15;
@@ -343,14 +343,14 @@ public class EntityFish : Entity
                             {
                                 var31 = (random.NextFloat() * 2.0F - 1.0F) * width;
                                 var17 = (random.NextFloat() * 2.0F - 1.0F) * width;
-                                world.addParticle("bubble", x + (double)var31, (double)(var30 + 1.0F), z + (double)var17, base.velocityX, base.velocityY - (double)(random.NextFloat() * 0.2F), base.velocityZ);
+                                world.AddParticle("bubble", x + (double)var31, (double)(var30 + 1.0F), z + (double)var17, base.velocityX, base.velocityY - (double)(random.NextFloat() * 0.2F), base.velocityZ);
                             }
 
                             for (var15 = 0; (float)var15 < 1.0F + width * 20.0F; ++var15)
                             {
                                 var31 = (random.NextFloat() * 2.0F - 1.0F) * width;
                                 var17 = (random.NextFloat() * 2.0F - 1.0F) * width;
-                                world.addParticle("splash", x + (double)var31, (double)(var30 + 1.0F), z + (double)var17, base.velocityX, base.velocityY, base.velocityZ);
+                                world.AddParticle("splash", x + (double)var31, (double)(var30 + 1.0F), z + (double)var17, base.velocityX, base.velocityY, base.velocityZ);
                             }
                         }
                     }

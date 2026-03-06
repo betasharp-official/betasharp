@@ -30,7 +30,7 @@ public class ReedRenderer : IBlockRenderer
             renderZ += (((hash >> 24 & 15L) / 15.0F) - 0.5F) * 0.5F;
         }
 
-        RenderCrossedSquares(block, ctx.World.getBlockMeta(pos.x, pos.y, pos.z), renderX, renderY, renderZ, ref ctx);
+        RenderCrossedSquares(block, ctx.World.GetBlockMeta(pos.x, pos.y, pos.z), renderX, renderY, renderZ, ref ctx);
         return true;
     }
 

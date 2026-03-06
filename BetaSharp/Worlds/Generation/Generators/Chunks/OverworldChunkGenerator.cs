@@ -79,7 +79,7 @@ internal class OverworldChunkGenerator : ChunkSource
         _floatingIslandNoise = new OctavePerlinNoiseSampler(_random, 16);
         _forestNoise = new OctavePerlinNoiseSampler(_random, 8);
         _seed = seed;
-        _biomeSource = world.getBiomeSource();
+        _biomeSource = world.GetBiomeSource();
         InitFeatures();
     }
 
@@ -143,10 +143,10 @@ internal class OverworldChunkGenerator : ChunkSource
         int blockX = chunkX * 16;
         int blockZ = chunkZ * 16;
         Biome chunkBiome = _biomeSource.GetBiome(blockX + 16, blockZ + 16);
-        _random.SetSeed(_world.getSeed());
+        _random.SetSeed(_world.GetSeed());
         long xOffset = _random.NextLong() / 2L * 2L + 1L;
         long zOffset = _random.NextLong() / 2L * 2L + 1L;
-        _random.SetSeed((chunkX * xOffset + chunkZ * zOffset) ^ _world.getSeed());
+        _random.SetSeed((chunkX * xOffset + chunkZ * zOffset) ^ _world.GetSeed());
         double fraction;
         int featureX;
         int featureY;
@@ -313,7 +313,7 @@ internal class OverworldChunkGenerator : ChunkSource
             featureZ = blockZ + _random.NextInt(16) + 8;
             Feature treeFeature = chunkBiome.GetRandomWorldGenForTrees(_random);
             treeFeature.prepare(1.0D, 1.0D, 1.0D);
-            treeFeature.Generate(_world, _random, featureX, _world.getTopY(featureX, featureZ), featureZ);
+            treeFeature.Generate(_world, _random, featureX, _world.GetTopY(featureX, featureZ), featureZ);
         }
 
         // Choose an appropriate amount of Dandelions
@@ -492,11 +492,11 @@ internal class OverworldChunkGenerator : ChunkSource
             {
                 int offsetX = x - (blockX + 8);
                 int offsetZ = z - (blockZ + 8);
-                int var22 = _world.getTopSolidBlockY(x, z);
+                int var22 = _world.GetTopSolidBlockY(x, z);
                 double temperatureSample = _temperatures[offsetX * 16 + offsetZ] - (var22 - 64) / 64.0D * 0.3D;
-                if (temperatureSample < 0.5D && var22 > 0 && var22 < 128 && _world.isAir(x, var22, z) && _world.getMaterial(x, var22 - 1, z).BlocksMovement && _world.getMaterial(x, var22 - 1, z) != Material.Ice)
+                if (temperatureSample < 0.5D && var22 > 0 && var22 < 128 && _world.IsAir(x, var22, z) && _world.GetMaterial(x, var22 - 1, z).BlocksMovement && _world.GetMaterial(x, var22 - 1, z) != Material.Ice)
                 {
-                    _world.setBlock(x, var22, z, Block.Snow.id);
+                    _world.SetBlock(x, var22, z, Block.Snow.id);
                 }
             }
         }

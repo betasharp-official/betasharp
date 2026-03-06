@@ -19,7 +19,7 @@ internal class BlockStationary : BlockFluid
     public override void neighborUpdate(World world, int x, int y, int z, int id)
     {
         base.neighborUpdate(world, x, y, z, id);
-        if (world.getBlockId(x, y, z) == base.id)
+        if (world.GetBlockId(x, y, z) == base.id)
         {
             convertToFlowing(world, x, y, z);
         }
@@ -28,10 +28,10 @@ internal class BlockStationary : BlockFluid
 
     private void convertToFlowing(World world, int x, int y, int z)
     {
-        int meta = world.getBlockMeta(x, y, z);
+        int meta = world.GetBlockMeta(x, y, z);
         world.pauseTicking = true;
         world.SetBlockWithoutNotifyingNeighbors(x, y, z, id - 1, meta);
-        world.setBlocksDirty(x, y, z, x, y, z);
+        world.SetBlocksDirty(x, y, z, x, y, z);
         world.TickScheduler.ScheduleBlockUpdate(x, y, z, id - 1, getTickRate());
         world.pauseTicking = false;
     }
@@ -47,12 +47,12 @@ internal class BlockStationary : BlockFluid
                 x += random.NextInt(3) - 1;
                 ++y;
                 z += random.NextInt(3) - 1;
-                int neighborBlockId = world.getBlockId(x, y, z);
+                int neighborBlockId = world.GetBlockId(x, y, z);
                 if (neighborBlockId == 0)
                 {
                     if (isFlammable(world, x - 1, y, z) || isFlammable(world, x + 1, y, z) || isFlammable(world, x, y, z - 1) || isFlammable(world, x, y, z + 1) || isFlammable(world, x, y - 1, z) || isFlammable(world, x, y + 1, z))
                     {
-                        world.setBlock(x, y, z, Block.Fire.id);
+                        world.SetBlock(x, y, z, Block.Fire.id);
                         return;
                     }
                 }
@@ -67,6 +67,6 @@ internal class BlockStationary : BlockFluid
 
     private bool isFlammable(World world, int x, int y, int z)
     {
-        return world.getMaterial(x, y, z).IsBurnable;
+        return world.GetMaterial(x, y, z).IsBurnable;
     }
 }

@@ -27,10 +27,10 @@ internal class BlockIce : BlockBreakable
     public override void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta)
     {
         base.afterBreak(world, player, x, y, z, meta);
-        Material materialBelow = world.getMaterial(x, y - 1, z);
+        Material materialBelow = world.GetMaterial(x, y - 1, z);
         if (materialBelow.BlocksMovement || materialBelow.IsFluid)
         {
-            world.setBlock(x, y, z, Block.FlowingWater.id);
+            world.SetBlock(x, y, z, Block.FlowingWater.id);
         }
 
     }
@@ -42,10 +42,10 @@ internal class BlockIce : BlockBreakable
 
     public override void onTick(World world, int x, int y, int z, JavaRandom random)
     {
-        if (world.getBrightness(LightType.Block, x, y, z) > 11 - Block.BlockLightOpacity[id])
+        if (world.GetBrightness(LightType.Block, x, y, z) > 11 - Block.BlockLightOpacity[id])
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, Block.Water.id);
+            dropStacks(world, x, y, z, world.GetBlockMeta(x, y, z));
+            world.SetBlock(x, y, z, Block.Water.id);
         }
 
     }

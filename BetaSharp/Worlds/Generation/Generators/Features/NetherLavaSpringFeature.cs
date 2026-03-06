@@ -12,72 +12,72 @@ internal class NetherLavaSpringFeature : Feature
 
     public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
     {
-        if (world.getBlockId(x, y + 1, z) != Block.Netherrack.id)
+        if (world.GetBlockId(x, y + 1, z) != Block.Netherrack.id)
         {
             return false;
         }
 
-        if (world.getBlockId(x, y, z) != 0 && world.getBlockId(x, y, z) != Block.Netherrack.id)
+        if (world.GetBlockId(x, y, z) != 0 && world.GetBlockId(x, y, z) != Block.Netherrack.id)
         {
             return false;
         }
 
         int netherrackNeighbors = 0;
-        if (world.getBlockId(x - 1, y, z) == Block.Netherrack.id)
+        if (world.GetBlockId(x - 1, y, z) == Block.Netherrack.id)
         {
             ++netherrackNeighbors;
         }
 
-        if (world.getBlockId(x + 1, y, z) == Block.Netherrack.id)
+        if (world.GetBlockId(x + 1, y, z) == Block.Netherrack.id)
         {
             ++netherrackNeighbors;
         }
 
-        if (world.getBlockId(x, y, z - 1) == Block.Netherrack.id)
+        if (world.GetBlockId(x, y, z - 1) == Block.Netherrack.id)
         {
             ++netherrackNeighbors;
         }
 
-        if (world.getBlockId(x, y, z + 1) == Block.Netherrack.id)
+        if (world.GetBlockId(x, y, z + 1) == Block.Netherrack.id)
         {
             ++netherrackNeighbors;
         }
 
-        if (world.getBlockId(x, y - 1, z) == Block.Netherrack.id)
+        if (world.GetBlockId(x, y - 1, z) == Block.Netherrack.id)
         {
             ++netherrackNeighbors;
         }
 
 
         int airNeighbors = 0;
-        if (world.isAir(x - 1, y, z))
+        if (world.IsAir(x - 1, y, z))
         {
             ++airNeighbors;
         }
 
-        if (world.isAir(x + 1, y, z))
+        if (world.IsAir(x + 1, y, z))
         {
             ++airNeighbors;
         }
 
-        if (world.isAir(x, y, z - 1))
+        if (world.IsAir(x, y, z - 1))
         {
             ++airNeighbors;
         }
 
-        if (world.isAir(x, y, z + 1))
+        if (world.IsAir(x, y, z + 1))
         {
             ++airNeighbors;
         }
 
-        if (world.isAir(x, y - 1, z))
+        if (world.IsAir(x, y - 1, z))
         {
             ++airNeighbors;
         }
 
         if (netherrackNeighbors == 4 && airNeighbors == 1)
         {
-            world.setBlock(x, y, z, _lavaBlockId);
+            world.SetBlock(x, y, z, _lavaBlockId);
 
             world.InstantBlockUpdateEnabled = true;
             Block.Blocks[_lavaBlockId].onTick(world, x, y, z, rand);

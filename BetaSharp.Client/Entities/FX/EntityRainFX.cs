@@ -54,10 +54,10 @@ public class EntityRainFX : EntityFX
             velocityZ *= (double)0.7F;
         }
 
-        Material material = world.getMaterial(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z));
+        Material material = world.GetMaterial(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z));
         if (material.IsFluid || material.IsSolid)
         {
-            double height = (double)((float)(MathHelper.Floor(y) + 1) - BlockFluid.getFluidHeightFromMeta(world.getBlockMeta(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z))));
+            double height = (double)((float)(MathHelper.Floor(y) + 1) - BlockFluid.getFluidHeightFromMeta(world.GetBlockMeta(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z))));
             if (y < height)
             {
                 markDead();

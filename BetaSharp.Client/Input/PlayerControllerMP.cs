@@ -34,7 +34,7 @@ public class PlayerControllerMP : PlayerController
 
     public override bool sendBlockRemoved(int x, int y, int z, int var4)
     {
-        int blockId = Game.world.getBlockId(x, y, z);
+        int blockId = Game.world.GetBlockId(x, y, z);
         bool var6 = base.sendBlockRemoved(x, y, z, var4);
         ItemStack var7 = Game.player.getHand();
         if (var7 != null)
@@ -55,7 +55,7 @@ public class PlayerControllerMP : PlayerController
         if (!isHittingBlock || var1 != currentBlockX || var2 != currentBlockY || var3 != currentblockZ)
         {
             netClientHandler.addToSendQueue(new PlayerActionC2SPacket(0, var1, var2, var3, var4));
-            int var5 = Game.world.getBlockId(var1, var2, var3);
+            int var5 = Game.world.GetBlockId(var1, var2, var3);
             if (var5 > 0 && curBlockDamageMP == 0.0F)
             {
                 Block.Blocks[var5].onBlockBreakStart(Game.world, var1, var2, var3, Game.player);
@@ -98,7 +98,7 @@ public class PlayerControllerMP : PlayerController
             {
                 if (var1 == currentBlockX && var2 == currentBlockY && var3 == currentblockZ)
                 {
-                    int var5 = Game.world.getBlockId(var1, var2, var3);
+                    int var5 = Game.world.GetBlockId(var1, var2, var3);
                     if (var5 == 0)
                     {
                         isHittingBlock = false;

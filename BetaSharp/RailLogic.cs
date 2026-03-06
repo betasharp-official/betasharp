@@ -18,8 +18,8 @@ internal class RailLogic
         _worldObj = world;
         _trackPos = pos;
 
-        int blockId = world.getBlockId(pos.X, pos.Y, pos.Z);
-        int meta = world.getBlockMeta(pos.X, pos.Y, pos.Z);
+        int blockId = world.GetBlockId(pos.X, pos.Y, pos.Z);
+        int meta = world.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
         if (Block.Blocks[blockId] is BlockRail rail && rail.isAlwaysStraight())
         {
@@ -96,10 +96,10 @@ internal class RailLogic
         int finalMeta = meta;
         if (_isPoweredRail)
         {
-            finalMeta = _worldObj.getBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
+            finalMeta = _worldObj.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
         }
 
-        if (forceUpdate || _worldObj.getBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) != finalMeta)
+        if (forceUpdate || _worldObj.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) != finalMeta)
         {
             _worldObj.setBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
 
@@ -262,7 +262,7 @@ internal class RailLogic
         int finalMeta = meta;
         if (_isPoweredRail)
         {
-            finalMeta = _worldObj.getBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
+            finalMeta = _worldObj.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
         }
 
         _worldObj.setBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);

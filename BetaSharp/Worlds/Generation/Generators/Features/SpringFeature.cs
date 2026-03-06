@@ -12,61 +12,61 @@ internal class SpringFeature : Feature
 
     public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
     {
-        if (world.getBlockId(x, y + 1, z) != Block.Stone.id)
+        if (world.GetBlockId(x, y + 1, z) != Block.Stone.id)
         {
             return false;
         }
 
-        if (world.getBlockId(x, y - 1, z) != Block.Stone.id)
+        if (world.GetBlockId(x, y - 1, z) != Block.Stone.id)
         {
             return false;
         }
 
-        int targetId = world.getBlockId(x, y, z);
+        int targetId = world.GetBlockId(x, y, z);
         if (targetId != 0 && targetId != Block.Stone.id)
         {
             return false;
         }
 
         int stoneNeighbors = 0;
-        if (world.getBlockId(x - 1, y, z) == Block.Stone.id)
+        if (world.GetBlockId(x - 1, y, z) == Block.Stone.id)
         {
             ++stoneNeighbors;
         }
 
-        if (world.getBlockId(x + 1, y, z) == Block.Stone.id)
+        if (world.GetBlockId(x + 1, y, z) == Block.Stone.id)
         {
             ++stoneNeighbors;
         }
 
-        if (world.getBlockId(x, y, z - 1) == Block.Stone.id)
+        if (world.GetBlockId(x, y, z - 1) == Block.Stone.id)
         {
             ++stoneNeighbors;
         }
 
-        if (world.getBlockId(x, y, z + 1) == Block.Stone.id)
+        if (world.GetBlockId(x, y, z + 1) == Block.Stone.id)
         {
             ++stoneNeighbors;
         }
 
 
         int airNeighbors = 0;
-        if (world.isAir(x - 1, y, z))
+        if (world.IsAir(x - 1, y, z))
         {
             ++airNeighbors;
         }
 
-        if (world.isAir(x + 1, y, z))
+        if (world.IsAir(x + 1, y, z))
         {
             ++airNeighbors;
         }
 
-        if (world.isAir(x, y, z - 1))
+        if (world.IsAir(x, y, z - 1))
         {
             ++airNeighbors;
         }
 
-        if (world.isAir(x, y, z + 1))
+        if (world.IsAir(x, y, z + 1))
         {
             ++airNeighbors;
         }
@@ -74,7 +74,7 @@ internal class SpringFeature : Feature
 
         if (stoneNeighbors == 3 && airNeighbors == 1)
         {
-            world.setBlock(x, y, z, _liquidBlockId);
+            world.SetBlock(x, y, z, _liquidBlockId);
 
             world.InstantBlockUpdateEnabled = true;
             Block.Blocks[_liquidBlockId].onTick(world, x, y, z, rand);

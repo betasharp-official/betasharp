@@ -65,10 +65,10 @@ internal class ItemDoor : Item
                     offsetX = 1;
                 }
 
-                int solidBlocksLeft = (world.shouldSuffocate(x - offsetX, y, z - offsetZ) ? 1 : 0) + (world.shouldSuffocate(x - offsetX, y + 1, z - offsetZ) ? 1 : 0);
-                int solidBlocksRight = (world.shouldSuffocate(x + offsetX, y, z + offsetZ) ? 1 : 0) + (world.shouldSuffocate(x + offsetX, y + 1, z + offsetZ) ? 1 : 0);
-                bool hasDoorOnLeft = world.getBlockId(x - offsetX, y, z - offsetZ) == block.id || world.getBlockId(x - offsetX, y + 1, z - offsetZ) == block.id;
-                bool hasDoorOnRight = world.getBlockId(x + offsetX, y, z + offsetZ) == block.id || world.getBlockId(x + offsetX, y + 1, z + offsetZ) == block.id;
+                int solidBlocksLeft = (world.ShouldSuffocate(x - offsetX, y, z - offsetZ) ? 1 : 0) + (world.ShouldSuffocate(x - offsetX, y + 1, z - offsetZ) ? 1 : 0);
+                int solidBlocksRight = (world.ShouldSuffocate(x + offsetX, y, z + offsetZ) ? 1 : 0) + (world.ShouldSuffocate(x + offsetX, y + 1, z + offsetZ) ? 1 : 0);
+                bool hasDoorOnLeft = world.GetBlockId(x - offsetX, y, z - offsetZ) == block.id || world.GetBlockId(x - offsetX, y + 1, z - offsetZ) == block.id;
+                bool hasDoorOnRight = world.GetBlockId(x + offsetX, y, z + offsetZ) == block.id || world.GetBlockId(x + offsetX, y + 1, z + offsetZ) == block.id;
                 bool shouldMirror = false;
                 if (hasDoorOnLeft && !hasDoorOnRight)
                 {
@@ -86,11 +86,11 @@ internal class ItemDoor : Item
                 }
 
                 world.pauseTicking = true;
-                world.setBlock(x, y, z, block.id, direction);
-                world.setBlock(x, y + 1, z, block.id, direction + 8);
+                world.SetBlock(x, y, z, block.id, direction);
+                world.SetBlock(x, y + 1, z, block.id, direction + 8);
                 world.pauseTicking = false;
-                world.notifyNeighbors(x, y, z, block.id);
-                world.notifyNeighbors(x, y + 1, z, block.id);
+                world.NotifyNeighbors(x, y, z, block.id);
+                world.NotifyNeighbors(x, y + 1, z, block.id);
                 --itemStack.count;
                 return true;
             }

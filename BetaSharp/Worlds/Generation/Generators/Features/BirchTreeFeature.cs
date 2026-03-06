@@ -36,7 +36,7 @@ internal class BirchTreeFeature : Feature
                 {
                     if (cy >= 0 && cy < 128)
                     {
-                        int blockId = world.getBlockId(cx, cy, cz);
+                        int blockId = world.GetBlockId(cx, cy, cz);
                         if (blockId != 0 && blockId != Block.Leaves.id)
                         {
                             canPlace = false;
@@ -55,7 +55,7 @@ internal class BirchTreeFeature : Feature
             return false;
         }
 
-        int soilId = world.getBlockId(x, y - 1, z);
+        int soilId = world.GetBlockId(x, y - 1, z);
         if ((soilId == Block.GrassBlock.id || soilId == Block.Dirt.id) && y < 128 - treeHeight - 1)
         {
             world.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id);
@@ -74,7 +74,7 @@ internal class BirchTreeFeature : Feature
                         int offsetZ = leafZ - z;
                         bool isCorner = (Math.Abs(offsetX) != leafRadius ||
                                          Math.Abs(offsetZ) != leafRadius ||
-                                         (rand.NextInt(2) != 0 && relativeY != 0)) && !Block.BlocksOpaque[world.getBlockId(leafX, leafY, leafZ)];
+                                         (rand.NextInt(2) != 0 && relativeY != 0)) && !Block.BlocksOpaque[world.GetBlockId(leafX, leafY, leafZ)];
                         if (isCorner)
                         {
                             world.SetBlockWithoutNotifyingNeighbors(leafX, leafY, leafZ, Block.Leaves.id, 2);
@@ -85,7 +85,7 @@ internal class BirchTreeFeature : Feature
 
             for (int trunkY = 0; trunkY < treeHeight; ++trunkY)
             {
-                int blockAtTrunk = world.getBlockId(x, y + trunkY, z);
+                int blockAtTrunk = world.GetBlockId(x, y + trunkY, z);
                 if (blockAtTrunk == 0 || blockAtTrunk == Block.Leaves.id)
                 {
                     world.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, Block.Log.id, 2);

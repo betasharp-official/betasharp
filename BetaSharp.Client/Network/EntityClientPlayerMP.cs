@@ -39,7 +39,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
 
     public override void tick()
     {
-        if (world.isPosLoaded(MathHelper.Floor(x), 64, MathHelper.Floor(z)))
+        if (world.IsPosLoaded(MathHelper.Floor(x), 64, MathHelper.Floor(z)))
         {
             base.tick();
             func_4056_N();

@@ -15,7 +15,7 @@ internal class BlockCake : Block
 
     public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        int slicesEaten = iBlockAccess.getBlockMeta(x, y, z);
+        int slicesEaten = iBlockAccess.GetBlockMeta(x, y, z);
         float edgeInset = 1.0F / 16.0F;
         float minX = (float)(1 + slicesEaten * 2) / 16.0F;
         float height = 0.5F;
@@ -31,7 +31,7 @@ internal class BlockCake : Block
 
     public override Box? getCollisionShape(World world, int x, int y, int z)
     {
-        int slicesEaten = world.getBlockMeta(x, y, z);
+        int slicesEaten = world.GetBlockMeta(x, y, z);
         float edgeInset = 1.0F / 16.0F;
         float minX = (float)(1 + slicesEaten * 2) / 16.0F;
         float height = 0.5F;
@@ -40,7 +40,7 @@ internal class BlockCake : Block
 
     public override Box getBoundingBox(World world, int x, int y, int z)
     {
-        int slicesEaten = world.getBlockMeta(x, y, z);
+        int slicesEaten = world.GetBlockMeta(x, y, z);
         float edgeInset = 1.0F / 16.0F;
         float minX = (float)(1 + slicesEaten * 2) / 16.0F;
         float height = 0.5F;
@@ -83,15 +83,15 @@ internal class BlockCake : Block
         if (player.health < 20)
         {
             player.heal(3);
-            int var6 = world.getBlockMeta(x, y, z) + 1;
+            int var6 = world.GetBlockMeta(x, y, z) + 1;
             if (var6 >= 6)
             {
-                world.setBlock(x, y, z, 0);
+                world.SetBlock(x, y, z, 0);
             }
             else
             {
                 world.setBlockMeta(x, y, z, var6);
-                world.setBlocksDirty(x, y, z);
+                world.SetBlocksDirty(x, y, z);
             }
         }
 
@@ -106,15 +106,15 @@ internal class BlockCake : Block
     {
         if (!canGrow(world, x, y, z))
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            dropStacks(world, x, y, z, world.GetBlockMeta(x, y, z));
+            world.SetBlock(x, y, z, 0);
         }
 
     }
 
     public override bool canGrow(World world, int x, int y, int z)
     {
-        return world.getMaterial(x, y - 1, z).IsSolid;
+        return world.GetMaterial(x, y - 1, z).IsSolid;
     }
 
     public override int getDroppedItemCount(JavaRandom random)

@@ -31,7 +31,7 @@ internal class ItemBoat : Item
         float dirZ = cosYaw * cosPitch;
         double rayLength = 5.0D;
         Vec3D rayEnd = rayStart + new Vec3D((double)dirX * rayLength, (double)sinPitch * rayLength, (double)dirZ * rayLength);
-        HitResult hitResult = world.raycast(rayStart, rayEnd, true);
+        HitResult hitResult = world.Raycast(rayStart, rayEnd, true);
         if (hitResult.Type == HitResultType.MISS)
         {
             return itemStack;
@@ -45,7 +45,7 @@ internal class ItemBoat : Item
                 int hitZ = hitResult.BlockZ;
                 if (!world.IsRemote)
                 {
-                    if (world.getBlockId(hitX, hitY, hitZ) == Block.Snow.id)
+                    if (world.GetBlockId(hitX, hitY, hitZ) == Block.Snow.id)
                     {
                         --hitY;
                     }

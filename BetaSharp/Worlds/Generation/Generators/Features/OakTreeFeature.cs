@@ -35,7 +35,7 @@ internal class OakTreeFeature : Feature
                 {
                     if (cy >= 0 && cy < 128)
                     {
-                        int blockId = world.getBlockId(cx, cy, cz);
+                        int blockId = world.GetBlockId(cx, cy, cz);
                         if (blockId != 0 && blockId != Block.Leaves.id)
                         {
                             canPlace = false;
@@ -54,7 +54,7 @@ internal class OakTreeFeature : Feature
             return false;
         }
 
-        int groundId = world.getBlockId(x, y - 1, z);
+        int groundId = world.GetBlockId(x, y - 1, z);
         if ((groundId == Block.GrassBlock.id || groundId == Block.Dirt.id) && y < 128 - treeHeight - 1)
         {
             world.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id);
@@ -71,7 +71,7 @@ internal class OakTreeFeature : Feature
                     for (int leafZ = z - leafRadius; leafZ <= z + leafRadius; ++leafZ)
                     {
                         int offsetZ = leafZ - z;
-                        if ((Math.Abs(offsetX) != leafRadius || Math.Abs(offsetZ) != leafRadius || (rand.NextInt(2) != 0 && relativeY != 0)) && !Block.BlocksOpaque[world.getBlockId(leafX, leafY, leafZ)])
+                        if ((Math.Abs(offsetX) != leafRadius || Math.Abs(offsetZ) != leafRadius || (rand.NextInt(2) != 0 && relativeY != 0)) && !Block.BlocksOpaque[world.GetBlockId(leafX, leafY, leafZ)])
                         {
                             world.SetBlockWithoutNotifyingNeighbors(leafX, leafY, leafZ, Block.Leaves.id);
                         }
@@ -81,7 +81,7 @@ internal class OakTreeFeature : Feature
 
             for (int trunkY = 0; trunkY < treeHeight; ++trunkY)
             {
-                int blockAtTrunk = world.getBlockId(x, y + trunkY, z);
+                int blockAtTrunk = world.GetBlockId(x, y + trunkY, z);
                 if (blockAtTrunk == 0 || blockAtTrunk == Block.Leaves.id)
                 {
                     world.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, Block.Log.id);

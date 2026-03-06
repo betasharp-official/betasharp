@@ -7,7 +7,7 @@ public class PistonExtensionRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.World.getBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.World.GetBlockMeta(pos.x, pos.y, pos.z);
         int facing = BlockPistonExtension.getFacing(metadata);
         float luminance = block.getLuminance(ctx.World, pos.x, pos.y, pos.z);
 

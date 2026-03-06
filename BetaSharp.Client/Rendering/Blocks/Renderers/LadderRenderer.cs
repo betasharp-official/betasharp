@@ -23,7 +23,7 @@ public class LadderRenderer : IBlockRenderer
         float minV = texV / 256.0f;
         float maxV = (texV + 15.99f) / 256.0f;
 
-        int metadata = ctx.World.getBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.World.GetBlockMeta(pos.x, pos.y, pos.z);
 
         // Push the ladder slightly off the wall
         float offset = 0.05f;

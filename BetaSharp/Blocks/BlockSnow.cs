@@ -17,7 +17,7 @@ internal class BlockSnow : Block
 
     public override Box? getCollisionShape(World world, int x, int y, int z)
     {
-        int meta = world.getBlockMeta(x, y, z) & 7;
+        int meta = world.GetBlockMeta(x, y, z) & 7;
         return meta >= 3 ?
             new Box(x + BoundingBox.MinX, y + BoundingBox.MinY, z + BoundingBox.MinZ, x + BoundingBox.MaxX, (double)((float)y + 0.5F), z + BoundingBox.MaxZ) :
             null;
@@ -35,15 +35,15 @@ internal class BlockSnow : Block
 
     public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        int meta = iBlockAccess.getBlockMeta(x, y, z) & 7;
+        int meta = iBlockAccess.GetBlockMeta(x, y, z) & 7;
         float height = (float)(2 * (1 + meta)) / 16.0F;
         setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, height, 1.0F);
     }
 
     public override bool canPlaceAt(World world, int x, int y, int z)
     {
-        int blockBelowId = world.getBlockId(x, y - 1, z);
-        return blockBelowId != 0 && Block.Blocks[blockBelowId].isOpaque() ? world.getMaterial(x, y - 1, z).BlocksMovement : false;
+        int blockBelowId = world.GetBlockId(x, y - 1, z);
+        return blockBelowId != 0 && Block.Blocks[blockBelowId].isOpaque() ? world.GetMaterial(x, y - 1, z).BlocksMovement : false;
     }
 
     public override void neighborUpdate(World world, int x, int y, int z, int id)
@@ -55,8 +55,8 @@ internal class BlockSnow : Block
     {
         if (!canPlaceAt(world, x, y, z))
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            dropStacks(world, x, y, z, world.GetBlockMeta(x, y, z));
+            world.SetBlock(x, y, z, 0);
             return false;
         }
         else
@@ -75,7 +75,7 @@ internal class BlockSnow : Block
         EntityItem entityItem = new EntityItem(world, (double)x + offsetX, (double)y + offsetY, (double)z + offsetZ, new ItemStack(snowballId, 1, 0));
         entityItem.delayBeforeCanPickup = 10;
         world.Entities.SpawnEntity(entityItem);
-        world.setBlock(x, y, z, 0);
+        world.SetBlock(x, y, z, 0);
         player.increaseStat(Stats.Stats.MineBlockStatArray[id], 1);
     }
 
@@ -91,10 +91,10 @@ internal class BlockSnow : Block
 
     public override void onTick(World world, int x, int y, int z, JavaRandom random)
     {
-        if (world.getBrightness(LightType.Block, x, y, z) > 11)
+        if (world.GetBrightness(LightType.Block, x, y, z) > 11)
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            dropStacks(world, x, y, z, world.GetBlockMeta(x, y, z));
+            world.SetBlock(x, y, z, 0);
         }
 
     }

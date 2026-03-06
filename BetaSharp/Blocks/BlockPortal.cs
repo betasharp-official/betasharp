@@ -21,7 +21,7 @@ public class BlockPortal : BlockBreakable
     {
         float thickness;
         float halfExtent;
-        if (iBlockAccess.getBlockId(x - 1, y, z) != id && iBlockAccess.getBlockId(x + 1, y, z) != id)
+        if (iBlockAccess.GetBlockId(x - 1, y, z) != id && iBlockAccess.GetBlockId(x + 1, y, z) != id)
         {
             thickness = 2.0F / 16.0F;
             halfExtent = 0.5F;
@@ -50,12 +50,12 @@ public class BlockPortal : BlockBreakable
     {
         sbyte extendsInZ = 0;
         sbyte extendsInX = 0;
-        if (world.getBlockId(x - 1, y, z) == Block.Obsidian.id || world.getBlockId(x + 1, y, z) == Block.Obsidian.id)
+        if (world.GetBlockId(x - 1, y, z) == Block.Obsidian.id || world.GetBlockId(x + 1, y, z) == Block.Obsidian.id)
         {
             extendsInZ = 1;
         }
 
-        if (world.getBlockId(x, y, z - 1) == Block.Obsidian.id || world.getBlockId(x, y, z + 1) == Block.Obsidian.id)
+        if (world.GetBlockId(x, y, z - 1) == Block.Obsidian.id || world.GetBlockId(x, y, z + 1) == Block.Obsidian.id)
         {
             extendsInX = 1;
         }
@@ -66,7 +66,7 @@ public class BlockPortal : BlockBreakable
         }
         else
         {
-            if (world.getBlockId(x - extendsInZ, y, z - extendsInX) == 0)
+            if (world.GetBlockId(x - extendsInZ, y, z - extendsInX) == 0)
             {
                 x -= extendsInZ;
                 z -= extendsInX;
@@ -81,7 +81,7 @@ public class BlockPortal : BlockBreakable
                     bool isFrame = horizontalOffset == -1 || horizontalOffset == 2 || verticalOffset == -1 || verticalOffset == 3;
                     if (horizontalOffset != -1 && horizontalOffset != 2 || verticalOffset != -1 && verticalOffset != 3)
                     {
-                        int blockId = world.getBlockId(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset);
+                        int blockId = world.GetBlockId(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset);
                         if (isFrame)
                         {
                             if (blockId != Block.Obsidian.id)
@@ -103,7 +103,7 @@ public class BlockPortal : BlockBreakable
             {
                 for (verticalOffset = 0; verticalOffset < 3; ++verticalOffset)
                 {
-                    world.setBlock(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset, Block.NetherPortal.id);
+                    world.SetBlock(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset, Block.NetherPortal.id);
                 }
             }
 
@@ -116,60 +116,60 @@ public class BlockPortal : BlockBreakable
     {
         sbyte offsetX = 0;
         sbyte offsetZ = 1;
-        if (world.getBlockId(x - 1, y, z) == base.id || world.getBlockId(x + 1, y, z) == base.id)
+        if (world.GetBlockId(x - 1, y, z) == base.id || world.GetBlockId(x + 1, y, z) == base.id)
         {
             offsetX = 1;
             offsetZ = 0;
         }
 
         int portalBottomY;
-        for (portalBottomY = y; world.getBlockId(x, portalBottomY - 1, z) == base.id; --portalBottomY)
+        for (portalBottomY = y; world.GetBlockId(x, portalBottomY - 1, z) == base.id; --portalBottomY)
         {
         }
 
-        if (world.getBlockId(x, portalBottomY - 1, z) != Block.Obsidian.id)
+        if (world.GetBlockId(x, portalBottomY - 1, z) != Block.Obsidian.id)
         {
-            world.setBlock(x, y, z, 0);
+            world.SetBlock(x, y, z, 0);
         }
         else
         {
             int blocksAbove;
-            for (blocksAbove = 1; blocksAbove < 4 && world.getBlockId(x, portalBottomY + blocksAbove, z) == base.id; ++blocksAbove)
+            for (blocksAbove = 1; blocksAbove < 4 && world.GetBlockId(x, portalBottomY + blocksAbove, z) == base.id; ++blocksAbove)
             {
             }
 
-            if (blocksAbove == 3 && world.getBlockId(x, portalBottomY + blocksAbove, z) == Block.Obsidian.id)
+            if (blocksAbove == 3 && world.GetBlockId(x, portalBottomY + blocksAbove, z) == Block.Obsidian.id)
             {
-                bool hasXNeighbors = world.getBlockId(x - 1, y, z) == base.id || world.getBlockId(x + 1, y, z) == base.id;
-                bool hasZNeighbors = world.getBlockId(x, y, z - 1) == base.id || world.getBlockId(x, y, z + 1) == base.id;
+                bool hasXNeighbors = world.GetBlockId(x - 1, y, z) == base.id || world.GetBlockId(x + 1, y, z) == base.id;
+                bool hasZNeighbors = world.GetBlockId(x, y, z - 1) == base.id || world.GetBlockId(x, y, z + 1) == base.id;
                 if (hasXNeighbors && hasZNeighbors)
                 {
-                    world.setBlock(x, y, z, 0);
+                    world.SetBlock(x, y, z, 0);
                 }
-                else if ((world.getBlockId(x + offsetX, y, z + offsetZ) != Block.Obsidian.id || world.getBlockId(x - offsetX, y, z - offsetZ) != base.id) && (world.getBlockId(x - offsetX, y, z - offsetZ) != Block.Obsidian.id || world.getBlockId(x + offsetX, y, z + offsetZ) != base.id))
+                else if ((world.GetBlockId(x + offsetX, y, z + offsetZ) != Block.Obsidian.id || world.GetBlockId(x - offsetX, y, z - offsetZ) != base.id) && (world.GetBlockId(x - offsetX, y, z - offsetZ) != Block.Obsidian.id || world.GetBlockId(x + offsetX, y, z + offsetZ) != base.id))
                 {
-                    world.setBlock(x, y, z, 0);
+                    world.SetBlock(x, y, z, 0);
                 }
             }
             else
             {
-                world.setBlock(x, y, z, 0);
+                world.SetBlock(x, y, z, 0);
             }
         }
     }
 
     public override bool isSideVisible(IBlockAccess iBlockAccess, int x, int y, int z, int side)
     {
-        if (iBlockAccess.getBlockId(x, y, z) == id)
+        if (iBlockAccess.GetBlockId(x, y, z) == id)
         {
             return false;
         }
         else
         {
-            bool edgeWest = iBlockAccess.getBlockId(x - 1, y, z) == id && iBlockAccess.getBlockId(x - 2, y, z) != id;
-            bool edgeEast = iBlockAccess.getBlockId(x + 1, y, z) == id && iBlockAccess.getBlockId(x + 2, y, z) != id;
-            bool edgeNorth = iBlockAccess.getBlockId(x, y, z - 1) == id && iBlockAccess.getBlockId(x, y, z - 2) != id;
-            bool edgeSouth = iBlockAccess.getBlockId(x, y, z + 1) == id && iBlockAccess.getBlockId(x, y, z + 2) != id;
+            bool edgeWest = iBlockAccess.GetBlockId(x - 1, y, z) == id && iBlockAccess.GetBlockId(x - 2, y, z) != id;
+            bool edgeEast = iBlockAccess.GetBlockId(x + 1, y, z) == id && iBlockAccess.GetBlockId(x + 2, y, z) != id;
+            bool edgeNorth = iBlockAccess.GetBlockId(x, y, z - 1) == id && iBlockAccess.GetBlockId(x, y, z - 2) != id;
+            bool edgeSouth = iBlockAccess.GetBlockId(x, y, z + 1) == id && iBlockAccess.GetBlockId(x, y, z + 2) != id;
             bool extendsInX = edgeWest || edgeEast;
             bool extendsInZ = edgeNorth || edgeSouth;
             return extendsInX && side == 4 ? true : (extendsInX && side == 5 ? true : (extendsInZ && side == 2 ? true : extendsInZ && side == 3));
@@ -199,7 +199,7 @@ public class BlockPortal : BlockBreakable
     {
         if (random.NextInt(100) == 0)
         {
-            world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "portal.portal", 1.0F, random.NextFloat() * 0.4F + 0.8F);
+            world.PlaySound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "portal.portal", 1.0F, random.NextFloat() * 0.4F + 0.8F);
         }
 
         for (int particleIndex = 0; particleIndex < 4; ++particleIndex)
@@ -214,7 +214,7 @@ public class BlockPortal : BlockBreakable
             velocityX = ((double)random.NextFloat() - 0.5D) * 0.5D;
             velocityY = ((double)random.NextFloat() - 0.5D) * 0.5D;
             velocityZ = ((double)random.NextFloat() - 0.5D) * 0.5D;
-            if (world.getBlockId(x - 1, y, z) != id && world.getBlockId(x + 1, y, z) != id)
+            if (world.GetBlockId(x - 1, y, z) != id && world.GetBlockId(x + 1, y, z) != id)
             {
                 particleX = (double)x + 0.5D + 0.25D * (double)direction;
                 velocityX = (double)(random.NextFloat() * 2.0F * (float)direction);
@@ -225,7 +225,7 @@ public class BlockPortal : BlockBreakable
                 velocityZ = (double)(random.NextFloat() * 2.0F * (float)direction);
             }
 
-            world.addParticle("portal", particleX, particleY, particleZ, velocityX, velocityY, velocityZ);
+            world.AddParticle("portal", particleX, particleY, particleZ, velocityX, velocityY, velocityZ);
         }
 
     }

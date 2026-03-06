@@ -34,49 +34,49 @@ internal class BlockLever : Block
 
     public override bool canPlaceAt(World world, int x, int y, int z, int side)
     {
-        return side == 1 && world.shouldSuffocate(x, y - 1, z) ? true : (side == 2 && world.shouldSuffocate(x, y, z + 1) ? true : (side == 3 && world.shouldSuffocate(x, y, z - 1) ? true : (side == 4 && world.shouldSuffocate(x + 1, y, z) ? true : side == 5 && world.shouldSuffocate(x - 1, y, z))));
+        return side == 1 && world.ShouldSuffocate(x, y - 1, z) ? true : (side == 2 && world.ShouldSuffocate(x, y, z + 1) ? true : (side == 3 && world.ShouldSuffocate(x, y, z - 1) ? true : (side == 4 && world.ShouldSuffocate(x + 1, y, z) ? true : side == 5 && world.ShouldSuffocate(x - 1, y, z))));
     }
 
     public override bool canPlaceAt(World world, int x, int y, int z)
     {
-        return world.shouldSuffocate(x - 1, y, z) ? true : (world.shouldSuffocate(x + 1, y, z) ? true : (world.shouldSuffocate(x, y, z - 1) ? true : (world.shouldSuffocate(x, y, z + 1) ? true : world.shouldSuffocate(x, y - 1, z))));
+        return world.ShouldSuffocate(x - 1, y, z) ? true : (world.ShouldSuffocate(x + 1, y, z) ? true : (world.ShouldSuffocate(x, y, z - 1) ? true : (world.ShouldSuffocate(x, y, z + 1) ? true : world.ShouldSuffocate(x, y - 1, z))));
     }
 
     public override void onPlaced(World world, int x, int y, int z, int direction)
     {
-        int var6 = world.getBlockMeta(x, y, z);
+        int var6 = world.GetBlockMeta(x, y, z);
         int var7 = var6 & 8;
         var6 &= 7;
         var6 = -1;
-        if (direction == 1 && world.shouldSuffocate(x, y - 1, z))
+        if (direction == 1 && world.ShouldSuffocate(x, y - 1, z))
         {
             var6 = 5 + world.random.NextInt(2);
         }
 
-        if (direction == 2 && world.shouldSuffocate(x, y, z + 1))
+        if (direction == 2 && world.ShouldSuffocate(x, y, z + 1))
         {
             var6 = 4;
         }
 
-        if (direction == 3 && world.shouldSuffocate(x, y, z - 1))
+        if (direction == 3 && world.ShouldSuffocate(x, y, z - 1))
         {
             var6 = 3;
         }
 
-        if (direction == 4 && world.shouldSuffocate(x + 1, y, z))
+        if (direction == 4 && world.ShouldSuffocate(x + 1, y, z))
         {
             var6 = 2;
         }
 
-        if (direction == 5 && world.shouldSuffocate(x - 1, y, z))
+        if (direction == 5 && world.ShouldSuffocate(x - 1, y, z))
         {
             var6 = 1;
         }
 
         if (var6 == -1)
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            dropStacks(world, x, y, z, world.GetBlockMeta(x, y, z));
+            world.SetBlock(x, y, z, 0);
         }
         else
         {
@@ -88,42 +88,42 @@ internal class BlockLever : Block
     {
         if (breakIfCannotPlaceAt(world, x, y, z))
         {
-            int var6 = world.getBlockMeta(x, y, z) & 7;
+            int var6 = world.GetBlockMeta(x, y, z) & 7;
             bool var7 = false;
-            if (!world.shouldSuffocate(x - 1, y, z) && var6 == 1)
+            if (!world.ShouldSuffocate(x - 1, y, z) && var6 == 1)
             {
                 var7 = true;
             }
 
-            if (!world.shouldSuffocate(x + 1, y, z) && var6 == 2)
+            if (!world.ShouldSuffocate(x + 1, y, z) && var6 == 2)
             {
                 var7 = true;
             }
 
-            if (!world.shouldSuffocate(x, y, z - 1) && var6 == 3)
+            if (!world.ShouldSuffocate(x, y, z - 1) && var6 == 3)
             {
                 var7 = true;
             }
 
-            if (!world.shouldSuffocate(x, y, z + 1) && var6 == 4)
+            if (!world.ShouldSuffocate(x, y, z + 1) && var6 == 4)
             {
                 var7 = true;
             }
 
-            if (!world.shouldSuffocate(x, y - 1, z) && var6 == 5)
+            if (!world.ShouldSuffocate(x, y - 1, z) && var6 == 5)
             {
                 var7 = true;
             }
 
-            if (!world.shouldSuffocate(x, y - 1, z) && var6 == 6)
+            if (!world.ShouldSuffocate(x, y - 1, z) && var6 == 6)
             {
                 var7 = true;
             }
 
             if (var7)
             {
-                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-                world.setBlock(x, y, z, 0);
+                dropStacks(world, x, y, z, world.GetBlockMeta(x, y, z));
+                world.SetBlock(x, y, z, 0);
             }
         }
 
@@ -133,8 +133,8 @@ internal class BlockLever : Block
     {
         if (!canPlaceAt(world, x, y, z))
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            dropStacks(world, x, y, z, world.GetBlockMeta(x, y, z));
+            world.SetBlock(x, y, z, 0);
             return false;
         }
         else
@@ -145,7 +145,7 @@ internal class BlockLever : Block
 
     public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        int var5 = iBlockAccess.getBlockMeta(x, y, z) & 7;
+        int var5 = iBlockAccess.GetBlockMeta(x, y, z) & 7;
         float var6 = 3.0F / 16.0F;
         if (var5 == 1)
         {
@@ -184,32 +184,32 @@ internal class BlockLever : Block
         }
         else
         {
-            int var6 = world.getBlockMeta(x, y, z);
+            int var6 = world.GetBlockMeta(x, y, z);
             int var7 = var6 & 7;
             int var8 = 8 - (var6 & 8);
             world.setBlockMeta(x, y, z, var7 + var8);
-            world.setBlocksDirty(x, y, z, x, y, z);
-            world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "random.click", 0.3F, var8 > 0 ? 0.6F : 0.5F);
-            world.notifyNeighbors(x, y, z, id);
+            world.SetBlocksDirty(x, y, z, x, y, z);
+            world.PlaySound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "random.click", 0.3F, var8 > 0 ? 0.6F : 0.5F);
+            world.NotifyNeighbors(x, y, z, id);
             if (var7 == 1)
             {
-                world.notifyNeighbors(x - 1, y, z, id);
+                world.NotifyNeighbors(x - 1, y, z, id);
             }
             else if (var7 == 2)
             {
-                world.notifyNeighbors(x + 1, y, z, id);
+                world.NotifyNeighbors(x + 1, y, z, id);
             }
             else if (var7 == 3)
             {
-                world.notifyNeighbors(x, y, z - 1, id);
+                world.NotifyNeighbors(x, y, z - 1, id);
             }
             else if (var7 == 4)
             {
-                world.notifyNeighbors(x, y, z + 1, id);
+                world.NotifyNeighbors(x, y, z + 1, id);
             }
             else
             {
-                world.notifyNeighbors(x, y - 1, z, id);
+                world.NotifyNeighbors(x, y - 1, z, id);
             }
 
             return true;
@@ -218,30 +218,30 @@ internal class BlockLever : Block
 
     public override void onBreak(World world, int x, int y, int z)
     {
-        int var5 = world.getBlockMeta(x, y, z);
+        int var5 = world.GetBlockMeta(x, y, z);
         if ((var5 & 8) > 0)
         {
-            world.notifyNeighbors(x, y, z, id);
+            world.NotifyNeighbors(x, y, z, id);
             int var6 = var5 & 7;
             if (var6 == 1)
             {
-                world.notifyNeighbors(x - 1, y, z, id);
+                world.NotifyNeighbors(x - 1, y, z, id);
             }
             else if (var6 == 2)
             {
-                world.notifyNeighbors(x + 1, y, z, id);
+                world.NotifyNeighbors(x + 1, y, z, id);
             }
             else if (var6 == 3)
             {
-                world.notifyNeighbors(x, y, z - 1, id);
+                world.NotifyNeighbors(x, y, z - 1, id);
             }
             else if (var6 == 4)
             {
-                world.notifyNeighbors(x, y, z + 1, id);
+                world.NotifyNeighbors(x, y, z + 1, id);
             }
             else
             {
-                world.notifyNeighbors(x, y - 1, z, id);
+                world.NotifyNeighbors(x, y - 1, z, id);
             }
         }
 
@@ -250,12 +250,12 @@ internal class BlockLever : Block
 
     public override bool isPoweringSide(IBlockAccess iBlockAccess, int x, int y, int a, int side)
     {
-        return (iBlockAccess.getBlockMeta(x, y, a) & 8) > 0;
+        return (iBlockAccess.GetBlockMeta(x, y, a) & 8) > 0;
     }
 
     public override bool isStrongPoweringSide(World world, int x, int y, int z, int side)
     {
-        int var6 = world.getBlockMeta(x, y, z);
+        int var6 = world.GetBlockMeta(x, y, z);
         if ((var6 & 8) == 0)
         {
             return false;

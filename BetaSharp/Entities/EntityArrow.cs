@@ -103,7 +103,7 @@ public class EntityArrow : Entity
             prevPitch = pitch = (float)(System.Math.Atan2(velocityY, (double)length) * 180.0D / (double)((float)System.Math.PI));
         }
 
-        int blockId = world.getBlockId(xTile, yTile, zTile);
+        int blockId = world.GetBlockId(xTile, yTile, zTile);
         if (blockId > 0)
         {
             Block.Blocks[blockId].updateBoundingBox(world, xTile, yTile, zTile);
@@ -121,8 +121,8 @@ public class EntityArrow : Entity
 
         if (inGround)
         {
-            blockId = world.getBlockId(xTile, yTile, zTile);
-            int blockMeta = world.getBlockMeta(xTile, yTile, zTile);
+            blockId = world.GetBlockId(xTile, yTile, zTile);
+            int blockMeta = world.GetBlockMeta(xTile, yTile, zTile);
             if (blockId == inTile && blockMeta == inData)
             {
                 ++ticksInGround;
@@ -147,14 +147,14 @@ public class EntityArrow : Entity
             ++ticksInAir;
             Vec3D rayStart = new Vec3D(x, y, z);
             Vec3D rayEnd = new Vec3D(x + velocityX, y + velocityY, z + velocityZ);
-            HitResult hit = world.raycast(rayStart, rayEnd, false, true);
+            HitResult hit = world.Raycast(rayStart, rayEnd, false, true);
             if (hit.Type != HitResultType.MISS)
             {
                 rayEnd = new Vec3D(hit.Pos.x, hit.Pos.y, hit.Pos.z);
             }
 
             Entity hitEntity = null;
-            var candidates = world.getEntities(this, boundingBox.Stretch(velocityX, velocityY, velocityZ).Expand(1.0D, 1.0D, 1.0D));
+            var candidates = world.Entities.GetEntities(this, boundingBox.Stretch(velocityX, velocityY, velocityZ).Expand(1.0D, 1.0D, 1.0D));
             double minHitDistance = 0.0D;
 
             float expandAmount;
@@ -190,7 +190,7 @@ public class EntityArrow : Entity
                 {
                     if (hit.Entity.damage(owner, 4))
                     {
-                        world.playSound(this, "random.drr", 1.0F, 1.2F / (random.NextFloat() * 0.2F + 0.9F));
+                        world.PlaySound(this, "random.drr", 1.0F, 1.2F / (random.NextFloat() * 0.2F + 0.9F));
                         markDead();
                     }
                     else
@@ -208,8 +208,8 @@ public class EntityArrow : Entity
                     xTile = hit.BlockX;
                     yTile = hit.BlockY;
                     zTile = hit.BlockZ;
-                    inTile = world.getBlockId(xTile, yTile, zTile);
-                    inData = world.getBlockMeta(xTile, yTile, zTile);
+                    inTile = world.GetBlockId(xTile, yTile, zTile);
+                    inData = world.GetBlockMeta(xTile, yTile, zTile);
                     velocityX = (double)((float)(hit.Pos.x - x));
                     velocityY = (double)((float)(hit.Pos.y - y));
                     velocityZ = (double)((float)(hit.Pos.z - z));
@@ -217,7 +217,7 @@ public class EntityArrow : Entity
                     x -= velocityX / (double)horizontalSpeed * (double)0.05F;
                     y -= velocityY / (double)horizontalSpeed * (double)0.05F;
                     z -= velocityZ / (double)horizontalSpeed * (double)0.05F;
-                    world.playSound(this, "random.drr", 1.0F, 1.2F / (random.NextFloat() * 0.2F + 0.9F));
+                    world.PlaySound(this, "random.drr", 1.0F, 1.2F / (random.NextFloat() * 0.2F + 0.9F));
                     inGround = true;
                     arrowShake = 7;
                 }
@@ -257,7 +257,7 @@ public class EntityArrow : Entity
                 for (int _ = 0; _ < 4; ++_)
                 {
                     float bubbleOffset = 0.25F;
-                    world.addParticle("bubble", x - velocityX * (double)bubbleOffset, y - velocityY * (double)bubbleOffset, z - velocityZ * (double)bubbleOffset, velocityX, velocityY, velocityZ);
+                    world.AddParticle("bubble", x - velocityX * (double)bubbleOffset, y - velocityY * (double)bubbleOffset, z - velocityZ * (double)bubbleOffset, velocityX, velocityY, velocityZ);
                 }
 
                 drag = 0.8F;
@@ -301,7 +301,7 @@ public class EntityArrow : Entity
         {
             if (inGround && doesArrowBelongToPlayer && arrowShake <= 0 && player.inventory.addItemStackToInventory(new ItemStack(Item.ARROW, 1)))
             {
-                world.playSound(this, "random.pop", 0.2F, ((random.NextFloat() - random.NextFloat()) * 0.7F + 1.0F) * 2.0F);
+                world.PlaySound(this, "random.pop", 0.2F, ((random.NextFloat() - random.NextFloat()) * 0.7F + 1.0F) * 2.0F);
                 player.sendPickup(this, 1);
                 markDead();
             }

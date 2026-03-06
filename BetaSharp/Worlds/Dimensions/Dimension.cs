@@ -44,9 +44,9 @@ public abstract class Dimension
 
     public virtual void InitBiomeSource() => BiomeSource = new BiomeSource(World);
 
-    public virtual ChunkSource CreateChunkGenerator() => new OverworldChunkGenerator(World, World.getSeed());
+    public virtual ChunkSource CreateChunkGenerator() => new OverworldChunkGenerator(World, World.GetSeed());
 
-    public virtual bool IsValidSpawnPoint(int x, int y) => World.getSpawnBlockId(x, y) == Block.Sand.id;
+    public virtual bool IsValidSpawnPoint(int x, int y) => World.GetSpawnBlockId(x, y) == Block.Sand.id;
 
     public virtual float GetTimeOfDay(long time, float tickDelta)
     {

@@ -19,11 +19,11 @@ internal class BlockMushroom : BlockPlant
             int tryX = x + random.NextInt(3) - 1;
             int tryY = y + random.NextInt(2) - random.NextInt(2);
             int tryZ = z + random.NextInt(3) - 1;
-            if (world.isAir(tryX, tryY, tryZ) && canGrow(world, tryX, tryY, tryZ))
+            if (world.IsAir(tryX, tryY, tryZ) && canGrow(world, tryX, tryY, tryZ))
             {
-                if (world.isAir(tryX, tryY, tryZ) && canGrow(world, tryX, tryY, tryZ))
+                if (world.IsAir(tryX, tryY, tryZ) && canGrow(world, tryX, tryY, tryZ))
                 {
-                    world.setBlock(tryX, tryY, tryZ, id);
+                    world.SetBlock(tryX, tryY, tryZ, id);
                 }
             }
         }
@@ -37,6 +37,6 @@ internal class BlockMushroom : BlockPlant
 
     public override bool canGrow(World world, int x, int y, int z)
     {
-        return y >= 0 && y < 128 ? world.getBrightness(x, y, z) < 13 && canPlantOnTop(world.getBlockId(x, y - 1, z)) : false;
+        return y >= 0 && y < 128 ? world.GetBrightness(x, y, z) < 13 && canPlantOnTop(world.GetBlockId(x, y - 1, z)) : false;
     }
 }

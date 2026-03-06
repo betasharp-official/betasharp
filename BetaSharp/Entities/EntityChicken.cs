@@ -56,7 +56,7 @@ public class EntityChicken : EntityAnimal
         field_752_b += field_755_h * 2.0F;
         if (!world.IsRemote && --timeUntilNextEgg <= 0)
         {
-            world.playSound(this, "mob.chickenplop", 1.0F, (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
+            world.PlaySound(this, "mob.chickenplop", 1.0F, (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
             dropItem(Item.Egg.id, 1);
             timeUntilNextEgg = random.NextInt(6000) + 6000;
         }

@@ -21,7 +21,7 @@ public class ClientWorld : World
     public ClientWorld(ClientNetworkHandler netHandler, long seed, int dimId) : base(new EmptyWorldStorage(), "MpServer", Dimension.FromId(dimId), seed)
     {
         _networkHandler = netHandler;
-        setSpawnPos(new Vec3i(8, 64, 8));
+        SetSpawnPos(new Vec3i(8, 64, 8));
         PersistentStateManager = netHandler.clientPersistentStateManager;
 
         Entities.OnEntityAdded += HandleEntityAdded;
@@ -30,7 +30,7 @@ public class ClientWorld : World
 
     public override void Tick()
     {
-        setTime(getTime() + 1L);
+        SetTime(GetTime() + 1L);
         Environment.UpdateWeatherCycles();
         int ambient = Environment.GetAmbientDarkness(1.0F);
 
@@ -60,7 +60,7 @@ public class ClientWorld : World
             if (--blockReset.Delay == 0)
             {
                 base.SetBlockWithoutNotifyingNeighbors(blockReset.X, blockReset.Y, blockReset.Z, blockReset.BlockId, blockReset.Meta);
-                blockUpdateEvent(blockReset.X, blockReset.Y, blockReset.Z);
+                BlockUpdateEvent(blockReset.X, blockReset.Y, blockReset.Z);
                 _blockResets.RemoveAt(i--);
             }
         }
@@ -85,7 +85,7 @@ public class ClientWorld : World
         return _chunkCache;
     }
 
-    public override void UpdateSpawnPosition() => setSpawnPos(new Vec3i(8, 64, 8));
+    public override void UpdateSpawnPosition() => SetSpawnPos(new Vec3i(8, 64, 8));
 
     protected override void ManageChunkUpdatesAndEvents()
     {
@@ -104,7 +104,7 @@ public class ClientWorld : World
 
         if (!load)
         {
-            setBlocksDirty(chunkX * 16, 0, chunkZ * 16, chunkX * 16 + 15, 128, chunkZ * 16 + 15);
+            SetBlocksDirty(chunkX * 16, 0, chunkZ * 16, chunkX * 16 + 15, 128, chunkZ * 16 + 15);
         }
     }
 
@@ -177,8 +177,8 @@ public class ClientWorld : World
 
     public override bool SetBlockMetaWithoutNotifyingNeighbors(int x, int y, int z, int meta)
     {
-        int blockId = getBlockId(x, y, z);
-        int previousMeta = getBlockMeta(x, y, z);
+        int blockId = GetBlockId(x, y, z);
+        int previousMeta = GetBlockMeta(x, y, z);
         if (base.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, meta))
         {
             _blockResets.Add(new BlockReset(this, x, y, z, blockId, previousMeta));
@@ -190,8 +190,8 @@ public class ClientWorld : World
 
     public override bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, int meta)
     {
-        int previousBlockId = getBlockId(x, y, z);
-        int previousMeta = getBlockMeta(x, y, z);
+        int previousBlockId = GetBlockId(x, y, z);
+        int previousMeta = GetBlockMeta(x, y, z);
         if (base.SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta))
         {
             _blockResets.Add(new BlockReset(this, x, y, z, previousBlockId, previousMeta));
@@ -203,8 +203,8 @@ public class ClientWorld : World
 
     public override bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId)
     {
-        int previousBlockId = getBlockId(x, y, z);
-        int previousMeta = getBlockMeta(x, y, z);
+        int previousBlockId = GetBlockId(x, y, z);
+        int previousMeta = GetBlockMeta(x, y, z);
         if (base.SetBlockWithoutNotifyingNeighbors(x, y, z, blockId))
         {
             _blockResets.Add(new BlockReset(this, x, y, z, previousBlockId, previousMeta));
@@ -219,7 +219,7 @@ public class ClientWorld : World
         ClearBlockResets(minX, minY, minZ, minX, minY, minZ);
         if (base.SetBlockWithoutNotifyingNeighbors(minX, minY, minZ, blockId, meta))
         {
-            blockUpdate(minX, minY, minZ, blockId);
+            BlockUpdate(minX, minY, minZ, blockId);
             return true;
         }
 

@@ -8,18 +8,18 @@ internal class GlowstoneClusterFeature : Feature
 {
     public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
     {
-        if (!world.isAir(x, y, z))
+        if (!world.IsAir(x, y, z))
         {
             return false;
         }
 
-        if (world.getBlockId(x, y + 1, z) != Block.Netherrack.id)
+        if (world.GetBlockId(x, y + 1, z) != Block.Netherrack.id)
         {
             return false;
         }
 
 
-        world.setBlock(x, y, z, Block.Glowstone.id);
+        world.SetBlock(x, y, z, Block.Glowstone.id);
 
         for (int i = 0; i < 1500; ++i)
         {
@@ -27,7 +27,7 @@ internal class GlowstoneClusterFeature : Feature
             int genY = y - rand.NextInt(12);
             int genZ = z + rand.NextInt(8) - rand.NextInt(8);
 
-            if (world.getBlockId(genX, genY, genZ) == 0)
+            if (world.GetBlockId(genX, genY, genZ) == 0)
             {
                 int GlowstoneNeighbors = 0;
 
@@ -36,32 +36,32 @@ internal class GlowstoneClusterFeature : Feature
                     int blockId = 0;
                     if (j == 0)
                     {
-                        blockId = world.getBlockId(genX - 1, genY, genZ);
+                        blockId = world.GetBlockId(genX - 1, genY, genZ);
                     }
 
                     if (j == 1)
                     {
-                        blockId = world.getBlockId(genX + 1, genY, genZ);
+                        blockId = world.GetBlockId(genX + 1, genY, genZ);
                     }
 
                     if (j == 2)
                     {
-                        blockId = world.getBlockId(genX, genY - 1, genZ);
+                        blockId = world.GetBlockId(genX, genY - 1, genZ);
                     }
 
                     if (j == 3)
                     {
-                        blockId = world.getBlockId(genX, genY + 1, genZ);
+                        blockId = world.GetBlockId(genX, genY + 1, genZ);
                     }
 
                     if (j == 4)
                     {
-                        blockId = world.getBlockId(genX, genY, genZ - 1);
+                        blockId = world.GetBlockId(genX, genY, genZ - 1);
                     }
 
                     if (j == 5)
                     {
-                        blockId = world.getBlockId(genX, genY, genZ + 1);
+                        blockId = world.GetBlockId(genX, genY, genZ + 1);
                     }
 
                     if (blockId == Block.Glowstone.id)
@@ -72,7 +72,7 @@ internal class GlowstoneClusterFeature : Feature
 
                 if (GlowstoneNeighbors == 1)
                 {
-                    world.setBlock(genX, genY, genZ, Block.Glowstone.id);
+                    world.SetBlock(genX, genY, genZ, Block.Glowstone.id);
                 }
             }
         }

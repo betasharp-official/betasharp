@@ -22,17 +22,17 @@ public class PlayerController
 
     public virtual void clickBlock(int var1, int var2, int var3, int var4)
     {
-        Game.world.extinguishFire(Game.player, var1, var2, var3, var4);
+        Game.world.ExtinguishFire(Game.player, var1, var2, var3, var4);
         sendBlockRemoved(var1, var2, var3, var4);
     }
 
     public virtual bool sendBlockRemoved(int var1, int var2, int var3, int var4)
     {
         World var5 = Game.world;
-        Block var6 = Block.Blocks[var5.getBlockId(var1, var2, var3)];
-        var5.worldEvent(2001, var1, var2, var3, var6.id + var5.getBlockMeta(var1, var2, var3) * 256);
-        int var7 = var5.getBlockMeta(var1, var2, var3);
-        bool var8 = var5.setBlock(var1, var2, var3, 0);
+        Block var6 = Block.Blocks[var5.GetBlockId(var1, var2, var3)];
+        var5.WorldEvent(2001, var1, var2, var3, var6.id + var5.GetBlockMeta(var1, var2, var3) * 256);
+        int var7 = var5.GetBlockMeta(var1, var2, var3);
+        bool var8 = var5.SetBlock(var1, var2, var3, 0);
         if (var6 != null && var8)
         {
             var6.onMetadataChange(var5, var1, var2, var3, var7);
@@ -97,7 +97,7 @@ public class PlayerController
 
     public virtual bool sendPlaceBlock(EntityPlayer var1, World var2, ItemStack var3, int var4, int var5, int var6, int var7)
     {
-        int var8 = var2.getBlockId(var4, var5, var6);
+        int var8 = var2.GetBlockId(var4, var5, var6);
         return var8 > 0 && Block.Blocks[var8].onUse(var2, var4, var5, var6, var1) ? true : (var3 == null ? false : var3.useOnBlock(var1, var2, var4, var5, var6, var7));
     }
 

@@ -42,8 +42,8 @@ public class BlockEntityMobSpawner : BlockEntity
             double particleX = (double)(X + World.random.NextFloat());
             double particleY = (double)(Y + World.random.NextFloat());
             double particleZ = (double)(Z + World.random.NextFloat());
-            World.addParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
-            World.addParticle("flame", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+            World.AddParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+            World.AddParticle("flame", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
 
             for (Rotation += 1000.0F / (SpawnDelay + 200.0F); Rotation > 360.0D; LastRotation -= 360.0D)
             {
@@ -73,7 +73,7 @@ public class BlockEntityMobSpawner : BlockEntity
                         return;
                     }
 
-                    int count = World.CollectEntitiesOfType<EntityLiving>(new Box(X, Y, Z, X + 1, Y + 1, Z + 1).Expand(8.0D, 4.0D, 8.0D)).Where(e => e.GetType() == entityLiving.GetType()).Count();
+                    int count = World.Entities.CollectEntitiesOfType<EntityLiving>(new Box(X, Y, Z, X + 1, Y + 1, Z + 1).Expand(8.0D, 4.0D, 8.0D)).Where(e => e.GetType() == entityLiving.GetType()).Count();
                     if (count >= 6)
                     {
                         ResetDelay();
@@ -95,8 +95,8 @@ public class BlockEntityMobSpawner : BlockEntity
                                 particleX = X + 0.5D + ((double)World.random.NextFloat() - 0.5D) * 2.0D;
                                 particleY = Y + 0.5D + ((double)World.random.NextFloat() - 0.5D) * 2.0D;
                                 particleZ = Z + 0.5D + ((double)World.random.NextFloat() - 0.5D) * 2.0D;
-                                World.addParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
-                                World.addParticle("flame", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+                                World.AddParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+                                World.AddParticle("flame", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                             }
 
                             entityLiving.animateSpawn();

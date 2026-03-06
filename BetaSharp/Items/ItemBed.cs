@@ -45,10 +45,10 @@ internal class ItemBed : Item
                 headOffsetX = 1;
             }
 
-            if (world.isAir(x, y, z) && world.isAir(x + headOffsetX, y, z + headOffsetZ) && world.shouldSuffocate(x, y - 1, z) && world.shouldSuffocate(x + headOffsetX, y - 1, z + headOffsetZ))
+            if (world.IsAir(x, y, z) && world.IsAir(x + headOffsetX, y, z + headOffsetZ) && world.ShouldSuffocate(x, y - 1, z) && world.ShouldSuffocate(x + headOffsetX, y - 1, z + headOffsetZ))
             {
-                world.setBlock(x, y, z, blockBed.id, direction);
-                world.setBlock(x + headOffsetX, y, z + headOffsetZ, blockBed.id, direction + 8);
+                world.SetBlock(x, y, z, blockBed.id, direction);
+                world.SetBlock(x + headOffsetX, y, z + headOffsetZ, blockBed.id, direction + 8);
                 --itemStack.count;
                 return true;
             }

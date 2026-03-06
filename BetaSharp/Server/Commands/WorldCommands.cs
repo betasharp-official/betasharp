@@ -29,11 +29,11 @@ internal static class WorldCommands
                 ServerWorld world = server.worlds[i];
                 if (mode == "add")
                 {
-                    world.setTime(world.getTime() + timeValue);
+                    world.SetTime(world.GetTime() + timeValue);
                 }
                 else
                 {
-                    world.setTime(timeValue);
+                    world.SetTime(timeValue);
                 }
             }
 
@@ -47,7 +47,7 @@ internal static class WorldCommands
         {
             for (int i = 0; i < server.worlds.Length; i++)
             {
-                server.worlds[i].setTime(namedTime);
+                server.worlds[i].SetTime(namedTime);
             }
 
             output.SendMessage($"Time set to {args[0]} ({namedTime})");

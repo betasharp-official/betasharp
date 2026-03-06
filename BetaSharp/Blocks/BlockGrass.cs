@@ -38,16 +38,16 @@ public class BlockGrass : Block
         }
         else
         {
-            Material materialAbove = iBlockAccess.getMaterial(x, y + 1, z);
+            Material materialAbove = iBlockAccess.GetMaterial(x, y + 1, z);
             return materialAbove != Material.SnowLayer && materialAbove != Material.SnowBlock ? 3 : 68;
         }
     }
 
     public override int getColorMultiplier(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        iBlockAccess.getBiomeSource().GetBiomesInArea(x, z, 1, 1);
-        double temperature = iBlockAccess.getBiomeSource().TemperatureMap[0];
-        double downfall = iBlockAccess.getBiomeSource().DownfallMap[0];
+        iBlockAccess.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
+        double temperature = iBlockAccess.GetBiomeSource().TemperatureMap[0];
+        double downfall = iBlockAccess.GetBiomeSource().DownfallMap[0];
         return GrassColors.getColor(temperature, downfall);
     }
 
@@ -55,24 +55,24 @@ public class BlockGrass : Block
     {
         if (!world.IsRemote)
         {
-            if (world.getLightLevel(x, y + 1, z) < 4 && Block.BlockLightOpacity[world.getBlockId(x, y + 1, z)] > 2)
+            if (world.GetLightLevel(x, y + 1, z) < 4 && Block.BlockLightOpacity[world.GetBlockId(x, y + 1, z)] > 2)
             {
                 if (random.NextInt(4) != 0)
                 {
                     return;
                 }
 
-                world.setBlock(x, y, z, Block.Dirt.id);
+                world.SetBlock(x, y, z, Block.Dirt.id);
             }
-            else if (world.getLightLevel(x, y + 1, z) >= 9)
+            else if (world.GetLightLevel(x, y + 1, z) >= 9)
             {
                 int spreadX = x + random.NextInt(3) - 1;
                 int spreadY = y + random.NextInt(5) - 3;
                 int spreadZ = z + random.NextInt(3) - 1;
-                int blockAboveId = world.getBlockId(spreadX, spreadY + 1, spreadZ);
-                if (world.getBlockId(spreadX, spreadY, spreadZ) == Block.Dirt.id && world.getLightLevel(spreadX, spreadY + 1, spreadZ) >= 4 && Block.BlockLightOpacity[blockAboveId] <= 2)
+                int blockAboveId = world.GetBlockId(spreadX, spreadY + 1, spreadZ);
+                if (world.GetBlockId(spreadX, spreadY, spreadZ) == Block.Dirt.id && world.GetLightLevel(spreadX, spreadY + 1, spreadZ) >= 4 && Block.BlockLightOpacity[blockAboveId] <= 2)
                 {
-                    world.setBlock(spreadX, spreadY, spreadZ, Block.GrassBlock.id);
+                    world.SetBlock(spreadX, spreadY, spreadZ, Block.GrassBlock.id);
                 }
             }
         }

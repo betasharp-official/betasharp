@@ -23,18 +23,18 @@ public class BlockBed : Block
         }
         else
         {
-            int meta = world.getBlockMeta(x, y, z);
+            int meta = world.GetBlockMeta(x, y, z);
             if (!isHeadOfBed(meta))
             {
                 int direction = getDirection(meta);
                 x += BED_OFFSETS[direction][0];
                 z += BED_OFFSETS[direction][1];
-                if (world.getBlockId(x, y, z) != id)
+                if (world.GetBlockId(x, y, z) != id)
                 {
                     return true;
                 }
 
-                meta = world.getBlockMeta(x, y, z);
+                meta = world.GetBlockMeta(x, y, z);
             }
 
             if (!world.Dimension.HasWorldSpawn)
@@ -42,19 +42,19 @@ public class BlockBed : Block
                 double posX = (double)x + 0.5D;
                 double posY = (double)y + 0.5D;
                 double posZ = (double)z + 0.5D;
-                world.setBlock(x, y, z, 0);
+                world.SetBlock(x, y, z, 0);
                 int direction = getDirection(meta);
                 x += BED_OFFSETS[direction][0];
                 z += BED_OFFSETS[direction][1];
-                if (world.getBlockId(x, y, z) == id)
+                if (world.GetBlockId(x, y, z) == id)
                 {
-                    world.setBlock(x, y, z, 0);
+                    world.SetBlock(x, y, z, 0);
                     posX = (posX + (double)x + 0.5D) / 2.0D;
                     posY = (posY + (double)y + 0.5D) / 2.0D;
                     posZ = (posZ + (double)z + 0.5D) / 2.0D;
                 }
 
-                world.createExplosion((Entity)null, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), 5.0F, true);
+                world.CreateExplosion((Entity)null, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), 5.0F, true);
                 return true;
             }
             else
@@ -139,18 +139,18 @@ public class BlockBed : Block
 
     public override void neighborUpdate(World world, int x, int y, int z, int id)
     {
-        int blockMeta = world.getBlockMeta(x, y, z);
+        int blockMeta = world.GetBlockMeta(x, y, z);
         int direction = getDirection(blockMeta);
         if (isHeadOfBed(blockMeta))
         {
-            if (world.getBlockId(x - BED_OFFSETS[direction][0], y, z - BED_OFFSETS[direction][1]) != this.id)
+            if (world.GetBlockId(x - BED_OFFSETS[direction][0], y, z - BED_OFFSETS[direction][1]) != this.id)
             {
-                world.setBlock(x, y, z, 0);
+                world.SetBlock(x, y, z, 0);
             }
         }
-        else if (world.getBlockId(x + BED_OFFSETS[direction][0], y, z + BED_OFFSETS[direction][1]) != this.id)
+        else if (world.GetBlockId(x + BED_OFFSETS[direction][0], y, z + BED_OFFSETS[direction][1]) != this.id)
         {
-            world.setBlock(x, y, z, 0);
+            world.SetBlock(x, y, z, 0);
             if (!world.IsRemote)
             {
                 dropStacks(world, x, y, z, blockMeta);
@@ -186,7 +186,7 @@ public class BlockBed : Block
 
     public static void updateState(World world, int x, int y, int z, bool occupied)
     {
-        int blockMeta = world.getBlockMeta(x, y, z);
+        int blockMeta = world.GetBlockMeta(x, y, z);
         if (occupied)
         {
             blockMeta |= 4;
@@ -201,7 +201,7 @@ public class BlockBed : Block
 
     public static Vec3i? findWakeUpPosition(World world, int x, int y, int z, int skip)
     {
-        int blockMeta = world.getBlockMeta(x, y, z);
+        int blockMeta = world.GetBlockMeta(x, y, z);
         int direction = getDirection(blockMeta);
 
         for (int bedHalf = 0; bedHalf <= 1; ++bedHalf)
@@ -215,7 +215,7 @@ public class BlockBed : Block
             {
                 for (int checkZ = searchMinZ; checkZ <= searchMaxZ; ++checkZ)
                 {
-                    if (world.shouldSuffocate(checkX, y - 1, checkZ) && world.isAir(checkX, y, checkZ) && world.isAir(checkX, y + 1, checkZ))
+                    if (world.ShouldSuffocate(checkX, y - 1, checkZ) && world.IsAir(checkX, y, checkZ) && world.IsAir(checkX, y + 1, checkZ))
                     {
                         if (skip <= 0)
                         {

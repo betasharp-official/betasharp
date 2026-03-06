@@ -95,7 +95,7 @@ internal class RegionChunkStorage : IChunkStorage
     {
         nbt.SetInteger("xPos", chunk.X);
         nbt.SetInteger("zPos", chunk.Z);
-        nbt.SetLong("LastUpdate", world.getTime());
+        nbt.SetLong("LastUpdate", world.GetTime());
         nbt.SetByteArray("Blocks", chunk.Blocks);
         nbt.SetByteArray("Data", chunk.Meta.Bytes);
         nbt.SetByteArray("SkyLight", chunk.SkyLight.Bytes);

@@ -33,11 +33,11 @@ internal class NetherDimension : Dimension
         }
     }
 
-    public override ChunkSource CreateChunkGenerator() => new NetherChunkGenerator(World, World.getSeed());
+    public override ChunkSource CreateChunkGenerator() => new NetherChunkGenerator(World, World.GetSeed());
 
     public override bool IsValidSpawnPoint(int x, int z)
     {
-        int blockId = World.getSpawnBlockId(x, z);
+        int blockId = World.GetSpawnBlockId(x, z);
         return blockId != Block.Bedrock.id && blockId != 0 && Block.BlocksOpaque[blockId];
     }
 

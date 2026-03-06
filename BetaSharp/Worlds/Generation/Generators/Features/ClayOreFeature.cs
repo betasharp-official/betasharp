@@ -14,7 +14,7 @@ internal class ClayOreFeature : Feature
 
     public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
     {
-        if (world.getMaterial(x, y, z) != Material.Water)
+        if (world.GetMaterial(x, y, z) != Material.Water)
         {
             return false;
         }
@@ -60,7 +60,7 @@ internal class ClayOreFeature : Feature
                         double dz = (blockZ + 0.5D - centerZ) / (radiusH / 2.0D);
                         if (dx * dx + dy * dy + dz * dz < 1.0D)
                         {
-                            int var47 = world.getBlockId(blockX, blockY, blockZ);
+                            int var47 = world.GetBlockId(blockX, blockY, blockZ);
                             if (var47 == Block.Sand.id)
                             {
                                 world.SetBlockWithoutNotifyingNeighbors(blockX, blockY, blockZ, _clayBlockId);

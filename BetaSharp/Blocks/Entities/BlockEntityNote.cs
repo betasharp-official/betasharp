@@ -39,9 +39,9 @@ internal class BlockEntityNote : BlockEntity
 
     public void playNote(World world, int x, int y, int z)
     {
-        if (world.getMaterial(x, y + 1, z) == Material.Air)
+        if (world.GetMaterial(x, y + 1, z) == Material.Air)
         {
-            Material material = world.getMaterial(x, y - 1, z);
+            Material material = world.GetMaterial(x, y - 1, z);
             byte instrument = 0;
             if (material == Material.Stone)
             {
@@ -63,7 +63,7 @@ internal class BlockEntityNote : BlockEntity
                 instrument = 4;
             }
 
-            world.playNoteBlockActionAt(x, y, z, instrument, note);
+            world.PlayNoteBlockActionAt(x, y, z, instrument, note);
         }
     }
 }

@@ -13,7 +13,7 @@ internal class CactusPatchFeature : Feature
             int genX = x + rand.NextInt(8) - rand.NextInt(8);
             int genY = y + rand.NextInt(4) - rand.NextInt(4);
             int genZ = z + rand.NextInt(8) - rand.NextInt(8);
-            if (world.isAir(genX, genY, genZ))
+            if (world.IsAir(genX, genY, genZ))
             {
                 int height = 1 + rand.NextInt(rand.NextInt(3) + 1);
 

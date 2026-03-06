@@ -24,7 +24,7 @@ public class BlockPistonMoving : BlockWithEntity
 
     public override void onBreak(World world, int x, int y, int z)
     {
-        BlockEntity var5 = world.getBlockEntity(x, y, z);
+        BlockEntity var5 = world.GetBlockEntity(x, y, z);
         if (var5 != null && var5 is BlockEntityPiston)
         {
             ((BlockEntityPiston)var5).finish();
@@ -63,9 +63,9 @@ public class BlockPistonMoving : BlockWithEntity
 
     public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
     {
-        if (!world.IsRemote && world.getBlockEntity(x, y, z) == null)
+        if (!world.IsRemote && world.GetBlockEntity(x, y, z) == null)
         {
-            world.setBlock(x, y, z, 0);
+            world.SetBlock(x, y, z, 0);
             return true;
         }
         else
@@ -93,7 +93,7 @@ public class BlockPistonMoving : BlockWithEntity
 
     public override void neighborUpdate(World world, int x, int y, int z, int id)
     {
-        if (!world.IsRemote && world.getBlockEntity(x, y, z) == null)
+        if (!world.IsRemote && world.GetBlockEntity(x, y, z) == null)
         {
         }
 
@@ -176,7 +176,7 @@ public class BlockPistonMoving : BlockWithEntity
 
     private BlockEntityPiston getPistonBlockEntity(IBlockAccess iBlockAccess, int x, int y, int z)
     {
-        BlockEntity? var5 = iBlockAccess.getBlockEntity(x, y, z);
+        BlockEntity? var5 = iBlockAccess.GetBlockEntity(x, y, z);
         return var5 != null && var5 is BlockEntityPiston ? (BlockEntityPiston)var5 : null;
     }
 }

@@ -49,7 +49,7 @@ internal class BlockRedstoneOre : Block
         spawnParticles(world, x, y, z);
         if (id == Block.RedstoneOre.id)
         {
-            world.setBlock(x, y, z, Block.LitRedstoneOre.id);
+            world.SetBlock(x, y, z, Block.LitRedstoneOre.id);
         }
 
     }
@@ -58,7 +58,7 @@ internal class BlockRedstoneOre : Block
     {
         if (id == Block.LitRedstoneOre.id)
         {
-            world.setBlock(x, y, z, Block.RedstoneOre.id);
+            world.SetBlock(x, y, z, Block.RedstoneOre.id);
         }
 
     }
@@ -92,39 +92,39 @@ internal class BlockRedstoneOre : Block
             double particleX = (double)((float)x + random.NextFloat());
             double particleY = (double)((float)y + random.NextFloat());
             double particleZ = (double)((float)z + random.NextFloat());
-            if (direction == 0 && !world.isOpaque(x, y + 1, z))
+            if (direction == 0 && !world.IsOpaque(x, y + 1, z))
             {
                 particleY = (double)(y + 1) + faceOffset;
             }
 
-            if (direction == 1 && !world.isOpaque(x, y - 1, z))
+            if (direction == 1 && !world.IsOpaque(x, y - 1, z))
             {
                 particleY = (double)(y + 0) - faceOffset;
             }
 
-            if (direction == 2 && !world.isOpaque(x, y, z + 1))
+            if (direction == 2 && !world.IsOpaque(x, y, z + 1))
             {
                 particleZ = (double)(z + 1) + faceOffset;
             }
 
-            if (direction == 3 && !world.isOpaque(x, y, z - 1))
+            if (direction == 3 && !world.IsOpaque(x, y, z - 1))
             {
                 particleZ = (double)(z + 0) - faceOffset;
             }
 
-            if (direction == 4 && !world.isOpaque(x + 1, y, z))
+            if (direction == 4 && !world.IsOpaque(x + 1, y, z))
             {
                 particleX = (double)(x + 1) + faceOffset;
             }
 
-            if (direction == 5 && !world.isOpaque(x - 1, y, z))
+            if (direction == 5 && !world.IsOpaque(x - 1, y, z))
             {
                 particleX = (double)(x + 0) - faceOffset;
             }
 
             if (particleX < (double)x || particleX > (double)(x + 1) || particleY < 0.0D || particleY > (double)(y + 1) || particleZ < (double)z || particleZ > (double)(z + 1))
             {
-                world.addParticle("reddust", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+                world.AddParticle("reddust", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
             }
         }
 
