@@ -96,7 +96,7 @@ public class MapItemRenderer
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate(0.0F, 0.0F, -0.04F);
         GLManager.GL.Scale(1.0F, 1.0F, 1.0F);
-        _textRenderer.DrawString(mapState.id, 0, 0, Color.White);
+        _textRenderer.DrawString(mapState.Id, 0, 0, Color.White);
         GLManager.GL.PopMatrix();
     }
 }

@@ -7,15 +7,15 @@ namespace BetaSharp.Worlds.Maps;
 public class MapState(string id) : PersistentState(id)
 {
     private readonly Dictionary<EntityPlayer, MapUpdateTracker> _updateTrackers = new();
-    public readonly List<MapIcon> Icons = [];
-    public int CenterX;
-    public int CenterZ;
-    public byte[] Colors = new byte[128 * 128];
-    public sbyte Dimension;
-    public int InventoryTicks;
-    public sbyte Scale;
+    public List<MapIcon> Icons { get; } = [];
+    public int CenterX { get; set; }
+    public int CenterZ { get; set; }
+    public byte[] Colors { get; set; } = new byte[128 * 128];
+    public sbyte Dimension { get; set; }
+    public int InventoryTicks { get; set; }
+    public sbyte Scale { get; set; }
 
-    public override void readNBT(NBTTagCompound nbt)
+    public override void ReadNBT(NBTTagCompound nbt)
     {
         Dimension = nbt.GetByte("dimension");
         CenterX = nbt.GetInteger("xCenter");
@@ -64,7 +64,7 @@ public class MapState(string id) : PersistentState(id)
         }
     }
 
-    public override void writeNBT(NBTTagCompound nbt)
+    public override void WriteNBT(NBTTagCompound nbt)
     {
         nbt.SetByte("dimension", Dimension);
         nbt.SetInteger("xCenter", CenterX);
@@ -75,7 +75,7 @@ public class MapState(string id) : PersistentState(id)
         nbt.SetByteArray("colors", Colors);
     }
 
-    public void update(EntityPlayer viewer, ItemStack mapItem)
+    public void Update(EntityPlayer viewer, ItemStack mapItem)
     {
         if (!_updateTrackers.ContainsKey(viewer))
         {
@@ -119,19 +119,14 @@ public class MapState(string id) : PersistentState(id)
         }
     }
 
-    public byte[]? getPlayerMarkerPacket(EntityPlayer player)
+    public byte[]? GetPlayerMarkerPacket(EntityPlayer player)
     {
-        if (_updateTrackers.TryGetValue(player, out MapUpdateTracker? mapInfo))
-        {
-            return mapInfo.getUpdateData();
-        }
-
-        return null;
+        return _updateTrackers.GetValueOrDefault(player)?.getUpdateData();
     }
 
-    public void markDirty(int xColumn, int minZ, int maxZ)
+    public void MarkDirty(int xColumn, int minZ, int maxZ)
     {
-        base.markDirty();
+        Dirty = true;
 
         foreach (MapUpdateTracker mapInfo in _updateTrackers.Values)
         {
@@ -147,7 +142,7 @@ public class MapState(string id) : PersistentState(id)
         }
     }
 
-    public void updateData(byte[] packet)
+    public void UpdateData(byte[] packet)
     {
         if (packet[0] == 0)
         {
@@ -159,7 +154,7 @@ public class MapState(string id) : PersistentState(id)
                 Colors[(i + startZ) * 128 + columnIndex] = packet[i + 3];
             }
 
-            markDirty();
+            Dirty = true;
         }
         else if (packet[0] == 1)
         {

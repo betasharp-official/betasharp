@@ -188,7 +188,7 @@ public class ItemMap : NetworkSyncedItem
 
                     if (minDirtyZ <= maxDirtyZ)
                     {
-                        map.markDirty(pixelX, minDirtyZ, maxDirtyZ);
+                        map.MarkDirty(pixelX, minDirtyZ, maxDirtyZ);
                     }
                 }
             }
@@ -254,7 +254,7 @@ public class ItemMap : NetworkSyncedItem
             if (entity is EntityPlayer)
             {
                 EntityPlayer entityPlayer = (EntityPlayer)entity;
-                mapState.update(entityPlayer, itemStack);
+                mapState.Update(entityPlayer, itemStack);
             }
 
             if (shouldUpdate)
@@ -275,12 +275,12 @@ public class ItemMap : NetworkSyncedItem
         mapState.CenterZ = MathHelper.Floor(entityPlayer.z);
         mapState.Scale = 3;
         mapState.Dimension = (sbyte)world.dimension.Id;
-        mapState.markDirty();
+        mapState.Dirty = true;
     }
 
     public override Packet getUpdatePacket(ItemStack stack, World world, EntityPlayer player)
     {
-        byte[] updateData = getMapState(stack.getDamage(), world).getPlayerMarkerPacket(player);
+        byte[] updateData = getMapState(stack.getDamage(), world).GetPlayerMarkerPacket(player);
         return updateData == null ? null : new MapUpdateS2CPacket((short)Item.Map.id, (short)stack.getDamage(), updateData);
     }
 }

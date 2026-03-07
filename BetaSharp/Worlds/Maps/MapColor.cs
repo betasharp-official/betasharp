@@ -2,7 +2,7 @@ namespace BetaSharp.Worlds.Maps;
 
 public record struct MapColor // TODO: Move Color from Client project to Core and use it here instead of uint
 {
-    private static List<MapColor> s_colors { get; } = [];
+    private static readonly List<MapColor> s_colors = [];
 
     public static MapColor ById(int id) => s_colors[id];
 
