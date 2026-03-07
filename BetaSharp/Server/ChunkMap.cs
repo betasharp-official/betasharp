@@ -160,6 +160,13 @@ internal class ChunkMap
             int maxX = xc + viewDistance;
             int minZ = zc - viewDistance;
             int maxZ = zc + viewDistance;
+            
+            player.HasVisibilityArea = true;
+            player.VisibilityMinX = minX;
+            player.VisibilityMaxX = maxX;
+            player.VisibilityMinZ = minZ;
+            player.VisibilityMaxZ = maxZ;
+
             player.networkHandler.sendPacket(new ChunkVisibilityAreaS2CPacket(minX, maxX, minZ, maxZ));
         }
 
@@ -322,7 +329,17 @@ internal class ChunkMap
 
             if (player.activeChunks.Add(chunkPos))
             {
-                if (!player.networkHandler.connection.BetaSharpClient)
+                bool suppress = false;
+                if (player.networkHandler.connection.BetaSharpClient && player.HasVisibilityArea)
+                {
+                    if (chunkPos.X >= player.VisibilityMinX && chunkPos.X <= player.VisibilityMaxX &&
+                        chunkPos.Z >= player.VisibilityMinZ && chunkPos.Z <= player.VisibilityMaxZ)
+                    {
+                        suppress = true;
+                    }
+                }
+
+                if (!suppress)
                 {
                     player.networkHandler.sendPacket(new ChunkStatusUpdateS2CPacket(chunkPos.X, chunkPos.Z, true));
                 }

@@ -8,6 +8,7 @@ public class MultiplayerChunkCache(World world) : ChunkSource
 {
     private readonly Chunk _empty = new EmptyChunk(world, new byte[-short.MinValue], 0, 0);
     private readonly Dictionary<ChunkPos, Chunk> _chunkByPos = [];
+    private readonly Queue<Chunk> _chunkPool = new();
 
     public bool IsChunkLoaded(int x, int y) => _chunkByPos.ContainsKey(new ChunkPos(x, y));
 
@@ -17,6 +18,7 @@ public class MultiplayerChunkCache(World world) : ChunkSource
         if (!chunk.IsEmpty())
         {
             chunk.Unload();
+            _chunkPool.Enqueue(chunk);
         }
 
         _chunkByPos.Remove(new ChunkPos(x, z));
@@ -25,8 +27,16 @@ public class MultiplayerChunkCache(World world) : ChunkSource
     public Chunk LoadChunk(int x, int z)
     {
         ChunkPos key = new(x, z);
-        byte[] blocks = new byte[-short.MinValue];
-        Chunk chunk = new(world, blocks, x, z);
+
+        if (_chunkPool.TryDequeue(out Chunk? chunk))
+        {
+            chunk.Reset(x, z);
+        }
+        else
+        {
+            byte[] blocks = new byte[32768];
+            chunk = new(world, blocks, x, z);
+        }
 
         Array.Fill(chunk.SkyLight.Bytes, (byte)255);
         _chunkByPos[key] = chunk;
@@ -47,9 +57,7 @@ public class MultiplayerChunkCache(World world) : ChunkSource
 
     public bool CanSave() => false;
 
-    public void DecorateTerrain(ChunkSource source, int x, int y){ }
-
-    public void markChunksForUnload(int _) { }
+    public void DecorateTerrain(ChunkSource source, int x, int y) { }
 
     public string GetDebugInfo() => $"MultiplayerChunkCache: {_chunkByPos.Count}";
 }

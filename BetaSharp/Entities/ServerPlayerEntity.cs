@@ -36,7 +36,13 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     private int screenHandlerSyncId;
     public bool skipPacketSlotUpdates;
 
-    public ServerPlayerEntity(BetaSharpServer server, World world, String name, ServerPlayerInteractionManager interactionManager) : base(world)
+    public bool HasVisibilityArea { get; set; }
+    public int VisibilityMinX { get; set; }
+    public int VisibilityMaxX { get; set; }
+    public int VisibilityMinZ { get; set; }
+    public int VisibilityMaxZ { get; set; }
+
+    public ServerPlayerEntity(BetaSharpServer server, World world, string name, ServerPlayerInteractionManager interactionManager) : base(world)
     {
         interactionManager.player = this;
         this.interactionManager = interactionManager;

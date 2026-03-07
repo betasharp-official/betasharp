@@ -20,8 +20,8 @@ public class Chunk
     public bool Loaded;
     public World World;
     public int MinHeightMapValue;
-    public readonly int X;
-    public readonly int Z;
+    public int X { get; internal set; }
+    public int Z { get; internal set; }
     public Dictionary<BlockPos, BlockEntity> BlockEntities;
     public List<Entity>[] Entities;
     public bool TerrainPopulated;
@@ -57,6 +57,31 @@ public class Chunk
         Meta = new ChunkNibbleArray(blocks.Length);
         SkyLight = new ChunkNibbleArray(blocks.Length);
         BlockLight = new ChunkNibbleArray(blocks.Length);
+    }
+
+    public void Reset(int x, int z)
+    {
+        X = x;
+        Z = z;
+        TerrainPopulated = false;
+        Dirty = false;
+        Empty = false;
+        LastSaveHadEntities = false;
+        LastSaveTime = 0L;
+        Loaded = false;
+        MinHeightMapValue = 0;
+
+        BlockEntities.Clear();
+        foreach (List<Entity> entityList in Entities)
+        {
+            entityList.Clear();
+        }
+
+        if (Blocks != null) Array.Clear(Blocks);
+        if (Meta != null) Array.Clear(Meta.Bytes);
+        if (BlockLight != null) Array.Clear(BlockLight.Bytes);
+        if (SkyLight != null) Array.Clear(SkyLight.Bytes);
+        if (HeightMap != null) Array.Clear(HeightMap);
     }
 
     public virtual bool ChunkPosEquals(int x, int z) => x == X && z == Z;
