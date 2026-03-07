@@ -255,11 +255,7 @@ public class ClientNetworkHandler : NetHandler
     public override void onEntityTrackerUpdate(EntityTrackerUpdateS2CPacket packet)
     {
         Entity ent = getEntityByID(packet.EntityId);
-        if (ent != null && packet.GetWatchedObjects() != null)
-        {
-            ent.getDataWatcher().UpdateWatchedObjectsFromList(packet.GetWatchedObjects());
-        }
-
+        ent.DataSynchronizer.ApplyChanges(new MemoryStream(packet.Data));
     }
 
     public override void onPlayerSpawn(PlayerSpawnS2CPacket packet)
@@ -553,12 +549,7 @@ public class ClientNetworkHandler : NetHandler
         ent.setPositionAndAngles(x, y, z, yaw, pitch);
         ent.interpolateOnly = true;
         worldClient.ForceEntity(packet.entityId, ent);
-        List<WatchableObject> metaData = packet.GetMetadata();
-        if (metaData != null)
-        {
-            ent.getDataWatcher().UpdateWatchedObjectsFromList(metaData);
-        }
-
+        ent.DataSynchronizer.ApplyChanges(new MemoryStream(packet.Data));
     }
 
     public override void onWorldTimeUpdate(WorldTimeUpdateS2CPacket packet)

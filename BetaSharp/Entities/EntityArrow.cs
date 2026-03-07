@@ -50,10 +50,6 @@ public class EntityArrow : Entity
         setArrowHeading(velocityX, velocityY, velocityZ, 1.5F, 1.0F);
     }
 
-    protected override void initDataTracker()
-    {
-    }
-
     public void setArrowHeading(double x, double y, double z, float speed, float spread)
     {
         float length = MathHelper.Sqrt(x * x + y * y + z * z);

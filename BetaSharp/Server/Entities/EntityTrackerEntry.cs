@@ -3,6 +3,7 @@ using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Server.Entities;
@@ -126,10 +127,12 @@ internal class EntityTrackerEntry
                 sendToListeners((Packet)var10);
             }
 
-            DataWatcher var23 = currentTrackedEntity.getDataWatcher();
-            if (var23.dirty)
+            DataSynchronizer dataSync = currentTrackedEntity.DataSynchronizer;
+            if (dataSync.Dirty)
             {
-                sendToAround(new EntityTrackerUpdateS2CPacket(currentTrackedEntity.id, var23));
+                var stream = new MemoryStream();
+                dataSync.WriteChanges(stream);
+                sendToAround(new EntityTrackerUpdateS2CPacket(currentTrackedEntity.id, stream.ToArray()));
             }
 
             if (var11)

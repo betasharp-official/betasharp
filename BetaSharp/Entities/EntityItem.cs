@@ -38,9 +38,6 @@ public class EntityItem : Entity
         standingEyeHeight = height / 2.0F;
     }
 
-    protected override void initDataTracker()
-    {
-    }
 
     public override void tick()
     {

@@ -14,7 +14,7 @@ public class PigEntityRenderer : LivingEntityRenderer
     protected bool renderSaddledPig(EntityPig var1, int var2, float var3)
     {
         loadTexture("/mob/saddle.png");
-        return var2 == 0 && var1.getSaddled();
+        return var2 == 0 && var1.Saddled.Value;
     }
 
     protected override bool shouldRenderPass(EntityLiving var1, int var2, float var3)

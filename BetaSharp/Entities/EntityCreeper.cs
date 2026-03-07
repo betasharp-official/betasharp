@@ -1,41 +1,37 @@
 using BetaSharp.Items;
 using BetaSharp.NBT;
+using BetaSharp.Util;
 using BetaSharp.Worlds;
 
 namespace BetaSharp.Entities;
 
 public class EntityCreeper : EntityMonster
 {
-    int timeSinceIgnited;
-    int lastActiveTime;
-
+    public readonly SyncedProperty<byte> CreeperState;
+    public readonly SyncedProperty<bool> Powered;
+    private int timeSinceIgnited;
+    private int lastActiveTime;
 
     public EntityCreeper(World world) : base(world)
     {
         texture = "/mob/creeper.png";
-    }
-
-    protected override void initDataTracker()
-    {
-        base.initDataTracker();
-        dataWatcher.AddObject(16, (byte)255); // -1
-        dataWatcher.AddObject(17, (byte)0);
+        CreeperState = DataSynchronizer.MakeProperty<byte>(16, 255); // -1
+        Powered = DataSynchronizer.MakeProperty<bool>(17, false);
     }
 
     public override void writeNbt(NBTTagCompound nbt)
     {
         base.writeNbt(nbt);
-        if (dataWatcher.getWatchableObjectByte(17) == 1)
+        if (Powered.Value)
         {
             nbt.SetBoolean("powered", true);
         }
-
     }
 
     public override void readNbt(NBTTagCompound nbt)
     {
         base.readNbt(nbt);
-        dataWatcher.UpdateObject(17,(byte)(nbt.GetBoolean("powered") ? 1 : 0));
+        Powered.Value = nbt.GetBoolean("powered");
     }
 
     protected override void attackBlockedEntity(Entity entity, float distance)
@@ -44,14 +40,13 @@ public class EntityCreeper : EntityMonster
         {
             if (timeSinceIgnited > 0)
             {
-                setCreeperState(-1);
+                CreeperState.Value = 255;
                 --timeSinceIgnited;
                 if (timeSinceIgnited < 0)
                 {
                     timeSinceIgnited = 0;
                 }
             }
-
         }
     }
 
@@ -60,7 +55,7 @@ public class EntityCreeper : EntityMonster
         lastActiveTime = timeSinceIgnited;
         if (world.isRemote)
         {
-            int state = getCreeperState();
+            int state = CreeperState.Value;
             if (state > 0 && timeSinceIgnited == 0)
             {
                 world.playSound(this, "random.fuse", 1.0F, 0.5F);
@@ -81,7 +76,7 @@ public class EntityCreeper : EntityMonster
         base.tick();
         if (playerToAttack == null && timeSinceIgnited > 0)
         {
-            setCreeperState(-1);
+            CreeperState.Value = 255;
             --timeSinceIgnited;
             if (timeSinceIgnited < 0)
             {
@@ -115,7 +110,7 @@ public class EntityCreeper : EntityMonster
     {
         if (!world.isRemote)
         {
-            int state = getCreeperState();
+            int state = CreeperState.Value;
             if (state <= 0 && distance < 3.0F || state > 0 && distance < 7.0F)
             {
                 if (timeSinceIgnited == 0)
@@ -123,11 +118,11 @@ public class EntityCreeper : EntityMonster
                     world.playSound(this, "random.fuse", 1.0F, 0.5F);
                 }
 
-                setCreeperState(1);
+                CreeperState.Value = 1;
                 ++timeSinceIgnited;
                 if (timeSinceIgnited >= 30)
                 {
-                    if (getPowered())
+                    if (Powered.Value)
                     {
                         world.createExplosion(this, x, y, z, 6.0F);
                     }
@@ -143,7 +138,7 @@ public class EntityCreeper : EntityMonster
             }
             else
             {
-                setCreeperState(-1);
+                CreeperState.Value = 255;
                 --timeSinceIgnited;
                 if (timeSinceIgnited < 0)
                 {
@@ -152,11 +147,6 @@ public class EntityCreeper : EntityMonster
             }
 
         }
-    }
-
-    public bool getPowered()
-    {
-        return dataWatcher.getWatchableObjectByte(17) == 1;
     }
 
     public float setCreeperFlashTime(float partialTick)
@@ -169,19 +159,9 @@ public class EntityCreeper : EntityMonster
         return Item.Gunpowder.id;
     }
 
-    private int getCreeperState()
-    {
-        return dataWatcher.getWatchableObjectByte(16);
-    }
-
-    private void setCreeperState(int state)
-    {
-        dataWatcher.UpdateObject(16, (byte)state);
-    }
-
     public override void onStruckByLightning(EntityLightningBolt bolt)
     {
         base.onStruckByLightning(bolt);
-        dataWatcher.UpdateObject(17, (byte)(1));
+        Powered.Value = true;
     }
 }

@@ -34,9 +34,6 @@ public class EntityFallingSand : Entity
         return false;
     }
 
-    protected override void initDataTracker()
-    {
-    }
 
     public override bool isCollidable()
     {

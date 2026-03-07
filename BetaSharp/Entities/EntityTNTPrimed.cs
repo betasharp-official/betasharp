@@ -30,9 +30,6 @@ public class EntityTNTPrimed : Entity
         prevZ = z;
     }
 
-    protected override void initDataTracker()
-    {
-    }
 
     protected override bool bypassesSteppingEffects()
     {

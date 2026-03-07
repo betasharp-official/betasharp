@@ -1,6 +1,7 @@
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.PathFinding;
+using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 
@@ -16,20 +17,19 @@ public class EntityWolf : EntityAnimal
     private float timeWolfIsShaking;
     private float prevTimeWolfIsShaking;
 
+    public readonly SyncedProperty<byte> WolfFlags;
+    public readonly SyncedProperty<string> WolfOwner;
+    public readonly SyncedProperty<int> WolfHealth;
+
     public EntityWolf(World world) : base(world)
     {
         texture = "/mob/wolf.png";
         setBoundingBoxSpacing(0.8F, 0.8F);
         movementSpeed = 1.1F;
         health = 8;
-    }
-
-    protected override void initDataTracker()
-    {
-        base.initDataTracker();
-        dataWatcher.AddObject(16, (byte)0);
-        dataWatcher.AddObject(17, "");
-        dataWatcher.AddObject(18, health);
+        WolfFlags = DataSynchronizer.MakeProperty<byte>(16, 0);
+        WolfOwner = DataSynchronizer.MakeProperty<string>(17, "");
+        WolfHealth = DataSynchronizer.MakeProperty<int>(18, health);
     }
 
     protected override bool bypassesSteppingEffects()
@@ -79,7 +79,7 @@ public class EntityWolf : EntityAnimal
 
     protected override string getLivingSound()
     {
-        return isWolfAngry() ? "mob.wolf.growl" : (random.NextInt(3) == 0 ? (isWolfTamed() && dataWatcher.GetWatchableObjectInt(18) < 10 ? "mob.wolf.whine" : "mob.wolf.panting") : "mob.wolf.bark");
+        return isWolfAngry() ? "mob.wolf.growl" : (random.NextInt(3) == 0 ? (isWolfTamed() && WolfHealth.Value < 10 ? "mob.wolf.whine" : "mob.wolf.panting") : "mob.wolf.bark");
     }
 
     protected override string getHurtSound()
@@ -137,7 +137,7 @@ public class EntityWolf : EntityAnimal
 
         if (!world.isRemote)
         {
-            dataWatcher.UpdateObject(18, health);
+            WolfHealth.Value = health;
         }
 
     }
@@ -439,7 +439,7 @@ public class EntityWolf : EntityAnimal
             if (heldItem != null && Item.ITEMS[heldItem.itemId] is ItemFood)
             {
                 ItemFood food = (ItemFood)Item.ITEMS[heldItem.itemId];
-                if (food.getIsWolfsFavoriteMeat() && dataWatcher.GetWatchableObjectInt(18) < 20)
+                if (food.getIsWolfsFavoriteMeat() && WolfHealth.Value < 20)
                 {
                     --heldItem.count;
                     if (heldItem.count <= 0)
@@ -511,7 +511,7 @@ public class EntityWolf : EntityAnimal
 
     public float getTailRotation()
     {
-        return isWolfAngry() ? (float)System.Math.PI * 0.49F : (isWolfTamed() ? (0.55F - (float)(20 - dataWatcher.GetWatchableObjectInt(18)) * 0.02F) * (float)System.Math.PI : (float)System.Math.PI * 0.2F);
+        return isWolfAngry() ? (float)System.Math.PI * 0.49F : (isWolfTamed() ? (0.55F - (float)(20 - WolfHealth.Value) * 0.02F) * (float)System.Math.PI : (float)System.Math.PI * 0.2F);
     }
 
     public override int getMaxSpawnedInChunk()
@@ -521,67 +521,65 @@ public class EntityWolf : EntityAnimal
 
     public string getWolfOwner()
     {
-        return dataWatcher.GetWatchableObjectString(17);
+        return WolfOwner.Value;
     }
 
     public void setWolfOwner(string name)
     {
-        dataWatcher.UpdateObject(17, name);
+        WolfOwner.Value = name;
     }
 
     public bool isWolfSitting()
     {
-        return (dataWatcher.getWatchableObjectByte(16) & 1) != 0;
+        return (WolfFlags.Value & 1) != 0;
     }
 
     public void setWolfSitting(bool isSitting)
     {
-        sbyte data = dataWatcher.getWatchableObjectByte(16);
+        byte data = WolfFlags.Value;
         if (isSitting)
         {
-            dataWatcher.UpdateObject(16, ((byte)(data | 1)));
+            WolfFlags.Value = (byte)(data | 1);
         }
         else
         {
-            dataWatcher.UpdateObject(16, ((byte)(data & -2)));
+            WolfFlags.Value = (byte)(data & -2);
         }
-
     }
 
     public bool isWolfAngry()
     {
-        return (dataWatcher.getWatchableObjectByte(16) & 2) != 0;
+        return (WolfFlags.Value & 2) != 0;
     }
 
     public void setWolfAngry(bool isAngry)
     {
-        sbyte data = dataWatcher.getWatchableObjectByte(16);
+        byte data = WolfFlags.Value;
         if (isAngry)
         {
-            dataWatcher.UpdateObject(16, ((byte)(data | 2)));
+            WolfFlags.Value = (byte)(data | 2);
         }
         else
         {
-            dataWatcher.UpdateObject(16, ((byte)(data & -3)));
+            WolfFlags.Value = (byte)(data & -3);
         }
-
     }
 
     public bool isWolfTamed()
     {
-        return (dataWatcher.getWatchableObjectByte(16) & 4) != 0;
+        return (WolfFlags.Value & 4) != 0;
     }
 
     public void setWolfTamed(bool IsTamed)
     {
-        sbyte data = dataWatcher.getWatchableObjectByte(16);
+        byte data = WolfFlags.Value;
         if (IsTamed)
         {
-            dataWatcher.UpdateObject(16, ((byte)(data | 4)));
+            WolfFlags.Value = (byte)(data | 4);
         }
         else
         {
-            dataWatcher.UpdateObject(16, ((byte)(data & -5)));
+            WolfFlags.Value = (byte)(data & -5);
         }
 
     }
