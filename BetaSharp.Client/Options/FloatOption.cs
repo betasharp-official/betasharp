@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace BetaSharp.Client.Options;
 
 public class FloatOption : GameOption
@@ -42,9 +44,9 @@ public class FloatOption : GameOption
         {
             "true" => 1.0F,
             "false" => 0.0F,
-            _ => float.Parse(raw)
+            _ => float.Parse(raw, CultureInfo.InvariantCulture)
         };
     }
 
-    public override string Save() => Value.ToString();
+    public override string Save() => Value.ToString(CultureInfo.InvariantCulture);
 }

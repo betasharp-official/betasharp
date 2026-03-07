@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace BetaSharp.Rules;
 
 public sealed record BoolValue(bool Value) : IRuleValue
@@ -18,7 +20,7 @@ public sealed record FloatValue(float Value) : IRuleValue
 {
     public static implicit operator FloatValue(float v) => new(v);
     public static implicit operator float(FloatValue v) => v.Value;
-    public override string ToString() => Value.ToString();
+    public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 }
 
 public sealed record StringValue(string Value) : IRuleValue
