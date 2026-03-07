@@ -21,7 +21,7 @@ internal class CactusPatchFeature : Feature
                 {
                     if (Block.Cactus.canGrow(world, genX, genY + h, genZ))
                     {
-                        world.SetBlockRaw(genX, genY + h, genZ, Block.Cactus.id);
+                        world.SetBlockWithoutNotifyingNeighbors(genX, genY + h, genZ, Block.Cactus.id);
                     }
                 }
             }

@@ -149,7 +149,7 @@ internal class LargeOakTreeFeature : Feature
                     continue;
                 }
 
-                world.SetBlockRaw(var11[0], var11[1], var11[2], var6);
+                world.SetBlockWithoutNotifyingNeighbors(var11[0], var11[1], var11[2], var6);
                 ++var13;
             }
         }
@@ -240,7 +240,7 @@ internal class LargeOakTreeFeature : Feature
                 var14[var6] = MathHelper.Floor(var1[var6] + var15 + 0.5D);
                 var14[var7] = MathHelper.Floor(var1[var7] + var15 * var10 + 0.5D);
                 var14[var8] = MathHelper.Floor(var1[var8] + var15 * var12 + 0.5D);
-                world.SetBlockRaw(var14[0], var14[1], var14[2], var3);
+                world.SetBlockWithoutNotifyingNeighbors(var14[0], var14[1], var14[2], var3);
             }
 
         }

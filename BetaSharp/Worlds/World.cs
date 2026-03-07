@@ -461,26 +461,6 @@ public abstract class World : IBlockAccess
         }
     }
 
-    public virtual bool SetBlockRaw(int x, int y, int z, int blockId)
-    {
-        if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000)
-        {
-            if (y < 0 || y >= 128) return false;
-
-            Chunk chunk = GetChunk(x >> 4, z >> 4);
-            return chunk.SetBlockRaw(x & 15, y, z & 15, blockId);
-        }
-        return false;
-    }
-
-    public virtual bool SetBlockRaw(int x, int y, int z, int blockId, int meta = 0)
-    {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
-            return false;
-
-        return GetChunk(x >> 4, z >> 4).SetBlockRaw(x & 15, y, z & 15, blockId, meta);
-    }
-
     public bool setBlock(int x, int y, int z, int blockId, int meta)
     {
         if (SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta))
@@ -1917,7 +1897,7 @@ public abstract class World : IBlockAccess
                 LightUpdate updateTask = _lightingQueue[lastIndex];
 
                 _lightingQueue.RemoveAt(lastIndex);
-                updateTask.UpdateLight(this);
+                updateTask.updateLight(this);
             }
 
             return false;
@@ -1970,8 +1950,8 @@ public abstract class World : IBlockAccess
                     for (int i = 0; i < lookbackCount; ++i)
                     {
                         ref LightUpdate existingUpdate = ref span[queueSize - i - 1];
-                        if (existingUpdate.LightType == type &&
-                            existingUpdate.Expand(minX, minY, minZ, maxX, maxY, maxZ))
+                        if (existingUpdate.lightType == type &&
+                            existingUpdate.expand(minX, minY, minZ, maxX, maxY, maxZ))
                         {
                             return;
                         }

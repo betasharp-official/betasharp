@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Util.Maths;
@@ -20,15 +18,15 @@ internal class OverworldChunkGenerator : ChunkSource
     private readonly OctavePerlinNoiseSampler _selectorNoise;
     private readonly OctavePerlinNoiseSampler _sandGravelNoise;
     private readonly OctavePerlinNoiseSampler _depthNoise;
-    private OctavePerlinNoiseSampler _floatingIslandScale;
-    private OctavePerlinNoiseSampler _floatingIslandNoise;
-    private OctavePerlinNoiseSampler _forestNoise;
+    private readonly OctavePerlinNoiseSampler _floatingIslandScale;
+    private readonly OctavePerlinNoiseSampler _floatingIslandNoise;
+    private readonly OctavePerlinNoiseSampler _forestNoise;
     private readonly World _world;
     private double[] _heightMap;
     private double[] _sandBuffer = new double[256];
     private double[] _gravelBuffer = new double[256];
     private double[] _depthBuffer = new double[256];
-    private readonly Carver _cave = new CaveCarver();
+    private readonly Carver _carver = new CaveCarver();
     private Biome[] _biomes;
     double[] _selectorNoiseBuffer;
     double[] _minLimitPerlinNoiseBuffer;
@@ -143,7 +141,7 @@ internal class OverworldChunkGenerator : ChunkSource
     /// <param name="biomes">1D Array of Biome values within this chunk</param>
     /// <param name="temperatures">1D Array of Temperature values within this chunk</param>
     /// <returns>The interpolated result.</returns>
-    private void BuildTerrain(int chunkX, int chunkZ, byte[] blocks, Biome[] biomes, double[] temperatures)
+    public void BuildTerrain(int chunkX, int chunkZ, byte[] blocks, Biome[] biomes, double[] temperatures)
     {
         // TODO: Replace some of these with global-constants
         //const byte vertScale = 8; // ChunkHeight / 8 = 16 (?)
@@ -156,11 +154,6 @@ internal class OverworldChunkGenerator : ChunkSource
         // Generate 4x16x4 low resolution noise map
         _heightMap = GenerateHeightMap(_heightMap, chunkX * horiScale, 0, chunkZ * horiScale, xMax, yMax, zMax);
 
-        // Raw references for high-performance memory access
-        ref byte blocksRef = ref MemoryMarshal.GetArrayDataReference(blocks);
-        ref double heightMapRef = ref MemoryMarshal.GetArrayDataReference(_heightMap);
-        ref double tempRef = ref MemoryMarshal.GetArrayDataReference(temperatures);
-
         // Terrain noise is trilinearly interpolated and only sampled every 4 blocks
         for (int sampleX = 0; sampleX < horiScale; ++sampleX)
         {
@@ -170,22 +163,14 @@ internal class OverworldChunkGenerator : ChunkSource
                 for (int sampleY = 0; sampleY < 16; ++sampleY)
                 {
                     const double verticalLerpStep = 0.125D;
-
-                    // Pre-calculate base indices for the noise cell corners
-                    int baseIdx00 = ((sampleX + 0) * zMax + (sampleZ + 0)) * yMax + sampleY;
-                    int baseIdx01 = ((sampleX + 0) * zMax + (sampleZ + 1)) * yMax + sampleY;
-                    int baseIdx10 = ((sampleX + 1) * zMax + (sampleZ + 0)) * yMax + sampleY;
-                    int baseIdx11 = ((sampleX + 1) * zMax + (sampleZ + 1)) * yMax + sampleY;
-
-                    double corner000 = Unsafe.Add(ref heightMapRef, baseIdx00);
-                    double corner010 = Unsafe.Add(ref heightMapRef, baseIdx01);
-                    double corner100 = Unsafe.Add(ref heightMapRef, baseIdx10);
-                    double corner110 = Unsafe.Add(ref heightMapRef, baseIdx11);
-
-                    double corner001 = (Unsafe.Add(ref heightMapRef, baseIdx00 + 1) - corner000) * verticalLerpStep;
-                    double corner011 = (Unsafe.Add(ref heightMapRef, baseIdx01 + 1) - corner010) * verticalLerpStep;
-                    double corner101 = (Unsafe.Add(ref heightMapRef, baseIdx10 + 1) - corner100) * verticalLerpStep;
-                    double corner111 = (Unsafe.Add(ref heightMapRef, baseIdx11 + 1) - corner110) * verticalLerpStep;
+                    double corner000 = _heightMap[((sampleX + 0) * zMax + sampleZ + 0) * yMax + sampleY + 0];
+                    double corner010 = _heightMap[((sampleX + 0) * zMax + sampleZ + 1) * yMax + sampleY + 0];
+                    double corner100 = _heightMap[((sampleX + 1) * zMax + sampleZ + 0) * yMax + sampleY + 0];
+                    double corner110 = _heightMap[((sampleX + 1) * zMax + sampleZ + 1) * yMax + sampleY + 0];
+                    double corner001 = (_heightMap[((sampleX + 0) * zMax + sampleZ + 0) * yMax + sampleY + 1] - corner000) * verticalLerpStep;
+                    double corner011 = (_heightMap[((sampleX + 0) * zMax + sampleZ + 1) * yMax + sampleY + 1] - corner010) * verticalLerpStep;
+                    double corner101 = (_heightMap[((sampleX + 1) * zMax + sampleZ + 0) * yMax + sampleY + 1] - corner100) * verticalLerpStep;
+                    double corner111 = (_heightMap[((sampleX + 1) * zMax + sampleZ + 1) * yMax + sampleY + 1] - corner110) * verticalLerpStep;
 
                     // Interpolate the 1/4th scale noise
                     for (int subY = 0; subY < 8; ++subY)
@@ -196,31 +181,24 @@ internal class OverworldChunkGenerator : ChunkSource
                         double terrainStepX0 = (corner100 - corner000) * horizontalLerpStep;
                         double terrainStepX1 = (corner110 - corner010) * horizontalLerpStep;
 
-                        int worldY = (sampleY * 8) + subY;
-
                         for (int subX = 0; subX < 4; ++subX)
                         {
-                            int worldX = (sampleX * 4) + subX;
-                            // Optimized bitwise index calculation
-                            int blockIndex = (worldX << 11) | (sampleZ * 4 << 7) | worldY;
-
+                            int blockIndex = (((subX + sampleX * 4) << 11) | ((sampleZ * 4) << 7) | ((sampleY * 8) + subY));
                             const short chunkHeight = 128; // Chunk Height
                             double terrainDensity = terrainX0;
                             double densityStepZ = (terrainX1 - terrainX0) * horizontalLerpStep;
 
                             for (int subZ = 0; subZ < 4; ++subZ)
                             {
-                                int worldZ = (sampleZ * 4) + subZ;
                                 // Here the actual block is determined
                                 // Default to air block
                                 int blockType = 0;
 
                                 // If water is too cold, turn into ice
-                                // Optimized temperature map lookup
-                                double temp = Unsafe.Add(ref tempRef, (worldX << 4) | worldZ);
-                                if (worldY < halfChunkHeight)
+                                double temp = temperatures[(sampleX * 4 + subX) * 16 + sampleZ * 4 + subZ];
+                                if (sampleY * 8 + subY < halfChunkHeight)
                                 {
-                                    if (temp < 0.5D && worldY >= halfChunkHeight - 1)
+                                    if (temp < 0.5D && sampleY * 8 + subY >= halfChunkHeight - 1)
                                     {
                                         blockType = Block.Ice.id;
                                     }
@@ -237,7 +215,7 @@ internal class OverworldChunkGenerator : ChunkSource
                                     blockType = Block.Stone.id;
                                 }
 
-                                Unsafe.Add(ref blocksRef, blockIndex) = (byte)blockType;
+                                blocks[blockIndex] = (byte)blockType;
                                 blockIndex += chunkHeight;
                                 terrainDensity += densityStepZ;
                             }
@@ -264,48 +242,36 @@ internal class OverworldChunkGenerator : ChunkSource
     /// <param name="blocks">1D Array of Blocks within this chunk</param>
     /// <param name="biomes">1D Array of Biome values within this chunk</param>
     /// <returns>The interpolated result.</returns>
-    private void BuildSurfaces(int chunkX, int chunkZ, byte[] blocks, Biome[] biomes)
+    public void BuildSurfaces(int chunkX, int chunkZ, byte[] blocks, Biome[] biomes)
     {
         byte blockZ = 64;
         double chunkBiome = 1.0D / 32.0D;
-        _sandBuffer = _sandGravelNoise.Create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome, chunkBiome, 1.0D);
-        _gravelBuffer = _sandGravelNoise.Create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, chunkBiome, 1.0D, chunkBiome);
-        _depthBuffer = _depthNoise.Create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome * 2.0D, chunkBiome * 2.0D, chunkBiome * 2.0D);
-
-        // Fetch array pointers once for the hot loop
-        ref byte blocksRef = ref MemoryMarshal.GetArrayDataReference(blocks);
-        ref double sandRef = ref MemoryMarshal.GetArrayDataReference(_sandBuffer);
-        ref double gravelRef = ref MemoryMarshal.GetArrayDataReference(_gravelBuffer);
-        ref double depthRef = ref MemoryMarshal.GetArrayDataReference(_depthBuffer);
-        ref Biome biomesRef = ref MemoryMarshal.GetArrayDataReference(biomes);
+        _sandBuffer = _sandGravelNoise.create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome, chunkBiome, 1.0D);
+        _gravelBuffer = _sandGravelNoise.create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, chunkBiome, 1.0D, chunkBiome);
+        _depthBuffer = _depthNoise.create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome * 2.0D, chunkBiome * 2.0D, chunkBiome * 2.0D);
 
         for (int horizontalScale = 0; horizontalScale < 16; ++horizontalScale)
         {
             for (int zOffset = 0; zOffset < 16; ++zOffset)
             {
-                int index2D = horizontalScale + (zOffset << 4);
-
-                Biome verticalScale = Unsafe.Add(ref biomesRef, index2D);
-                bool fraction = Unsafe.Add(ref sandRef, index2D) + _random.NextDouble() * 0.2D > 0.0D;
-                bool temperatureBuffer = Unsafe.Add(ref gravelRef, index2D) + _random.NextDouble() * 0.2D > 3.0D;
-                int featureX = (int)(Unsafe.Add(ref depthRef, index2D) / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
+                Biome verticalScale = biomes[horizontalScale + zOffset * 16];
+                bool fraction = _sandBuffer[horizontalScale + zOffset * 16] + _random.NextDouble() * 0.2D > 0.0D;
+                bool temperatureBuffer = _gravelBuffer[horizontalScale + zOffset * 16] + _random.NextDouble() * 0.2D > 3.0D;
+                int featureX = (int)(_depthBuffer[horizontalScale + zOffset * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
                 int featureY = -1;
                 byte featureZ = verticalScale.TopBlockId;
                 byte scaleFraction = verticalScale.SoilBlockId;
 
-                int columnBaseIndex = index2D << 7;
-
                 for (int iX = 127; iX >= 0; --iX)
                 {
-                    int treeFeature = columnBaseIndex | iX;
-
+                    int treeFeature = (zOffset * 16 + horizontalScale) * 128 + iX;
                     if (iX <= 0 + _random.NextInt(5))
                     {
-                        Unsafe.Add(ref blocksRef, treeFeature) = (byte)Block.Bedrock.id;
+                        blocks[treeFeature] = (byte)Block.Bedrock.id;
                     }
                     else
                     {
-                        byte z = Unsafe.Add(ref blocksRef, treeFeature);
+                        byte z = blocks[treeFeature];
                         if (z == 0)
                         {
                             featureY = -1;
@@ -326,12 +292,20 @@ internal class OverworldChunkGenerator : ChunkSource
                                     if (temperatureBuffer)
                                     {
                                         featureZ = 0;
+                                    }
+
+                                    if (temperatureBuffer)
+                                    {
                                         scaleFraction = (byte)Block.Gravel.id;
                                     }
 
                                     if (fraction)
                                     {
                                         featureZ = (byte)Block.Sand.id;
+                                    }
+
+                                    if (fraction)
+                                    {
                                         scaleFraction = (byte)Block.Sand.id;
                                     }
                                 }
@@ -342,13 +316,19 @@ internal class OverworldChunkGenerator : ChunkSource
                                 }
 
                                 featureY = featureX;
-
-                                Unsafe.Add(ref blocksRef, treeFeature) = (iX >= blockZ - 1) ? featureZ : scaleFraction;
+                                if (iX >= blockZ - 1)
+                                {
+                                    blocks[treeFeature] = featureZ;
+                                }
+                                else
+                                {
+                                    blocks[treeFeature] = scaleFraction;
+                                }
                             }
                             else if (featureY > 0)
                             {
                                 --featureY;
-                                Unsafe.Add(ref blocksRef, treeFeature) = scaleFraction;
+                                blocks[treeFeature] = scaleFraction;
                                 if (featureY == 0 && scaleFraction == Block.Sand.id)
                                 {
                                     featureY = _random.NextInt(4);
@@ -382,8 +362,8 @@ internal class OverworldChunkGenerator : ChunkSource
         double[] temperatureMap = _biomeSource.TemperatureMap;
         BuildTerrain(chunkX, chunkZ, blocks, _biomes, temperatureMap);
         BuildSurfaces(chunkX, chunkZ, blocks, _biomes);
-        _cave.carve(this, _world, chunkX, chunkZ, blocks);
-        chunk.PopulateHeightMapOnly();
+        _carver.carve(this, _world, chunkX, chunkZ, blocks);
+        chunk.PopulateHeightMap();
         return chunk;
     }
 
@@ -416,22 +396,11 @@ internal class OverworldChunkGenerator : ChunkSource
         double verticalScale = 684.412D;
         double[] temperatureBuffer = _biomeSource.TemperatureMap;
         double[] downfallBuffer = _biomeSource.DownfallMap;
-        _scaleNoiseBuffer = _floatingIslandScale.Create(_scaleNoiseBuffer, x, z, sizeX, sizeZ, 1.121D, 1.121D, 0.5D);
-        _depthNoiseBuffer = _floatingIslandNoise.Create(_depthNoiseBuffer, x, z, sizeX, sizeZ, 200.0D, 200.0D, 0.5D);
-        _selectorNoiseBuffer = _selectorNoise.Create(_selectorNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale / 80.0D, verticalScale / 160.0D, horizontalScale / 80.0D);
-        _minLimitPerlinNoiseBuffer = _minLimitPerlinNoise.Create(_minLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
-        _maxLimitPerlinNoiseBuffer = _maxLimitPerlinNoise.Create(_maxLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
-
-        // Setup raw memory pointers to bypass array overhead
-        ref double heightMapRef = ref MemoryMarshal.GetArrayDataReference(heightMap);
-        ref double tempRef = ref MemoryMarshal.GetArrayDataReference(temperatureBuffer);
-        ref double downRef = ref MemoryMarshal.GetArrayDataReference(downfallBuffer);
-        ref double scaleRef = ref MemoryMarshal.GetArrayDataReference(_scaleNoiseBuffer);
-        ref double depthRef = ref MemoryMarshal.GetArrayDataReference(_depthNoiseBuffer);
-        ref double selRef = ref MemoryMarshal.GetArrayDataReference(_selectorNoiseBuffer);
-        ref double minRef = ref MemoryMarshal.GetArrayDataReference(_minLimitPerlinNoiseBuffer);
-        ref double maxRef = ref MemoryMarshal.GetArrayDataReference(_maxLimitPerlinNoiseBuffer);
-
+        _scaleNoiseBuffer = _floatingIslandScale.create(_scaleNoiseBuffer, x, z, sizeX, sizeZ, 1.121D, 1.121D, 0.5D);
+        _depthNoiseBuffer = _floatingIslandNoise.create(_depthNoiseBuffer, x, z, sizeX, sizeZ, 200.0D, 200.0D, 0.5D);
+        _selectorNoiseBuffer = _selectorNoise.create(_selectorNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale / 80.0D, verticalScale / 160.0D, horizontalScale / 80.0D);
+        _minLimitPerlinNoiseBuffer = _minLimitPerlinNoise.create(_minLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
+        _maxLimitPerlinNoiseBuffer = _maxLimitPerlinNoise.create(_maxLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
         // Used to iterate 3D noise maps (low, high, selector)
         int xyzIndex = 0;
         // Used to iterate 2D Noise maps (depth, continentalness)
@@ -446,18 +415,15 @@ internal class OverworldChunkGenerator : ChunkSource
             {
                 // Sample 2D noises
                 int sampleZ = iZ * scaleFraction + scaleFraction / 2;
-                int tempIndex = (sampleX << 4) | sampleZ; // sampleX * 16 + sampleZ
-
                 // Apply biome-noise-dependent variety
-                double temperatureSample = Unsafe.Add(ref tempRef, tempIndex);
-                double downfallSample = Unsafe.Add(ref downRef, tempIndex) * temperatureSample;
+                double temperatureSample = temperatureBuffer[sampleX * 16 + sampleZ];
+                double downfallSample = downfallBuffer[sampleX * 16 + sampleZ] * temperatureSample;
                 downfallSample = 1.0D - downfallSample;
                 downfallSample *= downfallSample;
                 downfallSample *= downfallSample;
                 downfallSample = 1.0D - downfallSample;
-
                 // Sample scale/contientalness noise
-                double scaleNoiseSample = (Unsafe.Add(ref scaleRef, xzIndex) + 256.0D) / 512.0D;
+                double scaleNoiseSample = (_scaleNoiseBuffer[xzIndex] + 256.0D) / 512.0D;
                 scaleNoiseSample *= downfallSample;
                 if (scaleNoiseSample > 1.0D)
                 {
@@ -465,7 +431,7 @@ internal class OverworldChunkGenerator : ChunkSource
                 }
 
                 // Sample depth noise
-                double depthNoiseSample = Unsafe.Add(ref depthRef, xzIndex) / 8000.0D;
+                double depthNoiseSample = _depthNoiseBuffer[xzIndex] / 8000.0D;
                 if (depthNoiseSample < 0.0D)
                 {
                     depthNoiseSample = -depthNoiseSample * 0.3D;
@@ -514,12 +480,11 @@ internal class OverworldChunkGenerator : ChunkSource
                     }
 
                     // Sample low noise
-                    double lowNoiseSample = Unsafe.Add(ref minRef, xyzIndex) / 512.0D;
+                    double lowNoiseSample = _minLimitPerlinNoiseBuffer[xyzIndex] / 512.0D;
                     // Sample high noise
-                    double highNoiseSample = Unsafe.Add(ref maxRef, xyzIndex) / 512.0D;
+                    double highNoiseSample = _maxLimitPerlinNoiseBuffer[xyzIndex] / 512.0D;
                     // Sample selector noise
-                    double selectorNoiseSample = (Unsafe.Add(ref selRef, xyzIndex) / 10.0D + 1.0D) / 2.0D;
-
+                    double selectorNoiseSample = (_selectorNoiseBuffer[xyzIndex] / 10.0D + 1.0D) / 2.0D;
                     if (selectorNoiseSample < 0.0D)
                     {
                         terrainDensity = lowNoiseSample;
@@ -537,11 +502,11 @@ internal class OverworldChunkGenerator : ChunkSource
                     // Reduce density towards max height
                     if (iY > sizeY - 4)
                     {
-                        double var44 = (iY - (sizeY - 4)) / 3.0D; // Switched 3.0F to 3.0D to avoid float casts
+                        double var44 = (iY - (sizeY - 4)) / 3.0F;
                         terrainDensity = terrainDensity * (1.0D - var44) + -10.0D * var44;
                     }
 
-                    Unsafe.Add(ref heightMapRef, xyzIndex) = terrainDensity;
+                    heightMap[xyzIndex] = terrainDensity;
                     ++xyzIndex;
                 }
             }
@@ -571,7 +536,7 @@ internal class OverworldChunkGenerator : ChunkSource
         long xOffset = _random.NextLong() / 2L * 2L + 1L;
         long zOffset = _random.NextLong() / 2L * 2L + 1L;
         _random.SetSeed(chunkX * xOffset + chunkZ * zOffset ^ _world.getSeed());
-        double fraction = 0.25D;
+        double fraction;
         int featureX;
         int featureY;
         int featureZ;
@@ -689,7 +654,7 @@ internal class OverworldChunkGenerator : ChunkSource
 
         // Determine the number and type of trees that should be generated
         fraction = 0.5D;
-        int treeDensitySample = (int)((_forestNoise.GenerateNoise(blockX * fraction, blockZ * fraction) / 8.0D + _random.NextDouble() * 4.0D + 4.0D) / 3.0D);
+        int treeDensitySample = (int)((_forestNoise.generateNoise(blockX * fraction, blockZ * fraction) / 8.0D + _random.NextDouble() * 4.0D + 4.0D) / 3.0D);
         int numberOfTrees = 0;
         if (_random.NextInt(10) == 0)
         {
@@ -739,13 +704,6 @@ internal class OverworldChunkGenerator : ChunkSource
             treeFeature.prepare(1.0D, 1.0D, 1.0D);
             treeFeature.Generate(_world, _random, featureX, _world.getTopY(featureX, featureZ), featureZ);
         }
-
-        // ====================================================================
-        // Calculate vertical shadows so mushrooms and sun natual light dependent stuff know where the sun is.
-        _world.GetChunk(chunkX, chunkZ).PopulateHeightMap(false);
-        _world.GetChunk(chunkX + 1, chunkZ).PopulateHeightMap(false);
-        _world.GetChunk(chunkX, chunkZ + 1).PopulateHeightMap(false);
-        _world.GetChunk(chunkX + 1, chunkZ + 1).PopulateHeightMap(false);
 
         // Choose an appropriate amount of Dandelions
         byte amountOfDandelions = 0;
@@ -927,7 +885,7 @@ internal class OverworldChunkGenerator : ChunkSource
                 double temperatureSample = _temperatures[offsetX * 16 + offsetZ] - (var22 - 64) / 64.0D * 0.3D;
                 if (temperatureSample < 0.5D && var22 > 0 && var22 < 128 && _world.isAir(x, var22, z) && _world.getMaterial(x, var22 - 1, z).BlocksMovement && _world.getMaterial(x, var22 - 1, z) != Material.Ice)
                 {
-                    _world.SetBlockRaw(x, var22, z, Block.Snow.id);
+                    _world.setBlock(x, var22, z, Block.Snow.id);
                 }
             }
         }
@@ -935,13 +893,25 @@ internal class OverworldChunkGenerator : ChunkSource
         BlockSand.fallInstantly = false;
     }
 
-    public bool Save(bool saveEntities, LoadingDisplay display) => true;
+    public bool Save(bool saveEntities, LoadingDisplay display)
+    {
+        return true;
+    }
 
-    public bool Tick() => false;
+    public bool Tick()
+    {
+        return false;
+    }
 
-    public bool CanSave() => true;
+    public bool CanSave()
+    {
+        return true;
+    }
 
-    public string GetDebugInfo() => "RandomLevelSource";
+    public string GetDebugInfo()
+    {
+        return "RandomLevelSource";
+    }
 
     public void markChunksForUnload(int _)
     {

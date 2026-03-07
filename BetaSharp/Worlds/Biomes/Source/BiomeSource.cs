@@ -36,7 +36,7 @@ public class BiomeSource
 
     public virtual double GetTemperature(int x, int z)
     {
-        TemperatureMap = _temperatureSampler.Sample(TemperatureMap, x, z, 1, 1, (double)0.025F, (double)0.025F, 0.5D);
+        TemperatureMap = _temperatureSampler.sample(TemperatureMap, x, z, 1, 1, (double)0.025F, (double)0.025F, 0.5D);
         return TemperatureMap[0];
     }
 
@@ -54,8 +54,8 @@ public class BiomeSource
             map = new double[size];
         }
 
-        map = _temperatureSampler.Sample(map, x, z, width, depth, (double)0.025F, (double)0.025F, 0.25D);
-        WeirdnessMap = _weirdnessSampler.Sample(WeirdnessMap, x, z, width, depth, 0.25D, 0.25D, 10 / 17d);
+        map = _temperatureSampler.sample(map, x, z, width, depth, (double)0.025F, (double)0.025F, 0.25D);
+        WeirdnessMap = _weirdnessSampler.sample(WeirdnessMap, x, z, width, depth, 0.25D, 0.25D, 10 / 17d);
         int index = 0;
 
         for (int i = 0; i < width; ++i)
@@ -93,9 +93,9 @@ public class BiomeSource
             biomes = new Biome[size];
         }
 
-        TemperatureMap = _temperatureSampler.Sample(TemperatureMap, x, z, width, width, (double)0.025F, (double)0.025F, 0.25D);
-        DownfallMap = _downfallSampler.Sample(DownfallMap, x, z, width, width, (double)0.05F, (double)0.05F, 1.0D / 3.0D);
-        WeirdnessMap = _weirdnessSampler.Sample(WeirdnessMap, x, z, width, width, 0.25D, 0.25D, 0.5882352941176471D);
+        TemperatureMap = _temperatureSampler.sample(TemperatureMap, x, z, width, width, (double)0.025F, (double)0.025F, 0.25D);
+        DownfallMap = _downfallSampler.sample(DownfallMap, x, z, width, width, (double)0.05F, (double)0.05F, 1.0D / 3.0D);
+        WeirdnessMap = _weirdnessSampler.sample(WeirdnessMap, x, z, width, width, 0.25D, 0.25D, 0.5882352941176471D);
         int index = 0;
 
         for (int i = 0; i < width; ++i)

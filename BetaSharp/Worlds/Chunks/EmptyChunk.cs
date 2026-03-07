@@ -23,7 +23,7 @@ public class EmptyChunk : Chunk
 
     public override void PopulateLight() { }
     public override void PopulateHeightMapOnly() { }
-    public override void PopulateHeightMap(bool queueHorizontalBleed) { }
+    public override void PopulateHeightMap() { }
     public override void PopulateBlockLight() { }
 
     public override int GetBlockId(int x, int y, int z) => 0;

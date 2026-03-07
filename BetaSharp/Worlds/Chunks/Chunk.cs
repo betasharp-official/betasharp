@@ -66,9 +66,7 @@ public class Chunk
         return HeightMap[localZ << 4 | localX];
     }
 
-    public virtual void PopulateLight()
-    {
-    }
+    public virtual void PopulateLight() { }
 
     public virtual void PopulateHeightMapOnly()
     {
@@ -95,7 +93,7 @@ public class Chunk
         Dirty = true;
     }
 
-    public virtual void PopulateHeightMap(bool queueHorizontalBleed = true)
+    public virtual void PopulateHeightMap()
     {
         int minHeight = 127;
 
@@ -114,7 +112,6 @@ public class Chunk
                 HeightMap[localZ << 4 | localX] = (byte)y;
                 if (y < minHeight) minHeight = y;
 
-                // 1. Vertical Light Pass (Straight down)
                 if (!World.dimension.HasCeiling)
                 {
                     int lightLevel = 15;
@@ -127,27 +124,26 @@ public class Chunk
                         {
                             SkyLight.SetNibble(localX, currentY, localZ, lightLevel);
                         }
-
                         --currentY;
                     } while (currentY > 0 && lightLevel > 0);
-                }
-
-                // 2. Horizontal Light Pass (Only run if requested!)
-                if (queueHorizontalBleed)
-                {
-                    LightGaps(localX, localZ);
                 }
             }
         }
 
         MinHeightMapValue = minHeight;
 
+        for (int localX = 0; localX < 16; ++localX)
+        {
+            for (int localZ = 0; localZ < 16; ++localZ)
+            {
+                LightGaps(localX, localZ);
+            }
+        }
+
         Dirty = true;
     }
 
-    public virtual void PopulateBlockLight()
-    {
-    }
+    public virtual void PopulateBlockLight() { }
 
     private void LightGaps(int localX, int localZ)
     {
@@ -211,7 +207,6 @@ public class Chunk
                     }
                 }
             }
-
             MinHeightMapValue = min;
         }
 
@@ -349,37 +344,6 @@ public class Chunk
         {
             Block.Blocks[rawId].onPlaced(World, worldX, y, worldZ);
         }
-
-        Dirty = true;
-        return true;
-    }
-
-    public virtual bool SetBlockRaw(int localX, int y, int localZ, int rawId)
-    {
-        byte newId = (byte)rawId;
-        int oldId = Blocks[localX << 11 | localZ << 7 | y];
-
-        if (oldId == rawId) return false;
-
-        Blocks[localX << 11 | localZ << 7 | y] = newId;
-        Meta.SetNibble(localX, y, localZ, 0);
-
-        Dirty = true;
-        return true;
-    }
-
-    public virtual bool SetBlockRaw(int localX, int y, int localZ, int rawId, int meta)
-    {
-        byte newId = (byte)rawId;
-        int blockIndex = localX << 11 | localZ << 7 | y;
-
-        int oldId = Blocks[blockIndex];
-        int oldMeta = Meta.GetNibble(localX, y, localZ);
-
-        if (oldId == rawId && oldMeta == meta) return false;
-
-        Blocks[blockIndex] = newId;
-        Meta.SetNibble(localX, y, localZ, meta);
 
         Dirty = true;
         return true;
@@ -539,6 +503,7 @@ public class Chunk
         {
             World.unloadEntities(Entities[var3]);
         }
+
     }
 
     public virtual void MarkDirty() => Dirty = true;

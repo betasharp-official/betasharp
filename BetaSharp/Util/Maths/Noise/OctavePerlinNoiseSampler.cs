@@ -17,21 +17,21 @@ internal class OctavePerlinNoiseSampler : NoiseSampler
         }
     }
 
-    public double GenerateNoise(double x, double y)
+    public double generateNoise(double x, double y)
     {
         double value = 0.0D;
         double amplitude = 1.0D;
 
         for (int i = 0; i < _octaveCount; ++i)
         {
-            value += _octaves[i].GenerateNoise(x * amplitude, y * amplitude) / amplitude;
+            value += _octaves[i].generateNoise(x * amplitude, y * amplitude) / amplitude;
             amplitude /= 2.0D;
         }
 
         return value;
     }
 
-    public double[] Create(double[] buffer, double xStart, double yStart, double zStart, int xSize, int ySize, int zSize, double xFrequency, double yFrequency, double zFrequency)
+    public double[] create(double[] buffer, double xStart, double yStart, double zStart, int xSize, int ySize, int zSize, double xFrequency, double yFrequency, double zFrequency)
     {
         if (buffer == null)
         {
@@ -47,7 +47,7 @@ internal class OctavePerlinNoiseSampler : NoiseSampler
         for (int i = 0; i < _octaveCount; ++i)
         {
             _octaves[i]
-                .Sample(buffer,
+                .sample(buffer,
                     xStart,
                     yStart,
                     zStart,
@@ -65,8 +65,8 @@ internal class OctavePerlinNoiseSampler : NoiseSampler
     }
 
     // The last argument goes unused, but if it were used, it would definitely be that.
-    public double[] Create(double[] buffer, int xStart, int zStart, int xSize, int zSize, double xFrequency, double zFrequency, double inverseAmplitude)
+    public double[] create(double[] buffer, int xStart, int zStart, int xSize, int zSize, double xFrequency, double zFrequency, double inverseAmplitude)
     {
-        return Create(buffer, xStart, 10.0D, zStart, xSize, 1, zSize, xFrequency, 1.0D, zFrequency);
+        return create(buffer, xStart, 10.0D, zStart, xSize, 1, zSize, xFrequency, 1.0D, zFrequency);
     }
 }

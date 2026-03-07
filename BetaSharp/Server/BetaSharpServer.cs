@@ -184,12 +184,6 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
                     world.chunkCache.InsertPreGeneratedChunk(cx, cz, preGenerated[idx]);
                     world.chunkCache.DecorateIfReady(cx, cz);
                 }
-                for (int idx = 0; idx < totalChunks && running; idx++)
-                {
-                    var (cx, cz) = chunkList[idx];
-                    Chunk chunk = world.GetChunk(cx, cz);
-                    chunk.PopulateHeightMap();
-                }
                 sw2.Stop();
                 _logger.LogInformation($"  Level {i} decoration: {sw2.ElapsedMilliseconds}ms");
 

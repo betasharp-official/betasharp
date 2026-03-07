@@ -35,7 +35,7 @@ internal class NetherLavaSpringFeature : Feature
 
         if (netherrackNeighbors == 4 && airNeighbors == 1)
         {
-            world.SetBlockRaw(x, y, z, _lavaBlockId);
+            world.setBlock(x, y, z, _lavaBlockId);
 
             world.instantBlockUpdateEnabled = true;
             Block.Blocks[_lavaBlockId].onTick(world, x, y, z, rand);

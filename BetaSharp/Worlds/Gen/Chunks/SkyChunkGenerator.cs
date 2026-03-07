@@ -118,9 +118,9 @@ internal class SkyChunkGenerator : ChunkSource
     public void BuildSurfaces(int chunkX, int chunkZ, byte[] blocks, Biome[] biomes)
     {
         double chunkBiome = 1.0D / 32.0D;
-        _sandBuffer = _sandGravelNoise.Create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome, chunkBiome, 1.0D);
-        _gravelBuffer = _sandGravelNoise.Create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, chunkBiome, 1.0D, chunkBiome);
-        _depthBuffer = _depthNoise.Create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome * 2.0D, chunkBiome * 2.0D, chunkBiome * 2.0D);
+        _sandBuffer = _sandGravelNoise.create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome, chunkBiome, 1.0D);
+        _gravelBuffer = _sandGravelNoise.create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, chunkBiome, 1.0D, chunkBiome);
+        _depthBuffer = _depthNoise.create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome * 2.0D, chunkBiome * 2.0D, chunkBiome * 2.0D);
 
         for (int localX = 0; localX < 16; ++localX)
         {
@@ -206,12 +206,12 @@ internal class SkyChunkGenerator : ChunkSource
         double verticalScale = 684.412D;
         double[] temperatureBuffer = _world.getBiomeSource().TemperatureMap;
         double[] downfallBuffer = _world.getBiomeSource().DownfallMap;
-        _scaleNoiseBuffer = _floatingIslandScale.Create(_scaleNoiseBuffer, x, z, sizeX, sizeZ, 1.121D, 1.121D, 0.5D);
-        _depthNoiseBuffer = _floatingIslandNoise.Create(_depthNoiseBuffer, x, z, sizeX, sizeZ, 200.0D, 200.0D, 0.5D);
+        _scaleNoiseBuffer = _floatingIslandScale.create(_scaleNoiseBuffer, x, z, sizeX, sizeZ, 1.121D, 1.121D, 0.5D);
+        _depthNoiseBuffer = _floatingIslandNoise.create(_depthNoiseBuffer, x, z, sizeX, sizeZ, 200.0D, 200.0D, 0.5D);
         horizontalScale *= 2.0D;
-        _selectorNoiseBuffer = _selectorNoise.Create(_selectorNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale / 80.0D, verticalScale / 160.0D, horizontalScale / 80.0D);
-        _minLimitPerlinNoiseBuffer = _minLimitPerlinNoise.Create(_minLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
-        _maxLimitPerlinNoiseBuffer = _maxLimitPerlinNoise.Create(_maxLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
+        _selectorNoiseBuffer = _selectorNoise.create(_selectorNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale / 80.0D, verticalScale / 160.0D, horizontalScale / 80.0D);
+        _minLimitPerlinNoiseBuffer = _minLimitPerlinNoise.create(_minLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
+        _maxLimitPerlinNoiseBuffer = _maxLimitPerlinNoise.create(_maxLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
         int xyzIndex = 0;
         int xzIndex = 0;
         int scaleFraction = 16 / sizeX;
@@ -430,7 +430,7 @@ internal class SkyChunkGenerator : ChunkSource
         }
 
         fraction = 0.5D;
-        int treeDensitySample = (int)((_forestNoise.GenerateNoise(blockX * fraction, blockZ * fraction) / 8.0D + _random.NextDouble() * 4.0D + 4.0D) / 3.0D);
+        int treeDensitySample = (int)((_forestNoise.generateNoise(blockX * fraction, blockZ * fraction) / 8.0D + _random.NextDouble() * 4.0D + 4.0D) / 3.0D);
         int numberOfTrees = 0;
 
         if (_random.NextInt(10) == 0)
@@ -481,13 +481,6 @@ internal class SkyChunkGenerator : ChunkSource
             treeFeature.prepare(1.0D, 1.0D, 1.0D);
             treeFeature.Generate(_world, _random, featureX, _world.getTopY(featureX, featureZ), featureZ);
         }
-
-        // ====================================================================
-        // Calculate vertical shadows so mushrooms and sun natual light dependent stuff know where the sun is.
-        _world.GetChunk(chunkX, chunkZ).PopulateHeightMap(false);
-        _world.GetChunk(chunkX + 1, chunkZ).PopulateHeightMap(false);
-        _world.GetChunk(chunkX, chunkZ + 1).PopulateHeightMap(false);
-        _world.GetChunk(chunkX + 1, chunkZ + 1).PopulateHeightMap(false);
 
         for (int i = 0; i < 2; ++i)
         {

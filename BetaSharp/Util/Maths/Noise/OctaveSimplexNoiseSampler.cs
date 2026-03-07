@@ -14,14 +14,15 @@ internal class OctaveSimplexNoiseSampler : NoiseSampler
         {
             _octaves[i] = new SimplexNoiseSampler(rand);
         }
+
     }
 
-    public double[] Sample(double[] buffer, double x, double z, int width, int depth, double xFrequency, double zFrequency, double frequencyScaler)
+    public double[] sample(double[] buffer, double x, double z, int width, int depth, double xFrequency, double zFrequency, double frequencyScaler)
     {
-        return Sample(buffer, x, z, width, depth, xFrequency, zFrequency, frequencyScaler, 0.5D);
+        return sample(buffer, x, z, width, depth, xFrequency, zFrequency, frequencyScaler, 0.5D);
     }
 
-    public double[] Sample(double[] buffer, double x, double z, int width, int depth, double xFrequency, double zFrequency, double frequencyScaler, double amplitudeScaler)
+    public double[] sample(double[] buffer, double x, double z, int width, int depth, double xFrequency, double zFrequency, double frequencyScaler, double amplitudeScaler)
     {
         xFrequency /= 1.5D;
         zFrequency /= 1.5D;
@@ -42,7 +43,11 @@ internal class OctaveSimplexNoiseSampler : NoiseSampler
 
         for (int i = 0; i < _octaveCount; ++i)
         {
-            _octaves[i].Sample(buffer, x, z, width, depth, xFrequency * frequencyMultiplier, zFrequency * frequencyMultiplier, 0.55D / amplitudeDivisor);
+            _octaves[i].sample(buffer,
+                x, z, width, depth,
+                xFrequency * frequencyMultiplier,
+                zFrequency * frequencyMultiplier,
+                0.55D / amplitudeDivisor);
             frequencyMultiplier *= frequencyScaler;
             amplitudeDivisor *= amplitudeScaler;
         }
