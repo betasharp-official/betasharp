@@ -4,18 +4,19 @@ namespace BetaSharp.Worlds.Maps;
 
 internal class MapUpdateTracker
 {
-    public readonly EntityPlayer Player;
-    private readonly MapState _mapState;
+    public MapState State { get; }
+    public EntityPlayer Player { get; }
 
-    public readonly int[] StartZ;
-    public readonly int[] EndZ;
+    public int[] StartZ { get; }
+    public int[] EndZ { get; }
+
     private int _nextDirtyPixel;
     private int _colorsUpdateInterval;
     private byte[]? _iconsData;
 
     public MapUpdateTracker(MapState state, EntityPlayer player)
     {
-        _mapState = state;
+        State = state;
         StartZ = new int[128];
         EndZ = new int[128];
         _nextDirtyPixel = 0;
@@ -30,12 +31,12 @@ internal class MapUpdateTracker
         if (--_colorsUpdateInterval < 0)
         {
             _colorsUpdateInterval = 4;
-            byte[] data = new byte[_mapState.Icons.Count * 3 + 1];
+            byte[] data = new byte[State.Icons.Count * 3 + 1];
             data[0] = 1;
 
-            for (int iconIndex = 0; iconIndex < _mapState.Icons.Count; iconIndex++)
+            for (int iconIndex = 0; iconIndex < State.Icons.Count; iconIndex++)
             {
-                MapIcon icon = _mapState.Icons[iconIndex];
+                MapIcon icon = State.Icons[iconIndex];
                 data[iconIndex * 3 + 1] = (byte)(icon.Type + (icon.Rotation & 15) * 16);
                 data[iconIndex * 3 + 2] = icon.X;
                 data[iconIndex * 3 + 3] = icon.Z;
@@ -80,7 +81,7 @@ internal class MapUpdateTracker
 
                 for (int pixelOffset = 0; pixelOffset < packetData.Length - 3; pixelOffset++)
                 {
-                    packetData[pixelOffset + 3] = _mapState.Colors[(pixelOffset + startZCoord) * 128 + dirtyPixel];
+                    packetData[pixelOffset + 3] = State.Colors[(pixelOffset + startZCoord) * 128 + dirtyPixel];
                 }
 
                 EndZ[dirtyPixel] = -1;
