@@ -1,22 +1,23 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
+using BetaSharp.Client.Chunks;
 using BetaSharp.Client.Entities.FX;
+using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Blocks.Entities;
 using BetaSharp.Client.Rendering.Chunks;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.OpenGL;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
-using BetaSharp.Client.Options;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Profiling;
+using BetaSharp.Util;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using Silk.NET.Maths;
-using BetaSharp.Util;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 
 namespace BetaSharp.Client.Rendering;
 
@@ -180,6 +181,11 @@ public class WorldRenderer : IWorldAccess
     {
         Block.Leaves.setGraphicsLevel(true);
         renderDistance = _game.options.renderDistance;
+
+        if (world?.GetChunkSource() is MultiplayerChunkCache mcc)
+        {
+            mcc.ClearCache();
+        }
 
         chunkRenderer?.Dispose();
         chunkRenderer = new(world);

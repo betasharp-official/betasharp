@@ -28,6 +28,7 @@ using BetaSharp.Util;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Colors;
 using BetaSharp.Worlds.Storage;
 using ImGuiNET;
@@ -35,6 +36,7 @@ using Microsoft.Extensions.Logging;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
+using Silk.NET.Windowing;
 using Exception = System.Exception;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
@@ -249,8 +251,8 @@ public partial class BetaSharp
 
         try
         {
-            var window = Display.getWindow();
-            var input = window.CreateInput();
+            IWindow window = Display.getWindow();
+            IInputContext input = window.CreateInput();
             imGuiController = new(((LegacyGL)GLManager.GL).SilkGL, window, input);
             imGuiController.MakeCurrent();
         }
@@ -1113,7 +1115,7 @@ public partial class BetaSharp
                 }
 
                 // Center the window
-                var desktopMode = Display.getDesktopDisplayMode();
+                DisplayMode desktopMode = Display.getDesktopDisplayMode();
                 int centerX = (desktopMode.getWidth() - displayWidth) / 2;
                 int centerY = (desktopMode.getHeight() - displayHeight) / 2;
                 Display.setLocation(centerX, centerY);

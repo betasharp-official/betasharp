@@ -4,9 +4,9 @@ public interface ChunkSource
 {
     bool IsChunkLoaded(int x, int z);
 
-    Chunk GetChunk(int x, int z);
+    Chunk GetChunk(int x, int z, Chunk? reusedChunk = null);
 
-    Chunk LoadChunk(int x, int z);
+    Chunk LoadChunk(int x, int z, Chunk? reusedChunk = null);
 
     void DecorateTerrain(ChunkSource source, int x, int z);
 

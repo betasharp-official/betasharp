@@ -234,16 +234,27 @@ internal class NetherChunkGenerator : ChunkSource
         }
     }
 
-    public Chunk LoadChunk(int x, int z) => GetChunk(x, z);
+    public Chunk LoadChunk(int x, int z, Chunk? reusedChunk = null) => GetChunk(x, z, reusedChunk);
 
-    public Chunk GetChunk(int chunkX, int chunkZ)
+    public Chunk GetChunk(int chunkX, int chunkZ, Chunk? reusedChunk = null)
     {
         random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
-        byte[] blocks = new byte[-short.MinValue];
+        byte[] blocks;
+        Chunk chunk;
+        if (reusedChunk != null)
+        {
+            chunk = reusedChunk;
+            chunk.Reset(chunkX, chunkZ);
+            blocks = chunk.Blocks;
+        }
+        else
+        {
+            blocks = new byte[-short.MinValue];
+            chunk = new Chunk(_world, blocks, chunkX, chunkZ);
+        }
         BuildTerrain(chunkX, chunkZ, blocks);
         BuildSurfaces(chunkX, chunkZ, blocks);
         _cave.carve(this, _world, chunkX, chunkZ, blocks);
-        Chunk chunk = new Chunk(_world, blocks, chunkX, chunkZ);
         return chunk;
     }
 

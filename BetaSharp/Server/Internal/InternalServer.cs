@@ -1,4 +1,6 @@
 using BetaSharp.Server.Network;
+using BetaSharp.Server.Worlds;
+using BetaSharp.Worlds;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Internal;
@@ -25,6 +27,17 @@ public class InternalServer : BetaSharpServer
         InternalServerConfiguration serverConfiguration = (InternalServerConfiguration)config;
         serverConfiguration.SetViewDistance(viewDistanceChunks);
         playerManager?.SetViewDistance(viewDistanceChunks);
+        
+        if (worlds != null)
+        {
+            foreach (ServerWorld world in worlds)
+            {
+                if (world?.chunkCache is ServerChunkCache scc)
+                {
+                    scc.ClearCache();
+                }
+            }
+        }
     }
 
     public volatile bool isReady;

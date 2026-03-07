@@ -17,6 +17,7 @@ public class ServerChunkCache : ChunkSource
     private readonly Dictionary<int, Chunk> _chunksByPos = [];
     private readonly List<Chunk> _chunks = [];
     private readonly ServerWorld _world;
+    private readonly Queue<Chunk> _chunkPool = new();
 
     public ServerChunkCache(ServerWorld world, IChunkStorage storage, ChunkSource generator)
     {
@@ -45,14 +46,20 @@ public class ServerChunkCache : ChunkSource
     }
 
 
-    public Chunk LoadChunk(int chunkX, int chunkZ)
+    public Chunk LoadChunk(int chunkX, int chunkZ, Chunk? reusedChunk = null)
     {
         int var3 = ChunkPos.GetHashCode(chunkX, chunkZ);
         _chunksToUnload.Remove(var3);
         _chunksByPos.TryGetValue(var3, out Chunk? var4);
         if (var4 == null)
         {
-            var4 = LoadChunkFromStorage(chunkX, chunkZ);
+            Chunk? pooledChunk = reusedChunk;
+            if (pooledChunk == null)
+            {
+                _chunkPool.TryDequeue(out pooledChunk);
+            }
+
+            var4 = LoadChunkFromStorage(chunkX, chunkZ, pooledChunk);
             if (var4 == null)
             {
                 if (_generator == null)
@@ -61,7 +68,7 @@ public class ServerChunkCache : ChunkSource
                 }
                 else
                 {
-                    var4 = _generator.GetChunk(chunkX, chunkZ);
+                    var4 = _generator.GetChunk(chunkX, chunkZ, pooledChunk);
                 }
             }
 
@@ -113,12 +120,12 @@ public class ServerChunkCache : ChunkSource
     }
 
 
-    public Chunk GetChunk(int chunkX, int chunkZ)
+    public Chunk GetChunk(int chunkX, int chunkZ, Chunk? reusedChunk = null)
     {
         _chunksByPos.TryGetValue(ChunkPos.GetHashCode(chunkX, chunkZ), out Chunk? var3);
         if (var3 == null)
         {
-            return !_world.eventProcessingEnabled && !forceLoad ? _empty : LoadChunk(chunkX, chunkZ);
+            return !_world.eventProcessingEnabled && !forceLoad ? _empty : LoadChunk(chunkX, chunkZ, reusedChunk);
         }
         else
         {
@@ -126,7 +133,7 @@ public class ServerChunkCache : ChunkSource
         }
     }
 
-    private Chunk? LoadChunkFromStorage(int chunkX, int chunkZ)
+    private Chunk? LoadChunkFromStorage(int chunkX, int chunkZ, Chunk? reusedChunk = null)
     {
         if (_storage == null)
         {
@@ -136,10 +143,10 @@ public class ServerChunkCache : ChunkSource
         {
             try
             {
-                Chunk var3 = _storage.LoadChunk(_world, chunkX, chunkZ);
-                var3?.LastSaveTime = _world.getTime();
+                Chunk chunk = _storage.LoadChunk(_world, chunkX, chunkZ, reusedChunk);
+                chunk?.LastSaveTime = _world.getTime();
 
-                return var3;
+                return chunk;
             }
             catch (Exception ex)
             {
@@ -244,14 +251,20 @@ public class ServerChunkCache : ChunkSource
             {
                 if (_chunksToUnload.Count > 0)
                 {
-                    int var2 = _chunksToUnload.First();
-                    Chunk var3 = _chunksByPos[var2];
-                    var3.Unload();
-                    saveChunk(var3);
-                    saveEntities(var3);
-                    _chunksToUnload.Remove(var2);
-                    _chunksByPos.Remove(var2);
-                    _chunks.Remove(var3);
+                    int chunkPos = _chunksToUnload.First();
+                    Chunk chunk = _chunksByPos[chunkPos];
+                    chunk.Unload();
+                    saveChunk(chunk);
+                    saveEntities(chunk);
+                    _chunksToUnload.Remove(chunkPos);
+                    _chunksByPos.Remove(chunkPos);
+                    _chunks.Remove(chunk);
+
+                    if (chunk != _empty)
+                    {
+                        chunk.Reset(chunk.X, chunk.Z);
+                        _chunkPool.Enqueue(chunk);
+                    }
                 }
             }
 
@@ -269,17 +282,16 @@ public class ServerChunkCache : ChunkSource
 
     public string GetDebugInfo()
     {
-        return "NOP";
+        return $"ServerChunkCache: {_chunksByPos.Count} ({_chunkPool.Count} pooled)";
     }
 
-    // Exposes storage loading so the parallel gen phase can skip already-saved chunks.
-    public Chunk? TryLoadFromStorage(int chunkX, int chunkZ) => LoadChunkFromStorage(chunkX, chunkZ);
+    public void ClearCache()
+    {
+        _chunkPool.Clear();
+    }
 
-    /// Creates a parallel-safe generator instance for off-thread terrain generation.
     public ChunkSource CreateParallelGenerator() => _generator.CreateParallelInstance();
 
-    // Inserts a pre-generated chunk without triggering terrain re-generation.
-    // Checks storage first so that saved data is used correctly on server restart.
     public void InsertPreGeneratedChunk(int chunkX, int chunkZ, Chunk generatedChunk)
     {
         int key = ChunkPos.GetHashCode(chunkX, chunkZ);
@@ -291,9 +303,6 @@ public class ServerChunkCache : ChunkSource
         chunk.PopulateBlockLight();
         chunk.Load();
     }
-
-    // Runs the 4 decoration neighbour checks for a newly inserted chunk,
-    // mirroring the logic in LoadChunk but without re-generating terrain.
 
     public void DecorateIfReady(int chunkX, int chunkZ)
     {

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Server.Commands;
 using BetaSharp.Server.Entities;
@@ -9,10 +10,7 @@ using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Storage;
 using java.lang;
-using java.util;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
-using System.Threading;
 using Exception = System.Exception;
 
 namespace BetaSharp.Server;
@@ -103,7 +101,7 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
         }
 
         _logger.LogInformation($"Preparing level \"{worldName}\"");
-        loadWorld(new RegionWorldStorageSource(getFile(".").getAbsolutePath()), worldName, seed);
+        loadWorld(worldName, seed);
 
         if (logHelp)
         {
@@ -113,10 +111,10 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
         return true;
     }
 
-    private void loadWorld(IWorldStorageSource storageSource, string worldDir, long seed)
+    private void loadWorld(string worldDir, long seed)
     {
         worlds = new ServerWorld[2];
-        RegionWorldStorage worldStorage = new RegionWorldStorage(getFile(".").getAbsolutePath(), worldDir, true);
+        RegionWorldStorage worldStorage = new(getFile(".").getAbsolutePath(), worldDir, true);
 
         for (int i = 0; i < worlds.Length; i++)
         {

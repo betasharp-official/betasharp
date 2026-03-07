@@ -176,16 +176,27 @@ internal class SkyChunkGenerator : ChunkSource
         }
     }
 
-    public Chunk LoadChunk(int chunkX, int chunkZ)
+    public Chunk LoadChunk(int chunkX, int chunkZ, Chunk? reusedChunk = null)
     {
-        return GetChunk(chunkX, chunkZ);
+        return GetChunk(chunkX, chunkZ, reusedChunk);
     }
 
-    public Chunk GetChunk(int chunkX, int chunkZ)
+    public Chunk GetChunk(int chunkX, int chunkZ, Chunk? reusedChunk = null)
     {
         _random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
-        byte[] blocks = new byte[-short.MinValue];
-        Chunk chunk = new Chunk(_world, blocks, chunkX, chunkZ);
+        byte[] blocks;
+        Chunk chunk;
+        if (reusedChunk != null)
+        {
+            chunk = reusedChunk;
+            chunk.Reset(chunkX, chunkZ);
+            blocks = chunk.Blocks;
+        }
+        else
+        {
+            blocks = new byte[-short.MinValue];
+            chunk = new Chunk(_world, blocks, chunkX, chunkZ);
+        }
         _biomes = _world.getBiomeSource().GetBiomesInArea(_biomes, chunkX * 16, chunkZ * 16, 16, 16);
         double[] temperatureMap = _world.getBiomeSource().TemperatureMap;
         BuildTerrain(chunkX, chunkZ, blocks, _biomes, temperatureMap);

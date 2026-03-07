@@ -24,7 +24,12 @@ public class MultiplayerChunkCache(World world) : ChunkSource
         _chunkByPos.Remove(new ChunkPos(x, z));
     }
 
-    public Chunk LoadChunk(int x, int z)
+    public void ClearCache()
+    {
+        _chunkPool.Clear();
+    }
+
+    public Chunk LoadChunk(int x, int z, Chunk? reusedChunk = null)
     {
         ChunkPos key = new(x, z);
 
@@ -45,7 +50,7 @@ public class MultiplayerChunkCache(World world) : ChunkSource
         return chunk;
     }
 
-    public Chunk GetChunk(int x, int z)
+    public Chunk GetChunk(int x, int z, Chunk? reusedChunk = null)
     {
         _chunkByPos.TryGetValue(new ChunkPos(x, z), out Chunk? chunk);
         return chunk ?? _empty;
@@ -59,5 +64,5 @@ public class MultiplayerChunkCache(World world) : ChunkSource
 
     public void DecorateTerrain(ChunkSource source, int x, int y) { }
 
-    public string GetDebugInfo() => $"MultiplayerChunkCache: {_chunkByPos.Count}";
+    public string GetDebugInfo() => $"MultiplayerChunkCache: {_chunkByPos.Count} ({_chunkPool.Count} pooled)";
 }

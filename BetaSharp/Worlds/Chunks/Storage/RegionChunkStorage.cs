@@ -15,7 +15,7 @@ internal class RegionChunkStorage : IChunkStorage
         this.dir = new java.io.File(dir);
     }
 
-    public Chunk LoadChunk(World world, int chunkX, int chunkZ)
+    public Chunk LoadChunk(World world, int chunkX, int chunkZ, Chunk? reusedChunk = null)
     {
         using ChunkDataStream s = RegionIo.GetChunkInputStream(dir, chunkX, chunkZ);
         if (s == null)
@@ -40,13 +40,13 @@ internal class RegionChunkStorage : IChunkStorage
             }
             else
             {
-                Chunk var6 = LoadChunkFromNbt(world, var5.GetCompoundTag("Level"));
+                Chunk var6 = LoadChunkFromNbt(world, var5.GetCompoundTag("Level"), reusedChunk);
                 if (!var6.ChunkPosEquals(chunkX, chunkZ))
                 {
                     _logger.LogInformation($"Chunk file at {chunkX},{chunkZ} is in the wrong location; relocating. (Expected {chunkX}, {chunkZ}, got {var6.X}, {var6.Z})");
                     var5.SetInteger("xPos", chunkX);
                     var5.SetInteger("zPos", chunkZ);
-                    var6 = LoadChunkFromNbt(world, var5.GetCompoundTag("Level"));
+                    var6 = LoadChunkFromNbt(world, var5.GetCompoundTag("Level"), reusedChunk);
                 }
 
                 var6.Fill();
@@ -119,11 +119,19 @@ internal class RegionChunkStorage : IChunkStorage
         nbt.SetTag("TileEntities", var8);
     }
 
-    public static Chunk LoadChunkFromNbt(World world, NBTTagCompound nbt)
+    public static Chunk LoadChunkFromNbt(World world, NBTTagCompound nbt, Chunk? reusedChunk = null)
     {
         int var2 = nbt.GetInteger("xPos");
         int var3 = nbt.GetInteger("zPos");
-        Chunk var4 = new(world, var2, var3);
+        Chunk? var4 = reusedChunk;
+        if (var4 != null)
+        {
+            var4.Reset(var2, var3);
+        }
+        else
+        {
+            var4 = new(world, var2, var3);
+        }
         var4.Blocks = nbt.GetByteArray("Blocks");
         var4.Meta = new ChunkNibbleArray(nbt.GetByteArray("Data"));
         var4.SkyLight = new ChunkNibbleArray(nbt.GetByteArray("SkyLight"));
