@@ -182,12 +182,12 @@ public abstract class BlockFluid : Block
         return flowVector;
     }
 
-    public override void applyVelocity(World world, int x, int y, int z, Entity entity, Vec3D velocity)
+    public override void applyVelocity(OnApplyVelocityEvt ctx)
     {
-        Vector3D<double> flowVec = getFlow(world.BlocksReader, x, y, z);
-        velocity.x += flowVec.X;
-        velocity.y += flowVec.Y;
-        velocity.z += flowVec.Z;
+        Vector3D<double> flowVec = getFlow(ctx.WorldRead, ctx.X, ctx.Y, ctx.Z);
+        ctx.Velocity.x += flowVec.X;
+        ctx.Velocity.y += flowVec.Y;
+        ctx.Velocity.z += flowVec.Z;
     }
 
     public override int getTickRate() => material == Material.Water ? 5 : material == Material.Lava ? 30 : 0;

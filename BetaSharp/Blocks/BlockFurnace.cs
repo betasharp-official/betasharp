@@ -4,11 +4,13 @@ using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Blocks;
 
 internal class BlockFurnace : BlockWithEntity
 {
+    private static readonly ILogger<BlockFurnace> s_logger = BetaSharp.Log.Instance.For<BlockFurnace>();
     private static readonly ThreadLocal<bool> s_ignoreBlockRemoval = new(() => false);
     private readonly bool _lit;
 
@@ -172,11 +174,16 @@ internal class BlockFurnace : BlockWithEntity
 
     protected override BlockEntity getBlockEntity() => new BlockEntityFurnace();
 
-    public override void onBreak(World world, int x, int y, int z)
+    public override void onBreak(OnBreakEvt ctx)
     {
         if (!s_ignoreBlockRemoval.Value)
         {
-            BlockEntityFurnace furnace = (BlockEntityFurnace)world.getBlockEntity(x, y, z);
+            BlockEntityFurnace? furnace = (BlockEntityFurnace?)ctx.WorldRead.GetBlockEntity(ctx.X, ctx.Y, ctx.Z);
+            if (furnace == null)
+            {
+                s_logger.LogWarning("BlockEntityFurnace not found at {X}, {Y}, {Z}", ctx.X, ctx.Y, ctx.Z);
+                return;
+            }
 
             for (int slotIndex = 0; slotIndex < furnace.size(); ++slotIndex)
             {
@@ -196,17 +203,17 @@ internal class BlockFurnace : BlockWithEntity
                         }
 
                         stack.count -= var11;
-                        EntityItem droppedItem = new(world, x + offsetX, y + offsetY, z + offsetZ, new ItemStack(stack.itemId, var11, stack.getDamage()));
-                        float var13 = 0.05F;
-                        droppedItem.velocityX = (float)_random.NextGaussian() * var13;
-                        droppedItem.velocityY = (float)_random.NextGaussian() * var13 + 0.2F;
-                        droppedItem.velocityZ = (float)_random.NextGaussian() * var13;
-                        world.SpawnEntity(droppedItem);
+                        // EntityItem droppedItem = new(world, x + offsetX, y + offsetY, z + offsetZ, new ItemStack(stack.itemId, var11, stack.getDamage()));
+                        // float var13 = 0.05F;
+                        // droppedItem.velocityX = (float)_random.NextGaussian() * var13;
+                        // droppedItem.velocityY = (float)_random.NextGaussian() * var13 + 0.2F;
+                        // droppedItem.velocityZ = (float)_random.NextGaussian() * var13;
+                        // world.SpawnEntity(droppedItem);
                     }
                 }
             }
         }
 
-        base.onBreak(world, x, y, z);
+        base.onBreak(ctx);
     }
 }

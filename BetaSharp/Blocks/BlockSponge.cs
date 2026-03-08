@@ -1,5 +1,4 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Blocks;
 
@@ -7,17 +6,17 @@ internal class BlockSponge : Block
 {
     public BlockSponge(int id) : base(id, Material.Sponge) => textureId = 48;
 
-    public override void onPlaced(World world, int x, int y, int z)
+    public override void onPlaced(OnPlacedEvt ctx)
     {
         sbyte radius = 2;
 
-        for (int checkX = x - radius; checkX <= x + radius; ++checkX)
+        for (int checkX = ctx.X - radius; checkX <= ctx.X + radius; ++checkX)
         {
-            for (int checkY = y - radius; checkY <= y + radius; ++checkY)
+            for (int checkY = ctx.Y - radius; checkY <= ctx.Y + radius; ++checkY)
             {
-                for (int checkZ = z - radius; checkZ <= z + radius; ++checkZ)
+                for (int checkZ = ctx.Z - radius; checkZ <= ctx.Z + radius; ++checkZ)
                 {
-                    if (world.getMaterial(checkX, checkY, checkZ) == Material.Water)
+                    if (ctx.WorldRead.GetMaterial(checkX, checkY, checkZ) == Material.Water)
                     {
                     }
                 }
@@ -25,17 +24,18 @@ internal class BlockSponge : Block
         }
     }
 
-    public override void onBreak(World world, int x, int y, int z)
+    public override void onBreak(OnBreakEvt ctx)
     {
         sbyte radius = 2;
 
-        for (int checkX = x - radius; checkX <= x + radius; ++checkX)
+        for (int checkX = ctx.X - radius; checkX <= ctx.X + radius; ++checkX)
         {
-            for (int checkY = y - radius; checkY <= y + radius; ++checkY)
+            for (int checkY = ctx.Y - radius; checkY <= ctx.Y + radius; ++checkY)
             {
-                for (int checkZ = z - radius; checkZ <= z + radius; ++checkZ)
+                for (int checkZ = ctx.Z - radius; checkZ <= ctx.Z + radius; ++checkZ)
                 {
-                    world.notifyNeighbors(checkX, checkY, checkZ, world.getBlockId(checkX, checkY, checkZ));
+                    // TODO: Implement this
+                    // ctx.World.notifyNeighbors(checkX, checkY, checkZ, ctx.World.getBlockId(checkX, checkY, checkZ));
                 }
             }
         }

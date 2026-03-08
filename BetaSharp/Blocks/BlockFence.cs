@@ -10,7 +10,7 @@ internal class BlockFence : Block
     {
     }
 
-    public override bool canPlaceAt(OnPlacedEvt ctx) => ctx.WorldRead.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == id ? true : !ctx.WorldRead.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z).IsSolid ? false : base.canPlaceAt(ctx);
+    public override bool canPlaceAt(CanPlaceAtCtx ctx) => ctx.WorldRead.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == id ? true : !ctx.WorldRead.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z).IsSolid ? false : base.canPlaceAt(ctx);
 
     public override Box? getCollisionShape(IBlockReader world, int x, int y, int z) => new Box(x, y, z, x + 1, y + 1.5F, z + 1);
 

@@ -12,7 +12,7 @@ internal class BlockLadder : Block
 
     public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)
     {
-        int meta = world.getBlockMeta(x, y, z);
+        int meta = world.GetBlockMeta(x, y, z);
         float thickness = 2.0F / 16.0F;
         if (meta == 2)
         {
@@ -37,9 +37,9 @@ internal class BlockLadder : Block
         return base.getCollisionShape(world, x, y, z);
     }
 
-    public override Box getBoundingBox(World world, int x, int y, int z)
+    public override Box getBoundingBox(IBlockReader world, int x, int y, int z)
     {
-        int meta = world.getBlockMeta(x, y, z);
+        int meta = world.GetBlockMeta(x, y, z);
         float thickness = 2.0F / 16.0F;
         if (meta == 2)
         {
@@ -70,66 +70,67 @@ internal class BlockLadder : Block
 
     public override BlockRendererType getRenderType() => BlockRendererType.Ladder;
 
-    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z) =>
-        world.shouldSuffocate(x - 1, y, z) ? true : world.shouldSuffocate(x + 1, y, z) ? true : world.shouldSuffocate(x, y, z - 1) ? true : world.shouldSuffocate(x, y, z + 1);
+    public override bool canPlaceAt(CanPlaceAtCtx ctx) =>
+        ctx.WorldRead.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z) ? true : ctx.WorldRead.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z) ? true : ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1) ? true : ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1);
 
-    public override void onPlaced(World world, int x, int y, int z, int direction)
+    public override void onPlaced(OnPlacedEvt ctx)
     {
-        int meta = world.getBlockMeta(x, y, z);
-        if ((meta == 0 || direction == 2) && world.shouldSuffocate(x, y, z + 1))
+        int meta = ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        if ((meta == 0 || ctx.Direction == 2) && ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1))
         {
             meta = 2;
         }
 
-        if ((meta == 0 || direction == 3) && world.shouldSuffocate(x, y, z - 1))
+        if ((meta == 0 || ctx.Direction == 3) && ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1))
         {
             meta = 3;
         }
 
-        if ((meta == 0 || direction == 4) && world.shouldSuffocate(x + 1, y, z))
+        if ((meta == 0 || ctx.Direction == 4) && ctx.WorldRead.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z))
         {
             meta = 4;
         }
 
-        if ((meta == 0 || direction == 5) && world.shouldSuffocate(x - 1, y, z))
+        if ((meta == 0 || ctx.Direction == 5) && ctx.WorldRead.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z))
         {
             meta = 5;
         }
 
-        world.setBlockMeta(x, y, z, meta);
+        ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, meta);
     }
 
-    public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickEvt ctx)
     {
-        int meta = world.getBlockMeta(x, y, z);
+        int meta = ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         bool hasSupport = false;
-        if (meta == 2 && world.shouldSuffocate(x, y, z + 1))
+        if (meta == 2 && ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1))
         {
             hasSupport = true;
         }
 
-        if (meta == 3 && world.shouldSuffocate(x, y, z - 1))
+        if (meta == 3 && ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1))
         {
             hasSupport = true;
         }
 
-        if (meta == 4 && world.shouldSuffocate(x + 1, y, z))
+        if (meta == 4 && ctx.WorldRead.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z))
         {
             hasSupport = true;
         }
 
-        if (meta == 5 && world.shouldSuffocate(x - 1, y, z))
+        if (meta == 5 && ctx.WorldRead.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z))
         {
             hasSupport = true;
         }
 
         if (!hasSupport)
         {
-            dropStacks(world, x, y, z, meta);
-            world.setBlock(x, y, z, 0);
+            // TODO: Implement this
+            // dropStacks(world, x, y, z, meta);
+            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
         }
 
-        base.neighborUpdate(world, x, y, z, id);
+        base.neighborUpdate(ctx);
     }
 
     public override int getDroppedItemCount() => 1;

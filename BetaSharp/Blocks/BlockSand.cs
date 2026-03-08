@@ -18,9 +18,11 @@ internal class BlockSand : Block
         set => s_fallInstantly.Value = value;
     }
 
-    public override void onPlaced(World world, int x, int y, int z) => world.ScheduleBlockUpdate(x, y, z, id, getTickRate());
+    // TODO: Implement this
+    // public override void onPlaced(OnPlacedEvt ctx) => ctx.WorldWrite.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
 
-    public override void neighborUpdate(OnTickEvt ctx) => ctx.WorldRead.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
+    // TODO: Implement this
+    //public override void neighborUpdate(OnTickEvt ctx) => ctx.WorldRead.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
 
     public override void onTick(OnTickEvt ctx) => processFall(ctx);
 
@@ -29,12 +31,13 @@ internal class BlockSand : Block
         if (canFallThrough(ctx) && ctx.Y >= 0)
         {
             sbyte checkRadius = 32;
-            if (!fallInstantly && ctx.WorldRead.IsRegionLoaded(ctx.X - checkRadius, ctx.Y - checkRadius, ctx.Z - checkRadius, ctx.X + checkRadius, ctx.Y + checkRadius, ctx.Z + checkRadius))
-            {
-                EntityFallingSand fallingSand = new EntityFallingSand(ctx.WorldRead, (double)(ctx.X + 0.5F), (double)(ctx.Y + 0.5F), (double)(ctx.Z + 0.5F), id);
-                ctx.Entities.SpawnEntity(fallingSand);
-            }
-            else
+            // TODO: Implement this
+            // if (!fallInstantly && ctx.WorldRead.IsRegionLoaded(ctx.X - checkRadius, ctx.Y - checkRadius, ctx.Z - checkRadius, ctx.X + checkRadius, ctx.Y + checkRadius, ctx.Z + checkRadius))
+            // {
+            //     EntityFallingSand fallingSand = new EntityFallingSand(ctx.WorldRead, (double)(ctx.X + 0.5F), (double)(ctx.Y + 0.5F), (double)(ctx.Z + 0.5F), id);
+            //     ctx.Entities.SpawnEntity(fallingSand);
+            // }
+            // else
             {
                 ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
 

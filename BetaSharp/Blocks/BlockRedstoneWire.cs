@@ -23,7 +23,7 @@ public class BlockRedstoneWire : Block
 
     public override int getColorMultiplier(IBlockReader var1, int var2, int var3, int var4) => 8388608;
 
-    public override bool canPlaceAt(OnPlacedEvt ctx) => ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z);
+    public override bool canPlaceAt(CanPlaceAtCtx ctx) => ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z);
 
     private void updateAndPropagateCurrentStrength(World world, WorldBlockWrite worldWrite, int x, int y, int z)
     {

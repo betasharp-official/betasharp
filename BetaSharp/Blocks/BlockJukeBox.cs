@@ -62,9 +62,10 @@ internal class BlockJukeBox : BlockWithEntity
                 double offsetX = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5D;
                 double offsetY = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.2D + 0.6D;
                 double offsetZ = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5D;
-                EntityItem entityItem = new(world, x + offsetX, y + offsetY, z + offsetZ, new ItemStack(recordId, 1, 0));
-                entityItem.delayBeforeCanPickup = 10;
-                manager.SpawnEntity(entityItem);
+                // TODO: Implement this
+                // EntityItem entityItem = new(world, x + offsetX, y + offsetY, z + offsetZ, new ItemStack(recordId, 1, 0));
+                // entityItem.delayBeforeCanPickup = 10;
+                // manager.SpawnEntity(entityItem);
             }
         }
     }
@@ -75,11 +76,11 @@ internal class BlockJukeBox : BlockWithEntity
         base.onBreak(ctx);
     }
 
-    public override void dropStacks(WorldBlockView world, int x, int y, int z, int meta, float luck)
+    public override void dropStacks(OnDropEvt ctx)
     {
         if (!ctx.IsRemote)
         {
-            base.dropStacks(world, x, y, z, meta, luck);
+            base.dropStacks(ctx);
         }
     }
 

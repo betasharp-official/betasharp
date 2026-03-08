@@ -51,9 +51,9 @@ internal class BlockDoor : Block
 
     public override BlockRendererType getRenderType() => BlockRendererType.Door;
 
-    public override Box getBoundingBox(World world, int x, int y, int z)
+    public override Box getBoundingBox(IBlockReader world, int x, int y, int z)
     {
-        updateBoundingBox(world.BlocksReader, x, y, z);
+        updateBoundingBox(world, x, y, z);
         return base.getBoundingBox(world, x, y, z);
     }
 
@@ -189,7 +189,8 @@ internal class BlockDoor : Block
             {
                 if (!ctx.IsRemote)
                 {
-                    dropStacks(ctx.WorldRead, ctx.X, ctx.Y, ctx.Z, meta);
+                    // TODO: Implement this
+                    // dropStacks(ctx.WorldRead, ctx.X, ctx.Y, ctx.Z, meta);
                 }
             }
             else if (ctx.BlockId > 0 && Blocks[ctx.BlockId].canEmitRedstonePower())
@@ -210,7 +211,7 @@ internal class BlockDoor : Block
 
     public int setOpen(int meta) => (meta & 4) == 0 ? (meta - 1) & 3 : meta & 3;
 
-    public override bool canPlaceAt(OnPlacedEvt ctx) => ctx.Y >= 127 ? false : ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) && base.canPlaceAt(ctx) && base.canPlaceAt(ctx);
+    public override bool canPlaceAt(CanPlaceAtCtx ctx) => ctx.Y >= 127 ? false : ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) && base.canPlaceAt(ctx) && base.canPlaceAt(ctx);
 
     public static bool isOpen(int meta) => (meta & 4) != 0;
 

@@ -315,7 +315,7 @@ public class Block
     {
     }
 
-    public virtual void onMetadataChange(OnMetadataChangeEvt e)
+    public virtual void onMetadataChange(OnMetadataChangeEvt ctx)
     {
     }
 

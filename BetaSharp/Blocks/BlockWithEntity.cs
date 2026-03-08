@@ -1,6 +1,5 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Blocks;
 
@@ -10,16 +9,16 @@ public abstract class BlockWithEntity : Block
 
     protected BlockWithEntity(int id, int textureId, Material material) : base(id, textureId, material) => BlocksWithEntity[id] = true;
 
-    public override void onPlaced(World world, int x, int y, int z)
+    public override void onPlaced(OnPlacedEvt ctx)
     {
-        base.onPlaced(world, x, y, z);
-        world.setBlockEntity(x, y, z, getBlockEntity());
+        base.onPlaced(ctx);
+        ctx.WorldWrite.SetBlockEntity(ctx.X, ctx.Y, ctx.Z, getBlockEntity());
     }
 
-    public override void onBreak(World world, int x, int y, int z)
+    public override void onBreak(OnBreakEvt ctx)
     {
-        base.onBreak(world, x, y, z);
-        world.removeBlockEntity(x, y, z);
+        base.onBreak(ctx);
+        ctx.WorldWrite.RemoveBlockEntity(ctx.X, ctx.Y, ctx.Z);
     }
 
     protected abstract BlockEntity getBlockEntity();

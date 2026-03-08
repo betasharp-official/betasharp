@@ -19,108 +19,82 @@ internal class BlockLever : Block
 
     public override BlockRendererType getRenderType() => BlockRendererType.Lever;
 
-    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z, int side) => side == 1 && world.shouldSuffocate(x, y - 1, z) ? true :
-        side == 2 && world.shouldSuffocate(x, y, z + 1) ? true :
-        side == 3 && world.shouldSuffocate(x, y, z - 1) ? true :
-        side == 4 && world.shouldSuffocate(x + 1, y, z) ? true : side == 5 && world.shouldSuffocate(x - 1, y, z);
+    // Converted nested ternaries to clean boolean logic
+    public bool canPlaceAt(IBlockReader world, int x, int y, int z, int side) => 
+        (side == 1 && world.ShouldSuffocate(x, y - 1, z)) ||
+        (side == 2 && world.ShouldSuffocate(x, y, z + 1)) ||
+        (side == 3 && world.ShouldSuffocate(x, y, z - 1)) ||
+        (side == 4 && world.ShouldSuffocate(x + 1, y, z)) || 
+        (side == 5 && world.ShouldSuffocate(x - 1, y, z));
 
-    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z) => world.shouldSuffocate(x - 1, y, z) ? true :
-        world.shouldSuffocate(x + 1, y, z) ? true :
-        world.shouldSuffocate(x, y, z - 1) ? true :
-        world.shouldSuffocate(x, y, z + 1) ? true : world.shouldSuffocate(x, y - 1, z);
+    public override bool canPlaceAt(CanPlaceAtCtx ctx) => 
+        ctx.WorldRead.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z) ||
+        ctx.WorldRead.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z) ||
+        ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1) ||
+        ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1) || 
+        ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z);
 
-    public override void onPlaced(World world, int x, int y, int z, int direction)
+    public override void onPlaced(OnPlacedEvt ctx)
     {
-        int var6 = world.getBlockMeta(x, y, z);
-        int var7 = var6 & 8;
-        var6 &= 7;
-        var6 = -1;
-        if (direction == 1 && world.shouldSuffocate(x, y - 1, z))
+        int meta = ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        int powered = meta & 8;
+        meta &= 7;
+        meta = -1;
+
+        if (ctx.Direction == 1 && ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z))
         {
-            var6 = 5 + world.random.NextInt(2);
+            // OnPlacedEvt doesn't have a Random instance, so we instantiate one locally 
+            // to handle the randomized floor orientation Lever quirk.
+            meta = 5 + new JavaRandom().NextInt(2);
         }
 
-        if (direction == 2 && world.shouldSuffocate(x, y, z + 1))
-        {
-            var6 = 4;
-        }
+        if (ctx.Direction == 2 && ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1)) meta = 4;
+        if (ctx.Direction == 3 && ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1)) meta = 3;
+        if (ctx.Direction == 4 && ctx.WorldRead.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z)) meta = 2;
+        if (ctx.Direction == 5 && ctx.WorldRead.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z)) meta = 1;
 
-        if (direction == 3 && world.shouldSuffocate(x, y, z - 1))
+        if (meta == -1)
         {
-            var6 = 3;
-        }
-
-        if (direction == 4 && world.shouldSuffocate(x + 1, y, z))
-        {
-            var6 = 2;
-        }
-
-        if (direction == 5 && world.shouldSuffocate(x - 1, y, z))
-        {
-            var6 = 1;
-        }
-
-        if (var6 == -1)
-        {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            // TODO: Implement this
+            // dropStacks(new OnDropEvt(ctx.WorldRead, default!, ctx.IsRemote, ctx.X, ctx.Y, ctx.Z, ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z)));
+            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
         }
         else
         {
-            world.setBlockMeta(x, y, z, var6 + var7);
+            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, meta + powered);
         }
     }
 
-    public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickEvt ctx)
     {
-        if (breakIfCannotPlaceAt(world, x, y, z))
+        if (breakIfCannotPlaceAt(ctx.WorldRead, ctx.WorldWrite, ctx))
         {
-            int var6 = world.getBlockMeta(x, y, z) & 7;
-            bool var7 = false;
-            if (!world.shouldSuffocate(x - 1, y, z) && var6 == 1)
-            {
-                var7 = true;
-            }
+            int direction = ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) & 7;
+            bool shouldDrop = false;
 
-            if (!world.shouldSuffocate(x + 1, y, z) && var6 == 2)
-            {
-                var7 = true;
-            }
+            if (!ctx.WorldRead.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z) && direction == 1) shouldDrop = true;
+            if (!ctx.WorldRead.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z) && direction == 2) shouldDrop = true;
+            if (!ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1) && direction == 3) shouldDrop = true;
+            if (!ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1) && direction == 4) shouldDrop = true;
+            if (!ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) && direction == 5) shouldDrop = true;
+            if (!ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) && direction == 6) shouldDrop = true;
 
-            if (!world.shouldSuffocate(x, y, z - 1) && var6 == 3)
+            if (shouldDrop)
             {
-                var7 = true;
-            }
-
-            if (!world.shouldSuffocate(x, y, z + 1) && var6 == 4)
-            {
-                var7 = true;
-            }
-
-            if (!world.shouldSuffocate(x, y - 1, z) && var6 == 5)
-            {
-                var7 = true;
-            }
-
-            if (!world.shouldSuffocate(x, y - 1, z) && var6 == 6)
-            {
-                var7 = true;
-            }
-
-            if (var7)
-            {
-                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-                world.setBlock(x, y, z, 0);
+                // TODO: Implement this
+                // dropStacks(new OnDropEvt(ctx.WorldRead, ctx.Rules, ctx.IsRemote, ctx.X, ctx.Y, ctx.Z, ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z)));
+                ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             }
         }
     }
 
-    private bool breakIfCannotPlaceAt(World world, int x, int y, int z)
+    private bool breakIfCannotPlaceAt(IBlockReader worldRead, IBlockWrite worldWrite, OnTickEvt ctx)
     {
-        if (!canPlaceAt(world, x, y, z))
+        if (!canPlaceAt(new CanPlaceAtCtx(worldRead, worldWrite, 0, ctx.X, ctx.Y, ctx.Z)))
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            // TODO: Implement this
+            // dropStacks(new OnDropEvt(ctx.WorldRead, ctx.Rules, ctx.IsRemote, ctx.X, ctx.Y, ctx.Z, worldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z)));
+            worldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             return false;
         }
 
@@ -129,115 +103,93 @@ internal class BlockLever : Block
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
     {
-        int var5 = iBlockReader.getBlockMeta(x, y, z) & 7;
-        float var6 = 3.0F / 16.0F;
-        if (var5 == 1)
-        {
-            setBoundingBox(0.0F, 0.2F, 0.5F - var6, var6 * 2.0F, 0.8F, 0.5F + var6);
-        }
-        else if (var5 == 2)
-        {
-            setBoundingBox(1.0F - var6 * 2.0F, 0.2F, 0.5F - var6, 1.0F, 0.8F, 0.5F + var6);
-        }
-        else if (var5 == 3)
-        {
-            setBoundingBox(0.5F - var6, 0.2F, 0.0F, 0.5F + var6, 0.8F, var6 * 2.0F);
-        }
-        else if (var5 == 4)
-        {
-            setBoundingBox(0.5F - var6, 0.2F, 1.0F - var6 * 2.0F, 0.5F + var6, 0.8F, 1.0F);
-        }
+        int meta = iBlockReader.GetBlockMeta(x, y, z) & 7;
+        float width = 3.0F / 16.0F;
+        
+        if (meta == 1) setBoundingBox(0.0F, 0.2F, 0.5F - width, width * 2.0F, 0.8F, 0.5F + width);
+        else if (meta == 2) setBoundingBox(1.0F - width * 2.0F, 0.2F, 0.5F - width, 1.0F, 0.8F, 0.5F + width);
+        else if (meta == 3) setBoundingBox(0.5F - width, 0.2F, 0.0F, 0.5F + width, 0.8F, width * 2.0F);
+        else if (meta == 4) setBoundingBox(0.5F - width, 0.2F, 1.0F - width * 2.0F, 0.5F + width, 0.8F, 1.0F);
         else
         {
-            var6 = 0.25F;
-            setBoundingBox(0.5F - var6, 0.0F, 0.5F - var6, 0.5F + var6, 0.6F, 0.5F + var6);
+            width = 0.25F;
+            setBoundingBox(0.5F - width, 0.0F, 0.5F - width, 0.5F + width, 0.6F, 0.5F + width);
         }
     }
 
-    public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player) => onUse(world, x, y, z, player);
-
-    public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
+    // Both break start and use trigger the same logic, so we route them here
+    public override void onBlockBreakStart(OnBlockBreakStartEvt ctx)
     {
-        if (world.isRemote)
+        toggleLever(ctx.WorldRead, ctx.WorldWrite, ctx.Broadcaster, ctx.X, ctx.Y, ctx.Z);
+    }
+
+    public override bool onUse(OnUseEvt ctx)
+    {
+        if (ctx.IsRemote)
         {
             return true;
         }
 
-        int var6 = world.getBlockMeta(x, y, z);
-        int var7 = var6 & 7;
-        int var8 = 8 - (var6 & 8);
-        world.setBlockMeta(x, y, z, var7 + var8);
-        world.setBlocksDirty(x, y, z, x, y, z);
-        world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "random.click", 0.3F, var8 > 0 ? 0.6F : 0.5F);
-        world.notifyNeighbors(x, y, z, id);
-        if (var7 == 1)
-        {
-            world.notifyNeighbors(x - 1, y, z, id);
-        }
-        else if (var7 == 2)
-        {
-            world.notifyNeighbors(x + 1, y, z, id);
-        }
-        else if (var7 == 3)
-        {
-            world.notifyNeighbors(x, y, z - 1, id);
-        }
-        else if (var7 == 4)
-        {
-            world.notifyNeighbors(x, y, z + 1, id);
-        }
-        else
-        {
-            world.notifyNeighbors(x, y - 1, z, id);
-        }
-
+        toggleLever(ctx.WorldRead, ctx.WorldWrite, ctx.Broadcaster, ctx.X, ctx.Y, ctx.Z);
         return true;
     }
 
-    public override void onBreak(World world, int x, int y, int z)
+    // Extracted helper method to handle the shared lever flip logic
+    private void toggleLever(IBlockReader worldRead, IBlockWrite worldWrite, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        int var5 = world.getBlockMeta(x, y, z);
-        if ((var5 & 8) > 0)
-        {
-            world.notifyNeighbors(x, y, z, id);
-            int var6 = var5 & 7;
-            if (var6 == 1)
-            {
-                world.notifyNeighbors(x - 1, y, z, id);
-            }
-            else if (var6 == 2)
-            {
-                world.notifyNeighbors(x + 1, y, z, id);
-            }
-            else if (var6 == 3)
-            {
-                world.notifyNeighbors(x, y, z - 1, id);
-            }
-            else if (var6 == 4)
-            {
-                world.notifyNeighbors(x, y, z + 1, id);
-            }
-            else
-            {
-                world.notifyNeighbors(x, y - 1, z, id);
-            }
-        }
-
-        base.onBreak(world, x, y, z);
+        int meta = worldRead.GetBlockMeta(x, y, z);
+        int direction = meta & 7;
+        int powered = 8 - (meta & 8);
+        
+        worldWrite.SetBlockMeta(x, y, z, direction + powered);
+        worldWrite.SetBlocksDirty(x, y, z);
+        broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.click", 0.3F, powered > 0 ? 0.6F : 0.5F);
+        
+        broadcaster.NotifyNeighbors(x, y, z, id);
+        
+        if (direction == 1) broadcaster.NotifyNeighbors(x - 1, y, z, id);
+        else if (direction == 2) broadcaster.NotifyNeighbors(x + 1, y, z, id);
+        else if (direction == 3) broadcaster.NotifyNeighbors(x, y, z - 1, id);
+        else if (direction == 4) broadcaster.NotifyNeighbors(x, y, z + 1, id);
+        else broadcaster.NotifyNeighbors(x, y - 1, z, id);
     }
 
-    public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int a, int side) => (iBlockReader.getBlockMeta(x, y, a) & 8) > 0;
+    public override void onBreak(OnBreakEvt ctx)
+    {
+        int meta = ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        if ((meta & 8) > 0)
+        {
+            ctx.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, id);
+            int direction = meta & 7;
+            
+            if (direction == 1) ctx.Broadcaster.NotifyNeighbors(ctx.X - 1, ctx.Y, ctx.Z, id);
+            else if (direction == 2) ctx.Broadcaster.NotifyNeighbors(ctx.X + 1, ctx.Y, ctx.Z, id);
+            else if (direction == 3) ctx.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z - 1, id);
+            else if (direction == 4) ctx.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z + 1, id);
+            else ctx.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, id);
+        }
+
+        base.onBreak(ctx);
+    }
+
+    public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => 
+        (iBlockReader.GetBlockMeta(x, y, z) & 8) > 0;
 
     public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side)
     {
-        int var6 = world.getBlockMeta(x, y, z);
-        if ((var6 & 8) == 0)
+        int meta = world.GetBlockMeta(x, y, z);
+        if ((meta & 8) == 0)
         {
             return false;
         }
 
-        int var7 = var6 & 7;
-        return var7 == 6 && side == 1 ? true : var7 == 5 && side == 1 ? true : var7 == 4 && side == 2 ? true : var7 == 3 && side == 3 ? true : var7 == 2 && side == 4 ? true : var7 == 1 && side == 5;
+        int direction = meta & 7;
+        return (direction == 6 && side == 1) || 
+               (direction == 5 && side == 1) || 
+               (direction == 4 && side == 2) || 
+               (direction == 3 && side == 3) || 
+               (direction == 2 && side == 4) || 
+               (direction == 1 && side == 5);
     }
 
     public override bool canEmitRedstonePower() => true;

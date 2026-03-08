@@ -868,7 +868,7 @@ public abstract class Entity
         velocityModified = true;
     }
 
-    public virtual bool damage(Entity entity, int amount)
+    public virtual bool damage(Entity? entity, int amount)
     {
         scheduleVelocityUpdate();
         return false;

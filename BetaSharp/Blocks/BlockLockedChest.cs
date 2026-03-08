@@ -1,5 +1,4 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Blocks;
@@ -50,7 +49,7 @@ internal class BlockLockedChest : Block
 
     public override int getTexture(int side) => side == 1 ? textureId - 1 : side == 0 ? textureId - 1 : side == 3 ? textureId + 1 : textureId;
 
-    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z) => true;
+    public override bool canPlaceAt(CanPlaceAtCtx ctx) => true;
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote) => worldView.setBlock(x, y, z, 0);
+    public override void onTick(OnTickEvt ctx) => ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
 }

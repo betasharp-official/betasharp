@@ -83,12 +83,12 @@ public struct OnUseEvt(WorldBlockView worldRead, WorldBlockWrite worldWrite, Wor
     public int Z = z;
 }
 
-public struct OnBreakEvt(WorldBlockView worldRead, WorldBlockWrite worldWrite, WorldEventBroadcaster broadcaster, Dimension dimension, EntityManager entities, Entity entity, bool isRemote, int x, int y, int z)
+public struct OnBreakEvt(WorldBlockView worldRead, WorldBlockWrite worldWrite, WorldEventBroadcaster broadcaster, IWorldAccess world, EntityManager entities, Entity entity, bool isRemote, int x, int y, int z)
 {
     public WorldBlockView WorldRead = worldRead;
     public WorldBlockWrite WorldWrite = worldWrite;
     public WorldEventBroadcaster Broadcaster = broadcaster;
-    public Dimension Dimension = dimension;
+    public IWorldAccess World = world;
     public EntityManager Entities = entities;
     public Entity Entity = entity;
     public bool IsRemote = isRemote;

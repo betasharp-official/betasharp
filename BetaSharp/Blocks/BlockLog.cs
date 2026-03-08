@@ -12,13 +12,13 @@ internal class BlockLog : Block
 
     public override int getDroppedItemId(int blockMeta) => Log.id;
 
-    public override void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta) => base.afterBreak(world, player, x, y, z, meta);
+    public override void afterBreak(OnAfterBreakEvt ctx) => base.afterBreak(ctx);
 
-    public override void onBreak(World world, int x, int y, int z)
+    public override void onBreak(OnBreakEvt ctx)
     {
         sbyte searchRadius = 4;
         int regionExtent = searchRadius + 1;
-        if (world.isRegionLoaded(x - regionExtent, y - regionExtent, z - regionExtent, x + regionExtent, y + regionExtent, z + regionExtent))
+        if (ctx.world.IsRegionLoaded(ctx.X - regionExtent, ctx.Y - regionExtent, ctx.Z - regionExtent, ctx.X + regionExtent, ctx.Y + regionExtent, ctx.Z + regionExtent))
         {
             for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
             {
@@ -26,13 +26,13 @@ internal class BlockLog : Block
                 {
                     for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                     {
-                        int neighborBlockId = world.getBlockId(x + offsetX, y + offsetY, z + offsetZ);
+                        int neighborBlockId = ctx.WorldRead.GetBlockId(ctx.X + offsetX, ctx.Y + offsetY, ctx.Z + offsetZ);
                         if (neighborBlockId == Leaves.id)
                         {
-                            int leavesMeta = world.getBlockMeta(x + offsetX, y + offsetY, z + offsetZ);
+                            int leavesMeta = ctx.WorldRead.GetBlockMeta(ctx.X + offsetX, ctx.Y + offsetY, ctx.Z + offsetZ);
                             if ((leavesMeta & 8) == 0)
                             {
-                                world.SetBlockMetaWithoutNotifyingNeighbors(x + offsetX, y + offsetY, z + offsetZ, leavesMeta | 8);
+                                ctx.WorldWrite.SetBlockMetaWithoutNotifyingNeighbors(ctx.X + offsetX, ctx.Y + offsetY, ctx.Z + offsetZ, leavesMeta | 8);
                             }
                         }
                     }
