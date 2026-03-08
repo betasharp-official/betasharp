@@ -6,7 +6,6 @@ namespace BetaSharp.Blocks;
 
 internal class BlockLadder : Block
 {
-
     public BlockLadder(int id, int textureId) : base(id, textureId, Material.PistonBreakable)
     {
     }
@@ -65,25 +64,14 @@ internal class BlockLadder : Block
         return base.getBoundingBox(world, x, y, z);
     }
 
-    public override bool isOpaque()
-    {
-        return false;
-    }
+    public override bool isOpaque() => false;
 
-    public override bool isFullCube()
-    {
-        return false;
-    }
+    public override bool isFullCube() => false;
 
-    public override BlockRendererType getRenderType()
-    {
-        return BlockRendererType.Ladder;
-    }
+    public override BlockRendererType getRenderType() => BlockRendererType.Ladder;
 
-    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z)
-    {
-        return world.shouldSuffocate(x - 1, y, z) ? true : (world.shouldSuffocate(x + 1, y, z) ? true : (world.shouldSuffocate(x, y, z - 1) ? true : world.shouldSuffocate(x, y, z + 1)));
-    }
+    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z) =>
+        world.shouldSuffocate(x - 1, y, z) ? true : world.shouldSuffocate(x + 1, y, z) ? true : world.shouldSuffocate(x, y, z - 1) ? true : world.shouldSuffocate(x, y, z + 1);
 
     public override void onPlaced(World world, int x, int y, int z, int direction)
     {
@@ -144,8 +132,5 @@ internal class BlockLadder : Block
         base.neighborUpdate(world, x, y, z, id);
     }
 
-    public override int getDroppedItemCount(JavaRandom random)
-    {
-        return 1;
-    }
+    public override int getDroppedItemCount() => 1;
 }

@@ -5,10 +5,7 @@ namespace BetaSharp.Blocks;
 
 internal class BlockSponge : Block
 {
-    public BlockSponge(int id) : base(id, Material.Sponge)
-    {
-        textureId = 48;
-    }
+    public BlockSponge(int id) : base(id, Material.Sponge) => textureId = 48;
 
     public override void onPlaced(World world, int x, int y, int z)
     {
@@ -26,7 +23,6 @@ internal class BlockSponge : Block
                 }
             }
         }
-
     }
 
     public override void onBreak(World world, int x, int y, int z)
@@ -43,6 +39,5 @@ internal class BlockSponge : Block
                 }
             }
         }
-
     }
 }

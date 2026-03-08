@@ -28,7 +28,7 @@ public class EntityDiggingFX : EntityFX
         }
         else
         {
-            int color = targetedBlock.getColorMultiplier(world.BlocksView, x, y, z);
+            int color = targetedBlock.getColorMultiplier(_ctx.BlocksView, x, y, z);
             particleRed *= (float)(color >> 16 & 255) / 255.0F;
             particleGreen *= (float)(color >> 8 & 255) / 255.0F;
             particleBlue *= (float)(color & 255) / 255.0F;

@@ -5,15 +5,18 @@ namespace BetaSharp.Blocks;
 
 internal class BlockRedstoneTorch : BlockTorch
 {
-    private readonly bool _lit = false;
     private static readonly ThreadLocal<List<RedstoneUpdateInfo>> s_torchUpdates = new(() => []);
+    private readonly bool _lit;
 
-    public override int getTexture(int side, int meta)
+    public BlockRedstoneTorch(int id, int textureId, bool lit) : base(id, textureId)
     {
-        return side == 1 ? Block.RedstoneWire.getTexture(side, meta) : base.getTexture(side, meta);
+        _lit = lit;
+        setTickRandomly(true);
     }
 
-    private bool isBurnedOut(OnTickContext ctx, bool recordUpdate)
+    public override int getTexture(int side, int meta) => side == 1 ? RedstoneWire.getTexture(side, meta) : base.getTexture(side, meta);
+
+    private bool isBurnedOut(OnTickEvt ctx, bool recordUpdate)
     {
         List<RedstoneUpdateInfo> updates = s_torchUpdates.Value!;
         if (recordUpdate)
@@ -39,16 +42,7 @@ internal class BlockRedstoneTorch : BlockTorch
         return false;
     }
 
-    public BlockRedstoneTorch(int id, int textureId, bool lit) : base(id, textureId)
-    {
-        _lit = lit;
-        setTickRandomly(true);
-    }
-
-    public override int getTickRate()
-    {
-        return 2;
-    }
+    public override int getTickRate() => 2;
 
     public override void onPlaced(World world, int x, int y, int z)
     {
@@ -87,25 +81,23 @@ internal class BlockRedstoneTorch : BlockTorch
         {
             return false;
         }
-        else
-        {
-            int meta = iBlockReader.getBlockMeta(x, y, z);
-            return (meta != 5 || side != 1) && ((meta != 3 || side != 3) && ((meta != 4 || side != 2) && ((meta != 1 || side != 5) && (meta != 2 || side != 4))));
-        }
+
+        int meta = iBlockReader.getBlockMeta(x, y, z);
+        return (meta != 5 || side != 1) && (meta != 3 || side != 3) && (meta != 4 || side != 2) && (meta != 1 || side != 5) && (meta != 2 || side != 4);
     }
 
-    private bool shouldUnpower(OnTickContext ctx)
+    private bool shouldUnpower(OnTickEvt ctx)
     {
         int x = ctx.X;
         int y = ctx.Y;
         int z = ctx.Z;
-        var redstoneEngine = ctx.Redstone;
+        RedstoneEngine redstoneEngine = ctx.Redstone;
         int meta = ctx.WorldRead.getBlockMeta(x, y, z);
-        return meta == 5 && redstoneEngine.IsPoweringSide(x, y - 1, z, 0) || (meta == 3 && redstoneEngine.IsPoweringSide(x, y, z - 1, 2) ||
-                                                                     (meta == 4 && redstoneEngine.IsPoweringSide(x, y, z + 1, 3) || (meta == 1 && redstoneEngine.IsPoweringSide(x - 1, y, z, 4) || meta == 2 && redstoneEngine.IsPoweringSide(x + 1, y, z, 5))));
+        return (meta == 5 && redstoneEngine.IsPoweringSide(x, y - 1, z, 0)) || (meta == 3 && redstoneEngine.IsPoweringSide(x, y, z - 1, 2)) ||
+               (meta == 4 && redstoneEngine.IsPoweringSide(x, y, z + 1, 3)) || (meta == 1 && redstoneEngine.IsPoweringSide(x - 1, y, z, 4)) || (meta == 2 && redstoneEngine.IsPoweringSide(x + 1, y, z, 5));
     }
 
-    public override void onTick(OnTickContext ctx)
+    public override void onTick(OnTickEvt ctx)
     {
         int x = ctx.X;
         int y = ctx.Y;
@@ -139,41 +131,32 @@ internal class BlockRedstoneTorch : BlockTorch
         }
         else if (!shouldTurnOff && !isBurnedOut(ctx, false))
         {
-            ctx.WorldRead.setBlock(x, y, z, Block.LitRedstoneTorch.id, ctx.WorldRead.getBlockMeta(x, y, z));
+            ctx.WorldRead.setBlock(x, y, z, LitRedstoneTorch.id, ctx.WorldRead.getBlockMeta(x, y, z));
         }
     }
 
     public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
     {
         base.neighborUpdate(world, x, y, z, id);
-        world.ScheduleBlockUpdate(x, y, z, base.id, getTickRate());
+        world.ScheduleBlockUpdate(x, y, z, this.id, getTickRate());
     }
 
-    public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side)
-    {
-        return side == 0 && isPoweringSide(world, x, y, z, side);
-    }
+    public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => side == 0 && isPoweringSide(world, x, y, z, side);
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return Block.LitRedstoneTorch.id;
-    }
+    public override int getDroppedItemId(int blockMeta) => LitRedstoneTorch.id;
 
-    public override bool canEmitRedstonePower()
-    {
-        return true;
-    }
+    public override bool canEmitRedstonePower() => true;
 
     public override void randomDisplayTick(World world, int x, int y, int z, JavaRandom random)
     {
         if (_lit)
         {
             int meta = world.getBlockMeta(x, y, z);
-            double particleX = (double)((float)x + 0.5F) + (double)(random.NextFloat() - 0.5F) * 0.2D;
-            double particleY = (double)((float)y + 0.7F) + (double)(random.NextFloat() - 0.5F) * 0.2D;
-            double particleZ = (double)((float)z + 0.5F) + (double)(random.NextFloat() - 0.5F) * 0.2D;
-            double verticalOffset = (double)0.22F;
-            double horizontalOffset = (double)0.27F;
+            double particleX = x + 0.5F + (random.NextFloat() - 0.5F) * 0.2D;
+            double particleY = y + 0.7F + (random.NextFloat() - 0.5F) * 0.2D;
+            double particleZ = z + 0.5F + (random.NextFloat() - 0.5F) * 0.2D;
+            double verticalOffset = 0.22F;
+            double horizontalOffset = 0.27F;
             if (meta == 1)
             {
                 world.addParticle("reddust", particleX - horizontalOffset, particleY + verticalOffset, particleZ, 0.0D, 0.0D, 0.0D);

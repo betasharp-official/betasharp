@@ -7,7 +7,6 @@ namespace BetaSharp.Blocks;
 
 internal class BlockFarmland : Block
 {
-
     public BlockFarmland(int id) : base(id, Material.Soil)
     {
         textureId = 87;
@@ -16,27 +15,15 @@ internal class BlockFarmland : Block
         setOpacity(255);
     }
 
-    public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)
-    {
-        return new Box((double)(x + 0), (double)(y + 0), (double)(z + 0), (double)(x + 1), (double)(y + 1), (double)(z + 1));
-    }
+    public override Box? getCollisionShape(IBlockReader world, int x, int y, int z) => new Box(x + 0, y + 0, z + 0, x + 1, y + 1, z + 1);
 
-    public override bool isOpaque()
-    {
-        return false;
-    }
+    public override bool isOpaque() => false;
 
-    public override bool isFullCube()
-    {
-        return false;
-    }
+    public override bool isFullCube() => false;
 
-    public override int getTexture(int side, int meta)
-    {
-        return side == 1 && meta > 0 ? textureId - 1 : (side == 1 ? textureId : 2);
-    }
+    public override int getTexture(int side, int meta) => side == 1 && meta > 0 ? textureId - 1 : side == 1 ? textureId : 2;
 
-    public override void onTick(OnTickContext ctx)
+    public override void onTick(OnTickEvt ctx)
     {
         if (ctx.Random.NextInt(5) == 0)
         {
@@ -49,7 +36,7 @@ internal class BlockFarmland : Block
                 }
                 else if (!hasCrop(ctx.WorldRead, ctx.X, ctx.Y, ctx.Z))
                 {
-                    ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, Block.Dirt.id);
+                    ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, Dirt.id);
                 }
             }
             else
@@ -57,16 +44,14 @@ internal class BlockFarmland : Block
                 ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 7);
             }
         }
-
     }
 
     public override void onSteppedOn(World world, int x, int y, int z, Entity entity)
     {
         if (world.random.NextInt(4) == 0)
         {
-            world.setBlock(x, y, z, Block.Dirt.id);
+            world.setBlock(x, y, z, Dirt.id);
         }
-
     }
 
     private static bool hasCrop(IBlockReader world, int x, int y, int z)
@@ -77,7 +62,7 @@ internal class BlockFarmland : Block
         {
             for (int var7 = z - cropRadius; var7 <= z + cropRadius; ++var7)
             {
-                if (world.GetBlockId(var6, y + 1, var7) == Block.Wheat.id)
+                if (world.GetBlockId(var6, y + 1, var7) == Wheat.id)
                 {
                     return true;
                 }
@@ -106,19 +91,15 @@ internal class BlockFarmland : Block
         return false;
     }
 
-    public override void neighborUpdate(OnTickContext ctx)
+    public override void neighborUpdate(OnTickEvt ctx)
     {
         base.neighborUpdate(ctx);
         Material material = ctx.WorldRead.getMaterial(ctx.X, ctx.Y + 1, ctx.Z);
         if (material.IsSolid)
         {
-            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, Block.Dirt.id);
+            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, Dirt.id);
         }
-
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return Block.Dirt.getDroppedItemId(0, random);
-    }
+    public override int getDroppedItemId(int blockMeta) => Dirt.getDroppedItemId(0);
 }

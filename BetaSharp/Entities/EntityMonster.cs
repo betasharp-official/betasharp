@@ -27,7 +27,7 @@ public class EntityMonster : EntityCreature, Monster
     public override void tick()
     {
         base.tick();
-        if (!world.isRemote && world.difficulty == 0)
+        if (!_ctx.isRemote && _ctx.difficulty == 0)
         {
             markDead();
         }
@@ -36,7 +36,7 @@ public class EntityMonster : EntityCreature, Monster
 
     protected override Entity findPlayerToAttack()
     {
-        EntityPlayer player = world.getClosestPlayer(this, 16.0D);
+        EntityPlayer player = _ctx.getClosestPlayer(this, 16.0D);
         return player != null && canSee(player) ? player : null;
     }
 
@@ -76,7 +76,7 @@ public class EntityMonster : EntityCreature, Monster
 
     protected override float getBlockPathWeight(int x, int y, int z)
     {
-        return 0.5F - world.getLuminance(x, y, z);
+        return 0.5F - _ctx.getLuminance(x, y, z);
     }
 
     public override void writeNbt(NBTTagCompound nbt)
@@ -94,19 +94,19 @@ public class EntityMonster : EntityCreature, Monster
         int x = MathHelper.Floor(base.x);
         int y = MathHelper.Floor(boundingBox.MinY);
         int z = MathHelper.Floor(base.z);
-        if (world.getBrightness(LightType.Sky, x, y, z) > random.NextInt(32))
+        if (_ctx.getBrightness(LightType.Sky, x, y, z) > random.NextInt(32))
         {
             return false;
         }
         else
         {
-            int lightLevel = world.getLightLevel(x, y, z);
-            if (world.isThundering())
+            int lightLevel = _ctx.getLightLevel(x, y, z);
+            if (_ctx.isThundering())
             {
-                int ambientDarkness = world.ambientDarkness;
-                world.ambientDarkness = 10;
-                lightLevel = world.getLightLevel(x, y, z);
-                world.ambientDarkness = ambientDarkness;
+                int ambientDarkness = _ctx.ambientDarkness;
+                _ctx.ambientDarkness = 10;
+                lightLevel = _ctx.getLightLevel(x, y, z);
+                _ctx.ambientDarkness = ambientDarkness;
             }
 
             return lightLevel <= random.NextInt(8) && base.canSpawn();

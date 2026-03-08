@@ -153,7 +153,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             ItemStack itemStack = inventory.getStack(slotIndex);
             if (itemStack != null && Item.ITEMS[itemStack.itemId].isNetworkSynced() && networkHandler.getBlockDataSendQueueSize() <= 2)
             {
-                Packet packet = ((NetworkSyncedItem)Item.ITEMS[itemStack.itemId]).getUpdatePacket(itemStack, world, this);
+                Packet packet = ((NetworkSyncedItem)Item.ITEMS[itemStack.itemId]).getUpdatePacket(itemStack, _ctx, this);
                 if (packet != null)
                 {
                     networkHandler.sendPacket(packet);
@@ -351,7 +351,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         incrementScreenHandlerSyncId();
         networkHandler.sendPacket(new OpenScreenS2CPacket(screenHandlerSyncId, 1, "Crafting", 9));
-        currentScreenHandler = new CraftingScreenHandler(inventory, world, x, y, z);
+        currentScreenHandler = new CraftingScreenHandler(inventory, _ctx, x, y, z);
         currentScreenHandler.SyncId = screenHandlerSyncId;
         currentScreenHandler.AddListener(this);
     }

@@ -1,7 +1,6 @@
 using BetaSharp.Items;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.ClientData.Colors;
+using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Blocks;
 
@@ -13,15 +12,9 @@ public class BlockTallGrass : BlockPlant
         setBoundingBox(0.5F - halfSize, 0.0F, 0.5F - halfSize, 0.5F + halfSize, 0.8F, 0.5F + halfSize);
     }
 
-    public override int getTexture(int side, int meta)
-    {
-        return meta == 1 ? textureId : (meta == 2 ? textureId + 16 + 1 : (meta == 0 ? textureId + 16 : textureId));
-    }
+    public override int getTexture(int side, int meta) => meta == 1 ? textureId : meta == 2 ? textureId + 16 + 1 : meta == 0 ? textureId + 16 : textureId;
 
-    public override int getColor(int meta)
-    {
-        return meta == 0 ? 0xFFFFFF : GrassColors.getDefaultColor();
-    }
+    public override int getColor(int meta) => meta == 0 ? 0xFFFFFF : GrassColors.getDefaultColor();
 
     public override int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z)
     {
@@ -30,22 +23,17 @@ public class BlockTallGrass : BlockPlant
         {
             return 0xFFFFFF;
         }
-        else
-        {
-            long positionSeed = (long)(x * 3129871 + z * 6129781 + y);
-            positionSeed = positionSeed * positionSeed * 42317861L + positionSeed * 11L;
-            x = (int)((long)x + (positionSeed >> 14 & 31L));
-            y = (int)((long)y + (positionSeed >> 19 & 31L));
-            z = (int)((long)z + (positionSeed >> 24 & 31L));
-            iBlockReader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
-            double temperature = iBlockReader.GetBiomeSource().TemperatureMap[0];
-            double downfall = iBlockReader.GetBiomeSource().DownfallMap[0];
-            return GrassColors.getColor(temperature, downfall);
-        }
+
+        long positionSeed = x * 3129871 + z * 6129781 + y;
+        positionSeed = positionSeed * positionSeed * 42317861L + positionSeed * 11L;
+        x = (int)(x + ((positionSeed >> 14) & 31L));
+        y = (int)(y + ((positionSeed >> 19) & 31L));
+        z = (int)(z + ((positionSeed >> 24) & 31L));
+        iBlockReader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
+        double temperature = iBlockReader.GetBiomeSource().TemperatureMap[0];
+        double downfall = iBlockReader.GetBiomeSource().DownfallMap[0];
+        return GrassColors.getColor(temperature, downfall);
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return random.NextInt(8) == 0 ? Item.Seeds.id : -1;
-    }
+    public override int getDroppedItemId(int blockMeta) => random.NextInt(8) == 0 ? Item.Seeds.id : -1;
 }

@@ -14,25 +14,14 @@ internal class BlockCloth : Block
         {
             return textureId;
         }
-        else
-        {
-            meta = ~(meta & 15);
-            return 113 + ((meta & 8) >> 3) + (meta & 7) * 16;
-        }
+
+        meta = ~(meta & 15);
+        return 113 + ((meta & 8) >> 3) + (meta & 7) * 16;
     }
 
-    protected override int getDroppedItemMeta(int blockMeta)
-    {
-        return blockMeta;
-    }
+    protected override int getDroppedItemMeta(int blockMeta) => blockMeta;
 
-    public static int getBlockMeta(int itemMeta)
-    {
-        return ~itemMeta & 15;
-    }
+    public static int getBlockMeta(int itemMeta) => ~itemMeta & 15;
 
-    public static int getItemMeta(int blockMeta)
-    {
-        return ~blockMeta & 15;
-    }
+    public static int getItemMeta(int blockMeta) => ~blockMeta & 15;
 }

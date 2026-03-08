@@ -40,7 +40,7 @@ public abstract class World : IBlockWorldContext
     public readonly EnvironmentManager Environment;
     private readonly RedstoneEngine Redstone;
     private readonly BlockHost _blockHost;
-    public readonly WorldBlockView BlocksView;
+    public readonly WorldBlockView BlocksReader;
     public readonly WorldBlockWrite BlockWriter;
     protected readonly IWorldStorage Storage;
     public readonly WorldEventBroadcaster WorldEventBroadcaster;
@@ -56,7 +56,7 @@ public abstract class World : IBlockWorldContext
     public bool IsNewWorld;
     public bool isRemote { set; get; } = false;
 
-    public bool PauseTicking { get => BlocksView.PauseTicking; set => BlocksView.PauseTicking = value; }
+    public bool PauseTicking { get => BlocksReader.PauseTicking; set => BlocksReader.PauseTicking = value; }
 
     public bool InstantBlockUpdateEnabled { get => TickScheduler.instantBlockUpdateEnabled; set => TickScheduler.instantBlockUpdateEnabled = value; }
 
@@ -83,17 +83,17 @@ public abstract class World : IBlockWorldContext
         BlockWriter = new WorldBlockWrite(_blockHost);
         BlockWriter.OnBlockChanged += this.BlockUpdate;
         BlockWriter.OnNeighborsShouldUpdate += notifyNeighbors;
-        BlocksView = new WorldBlockView(_blockHost, BlockWriter, isRemote, this);
+        BlocksReader = new WorldBlockView(_blockHost, BlockWriter, isRemote, this);
         WorldEventBroadcaster = new WorldEventBroadcaster(EventListeners);
 
-        Redstone = new RedstoneEngine(BlocksView);
-        Lighting = new LightingEngine(BlocksView, dim);
+        Redstone = new RedstoneEngine(BlocksReader);
+        Lighting = new LightingEngine(BlocksReader, dim);
         Lighting.OnLightUpdated += (x, y, z) => blockUpdateEvent(x, y, z);
 
-        TickScheduler = new WorldTickScheduler(BlocksView, random, isRemote, WorldEventBroadcaster);
+        TickScheduler = new WorldTickScheduler(BlocksReader, random, isRemote, WorldEventBroadcaster);
 
-        Environment = new EnvironmentManager(Properties, dim, BlocksView, random);
-        Entities = new EntityManager(BlocksView, Rules);
+        Environment = new EnvironmentManager(Properties, dim, BlocksReader, random);
+        Entities = new EntityManager(BlocksReader, Rules);
 
         Entities.OnBlockUpdateRequired += (x, y, z) => blockUpdateEvent(x, y, z);
 
@@ -147,17 +147,17 @@ public abstract class World : IBlockWorldContext
         BlockWriter = new WorldBlockWrite(_blockHost);
         BlockWriter.OnBlockChanged += BlockUpdate;
         BlockWriter.OnNeighborsShouldUpdate += notifyNeighbors;
-        BlocksView = new WorldBlockView(_blockHost, this);
+        BlocksReader = new WorldBlockView(_blockHost, this);
         WorldEventBroadcaster = new WorldEventBroadcaster(EventListeners);
 
-        Redstone = new RedstoneEngine(BlocksView);
-        Lighting = new LightingEngine(BlocksView, dimension);
+        Redstone = new RedstoneEngine(BlocksReader);
+        Lighting = new LightingEngine(BlocksReader, dimension);
         Lighting.OnLightUpdated += (x, y, z) => blockUpdateEvent(x, y, z);
 
-        TickScheduler = new WorldTickScheduler(BlocksView, random, isRemote, WorldEventBroadcaster);
+        TickScheduler = new WorldTickScheduler(BlocksReader, random, isRemote, WorldEventBroadcaster);
 
-        Environment = new EnvironmentManager(Properties, dimension, BlocksView, random);
-        Entities = new EntityManager(BlocksView, Rules);
+        Environment = new EnvironmentManager(Properties, dimension, BlocksReader, random);
+        Entities = new EntityManager(BlocksReader, Rules);
 
         Entities.OnBlockUpdateRequired += (x, y, z) => blockUpdateEvent(x, y, z);
 
@@ -245,11 +245,11 @@ public abstract class World : IBlockWorldContext
     public int GetSpawnBlockId(int x, int z)
     {
         int y;
-        for (y = 63; !BlocksView.IsAir(x, y + 1, z); ++y)
+        for (y = 63; !BlocksReader.IsAir(x, y + 1, z); ++y)
         {
         }
 
-        return BlocksView.GetBlockId(x, y, z);
+        return BlocksReader.GetBlockId(x, y, z);
     }
 
     public void AddPlayer(EntityPlayer player)
@@ -347,15 +347,15 @@ public abstract class World : IBlockWorldContext
         int currentY = MathHelper.Floor(start.y);
         int currentZ = MathHelper.Floor(start.z);
 
-        int initialId = BlocksView.GetBlockId(currentX, currentY, currentZ);
-        int initialMeta = BlocksView.GetBlockMeta(currentX, currentY, currentZ);
+        int initialId = BlocksReader.GetBlockId(currentX, currentY, currentZ);
+        int initialMeta = BlocksReader.GetBlockMeta(currentX, currentY, currentZ);
         Block? initialBlock = Block.Blocks[initialId];
 
         if ((!ignoreNonSolid || initialBlock == null ||
-             initialBlock.getCollisionShape(BlocksView, currentX, currentY, currentZ) != null) &&
+             initialBlock.getCollisionShape(BlocksReader, currentX, currentY, currentZ) != null) &&
             initialId > 0 && initialBlock.hasCollision(initialMeta, includeFluids))
         {
-            HitResult result = initialBlock.raycast(BlocksView, currentX, currentY, currentZ, start, target);
+            HitResult result = initialBlock.raycast(BlocksReader, currentX, currentY, currentZ, start, target);
             if (result.Type != HitResultType.MISS)
             {
                 return result;
@@ -482,15 +482,15 @@ public abstract class World : IBlockWorldContext
                 currentStepPos.z++;
             }
 
-            int blockIdAtStep = BlocksView.GetBlockId(currentX, currentY, currentZ);
-            int metaAtStep = BlocksView.GetBlockMeta(currentX, currentY, currentZ);
+            int blockIdAtStep = BlocksReader.GetBlockId(currentX, currentY, currentZ);
+            int metaAtStep = BlocksReader.GetBlockMeta(currentX, currentY, currentZ);
             Block blockAtStep = Block.Blocks[blockIdAtStep];
 
             if ((!ignoreNonSolid || blockAtStep == null ||
-                 blockAtStep.getCollisionShape(BlocksView, currentX, currentY, currentZ) != null) &&
+                 blockAtStep.getCollisionShape(BlocksReader, currentX, currentY, currentZ) != null) &&
                 blockIdAtStep > 0 && blockAtStep.hasCollision(metaAtStep, includeFluids))
             {
-                HitResult hit = blockAtStep.raycast(BlocksView, currentX, currentY, currentZ, start, target);
+                HitResult hit = blockAtStep.raycast(BlocksReader, currentX, currentY, currentZ, start, target);
                 if (hit.Type != HitResultType.MISS)
                 {
                     return hit;
@@ -578,7 +578,7 @@ public abstract class World : IBlockWorldContext
             {
                 for (int z = minZ; z < maxZ; z++)
                 {
-                    if (BlocksView.GetBlockId(x, y, z) > 0)
+                    if (BlocksReader.GetBlockId(x, y, z) > 0)
                     {
                         return true;
                     }
@@ -619,7 +619,7 @@ public abstract class World : IBlockWorldContext
             {
                 for (int z = minZ; z < maxZ; ++z)
                 {
-                    Block block = Block.Blocks[BlocksView.GetBlockId(x, y, z)];
+                    Block block = Block.Blocks[BlocksReader.GetBlockId(x, y, z)];
                     if (block != null && block.material.IsFluid)
                     {
                         return true;
@@ -648,7 +648,7 @@ public abstract class World : IBlockWorldContext
                 {
                     for (int z = minZ; z < maxZ; ++z)
                     {
-                        int blockId = BlocksView.GetBlockId(x, y, z);
+                        int blockId = BlocksReader.GetBlockId(x, y, z);
                         if (blockId == Block.Fire.id || blockId == Block.FlowingLava.id || blockId == Block.Lava.id)
                         {
                             return true;
@@ -684,10 +684,10 @@ public abstract class World : IBlockWorldContext
             {
                 for (int z = minZ; z < maxZ; ++z)
                 {
-                    Block block = Block.Blocks[BlocksView.GetBlockId(x, y, z)];
+                    Block block = Block.Blocks[BlocksReader.GetBlockId(x, y, z)];
                     if (block != null && block.material == fluidMaterial)
                     {
-                        double fluidSurfaceY = y + 1 - BlockFluid.getFluidHeightFromMeta(BlocksView.GetBlockMeta(x, y, z));
+                        double fluidSurfaceY = y + 1 - BlockFluid.getFluidHeightFromMeta(BlocksReader.GetBlockMeta(x, y, z));
 
                         if (maxY >= fluidSurfaceY)
                         {
@@ -726,7 +726,7 @@ public abstract class World : IBlockWorldContext
             {
                 for (int z = minZ; z < maxZ; ++z)
                 {
-                    Block block = Block.Blocks[BlocksView.GetBlockId(x, y, z)];
+                    Block block = Block.Blocks[BlocksReader.GetBlockId(x, y, z)];
                     if (block != null && block.material == material)
                     {
                         return true;
@@ -753,10 +753,10 @@ public abstract class World : IBlockWorldContext
             {
                 for (int z = minZ; z < maxZ; ++z)
                 {
-                    Block block = Block.Blocks[BlocksView.GetBlockId(x, y, z)];
+                    Block block = Block.Blocks[BlocksReader.GetBlockId(x, y, z)];
                     if (block != null && block.material == fluid)
                     {
-                        int meta = BlocksView.GetBlockMeta(x, y, z);
+                        int meta = BlocksReader.GetBlockMeta(x, y, z);
                         double waterLevel = y + 1;
                         if (meta < 8)
                         {
@@ -849,7 +849,7 @@ public abstract class World : IBlockWorldContext
             ++x;
         }
 
-        if (BlocksView.GetBlockId(x, y, z) == Block.Fire.id)
+        if (BlocksReader.GetBlockId(x, y, z) == Block.Fire.id)
         {
             WorldEventBroadcaster.WorldEvent(player, 1004, x, y, z, 0);
             BlockWriter.SetBlock(x, y, z, 0);
@@ -972,7 +972,7 @@ public abstract class World : IBlockWorldContext
                 int blockId = currentChunk.GetBlockId(localX, localY, localZ);
                 int worldX = localX + worldXBase;
                 int worldZ = localZ + worldZBase;
-                if (blockId == 0 && BlocksView.GetBrightness(worldX, localY, worldZ) <= random.NextInt(8) &&
+                if (blockId == 0 && BlocksReader.GetBrightness(worldX, localY, worldZ) <= random.NextInt(8) &&
                     Lighting.GetBrightness(LightType.Sky, worldX, localY, worldZ) <= 0)
                 {
                     EntityPlayer closest = Entities.GetClosestPlayer(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, 8.0D);
@@ -992,7 +992,7 @@ public abstract class World : IBlockWorldContext
                 int randomVal = _lcgBlockSeed >> 2;
                 int worldX = worldXBase + (randomVal & 15);
                 int worldZ = worldZBase + ((randomVal >> 8) & 15);
-                int worldY = BlocksView.GetTopSolidBlockY(worldX, worldZ);
+                int worldY = BlocksReader.GetTopSolidBlockY(worldX, worldZ);
 
                 if (Environment.IsRainingAt(worldX, worldY, worldZ))
                 {
@@ -1009,7 +1009,7 @@ public abstract class World : IBlockWorldContext
                 int localZ = (randomVal >> 8) & 15;
                 int worldX = localX + worldXBase;
                 int worldZ = localZ + worldZBase;
-                int worldY = BlocksView.GetTopSolidBlockY(worldX, worldZ);
+                int worldY = BlocksReader.GetTopSolidBlockY(worldX, worldZ);
 
                 if (GetBiomeSource().GetBiome(worldX, worldZ).GetEnableSnow() && worldY >= 0 && worldY < 128 &&
                     currentChunk.GetLight(LightType.Block, localX, worldY, localZ) < 10)
@@ -1017,7 +1017,7 @@ public abstract class World : IBlockWorldContext
                     int blockBelowId = currentChunk.GetBlockId(localX, worldY - 1, localZ);
                     int currentBlockId = currentChunk.GetBlockId(localX, worldY, localZ);
 
-                    if (Environment.IsRaining && currentBlockId == 0 && Block.Snow.canPlaceAt(BlocksView, worldX, worldY, worldZ) &&
+                    if (Environment.IsRaining && currentBlockId == 0 && Block.Snow.canPlaceAt(BlocksReader, worldX, worldY, worldZ) &&
                         blockBelowId != 0 && blockBelowId != Block.Ice.id &&
                         Block.Blocks[blockBelowId].material.BlocksMovement)
                     {
@@ -1042,7 +1042,7 @@ public abstract class World : IBlockWorldContext
                 int blockId = currentChunk.Blocks[(localX << 11) | (localZ << 7) | localY] & 255;
                 if (Block.BlocksRandomTick[blockId])
                 {
-                    Block.Blocks[blockId].onTick(new WorldTickContext(this, BlocksView, BlockWriter, WorldEventBroadcaster, isRemote, localX + worldXBase, localY, localZ + worldZBase, random));
+                    Block.Blocks[blockId].onTick(new WorldTickContext(this, BlocksReader, BlockWriter, WorldEventBroadcaster, isRemote, localX + worldXBase, localY, localZ + worldZBase, random));
                 }
             }
         }
@@ -1059,7 +1059,7 @@ public abstract class World : IBlockWorldContext
             int targetY = centerY + random.NextInt(searchRadius) - random.NextInt(searchRadius);
             int targetZ = centerZ + random.NextInt(searchRadius) - random.NextInt(searchRadius);
 
-            int blockId = BlocksView.GetBlockId(targetX, targetY, targetZ);
+            int blockId = BlocksReader.GetBlockId(targetX, targetY, targetZ);
             if (blockId > 0)
             {
                 Block.Blocks[blockId].randomDisplayTick(this, targetX, targetY, targetZ, particleRandom);
@@ -1089,11 +1089,11 @@ public abstract class World : IBlockWorldContext
 
     public bool canPlace(int blockId, int x, int y, int z, bool isFallingBlock, int side)
     {
-        int existingBlockId = BlocksView.GetBlockId(x, y, z);
+        int existingBlockId = BlocksReader.GetBlockId(x, y, z);
         Block? existingBlock = Block.Blocks[existingBlockId];
         Block? newBlock = Block.Blocks[blockId];
 
-        Box? collisionBox = newBlock?.getCollisionShape(BlocksView, x, y, z);
+        Box? collisionBox = newBlock?.getCollisionShape(BlocksReader, x, y, z);
 
         if (isFallingBlock)
         {
@@ -1112,7 +1112,15 @@ public abstract class World : IBlockWorldContext
             existingBlock = null;
         }
 
-        return blockId > 0 && existingBlock == null && newBlock != null && newBlock.canPlaceAt(BlocksView, x, y, z, side);
+        return blockId > 0 && existingBlock == null && newBlock != null && newBlock.canPlaceAt(
+            new CanPlaceAtCtx(
+                BlocksReader,
+                BlockWriter,
+                x,
+                y,
+                z
+            )
+        );
     }
 
     internal PathEntity findPath(Entity entity, Entity target, float range)
@@ -1254,7 +1262,7 @@ public abstract class World : IBlockWorldContext
 
     public virtual void playNoteBlockActionAt(int x, int y, int z, int soundType, int pitch)
     {
-        int blockId = BlocksView.GetBlockId(x, y, z);
+        int blockId = BlocksReader.GetBlockId(x, y, z);
         if (blockId > 0)
         {
             Block.Blocks[blockId].onBlockAction(this, x, y, z, soundType, pitch);
@@ -1301,10 +1309,10 @@ public abstract class World : IBlockWorldContext
     public IChunkSource getChunkSource() => _blockHost.ChunkSource;
 
     [Obsolete("Use Blocks.GetBlockId instead.")]
-    public int getBlockId(int x, int y, int z) => BlocksView.GetBlockId(x, y, z);
+    public int getBlockId(int x, int y, int z) => BlocksReader.GetBlockId(x, y, z);
 
     [Obsolete("Use Blocks.IsAir instead.")]
-    public bool isAir(int x, int y, int z) => BlocksView.IsAir(x, y, z);
+    public bool isAir(int x, int y, int z) => BlocksReader.IsAir(x, y, z);
 
     [Obsolete("Use Blocks.IsPosLoaded instead.")]
     public bool isPosLoaded(int x, int y, int z) => _blockHost.IsPosLoaded(x, y, z);
@@ -1331,10 +1339,10 @@ public abstract class World : IBlockWorldContext
     public virtual bool setBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId) => BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y, z, blockId);
 
     [Obsolete("Use Blocks.GetMaterial instead.")]
-    public Material getMaterial(int x, int y, int z) => BlocksView.GetMaterial(x, y, z);
+    public Material getMaterial(int x, int y, int z) => BlocksReader.GetMaterial(x, y, z);
 
     [Obsolete("Use Blocks.GetBlockMeta instead.")]
-    public int getBlockMeta(int x, int y, int z) => BlocksView.GetBlockMeta(x, y, z);
+    public int getBlockMeta(int x, int y, int z) => BlocksReader.GetBlockMeta(x, y, z);
 
     [Obsolete("Use Blocks.SetBlockMeta instead.")]
         public void setBlockMeta(int x, int y, int z, int meta) => BlockWriter.SetBlockMeta(x, y, z, meta);
@@ -1349,25 +1357,25 @@ public abstract class World : IBlockWorldContext
     public bool setBlock(int x, int y, int z, int blockId, int meta) => BlockWriter.SetBlock(x, y, z, blockId, meta);
 
     [Obsolete("Use Blocks.IsTopY instead.")]
-    public bool isTopY(int x, int y, int z) => BlocksView.IsTopY(x, y, z);
+    public bool isTopY(int x, int y, int z) => BlocksReader.IsTopY(x, y, z);
 
     [Obsolete("Use Blocks.GetTopY instead.")]
-    public int getTopY(int x, int z) => BlocksView.GetTopY(x, z);
+    public int getTopY(int x, int z) => BlocksReader.GetTopY(x, z);
 
     [Obsolete("Use Blocks.GetTopSolidBlockY instead.")]
-    public int getTopSolidBlockY(int x, int z) => BlocksView.GetTopSolidBlockY(x, z);
+    public int getTopSolidBlockY(int x, int z) => BlocksReader.GetTopSolidBlockY(x, z);
 
     [Obsolete("Use Blocks.GetSpawnPositionValidityY instead.")]
-    public int getSpawnPositionValidityY(int x, int z) => BlocksView.GetSpawnPositionValidityY(x, z);
+    public int getSpawnPositionValidityY(int x, int z) => BlocksReader.GetSpawnPositionValidityY(x, z);
 
     [Obsolete("Use Blocks.IsOpaque instead.")]
-    public bool isOpaque(int x, int y, int z) => BlocksView.IsOpaque(x, y, z);
+    public bool isOpaque(int x, int y, int z) => BlocksReader.IsOpaque(x, y, z);
 
     [Obsolete("Use Blocks.ShouldSuffocate instead.")]
-    public bool shouldSuffocate(int x, int y, int z) => BlocksView.ShouldSuffocate(x, y, z);
+    public bool shouldSuffocate(int x, int y, int z) => BlocksReader.ShouldSuffocate(x, y, z);
 
     [Obsolete("Use Blocks.GetBlockEntity instead.")]
-    public BlockEntity? getBlockEntity(int x, int y, int z) => BlocksView.GetBlockEntity(x, y, z);
+    public BlockEntity? getBlockEntity(int x, int y, int z) => BlocksReader.GetBlockEntity(x, y, z);
 
     #endregion
 
@@ -1413,39 +1421,12 @@ public abstract class World : IBlockWorldContext
 
     #region Environment Proxy (Routes to EnvironmentManager)
 
-    [Obsolete("Use Environment.GetSkyColor instead.")]
-    public Vector3D<double> getSkyColor(Entity entity, float partialTicks) => Environment.GetSkyColor(entity, partialTicks);
-
-    [Obsolete("Use Environment.GetTime instead.")]
-    public float getTime(float delta) => Environment.GetTime(delta);
-
-    [Obsolete("Use Environment.GetCloudColor instead.")]
-    public Vector3D<double> getCloudColor(float partialTicks) => Environment.GetCloudColor(partialTicks);
-
-    [Obsolete("Use Environment.GetThunderGradient instead.")]
-    public float getThunderGradient(float delta) => Environment.GetThunderGradient(delta);
-
-    [Obsolete("Use Environment.GetRainGradient instead.")]
-    public float getRainGradient(float delta) => Environment.GetRainGradient(delta);
-
-    [Obsolete("Use Environment.SetRainGradient instead.")]
-    public void setRainGradient(float rainGradient) => Environment.SetRainGradient(rainGradient);
-
-    [Obsolete("Use Environment.IsThundering instead.")]
-    public bool isThundering() => Environment.IsThundering();
-
-    [Obsolete("Use Environment.IsRaining instead.")]
-    public bool isRaining() => Environment.IsRaining;
-
     [Obsolete("Use Environment.IsRainingAt instead.")]
     public bool isRaining(int x, int y, int z) => Environment.IsRainingAt(x, y, z);
 
     #endregion
 
     #region Entity Proxy (Routes to EntityManager)
-
-    [Obsolete("Use Entities.SpawnGlobalEntity instead.")]
-    public virtual bool spawnGlobalEntity(Entity entity) => Entities.SpawnGlobalEntity(entity);
 
     [Obsolete("Use Entities.SpawnEntity instead.")]
     public virtual bool SpawnEntity(Entity entity) => Entities.SpawnEntity(entity);
@@ -1459,12 +1440,6 @@ public abstract class World : IBlockWorldContext
         Entities.SpawnEntity(droppedItem);
     }
 
-    [Obsolete("Use Entities.Remove instead.")]
-    public virtual void Remove(Entity entity) => Entities.Remove(entity);
-
-    [Obsolete("Use Entities.ServerRemove instead.")]
-    public void serverRemove(Entity entity) => Entities.ServerRemove(entity);
-
     [Obsolete("Use Entities.GetEntityCollisions instead.")]
     public List<Box> getEntityCollisionsScratch(Entity entity, Box area) => Entities.GetEntityCollisions(entity, area);
 
@@ -1474,42 +1449,12 @@ public abstract class World : IBlockWorldContext
     [Obsolete("Use Entities.CollectEntitiesOfType instead.")]
     public List<T> CollectEntitiesOfType<T>(Box area) where T : Entity => Entities.CollectEntitiesOfType<T>(area);
 
-    [Obsolete("Use Entities.CountEntitiesOfType instead.")]
-    public int CountEntitiesOfType(Type type) => Entities.CountEntitiesOfType(type);
-
-    [Obsolete("Use Entities.AddEntities instead.")]
-    public void addEntities(List<Entity> entities) => Entities.AddEntities(entities);
-
-    [Obsolete("Use Entities.UnloadEntities instead.")]
-    public void unloadEntities(List<Entity> entities) => Entities.UnloadEntities(entities);
-
-    [Obsolete("Use Entities.GetClosestPlayer instead.")]
-    public EntityPlayer getClosestPlayer(Entity entity, double range) => Entities.GetClosestPlayer(entity.x, entity.y, entity.z, range);
-
     [Obsolete("Use Entities.GetClosestPlayer instead.")]
     public EntityPlayer getClosestPlayer(double x, double y, double z, double range) => Entities.GetClosestPlayer(x, y, z, range);
-
-    [Obsolete("Use Entities.GetPlayer instead.")]
-    public EntityPlayer? getPlayer(string name) => Entities.GetPlayer(name);
-
-    [Obsolete("Use Entities.GetEntityByID instead.")]
-    public Entity? getEntityByID(int id) => Entities.GetEntityByID(id);
-
-    [Obsolete("Use Entities.CanSpawnEntity instead.")]
-    public bool canSpawnEntity(Box spawnArea) => Entities.CanSpawnEntity(spawnArea);
-
-    [Obsolete("Use Entities.LoadChunksNearEntity instead.")]
-    public void LoadChunksNearEntity(Entity entity) => Entities.LoadChunksNearEntity(entity);
 
     #endregion
 
     #region Redstone Proxy (Routes to RedstoneEngine)
-
-    [Obsolete("Use Redstone.IsStrongPoweringSide instead.")]
-    private bool isStrongPoweringSide(int x, int y, int z, int side) => Redstone.IsStrongPoweringSide(x, y, z, side);
-
-    [Obsolete("Use Redstone.IsStrongPowered instead.")]
-    public bool isStrongPowered(int x, int y, int z) => Redstone.IsStrongPowered(x, y, z);
 
     [Obsolete("Use Redstone.IsPoweringSide instead.")]
     public bool isPoweringSide(int x, int y, int z, int side) => Redstone.IsPoweringSide(x, y, z, side);

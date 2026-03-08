@@ -15,7 +15,7 @@ public class EntityWaterMob : EntityCreature, SpawnableEntity
 
     public override bool canSpawn()
     {
-        return world.canSpawnEntity(boundingBox);
+        return _ctx.canSpawnEntity(boundingBox);
     }
 
     public override int getTalkInterval()

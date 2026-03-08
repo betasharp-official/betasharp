@@ -6,8 +6,7 @@ namespace BetaSharp.Blocks;
 
 internal class BlockStairs : Block
 {
-
-    private Block baseBlock;
+    private readonly Block baseBlock;
 
     public BlockStairs(int id, Block block) : base(id, block.textureId, block.material)
     {
@@ -18,39 +17,22 @@ internal class BlockStairs : Block
         setOpacity(255);
     }
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
-    {
-        setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-    }
+    public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z) => setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
 
-    public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)
-    {
-        return base.getCollisionShape(world, x, y, z);
-    }
+    public override Box? getCollisionShape(IBlockReader world, int x, int y, int z) => base.getCollisionShape(world, x, y, z);
 
-    public override bool isOpaque()
-    {
-        return false;
-    }
+    public override bool isOpaque() => false;
 
-    public override bool isFullCube()
-    {
-        return false;
-    }
+    public override bool isFullCube() => false;
 
-    public override BlockRendererType getRenderType()
-    {
-        return BlockRendererType.Stairs;
-    }
+    public override BlockRendererType getRenderType() => BlockRendererType.Stairs;
 
-    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side)
-    {
-        return base.isSideVisible(iBlockReader, x, y, z, side);
-    }
+    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side) => base.isSideVisible(iBlockReader, x, y, z, side);
 
     public override void addIntersectingBoundingBox(IBlockReader world, int x, int y, int z, Box box, List<Box> boxes)
     {
-        int meta = world.getBlockMeta(x, y, z);
+        // Fixed capitalization on GetBlockMeta
+        int meta = world.GetBlockMeta(x, y, z);
         if (meta == 0)
         {
             setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F);
@@ -83,149 +65,93 @@ internal class BlockStairs : Block
         setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    public override void randomDisplayTick(World world, int x, int y, int z, JavaRandom random)
-    {
-        baseBlock.randomDisplayTick(world, x, y, z, random);
-    }
+    // Migrated to OnTickEvt
+    public override void randomDisplayTick(OnTickEvt ctx) => baseBlock.randomDisplayTick(ctx);
 
-    public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
-    {
-        baseBlock.onBlockBreakStart(world, x, y, z, player);
-    }
+    // Migrated to OnBlockBreakStartEvt
+    public override void onBlockBreakStart(OnBlockBreakStartEvt ctx) => baseBlock.onBlockBreakStart(ctx);
 
-    public override void onMetadataChange(World world, int x, int y, int z, int meta)
-    {
-        baseBlock.onMetadataChange(world, x, y, z, meta);
-    }
+    public override void onMetadataChange(WorldBlockView world, int x, int y, int z, int meta) => baseBlock.onMetadataChange(world, x, y, z, meta);
 
-    public override float getLuminance(LightingEngine lighting, int x, int y, int z)
-    {
-        return baseBlock.getLuminance(lighting, x, y, z);
-    }
+    public override float getLuminance(LightingEngine lighting, int x, int y, int z) => baseBlock.getLuminance(lighting, x, y, z);
 
-    public override float getBlastResistance(Entity entity)
-    {
-        return baseBlock.getBlastResistance(entity);
-    }
+    public override float getBlastResistance(Entity entity) => baseBlock.getBlastResistance(entity);
 
-    public override int getRenderLayer()
-    {
-        return baseBlock.getRenderLayer();
-    }
+    public override int getRenderLayer() => baseBlock.getRenderLayer();
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return baseBlock.getDroppedItemId(blockMeta, random);
-    }
+    public override int getDroppedItemId(int blockMeta) => baseBlock.getDroppedItemId(blockMeta);
 
-    public override int getDroppedItemCount(JavaRandom random)
-    {
-        return baseBlock.getDroppedItemCount(random);
-    }
+    public override int getDroppedItemCount() => baseBlock.getDroppedItemCount();
 
-    public override int getTexture(int side, int meta)
-    {
-        return baseBlock.getTexture(side, meta);
-    }
+    public override int getTexture(int side, int meta) => baseBlock.getTexture(side, meta);
 
-    public override int getTexture(int side)
-    {
-        return baseBlock.getTexture(side);
-    }
+    public override int getTexture(int side) => baseBlock.getTexture(side);
 
-    public override int getTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
-    {
-        return baseBlock.getTextureId(iBlockReader, x, y, z, side);
-    }
+    public override int getTextureId(IBlockReader iBlockReader, int x, int y, int z, int side) => baseBlock.getTextureId(iBlockReader, x, y, z, side);
 
-    public override int getTickRate()
-    {
-        return baseBlock.getTickRate();
-    }
+    public override int getTickRate() => baseBlock.getTickRate();
 
-    public override Box getBoundingBox(World world, int x, int y, int z)
-    {
-        return baseBlock.getBoundingBox(world, x, y, z);
-    }
+    public override Box getBoundingBox(IBlockReader world, int x, int y, int z) => baseBlock.getBoundingBox(world, x, y, z);
 
-    public override void applyVelocity(World world, int x, int y, int z, Entity entity, Vec3D velocity)
-    {
-        baseBlock.applyVelocity(world, x, y, z, entity, velocity);
-    }
+    public override void applyVelocity(WorldBlockView world, int x, int y, int z, Entity entity, Vec3D velocity) => baseBlock.applyVelocity(world, x, y, z, entity, velocity);
 
-    public override bool hasCollision()
-    {
-        return baseBlock.hasCollision();
-    }
+    public override bool hasCollision() => baseBlock.hasCollision();
 
-    public override bool hasCollision(int meta, bool allowLiquids)
-    {
-        return baseBlock.hasCollision(meta, allowLiquids);
-    }
+    public override bool hasCollision(int meta, bool allowLiquids) => baseBlock.hasCollision(meta, allowLiquids);
 
-    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z)
-    {
-        return baseBlock.canPlaceAt(world, x, y, z);
-    }
+    public override bool canPlaceAt(IBlockReader world, int x, int y, int z) => baseBlock.canPlaceAt(world, x, y, z);
 
-    public override void onPlaced(OnPlacedContext ctx)
+    // Merged the two onPlaced methods into one solid context execution
+    public override void onPlaced(OnPlacedEvt ctx)
     {
-        neighborUpdate(new UpdateContext(ctx.WorldRead, ctx.WorldWrite, ctx.Broadcaster, ctx.Entities, ctx.Random, ctx.IsRemote, ctx.Time, ctx.X, ctx.Y, ctx.Z));
-        baseBlock.onPlaced(ctx);
-    }
+        // 1. Calculate facing based on placer entity yaw
+        int facing = MathHelper.Floor(ctx.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
+        int meta = 0;
 
-    public override void onBreak(World world, int x, int y, int z)
-    {
-        baseBlock.onBreak(world, x, y, z);
-    }
-
-    public override void dropStacks(WorldBlockView world, int x, int y, int z, int meta, float luck)
-    {
-        baseBlock.dropStacks(world, x, y, z, meta, luck);
-    }
-
-    public override void onSteppedOn(World world, int x, int y, int z, Entity entity)
-    {
-        baseBlock.onSteppedOn(world, x, y, z, entity);
-    }
-
-    public override void onTick(OnTickContext ctx)
-    {
-        baseBlock.onTick(ctx);
-    }
-
-    public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
-    {
-        return baseBlock.onUse(world, x, y, z, player);
-    }
-
-    public override void onDestroyedByExplosion(World world, int x, int y, int z)
-    {
-        baseBlock.onDestroyedByExplosion(world, x, y, z);
-    }
-
-    public override void onPlaced(OnPlacedContext ctx)
-    {
-        int facing = MathHelper.Floor((ctx.Placer.yaw * 4.0F / 360.0F) + 0.5D) & 3;
         if (facing == 0)
         {
-            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 2);
+            meta = 2;
         }
 
         if (facing == 1)
         {
-            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 1);
+            meta = 1;
         }
 
         if (facing == 2)
         {
-            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 3);
+            meta = 3;
         }
 
         if (facing == 3)
         {
-            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 0);
+            meta = 0;
         }
 
+        ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, meta);
+
+        // 2. Trigger Neighbor Update (Constructing a dummy OnTickEvt to satisfy the signature safely)
+        OnTickEvt dummyTickEvt = new(
+            ctx.WorldRead, ctx.WorldWrite, ctx.Broadcaster, ctx.Redstone, default!, default!, default!,
+            default!, default!, default!, ctx.IsRemote, 0, ctx.X, ctx.Y, ctx.Z, meta, id
+        );
+        neighborUpdate(dummyTickEvt);
+
+        // 3. Inform the base block
+        baseBlock.onPlaced(ctx);
     }
+
+    // Migrated to OnBreakEvt
+    public override void onBreak(OnBreakEvt ctx) => baseBlock.onBreak(ctx);
+
+    public override void dropStacks(WorldBlockView world, int x, int y, int z, int meta, float luck) => baseBlock.dropStacks(world, x, y, z, meta, luck);
+
+    public override void onSteppedOn(WorldBlockView world, int x, int y, int z, Entity entity) => baseBlock.onSteppedOn(world, x, y, z, entity);
+
+    public override void onTick(OnTickEvt ctx) => baseBlock.onTick(ctx);
+
+    // Migrated to OnUseEvt
+    public override bool onUse(OnUseEvt ctx) => baseBlock.onUse(ctx);
+
+    public override void onDestroyedByExplosion(WorldBlockView read, int x, int y, int z) => baseBlock.onDestroyedByExplosion(read, x, y, z);
 }

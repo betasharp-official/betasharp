@@ -7,15 +7,11 @@ namespace BetaSharp.Blocks;
 
 public class BlockPortal : BlockBreakable
 {
-
     public BlockPortal(int id, int textureId) : base(id, textureId, Material.NetherPortal, false)
     {
     }
 
-    public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)
-    {
-        return null;
-    }
+    public override Box? getCollisionShape(IBlockReader world, int x, int y, int z) => null;
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
     {
@@ -33,20 +29,13 @@ public class BlockPortal : BlockBreakable
             halfExtent = 2.0F / 16.0F;
             setBoundingBox(0.5F - thickness, 0.0F, 0.5F - halfExtent, 0.5F + thickness, 1.0F, 0.5F + halfExtent);
         }
-
     }
 
-    public override bool isOpaque()
-    {
-        return false;
-    }
+    public override bool isOpaque() => false;
 
-    public override bool isFullCube()
-    {
-        return false;
-    }
+    public override bool isFullCube() => false;
 
-    public bool create(IBlockReader reader,IBlockWrite writer, int x, int y, int z)
+    public bool create(IBlockReader reader, IBlockWrite writer, int x, int y, int z)
     {
         sbyte extendsInZ = 0;
         sbyte extendsInX = 0;
@@ -64,55 +53,53 @@ public class BlockPortal : BlockBreakable
         {
             return false;
         }
-        else
-        {
-            if (reader.GetBlockId(x - extendsInZ, y, z - extendsInX) == 0)
-            {
-                x -= extendsInZ;
-                z -= extendsInX;
-            }
 
-            int horizontalOffset;
-            int verticalOffset;
-            for (horizontalOffset = -1; horizontalOffset <= 2; ++horizontalOffset)
+        if (reader.GetBlockId(x - extendsInZ, y, z - extendsInX) == 0)
+        {
+            x -= extendsInZ;
+            z -= extendsInX;
+        }
+
+        int horizontalOffset;
+        int verticalOffset;
+        for (horizontalOffset = -1; horizontalOffset <= 2; ++horizontalOffset)
+        {
+            for (verticalOffset = -1; verticalOffset <= 3; ++verticalOffset)
             {
-                for (verticalOffset = -1; verticalOffset <= 3; ++verticalOffset)
+                bool isFrame = horizontalOffset == -1 || horizontalOffset == 2 || verticalOffset == -1 || verticalOffset == 3;
+                if ((horizontalOffset != -1 && horizontalOffset != 2) || (verticalOffset != -1 && verticalOffset != 3))
                 {
-                    bool isFrame = horizontalOffset == -1 || horizontalOffset == 2 || verticalOffset == -1 || verticalOffset == 3;
-                    if (horizontalOffset != -1 && horizontalOffset != 2 || verticalOffset != -1 && verticalOffset != 3)
+                    int blockId = reader.GetBlockId(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset);
+                    if (isFrame)
                     {
-                        int blockId = reader.GetBlockId(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset);
-                        if (isFrame)
-                        {
-                            if (blockId != Obsidian.id)
-                            {
-                                return false;
-                            }
-                        }
-                        else if (blockId != 0 && blockId != Fire.id)
+                        if (blockId != Obsidian.id)
                         {
                             return false;
                         }
                     }
+                    else if (blockId != 0 && blockId != Fire.id)
+                    {
+                        return false;
+                    }
                 }
             }
-
-            world.pauseTicking = true;
-
-            for (horizontalOffset = 0; horizontalOffset < 2; ++horizontalOffset)
-            {
-                for (verticalOffset = 0; verticalOffset < 3; ++verticalOffset)
-                {
-                    writer.SetBlock(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset, NetherPortal.id);
-                }
-            }
-
-            world.pauseTicking = false;
-            return true;
         }
+
+        world.pauseTicking = true;
+
+        for (horizontalOffset = 0; horizontalOffset < 2; ++horizontalOffset)
+        {
+            for (verticalOffset = 0; verticalOffset < 3; ++verticalOffset)
+            {
+                writer.SetBlock(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset, NetherPortal.id);
+            }
+        }
+
+        world.pauseTicking = false;
+        return true;
     }
 
-    public override void neighborUpdate(OnTickContext ctx)
+    public override void neighborUpdate(OnTickEvt ctx)
     {
         sbyte offsetX = 0;
         sbyte offsetZ = 1;
@@ -146,7 +133,8 @@ public class BlockPortal : BlockBreakable
                 {
                     ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
                 }
-                else if ((ctx.WorldRead.GetBlockId(ctx.X + offsetX, ctx.Y, ctx.Z + offsetZ) != Obsidian.id || ctx.WorldRead.GetBlockId(ctx.X - offsetX, ctx.Y, ctx.Z - offsetZ) != id) && (ctx.WorldRead.GetBlockId(ctx.X - offsetX, ctx.Y, ctx.Z - offsetZ) != Obsidian.id || ctx.WorldRead.GetBlockId(ctx.X + offsetX, ctx.Y, ctx.Z + offsetZ) != id))
+                else if ((ctx.WorldRead.GetBlockId(ctx.X + offsetX, ctx.Y, ctx.Z + offsetZ) != Obsidian.id || ctx.WorldRead.GetBlockId(ctx.X - offsetX, ctx.Y, ctx.Z - offsetZ) != id) &&
+                         (ctx.WorldRead.GetBlockId(ctx.X - offsetX, ctx.Y, ctx.Z - offsetZ) != Obsidian.id || ctx.WorldRead.GetBlockId(ctx.X + offsetX, ctx.Y, ctx.Z + offsetZ) != id))
                 {
                     ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
                 }
@@ -164,27 +152,19 @@ public class BlockPortal : BlockBreakable
         {
             return false;
         }
-        else
-        {
-            bool edgeWest = iBlockReader.GetBlockId(x - 1, y, z) == id && iBlockReader.GetBlockId(x - 2, y, z) != id;
-            bool edgeEast = iBlockReader.GetBlockId(x + 1, y, z) == id && iBlockReader.GetBlockId(x + 2, y, z) != id;
-            bool edgeNorth = iBlockReader.GetBlockId(x, y, z - 1) == id && iBlockReader.GetBlockId(x, y, z - 2) != id;
-            bool edgeSouth = iBlockReader.GetBlockId(x, y, z + 1) == id && iBlockReader.GetBlockId(x, y, z + 2) != id;
-            bool extendsInX = edgeWest || edgeEast;
-            bool extendsInZ = edgeNorth || edgeSouth;
-            return extendsInX && side == 4 ? true : (extendsInX && side == 5 ? true : (extendsInZ && side == 2 ? true : extendsInZ && side == 3));
-        }
+
+        bool edgeWest = iBlockReader.GetBlockId(x - 1, y, z) == id && iBlockReader.GetBlockId(x - 2, y, z) != id;
+        bool edgeEast = iBlockReader.GetBlockId(x + 1, y, z) == id && iBlockReader.GetBlockId(x + 2, y, z) != id;
+        bool edgeNorth = iBlockReader.GetBlockId(x, y, z - 1) == id && iBlockReader.GetBlockId(x, y, z - 2) != id;
+        bool edgeSouth = iBlockReader.GetBlockId(x, y, z + 1) == id && iBlockReader.GetBlockId(x, y, z + 2) != id;
+        bool extendsInX = edgeWest || edgeEast;
+        bool extendsInZ = edgeNorth || edgeSouth;
+        return extendsInX && side == 4 ? true : extendsInX && side == 5 ? true : extendsInZ && side == 2 ? true : extendsInZ && side == 3;
     }
 
-    public override int getDroppedItemCount(JavaRandom random)
-    {
-        return 0;
-    }
+    public override int getDroppedItemCount() => 0;
 
-    public override int getRenderLayer()
-    {
-        return 1;
-    }
+    public override int getRenderLayer() => 1;
 
     public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
     {
@@ -192,41 +172,39 @@ public class BlockPortal : BlockBreakable
         {
             entity.tickPortalCooldown();
         }
-
     }
 
     public override void randomDisplayTick(World world, int x, int y, int z, JavaRandom random)
     {
         if (random.NextInt(100) == 0)
         {
-            world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "portal.portal", 1.0F, random.NextFloat() * 0.4F + 0.8F);
+            world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "portal.portal", 1.0F, random.NextFloat() * 0.4F + 0.8F);
         }
 
         for (int particleIndex = 0; particleIndex < 4; ++particleIndex)
         {
-            double particleX = (double)((float)x + random.NextFloat());
-            double particleY = (double)((float)y + random.NextFloat());
-            double particleZ = (double)((float)z + random.NextFloat());
+            double particleX = x + random.NextFloat();
+            double particleY = y + random.NextFloat();
+            double particleZ = z + random.NextFloat();
             double velocityX = 0.0D;
             double velocityY = 0.0D;
             double velocityZ = 0.0D;
             int direction = random.NextInt(2) * 2 - 1;
-            velocityX = ((double)random.NextFloat() - 0.5D) * 0.5D;
-            velocityY = ((double)random.NextFloat() - 0.5D) * 0.5D;
-            velocityZ = ((double)random.NextFloat() - 0.5D) * 0.5D;
+            velocityX = (random.NextFloat() - 0.5D) * 0.5D;
+            velocityY = (random.NextFloat() - 0.5D) * 0.5D;
+            velocityZ = (random.NextFloat() - 0.5D) * 0.5D;
             if (world.getBlockId(x - 1, y, z) != id && world.getBlockId(x + 1, y, z) != id)
             {
-                particleX = (double)x + 0.5D + 0.25D * (double)direction;
-                velocityX = (double)(random.NextFloat() * 2.0F * (float)direction);
+                particleX = x + 0.5D + 0.25D * direction;
+                velocityX = random.NextFloat() * 2.0F * direction;
             }
             else
             {
-                particleZ = (double)z + 0.5D + 0.25D * (double)direction;
-                velocityZ = (double)(random.NextFloat() * 2.0F * (float)direction);
+                particleZ = z + 0.5D + 0.25D * direction;
+                velocityZ = random.NextFloat() * 2.0F * direction;
             }
 
             world.addParticle("portal", particleX, particleY, particleZ, velocityX, velocityY, velocityZ);
         }
-
     }
 }

@@ -1,14 +1,12 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
-using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Blocks;
 
 internal class BlockRedstoneOre : Block
 {
-
-    private bool lit;
+    private readonly bool lit;
 
     public BlockRedstoneOre(int id, int textureId, bool lit) : base(id, textureId, Material.Stone)
     {
@@ -20,12 +18,9 @@ internal class BlockRedstoneOre : Block
         this.lit = lit;
     }
 
-    public override int getTickRate()
-    {
-        return 30;
-    }
+    public override int getTickRate() => 30;
 
-    public override void onBlockBreakStart(OnBlockBreakStartContext ctx)
+    public override void onBlockBreakStart(OnBlockBreakStartEvt ctx)
     {
         light(ctx.WorldWrite, ctx.WorldRead, ctx.Broadcaster, ctx.X, ctx.Y, ctx.Z);
         base.onBlockBreakStart(ctx);
@@ -37,51 +32,42 @@ internal class BlockRedstoneOre : Block
         base.onSteppedOn(ctx);
     }
 
-    public override bool onUse(OnUseContext ctx)
+    public override bool onUse(OnUseEvt ctx)
     {
         light(ctx.WorldWrite, ctx.WorldRead, ctx.Broadcaster, ctx.X, ctx.Y, ctx.Z);
         return base.onUse(ctx);
     }
 
-    private void light(IBlockWrite worldWrite,IBlockReader worldRead,WorldEventBroadcaster broadcaster, int x, int y, int z)
+    private void light(IBlockWrite worldWrite, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         spawnParticles(worldRead, broadcaster, x, y, z);
         if (worldRead.GetBlockId(x, y, z) == RedstoneOre.id)
         {
             worldWrite.SetBlock(x, y, z, LitRedstoneOre.id);
         }
-
     }
 
-    public override void onTick(OnTickContext ctx)
+    public override void onTick(OnTickEvt ctx)
     {
         if (id == LitRedstoneOre.id)
         {
-            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, Block.RedstoneOre.id);
+            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, RedstoneOre.id);
         }
-
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return Item.Redstone.id;
-    }
+    public override int getDroppedItemId(int blockMeta) => Item.Redstone.id;
 
-    public override int getDroppedItemCount(JavaRandom random)
-    {
-        return 4 + random.NextInt(2);
-    }
+    public override int getDroppedItemCount() => 4 + random.NextInt(2);
 
-    public override void randomDisplayTick(OnTickContext ctx)
+    public override void randomDisplayTick(OnTickEvt ctx)
     {
         if (lit)
         {
             spawnParticles(ctx.WorldRead, ctx.Broadcaster, ctx.X, ctx.Y, ctx.Z);
         }
-
     }
 
-    private void spawnParticles(IBlockReader reader,WorldEventBroadcaster broadcaster, int x, int y, int z)
+    private void spawnParticles(IBlockReader reader, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         double faceOffset = 1.0D / 16.0D;
         for (int direction = 0; direction < 6; ++direction)
@@ -119,11 +105,10 @@ internal class BlockRedstoneOre : Block
                 particleX = x + 0 - faceOffset;
             }
 
-            if (particleX < x || particleX > (x + 1) || particleY < 0.0D || particleY > (y + 1) || particleZ < z || particleZ > (z + 1))
+            if (particleX < x || particleX > x + 1 || particleY < 0.0D || particleY > y + 1 || particleZ < z || particleZ > z + 1)
             {
                 broadcaster.AddParticle("reddust", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
             }
         }
-
     }
 }

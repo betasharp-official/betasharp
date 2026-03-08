@@ -9,8 +9,8 @@ namespace BetaSharp.Blocks;
 
 public class BlockLeaves : BlockLeavesBase
 {
-    private int spriteIndex;
     private readonly ThreadLocal<int[]> s_decayRegion = new(() => null);
+    private readonly int spriteIndex;
 
     public BlockLeaves(int id, int textureId) : base(id, textureId, Material.Leaves, false)
     {
@@ -18,10 +18,7 @@ public class BlockLeaves : BlockLeavesBase
         setTickRandomly(true);
     }
 
-    public override int getColor(int meta)
-    {
-        return (meta & 1) == 1 ? FoliageColors.getSpruceColor() : ((meta & 2) == 2 ? FoliageColors.getBirchColor() : FoliageColors.getDefaultColor());
-    }
+    public override int getColor(int meta) => (meta & 1) == 1 ? FoliageColors.getSpruceColor() : (meta & 2) == 2 ? FoliageColors.getBirchColor() : FoliageColors.getDefaultColor();
 
     public override int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z)
     {
@@ -30,17 +27,16 @@ public class BlockLeaves : BlockLeavesBase
         {
             return FoliageColors.getSpruceColor();
         }
-        else if ((meta & 2) == 2)
+
+        if ((meta & 2) == 2)
         {
             return FoliageColors.getBirchColor();
         }
-        else
-        {
-            iBlockReader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
-            double temperature = iBlockReader.GetBiomeSource().TemperatureMap[0];
-            double downfall = iBlockReader.GetBiomeSource().DownfallMap[0];
-            return FoliageColors.getFoliageColor(temperature, downfall);
-        }
+
+        iBlockReader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
+        double temperature = iBlockReader.GetBiomeSource().TemperatureMap[0];
+        double downfall = iBlockReader.GetBiomeSource().DownfallMap[0];
+        return FoliageColors.getFoliageColor(temperature, downfall);
     }
 
     public override void onBreak(World world, int x, int y, int z)
@@ -56,7 +52,7 @@ public class BlockLeaves : BlockLeavesBase
                     for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                     {
                         int blockId = world.getBlockId(x + offsetX, y + offsetY, z + offsetZ);
-                        if (blockId == Block.Leaves.id)
+                        if (blockId == Leaves.id)
                         {
                             int leavesMeta = world.getBlockMeta(x + offsetX, y + offsetY, z + offsetZ);
                             world.SetBlockMetaWithoutNotifyingNeighbors(x + offsetX, y + offsetY, z + offsetZ, leavesMeta | 8);
@@ -65,7 +61,6 @@ public class BlockLeaves : BlockLeavesBase
                 }
             }
         }
-
     }
 
     public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
@@ -103,11 +98,11 @@ public class BlockLeaves : BlockLeavesBase
                             for (dy = -decayRadius; dy <= decayRadius; ++dy)
                             {
                                 dz = worldView.GetBlockId(x + distanceToLog, y + dx, z + dy);
-                                if (dz == Block.Log.id)
+                                if (dz == Log.id)
                                 {
                                     decayRegion[(distanceToLog + centerOffset) * planeSize + (dx + centerOffset) * regionSize + dy + centerOffset] = 0;
                                 }
-                                else if (dz == Block.Leaves.id)
+                                else if (dz == Leaves.id)
                                 {
                                     decayRegion[(distanceToLog + centerOffset) * planeSize + (dx + centerOffset) * regionSize + dy + centerOffset] = -2;
                                 }
@@ -181,7 +176,6 @@ public class BlockLeaves : BlockLeavesBase
                     breakLeaves(worldView, x, y, z);
                 }
             }
-
         }
     }
 
@@ -191,44 +185,28 @@ public class BlockLeaves : BlockLeavesBase
         world.setBlock(x, y, z, 0);
     }
 
-    public override int getDroppedItemCount(JavaRandom random)
-    {
-        return random.NextInt(20) == 0 ? 1 : 0;
-    }
+    public override int getDroppedItemCount() => random.NextInt(20) == 0 ? 1 : 0;
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return Block.Sapling.id;
-    }
+    public override int getDroppedItemId(int blockMeta) => Sapling.id;
 
     public override void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta)
     {
         if (!world.isRemote && player.getHand() != null && player.getHand().itemId == Item.Shears.id)
         {
             player.increaseStat(Stats.Stats.MineBlockStatArray[id], 1);
-            dropStack(world, x, y, z, new ItemStack(Block.Leaves.id, 1, meta & 3));
+            dropStack(world, x, y, z, new ItemStack(Leaves.id, 1, meta & 3));
         }
         else
         {
             base.afterBreak(world, player, x, y, z, meta);
         }
-
     }
 
-    protected override int getDroppedItemMeta(int blockMeta)
-    {
-        return blockMeta & 3;
-    }
+    protected override int getDroppedItemMeta(int blockMeta) => blockMeta & 3;
 
-    public override bool isOpaque()
-    {
-        return !graphicsLevel;
-    }
+    public override bool isOpaque() => !graphicsLevel;
 
-    public override int getTexture(int side, int meta)
-    {
-        return (meta & 3) == 1 ? textureId + 80 : textureId;
-    }
+    public override int getTexture(int side, int meta) => (meta & 3) == 1 ? textureId + 80 : textureId;
 
     public void setGraphicsLevel(bool bl)
     {
@@ -236,8 +214,5 @@ public class BlockLeaves : BlockLeavesBase
         textureId = spriteIndex + (bl ? 0 : 1);
     }
 
-    public override void onSteppedOn(World world, int x, int y, int z, Entity entity)
-    {
-        base.onSteppedOn(world, x, y, z, entity);
-    }
+    public override void onSteppedOn(World world, int x, int y, int z, Entity entity) => base.onSteppedOn(world, x, y, z, entity);
 }

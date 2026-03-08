@@ -22,7 +22,7 @@ public class EntityLightningBolt : EntityWeatherEffect
             int strikeX = MathHelper.Floor(x);
             int strikeY = MathHelper.Floor(y);
             int strikeZ = MathHelper.Floor(z);
-            if (world.getBlockId(strikeX, strikeY, strikeZ) == 0 && Block.Fire.canPlaceAt(world.BlocksView, strikeX, strikeY, strikeZ))
+            if (world.getBlockId(strikeX, strikeY, strikeZ) == 0 && Block.Fire.canPlaceAt(world.BlocksReader, strikeX, strikeY, strikeZ))
             {
                 world.setBlock(strikeX, strikeY, strikeZ, Block.Fire.id);
             }
@@ -32,7 +32,7 @@ public class EntityLightningBolt : EntityWeatherEffect
                 strikeY = MathHelper.Floor(x) + random.NextInt(3) - 1;
                 strikeZ = MathHelper.Floor(y) + random.NextInt(3) - 1;
                 int fireZ = MathHelper.Floor(z) + random.NextInt(3) - 1;
-                if (world.getBlockId(strikeY, strikeZ, fireZ) == 0 && Block.Fire.canPlaceAt(world.BlocksView, strikeY, strikeZ, fireZ))
+                if (world.getBlockId(strikeY, strikeZ, fireZ) == 0 && Block.Fire.canPlaceAt(world.BlocksReader, strikeY, strikeZ, fireZ))
                 {
                     world.setBlock(strikeY, strikeZ, fireZ, Block.Fire.id);
                 }
@@ -46,8 +46,8 @@ public class EntityLightningBolt : EntityWeatherEffect
         base.tick();
         if (flashTimer == 2)
         {
-            world.playSound(x, y, z, "ambient.weather.thunder", 10000.0F, 0.8F + random.NextFloat() * 0.2F);
-            world.playSound(x, y, z, "random.explode", 2.0F, 0.5F + random.NextFloat() * 0.2F);
+            _ctx.playSound(x, y, z, "ambient.weather.thunder", 10000.0F, 0.8F + random.NextFloat() * 0.2F);
+            _ctx.playSound(x, y, z, "random.explode", 2.0F, 0.5F + random.NextFloat() * 0.2F);
         }
 
         --flashTimer;
@@ -62,14 +62,14 @@ public class EntityLightningBolt : EntityWeatherEffect
                 --flashCount;
                 flashTimer = 1;
                 renderSeed = random.NextLong();
-                if (world.isRegionLoaded(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z), 10))
+                if (_ctx.isRegionLoaded(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z), 10))
                 {
                     int floorX = MathHelper.Floor(x);
                     int floorY = MathHelper.Floor(y);
                     int floorZ = MathHelper.Floor(z);
-                    if (world.getBlockId(floorX, floorY, floorZ) == 0 && Block.Fire.canPlaceAt(world.BlocksView, floorX, floorY, floorZ))
+                    if (_ctx.getBlockId(floorX, floorY, floorZ) == 0 && Block.Fire.canPlaceAt(_ctx.BlocksView, floorX, floorY, floorZ))
                     {
-                        world.setBlock(floorX, floorY, floorZ, Block.Fire.id);
+                        _ctx.setBlock(floorX, floorY, floorZ, Block.Fire.id);
                     }
                 }
             }
@@ -78,7 +78,7 @@ public class EntityLightningBolt : EntityWeatherEffect
         if (flashTimer >= 0)
         {
             double searchRadius = 3.0D;
-            var entities = world.getEntities(this, new Box(x - searchRadius, y - searchRadius, z - searchRadius, x + searchRadius, y + 6.0D + searchRadius, z + searchRadius));
+            var entities = _ctx.getEntities(this, new Box(x - searchRadius, y - searchRadius, z - searchRadius, x + searchRadius, y + 6.0D + searchRadius, z + searchRadius));
 
             for (int i = 0; i < entities.Count; ++i)
             {
@@ -86,7 +86,7 @@ public class EntityLightningBolt : EntityWeatherEffect
                 entity.onStruckByLightning(this);
             }
 
-            world.lightningTicksLeft = 2;
+            _ctx.lightningTicksLeft = 2;
         }
 
     }

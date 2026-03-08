@@ -36,7 +36,7 @@ internal class ItemDoor : Item
                 block = Block.IronDoor;
             }
 
-            if (!block.canPlaceAt(world.BlocksView, x, y, z))
+            if (!block.canPlaceAt(world.BlocksReader, x, y, z))
             {
                 return false;
             }

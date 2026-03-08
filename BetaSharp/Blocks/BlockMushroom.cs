@@ -27,16 +27,9 @@ internal class BlockMushroom : BlockPlant
                 }
             }
         }
-
     }
 
-    protected override bool canPlantOnTop(int id)
-    {
-        return Block.BlocksOpaque[id];
-    }
+    protected override bool canPlantOnTop(int id) => BlocksOpaque[id];
 
-    public override bool canGrow(World world, int x, int y, int z)
-    {
-        return y >= 0 && y < 128 ? world.getBrightness(x, y, z) < 13 && canPlantOnTop(world.getBlockId(x, y - 1, z)) : false;
-    }
+    public override bool canGrow(World world, int x, int y, int z) => y >= 0 && y < 128 ? world.getBrightness(x, y, z) < 13 && canPlantOnTop(world.getBlockId(x, y - 1, z)) : false;
 }

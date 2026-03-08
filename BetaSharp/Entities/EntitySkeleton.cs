@@ -31,10 +31,10 @@ public class EntitySkeleton : EntityMonster
 
     public override void tickMovement()
     {
-        if (world.canMonsterSpawn())
+        if (_ctx.canMonsterSpawn())
         {
             float brightness = getBrightnessAtEyes(1.0F);
-            if (brightness > 0.5F && world.hasSkyLight(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z)) && random.NextFloat() * 30.0F < (brightness - 0.4F) * 2.0F)
+            if (brightness > 0.5F && _ctx.hasSkyLight(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z)) && random.NextFloat() * 30.0F < (brightness - 0.4F) * 2.0F)
             {
                 fireTicks = 300;
             }
@@ -51,12 +51,12 @@ public class EntitySkeleton : EntityMonster
             double dy = entity.z - z;
             if (attackTime == 0)
             {
-                EntityArrow arrow = new EntityArrow(world, this);
+                EntityArrow arrow = new EntityArrow(_ctx, this);
                 arrow.y += (double)1.4F;
                 double targetHeightOffset = entity.y + (double)entity.getEyeHeight() - (double)0.2F - arrow.y;
                 float distanceFactor = MathHelper.Sqrt(dx * dx + dy * dy) * 0.2F;
-                world.playSound(this, "random.bow", 1.0F, 1.0F / (random.NextFloat() * 0.4F + 0.8F));
-                world.SpawnEntity(arrow);
+                _ctx.playSound(this, "random.bow", 1.0F, 1.0F / (random.NextFloat() * 0.4F + 0.8F));
+                _ctx.SpawnEntity(arrow);
                 arrow.setArrowHeading(dx, targetHeightOffset + (double)distanceFactor, dy, 0.6F, 12.0F);
                 attackTime = 30;
             }

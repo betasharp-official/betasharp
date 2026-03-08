@@ -1,5 +1,4 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
@@ -27,47 +26,34 @@ internal class BlockDoor : Block
         if (side != 0 && side != 1)
         {
             int facing = setOpen(meta);
-            if ((facing == 0 || facing == 2) ^ side <= 3)
+            if ((facing == 0 || facing == 2) ^ (side <= 3))
             {
                 return textureId;
             }
-            else
-            {
-                int textureIndex = facing / 2 + (side & 1 ^ facing);
-                textureIndex += (meta & 4) / 4;
-                int textureId = base.textureId - (meta & 8) * 2;
-                if ((textureIndex & 1) != 0)
-                {
-                    textureId = -textureId;
-                }
 
-                return textureId;
+            int textureIndex = facing / 2 + ((side & 1) ^ facing);
+            textureIndex += (meta & 4) / 4;
+            int textureId = this.textureId - (meta & 8) * 2;
+            if ((textureIndex & 1) != 0)
+            {
+                textureId = -textureId;
             }
-        }
-        else
-        {
+
             return textureId;
         }
+
+        return textureId;
     }
 
-    public override bool isOpaque()
-    {
-        return false;
-    }
+    public override bool isOpaque() => false;
 
-    public override bool isFullCube()
-    {
-        return false;
-    }
+    public override bool isFullCube() => false;
 
-    public override BlockRendererType getRenderType()
-    {
-        return BlockRendererType.Door;
-    }
+    public override BlockRendererType getRenderType() => BlockRendererType.Door;
 
     public override Box getBoundingBox(World world, int x, int y, int z)
     {
-        updateBoundingBox(world.BlocksView, x, y, z);
+        updateBoundingBox(world.BlocksReader, x, y, z);
         return base.getBoundingBox(world, x, y, z);
     }
 
@@ -77,10 +63,7 @@ internal class BlockDoor : Block
         return base.getCollisionShape(world, x, y, z);
     }
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
-    {
-        rotate(setOpen(iBlockReader.GetBlockMeta(x, y, z)));
-    }
+    public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z) => rotate(setOpen(iBlockReader.GetBlockMeta(x, y, z)));
 
     public void rotate(int meta)
     {
@@ -105,54 +88,43 @@ internal class BlockDoor : Block
         {
             setBoundingBox(0.0F, 0.0F, 0.0F, thickness, 1.0F, 1.0F);
         }
-
     }
 
-    public override void onBlockBreakStart(OnBlockBreakStartContext ctx)
-    {
-        updateDorState(ctx.WorldRead, ctx.WorldWrite, ctx.Broadcaster, ctx.X, ctx.Y, ctx.Z);
-    }
+    public override void onBlockBreakStart(OnBlockBreakStartEvt ctx) => updateDorState(ctx.WorldRead, ctx.WorldWrite, ctx.Broadcaster, ctx.X, ctx.Y, ctx.Z);
 
-     private bool updateDorState(IBlockReader reader,IBlockWrite writer,WorldEventBroadcaster broadcaster,int x, int y, int z)
+    private bool updateDorState(IBlockReader reader, IBlockWrite writer, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         if (material == Material.Metal)
         {
             return true;
         }
-        else
+
+        int meta = reader.GetBlockMeta(x, y, z);
+        if ((meta & 8) != 0)
         {
-            int meta = reader.GetBlockMeta(x, y, z);
-            if ((meta & 8) != 0)
+            if (reader.GetBlockId(x, y - 1, z) == id)
             {
-                if (reader.GetBlockId(x, y - 1, z) == id)
-                {
-                    updateDorState(reader, writer, broadcaster, x, y - 1, z);
-                }
-
-                return true;
+                updateDorState(reader, writer, broadcaster, x, y - 1, z);
             }
-            else
-            {
-                if (reader.GetBlockId(x, y + 1, z) == id)
-                {
-                    writer.SetBlockMeta(x, y + 1, z, (meta ^ 4) + 8);
-                }
 
-                writer.SetBlockMeta(x, y, z, meta ^ 4);
-                writer.SetBlocksDirty(x, y - 1, z, x, y, z);
-                broadcaster.WorldEvent(1003, x, y, z, 0);
-                return true;
-            }
+            return true;
         }
+
+        if (reader.GetBlockId(x, y + 1, z) == id)
+        {
+            writer.SetBlockMeta(x, y + 1, z, (meta ^ 4) + 8);
+        }
+
+        writer.SetBlockMeta(x, y, z, meta ^ 4);
+        writer.SetBlocksDirty(x, y - 1, z, x, y, z);
+        broadcaster.WorldEvent(1003, x, y, z, 0);
+        return true;
     }
 
 
-    public override bool onUse(OnUseContext ctx)
-    {
-       return updateDorState(ctx.WorldRead, ctx.WorldWrite, ctx.Broadcaster, ctx.X, ctx.Y, ctx.Z);
-    }
+    public override bool onUse(OnUseEvt ctx) => updateDorState(ctx.WorldRead, ctx.WorldWrite, ctx.Broadcaster, ctx.X, ctx.Y, ctx.Z);
 
-    public void setOpen(IBlockReader reader,IBlockWrite writer,WorldEventBroadcaster broadcaster, int x, int y, int z, bool open)
+    public void setOpen(IBlockReader reader, IBlockWrite writer, WorldEventBroadcaster broadcaster, int x, int y, int z, bool open)
     {
         int meta = reader.GetBlockMeta(x, y, z);
         if ((meta & 8) != 0)
@@ -161,7 +133,6 @@ internal class BlockDoor : Block
             {
                 setOpen(reader, writer, broadcaster, x, y - 1, z, open);
             }
-
         }
         else
         {
@@ -180,12 +151,12 @@ internal class BlockDoor : Block
         }
     }
 
-    public override void neighborUpdate(OnTickContext ctx)
+    public override void neighborUpdate(OnTickEvt ctx)
     {
         int meta = ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         if ((meta & 8) != 0)
         {
-            if (ctx.WorldRead.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) != base.id)
+            if (ctx.WorldRead.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) != id)
             {
                 ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             }
@@ -198,7 +169,7 @@ internal class BlockDoor : Block
         else
         {
             bool wasBroken = false;
-            if (ctx.WorldRead.GetBlockId(ctx.X, ctx.Y + 1, ctx.Z) != base.id)
+            if (ctx.WorldRead.GetBlockId(ctx.X, ctx.Y + 1, ctx.Z) != id)
             {
                 ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
                 wasBroken = true;
@@ -208,7 +179,7 @@ internal class BlockDoor : Block
             {
                 ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
                 wasBroken = true;
-                if (ctx.WorldRead.GetBlockId(ctx.X, ctx.Y + 1, ctx.Z) == base.id)
+                if (ctx.WorldRead.GetBlockId(ctx.X, ctx.Y + 1, ctx.Z) == id)
                 {
                     ctx.WorldWrite.SetBlock(ctx.X, ctx.Y + 1, ctx.Z, 0);
                 }
@@ -227,13 +198,9 @@ internal class BlockDoor : Block
                 setOpen(ctx.WorldRead, ctx.WorldWrite, ctx.Broadcaster, ctx.X, ctx.Y, ctx.Z, isPowered);
             }
         }
-
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return (blockMeta & 8) != 0 ? 0 : (material == Material.Metal ? Item.IronDoor.id : Item.WoodenDoor.id);
-    }
+    public override int getDroppedItemId(int blockMeta) => (blockMeta & 8) != 0 ? 0 : material == Material.Metal ? Item.IronDoor.id : Item.WoodenDoor.id;
 
     public override HitResult raycast(IBlockReader world, int x, int y, int z, Vec3D startPos, Vec3D endPos)
     {
@@ -241,23 +208,11 @@ internal class BlockDoor : Block
         return base.raycast(world, x, y, z, startPos, endPos);
     }
 
-    public int setOpen(int meta)
-    {
-        return (meta & 4) == 0 ? meta - 1 & 3 : meta & 3;
-    }
+    public int setOpen(int meta) => (meta & 4) == 0 ? (meta - 1) & 3 : meta & 3;
 
-    public override bool canPlaceAt(OnPlacedContext ctx)
-    {
-        return ctx.Y >= 127 ? false : ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) && base.canPlaceAt(ctx) && base.canPlaceAt(ctx);
-    }
+    public override bool canPlaceAt(OnPlacedEvt ctx) => ctx.Y >= 127 ? false : ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) && base.canPlaceAt(ctx) && base.canPlaceAt(ctx);
 
-    public static bool isOpen(int meta)
-    {
-        return (meta & 4) != 0;
-    }
+    public static bool isOpen(int meta) => (meta & 4) != 0;
 
-    public override int getPistonBehavior()
-    {
-        return 1;
-    }
+    public override int getPistonBehavior() => 1;
 }

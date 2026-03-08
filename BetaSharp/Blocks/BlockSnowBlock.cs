@@ -1,35 +1,22 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Blocks;
 
 internal class BlockSnowBlock : Block
 {
+    public BlockSnowBlock(int id, int textureId) : base(id, textureId, Material.SnowBlock) => setTickRandomly(true);
 
-    public BlockSnowBlock(int id, int textureId) : base(id, textureId, Material.SnowBlock)
-    {
-        setTickRandomly(true);
-    }
+    public override int getDroppedItemId(int blockMeta) => Item.Snowball.id;
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return Item.Snowball.id;
-    }
+    public override int getDroppedItemCount() => 4;
 
-    public override int getDroppedItemCount(JavaRandom random)
+    public override void onTick(OnTickEvt ctx)
     {
-        return 4;
-    }
-
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
-    {
-        if (worldView.getBrightness(LightType.Block, x, y, z) > 11)
+        if (ctx.Lighting.GetBrightness(LightType.Block, ctx.X, ctx.Y, ctx.Z) > 11)
         {
             dropStacks(worldView, x, y, z, worldView.getBlockMeta(x, y, z));
-            worldView.setBlock(x, y, z, 0);
+            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
         }
-
     }
 }

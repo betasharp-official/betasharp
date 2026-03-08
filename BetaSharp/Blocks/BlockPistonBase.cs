@@ -8,7 +8,7 @@ namespace BetaSharp.Blocks;
 
 public class BlockPistonBase : Block
 {
-    private bool sticky;
+    private readonly bool sticky;
     private bool deaf;
 
     public BlockPistonBase(int id, int textureId, bool sticky) : base(id, textureId, Material.Piston)
@@ -18,45 +18,33 @@ public class BlockPistonBase : Block
         setHardness(0.5F);
     }
 
-    public int getTopTexture()
-    {
-        return sticky ? 106 : 107;
-    }
+    public int getTopTexture() => sticky ? 106 : 107;
 
-    public override int getTexture(int side)
-    {
-        return side switch
+    public override int getTexture(int side) =>
+        side switch
         {
             1 => getTopTexture(),
             0 => 109,
             _ => 108
         };
-    }
 
     public override int getTexture(int side, int meta)
     {
         int var3 = getFacing(meta);
         return var3 > 5
             ? textureId
-            : (side == var3
-                ? (!isExtended(meta) && BoundingBox.MinX <= 0.0D && BoundingBox.MinY <= 0.0D && BoundingBox.MinZ <= 0.0D && BoundingBox.MaxX >= 1.0D && BoundingBox.MaxY >= 1.0D && BoundingBox.MaxZ >= 1.0D ? textureId : 110)
-                : (side == PistonConstants.field_31057_a[var3] ? 109 : 108));
+            : side == var3
+                ? !isExtended(meta) && BoundingBox.MinX <= 0.0D && BoundingBox.MinY <= 0.0D && BoundingBox.MinZ <= 0.0D && BoundingBox.MaxX >= 1.0D && BoundingBox.MaxY >= 1.0D && BoundingBox.MaxZ >= 1.0D ? textureId : 110
+                : side == PistonConstants.field_31057_a[var3]
+                    ? 109
+                    : 108;
     }
 
-    public override BlockRendererType getRenderType()
-    {
-        return BlockRendererType.PistonBase;
-    }
+    public override BlockRendererType getRenderType() => BlockRendererType.PistonBase;
 
-    public override bool isOpaque()
-    {
-        return false;
-    }
+    public override bool isOpaque() => false;
 
-    public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
-    {
-        return false;
-    }
+    public override bool onUse(World world, int x, int y, int z, EntityPlayer player) => false;
 
     public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
     {
@@ -107,28 +95,30 @@ public class BlockPistonBase : Block
         }
     }
 
-    private bool shouldExtend(World world, int x, int y, int z, int facing)
-    {
-        return facing != 0 && world.isPoweringSide(x, y - 1, z, 0)
+    private bool shouldExtend(World world, int x, int y, int z, int facing) =>
+        facing != 0 && world.isPoweringSide(x, y - 1, z, 0)
             ? true
-            : (facing != 1 && world.isPoweringSide(x, y + 1, z, 1)
+            : facing != 1 && world.isPoweringSide(x, y + 1, z, 1)
                 ? true
-                : (facing != 2 && world.isPoweringSide(x, y, z - 1, 2)
+                : facing != 2 && world.isPoweringSide(x, y, z - 1, 2)
                     ? true
-                    : (facing != 3 && world.isPoweringSide(x, y, z + 1, 3)
+                    : facing != 3 && world.isPoweringSide(x, y, z + 1, 3)
                         ? true
-                        : (facing != 5 && world.isPoweringSide(x + 1, y, z, 5)
+                        : facing != 5 && world.isPoweringSide(x + 1, y, z, 5)
                             ? true
-                            : (facing != 4 && world.isPoweringSide(x - 1, y, z, 4)
+                            : facing != 4 && world.isPoweringSide(x - 1, y, z, 4)
                                 ? true
-                                : (world.isPoweringSide(x, y, z, 0)
+                                : world.isPoweringSide(x, y, z, 0)
                                     ? true
-                                    : (world.isPoweringSide(x, y + 2, z, 1)
+                                    : world.isPoweringSide(x, y + 2, z, 1)
                                         ? true
-                                        : (world.isPoweringSide(x, y + 1, z - 1, 2)
+                                        : world.isPoweringSide(x, y + 1, z - 1, 2)
                                             ? true
-                                            : (world.isPoweringSide(x, y + 1, z + 1, 3) ? true : (world.isPoweringSide(x - 1, y + 1, z, 4) ? true : world.isPoweringSide(x + 1, y + 1, z, 5)))))))))));
-    }
+                                            : world.isPoweringSide(x, y + 1, z + 1, 3)
+                                                ? true
+                                                : world.isPoweringSide(x - 1, y + 1, z, 4)
+                                                    ? true
+                                                    : world.isPoweringSide(x + 1, y + 1, z, 5);
 
     public override void onBlockAction(World world, int x, int y, int z, int data1, int data2)
     {
@@ -138,7 +128,7 @@ public class BlockPistonBase : Block
             if (push(world, x, y, z, data2))
             {
                 world.setBlockMeta(x, y, z, data2 | 8);
-                world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "tile.piston.out", 0.5F, world.random.NextFloat() * 0.25F + 0.6F);
+                world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "tile.piston.out", 0.5F, world.random.NextFloat() * 0.25F + 0.6F);
             }
         }
         else if (data1 == 1)
@@ -175,7 +165,7 @@ public class BlockPistonBase : Block
                     }
                 }
 
-                if (var14 || var12 <= 0 || !canMoveBlock(var12, world, var9, var10, var11, false) || Block.Blocks[var12].getPistonBehavior() != 0 && var12 != Block.Piston.id && var12 != Block.StickyPiston.id)
+                if (var14 || var12 <= 0 || !canMoveBlock(var12, world, var9, var10, var11, false) || (Blocks[var12].getPistonBehavior() != 0 && var12 != Piston.id && var12 != StickyPiston.id))
                 {
                     if (!var14)
                     {
@@ -203,7 +193,7 @@ public class BlockPistonBase : Block
                 deaf = true;
             }
 
-            world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "tile.piston.in", 0.5F, world.random.NextFloat() * 0.15F + 0.6F);
+            world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "tile.piston.in", 0.5F, world.random.NextFloat() * 0.15F + 0.6F);
         }
 
         deaf = false;
@@ -242,10 +232,7 @@ public class BlockPistonBase : Block
         }
     }
 
-    public override void setupRenderBoundingBox()
-    {
-        setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-    }
+    public override void setupRenderBoundingBox() => setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
 
     public override void addIntersectingBoundingBox(IBlockReader world, int x, int y, int z, Box box, List<Box> boxes)
     {
@@ -253,74 +240,63 @@ public class BlockPistonBase : Block
         base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
     }
 
-    public override bool isFullCube()
-    {
-        return false;
-    }
+    public override bool isFullCube() => false;
 
-    public static int getFacing(int meta)
-    {
-        return meta & 7;
-    }
+    public static int getFacing(int meta) => meta & 7;
 
-    public static bool isExtended(int meta)
-    {
-        return (meta & 8) != 0;
-    }
+    public static bool isExtended(int meta) => (meta & 8) != 0;
 
     private static int getFacingForPlacement(World world, int x, int y, int z, EntityPlayer player)
     {
-        if (MathF.Abs((float)player.x - (float)x) < 2.0F && MathHelper.Abs((float)player.z - (float)z) < 2.0F)
+        if (MathF.Abs((float)player.x - x) < 2.0F && MathHelper.Abs((float)player.z - z) < 2.0F)
         {
-            double var5 = player.y + 1.82D - (double)player.standingEyeHeight;
-            if (var5 - (double)y > 2.0D)
+            double var5 = player.y + 1.82D - player.standingEyeHeight;
+            if (var5 - y > 2.0D)
             {
                 return 1;
             }
 
-            if ((double)y - var5 > 0.0D)
+            if (y - var5 > 0.0D)
             {
                 return 0;
             }
         }
 
-        int var7 = MathHelper.Floor((double)(player.yaw * 4.0F / 360.0F) + 0.5D) & 3;
-        return var7 == 0 ? 2 : (var7 == 1 ? 5 : (var7 == 2 ? 3 : (var7 == 3 ? 4 : 0)));
+        int var7 = MathHelper.Floor(player.yaw * 4.0F / 360.0F + 0.5D) & 3;
+        return var7 == 0 ? 2 : var7 == 1 ? 5 : var7 == 2 ? 3 : var7 == 3 ? 4 : 0;
     }
 
     private static bool canMoveBlock(int id, World world, int x, int y, int z, bool allowBreaking)
     {
-        if (id == Block.Obsidian.id)
+        if (id == Obsidian.id)
         {
             return false;
         }
-        else
+
+        if (id != Piston.id && id != StickyPiston.id)
         {
-            if (id != Block.Piston.id && id != Block.StickyPiston.id)
-            {
-                if (Block.Blocks[id].getHardness() == -1.0F)
-                {
-                    return false;
-                }
-
-                if (Block.Blocks[id].getPistonBehavior() == 2)
-                {
-                    return false;
-                }
-
-                if (!allowBreaking && Block.Blocks[id].getPistonBehavior() == 1)
-                {
-                    return false;
-                }
-            }
-            else if (isExtended(world.getBlockMeta(x, y, z)))
+            if (Blocks[id].getHardness() == -1.0F)
             {
                 return false;
             }
 
-            BlockEntity var6 = world.getBlockEntity(x, y, z);
-            return var6 == null;
+            if (Blocks[id].getPistonBehavior() == 2)
+            {
+                return false;
+            }
+
+            if (!allowBreaking && Blocks[id].getPistonBehavior() == 1)
+            {
+                return false;
+            }
         }
+        else if (isExtended(world.getBlockMeta(x, y, z)))
+        {
+            return false;
+        }
+
+        BlockEntity var6 = world.getBlockEntity(x, y, z);
+        return var6 == null;
     }
 
     private static bool canExtend(World world, int x, int y, int z, int dir)
@@ -347,7 +323,7 @@ public class BlockPistonBase : Block
                         return false;
                     }
 
-                    if (Block.Blocks[var9].getPistonBehavior() != 1)
+                    if (Blocks[var9].getPistonBehavior() != 1)
                     {
                         if (var8 == 12)
                         {
@@ -392,7 +368,7 @@ public class BlockPistonBase : Block
                         return false;
                     }
 
-                    if (Block.Blocks[var10].getPistonBehavior() != 1)
+                    if (Blocks[var10].getPistonBehavior() != 1)
                     {
                         if (var9 == 12)
                         {
@@ -406,7 +382,7 @@ public class BlockPistonBase : Block
                         continue;
                     }
 
-                    Block.Blocks[var10].dropStacks(world, var6, var7, var8, world.getBlockMeta(var6, var7, var8));
+                    Blocks[var10].dropStacks(world, var6, var7, var8, world.getBlockMeta(var6, var7, var8));
                     world.setBlock(var6, var7, var8, 0);
                 }
             }

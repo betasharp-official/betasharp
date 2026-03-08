@@ -13,18 +13,15 @@ internal class BlockSign : BlockWithEntity
 
     public BlockSign(int id, Type blockEntityType, bool standing) : base(id, Material.Wood)
     {
-        this._standing = standing;
+        _standing = standing;
         textureId = 4;
-        this._blockEntityType = blockEntityType;
+        _blockEntityType = blockEntityType;
         float width = 0.25F;
         float height = 1.0F;
         setBoundingBox(0.5F - width, 0.0F, 0.5F - width, 0.5F + width, height, 0.5F + width);
     }
 
-    public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)
-    {
-        return null;
-    }
+    public override Box? getCollisionShape(IBlockReader world, int x, int y, int z) => null;
 
     public override Box getBoundingBox(World world, int x, int y, int z)
     {
@@ -65,20 +62,11 @@ internal class BlockSign : BlockWithEntity
         }
     }
 
-    public override BlockRendererType getRenderType()
-    {
-        return BlockRendererType.Entity;
-    }
+    public override BlockRendererType getRenderType() => BlockRendererType.Entity;
 
-    public override bool isFullCube()
-    {
-        return false;
-    }
+    public override bool isFullCube() => false;
 
-    public override bool isOpaque()
-    {
-        return false;
-    }
+    public override bool isOpaque() => false;
 
     protected override BlockEntity getBlockEntity()
     {
@@ -92,10 +80,7 @@ internal class BlockSign : BlockWithEntity
         }
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return Item.Sign.id;
-    }
+    public override int getDroppedItemId(int blockMeta) => Item.Sign.id;
 
     public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
     {

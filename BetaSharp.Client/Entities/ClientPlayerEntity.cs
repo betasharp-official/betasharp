@@ -55,7 +55,7 @@ public class ClientPlayerEntity : EntityPlayer
         lastScreenDistortion = changeDimensionCooldown;
         if (inTeleportationState)
         {
-            if (!world.isRemote && vehicle != null)
+            if (!_ctx.isRemote && vehicle != null)
             {
                 setVehicle((Entity)null);
             }
@@ -149,7 +149,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void openCraftingScreen(int x, int y, int z)
     {
-        Game.displayGuiScreen(new GuiCrafting(inventory, world, x, y, z));
+        Game.displayGuiScreen(new GuiCrafting(inventory, _ctx, x, y, z));
     }
 
     public override void openFurnaceScreen(BlockEntityFurnace furnace)
@@ -248,7 +248,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     private bool isBlockTranslucent(int x, int y, int z)
     {
-        return world.shouldSuffocate(x, y, z);
+        return _ctx.shouldSuffocate(x, y, z);
     }
 
     protected override bool pushOutOfBlocks(double posX, double posY, double posZ)

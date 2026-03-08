@@ -8,32 +8,23 @@ internal class BlockSand : Block
 {
     private static readonly ThreadLocal<bool> s_fallInstantly = new(() => false);
 
+    public BlockSand(int id, int textureId) : base(id, textureId, Material.Sand)
+    {
+    }
+
     public static bool fallInstantly
     {
         get => s_fallInstantly.Value;
         set => s_fallInstantly.Value = value;
     }
 
-    public BlockSand(int id, int textureId) : base(id, textureId, Material.Sand)
-    {
-    }
+    public override void onPlaced(World world, int x, int y, int z) => world.ScheduleBlockUpdate(x, y, z, id, getTickRate());
 
-    public override void onPlaced(World world, int x, int y, int z)
-    {
-        world.ScheduleBlockUpdate(x, y, z, id, getTickRate());
-    }
+    public override void neighborUpdate(OnTickEvt ctx) => ctx.WorldRead.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
 
-    public override void neighborUpdate(OnTickContext ctx)
-    {
-        ctx.WorldRead.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
-    }
+    public override void onTick(OnTickEvt ctx) => processFall(ctx);
 
-    public override void onTick(OnTickContext ctx)
-    {
-        processFall(ctx);
-    }
-
-    private void processFall(OnTickContext ctx)
+    private void processFall(OnTickEvt ctx)
     {
         if (canFallThrough(ctx) && ctx.Y >= 0)
         {
@@ -58,29 +49,24 @@ internal class BlockSand : Block
                 }
             }
         }
-
     }
 
-    public override int getTickRate()
-    {
-        return 3;
-    }
+    public override int getTickRate() => 3;
 
-    public static bool canFallThrough(OnTickContext ctx)
+    public static bool canFallThrough(OnTickEvt ctx)
     {
         int blockId = ctx.WorldRead.GetBlockId(ctx.X, ctx.Y, ctx.Z);
         if (blockId == 0)
         {
             return true;
         }
-        else if (blockId == Block.Fire.id)
+
+        if (blockId == Fire.id)
         {
             return true;
         }
-        else
-        {
-            Material material = Block.Blocks[blockId].material;
-            return material == Material.Water || material == Material.Lava;
-        }
+
+        Material material = Blocks[blockId].material;
+        return material == Material.Water || material == Material.Lava;
     }
 }

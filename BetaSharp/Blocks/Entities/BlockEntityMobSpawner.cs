@@ -7,41 +7,28 @@ namespace BetaSharp.Blocks.Entities;
 
 public class BlockEntityMobSpawner : BlockEntity
 {
-    public int SpawnDelay { get; set; } = -1;
-    private string _spawnedEntityId = "Pig";
-    public double Rotation { get; set; }
-    public double LastRotation { get; set; } = 0.0D;
-
     private readonly ILogger<BlockEntityMobSpawner> _logger = Log.Instance.For<BlockEntityMobSpawner>();
+    private string _spawnedEntityId = "Pig";
 
-    public BlockEntityMobSpawner()
-    {
-        SpawnDelay = 20;
-    }
+    public BlockEntityMobSpawner() => SpawnDelay = 20;
+    public int SpawnDelay { get; set; } = -1;
+    public double Rotation { get; set; }
+    public double LastRotation { get; set; }
 
-    public string GetSpawnedEntityId()
-    {
-        return _spawnedEntityId;
-    }
+    public string GetSpawnedEntityId() => _spawnedEntityId;
 
-    public void SetSpawnedEntityId(string spawnedEntityId)
-    {
-        _spawnedEntityId = spawnedEntityId;
-    }
+    public void SetSpawnedEntityId(string spawnedEntityId) => _spawnedEntityId = spawnedEntityId;
 
-    public bool IsPlayerInRange()
-    {
-        return World.getClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
-    }
+    public bool IsPlayerInRange() => World.getClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
 
     public override void tick()
     {
         LastRotation = Rotation;
         if (IsPlayerInRange())
         {
-            double particleX = (double)(X + World.random.NextFloat());
-            double particleY = (double)(Y + World.random.NextFloat());
-            double particleZ = (double)(Z + World.random.NextFloat());
+            double particleX = X + World.random.NextFloat();
+            double particleY = Y + World.random.NextFloat();
+            double particleZ = Z + World.random.NextFloat();
             World.addParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
             World.addParticle("flame", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
 
@@ -92,9 +79,9 @@ public class BlockEntityMobSpawner : BlockEntity
 
                             for (int particleIndex = 0; particleIndex < 20; ++particleIndex)
                             {
-                                particleX = X + 0.5D + ((double)World.random.NextFloat() - 0.5D) * 2.0D;
-                                particleY = Y + 0.5D + ((double)World.random.NextFloat() - 0.5D) * 2.0D;
-                                particleZ = Z + 0.5D + ((double)World.random.NextFloat() - 0.5D) * 2.0D;
+                                particleX = X + 0.5D + (World.random.NextFloat() - 0.5D) * 2.0D;
+                                particleY = Y + 0.5D + (World.random.NextFloat() - 0.5D) * 2.0D;
+                                particleZ = Z + 0.5D + (World.random.NextFloat() - 0.5D) * 2.0D;
                                 World.addParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                                 World.addParticle("flame", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                             }

@@ -7,19 +7,7 @@ namespace BetaSharp.Blocks;
 
 public class BlockRail : Block
 {
-
     private readonly bool alwaysStraight;
-
-    public static bool isRail(World world, int x, int y, int z)
-    {
-        int blockId = world.getBlockId(x, y, z);
-        return blockId == Block.Rail.id || blockId == Block.PoweredRail.id || blockId == Block.DetectorRail.id;
-    }
-
-    public static bool isRail(int id)
-    {
-        return id == Block.Rail.id || id == Block.PoweredRail.id || id == Block.DetectorRail.id;
-    }
 
     public BlockRail(int id, int textureId, bool alwaysStraight) : base(id, textureId, Material.PistonBreakable)
     {
@@ -27,20 +15,19 @@ public class BlockRail : Block
         setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
     }
 
-    public bool isAlwaysStraight()
+    public static bool isRail(World world, int x, int y, int z)
     {
-        return alwaysStraight;
+        int blockId = world.getBlockId(x, y, z);
+        return blockId == Rail.id || blockId == PoweredRail.id || blockId == DetectorRail.id;
     }
 
-    public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)
-    {
-        return null;
-    }
+    public static bool isRail(int id) => id == Rail.id || id == PoweredRail.id || id == DetectorRail.id;
 
-    public override bool isOpaque()
-    {
-        return false;
-    }
+    public bool isAlwaysStraight() => alwaysStraight;
+
+    public override Box? getCollisionShape(IBlockReader world, int x, int y, int z) => null;
+
+    public override bool isOpaque() => false;
 
     public override HitResult raycast(IBlockReader world, int x, int y, int z, Vec3D startPos, Vec3D endPos)
     {
@@ -59,14 +46,13 @@ public class BlockRail : Block
         {
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
         }
-
     }
 
     public override int getTexture(int side, int meta)
     {
         if (alwaysStraight)
         {
-            if (id == Block.PoweredRail.id && (meta & 8) == 0)
+            if (id == PoweredRail.id && (meta & 8) == 0)
             {
                 return textureId - 16;
             }
@@ -79,20 +65,11 @@ public class BlockRail : Block
         return textureId;
     }
 
-    public override bool isFullCube()
-    {
-        return false;
-    }
+    public override bool isFullCube() => false;
 
-    public override BlockRendererType getRenderType()
-    {
-        return BlockRendererType.MinecartTrack;
-    }
+    public override BlockRendererType getRenderType() => BlockRendererType.MinecartTrack;
 
-    public override bool canPlaceAt(World world, int x, int y, int z)
-    {
-        return world.shouldSuffocate(x, y - 1, z);
-    }
+    public override bool canPlaceAt(World world, int x, int y, int z) => world.shouldSuffocate(x, y - 1, z);
 
     public override void onPlaced(World world, int x, int y, int z)
     {
@@ -100,7 +77,6 @@ public class BlockRail : Block
         {
             updateShape(world, x, y, z, true);
         }
-
     }
 
     public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
@@ -145,7 +121,7 @@ public class BlockRail : Block
                 dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
                 world.setBlock(x, y, z, 0);
             }
-            else if (base.id == Block.PoweredRail.id)
+            else if (this.id == PoweredRail.id)
             {
                 bool isPowered = world.isPowered(x, y, z) || world.isPowered(x, y + 1, z);
                 isPowered = isPowered || isPoweredByConnectedRails(world, x, y, z, meta, true, 0) || isPoweredByConnectedRails(world, x, y, z, meta, false, 0);
@@ -163,18 +139,17 @@ public class BlockRail : Block
 
                 if (stateChanged)
                 {
-                    world.notifyNeighbors(x, y - 1, z, base.id);
+                    world.notifyNeighbors(x, y - 1, z, this.id);
                     if (railMeta == 2 || railMeta == 3 || railMeta == 4 || railMeta == 5)
                     {
-                        world.notifyNeighbors(x, y + 1, z, base.id);
+                        world.notifyNeighbors(x, y + 1, z, this.id);
                     }
                 }
             }
-            else if (id > 0 && Block.Blocks[id].canEmitRedstonePower() && !alwaysStraight && RailLogic.GetNAdjacentTracks(new RailLogic(this, world, new Vec3i(x, y, z))) == 3)
+            else if (id > 0 && Blocks[id].canEmitRedstonePower() && !alwaysStraight && RailLogic.GetNAdjacentTracks(new RailLogic(this, world, new Vec3i(x, y, z))) == 3)
             {
                 updateShape(world, x, y, z, false);
             }
-
         }
     }
 
@@ -192,98 +167,98 @@ public class BlockRail : Block
         {
             return false;
         }
-        else
+
+        int shape = meta & 7;
+        bool isSameY = true;
+        switch (shape)
         {
-            int shape = meta & 7;
-            bool isSameY = true;
-            switch (shape)
-            {
-                case 0:
-                    if (towardsNegative)
-                    {
-                        ++z;
-                    }
-                    else
-                    {
-                        --z;
-                    }
-                    break;
-                case 1:
-                    if (towardsNegative)
-                    {
-                        --x;
-                    }
-                    else
-                    {
-                        ++x;
-                    }
-                    break;
-                case 2:
-                    if (towardsNegative)
-                    {
-                        --x;
-                    }
-                    else
-                    {
-                        ++x;
-                        ++y;
-                        isSameY = false;
-                    }
+            case 0:
+                if (towardsNegative)
+                {
+                    ++z;
+                }
+                else
+                {
+                    --z;
+                }
 
-                    shape = 1;
-                    break;
-                case 3:
-                    if (towardsNegative)
-                    {
-                        --x;
-                        ++y;
-                        isSameY = false;
-                    }
-                    else
-                    {
-                        ++x;
-                    }
+                break;
+            case 1:
+                if (towardsNegative)
+                {
+                    --x;
+                }
+                else
+                {
+                    ++x;
+                }
 
-                    shape = 1;
-                    break;
-                case 4:
-                    if (towardsNegative)
-                    {
-                        ++z;
-                    }
-                    else
-                    {
-                        --z;
-                        ++y;
-                        isSameY = false;
-                    }
+                break;
+            case 2:
+                if (towardsNegative)
+                {
+                    --x;
+                }
+                else
+                {
+                    ++x;
+                    ++y;
+                    isSameY = false;
+                }
 
-                    shape = 0;
-                    break;
-                case 5:
-                    if (towardsNegative)
-                    {
-                        ++z;
-                        ++y;
-                        isSameY = false;
-                    }
-                    else
-                    {
-                        --z;
-                    }
+                shape = 1;
+                break;
+            case 3:
+                if (towardsNegative)
+                {
+                    --x;
+                    ++y;
+                    isSameY = false;
+                }
+                else
+                {
+                    ++x;
+                }
 
-                    shape = 0;
-                    break;
-            }
+                shape = 1;
+                break;
+            case 4:
+                if (towardsNegative)
+                {
+                    ++z;
+                }
+                else
+                {
+                    --z;
+                    ++y;
+                    isSameY = false;
+                }
 
-            return isPoweredByRail(world, x, y, z, towardsNegative, depth, shape) ? true : isSameY && isPoweredByRail(world, x, y - 1, z, towardsNegative, depth, shape);
+                shape = 0;
+                break;
+            case 5:
+                if (towardsNegative)
+                {
+                    ++z;
+                    ++y;
+                    isSameY = false;
+                }
+                else
+                {
+                    --z;
+                }
+
+                shape = 0;
+                break;
         }
+
+        return isPoweredByRail(world, x, y, z, towardsNegative, depth, shape) ? true : isSameY && isPoweredByRail(world, x, y - 1, z, towardsNegative, depth, shape);
     }
 
     private bool isPoweredByRail(World world, int x, int y, int z, bool towardsNegative, int depth, int shape)
     {
         int blockId = world.getBlockId(x, y, z);
-        if (blockId == Block.PoweredRail.id)
+        if (blockId == PoweredRail.id)
         {
             int meta = world.getBlockMeta(x, y, z);
             int railMeta = meta & 7;
@@ -311,8 +286,5 @@ public class BlockRail : Block
         return false;
     }
 
-    public override int getPistonBehavior()
-    {
-        return 0;
-    }
+    public override int getPistonBehavior() => 0;
 }

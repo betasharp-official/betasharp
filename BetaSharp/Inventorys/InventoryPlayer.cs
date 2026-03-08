@@ -153,7 +153,7 @@ public class InventoryPlayer : IInventory
         {
             if (main[slotIndex] != null)
             {
-                main[slotIndex].inventoryTick(player.world, player, slotIndex, selectedSlot == slotIndex);
+                main[slotIndex].inventoryTick(player._ctx, player, slotIndex, selectedSlot == slotIndex);
             }
         }
 

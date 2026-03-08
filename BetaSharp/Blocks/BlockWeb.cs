@@ -12,33 +12,15 @@ internal class BlockWeb : Block
     {
     }
 
-    public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
-    {
-        entity.slowed = true;
-    }
+    public override void onEntityCollision(World world, int x, int y, int z, Entity entity) => entity.slowed = true;
 
-    public override bool isOpaque()
-    {
-        return false;
-    }
+    public override bool isOpaque() => false;
 
-    public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)
-    {
-        return null;
-    }
+    public override Box? getCollisionShape(IBlockReader world, int x, int y, int z) => null;
 
-    public override BlockRendererType getRenderType()
-    {
-        return BlockRendererType.Reed;
-    }
+    public override BlockRendererType getRenderType() => BlockRendererType.Reed;
 
-    public override bool isFullCube()
-    {
-        return false;
-    }
+    public override bool isFullCube() => false;
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return Item.String.id;
-    }
+    public override int getDroppedItemId(int blockMeta) => Item.String.id;
 }

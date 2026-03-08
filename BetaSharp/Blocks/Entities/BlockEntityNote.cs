@@ -28,7 +28,6 @@ internal class BlockEntityNote : BlockEntity
         {
             note = 24;
         }
-
     }
 
     public void cycleNote()

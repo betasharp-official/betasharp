@@ -74,7 +74,7 @@ public class EntityBoat : Entity
 
     public override bool damage(Entity entity, int amount)
     {
-        if (!world.isRemote && !dead)
+        if (!_ctx.isRemote && !dead)
         {
             boatRockDirection = -boatRockDirection;
             boatTimeSinceHit = 10;
@@ -165,7 +165,7 @@ public class EntityBoat : Entity
             double var5 = boundingBox.MinY + (boundingBox.MaxY - boundingBox.MinY) * (double)(i + 0) / (double)var1 - 0.125D;
             double var7 = boundingBox.MinY + (boundingBox.MaxY - boundingBox.MinY) * (double)(i + 1) / (double)var1 - 0.125D;
             Box var9 = new Box(boundingBox.MinX, var5, boundingBox.MinZ, boundingBox.MaxX, var7, boundingBox.MaxZ);
-            if (world.isFluidInBox(var9, Material.Water))
+            if (_ctx.isFluidInBox(var9, Material.Water))
             {
                 var2 += 1.0D / (double)var1;
             }
@@ -175,7 +175,7 @@ public class EntityBoat : Entity
         double var8;
         double var10;
         double var21;
-        if (world.isRemote)
+        if (_ctx.isRemote)
         {
             if (lerpSteps > 0)
             {
@@ -285,20 +285,20 @@ public class EntityBoat : Entity
                     {
                         particleX = x - var8 * randomOffset * 0.8D + var10 * sideOffset;
                         particleZ = z - var10 * randomOffset * 0.8D - var8 * sideOffset;
-                        world.addParticle("splash", particleX, y - 0.125D, particleZ, velocityX, velocityY, velocityZ);
+                        _ctx.addParticle("splash", particleX, y - 0.125D, particleZ, velocityX, velocityY, velocityZ);
                     }
                     else
                     {
                         particleX = x + var8 + var10 * randomOffset * 0.7D;
                         particleZ = z + var10 - var8 * randomOffset * 0.7D;
-                        world.addParticle("splash", particleX, y - 0.125D, particleZ, velocityX, velocityY, velocityZ);
+                        _ctx.addParticle("splash", particleX, y - 0.125D, particleZ, velocityX, velocityY, velocityZ);
                     }
                 }
             }
 
             if (horizontalCollison && var6 > 0.15D)
             {
-                if (!world.isRemote)
+                if (!_ctx.isRemote)
                 {
                     markDead();
 
@@ -352,7 +352,7 @@ public class EntityBoat : Entity
 
             yaw = (float)((double)yaw + yawDelta);
             setRotation(yaw, pitch);
-            var entitiesInbound = world.getEntities(this, boundingBox.Expand((double)0.2F, 0.0D, (double)0.2F));
+            var entitiesInbound = _ctx.getEntities(this, boundingBox.Expand((double)0.2F, 0.0D, (double)0.2F));
             int i;
             if (entitiesInbound != null && entitiesInbound.Count > 0)
             {
@@ -371,9 +371,9 @@ public class EntityBoat : Entity
                 int x = MathHelper.Floor(base.x + ((double)(i % 2) - 0.5D) * 0.8D);
                 int y = MathHelper.Floor(base.y);
                 int z = MathHelper.Floor(base.z + ((double)(i / 2) - 0.5D) * 0.8D);
-                if (world.getBlockId(x, y, z) == Block.Snow.id)
+                if (_ctx.getBlockId(x, y, z) == Block.Snow.id)
                 {
-                    world.setBlock(x, y, z, 0);
+                    _ctx.setBlock(x, y, z, 0);
                 }
             }
 
@@ -416,7 +416,7 @@ public class EntityBoat : Entity
         }
         else
         {
-            if (!world.isRemote)
+            if (!_ctx.isRemote)
             {
                 player.setVehicle(this);
             }

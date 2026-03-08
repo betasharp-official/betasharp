@@ -14,15 +14,9 @@ public class BlockPistonExtension : Block
         setHardness(0.5F);
     }
 
-    public void setSprite(int sprite)
-    {
-        pistonHeadSprite = sprite;
-    }
+    public void setSprite(int sprite) => pistonHeadSprite = sprite;
 
-    public void clearSprite()
-    {
-        pistonHeadSprite = -1;
-    }
+    public void clearSprite() => pistonHeadSprite = -1;
 
     public override void onBreak(World world, int x, int y, int z)
     {
@@ -33,53 +27,34 @@ public class BlockPistonExtension : Block
         y += PistonConstants.HEAD_OFFSET_Y[var6];
         z += PistonConstants.HEAD_OFFSET_Z[var6];
         int var7 = world.getBlockId(x, y, z);
-        if (var7 == Block.Piston.id || var7 == Block.StickyPiston.id)
+        if (var7 == Piston.id || var7 == StickyPiston.id)
         {
             var5 = world.getBlockMeta(x, y, z);
             if (BlockPistonBase.isExtended(var5))
             {
-                Block.Blocks[var7].dropStacks(world, x, y, z, var5);
+                Blocks[var7].dropStacks(world, x, y, z, var5);
                 world.setBlock(x, y, z, 0);
             }
         }
-
     }
 
     public override int getTexture(int side, int meta)
     {
         int var3 = getFacing(meta);
-        return side == var3 ? (pistonHeadSprite >= 0 ? pistonHeadSprite : ((meta & 8) != 0 ? textureId - 1 : textureId)) : (side == PistonConstants.field_31057_a[var3] ? 107 : 108);
+        return side == var3 ? pistonHeadSprite >= 0 ? pistonHeadSprite : (meta & 8) != 0 ? textureId - 1 : textureId : side == PistonConstants.field_31057_a[var3] ? 107 : 108;
     }
 
-    public override BlockRendererType getRenderType()
-    {
-        return BlockRendererType.PistonExtension;
-    }
+    public override BlockRendererType getRenderType() => BlockRendererType.PistonExtension;
 
-    public override bool isOpaque()
-    {
-        return false;
-    }
+    public override bool isOpaque() => false;
 
-    public override bool isFullCube()
-    {
-        return false;
-    }
+    public override bool isFullCube() => false;
 
-    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z)
-    {
-        return false;
-    }
+    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z) => false;
 
-    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z, int side)
-    {
-        return false;
-    }
+    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z, int side) => false;
 
-    public override int getDroppedItemCount(JavaRandom random)
-    {
-        return 0;
-    }
+    public override int getDroppedItemCount() => 0;
 
     public override void addIntersectingBoundingBox(IBlockReader world, int x, int y, int z, Box box, List<Box> boxes)
     {
@@ -151,10 +126,9 @@ public class BlockPistonExtension : Block
                 setBoundingBox(12.0F / 16.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 break;
         }
-
     }
 
-    public override void neighborUpdate(OnTickContext ctx)
+    public override void neighborUpdate(OnTickEvt ctx)
     {
         int facing = getFacing(ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z));
         int var7 = ctx.WorldRead.GetBlockId(ctx.X - PistonConstants.HEAD_OFFSET_X[facing], ctx.Y - PistonConstants.HEAD_OFFSET_Y[facing], ctx.Z - PistonConstants.HEAD_OFFSET_Z[facing]);
@@ -166,11 +140,7 @@ public class BlockPistonExtension : Block
         {
             Blocks[var7].neighborUpdate(ctx, ctx.X - PistonConstants.HEAD_OFFSET_X[facing], ctx.Y - PistonConstants.HEAD_OFFSET_Y[facing], ctx.Z - PistonConstants.HEAD_OFFSET_Z[facing], id);
         }
-
     }
 
-    public static int getFacing(int meta)
-    {
-        return meta & 7;
-    }
+    public static int getFacing(int meta) => meta & 7;
 }

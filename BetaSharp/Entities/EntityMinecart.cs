@@ -101,7 +101,7 @@ public class EntityMinecart : Entity, IInventory
 
     public override bool damage(Entity entity, int amount)
     {
-        if (!world.isRemote && !dead)
+        if (!_ctx.isRemote && !dead)
         {
             minecartRockDirection = -minecartRockDirection;
             minecartTimeSinceHit = 10;
@@ -138,12 +138,12 @@ public class EntityMinecart : Entity, IInventory
                                 }
 
                                 itemStack.count -= dropCount;
-                                EntityItem entityItem = new EntityItem(world, x + (double)offsetX, y + (double)offsetY, z + (double)offsetZ, new ItemStack(itemStack.itemId, dropCount, itemStack.getDamage()));
+                                EntityItem entityItem = new EntityItem(_ctx, x + (double)offsetX, y + (double)offsetY, z + (double)offsetZ, new ItemStack(itemStack.itemId, dropCount, itemStack.getDamage()));
                                 float scatterSpeed = 0.05F;
                                 entityItem.velocityX = (double)((float)random.NextGaussian() * scatterSpeed);
                                 entityItem.velocityY = (double)((float)random.NextGaussian() * scatterSpeed + 0.2F);
                                 entityItem.velocityZ = (double)((float)random.NextGaussian() * scatterSpeed);
-                                world.SpawnEntity(entityItem);
+                                _ctx.SpawnEntity(entityItem);
                             }
                         }
                     }
@@ -197,12 +197,12 @@ public class EntityMinecart : Entity, IInventory
                     }
 
                     itemStack.count -= dropCount;
-                    EntityItem entityItem = new EntityItem(world, x + (double)offsetX, y + (double)offsetY, z + (double)offsetZ, new ItemStack(itemStack.itemId, dropCount, itemStack.getDamage()));
+                    EntityItem entityItem = new EntityItem(_ctx, x + (double)offsetX, y + (double)offsetY, z + (double)offsetZ, new ItemStack(itemStack.itemId, dropCount, itemStack.getDamage()));
                     float scatterSpeed = 0.05F;
                     entityItem.velocityX = (double)((float)random.NextGaussian() * scatterSpeed);
                     entityItem.velocityY = (double)((float)random.NextGaussian() * scatterSpeed + 0.2F);
                     entityItem.velocityZ = (double)((float)random.NextGaussian() * scatterSpeed);
-                    world.SpawnEntity(entityItem);
+                    _ctx.SpawnEntity(entityItem);
                 }
             }
         }
@@ -223,7 +223,7 @@ public class EntityMinecart : Entity, IInventory
         }
 
         double var7;
-        if (world.isRemote && field_9415_k > 0)
+        if (_ctx.isRemote && field_9415_k > 0)
         {
             if (field_9415_k > 0)
             {
@@ -262,7 +262,7 @@ public class EntityMinecart : Entity, IInventory
             int floorX = MathHelper.Floor(x);
             int floorY = MathHelper.Floor(y);
             int floorZ = MathHelper.Floor(z);
-            if (BlockRail.isRail(world, floorX, floorY - 1, floorZ))
+            if (BlockRail.isRail(_ctx, floorX, floorY - 1, floorZ))
             {
                 --floorY;
             }
@@ -270,11 +270,11 @@ public class EntityMinecart : Entity, IInventory
             double var4 = 0.4D;
             bool var6 = false;
             var7 = 1.0D / 128.0D;
-            int var9 = world.getBlockId(floorX, floorY, floorZ);
+            int var9 = _ctx.getBlockId(floorX, floorY, floorZ);
             if (BlockRail.isRail(var9))
             {
                 Vec3D? var10 = func_514_g(x, y, z);
-                int var11 = world.getBlockMeta(floorX, floorY, floorZ);
+                int var11 = _ctx.getBlockMeta(floorX, floorY, floorZ);
                 y = (double)floorY;
                 bool var12 = false;
                 bool var13 = false;
@@ -506,22 +506,22 @@ public class EntityMinecart : Entity, IInventory
                     }
                     else if (var11 == 1)
                     {
-                        if (world.shouldSuffocate(floorX - 1, floorY, floorZ))
+                        if (_ctx.shouldSuffocate(floorX - 1, floorY, floorZ))
                         {
                             velocityX = 0.02D;
                         }
-                        else if (world.shouldSuffocate(floorX + 1, floorY, floorZ))
+                        else if (_ctx.shouldSuffocate(floorX + 1, floorY, floorZ))
                         {
                             velocityX = -0.02D;
                         }
                     }
                     else if (var11 == 0)
                     {
-                        if (world.shouldSuffocate(floorX, floorY, floorZ - 1))
+                        if (_ctx.shouldSuffocate(floorX, floorY, floorZ - 1))
                         {
                             velocityZ = 0.02D;
                         }
-                        else if (world.shouldSuffocate(floorX, floorY, floorZ + 1))
+                        else if (_ctx.shouldSuffocate(floorX, floorY, floorZ + 1))
                         {
                             velocityZ = -0.02D;
                         }
@@ -595,7 +595,7 @@ public class EntityMinecart : Entity, IInventory
             }
 
             setRotation(yaw, pitch);
-            var var16 = world.getEntities(this, boundingBox.Expand((double)0.2F, 0.0D, (double)0.2F));
+            var var16 = _ctx.getEntities(this, boundingBox.Expand((double)0.2F, 0.0D, (double)0.2F));
             if (var16 != null && var16.Count > 0)
             {
                 for (int var51 = 0; var51 < var16.Count; ++var51)
@@ -621,7 +621,7 @@ public class EntityMinecart : Entity, IInventory
                     pushX = pushZ = 0.0D;
                 }
 
-                world.addParticle("largesmoke", x, y + 0.8D, z, 0.0D, 0.0D, 0.0D);
+                _ctx.addParticle("largesmoke", x, y + 0.8D, z, 0.0D, 0.0D, 0.0D);
             }
 
         }
@@ -632,19 +632,19 @@ public class EntityMinecart : Entity, IInventory
         int var9 = MathHelper.Floor(x);
         int var10 = MathHelper.Floor(y);
         int var11 = MathHelper.Floor(z);
-        if (BlockRail.isRail(world, var9, var10 - 1, var11))
+        if (BlockRail.isRail(_ctx, var9, var10 - 1, var11))
         {
             --var10;
         }
 
-        int var12 = world.getBlockId(var9, var10, var11);
+        int var12 = _ctx.getBlockId(var9, var10, var11);
         if (!BlockRail.isRail(var12))
         {
             return null;
         }
         else
         {
-            int var13 = world.getBlockMeta(var9, var10, var11);
+            int var13 = _ctx.getBlockMeta(var9, var10, var11);
             if (((BlockRail)Block.Blocks[var12]).isAlwaysStraight())
             {
                 var13 &= 7;
@@ -682,15 +682,15 @@ public class EntityMinecart : Entity, IInventory
         int floorX = MathHelper.Floor(x);
         int floorY = MathHelper.Floor(y);
         int floorZ = MathHelper.Floor(z);
-        if (BlockRail.isRail(world, floorX, floorY - 1, floorZ))
+        if (BlockRail.isRail(_ctx, floorX, floorY - 1, floorZ))
         {
             --floorY;
         }
 
-        int blockId = world.getBlockId(floorX, floorY, floorZ);
+        int blockId = _ctx.getBlockId(floorX, floorY, floorZ);
         if (BlockRail.isRail(blockId))
         {
-            int meta = world.getBlockMeta(floorX, floorY, floorZ);
+            int meta = _ctx.getBlockMeta(floorX, floorY, floorZ);
             y = (double)floorY;
             if (((BlockRail)Block.Blocks[blockId]).isAlwaysStraight())
             {
@@ -815,7 +815,7 @@ public class EntityMinecart : Entity, IInventory
 
     public override void onCollision(Entity entity)
     {
-        if (!world.isRemote)
+        if (!_ctx.isRemote)
         {
             if (entity != passenger)
             {
@@ -969,14 +969,14 @@ public class EntityMinecart : Entity, IInventory
                 return true;
             }
 
-            if (!world.isRemote)
+            if (!_ctx.isRemote)
             {
                 player.setVehicle(this);
             }
         }
         else if (type == 1)
         {
-            if (!world.isRemote)
+            if (!_ctx.isRemote)
             {
                 player.openChestScreen(this);
             }

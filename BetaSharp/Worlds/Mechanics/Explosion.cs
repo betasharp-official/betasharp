@@ -170,7 +170,7 @@ public class Explosion
 
             if (var8 > 0)
             {
-                Block.Blocks[var8].dropStacks(worldObj.BlocksView, var5, var6, var7, worldObj.getBlockMeta(var5, var6, var7), 0.3F);
+                Block.Blocks[var8].dropStacks(worldObj.BlocksReader, var5, var6, var7, worldObj.getBlockMeta(var5, var6, var7), 0.3F);
                 worldObj.setBlock(var5, var6, var7, 0);
                 Block.Blocks[var8].onDestroyedByExplosion(worldObj, var5, var6, var7);
             }

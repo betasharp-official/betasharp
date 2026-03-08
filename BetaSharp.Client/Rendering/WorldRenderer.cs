@@ -663,7 +663,7 @@ public class WorldRenderer : IWorldAccess
                 var6.startDrawingQuads();
                 var6.setTranslationD(-var10, -var12, -var14);
                 var6.disableColor();
-                BlockRenderer.RenderBlockByRenderType(world.BlocksView, var9, new BlockPos(var2.BlockX, var2.BlockY, var2.BlockZ), var6, 240 + (int)(damagePartialTime * 10.0F), true);
+                BlockRenderer.RenderBlockByRenderType(world.BlocksReader, var9, new BlockPos(var2.BlockX, var2.BlockY, var2.BlockZ), var6, 240 + (int)(damagePartialTime * 10.0F), true);
                 var6.draw();
                 var6.setTranslationD(0.0D, 0.0D, 0.0D);
                 GLManager.GL.Disable(GLEnum.AlphaTest);
@@ -734,7 +734,7 @@ public class WorldRenderer : IWorldAccess
             int var7 = world.getBlockId(var2.BlockX, var2.BlockY, var2.BlockZ);
             if (var7 > 0)
             {
-                Block.Blocks[var7].updateBoundingBox(world.BlocksView, var2.BlockX, var2.BlockY, var2.BlockZ);
+                Block.Blocks[var7].updateBoundingBox(world.BlocksReader, var2.BlockX, var2.BlockY, var2.BlockZ);
                 double var8 = var1.lastTickX + (var1.x - var1.lastTickX) * (double)var5;
                 double var10 = var1.lastTickY + (var1.y - var1.lastTickY) * (double)var5;
                 double var12 = var1.lastTickZ + (var1.z - var1.lastTickZ) * (double)var5;

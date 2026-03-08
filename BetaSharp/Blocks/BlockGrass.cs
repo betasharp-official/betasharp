@@ -1,5 +1,4 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.ClientData.Colors;
 using BetaSharp.Worlds.Core;
 
@@ -15,15 +14,20 @@ public class BlockGrass : Block
 
     public override int getTexture(int side)
     {
-        if (side == 1) return 0;  // top: grass green
-        if (side == 0) return 2;  // bottom: dirt
-        return 3;                  // sides: grass+dirt edge
+        if (side == 1)
+        {
+            return 0; // top: grass green
+        }
+
+        if (side == 0)
+        {
+            return 2; // bottom: dirt
+        }
+
+        return 3; // sides: grass+dirt edge
     }
 
-    public override int getColorForFace(int meta, int face)
-    {
-        return face == 1 ? GrassColors.getDefaultColor() : 0xFFFFFF;
-    }
+    public override int getColorForFace(int meta, int face) => face == 1 ? GrassColors.getDefaultColor() : 0xFFFFFF;
 
     public override int getTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
     {
@@ -31,15 +35,14 @@ public class BlockGrass : Block
         {
             return 0;
         }
-        else if (side == 0)
+
+        if (side == 0)
         {
             return 2;
         }
-        else
-        {
-            Material materialAbove = iBlockReader.GetMaterial(x, y + 1, z);
-            return materialAbove != Material.SnowLayer && materialAbove != Material.SnowBlock ? 3 : 68;
-        }
+
+        Material materialAbove = iBlockReader.GetMaterial(x, y + 1, z);
+        return materialAbove != Material.SnowLayer && materialAbove != Material.SnowBlock ? 3 : 68;
     }
 
     public override int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z)
@@ -50,7 +53,7 @@ public class BlockGrass : Block
         return GrassColors.getColor(temperature, downfall);
     }
 
-    public override void onTick(OnTickContext ctx)
+    public override void onTick(OnTickEvt ctx)
     {
         if (!ctx.IsRemote)
         {
@@ -77,8 +80,5 @@ public class BlockGrass : Block
         }
     }
 
-    public override int getDroppedItemId(int blocKMeta, JavaRandom random)
-    {
-        return Dirt.getDroppedItemId(0, random);
-    }
+    public override int getDroppedItemId(int blocKMeta) => Dirt.getDroppedItemId(0);
 }

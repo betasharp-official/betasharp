@@ -51,7 +51,7 @@ internal class ItemRedstone : Item
             }
         }
 
-        if (Block.RedstoneWire.canPlaceAt(world.BlocksView, x, y, z))
+        if (Block.RedstoneWire.canPlaceAt(world.BlocksReader, x, y, z))
         {
             --itemStack.count;
             world.setBlock(x, y, z, Block.RedstoneWire.id);

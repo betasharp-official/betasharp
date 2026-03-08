@@ -7,40 +7,27 @@ namespace BetaSharp.Blocks;
 
 internal class BlockLever : Block
 {
-
     public BlockLever(int id, int level) : base(id, level, Material.PistonBreakable)
     {
     }
 
-    public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)
-    {
-        return null;
-    }
+    public override Box? getCollisionShape(IBlockReader world, int x, int y, int z) => null;
 
-    public override bool isOpaque()
-    {
-        return false;
-    }
+    public override bool isOpaque() => false;
 
-    public override bool isFullCube()
-    {
-        return false;
-    }
+    public override bool isFullCube() => false;
 
-    public override BlockRendererType getRenderType()
-    {
-        return BlockRendererType.Lever;
-    }
+    public override BlockRendererType getRenderType() => BlockRendererType.Lever;
 
-    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z, int side)
-    {
-        return side == 1 && world.shouldSuffocate(x, y - 1, z) ? true : (side == 2 && world.shouldSuffocate(x, y, z + 1) ? true : (side == 3 && world.shouldSuffocate(x, y, z - 1) ? true : (side == 4 && world.shouldSuffocate(x + 1, y, z) ? true : side == 5 && world.shouldSuffocate(x - 1, y, z))));
-    }
+    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z, int side) => side == 1 && world.shouldSuffocate(x, y - 1, z) ? true :
+        side == 2 && world.shouldSuffocate(x, y, z + 1) ? true :
+        side == 3 && world.shouldSuffocate(x, y, z - 1) ? true :
+        side == 4 && world.shouldSuffocate(x + 1, y, z) ? true : side == 5 && world.shouldSuffocate(x - 1, y, z);
 
-    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z)
-    {
-        return world.shouldSuffocate(x - 1, y, z) ? true : (world.shouldSuffocate(x + 1, y, z) ? true : (world.shouldSuffocate(x, y, z - 1) ? true : (world.shouldSuffocate(x, y, z + 1) ? true : world.shouldSuffocate(x, y - 1, z))));
-    }
+    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z) => world.shouldSuffocate(x - 1, y, z) ? true :
+        world.shouldSuffocate(x + 1, y, z) ? true :
+        world.shouldSuffocate(x, y, z - 1) ? true :
+        world.shouldSuffocate(x, y, z + 1) ? true : world.shouldSuffocate(x, y - 1, z);
 
     public override void onPlaced(World world, int x, int y, int z, int direction)
     {
@@ -126,7 +113,6 @@ internal class BlockLever : Block
                 world.setBlock(x, y, z, 0);
             }
         }
-
     }
 
     private bool breakIfCannotPlaceAt(World world, int x, int y, int z)
@@ -137,10 +123,8 @@ internal class BlockLever : Block
             world.setBlock(x, y, z, 0);
             return false;
         }
-        else
-        {
-            return true;
-        }
+
+        return true;
     }
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
@@ -168,13 +152,9 @@ internal class BlockLever : Block
             var6 = 0.25F;
             setBoundingBox(0.5F - var6, 0.0F, 0.5F - var6, 0.5F + var6, 0.6F, 0.5F + var6);
         }
-
     }
 
-    public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
-    {
-        onUse(world, x, y, z, player);
-    }
+    public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player) => onUse(world, x, y, z, player);
 
     public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
     {
@@ -182,38 +162,36 @@ internal class BlockLever : Block
         {
             return true;
         }
+
+        int var6 = world.getBlockMeta(x, y, z);
+        int var7 = var6 & 7;
+        int var8 = 8 - (var6 & 8);
+        world.setBlockMeta(x, y, z, var7 + var8);
+        world.setBlocksDirty(x, y, z, x, y, z);
+        world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "random.click", 0.3F, var8 > 0 ? 0.6F : 0.5F);
+        world.notifyNeighbors(x, y, z, id);
+        if (var7 == 1)
+        {
+            world.notifyNeighbors(x - 1, y, z, id);
+        }
+        else if (var7 == 2)
+        {
+            world.notifyNeighbors(x + 1, y, z, id);
+        }
+        else if (var7 == 3)
+        {
+            world.notifyNeighbors(x, y, z - 1, id);
+        }
+        else if (var7 == 4)
+        {
+            world.notifyNeighbors(x, y, z + 1, id);
+        }
         else
         {
-            int var6 = world.getBlockMeta(x, y, z);
-            int var7 = var6 & 7;
-            int var8 = 8 - (var6 & 8);
-            world.setBlockMeta(x, y, z, var7 + var8);
-            world.setBlocksDirty(x, y, z, x, y, z);
-            world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "random.click", 0.3F, var8 > 0 ? 0.6F : 0.5F);
-            world.notifyNeighbors(x, y, z, id);
-            if (var7 == 1)
-            {
-                world.notifyNeighbors(x - 1, y, z, id);
-            }
-            else if (var7 == 2)
-            {
-                world.notifyNeighbors(x + 1, y, z, id);
-            }
-            else if (var7 == 3)
-            {
-                world.notifyNeighbors(x, y, z - 1, id);
-            }
-            else if (var7 == 4)
-            {
-                world.notifyNeighbors(x, y, z + 1, id);
-            }
-            else
-            {
-                world.notifyNeighbors(x, y - 1, z, id);
-            }
-
-            return true;
+            world.notifyNeighbors(x, y - 1, z, id);
         }
+
+        return true;
     }
 
     public override void onBreak(World world, int x, int y, int z)
@@ -248,10 +226,7 @@ internal class BlockLever : Block
         base.onBreak(world, x, y, z);
     }
 
-    public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int a, int side)
-    {
-        return (iBlockReader.getBlockMeta(x, y, a) & 8) > 0;
-    }
+    public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int a, int side) => (iBlockReader.getBlockMeta(x, y, a) & 8) > 0;
 
     public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side)
     {
@@ -260,15 +235,10 @@ internal class BlockLever : Block
         {
             return false;
         }
-        else
-        {
-            int var7 = var6 & 7;
-            return var7 == 6 && side == 1 ? true : (var7 == 5 && side == 1 ? true : (var7 == 4 && side == 2 ? true : (var7 == 3 && side == 3 ? true : (var7 == 2 && side == 4 ? true : var7 == 1 && side == 5))));
-        }
+
+        int var7 = var6 & 7;
+        return var7 == 6 && side == 1 ? true : var7 == 5 && side == 1 ? true : var7 == 4 && side == 2 ? true : var7 == 3 && side == 3 ? true : var7 == 2 && side == 4 ? true : var7 == 1 && side == 5;
     }
 
-    public override bool canEmitRedstonePower()
-    {
-        return true;
-    }
+    public override bool canEmitRedstonePower() => true;
 }

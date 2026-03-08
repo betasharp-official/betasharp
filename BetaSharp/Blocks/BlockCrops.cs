@@ -1,14 +1,12 @@
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Rules;
-using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Blocks;
 
 internal class BlockCrops : BlockPlant
 {
-
     public BlockCrops(int i, int j) : base(i, j)
     {
         textureId = j;
@@ -17,46 +15,39 @@ internal class BlockCrops : BlockPlant
         setBoundingBox(0.5F - halfWidth, 0.0F, 0.5F - halfWidth, 0.5F + halfWidth, 0.25F, 0.5F + halfWidth);
     }
 
-    protected override bool canPlantOnTop(int id)
-    {
-        return id == Block.Farmland.id;
-    }
+    protected override bool canPlantOnTop(int id) => id == Farmland.id;
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickEvt ctx)
     {
-        base.onTick(worldView, x, y, z, random, broadcaster, isRemote);
-        if (worldView.getLightLevel(x, y + 1, z) >= 9)
+        base.onTick(ctx);
+        if (ctx.Lighting.GetBrightness(LightType.Block, ctx.X, ctx.Y + 1, ctx.Z) >= 9)
         {
-            int meta = worldView.getBlockMeta(x, y, z);
+            int meta = ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
             if (meta < 7)
             {
-                float var7 = getAvailableMoisture(worldView, x, y, z);
-                if (random.NextInt((int)(100.0F / var7)) == 0)
+                float var7 = getAvailableMoisture(ctx.WorldRead, ctx.X, ctx.Y, ctx.Z);
+                if (Random.Shared.Next(100) / var7 == 0)
                 {
                     ++meta;
-                    worldView.setBlockMeta(x, y, z, meta);
+                    ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, meta);
                 }
             }
         }
-
     }
 
-    public void applyFullGrowth(World world, int x, int y, int z)
-    {
-        world.setBlockMeta(x, y, z, 7);
-    }
+    public void applyFullGrowth(World world, int x, int y, int z) => world.setBlockMeta(x, y, z, 7);
 
-    private float getAvailableMoisture(World world, int x, int y, int z)
+    private float getAvailableMoisture(IBlockReader read, int x, int y, int z)
     {
         float totalMoisture = 1.0F;
-        int blockNorth = world.getBlockId(x, y, z - 1);
-        int blockSouth = world.getBlockId(x, y, z + 1);
-        int blockWest = world.getBlockId(x - 1, y, z);
-        int blockEast = world.getBlockId(x + 1, y, z);
-        int blockNorthWest = world.getBlockId(x - 1, y, z - 1);
-        int blockNorthEast = world.getBlockId(x + 1, y, z - 1);
-        int blockSouthEast = world.getBlockId(x + 1, y, z + 1);
-        int blockSouthWest = world.getBlockId(x - 1, y, z + 1);
+        int blockNorth = read.GetBlockId(x, y, z - 1);
+        int blockSouth = read.GetBlockId(x, y, z + 1);
+        int blockWest = read.GetBlockId(x - 1, y, z);
+        int blockEast = read.GetBlockId(x + 1, y, z);
+        int blockNorthWest = read.GetBlockId(x - 1, y, z - 1);
+        int blockNorthEast = read.GetBlockId(x + 1, y, z - 1);
+        int blockSouthEast = read.GetBlockId(x + 1, y, z + 1);
+        int blockSouthWest = read.GetBlockId(x - 1, y, z + 1);
         bool cropsEastWest = blockWest == id || blockEast == id;
         bool cropsNorthSouth = blockNorth == id || blockSouth == id;
         bool cropsDiagonals = blockNorthWest == id || blockNorthEast == id || blockSouthEast == id || blockSouthWest == id;
@@ -65,12 +56,12 @@ internal class BlockCrops : BlockPlant
         {
             for (int dz = z - 1; dz <= z + 1; ++dz)
             {
-                int blockBelow = world.getBlockId(dx, y - 1, dz);
+                int blockBelow = read.GetBlockId(dx, y - 1, dz);
                 float cellMoisture = 0.0F;
-                if (blockBelow == Block.Farmland.id)
+                if (blockBelow == Farmland.id)
                 {
                     cellMoisture = 1.0F;
-                    if (world.getBlockMeta(dx, y - 1, dz) > 0)
+                    if (read.GetBlockMeta(dx, y - 1, dz) > 0)
                     {
                         cellMoisture = 3.0F;
                     }
@@ -85,7 +76,7 @@ internal class BlockCrops : BlockPlant
             }
         }
 
-        if (cropsDiagonals || cropsEastWest && cropsNorthSouth)
+        if (cropsDiagonals || (cropsEastWest && cropsNorthSouth))
         {
             totalMoisture /= 2.0F;
         }
@@ -103,40 +94,30 @@ internal class BlockCrops : BlockPlant
         return textureId + meta;
     }
 
-    public override BlockRendererType getRenderType()
-    {
-        return BlockRendererType.Crops;
-    }
+    public override BlockRendererType getRenderType() => BlockRendererType.Crops;
 
-    public override void dropStacks(WorldBlockView world, int x, int y, int z, int meta, float luck)
+    public override void dropStacks(OnDropEvt ctx)
     {
-        base.dropStacks(world, x, y, z, meta, luck);
-        if (!world.isRemote && world.Rules.GetBool(DefaultRules.DoTileDrops))
+        base.dropStacks(ctx);
+        if (!ctx.IsRemote && ctx.Rules.GetBool(DefaultRules.DoTileDrops))
         {
             for (int attempt = 0; attempt < 3; ++attempt)
             {
-                if (world.random.NextInt(15) <= meta)
+                if (Random.Shared.Next(15) <= ctx.Meta)
                 {
                     float spreadFactor = 0.7F;
-                    float offsetX = world.random.NextFloat() * spreadFactor + (1.0F - spreadFactor) * 0.5F;
-                    float offsetY = world.random.NextFloat() * spreadFactor + (1.0F - spreadFactor) * 0.5F;
-                    float offsetZ = world.random.NextFloat() * spreadFactor + (1.0F - spreadFactor) * 0.5F;
-                    EntityItem entityItem = new EntityItem(world, (double)((float)x + offsetX), (double)((float)y + offsetY), (double)((float)z + offsetZ), new ItemStack(Item.Seeds));
+                    float offsetX = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5F;
+                    float offsetY = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5F;
+                    float offsetZ = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5F;
+                    EntityItem entityItem = new(world, (float)x + offsetX, (float)y + offsetY, (float)z + offsetZ, new ItemStack(Item.Seeds));
                     entityItem.delayBeforeCanPickup = 10;
-                    world.SpawnEntity(entityItem);
+                    ctx.Entities.SpawnEntity(entityItem);
                 }
             }
-
         }
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return blockMeta == 7 ? Item.Wheat.id : -1;
-    }
+    public override int getDroppedItemId(int blockMeta) => blockMeta == 7 ? Item.Wheat.id : -1;
 
-    public override int getDroppedItemCount(JavaRandom random)
-    {
-        return 1;
-    }
+    public override int getDroppedItemCount() => 1;
 }

@@ -11,14 +11,11 @@ internal class BlockNote : BlockWithEntity
     {
     }
 
-    public override int getTexture(int side)
-    {
-        return textureId;
-    }
+    public override int getTexture(int side) => textureId;
 
     public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
     {
-        if (id > 0 && Block.Blocks[id].canEmitRedstonePower())
+        if (id > 0 && Blocks[id].canEmitRedstonePower())
         {
             bool isPowered = world.isStrongPowered(x, y, z);
             BlockEntityNote blockEntity = (BlockEntityNote)world.getBlockEntity(x, y, z);
@@ -32,7 +29,6 @@ internal class BlockNote : BlockWithEntity
                 blockEntity.powered = isPowered;
             }
         }
-
     }
 
     public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
@@ -41,13 +37,11 @@ internal class BlockNote : BlockWithEntity
         {
             return true;
         }
-        else
-        {
-            BlockEntityNote blockEntity = (BlockEntityNote)world.getBlockEntity(x, y, z);
-            blockEntity.cycleNote();
-            blockEntity.playNote(world, x, y, z);
-            return true;
-        }
+
+        BlockEntityNote blockEntity = (BlockEntityNote)world.getBlockEntity(x, y, z);
+        blockEntity.cycleNote();
+        blockEntity.playNote(world, x, y, z);
+        return true;
     }
 
     public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
@@ -59,14 +53,11 @@ internal class BlockNote : BlockWithEntity
         }
     }
 
-    protected override BlockEntity getBlockEntity()
-    {
-        return new BlockEntityNote();
-    }
+    protected override BlockEntity getBlockEntity() => new BlockEntityNote();
 
     public override void onBlockAction(World world, int x, int y, int z, int data1, int data2)
     {
-        float pitch = (float)Math.Pow(2.0D, (double)(data2 - 12) / 12.0D);
+        float pitch = (float)Math.Pow(2.0D, (data2 - 12) / 12.0D);
         string instrumentName = "harp";
         if (data1 == 1)
         {
@@ -88,7 +79,7 @@ internal class BlockNote : BlockWithEntity
             instrumentName = "bassattack";
         }
 
-        world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "note." + instrumentName, 3.0F, pitch);
-        world.addParticle("note", (double)x + 0.5D, (double)y + 1.2D, (double)z + 0.5D, (double)data2 / 24.0D, 0.0D, 0.0D);
+        world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "note." + instrumentName, 3.0F, pitch);
+        world.addParticle("note", x + 0.5D, y + 1.2D, z + 0.5D, data2 / 24.0D, 0.0D, 0.0D);
     }
 }

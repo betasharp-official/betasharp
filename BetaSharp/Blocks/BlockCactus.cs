@@ -7,13 +7,9 @@ namespace BetaSharp.Blocks;
 
 internal class BlockCactus : Block
 {
+    public BlockCactus(int id, int textureId) : base(id, textureId, Material.Cactus) => setTickRandomly(true);
 
-    public BlockCactus(int id, int textureId) : base(id, textureId, Material.Cactus)
-    {
-        setTickRandomly(true);
-    }
-
-    public override void onTick(OnTickContext ctx)
+    public override void onTick(OnTickEvt ctx)
     {
         if (ctx.WorldRead.IsAir(ctx.X, ctx.Y + 1, ctx.Z))
         {
@@ -36,60 +32,40 @@ internal class BlockCactus : Block
                 }
             }
         }
-
     }
 
     public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)
     {
         float edgeInset = 1.0F / 16.0F;
-        return new Box((double)((float)x + edgeInset), (double)y, (double)((float)z + edgeInset), (double)((float)(x + 1) - edgeInset), (double)((float)(y + 1) - edgeInset), (double)((float)(z + 1) - edgeInset));
+        return new Box(x + edgeInset, y, z + edgeInset, x + 1 - edgeInset, y + 1 - edgeInset, z + 1 - edgeInset);
     }
 
     public override Box getBoundingBox(World world, int x, int y, int z)
     {
         float edgeInset = 1.0F / 16.0F;
-        return new Box((double)((float)x + edgeInset), (double)y, (double)((float)z + edgeInset), (double)((float)(x + 1) - edgeInset), (double)(y + 1), (double)((float)(z + 1) - edgeInset));
+        return new Box(x + edgeInset, y, z + edgeInset, x + 1 - edgeInset, y + 1, z + 1 - edgeInset);
     }
 
-    public override int getTexture(int side)
-    {
-        return side == 1 ? textureId - 1 : (side == 0 ? textureId + 1 : textureId);
-    }
+    public override int getTexture(int side) => side == 1 ? textureId - 1 : side == 0 ? textureId + 1 : textureId;
 
-    public override bool isFullCube()
-    {
-        return false;
-    }
+    public override bool isFullCube() => false;
 
-    public override bool isOpaque()
-    {
-        return false;
-    }
+    public override bool isOpaque() => false;
 
-    public override BlockRendererType getRenderType()
-    {
-        return BlockRendererType.Cactus;
-    }
+    public override BlockRendererType getRenderType() => BlockRendererType.Cactus;
 
-    public override bool canPlaceAt(OnPlacedContext ctx)
-    {
-        return !base.canPlaceAt(ctx) ? false : canGrow(ctx.WorldRead, ctx.X, ctx.Y, ctx.Z);
-    }
+    public override bool canPlaceAt(OnPlacedEvt ctx) => !base.canPlaceAt(ctx) ? false : canGrow(ctx.WorldRead, ctx.X, ctx.Y, ctx.Z);
 
-    public override void neighborUpdate(OnTickContext ctx)
+    public override void neighborUpdate(OnTickEvt ctx)
     {
         if (!canGrow(ctx))
         {
             dropStacks(ctx.WorldRead, ctx.X, ctx.Y, ctx.Z, ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z));
             ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
         }
-
     }
 
-    public override bool canGrow(OnTickContext ctx)
-    {
-        return canGrow(ctx.WorldRead, ctx.X, ctx.Y, ctx.Z);
-    }
+    public override bool canGrow(OnTickEvt ctx) => canGrow(ctx.WorldRead, ctx.X, ctx.Y, ctx.Z);
 
     private static bool canGrow(WorldBlockView world, int x, int y, int z)
     {
@@ -97,27 +73,25 @@ internal class BlockCactus : Block
         {
             return false;
         }
-        else if (world.GetMaterial(x + 1, y, z).IsSolid)
+
+        if (world.GetMaterial(x + 1, y, z).IsSolid)
         {
             return false;
         }
-        else if (world.GetMaterial(x, y, z - 1).IsSolid)
+
+        if (world.GetMaterial(x, y, z - 1).IsSolid)
         {
             return false;
         }
-        else if (world.GetMaterial(x, y, z + 1).IsSolid)
+
+        if (world.GetMaterial(x, y, z + 1).IsSolid)
         {
             return false;
         }
-        else
-        {
-            int blockBelowId = world.GetBlockId(x, y - 1, z);
-            return blockBelowId == Cactus.id || blockBelowId == Sand.id;
-        }
+
+        int blockBelowId = world.GetBlockId(x, y - 1, z);
+        return blockBelowId == Cactus.id || blockBelowId == Sand.id;
     }
 
-    public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
-    {
-        entity.damage(null, 1);
-    }
+    public override void onEntityCollision(World world, int x, int y, int z, Entity entity) => entity.damage(null, 1);
 }

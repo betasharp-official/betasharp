@@ -10,11 +10,23 @@ public class BlockEntity
     private static readonly Dictionary<string, Type> s_idToClass = new();
     private static readonly Dictionary<Type, string> s_classToId = new();
     private static readonly ILogger<BlockEntity> s_logger = Log.Instance.For<BlockEntity>();
+    protected bool Removed;
     public World World;
     public int X;
     public int Y;
     public int Z;
-    protected bool Removed;
+
+    static BlockEntity()
+    {
+        Create(typeof(BlockEntityFurnace), "Furnace");
+        Create(typeof(BlockEntityChest), "Chest");
+        Create(typeof(BlockEntityRecordPlayer), "RecordPlayer");
+        Create(typeof(BlockEntityDispenser), "Trap");
+        Create(typeof(BlockEntitySign), "Sign");
+        Create(typeof(BlockEntityMobSpawner), "MobSpawner");
+        Create(typeof(BlockEntityNote), "Music");
+        Create(typeof(BlockEntityPiston), "Piston");
+    }
 
     private static void Create(Type blockEntityClass, string id)
     {
@@ -47,7 +59,9 @@ public class BlockEntity
         nbt.SetInteger("z", Z);
     }
 
-    public virtual void tick() { }
+    public virtual void tick()
+    {
+    }
 
     public static BlockEntity? CreateFromNbt(NBTTagCompound nbt)
     {
@@ -57,7 +71,7 @@ public class BlockEntity
         {
             if (s_idToClass.TryGetValue(nbt.GetString("id"), out Type? blockEntityClass))
             {
-                blockEntity = ((BlockEntity)Activator.CreateInstance(blockEntityClass));
+                blockEntity = (BlockEntity)Activator.CreateInstance(blockEntityClass);
             }
             else
             {
@@ -82,10 +96,7 @@ public class BlockEntity
         return blockEntity;
     }
 
-    public virtual int getPushedBlockData()
-    {
-        return World.getBlockMeta(X, Y, Z);
-    }
+    public virtual int getPushedBlockData() => World.getBlockMeta(X, Y, Z);
 
     public void markDirty()
     {
@@ -97,54 +108,36 @@ public class BlockEntity
 
     public double distanceFrom(double x, double y, double z)
     {
-        double dx = this.X + 0.5D - x;
-        double dy = this.Y + 0.5D - y;
-        double dz = this.Z + 0.5D - z;
+        double dx = X + 0.5D - x;
+        double dy = Y + 0.5D - y;
+        double dz = Z + 0.5D - z;
         return dx * dx + dy * dy + dz * dz;
     }
 
-    public Block getBlock()
-    {
-        return Block.Blocks[World.getBlockId(X, Y, Z)];
-    }
+    public Block getBlock() => Block.Blocks[World.getBlockId(X, Y, Z)];
 
-    public virtual Packet createUpdatePacket()
-    {
-        return null;
-    }
+    public virtual Packet createUpdatePacket() => null;
 
     public bool isRemoved()
     {
-        if (Removed) return true;
+        if (Removed)
+        {
+            return true;
+        }
 
         if (World != null)
         {
             int id = World.getBlockId(X, Y, Z);
-            if (id == 0 || !Block.BlocksWithEntity[id]) return true;
+            if (id == 0 || !Block.BlocksWithEntity[id])
+            {
+                return true;
+            }
         }
 
         return false;
     }
 
-    public void markRemoved()
-    {
-        Removed = true;
-    }
+    public void markRemoved() => Removed = true;
 
-    public void cancelRemoval()
-    {
-        Removed = false;
-    }
-
-    static BlockEntity()
-    {
-        Create(typeof(BlockEntityFurnace), "Furnace");
-        Create(typeof(BlockEntityChest), "Chest");
-        Create(typeof(BlockEntityRecordPlayer), "RecordPlayer");
-        Create(typeof(BlockEntityDispenser), "Trap");
-        Create(typeof(BlockEntitySign), "Sign");
-        Create(typeof(BlockEntityMobSpawner), "MobSpawner");
-        Create(typeof(BlockEntityNote), "Music");
-        Create(typeof(BlockEntityPiston), "Piston");
-    }
+    public void cancelRemoval() => Removed = false;
 }

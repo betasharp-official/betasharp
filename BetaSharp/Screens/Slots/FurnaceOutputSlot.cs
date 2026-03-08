@@ -21,7 +21,7 @@ internal class FurnaceOutputSlot : Slot
 
     public override void onTakeItem(ItemStack var1)
     {
-        var1.onCraft(thePlayer.world, thePlayer);
+        var1.onCraft(thePlayer._ctx, thePlayer);
         if (var1.itemId == Item.IronIngot.id)
         {
             thePlayer.increaseStat(Achievements.AcquireIron, 1);

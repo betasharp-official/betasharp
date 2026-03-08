@@ -6,20 +6,11 @@ namespace BetaSharp.Blocks;
 
 internal class BlockDetectorRail : BlockRail
 {
-    public BlockDetectorRail(int id, int textureId) : base(id, textureId, true)
-    {
-        setTickRandomly(true);
-    }
+    public BlockDetectorRail(int id, int textureId) : base(id, textureId, true) => setTickRandomly(true);
 
-    public override int getTickRate()
-    {
-        return 20;
-    }
+    public override int getTickRate() => 20;
 
-    public override bool canEmitRedstonePower()
-    {
-        return true;
-    }
+    public override bool canEmitRedstonePower() => true;
 
     public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
     {
@@ -33,7 +24,7 @@ internal class BlockDetectorRail : BlockRail
         }
     }
 
-    public override void onTick(OnTickContext ctx)
+    public override void onTick(OnTickEvt ctx)
     {
         if (!ctx.IsRemote)
         {
@@ -45,22 +36,16 @@ internal class BlockDetectorRail : BlockRail
         }
     }
 
-    public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side)
-    {
-        return (iBlockReader.getBlockMeta(x, y, z) & 8) != 0;
-    }
+    public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => (iBlockReader.getBlockMeta(x, y, z) & 8) != 0;
 
-    public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side)
-    {
-        return (world.getBlockMeta(x, y, z) & 8) == 0 ? false : side == 1;
-    }
+    public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => (world.getBlockMeta(x, y, z) & 8) == 0 ? false : side == 1;
 
-    private void updatePoweredStatus(OnTickContext ctx, int meta)
+    private void updatePoweredStatus(OnTickEvt ctx, int meta)
     {
         bool isPowered = (meta & 8) != 0;
         bool hasMinecart = false;
         float detectionInset = 2.0F / 16.0F;
-        var minecartsOnRail = ctx.Entities.CollectEntitiesOfType<EntityMinecart>(new Box((double)((float)ctx.X + detectionInset), (double)ctx.Y, (double)((float)ctx.Z + detectionInset), (double)((float)(ctx.X + 1) - detectionInset), (double)ctx.Y + 0.25D, (double)((float)(ctx.Z + 1) - detectionInset)));
+        List<EntityMinecart> minecartsOnRail = ctx.Entities.CollectEntitiesOfType<EntityMinecart>(new Box(ctx.X + detectionInset, ctx.Y, ctx.Z + detectionInset, ctx.X + 1 - detectionInset, ctx.Y + 0.25D, ctx.Z + 1 - detectionInset));
         if (minecartsOnRail.Count > 0)
         {
             hasMinecart = true;
@@ -86,6 +71,5 @@ internal class BlockDetectorRail : BlockRail
         {
             ctx.WorldRead.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
         }
-
     }
 }

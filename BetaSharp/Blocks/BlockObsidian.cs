@@ -1,5 +1,3 @@
-using BetaSharp.Util.Maths;
-
 namespace BetaSharp.Blocks;
 
 internal class BlockObsidian : BlockStone
@@ -8,13 +6,7 @@ internal class BlockObsidian : BlockStone
     {
     }
 
-    public override int getDroppedItemCount(JavaRandom random)
-    {
-        return 1;
-    }
+    public override int getDroppedItemCount() => 1;
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return Block.Obsidian.id;
-    }
+    public override int getDroppedItemId(int blockMeta) => Obsidian.id;
 }

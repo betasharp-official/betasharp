@@ -18,7 +18,7 @@ internal class PathFinder
 
     public PathFinder(World world)
     {
-        _worldMap = world.BlocksView;
+        _worldMap = world.BlocksReader;
         for (int i = 0; i < _pointPool.Length; i++)
         {
             _pointPool[i] = new PathPoint(0, 0, 0);

@@ -8,8 +8,5 @@ internal class BlockSandStone : Block
     {
     }
 
-    public override int getTexture(int side)
-    {
-        return side == 1 ? textureId - 16 : (side == 0 ? textureId + 16 : textureId);
-    }
+    public override int getTexture(int side) => side == 1 ? textureId - 16 : side == 0 ? textureId + 16 : textureId;
 }

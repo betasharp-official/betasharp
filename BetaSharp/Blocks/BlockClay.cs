@@ -1,23 +1,15 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
-using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Blocks;
 
 internal class BlockClay : Block
 {
-
     public BlockClay(int id, int textureId) : base(id, textureId, Material.Clay)
     {
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return Item.Clay.id;
-    }
+    public override int getDroppedItemId(int blockMeta) => Item.Clay.id;
 
-    public override int getDroppedItemCount(JavaRandom random)
-    {
-        return 4;
-    }
+    public override int getDroppedItemCount() => 4;
 }

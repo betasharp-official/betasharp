@@ -6,16 +6,9 @@ namespace BetaSharp.Blocks;
 
 public abstract class BlockWithEntity : Block
 {
+    protected BlockWithEntity(int id, Material material) : base(id, material) => BlocksWithEntity[id] = true;
 
-    protected BlockWithEntity(int id, Material material) : base(id, material)
-    {
-        BlocksWithEntity[id] = true;
-    }
-
-    protected BlockWithEntity(int id, int textureId, Material material) : base(id, textureId, material)
-    {
-        BlocksWithEntity[id] = true;
-    }
+    protected BlockWithEntity(int id, int textureId, Material material) : base(id, textureId, material) => BlocksWithEntity[id] = true;
 
     public override void onPlaced(World world, int x, int y, int z)
     {

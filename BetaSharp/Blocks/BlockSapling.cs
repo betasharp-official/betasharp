@@ -29,14 +29,13 @@ internal class BlockSapling : BlockPlant
                     generate(worldView, x, y, z, random);
                 }
             }
-
         }
     }
 
     public override int getTexture(int side, int meta)
     {
         meta &= 3;
-        return meta == 1 ? 63 : (meta == 2 ? 79 : base.getTexture(side, meta));
+        return meta == 1 ? 63 : meta == 2 ? 79 : base.getTexture(side, meta);
     }
 
     public void generate(World world, int x, int y, int z, JavaRandom random)
@@ -65,11 +64,7 @@ internal class BlockSapling : BlockPlant
         {
             world.setBlockWithoutNotifyingNeighbors(x, y, z, id, saplingType);
         }
-
     }
 
-    protected override int getDroppedItemMeta(int blockMeta)
-    {
-        return blockMeta & 3;
-    }
+    protected override int getDroppedItemMeta(int blockMeta) => blockMeta & 3;
 }

@@ -63,7 +63,7 @@ public class EntityTNTPrimed : Entity
 
         if (fuse-- <= 0)
         {
-            if (!world.isRemote)
+            if (!_ctx.isRemote)
             {
                 markDead();
                 explode();
@@ -75,20 +75,20 @@ public class EntityTNTPrimed : Entity
         }
         else
         {
-            world.addParticle("smoke", x, y + 0.5D, z, 0.0D, 0.0D, 0.0D);
+            _ctx.addParticle("smoke", x, y + 0.5D, z, 0.0D, 0.0D, 0.0D);
         }
 
     }
 
     private void explode()
     {
-        if (!world.Rules.GetBool(DefaultRules.TntExplodes))
+        if (!_ctx.Rules.GetBool(DefaultRules.TntExplodes))
         {
             return;
         }
 
         const float power = 4.0F;
-        world.createExplosion((Entity)null, x, y, z, power);
+        _ctx.createExplosion((Entity)null, x, y, z, power);
     }
 
     public override void writeNbt(NBTTagCompound nbt)

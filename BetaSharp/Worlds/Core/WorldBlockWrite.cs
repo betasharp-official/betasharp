@@ -74,7 +74,7 @@ public sealed class WorldBlockWrite : IBlockWrite
         if (SetBlockMetaWithoutNotifyingNeighbors(x, y, z, meta))
         {
             int blockId = _host.GetBlockId(x, y, z);
-            if (Block.BlocksIngoreMetaUpdate[blockId & 255])
+            if (Block.BlocksIgnoreMetaUpdate[blockId & 255])
             {
                 OnBlockChanged?.Invoke(x, y, z, blockId);
             }
