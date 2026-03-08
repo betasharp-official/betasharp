@@ -145,7 +145,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         }
 
         float var5;
-        if (var1.name.Equals("deadmau5") && LoadDownloadableImageTexture(var1.skinUrl, null))
+        if (var1.name.Equals("deadmau5") && LoadDownloadableImageTexture(var1.name, null))
         {
             for (int var19 = 0; var19 < 2; ++var19)
             {

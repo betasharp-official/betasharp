@@ -51,7 +51,7 @@ public class RegionWorldStorageSource : IWorldStorageSource
 
     public virtual void Flush()
     {
-        RegionIo.flush();
+        RegionIo.Flush();
     }
 
     public virtual IWorldStorage Get(string worldName, bool createPlayerStorage)

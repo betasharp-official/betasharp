@@ -19,11 +19,6 @@ public class OtherPlayerEntity : EntityPlayer
         base.name = name;
         standingEyeHeight = 0.0F;
         stepHeight = 0.0F;
-        if (name != null && name.Length > 0)
-        {
-            skinUrl = $"https://mc-heads.net/skin/{name}";
-        }
-
         noClip = true;
         sleepOffsetY = 0.25F;
         renderDistanceWeight = 10.0D;

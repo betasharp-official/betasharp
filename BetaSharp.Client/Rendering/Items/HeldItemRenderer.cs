@@ -498,7 +498,7 @@ public class HeldItemRenderer
 
     private void bindSkinTexture()
     {
-        var skinHandle = EntityRenderDispatcher.instance.skinManager?.GetTextureHandle(_game.player?.skinUrl);
+        var skinHandle = EntityRenderDispatcher.instance.skinManager?.GetTextureHandle(_game.player?.name);
         if (skinHandle != null)
         {
             skinHandle.Bind();

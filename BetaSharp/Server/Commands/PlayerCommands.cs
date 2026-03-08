@@ -1,3 +1,4 @@
+using System.Globalization;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Server.Internal;
@@ -50,9 +51,9 @@ internal static class PlayerCommands
             ServerPlayerEntity sender = server.playerManager.getPlayer(senderName);
             if (sender == null) { output.SendMessage("Could not find your player."); return; }
 
-            if (float.TryParse(args[0], out float x) &&
-                float.TryParse(args[1], out float y) &&
-                float.TryParse(args[2], out float z))
+            if (float.TryParse(args[0], CultureInfo.InvariantCulture, out float x) &&
+                float.TryParse(args[1], CultureInfo.InvariantCulture, out float y) &&
+                float.TryParse(args[2], CultureInfo.InvariantCulture, out float z))
             {
                 sender.networkHandler.teleport(x, y, z, sender.yaw, sender.pitch);
                 output.SendMessage($"Teleported to {x}, {y}, {z}");

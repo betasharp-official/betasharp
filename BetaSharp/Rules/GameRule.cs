@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace BetaSharp.Rules;
 
 public abstract class GameRule<T>(ResourceLocation key, T defaultValue, string category, string description)
@@ -51,7 +53,7 @@ public sealed class FloatRule(ResourceLocation key, float defaultValue, float mi
 
     public override FloatValue Deserialize(string raw)
     {
-        float v = float.TryParse(raw, out float f) ? f : DefaultValue.Value;
+        float v = float.TryParse(raw, CultureInfo.InvariantCulture, out float f) ? f : DefaultValue.Value;
         return new(Math.Clamp(v, Min, Max));
     }
 

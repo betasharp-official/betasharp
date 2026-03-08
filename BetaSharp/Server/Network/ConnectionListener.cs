@@ -113,7 +113,6 @@ public class ConnectionListener
                 _pendingConnections.RemoveAt(i--);
             }
 
-                connection.connection.interrupt();
             }
         }
 
@@ -138,7 +137,6 @@ public class ConnectionListener
                 _connections.RemoveAt(i--);
             }
 
-            connection.connection.interrupt();
             }
         }
     }

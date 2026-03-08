@@ -8,11 +8,11 @@ namespace BetaSharp.Worlds.Chunks.Storage;
 internal class RegionChunkStorage : IChunkStorage
 {
     private readonly ILogger<RegionChunkStorage> _logger = Log.Instance.For<RegionChunkStorage>();
-    private readonly java.io.File dir;
+    private readonly string dir;
 
-    public RegionChunkStorage(string dir)
+    public RegionChunkStorage(string inputDir)
     {
-        this.dir = new java.io.File(dir);
+        this.dir = inputDir;
     }
 
     public Chunk LoadChunk(World world, int chunkX, int chunkZ)
@@ -70,7 +70,7 @@ internal class RegionChunkStorage : IChunkStorage
             storeChunkInCompound(chunk, world, var5);
             NbtIo.Write(tag, stream);
             WorldProperties var6 = world.getProperties();
-            var6.SizeOnDisk = var6.SizeOnDisk + (long)RegionIo.getSizeDelta(dir, chunk.X, chunk.Z);
+            var6.SizeOnDisk = var6.SizeOnDisk + (long)RegionIo.GetSizeDelta(dir, chunk.X, chunk.Z);
         }
         catch (Exception var7)
         {

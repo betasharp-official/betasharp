@@ -73,11 +73,10 @@ public class ClientNetworkHandler : NetHandler
 
             if (ticks++ - lastKeepAliveTime > 200)
             {
-                SendPacket(new KeepAlivePacket());
+                SendPacket(KeepAlivePacket.Get());
             }
         }
 
-        netManager.interrupt();
     }
 
     public void SendPacket(Packet packet)
@@ -534,7 +533,6 @@ public class ClientNetworkHandler : NetHandler
     public void disconnect()
     {
         disconnected = true;
-        netManager.interrupt();
         netManager.disconnect("disconnect.closed");
     }
 
@@ -837,7 +835,7 @@ public class ClientNetworkHandler : NetHandler
         if (packet.type == PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Leave)
         {
             Entity ent = worldClient.GetEntity(packet.entityId);
-            EntityRenderDispatcher.instance.skinManager?.Release(ent?.skinUrl);
+            EntityRenderDispatcher.instance.skinManager?.Release(packet.name);
         }
     }
 

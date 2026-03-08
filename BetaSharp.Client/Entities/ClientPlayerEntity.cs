@@ -24,11 +24,6 @@ public class ClientPlayerEntity : EntityPlayer
     {
         this.Game = game;
         base.dimensionId = dimensionId;
-        if (session != null && session.username != null && session.username.Length > 0)
-        {
-            skinUrl = $"https://mc-heads.net/skin/{session.username}";
-        }
-
         name = session.username;
     }
 

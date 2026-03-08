@@ -1,6 +1,6 @@
+using System.IO.Compression;
 using System.Net.Sockets;
 using BetaSharp.Worlds;
-using java.util.zip;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
@@ -25,21 +25,16 @@ public class ChunkDataS2CPacket() : Packet(PacketId.ChunkDataS2C)
         p.sizeX = sizeX;
         p.sizeY = sizeY;
         p.sizeZ = sizeZ;
-        byte[] chunkData = world.GetChunkData(x, y, z, sizeX, sizeY, sizeZ);
-        p.rawData = chunkData;
-        Deflater deflater = new(1);
+        p.rawData = world.GetChunkData(x, y, z, sizeX, sizeY, sizeZ);
 
-        try
-        {
-            deflater.setInput(chunkData);
-            deflater.finish();
-            p.chunkData = new byte[sizeX * sizeY * sizeZ * 5 / 2];
-            p.chunkDataSize = deflater.deflate(p.chunkData);
-        }
-        finally
-        {
-            deflater.end();
-        }
+        using var output = new MemoryStream(sizeX * sizeY * sizeZ * 5 / 2);
+        using var stream = new ZLibStream(output, CompressionLevel.Optimal);
+
+        stream.Write(p.rawData);
+        stream.Flush();
+
+        p.chunkData = output.GetBuffer();
+        p.chunkDataSize = (int)output.Position;
 
         return p;
     }
@@ -53,26 +48,16 @@ public class ChunkDataS2CPacket() : Packet(PacketId.ChunkDataS2C)
         sizeY = stream.ReadByte() + 1;
         sizeZ = stream.ReadByte() + 1;
         chunkDataSize = stream.ReadInt();
-        byte[] chunkData = new byte[chunkDataSize];
-        stream.ReadExactly(chunkData);
 
-        this.chunkData = new byte[sizeX * sizeY * sizeZ * 5 / 2];
-        Inflater inflater = new();
-        inflater.setInput(chunkData);
+        byte[] buffer = new byte[chunkDataSize];
+        stream.ReadExactly(buffer);
 
-        try
-        {
-            inflater.inflate(this.chunkData);
-        }
-        catch (DataFormatException ex)
-        {
-            throw new java.io.IOException("Bad compressed data format");
-        }
-        finally
-        {
-            inflater.end();
-        }
+        using var output = new MemoryStream(sizeX * sizeY * sizeZ * 5 / 2);
+        using var decompressor = new ZLibStream(new MemoryStream(buffer), CompressionMode.Decompress);
 
+        decompressor.CopyTo(output);
+
+        chunkData = output.GetBuffer();
     }
 
     public override void Write(NetworkStream stream)

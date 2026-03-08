@@ -56,7 +56,7 @@ internal static class StreamExtensions
         }
 
         /// <summary>
-        /// Write as fixed lenght Utf8 string
+        /// Write as fixed length UTF-8 string
         /// </summary>
         public void WriteString(string value)
         {
@@ -67,18 +67,11 @@ internal static class StreamExtensions
         }
 
         /// <summary>
-        /// Write as fixed lenght Utf16 string
+        /// Write as fixed length UTF-16 string
         /// </summary>
         public void WriteLongString(string value)
         {
             stream.WriteUShort((ushort)value.Length);
-
-            // foreach (char item in value)
-            // {
-            //     stream.WriteByte((byte)item);
-            //     stream.WriteByte(0);
-            // }
-
             stream.Write(Encoding.BigEndianUnicode.GetBytes(value));
         }
 
@@ -136,7 +129,7 @@ internal static class StreamExtensions
         }
 
         /// <summary>
-        /// Read fixed lenght Utf8 string
+        /// Read fixed length UTF-8 string
         /// </summary>
         public string ReadString()
         {
@@ -149,7 +142,7 @@ internal static class StreamExtensions
         }
 
         /// <summary>
-        /// Read fixed lenght Utf16 string
+        /// Read fixed length UTF-16 string
         /// </summary>
         public string ReadLongString(ushort maximumLength = ushort.MaxValue)
         {

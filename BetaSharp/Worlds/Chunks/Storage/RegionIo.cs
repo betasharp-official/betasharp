@@ -1,90 +1,72 @@
-using java.io;
-using java.lang.@ref;
-using java.util;
-
 namespace BetaSharp.Worlds.Chunks.Storage;
 
-internal class RegionIo
+internal static class RegionIo
 {
-    private static readonly Map cache = new HashMap();
-    private static readonly object l = new();
+    private static readonly Dictionary<string, RegionFile> cache = new(StringComparer.Ordinal);
+    private static readonly object gate = new();
 
-    public static RegionFile func_22193_a(java.io.File var0, int var1, int var2)
+    public static RegionFile CreateRegionFile(string worldDir, int chunkX, int chunkZ)
     {
-        lock (l)
+        if (worldDir is null)
         {
-            java.io.File var3 = new(var0, "region");
-            java.io.File var4 = new(var3, "r." + (var1 >> 5) + "." + (var2 >> 5) + ".mcr");
-            Reference var5 = (Reference)cache.get(var4);
-            RegionFile var6;
-            if (var5 != null)
+            throw new ArgumentNullException(nameof(worldDir));
+        }
+
+        lock (gate)
+        {
+            string regionDir = Path.Combine(worldDir, "region");
+            string regionFileName = $"r.{chunkX >> 5}.{chunkZ >> 5}.mcr";
+            string regionPath = Path.Combine(regionDir, regionFileName);
+
+            if (cache.TryGetValue(regionPath, out RegionFile? region))
             {
-                var6 = (RegionFile)var5.get();
-                if (var6 != null)
-                {
-                    return var6;
-                }
+                return region;
             }
 
-            if (!var3.exists())
+            if (!Directory.Exists(regionDir))
             {
-                var3.mkdirs();
+                Directory.CreateDirectory(regionDir);
             }
 
-            if (cache.size() >= 256)
+            if (cache.Count >= 256)
             {
-                flush();
+                Flush();
             }
 
-            var6 = new RegionFile(var4);
-            cache.put(var4, new SoftReference(var6));
-            return var6;
+            RegionFile created = new(regionPath);
+            cache[regionPath] = created;
+            return created;
         }
     }
 
-    public static void flush()
+    public static void Flush()
     {
-        lock (l)
+        lock (gate)
         {
-            Iterator var0 = cache.values().iterator();
-
-            while (var0.hasNext())
+            foreach (var regionFile in cache.Values)
             {
-                Reference var1 = (Reference)var0.next();
-
-                try
-                {
-                    RegionFile var2 = (RegionFile)var1.get();
-                    if (var2 != null)
-                    {
-                        var2.func_22196_b();
-                    }
-                }
-                catch (java.io.IOException ex)
-                {
-                    ex.printStackTrace();
-                }
+                regionFile.Flush();
             }
 
-            cache.clear();
+            cache.Clear();
         }
     }
 
-    public static int getSizeDelta(java.io.File var0, int var1, int var2)
+    public static int GetSizeDelta(string worldDir, int chunkX, int chunkZ)
     {
-        RegionFile var3 = func_22193_a(var0, var1, var2);
-        return var3.func_22209_a();
+        RegionFile regionFile = CreateRegionFile(worldDir, chunkX, chunkZ);
+        return regionFile.func_22209_a();
     }
 
-    public static ChunkDataStream GetChunkInputStream(java.io.File var0, int var1, int var2)
+    public static ChunkDataStream? GetChunkInputStream(string worldDir, int chunkX, int chunkZ)
     {
-        RegionFile var3 = func_22193_a(var0, var1, var2);
-        return var3.GetChunkDataInputStream(var1 & 31, var2 & 31);
+        RegionFile regionFile = CreateRegionFile(worldDir, chunkX, chunkZ);
+        return regionFile.GetChunkDataInputStream(chunkX & 31, chunkZ & 31);
     }
 
-    public static Stream GetChunkOutputStream(java.io.File var0, int var1, int var2)
+    public static Stream? GetChunkOutputStream(string worldDir, int chunkX, int chunkZ)
     {
-        RegionFile var3 = func_22193_a(var0, var1, var2);
-        return var3.GetChunkDataOutputStream(var1 & 31, var2 & 31);
+        RegionFile regionFile = CreateRegionFile(worldDir, chunkX, chunkZ);
+        return regionFile.GetChunkDataOutputStream(chunkX & 31, chunkZ & 31);
     }
 }
