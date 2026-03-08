@@ -27,7 +27,7 @@ public class BlockRenderer
     private static readonly PistonExtensionRenderer s_pistonExt = new();
 
 
-    public static bool RenderBlockByRenderType(IBlockReader world, Block block, BlockPos pos, Tessellator tess, int overrideTexture = -1, bool renderAllFaces = false)
+    public static bool RenderBlockByRenderType(IBlockReader world, LightingEngine lighting, Block block, BlockPos pos, Tessellator tess, int overrideTexture = -1, bool renderAllFaces = false)
     {
         BlockRendererType type = block.getRenderType();
 
@@ -35,7 +35,8 @@ public class BlockRenderer
 
         var ctx = new BlockRenderContext(
             tess: tess,
-            world: world,
+            lighting: lighting,
+            blockReader: world,
             overrideTexture: overrideTexture,
             renderAllFaces: renderAllFaces,
             flipTexture: false,
@@ -81,7 +82,7 @@ public class BlockRenderer
     {
         BlockRendererType renderType = block.getRenderType();
         var uiCtx = new BlockRenderContext(
-            world: NullBlockReader.Instance,
+            blockReader: NullBlockReader.Instance,
             tess: tess,
             renderAllFaces: true,
             enableAo: false,
@@ -178,7 +179,8 @@ public class BlockRenderer
         float lightX = 0.6F; // North/South faces
 
         var entityCtx = new BlockRenderContext(
-            world: world.BlocksReader,
+            blockReader: world.BlocksReader,
+            lighting:world.Lighting,
             tess: tess,
             renderAllFaces: true,
             enableAo: false
