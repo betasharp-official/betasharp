@@ -12,12 +12,6 @@ class NetworkReaderThread : java.lang.Thread
 
     public override void run()
     {
-        object var1 = Connection.LOCK;
-        lock (var1)
-        {
-            ++Connection.READ_THREAD_COUNTER;
-        }
-
         while (true)
         {
             bool var12 = false;
@@ -45,21 +39,7 @@ class NetworkReaderThread : java.lang.Thread
             }
             finally
             {
-                if (var12)
-                {
-                    object var5 = Connection.LOCK;
-                    lock (var5)
-                    {
-                        --Connection.READ_THREAD_COUNTER;
-                    }
-                }
             }
-        }
-
-        var1 = Connection.LOCK;
-        lock (var1)
-        {
-            --Connection.READ_THREAD_COUNTER;
         }
     }
 }

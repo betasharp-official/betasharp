@@ -11,8 +11,6 @@ public class Connection
 {
     private readonly ILogger<Connection> _logger = Log.Instance.For<Connection>();
     public static readonly object LOCK = new();
-    public static int READ_THREAD_COUNTER;
-    public static int WRITE_THREAD_COUNTER;
     protected object lck = new();
     private Socket? _socket;
     private readonly IPEndPoint? _address;
