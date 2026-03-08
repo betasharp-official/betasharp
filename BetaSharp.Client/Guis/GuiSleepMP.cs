@@ -67,7 +67,7 @@ public class GuiSleepMP : GuiChat
         if (Game.player is EntityClientPlayerMP)
         {
             ClientNetworkHandler sendQueue = ((EntityClientPlayerMP)Game.player).sendQueue;
-            sendQueue.addToSendQueue(new ClientCommandC2SPacket(Game.player, 3));
+            sendQueue.addToSendQueue(ClientCommandC2SPacket.Get(Game.player, 3));
         }
 
     }

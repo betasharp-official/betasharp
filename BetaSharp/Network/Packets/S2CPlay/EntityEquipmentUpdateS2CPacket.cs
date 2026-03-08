@@ -9,20 +9,23 @@ public class EntityEquipmentUpdateS2CPacket() : PacketBaseEntity(PacketId.Entity
     public int itemRawId;
     public int itemDamage;
 
-    public EntityEquipmentUpdateS2CPacket(int entityId, int slot, ItemStack itemStack) : this()
+    public static EntityEquipmentUpdateS2CPacket Get(int entityId, int slot, ItemStack itemStack)
     {
-        EntityId = entityId;
-        this.slot = slot;
+        var p = Get<EntityEquipmentUpdateS2CPacket>(PacketId.EntityEquipmentUpdateS2C);
+        p.EntityId = entityId;
+        p.slot = slot;
         if (itemStack == null)
         {
-            itemRawId = -1;
-            itemDamage = 0;
+            p.itemRawId = -1;
+            p.itemDamage = 0;
         }
         else
         {
-            itemRawId = itemStack.itemId;
-            itemDamage = itemStack.getDamage();
+            p.itemRawId = itemStack.itemId;
+            p.itemDamage = itemStack.getDamage();
         }
+
+        return p;
     }
 
     public override void Read(NetworkStream stream)

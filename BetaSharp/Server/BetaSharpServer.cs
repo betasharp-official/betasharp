@@ -406,7 +406,7 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
                 ServerWorld world = worlds[i];
                 if (ticks % 20 == 0)
                 {
-                    playerManager.sendToDimension(new WorldTimeUpdateS2CPacket(world.getTime()), world.dimension.Id);
+                    playerManager.sendToDimension(WorldTimeUpdateS2CPacket.Get(world.getTime()), world.dimension.Id);
                 }
 
                 world.Tick();

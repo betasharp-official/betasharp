@@ -7,10 +7,12 @@ public class IncreaseStatS2CPacket() : Packet(PacketId.IncreaseStatS2C)
     public int statId;
     public int amount;
 
-    public IncreaseStatS2CPacket(int statId, int amount) : this()
+    public static IncreaseStatS2CPacket Get(int statId, int amount)
     {
-        this.statId = statId;
-        this.amount = amount;
+        var p = Get<IncreaseStatS2CPacket>(PacketId.IncreaseStatS2C);
+        p.statId = statId;
+        p.amount = amount;
+        return p;
     }
 
     public override void Apply(NetHandler handler)

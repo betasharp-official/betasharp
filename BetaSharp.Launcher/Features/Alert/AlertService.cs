@@ -9,7 +9,12 @@ internal sealed class AlertService
 {
     public async Task ShowAsync(string title, string message)
     {
-        var window = ((ClassicDesktopStyleApplicationLifetime?)Application.Current?.ApplicationLifetime)?.MainWindow;
+        if (Application.Current?.ApplicationLifetime is not ClassicDesktopStyleApplicationLifetime lifetime)
+        {
+            return;
+        }
+
+        var window = lifetime.MainWindow;
 
         ArgumentNullException.ThrowIfNull(window);
 

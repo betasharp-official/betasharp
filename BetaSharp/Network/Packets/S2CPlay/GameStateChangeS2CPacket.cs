@@ -7,9 +7,11 @@ public class GameStateChangeS2CPacket() : Packet(PacketId.GameStateChangeS2C)
     public static readonly string[] REASONS = ["tile.bed.notValid", null, null];
     public int reason;
 
-    public GameStateChangeS2CPacket(int reason) : this()
+    public static GameStateChangeS2CPacket Get(int reason)
     {
-        this.reason = reason;
+        var p = Get<GameStateChangeS2CPacket>(PacketId.GameStateChangeS2C);
+        p.reason = reason;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

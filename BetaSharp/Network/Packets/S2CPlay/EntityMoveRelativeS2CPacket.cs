@@ -5,12 +5,17 @@ namespace BetaSharp.Network.Packets.S2CPlay;
 internal class EntityMoveRelativeS2CPacket() : EntityS2CPacket(PacketId.EntityMoveRelativeS2C)
 {
 
-    public EntityMoveRelativeS2CPacket(int entityId, byte deltaX, byte deltaY, byte deltaZ) : this()
+    public static EntityMoveRelativeS2CPacket Get(int entityId, byte deltaX, byte deltaY, byte deltaZ)
     {
-        EntityId = entityId;
-        this.deltaX = (sbyte)deltaX;
-        this.deltaY = (sbyte)deltaY;
-        this.deltaZ = (sbyte)deltaZ;
+        var p = Get<EntityMoveRelativeS2CPacket>(PacketId.EntityMoveRelativeS2C);
+        p.EntityId = entityId;
+        p.deltaX = (sbyte)deltaX;
+        p.deltaY = (sbyte)deltaY;
+        p.deltaZ = (sbyte)deltaZ;
+        p.yaw = 0;
+        p.pitch = 0;
+        p.rotate = false;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

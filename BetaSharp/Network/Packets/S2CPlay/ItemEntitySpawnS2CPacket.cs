@@ -17,18 +17,20 @@ public class ItemEntitySpawnS2CPacket() : Packet(PacketId.ItemEntitySpawnS2C)
     public int itemCount;
     public int itemDamage;
 
-    public ItemEntitySpawnS2CPacket(EntityItem item) : this()
+    public static ItemEntitySpawnS2CPacket Get(EntityItem item)
     {
-        id = item.id;
-        itemRawId = item.stack.itemId;
-        itemCount = item.stack.count;
-        itemDamage = item.stack.getDamage();
-        x = MathHelper.Floor(item.x * 32.0D);
-        y = MathHelper.Floor(item.y * 32.0D);
-        z = MathHelper.Floor(item.z * 32.0D);
-        velocityX = (sbyte)(int)(item.velocityX * 128.0D);
-        velocityY = (sbyte)(int)(item.velocityY * 128.0D);
-        velocityZ = (sbyte)(int)(item.velocityZ * 128.0D);
+        var p = Get<ItemEntitySpawnS2CPacket>(PacketId.ItemEntitySpawnS2C);
+        p.id = item.id;
+        p.itemRawId = item.stack.itemId;
+        p.itemCount = item.stack.count;
+        p.itemDamage = item.stack.getDamage();
+        p.x = MathHelper.Floor(item.x * 32.0D);
+        p.y = MathHelper.Floor(item.y * 32.0D);
+        p.z = MathHelper.Floor(item.z * 32.0D);
+        p.velocityX = (sbyte)(int)(item.velocityX * 128.0D);
+        p.velocityY = (sbyte)(int)(item.velocityY * 128.0D);
+        p.velocityZ = (sbyte)(int)(item.velocityZ * 128.0D);
+        return p;
     }
 
     public override void Read(NetworkStream stream)

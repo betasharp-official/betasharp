@@ -6,9 +6,11 @@ public class PlayerRespawnPacket() : Packet(PacketId.PlayerRespawn)
 {
     public sbyte dimensionId;
 
-    public PlayerRespawnPacket(sbyte dimensionId) : this()
+    public static PlayerRespawnPacket Get(sbyte dimensionId)
     {
-        this.dimensionId = dimensionId;
+        var p = Get<PlayerRespawnPacket>(PacketId.PlayerRespawn);
+        p.dimensionId = dimensionId;
+        return p;
     }
 
     public override void Apply(NetHandler handler)

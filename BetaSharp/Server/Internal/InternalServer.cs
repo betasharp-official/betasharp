@@ -83,7 +83,7 @@ public class InternalServer : BetaSharpServer
                     _ => "Unknown"
                 };
 
-                playerManager?.sendToAll(new BetaSharp.Network.Packets.Play.ChatMessagePacket($"Difficulty set to {difficultyName}"));
+                playerManager?.sendToAll(BetaSharp.Network.Packets.Play.ChatMessagePacket.Get($"Difficulty set to {difficultyName}"));
             }
         }
     }

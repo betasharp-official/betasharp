@@ -8,11 +8,13 @@ public class ScreenHandlerPropertyUpdateS2CPacket() : Packet(PacketId.ScreenHand
     public int propertyId;
     public int value;
 
-    public ScreenHandlerPropertyUpdateS2CPacket(int syncId, int propertyId, int value) : this()
+    public static ScreenHandlerPropertyUpdateS2CPacket Get(int syncId, int propertyId, int value)
     {
-        this.syncId = syncId;
-        this.propertyId = propertyId;
-        this.value = value;
+        var p = Get<ScreenHandlerPropertyUpdateS2CPacket>(PacketId.ScreenHandlerPropertyUpdateS2C);
+        p.syncId = syncId;
+        p.propertyId = propertyId;
+        p.value = value;
+        return p;
     }
 
     public override void Apply(NetHandler handler)

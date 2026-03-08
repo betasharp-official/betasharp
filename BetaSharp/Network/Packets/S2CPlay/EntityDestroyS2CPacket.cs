@@ -5,9 +5,11 @@ namespace BetaSharp.Network.Packets.S2CPlay;
 public class EntityDestroyS2CPacket() : PacketBaseEntity(PacketId.EntityDestroyS2C)
 {
 
-    public EntityDestroyS2CPacket(int entityId) : this()
+    public static EntityDestroyS2CPacket Get(int entityId)
     {
-        EntityId = entityId;
+        var p = Get<EntityDestroyS2CPacket>(PacketId.EntityDestroyS2C);
+        p.EntityId = entityId;
+        return p;
     }
 
     public override void Apply(NetHandler handler)

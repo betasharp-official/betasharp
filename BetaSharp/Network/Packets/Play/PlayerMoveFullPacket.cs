@@ -10,15 +10,19 @@ public class PlayerMoveFullPacket : PlayerMovePacket
         changePosition = true;
     }
 
-    public PlayerMoveFullPacket(double x, double y, double eyeHeight, double z, float yaw, float pitch, bool onGround) : this()
+    public static PlayerMoveFullPacket Get(double x, double y, double eyeHeight, double z, float yaw, float pitch, bool onGround)
     {
-        base.x = x;
-        base.y = y;
-        base.z = z;
-        base.eyeHeight = eyeHeight;
-        base.yaw = yaw;
-        base.pitch = pitch;
-        base.onGround = onGround;
+        var p = Get<PlayerMoveFullPacket>(PacketId.PlayerMoveFull);
+        p.x = x;
+        p.y = y;
+        p.z = z;
+        p.eyeHeight = eyeHeight;
+        p.yaw = yaw;
+        p.pitch = pitch;
+        p.onGround = onGround;
+        p.changeLook = true;
+        p.changePosition = true;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

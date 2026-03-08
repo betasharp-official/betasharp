@@ -6,9 +6,11 @@ public class HealthUpdateS2CPacket() : Packet(PacketId.HealthUpdateS2C)
 {
     public int healthMP;
 
-    public HealthUpdateS2CPacket(int health) : this()
+    public static HealthUpdateS2CPacket Get(int health)
     {
-        healthMP = health;
+        var p = Get<HealthUpdateS2CPacket>(PacketId.HealthUpdateS2C);
+        p.healthMP = health;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

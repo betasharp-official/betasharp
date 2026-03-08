@@ -62,7 +62,6 @@ public abstract class Entity
     public int hearts = 0;
     public int air = 300;
     private bool firstTick = true;
-    public string skinUrl;
     public string cloakUrl;
     protected bool isImmuneToFire = false;
     protected DataWatcher dataWatcher = new();

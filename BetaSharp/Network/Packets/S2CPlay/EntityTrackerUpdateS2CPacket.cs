@@ -6,10 +6,12 @@ public class EntityTrackerUpdateS2CPacket() : PacketBaseEntity(PacketId.EntityTr
 {
     private List<WatchableObject> trackedValues;
 
-    public EntityTrackerUpdateS2CPacket(int entityId, DataWatcher dataWatcher) : this()
+    public static EntityTrackerUpdateS2CPacket Get(int entityId, DataWatcher dataWatcher)
     {
-        EntityId = entityId;
-        trackedValues = dataWatcher.GetDirtyEntries();
+        var p = Get<EntityTrackerUpdateS2CPacket>(PacketId.EntityTrackerUpdateS2C);
+        p.EntityId = entityId;
+        p.trackedValues = dataWatcher.GetDirtyEntries();
+        return p;
     }
 
     public override void Read(NetworkStream stream)

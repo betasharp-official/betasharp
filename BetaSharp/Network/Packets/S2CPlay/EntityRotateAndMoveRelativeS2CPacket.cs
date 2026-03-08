@@ -9,14 +9,17 @@ internal class EntityRotateAndMoveRelativeS2CPacket : EntityS2CPacket
         rotate = true;
     }
 
-    public EntityRotateAndMoveRelativeS2CPacket(int entityId, byte deltaX, byte deltaY, byte deltaZ, byte yaw, byte pitch) : this()
+    public static EntityRotateAndMoveRelativeS2CPacket Get(int entityId, byte deltaX, byte deltaY, byte deltaZ, byte yaw, byte pitch)
     {
-        EntityId = entityId;
-        this.deltaX = (sbyte)deltaX;
-        this.deltaY = (sbyte)deltaY;
-        this.deltaZ = (sbyte)deltaZ;
-        this.yaw = (sbyte)yaw;
-        this.pitch = (sbyte)pitch;
+        var p = Get<EntityRotateAndMoveRelativeS2CPacket>(PacketId.EntityRotateAndMoveRelativeS2C);
+        p.EntityId = entityId;
+        p.deltaX = (sbyte)deltaX;
+        p.deltaY = (sbyte)deltaY;
+        p.deltaZ = (sbyte)deltaZ;
+        p.yaw = (sbyte)yaw;
+        p.pitch = (sbyte)pitch;
+        p.rotate = true;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

@@ -15,14 +15,19 @@ public class EntitySpawnS2CPacket() : PacketBaseEntity(PacketId.EntitySpawnS2C)
     public int entityType;
     public int entityData;
 
-    public EntitySpawnS2CPacket(Entity entity, int entityType, int entityData = 0) : this()
+    public static EntitySpawnS2CPacket Get(Entity entity, int entityType, int entityData = 0)
     {
-        EntityId = entity.id;
-        x = MathHelper.Floor(entity.x * 32.0);
-        y = MathHelper.Floor(entity.y * 32.0);
-        z = MathHelper.Floor(entity.z * 32.0);
-        this.entityType = entityType;
-        this.entityData = entityData;
+        var p = Get<EntitySpawnS2CPacket>(PacketId.EntitySpawnS2C);
+        p.EntityId = entity.id;
+        p.x = MathHelper.Floor(entity.x * 32.0);
+        p.y = MathHelper.Floor(entity.y * 32.0);
+        p.z = MathHelper.Floor(entity.z * 32.0);
+        p.entityType = entityType;
+        p.entityData = entityData;
+        p.velocityX = 0;
+        p.velocityY = 0;
+        p.velocityZ = 0;
+
         if (entityData > 0)
         {
             double velocityX = entity.velocityX;
@@ -59,10 +64,12 @@ public class EntitySpawnS2CPacket() : PacketBaseEntity(PacketId.EntitySpawnS2C)
                 velocityZ = maxVelocity;
             }
 
-            this.velocityX = (int)(velocityX * 8000.0);
-            this.velocityY = (int)(velocityY * 8000.0);
-            this.velocityZ = (int)(velocityZ * 8000.0);
+            p.velocityX = (int)(velocityX * 8000.0);
+            p.velocityY = (int)(velocityY * 8000.0);
+            p.velocityZ = (int)(velocityZ * 8000.0);
         }
+
+        return p;
     }
 
     public override void Read(NetworkStream stream)

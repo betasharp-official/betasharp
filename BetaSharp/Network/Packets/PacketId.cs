@@ -57,6 +57,7 @@ public enum PacketId : byte
     ScreenHandlerAcknowledgement = 106,
     UpdateSign = 130,
     MapUpdateS2C = 131,
+    PlayerConnectionUpdateS2C = 132,
     IncreaseStatS2C = 200,
     Disconnect = 255,
 }

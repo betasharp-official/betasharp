@@ -11,13 +11,15 @@ public class PlayerInteractBlockC2SPacket() : Packet(PacketId.PlayerInteractBloc
     public int side;
     public ItemStack stack;
 
-    public PlayerInteractBlockC2SPacket(int x, int y, int z, int side, ItemStack stack) : this()
+    public static PlayerInteractBlockC2SPacket Get(int x, int y, int z, int side, ItemStack stack)
     {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.side = side;
-        this.stack = stack;
+        var p = Get<PlayerInteractBlockC2SPacket>(PacketId.PlayerInteractBlockC2S);
+        p.x = x;
+        p.y = y;
+        p.z = z;
+        p.side = side;
+        p.stack = stack;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

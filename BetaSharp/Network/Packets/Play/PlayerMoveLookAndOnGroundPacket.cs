@@ -9,11 +9,19 @@ public class PlayerMoveLookAndOnGroundPacket : PlayerMovePacket
         changeLook = true;
     }
 
-    public PlayerMoveLookAndOnGroundPacket(float yaw, float pitch, bool onGround) : this()
+    public static PlayerMoveLookAndOnGroundPacket Get(float yaw, float pitch, bool onGround)
     {
-        base.yaw = yaw;
-        base.pitch = pitch;
-        base.onGround = onGround;
+        var p = Get<PlayerMoveLookAndOnGroundPacket>(PacketId.PlayerMoveLookAndOnGround);
+        p.x = 0;
+        p.y = 0;
+        p.z = 0;
+        p.eyeHeight = 0;
+        p.yaw = yaw;
+        p.pitch = pitch;
+        p.onGround = onGround;
+        p.changePosition = false;
+        p.changeLook = true;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

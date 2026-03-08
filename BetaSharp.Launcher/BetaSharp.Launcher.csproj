@@ -14,12 +14,11 @@
     <ApplicationIcon>logo.ico</ApplicationIcon>
     <Company>BetaSharp</Company>
     <Product>BetaSharp Launcher</Product>
+    <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BetaSharp.Client\BetaSharp.Client.csproj"
-                      ReferenceOutputAssembly="false"
-                      Private="false"/>
+    <ProjectReference Include="..\BetaSharp.Client\BetaSharp.Client.csproj" ReferenceOutputAssembly="false" Private="false"/>
   </ItemGroup>
 
   <Target Name="_CopyClientOutput">
@@ -31,21 +30,15 @@
       <ClientFiles Include="$(ClientOutputDir)**\*.*"/>
     </ItemGroup>
 
-    <Copy SourceFiles="@(ClientFiles)"
-          DestinationFiles="@(ClientFiles->'$(ClientCopyDestination)%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="true"/>
+    <Copy SourceFiles="@(ClientFiles)" DestinationFiles="@(ClientFiles->'$(ClientCopyDestination)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
   </Target>
 
   <Target Name="CopyClientOutputBuild" AfterTargets="Build">
-    <MSBuild Projects="$(MSBuildProjectFile)"
-             Targets="_CopyClientOutput"
-             Properties="ClientCopyDestination=$(OutputPath)Client\"/>
+    <MSBuild Projects="$(MSBuildProjectFile)" Targets="_CopyClientOutput" Properties="ClientCopyDestination=$(OutputPath)Client\"/>
   </Target>
 
   <Target Name="CopyClientOutputPublish" AfterTargets="Publish">
-    <MSBuild Projects="$(MSBuildProjectFile)"
-             Targets="_CopyClientOutput"
-             Properties="ClientCopyDestination=$(PublishDir)Client\"/>
+    <MSBuild Projects="$(MSBuildProjectFile)" Targets="_CopyClientOutput" Properties="ClientCopyDestination=$(PublishDir)Client\"/>
   </Target>
 
   <ItemGroup>
@@ -54,6 +47,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AsyncImageLoader.Avalonia" Version="3.7.0"/>
+
     <PackageReference Include="Avalonia" Version="11.3.12"/>
     <PackageReference Include="Avalonia.Desktop" Version="11.3.12"/>
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12"/>
@@ -67,8 +62,6 @@
     <PackageReference Include="CommunityToolkit.Labs.Extensions.DependencyInjection" Version="0.1.251217-build.2433"/>
 
     <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0"/>
-
-    <PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.9.5"/>
 
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0"/>
 

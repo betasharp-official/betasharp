@@ -106,7 +106,7 @@ public class ServerWorld : World
     {
         if (base.spawnGlobalEntity(entity))
         {
-            server.playerManager.sendToAround(entity.x, entity.y, entity.z, 512.0, dimension.Id, new GlobalEntitySpawnS2CPacket(entity));
+            server.playerManager.sendToAround(entity.x, entity.y, entity.z, 512.0, dimension.Id, GlobalEntitySpawnS2CPacket.Get(entity));
             return true;
         }
         else
@@ -118,7 +118,7 @@ public class ServerWorld : World
 
     public override void broadcastEntityEvent(Entity entity, byte @event)
     {
-        EntityStatusS2CPacket var3 = new EntityStatusS2CPacket(entity.id, @event);
+        EntityStatusS2CPacket var3 = EntityStatusS2CPacket.Get(entity.id, @event);
         server.getEntityTracker(dimension.Id).sendToAround(entity, var3);
     }
 
@@ -131,7 +131,7 @@ public class ServerWorld : World
         };
         var10.doExplosionA();
         var10.doExplosionB(false);
-        server.playerManager.sendToAround(x, y, z, 64.0, dimension.Id, new ExplosionS2CPacket(x, y, z, power, var10.destroyedBlockPositions));
+        server.playerManager.sendToAround(x, y, z, 64.0, dimension.Id, ExplosionS2CPacket.Get(x, y, z, power, var10.destroyedBlockPositions));
         return var10;
     }
 
@@ -139,7 +139,7 @@ public class ServerWorld : World
     public override void playNoteBlockActionAt(int x, int y, int z, int soundType, int pitch)
     {
         base.playNoteBlockActionAt(x, y, z, soundType, pitch);
-        server.playerManager.sendToAround(x, y, z, 64.0, dimension.Id, new PlayNoteSoundS2CPacket(x, y, z, soundType, pitch));
+        server.playerManager.sendToAround(x, y, z, 64.0, dimension.Id, PlayNoteSoundS2CPacket.Get(x, y, z, soundType, pitch));
     }
 
     public void forceSave()
@@ -156,11 +156,11 @@ public class ServerWorld : World
         {
             if (raining)
             {
-                server.playerManager.sendToAll(new GameStateChangeS2CPacket(2));
+                server.playerManager.sendToAll(GameStateChangeS2CPacket.Get(2));
             }
             else
             {
-                server.playerManager.sendToAll(new GameStateChangeS2CPacket(1));
+                server.playerManager.sendToAll(GameStateChangeS2CPacket.Get(1));
             }
         }
     }

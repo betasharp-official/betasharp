@@ -7,10 +7,12 @@ public class ItemPickupAnimationS2CPacket() : Packet(PacketId.ItemPickupAnimatio
     public int entityId;
     public int collectorEntityId;
 
-    public ItemPickupAnimationS2CPacket(int entityId, int collectorId) : this()
+    public static ItemPickupAnimationS2CPacket Get(int entityId, int collectorId)
     {
-        this.entityId = entityId;
-        collectorEntityId = collectorId;
+        var p = Get<ItemPickupAnimationS2CPacket>(PacketId.ItemPickupAnimationS2C);
+        p.entityId = entityId;
+        p.collectorEntityId = collectorId;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

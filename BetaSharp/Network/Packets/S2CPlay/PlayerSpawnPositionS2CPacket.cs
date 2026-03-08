@@ -8,11 +8,13 @@ public class PlayerSpawnPositionS2CPacket() : Packet(PacketId.PlayerSpawnPositio
     public int y;
     public int z;
 
-    public PlayerSpawnPositionS2CPacket(int x, int y, int z) : this()
+    public static PlayerSpawnPositionS2CPacket Get(int x, int y, int z)
     {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        var p = Get<PlayerSpawnPositionS2CPacket>(PacketId.PlayerSpawnPositionS2C);
+        p.x = x;
+        p.y = y;
+        p.z = z;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

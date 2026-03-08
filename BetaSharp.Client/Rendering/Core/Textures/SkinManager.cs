@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Text;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -6,7 +8,7 @@ using SixLabors.ImageSharp.Processing;
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
 
-public class SkinManager : IDisposable
+public sealed class SkinManager : IDisposable
 {
     private readonly ILogger _logger = Log.Instance.For<SkinManager>();
     private readonly TextureManager _textureManager;
@@ -19,62 +21,105 @@ public class SkinManager : IDisposable
     public SkinManager(TextureManager textureManager)
     {
         _textureManager = textureManager;
-        _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+        _httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(15)
+        };
+
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", nameof(BetaSharp));
     }
 
-    public void RequestDownload(string url)
+    public void RequestDownload(string? username)
     {
-        if (string.IsNullOrWhiteSpace(url)) return;
-        if (_textureHandles.ContainsKey(url) || _downloadedImages.ContainsKey(url)) return;
-        if (!_downloading.TryAdd(url, true)) return;
+        if (string.IsNullOrWhiteSpace(username) || _textureHandles.ContainsKey(username)
+                                                || _downloadedImages.ContainsKey(username)
+                                                || !_downloading.TryAdd(username, true))
+        {
+            return;
+        }
 
         Task.Run(async () =>
         {
             try
             {
-                _logger.LogInformation("Downloading skin from {Url}", url);
-                byte[] data = await _httpClient.GetByteArrayAsync(url);
-                var image = Image.Load<Rgba32>(data);
+                _logger.LogInformation("Downloading skin for {Url}", username);
 
-                if (image.Height == 64 && image.Width == 64)
+                var profileResponse = await _httpClient.GetAsync($"https://api.mojang.com/minecraft/profile/lookup/name/{username}");
+                await using var profileStream = await profileResponse.Content.ReadAsStreamAsync();
+                var profileNode = await JsonNode.ParseAsync(profileStream);
+
+                string? id = profileNode?["id"]?.GetValue<string>();
+
+                ArgumentException.ThrowIfNullOrWhiteSpace(id);
+
+                var skinResponse = await _httpClient.GetAsync($"https://sessionserver.mojang.com/session/minecraft/profile/{id}");
+                await using var skinStream = await skinResponse.Content.ReadAsStreamAsync();
+                var skinNode = await JsonNode.ParseAsync(skinStream);
+
+                string? value = skinNode?["properties"]?[0]?["value"]?.GetValue<string>();
+
+                ArgumentException.ThrowIfNullOrWhiteSpace(value);
+
+                var node = JsonNode.Parse(Encoding.UTF8.GetString(Convert.FromBase64String(value)));
+                string? texture = node?["textures"]?["SKIN"]?["url"]?.GetValue<string>();
+
+                ArgumentException.ThrowIfNullOrWhiteSpace(texture);
+
+                await using var textureStream = await _httpClient.GetStreamAsync(texture);
+
+                var image = await Image.LoadAsync<Rgba32>(textureStream);
+
+                if (image is { Height: 64, Width: 64 })
                 {
                     image.Mutate(ctx => ctx.Crop(64, 32));
                 }
 
-                _downloadedImages[url] = image;
-                _logger.LogInformation("Skin downloaded successfully from {Url}: ({W}x{H})", url, image.Width, image.Height);
+                _downloadedImages[username] = image;
+
+                _logger.LogInformation("Skin downloaded successfully for {Name}: ({W}x{H})", username, image.Width, image.Height);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to download skin from {Url}", url);
+                _logger.LogWarning(ex, "Failed to download skin for {Name}", username);
             }
             finally
             {
-                _downloading.TryRemove(url, out _);
+                _downloading.TryRemove(username, out _);
             }
         });
     }
 
     public TextureHandle? GetTextureHandle(string? url)
     {
-        if (string.IsNullOrWhiteSpace(url)) return null;
-
-        if (_textureHandles.TryGetValue(url, out TextureHandle? handle)) return handle;
-
-        if (_downloadedImages.TryRemove(url, out Image<Rgba32>? image))
+        if (string.IsNullOrWhiteSpace(url))
         {
-            handle = _textureManager.Load(image);
-            _textureHandles[url] = handle;
-            _logger.LogInformation("Skin texture created for {Url}", url);
+            return null;
+        }
+
+        if (_textureHandles.TryGetValue(url, out TextureHandle? handle))
+        {
             return handle;
         }
 
-        return null;
+        if (!_downloadedImages.TryRemove(url, out Image<Rgba32>? image))
+        {
+            return null;
+        }
+
+        handle = _textureManager.Load(image);
+
+        _textureHandles[url] = handle;
+        _logger.LogInformation("Skin texture created for {Url}", url);
+
+        return handle;
     }
 
     public void Release(string? url)
     {
-        if (string.IsNullOrWhiteSpace(url)) return;
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return;
+        }
 
         if (_downloadedImages.TryRemove(url, out Image<Rgba32>? image))
         {
@@ -89,19 +134,20 @@ public class SkinManager : IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
         _httpClient.Dispose();
 
         foreach (Image<Rgba32> image in _downloadedImages.Values)
         {
             image.Dispose();
         }
+
         _downloadedImages.Clear();
 
         foreach (TextureHandle handle in _textureHandles.Values)
         {
             _textureManager.Delete(handle);
         }
+
         _textureHandles.Clear();
     }
 }

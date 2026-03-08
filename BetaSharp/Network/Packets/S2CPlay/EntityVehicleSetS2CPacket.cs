@@ -7,10 +7,12 @@ public class EntityVehicleSetS2CPacket() : PacketBaseEntity(PacketId.EntityVehic
 {
     public int VehicleEntityId;
 
-    public EntityVehicleSetS2CPacket(Entity entity, Entity vehicle) : this()
+    public static EntityVehicleSetS2CPacket Get(Entity entity, Entity vehicle)
     {
-        EntityId = entity.id;
-        VehicleEntityId = vehicle != null ? vehicle.id : -1;
+        var p = Get<EntityVehicleSetS2CPacket>(PacketId.EntityVehicleSetS2C);
+        p.EntityId = entity.id;
+        p.VehicleEntityId = vehicle != null ? vehicle.id : -1;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

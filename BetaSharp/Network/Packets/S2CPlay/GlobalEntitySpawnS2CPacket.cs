@@ -12,17 +12,19 @@ public class GlobalEntitySpawnS2CPacket() : Packet(PacketId.GlobalEntitySpawnS2C
     public int z;
     public byte type;
 
-    public GlobalEntitySpawnS2CPacket(Entity ent) : this()
+    public static GlobalEntitySpawnS2CPacket Get(Entity ent)
     {
-        id = ent.id;
-        x = MathHelper.Floor(ent.x * 32.0D);
-        y = MathHelper.Floor(ent.y * 32.0D);
-        z = MathHelper.Floor(ent.z * 32.0D);
+        var p = Get<GlobalEntitySpawnS2CPacket>(PacketId.GlobalEntitySpawnS2C);
+        p.id = ent.id;
+        p.x = MathHelper.Floor(ent.x * 32.0D);
+        p.y = MathHelper.Floor(ent.y * 32.0D);
+        p.z = MathHelper.Floor(ent.z * 32.0D);
         if (ent is EntityLightningBolt)
         {
-            type = 1;
+            p.type = 1;
         }
 
+        return p;
     }
 
     public override void Read(NetworkStream stream)

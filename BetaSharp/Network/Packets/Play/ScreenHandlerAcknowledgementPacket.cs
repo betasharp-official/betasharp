@@ -8,11 +8,13 @@ public class ScreenHandlerAcknowledgementPacket() : Packet(PacketId.ScreenHandle
     public short actionType;
     public bool accepted;
 
-    public ScreenHandlerAcknowledgementPacket(int syncId, short actionType, bool accepted) : this()
+    public static ScreenHandlerAcknowledgementPacket Get(int syncId, short actionType, bool accepted)
     {
-        this.syncId = syncId;
-        this.actionType = actionType;
-        this.accepted = accepted;
+        var p = Get<ScreenHandlerAcknowledgementPacket>(PacketId.ScreenHandlerAcknowledgement);
+        p.syncId = syncId;
+        p.actionType = actionType;
+        p.accepted = accepted;
+        return p;
     }
 
     public override void Apply(NetHandler handler)

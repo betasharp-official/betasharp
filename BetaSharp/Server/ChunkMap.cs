@@ -311,7 +311,7 @@ internal class ChunkMap
 
             if (player.activeChunks.Add(chunkPos))
             {
-                player.networkHandler.sendPacket(new ChunkStatusUpdateS2CPacket(chunkPos.X, chunkPos.Z, true));
+                player.networkHandler.sendPacket(ChunkStatusUpdateS2CPacket.Get(chunkPos.X, chunkPos.Z, true));
             }
 
             player.PendingChunkUpdates.Enqueue(chunkPos);
@@ -335,7 +335,7 @@ internal class ChunkMap
 
                 if (player.activeChunks.Remove(chunkPos))
                 {
-                    player.networkHandler.sendPacket(new ChunkStatusUpdateS2CPacket(chunkX, chunkZ, false));
+                    player.networkHandler.sendPacket(ChunkStatusUpdateS2CPacket.Get(chunkX, chunkZ, false));
                 }
             }
         }
@@ -417,7 +417,7 @@ internal class ChunkMap
                     int var2 = chunkX * 16 + minX;
                     int var3 = minZ;
                     int var4 = chunkZ * 16 + maxY;
-                    sendPacketToPlayers(new BlockUpdateS2CPacket(var2, var3, var4, var1));
+                    sendPacketToPlayers(BlockUpdateS2CPacket.Get(var2, var3, var4, var1));
                     if (Block.BlocksWithEntity[var1.getBlockId(var2, var3, var4)])
                     {
                         sendBlockEntityUpdate(var1.getBlockEntity(var2, var3, var4));
@@ -433,7 +433,7 @@ internal class ChunkMap
                     int var5 = minY - minX + 1;
                     int var6 = maxX - minZ + 2;
                     int var7 = maxZ - maxY + 1;
-                    sendPacketToPlayers(new ChunkDataS2CPacket(var10, var12, var14, var5, var6, var7, var1));
+                    sendPacketToPlayers(ChunkDataS2CPacket.Get(var10, var12, var14, var5, var6, var7, var1));
                     var var8 = var1.getBlockEntities(var10, var12, var14, var10 + var5, var12 + var6, var14 + var7);
 
                     for (int var9 = 0; var9 < var8.Count; var9++)
@@ -443,7 +443,7 @@ internal class ChunkMap
                 }
                 else
                 {
-                    sendPacketToPlayers(new ChunkDeltaUpdateS2CPacket(chunkX, chunkZ, dirtyBlocks, dirtyBlockCount, var1));
+                    sendPacketToPlayers(ChunkDeltaUpdateS2CPacket.Get(chunkX, chunkZ, dirtyBlocks, dirtyBlockCount, var1));
 
                     for (int var11 = 0; var11 < dirtyBlockCount; var11++)
                     {

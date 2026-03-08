@@ -9,12 +9,14 @@ public class UpdateSignPacket() : Packet(PacketId.UpdateSign)
     public int z;
     public string[] text;
 
-    public UpdateSignPacket(int x, int y, int z, string[] text) : this()
+    public static UpdateSignPacket Get(int x, int y, int z, string[] text)
     {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.text = text;
+        var p = Get<UpdateSignPacket>(PacketId.UpdateSign);
+        p.x = x;
+        p.y = y;
+        p.z = z;
+        p.text = text;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

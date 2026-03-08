@@ -10,13 +10,15 @@ public class PlayerActionC2SPacket() : Packet(PacketId.PlayerActionC2S)
     public int direction;
     public int action;
 
-    public PlayerActionC2SPacket(int action, int x, int y, int z, int direction) : this()
+    public static PlayerActionC2SPacket Get(int action, int x, int y, int z, int direction)
     {
-        this.action = action;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.direction = direction;
+        var p = Get<PlayerActionC2SPacket>(PacketId.PlayerActionC2S);
+        p.action = action;
+        p.x = x;
+        p.y = y;
+        p.z = z;
+        p.direction = direction;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

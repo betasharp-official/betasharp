@@ -10,13 +10,15 @@ public class WorldEventS2CPacket() : Packet(PacketId.WorldEventS2C)
     public int y;
     public int z;
 
-    public WorldEventS2CPacket(int eventId, int x, int y, int z, int data) : this()
+    public static WorldEventS2CPacket Get(int eventId, int x, int y, int z, int data)
     {
-        this.eventId = eventId;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.data = data;
+        var p = Get<WorldEventS2CPacket>(PacketId.WorldEventS2C);
+        p.eventId = eventId;
+        p.x = x;
+        p.y = y;
+        p.z = z;
+        p.data = data;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

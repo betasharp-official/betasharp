@@ -12,14 +12,16 @@ public class PaintingEntitySpawnS2CPacket() : Packet(PacketId.PaintingEntitySpaw
     public int direction;
     public string title;
 
-    public PaintingEntitySpawnS2CPacket(EntityPainting paint) : this()
+    public static PaintingEntitySpawnS2CPacket Get(EntityPainting paint)
     {
-        entityId = paint.id;
-        xPosition = paint.XPosition;
-        yPosition = paint.YPosition;
-        zPosition = paint.ZPosition;
-        direction = paint.Direction;
-        title = paint.Art.Title;
+        var p = Get<PaintingEntitySpawnS2CPacket>(PacketId.PaintingEntitySpawnS2C);
+        p.entityId = paint.id;
+        p.xPosition = paint.XPosition;
+        p.yPosition = paint.YPosition;
+        p.zPosition = paint.ZPosition;
+        p.direction = paint.Direction;
+        p.title = paint.Art.Title;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

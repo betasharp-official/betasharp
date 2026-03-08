@@ -16,16 +16,18 @@ public class LivingEntitySpawnS2CPacket() : Packet(PacketId.LivingEntitySpawnS2C
     private DataWatcher metaData;
     private List<WatchableObject> receivedMetadata;
 
-    public LivingEntitySpawnS2CPacket(EntityLiving ent) : this()
+    public static LivingEntitySpawnS2CPacket Get(EntityLiving ent)
     {
-        entityId = ent.id;
-        type = (sbyte)EntityRegistry.GetRawId(ent);
-        xPosition = MathHelper.Floor(ent.x * 32.0D);
-        yPosition = MathHelper.Floor(ent.y * 32.0D);
-        zPosition = MathHelper.Floor(ent.z * 32.0D);
-        yaw = (sbyte)(int)(ent.yaw * 256.0F / 360.0F);
-        pitch = (sbyte)(int)(ent.pitch * 256.0F / 360.0F);
-        metaData = ent.getDataWatcher();
+        var p = Get<LivingEntitySpawnS2CPacket>(PacketId.LivingEntitySpawnS2C);
+        p.entityId = ent.id;
+        p.type = (sbyte)EntityRegistry.GetRawId(ent);
+        p.xPosition = MathHelper.Floor(ent.x * 32.0D);
+        p.yPosition = MathHelper.Floor(ent.y * 32.0D);
+        p.zPosition = MathHelper.Floor(ent.z * 32.0D);
+        p.yaw = (sbyte)(int)(ent.yaw * 256.0F / 360.0F);
+        p.pitch = (sbyte)(int)(ent.pitch * 256.0F / 360.0F);
+        p.metaData = ent.getDataWatcher();
+        return p;
     }
 
     public override void Read(NetworkStream stream)

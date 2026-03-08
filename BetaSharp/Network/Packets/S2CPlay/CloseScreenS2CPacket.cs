@@ -6,9 +6,11 @@ public class CloseScreenS2CPacket() : Packet(PacketId.CloseScreenS2C)
 {
     public int windowId;
 
-    public CloseScreenS2CPacket(int windowId) : this()
+    public static CloseScreenS2CPacket Get(int windowId)
     {
-        this.windowId = windowId;
+        var p = Get<CloseScreenS2CPacket>(PacketId.CloseScreenS2C);
+        p.windowId = windowId;
+        return p;
     }
 
     public override void Apply(NetHandler handler)

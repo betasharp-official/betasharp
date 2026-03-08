@@ -174,6 +174,9 @@ csharp_style_var_for_built_in_types = false:suggestion
 csharp_style_var_when_type_is_apparent = false:none
 csharp_style_var_elsewhere = false:suggestion
 
+# ReSharper properties
+resharper_wrap_object_and_collection_initializer_style = chop_always
+
 # Visual Basic files
 [*.vb]
 # Modifier preferences

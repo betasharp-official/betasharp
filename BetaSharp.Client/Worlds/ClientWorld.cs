@@ -235,7 +235,7 @@ public class ClientWorld : World
         return false;
     }
 
-    public override void Disconnect() => _networkHandler.sendPacketAndDisconnect(new DisconnectPacket("Quitting"));
+    public override void Disconnect() => _networkHandler.sendPacketAndDisconnect(DisconnectPacket.Get("Quitting"));
 
 
     protected override void UpdateWeatherCycles()

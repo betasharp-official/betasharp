@@ -1589,10 +1589,7 @@ public partial class BetaSharp
 
             newWorld.addPlayer(player);
 
-            if (!string.IsNullOrEmpty(session?.skinUrl))
-            {
-                skinManager.RequestDownload(session.skinUrl);
-            }
+            skinManager.RequestDownload(player.name);
 
             if (newWorld.isNewWorld)
             {
@@ -1767,7 +1764,7 @@ public partial class BetaSharp
         }
     }
 
-    private static void StartMainThread(string playerName, string sessionToken, string? skinUrl = null)
+    private static void StartMainThread(string playerName, string sessionToken)
     {
         Thread.CurrentThread.Name = "BetaSharp Main Thread";
 
@@ -1778,7 +1775,7 @@ public partial class BetaSharp
 
         if (playerName != null && sessionToken != null)
         {
-            game.session = new Session(playerName, sessionToken, skinUrl);
+            game.session = new Session(playerName, sessionToken);
 
             if (sessionToken == "-")
             {
@@ -1801,15 +1798,14 @@ public partial class BetaSharp
 
     public static void Startup(string[] args)
     {
-        (string Name, string Session, string? SkinUrl) result = args.Length switch
+        (string Name, string Session) result = args.Length switch
         {
-            0 => ($"Player{Random.Shared.Next()}", "-", null),
-            1 => (args[0], "-", null),
-            2 => (args[0], args[1], null),
-            _ => (args[0], args[1], args[2]),
+            0 => ($"Player{Random.Shared.Next()}", "-"),
+            1 => (args[0], "-"),
+            _ => (args[0], args[1]),
         };
 
-        StartMainThread(result.Name, result.Session, result.SkinUrl);
+        StartMainThread(result.Name, result.Session);
     }
 
     public static bool isGuiEnabled()

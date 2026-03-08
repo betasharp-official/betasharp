@@ -1,26 +1,39 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:BetaSharp.Launcher.Features.Home"
+             xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
 
              x:Class="BetaSharp.Launcher.Features.Home.HomeView" x:DataType="local:HomeViewModel">
 
-    <Interaction.Behaviors>
-        <EventTriggerBehavior EventName="AttachedToVisualTree">
-            <InvokeCommandAction Command="{Binding InitializeCommand}" />
-        </EventTriggerBehavior>
-    </Interaction.Behaviors>
+    <Grid RowDefinitions="Auto *" IsVisible="{CompiledBinding Session, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <Grid ColumnDefinitions="* Auto" Grid.Row="0">
+            <StackPanel Spacing="25" HorizontalAlignment="Stretch" Orientation="Horizontal" Grid.Row="0">
+                <Border Width="50" Height="50" ClipToBounds="True" CornerRadius="{StaticResource ControlCornerRadius}">
+                    <asyncImageLoader:AdvancedImage Source="{Binding Session.Face, FallbackValue='...'}" RenderOptions.BitmapInterpolationMode="None" Stretch="UniformToFill">
+                        <asyncImageLoader:AdvancedImage.Styles>
+                            <Style Selector="asyncImageLoader|AdvancedImage">
+                                <Setter Property="Transitions">
+                                    <Transitions>
+                                        <DoubleTransition Property="Opacity" Duration="0:0:0.5" />
+                                    </Transitions>
+                                </Setter>
+                            </Style>
 
-    <Grid RowDefinitions="Auto *" IsVisible="{CompiledBinding Account, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-        <Grid ColumnDefinitions="* Auto">
-            <StackPanel HorizontalAlignment="Stretch" Orientation="Horizontal" Spacing="25" Grid.Row="0">
-                <Border Width="50" Height="50" CornerRadius="{StaticResource ControlCornerRadius}" ClipToBounds="True">
-                    <Image Source="{CompiledBinding Face}" RenderOptions.BitmapInterpolationMode="None" Stretch="UniformToFill" />
+                            <Style Selector="asyncImageLoader|AdvancedImage[IsLoading=True]">
+                                <Setter Property="Opacity" Value="0" />
+                            </Style>
+
+                            <Style Selector="asyncImageLoader|AdvancedImage[IsLoading=False]">
+                                <Setter Property="Opacity" Value="1" />
+                            </Style>
+                        </asyncImageLoader:AdvancedImage.Styles>
+                    </asyncImageLoader:AdvancedImage>
                 </Border>
 
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="Welcome" Opacity="0.5" />
 
-                    <TextBlock Text="{CompiledBinding Account.Name, FallbackValue='...'}"
+                    <TextBlock Text="{CompiledBinding Session.Name, FallbackValue='...'}"
                                FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </StackPanel>
             </StackPanel>

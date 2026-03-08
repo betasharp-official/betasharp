@@ -8,11 +8,13 @@ public class ChunkStatusUpdateS2CPacket() : Packet(PacketId.ChunkStatusUpdateS2C
     public int z;
     public bool load;
 
-    public ChunkStatusUpdateS2CPacket(int x, int z, bool load) : this()
+    public static ChunkStatusUpdateS2CPacket Get(int x, int z, bool load)
     {
-        this.x = x;
-        this.z = z;
-        this.load = load;
+        var p = Get<ChunkStatusUpdateS2CPacket>(PacketId.ChunkStatusUpdateS2C);
+        p.x = x;
+        p.z = z;
+        p.load = load;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

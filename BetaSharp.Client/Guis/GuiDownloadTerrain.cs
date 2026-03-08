@@ -30,7 +30,7 @@ public class GuiDownloadTerrain : GuiScreen
         ++_tickCounter;
         if (_tickCounter % 20 == 0)
         {
-            _networkHandler.addToSendQueue(new KeepAlivePacket());
+            _networkHandler.addToSendQueue(KeepAlivePacket.Get());
         }
 
         if (_networkHandler != null)

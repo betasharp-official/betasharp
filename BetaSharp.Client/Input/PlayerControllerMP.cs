@@ -54,7 +54,7 @@ public class PlayerControllerMP : PlayerController
     {
         if (!isHittingBlock || var1 != currentBlockX || var2 != currentBlockY || var3 != currentblockZ)
         {
-            netClientHandler.addToSendQueue(new PlayerActionC2SPacket(0, var1, var2, var3, var4));
+            netClientHandler.addToSendQueue(PlayerActionC2SPacket.Get(0, var1, var2, var3, var4));
             int var5 = Game.world.getBlockId(var1, var2, var3);
             if (var5 > 0 && curBlockDamageMP == 0.0F)
             {
@@ -116,7 +116,7 @@ public class PlayerControllerMP : PlayerController
                     if (curBlockDamageMP >= 1.0F)
                     {
                         isHittingBlock = false;
-                        netClientHandler.addToSendQueue(new PlayerActionC2SPacket(2, var1, var2, var3, var4));
+                        netClientHandler.addToSendQueue(PlayerActionC2SPacket.Get(2, var1, var2, var3, var4));
                         sendBlockRemoved(var1, var2, var3, var4);
                         curBlockDamageMP = 0.0F;
                         prevBlockDamageMP = 0.0F;
@@ -172,7 +172,7 @@ public class PlayerControllerMP : PlayerController
         if (var1 != currentPlayerItem)
         {
             currentPlayerItem = var1;
-            netClientHandler.addToSendQueue(new UpdateSelectedSlotC2SPacket(currentPlayerItem));
+            netClientHandler.addToSendQueue(UpdateSelectedSlotC2SPacket.Get(currentPlayerItem));
         }
 
     }
@@ -180,7 +180,7 @@ public class PlayerControllerMP : PlayerController
     public override bool sendPlaceBlock(EntityPlayer var1, World var2, ItemStack var3, int var4, int var5, int var6, int var7)
     {
         syncCurrentPlayItem();
-        netClientHandler.addToSendQueue(new PlayerInteractBlockC2SPacket(var4, var5, var6, var7, var1.inventory.getSelectedItem()));
+        netClientHandler.addToSendQueue(PlayerInteractBlockC2SPacket.Get(var4, var5, var6, var7, var1.inventory.getSelectedItem()));
         bool var8 = base.sendPlaceBlock(var1, var2, var3, var4, var5, var6, var7);
         return var8;
     }
@@ -188,7 +188,7 @@ public class PlayerControllerMP : PlayerController
     public override bool sendUseItem(EntityPlayer var1, World var2, ItemStack var3)
     {
         syncCurrentPlayItem();
-        netClientHandler.addToSendQueue(new PlayerInteractBlockC2SPacket(-1, -1, -1, 255, var1.inventory.getSelectedItem()));
+        netClientHandler.addToSendQueue(PlayerInteractBlockC2SPacket.Get(-1, -1, -1, 255, var1.inventory.getSelectedItem()));
         bool var4 = base.sendUseItem(var1, var2, var3);
         return var4;
     }
@@ -201,14 +201,14 @@ public class PlayerControllerMP : PlayerController
     public override void attackEntity(EntityPlayer var1, Entity var2)
     {
         syncCurrentPlayItem();
-        netClientHandler.addToSendQueue(new PlayerInteractEntityC2SPacket(var1.id, var2.id, 1));
+        netClientHandler.addToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.id, var2.id, 1));
         var1.attack(var2);
     }
 
     public override void interactWithEntity(EntityPlayer var1, Entity var2)
     {
         syncCurrentPlayItem();
-        netClientHandler.addToSendQueue(new PlayerInteractEntityC2SPacket(var1.id, var2.id, 0));
+        netClientHandler.addToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.id, var2.id, 0));
         var1.interact(var2);
     }
 
@@ -216,7 +216,7 @@ public class PlayerControllerMP : PlayerController
     {
         short var6 = var5.currentScreenHandler.nextRevision(var5.inventory);
         ItemStack var7 = base.func_27174_a(var1, var2, var3, var4, var5);
-        netClientHandler.addToSendQueue(new ClickSlotC2SPacket(var1, var2, var3, var4, var7, var6));
+        netClientHandler.addToSendQueue(ClickSlotC2SPacket.Get(var1, var2, var3, var4, var7, var6));
         return var7;
     }
 

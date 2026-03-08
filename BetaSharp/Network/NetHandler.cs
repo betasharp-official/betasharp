@@ -231,6 +231,11 @@ public abstract class NetHandler
         handle(var1);
     }
 
+    public virtual void onPlayerConnectionUpdate(PlayerConnectionUpdateS2CPacket packet)
+    {
+        handle(packet);
+    }
+
     public virtual void onIncreaseStat(IncreaseStatS2CPacket var1)
     {
         handle(var1);

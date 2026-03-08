@@ -9,13 +9,19 @@ public class PlayerMovePositionAndOnGroundPacket : PlayerMovePacket
         changePosition = true;
     }
 
-    public PlayerMovePositionAndOnGroundPacket(double x, double y, double eyeHeight, double z, bool onGround) : this()
+    public static PlayerMovePositionAndOnGroundPacket Get(double x, double y, double eyeHeight, double z, bool onGround)
     {
-        base.x = x;
-        base.y = y;
-        base.eyeHeight = eyeHeight;
-        base.z = z;
-        base.onGround = onGround;
+        var p = Get<PlayerMovePositionAndOnGroundPacket>(PacketId.PlayerMovePositionAndOnGround);
+        p.x = x;
+        p.y = y;
+        p.eyeHeight = eyeHeight;
+        p.z = z;
+        p.yaw = 0;
+        p.pitch = 0;
+        p.onGround = onGround;
+        p.changePosition = true;
+        p.changeLook = false;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

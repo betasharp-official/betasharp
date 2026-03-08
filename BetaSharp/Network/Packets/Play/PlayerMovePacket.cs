@@ -14,9 +14,19 @@ public class PlayerMovePacket(PacketId id = PacketId.PlayerMove) : Packet(id)
     public bool changePosition;
     public bool changeLook;
 
-    public PlayerMovePacket(bool onGround) : this()
+    public static PlayerMovePacket Get(bool onGround)
     {
-        this.onGround = onGround;
+        var p = Get<PlayerMovePacket>(PacketId.PlayerMove);
+        p.x = 0;
+        p.y = 0;
+        p.z = 0;
+        p.eyeHeight = 0;
+        p.yaw = 0;
+        p.pitch = 0;
+        p.onGround = onGround;
+        p.changePosition = false;
+        p.changeLook = false;
+        return p;
     }
 
     public override void Apply(NetHandler handler)

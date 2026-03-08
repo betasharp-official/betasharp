@@ -12,14 +12,16 @@ public class ClickSlotC2SPacket() : Packet(PacketId.ClickSlotC2S)
     public ItemStack stack;
     public bool holdingShift;
 
-    public ClickSlotC2SPacket(int syncId, int slot, int button, bool holdingShift, ItemStack stack, short actionType) : this()
+    public static ClickSlotC2SPacket Get(int syncId, int slot, int button, bool holdingShift, ItemStack stack, short actionType)
     {
-        this.syncId = syncId;
-        this.slot = slot;
-        this.button = button;
-        this.stack = stack;
-        this.actionType = actionType;
-        this.holdingShift = holdingShift;
+        var p = Get<ClickSlotC2SPacket>(PacketId.ClickSlotC2S);
+        p.syncId = syncId;
+        p.slot = slot;
+        p.button = button;
+        p.stack = stack;
+        p.actionType = actionType;
+        p.holdingShift = holdingShift;
+        return p;
     }
 
     public override void Apply(NetHandler handler)

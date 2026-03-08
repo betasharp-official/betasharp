@@ -16,29 +16,32 @@ public class ChunkDataS2CPacket() : Packet(PacketId.ChunkDataS2C)
     private int chunkDataSize;
     public byte[] rawData;
 
-    public ChunkDataS2CPacket(int x, int y, int z, int sizeX, int sizeY, int sizeZ, World world) : this()
+    public static ChunkDataS2CPacket Get(int x, int y, int z, int sizeX, int sizeY, int sizeZ, World world)
     {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.sizeX = sizeX;
-        this.sizeY = sizeY;
-        this.sizeZ = sizeZ;
+        var p = Get<ChunkDataS2CPacket>(PacketId.ChunkDataS2C);
+        p.x = x;
+        p.y = y;
+        p.z = z;
+        p.sizeX = sizeX;
+        p.sizeY = sizeY;
+        p.sizeZ = sizeZ;
         byte[] chunkData = world.GetChunkData(x, y, z, sizeX, sizeY, sizeZ);
-        rawData = chunkData;
+        p.rawData = chunkData;
         Deflater deflater = new(1);
 
         try
         {
             deflater.setInput(chunkData);
             deflater.finish();
-            this.chunkData = new byte[sizeX * sizeY * sizeZ * 5 / 2];
-            chunkDataSize = deflater.deflate(this.chunkData);
+            p.chunkData = new byte[sizeX * sizeY * sizeZ * 5 / 2];
+            p.chunkDataSize = deflater.deflate(p.chunkData);
         }
         finally
         {
             deflater.end();
         }
+
+        return p;
     }
 
     public override void Read(NetworkStream stream)

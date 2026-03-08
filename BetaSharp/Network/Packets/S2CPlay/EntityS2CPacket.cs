@@ -9,9 +9,17 @@ public class EntityS2CPacket(PacketId id = PacketId.EntityS2C) : PacketBaseEntit
     public sbyte pitch;
     public bool rotate = false;
 
-    public EntityS2CPacket(int entityId) : this()
+    public static EntityS2CPacket Get(int entityId)
     {
-        EntityId = entityId;
+        var p = Get<EntityS2CPacket>(PacketId.EntityS2C);
+        p.EntityId = entityId;
+        p.deltaX = 0;
+        p.deltaY = 0;
+        p.deltaZ = 0;
+        p.yaw = 0;
+        p.pitch = 0;
+        p.rotate = false;
+        return p;
     }
 
     public override void Apply(NetHandler handler)

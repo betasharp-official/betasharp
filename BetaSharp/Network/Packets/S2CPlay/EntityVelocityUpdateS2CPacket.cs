@@ -9,11 +9,13 @@ public class EntityVelocityUpdateS2CPacket() : PacketBaseEntity(PacketId.EntityV
     public int motionY;
     public int motionZ;
 
-    public EntityVelocityUpdateS2CPacket(Entity ent) : this(ent.id, ent.velocityX, ent.velocityY, ent.velocityZ) { }
+    public static EntityVelocityUpdateS2CPacket Get(Entity ent) =>
+        Get(ent.id, ent.velocityX, ent.velocityY, ent.velocityZ);
 
-    public EntityVelocityUpdateS2CPacket(int entityId, double motionX, double motionY, double motionZ) : this()
+    public static EntityVelocityUpdateS2CPacket Get(int entityId, double motionX, double motionY, double motionZ)
     {
-        EntityId = entityId;
+        var p = Get<EntityVelocityUpdateS2CPacket>(PacketId.EntityVelocityUpdateS2C);
+        p.EntityId = entityId;
         double maxvelocity = 3.9D;
         if (motionX < -maxvelocity)
         {
@@ -45,9 +47,10 @@ public class EntityVelocityUpdateS2CPacket() : PacketBaseEntity(PacketId.EntityV
             motionZ = maxvelocity;
         }
 
-        this.motionX = (int)(motionX * 8000.0D);
-        this.motionY = (int)(motionY * 8000.0D);
-        this.motionZ = (int)(motionZ * 8000.0D);
+        p.motionX = (int)(motionX * 8000.0D);
+        p.motionY = (int)(motionY * 8000.0D);
+        p.motionZ = (int)(motionZ * 8000.0D);
+        return p;
     }
 
     public override void Read(NetworkStream stream)

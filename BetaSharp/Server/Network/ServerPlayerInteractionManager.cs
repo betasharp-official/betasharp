@@ -121,7 +121,7 @@ public class ServerPlayerInteractionManager
         if (success && player.canHarvest(Block.Blocks[blockId]))
         {
             Block.Blocks[blockId].afterBreak(world, player, x, y, z, blockMeta);
-            ((ServerPlayerEntity)player).networkHandler.sendPacket(new BlockUpdateS2CPacket(x, y, z, world));
+            ((ServerPlayerEntity)player).networkHandler.sendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
         }
 
         ItemStack itemStack = player.getHand();

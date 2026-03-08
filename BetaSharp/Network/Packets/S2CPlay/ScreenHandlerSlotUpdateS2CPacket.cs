@@ -9,11 +9,13 @@ public class ScreenHandlerSlotUpdateS2CPacket() : Packet(PacketId.ScreenHandlerS
     public int slot;
     public ItemStack stack;
 
-    public ScreenHandlerSlotUpdateS2CPacket(int syncId, int slot, ItemStack stack) : this()
+    public static ScreenHandlerSlotUpdateS2CPacket Get(int syncId, int slot, ItemStack stack)
     {
-        this.syncId = syncId;
-        this.slot = slot;
-        this.stack = stack == null ? stack : stack.copy();
+        var p = Get<ScreenHandlerSlotUpdateS2CPacket>(PacketId.ScreenHandlerSlotUpdateS2C);
+        p.syncId = syncId;
+        p.slot = slot;
+        p.stack = stack == null ? stack : stack.copy();
+        return p;
     }
 
     public override void Apply(NetHandler handler)

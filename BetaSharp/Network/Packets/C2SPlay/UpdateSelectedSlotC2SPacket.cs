@@ -6,9 +6,11 @@ public class UpdateSelectedSlotC2SPacket() : Packet(PacketId.UpdateSelectedSlotC
 {
     public int selectedSlot;
 
-    public UpdateSelectedSlotC2SPacket(int selectedSlot) : this()
+    public static UpdateSelectedSlotC2SPacket Get(int selectedSlot)
     {
-        this.selectedSlot = selectedSlot;
+        var p = Get<UpdateSelectedSlotC2SPacket>(PacketId.UpdateSelectedSlotC2S);
+        p.selectedSlot = selectedSlot;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

@@ -8,16 +8,19 @@ public class InventoryS2CPacket() : Packet(PacketId.InventoryS2C)
     public int syncId;
     public ItemStack[] contents;
 
-    public InventoryS2CPacket(int syncId, List<ItemStack> contents) : this()
+    public static InventoryS2CPacket Get(int syncId, List<ItemStack> contents)
     {
-        this.syncId = syncId;
-        this.contents = new ItemStack[contents.Count];
+        var p = Get<InventoryS2CPacket>(PacketId.InventoryS2C);
+        p.syncId = syncId;
+        p.contents = new ItemStack[contents.Count];
 
-        for (int i = 0; i < this.contents.Length; i++)
+        for (int i = 0; i < p.contents.Length; i++)
         {
             ItemStack itemStack = contents[i];
-            this.contents[i] = itemStack == null ? null : itemStack.copy();
+            p.contents[i] = itemStack == null ? null : itemStack.copy();
         }
+
+        return p;
     }
 
     public override void Read(NetworkStream stream)

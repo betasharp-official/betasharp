@@ -12,19 +12,5 @@
             <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
             <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
         </Style>
-
-        <Style Selector="Image">
-            <Style.Animations>
-                <Animation Duration="0:0:1" IterationCount="1" Easing="SineEaseOut">
-                    <KeyFrame Cue="0%">
-                        <Setter Property="Opacity" Value="0" />
-                    </KeyFrame>
-
-                    <KeyFrame Cue="100%">
-                        <Setter Property="Opacity" Value="1" />
-                    </KeyFrame>
-                </Animation>
-            </Style.Animations>
-        </Style>
     </Application.Styles>
 </Application>

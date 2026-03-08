@@ -55,6 +55,9 @@ internal static class StreamExtensions
             stream.Write(span);
         }
 
+        /// <summary>
+        /// Write as fixed lenght Utf8 string
+        /// </summary>
         public void WriteString(string value)
         {
             byte[] buffer = ModifiedUtf8.GetBytes(value);
@@ -63,6 +66,9 @@ internal static class StreamExtensions
             stream.Write(buffer);
         }
 
+        /// <summary>
+        /// Write as fixed lenght Utf16 string
+        /// </summary>
         public void WriteLongString(string value)
         {
             stream.WriteUShort((ushort)value.Length);
@@ -129,6 +135,9 @@ internal static class StreamExtensions
             return BinaryPrimitives.ReadInt64BigEndian(span);
         }
 
+        /// <summary>
+        /// Read fixed lenght Utf8 string
+        /// </summary>
         public string ReadString()
         {
             ushort length = stream.ReadUShort();
@@ -139,6 +148,9 @@ internal static class StreamExtensions
             return ModifiedUtf8.GetString(buffer);
         }
 
+        /// <summary>
+        /// Read fixed lenght Utf16 string
+        /// </summary>
         public string ReadLongString(ushort maximumLength = ushort.MaxValue)
         {
             ushort length = stream.ReadUShort();

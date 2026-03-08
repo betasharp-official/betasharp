@@ -13,7 +13,7 @@ internal static class ChatCommands
 
         string message = string.Join(" ", args);
         s_logger.LogInformation("[" + senderName + "] " + message);
-        server.playerManager.sendToAll(new ChatMessagePacket("§d[Server] " + message));
+        server.playerManager.sendToAll(ChatMessagePacket.Get("§d[Server] " + message));
     }
 
     public static void Tell(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
@@ -31,7 +31,7 @@ internal static class ChatCommands
         string whisper = "§7" + senderName + " whispers " + message;
         s_logger.LogInformation(whisper);
 
-        if (!server.playerManager.sendPacket(targetName, new ChatMessagePacket(whisper)))
+        if (!server.playerManager.sendPacket(targetName, ChatMessagePacket.Get(whisper)))
         {
             output.SendMessage("There's no player by that name online.");
         }

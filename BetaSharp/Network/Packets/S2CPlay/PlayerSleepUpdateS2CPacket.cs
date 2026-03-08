@@ -11,13 +11,15 @@ public class PlayerSleepUpdateS2CPacket() : Packet(PacketId.PlayerSleepUpdateS2C
     public int z;
     public int status;
 
-    public PlayerSleepUpdateS2CPacket(Entity player, int status, int x, int y, int z) : this()
+    public static PlayerSleepUpdateS2CPacket Get(Entity player, int status, int x, int y, int z)
     {
-        this.status = status;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.id = player.id;
+        var p = Get<PlayerSleepUpdateS2CPacket>(PacketId.PlayerSleepUpdateS2C);
+        p.status = status;
+        p.x = x;
+        p.y = y;
+        p.z = z;
+        p.id = player.id;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

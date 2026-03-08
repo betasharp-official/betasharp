@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
-using BetaSharp.Launcher.Features.Accounts;
 using BetaSharp.Launcher.Features.Alert;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Home;
 using BetaSharp.Launcher.Features.Mojang;
+using BetaSharp.Launcher.Features.Sessions;
 using BetaSharp.Launcher.Features.Shell;
 using BetaSharp.Launcher.Features.Splash;
 using BetaSharp.Launcher.Features.Xbox;
@@ -45,13 +45,13 @@ internal static partial class Bootstrapper
     }
 
     [Singleton(typeof(ViewLocator))]
-    [Singleton(typeof(AccountsService))]
     [Singleton(typeof(AuthenticationService))]
     [Singleton(typeof(NavigationService))]
     [Singleton(typeof(AlertService))]
     [Singleton(typeof(ShellViewModel))]
+    [Transient(typeof(SessionService))]
+    [Transient(typeof(StorageService))]
     [Transient(typeof(ClientService))]
-    [Transient(typeof(SkinService))]
     [Transient(typeof(MojangClient))]
     [Transient(typeof(XboxClient))]
     [Transient(typeof(AuthenticationView))]

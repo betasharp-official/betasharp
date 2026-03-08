@@ -8,11 +8,13 @@ public class MapUpdateS2CPacket() : Packet(PacketId.MapUpdateS2C)
     public short id;
     public byte[] updateData;
 
-    public MapUpdateS2CPacket(short itemRawId, short id, byte[] updateData) : this()
+    public static MapUpdateS2CPacket Get(short itemRawId, short id, byte[] updateData)
     {
-        this.itemRawId = itemRawId;
-        this.id = id;
-        this.updateData = updateData;
+        var p = Get<MapUpdateS2CPacket>(PacketId.MapUpdateS2C);
+        p.itemRawId = itemRawId;
+        p.id = id;
+        p.updateData = updateData;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

@@ -59,11 +59,11 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         {
             if (isSneaking)
             {
-                sendQueue.addToSendQueue(new ClientCommandC2SPacket(this, 1));
+                sendQueue.addToSendQueue(ClientCommandC2SPacket.Get(this, 1));
             }
             else
             {
-                sendQueue.addToSendQueue(new ClientCommandC2SPacket(this, 2));
+                sendQueue.addToSendQueue(ClientCommandC2SPacket.Get(this, 2));
             }
 
             wasSneaking = isSneaking;
@@ -81,30 +81,30 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         {
             if (rotationChanged)
             {
-                sendQueue.addToSendQueue(new PlayerMovePositionAndOnGroundPacket(velocityX, -999.0D, -999.0D, velocityZ, onGround));
+                sendQueue.addToSendQueue(PlayerMovePositionAndOnGroundPacket.Get(velocityX, -999.0D, -999.0D, velocityZ, onGround));
             }
             else
             {
-                sendQueue.addToSendQueue(new PlayerMoveFullPacket(velocityX, -999.0D, -999.0D, velocityZ, yaw, pitch, onGround));
+                sendQueue.addToSendQueue(PlayerMoveFullPacket.Get(velocityX, -999.0D, -999.0D, velocityZ, yaw, pitch, onGround));
             }
 
             positionChanged = false;
         }
         else if (positionChanged && rotationChanged)
         {
-            sendQueue.addToSendQueue(new PlayerMoveFullPacket(x, boundingBox.MinY, y, z, yaw, pitch, onGround));
+            sendQueue.addToSendQueue(PlayerMoveFullPacket.Get(x, boundingBox.MinY, y, z, yaw, pitch, onGround));
         }
         else if (positionChanged)
         {
-            sendQueue.addToSendQueue(new PlayerMovePositionAndOnGroundPacket(x, boundingBox.MinY, y, z, onGround));
+            sendQueue.addToSendQueue(PlayerMovePositionAndOnGroundPacket.Get(x, boundingBox.MinY, y, z, onGround));
         }
         else if (rotationChanged)
         {
-            sendQueue.addToSendQueue(new PlayerMoveLookAndOnGroundPacket(yaw, pitch, onGround));
+            sendQueue.addToSendQueue(PlayerMoveLookAndOnGroundPacket.Get(yaw, pitch, onGround));
         }
         else if (lastOnGround != onGround)
         {
-            sendQueue.addToSendQueue(new PlayerMovePacket(onGround));
+            sendQueue.addToSendQueue(PlayerMovePacket.Get(onGround));
         }
 
         lastOnGround = onGround;
@@ -131,7 +131,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         {
             increaseStat(Stats.Stats.DropStat, 1);
         }
-        sendQueue.addToSendQueue(new PlayerActionC2SPacket(4, 0, 0, 0, 0));
+        sendQueue.addToSendQueue(PlayerActionC2SPacket.Get(4, 0, 0, 0, 0));
     }
 
     private void sendInventoryChanged()
@@ -144,19 +144,19 @@ public class EntityClientPlayerMP : ClientPlayerEntity
 
     public override void sendChatMessage(string message)
     {
-        sendQueue.addToSendQueue(new ChatMessagePacket(message));
+        sendQueue.addToSendQueue(ChatMessagePacket.Get(message));
     }
 
     public override void swingHand()
     {
         base.swingHand();
-        sendQueue.addToSendQueue(new EntityAnimationPacket(this, EntityAnimationPacket.EntityAnimation.SwingHand));
+        sendQueue.addToSendQueue(EntityAnimationPacket.Get(this, EntityAnimationPacket.EntityAnimation.SwingHand));
     }
 
     public override void respawn()
     {
         sendInventoryChanged();
-        sendQueue.addToSendQueue(new PlayerRespawnPacket((sbyte)dimensionId));
+        sendQueue.addToSendQueue(PlayerRespawnPacket.Get((sbyte)dimensionId));
     }
 
     protected override void applyDamage(int amount)
@@ -166,7 +166,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
 
     public override void closeHandledScreen()
     {
-        sendQueue.addToSendQueue(new CloseScreenS2CPacket(currentScreenHandler.SyncId));
+        sendQueue.addToSendQueue(CloseScreenS2CPacket.Get(currentScreenHandler.SyncId));
         inventory.setItemStack(null);
         base.closeHandledScreen();
     }

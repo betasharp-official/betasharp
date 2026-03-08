@@ -10,13 +10,15 @@ public class PlayNoteSoundS2CPacket() : Packet(PacketId.PlayNoteSoundS2C)
     public int instrumentType;
     public int pitch;
 
-    public PlayNoteSoundS2CPacket(int x, int y, int z, int instrument, int pitch) : this()
+    public static PlayNoteSoundS2CPacket Get(int x, int y, int z, int instrument, int pitch)
     {
-        xLocation = x;
-        yLocation = y;
-        zLocation = z;
-        instrumentType = instrument;
-        this.pitch = pitch;
+        var p = Get<PlayNoteSoundS2CPacket>(PacketId.PlayNoteSoundS2C);
+        p.xLocation = x;
+        p.yLocation = y;
+        p.zLocation = z;
+        p.instrumentType = instrument;
+        p.pitch = pitch;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

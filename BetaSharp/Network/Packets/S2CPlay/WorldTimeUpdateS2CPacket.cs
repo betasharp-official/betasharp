@@ -6,9 +6,11 @@ public class WorldTimeUpdateS2CPacket() : Packet(PacketId.WorldTimeUpdateS2C)
 {
     public long time;
 
-    public WorldTimeUpdateS2CPacket(long time) : this()
+    public static WorldTimeUpdateS2CPacket Get(long time)
     {
-        this.time = time;
+        var p = Get<WorldTimeUpdateS2CPacket>(PacketId.WorldTimeUpdateS2C);
+        p.time = time;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

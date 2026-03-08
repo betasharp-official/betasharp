@@ -11,13 +11,15 @@ public class BlockUpdateS2CPacket() : Packet(PacketId.BlockUpdateS2C)
     public int blockRawId;
     public int blockMetadata;
 
-    public BlockUpdateS2CPacket(int x, int y, int z, World world) : this()
+    public static BlockUpdateS2CPacket Get(int x, int y, int z, World world)
     {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        blockRawId = world.getBlockId(x, y, z);
-        blockMetadata = world.getBlockMeta(x, y, z);
+        var p = Get<BlockUpdateS2CPacket>(PacketId.BlockUpdateS2C);
+        p.x = x;
+        p.y = y;
+        p.z = z;
+        p.blockRawId = world.getBlockId(x, y, z);
+        p.blockMetadata = world.getBlockMeta(x, y, z);
+        return p;
     }
 
     public override void Read(NetworkStream stream)

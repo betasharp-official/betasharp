@@ -6,10 +6,12 @@ public class EntityStatusS2CPacket() : PacketBaseEntity(PacketId.EntityStatusS2C
 {
     public sbyte EntityStatus;
 
-    public EntityStatusS2CPacket(int entityId, byte status) : this()
+    public static EntityStatusS2CPacket Get(int entityId, byte status)
     {
-        EntityId = entityId;
-        EntityStatus = (sbyte)status;
+        var p = Get<EntityStatusS2CPacket>(PacketId.EntityStatusS2C);
+        p.EntityId = entityId;
+        p.EntityStatus = (sbyte)status;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

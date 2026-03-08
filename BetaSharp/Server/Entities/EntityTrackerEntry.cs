@@ -86,19 +86,19 @@ internal class EntityTrackerEntry
                 currentTrackedEntity.x = var2 / 32.0;
                 currentTrackedEntity.y = var3 / 32.0;
                 currentTrackedEntity.z = var4 / 32.0;
-                var10 = new EntityPositionS2CPacket(currentTrackedEntity.id, var2, var3, var4, (byte)var5, (byte)var6);
+                var10 = EntityPositionS2CPacket.Get(currentTrackedEntity.id, var2, var3, var4, (byte)var5, (byte)var6);
             }
             else if (var11 && var12)
             {
-                var10 = new EntityRotateAndMoveRelativeS2CPacket(currentTrackedEntity.id, (byte)var7, (byte)var8, (byte)var9, (byte)var5, (byte)var6);
+                var10 = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.id, (byte)var7, (byte)var8, (byte)var9, (byte)var5, (byte)var6);
             }
             else if (var11)
             {
-                var10 = new EntityMoveRelativeS2CPacket(currentTrackedEntity.id, (byte)var7, (byte)var8, (byte)var9);
+                var10 = EntityMoveRelativeS2CPacket.Get(currentTrackedEntity.id, (byte)var7, (byte)var8, (byte)var9);
             }
             else if (var12)
             {
-                var10 = new EntityRotateS2CPacket(currentTrackedEntity.id, (byte)var5, (byte)var6);
+                var10 = EntityRotateS2CPacket.Get(currentTrackedEntity.id, (byte)var5, (byte)var6);
             }
 
             if (alwaysUpdateVelocity)
@@ -117,7 +117,7 @@ internal class EntityTrackerEntry
                     velocityX = currentTrackedEntity.velocityX;
                     velocityY = currentTrackedEntity.velocityY;
                     velocityZ = currentTrackedEntity.velocityZ;
-                    sendToListeners(new EntityVelocityUpdateS2CPacket(currentTrackedEntity.id, velocityX, velocityY, velocityZ));
+                    sendToListeners(EntityVelocityUpdateS2CPacket.Get(currentTrackedEntity.id, velocityX, velocityY, velocityZ));
                 }
             }
 
@@ -129,7 +129,7 @@ internal class EntityTrackerEntry
             DataWatcher var23 = currentTrackedEntity.getDataWatcher();
             if (var23.dirty)
             {
-                sendToAround(new EntityTrackerUpdateS2CPacket(currentTrackedEntity.id, var23));
+                sendToAround(EntityTrackerUpdateS2CPacket.Get(currentTrackedEntity.id, var23));
             }
 
             if (var11)
@@ -148,7 +148,7 @@ internal class EntityTrackerEntry
 
         if (currentTrackedEntity.velocityModified)
         {
-            sendToAround(new EntityVelocityUpdateS2CPacket(currentTrackedEntity));
+            sendToAround(EntityVelocityUpdateS2CPacket.Get(currentTrackedEntity));
             currentTrackedEntity.velocityModified = false;
         }
     }
@@ -172,7 +172,7 @@ internal class EntityTrackerEntry
 
     public void notifyEntityRemoved()
     {
-        sendToListeners(new EntityDestroyS2CPacket(currentTrackedEntity.id));
+        sendToListeners(EntityDestroyS2CPacket.Get(currentTrackedEntity.id));
     }
 
     public void notifyEntityRemoved(ServerPlayerEntity player)
@@ -196,7 +196,7 @@ internal class EntityTrackerEntry
                     {
                         player.networkHandler
                             .sendPacket(
-                                new EntityVelocityUpdateS2CPacket(
+                                EntityVelocityUpdateS2CPacket.Get(
                                     currentTrackedEntity.id,
                                     currentTrackedEntity.velocityX,
                                     currentTrackedEntity.velocityY,
@@ -210,7 +210,7 @@ internal class EntityTrackerEntry
                     {
                         for (int var7 = 0; var7 < var6.Length; var7++)
                         {
-                            player.networkHandler.sendPacket(new EntityEquipmentUpdateS2CPacket(currentTrackedEntity.id, var7, var6[var7]));
+                            player.networkHandler.sendPacket(EntityEquipmentUpdateS2CPacket.Get(currentTrackedEntity.id, var7, var6[var7]));
                         }
                     }
 
@@ -220,7 +220,7 @@ internal class EntityTrackerEntry
                         {
                             player.networkHandler
                                 .sendPacket(
-                                    new PlayerSleepUpdateS2CPacket(
+                                    PlayerSleepUpdateS2CPacket.Get(
                                         currentTrackedEntity,
                                         0,
                                         MathHelper.Floor(currentTrackedEntity.x),
@@ -234,7 +234,7 @@ internal class EntityTrackerEntry
             }
             else if (listeners.Remove(player))
             {
-                player.networkHandler.sendPacket(new EntityDestroyS2CPacket(currentTrackedEntity.id));
+                player.networkHandler.sendPacket(EntityDestroyS2CPacket.Get(currentTrackedEntity.id));
             }
         }
     }
@@ -249,17 +249,17 @@ internal class EntityTrackerEntry
 
     private Packet createAddEntityPacket()
     {
-        if (currentTrackedEntity is EntityItem var6)
+        if (currentTrackedEntity is EntityItem item)
         {
-            ItemEntitySpawnS2CPacket var7 = new(var6);
-            var6.x = var7.x / 32.0;
-            var6.y = var7.y / 32.0;
-            var6.z = var7.z / 32.0;
+            var var7 = ItemEntitySpawnS2CPacket.Get(item);
+            item.x = var7.x / 32.0;
+            item.y = var7.y / 32.0;
+            item.z = var7.z / 32.0;
             return var7;
         }
         else if (currentTrackedEntity is ServerPlayerEntity p)
         {
-            return new PlayerSpawnS2CPacket(p);
+            return PlayerSpawnS2CPacket.Get(p);
         }
         else
         {
@@ -267,58 +267,57 @@ internal class EntityTrackerEntry
             {
                 if (var1.type == 0)
                 {
-                    return new EntitySpawnS2CPacket(currentTrackedEntity, 10);
+                    return EntitySpawnS2CPacket.Get(currentTrackedEntity, 10);
                 }
 
                 if (var1.type == 1)
                 {
-                    return new EntitySpawnS2CPacket(currentTrackedEntity, 11);
+                    return EntitySpawnS2CPacket.Get(currentTrackedEntity, 11);
                 }
 
                 if (var1.type == 2)
                 {
-                    return new EntitySpawnS2CPacket(currentTrackedEntity, 12);
+                    return EntitySpawnS2CPacket.Get(currentTrackedEntity, 12);
                 }
             }
 
             if (currentTrackedEntity is EntityBoat)
             {
-                return new EntitySpawnS2CPacket(currentTrackedEntity, 1);
+                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 1);
             }
             else if (currentTrackedEntity is SpawnableEntity)
             {
-                return new LivingEntitySpawnS2CPacket((EntityLiving)currentTrackedEntity);
+                return LivingEntitySpawnS2CPacket.Get((EntityLiving)currentTrackedEntity);
             }
             else if (currentTrackedEntity is EntityFish)
             {
-                return new EntitySpawnS2CPacket(currentTrackedEntity, 90);
+                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 90);
             }
             else if (currentTrackedEntity is EntityArrow arrow)
             {
-                EntityLiving var5 = arrow.owner;
-                return new EntitySpawnS2CPacket(currentTrackedEntity, 60, var5 != null ? var5.id : currentTrackedEntity.id);
+                EntityLiving arrowOwner = arrow.owner;
+                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 60, arrowOwner != null ? arrowOwner.id : currentTrackedEntity.id);
             }
             else if (currentTrackedEntity is EntitySnowball)
             {
-                return new EntitySpawnS2CPacket(currentTrackedEntity, 61);
+                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 61);
             }
-            else if (currentTrackedEntity is EntityFireball var4)
+            else if (currentTrackedEntity is EntityFireball fireball)
             {
-                EntitySpawnS2CPacket var2 = new(currentTrackedEntity, 63, ((EntityFireball)currentTrackedEntity).owner.id)
-                {
-                    velocityX = (int)(var4.powerX * 8000.0),
-                    velocityY = (int)(var4.powerY * 8000.0),
-                    velocityZ = (int)(var4.powerZ * 8000.0)
-                };
-                return var2;
+                var packet = EntitySpawnS2CPacket.Get(fireball, 63, fireball.owner.id);
+                packet.velocityX = (int)(fireball.powerX * 8000.0);
+                packet.velocityY = (int)(fireball.powerY * 8000.0);
+                packet.velocityZ = (int)(fireball.powerZ * 8000.0);
+
+                return packet;
             }
             else if (currentTrackedEntity is EntityEgg)
             {
-                return new EntitySpawnS2CPacket(currentTrackedEntity, 62);
+                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 62);
             }
             else if (currentTrackedEntity is EntityTNTPrimed)
             {
-                return new EntitySpawnS2CPacket(currentTrackedEntity, 50);
+                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 50);
             }
             else
             {
@@ -326,18 +325,18 @@ internal class EntityTrackerEntry
                 {
                     if (var3.blockId == Block.Sand.id)
                     {
-                        return new EntitySpawnS2CPacket(currentTrackedEntity, 70);
+                        return EntitySpawnS2CPacket.Get(currentTrackedEntity, 70);
                     }
 
                     if (var3.blockId == Block.Gravel.id)
                     {
-                        return new EntitySpawnS2CPacket(currentTrackedEntity, 71);
+                        return EntitySpawnS2CPacket.Get(currentTrackedEntity, 71);
                     }
                 }
 
                 if (currentTrackedEntity is EntityPainting painting)
                 {
-                    return new PaintingEntitySpawnS2CPacket(painting);
+                    return PaintingEntitySpawnS2CPacket.Get(painting);
                 }
                 else
                 {
@@ -351,7 +350,7 @@ internal class EntityTrackerEntry
     {
         if (listeners.Remove(player))
         {
-            player.networkHandler.sendPacket(new EntityDestroyS2CPacket(currentTrackedEntity.id));
+            player.networkHandler.sendPacket(EntityDestroyS2CPacket.Get(currentTrackedEntity.id));
         }
     }
 }

@@ -11,13 +11,15 @@ public class ExplosionS2CPacket() : Packet(PacketId.ExplosionS2C)
     public float explosionSize;
     public HashSet<BlockPos> destroyedBlockPositions;
 
-    public ExplosionS2CPacket(double x, double y, double z, float radius, HashSet<BlockPos> affectedBlocks) : this()
+    public static ExplosionS2CPacket Get(double x, double y, double z, float radius, HashSet<BlockPos> affectedBlocks)
     {
-        explosionX = x;
-        explosionY = y;
-        explosionZ = z;
-        explosionSize = radius;
-        destroyedBlockPositions = new HashSet<BlockPos>(affectedBlocks);
+        var p = Get<ExplosionS2CPacket>(PacketId.ExplosionS2C);
+        p.explosionX = x;
+        p.explosionY = y;
+        p.explosionZ = z;
+        p.explosionSize = radius;
+        p.destroyedBlockPositions = new HashSet<BlockPos>(affectedBlocks);
+        return p;
     }
 
     public override void Read(NetworkStream stream)

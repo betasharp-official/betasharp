@@ -6,9 +6,11 @@ public class DisconnectPacket() : Packet(PacketId.Disconnect)
 {
     public string reason;
 
-    public DisconnectPacket(string reason) : this()
+    public static DisconnectPacket Get(string reason)
     {
-        this.reason = reason;
+        var p = Get<DisconnectPacket>(PacketId.Disconnect);
+        p.reason = reason;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

@@ -12,24 +12,28 @@ public class EntityPositionS2CPacket() : PacketBaseEntity(PacketId.EntityPositio
     public sbyte yaw;
     public sbyte pitch;
 
-    public EntityPositionS2CPacket(int entityId, int x, int y, int z, byte yaw, byte pitch) : this()
+    public static EntityPositionS2CPacket Get(int entityId, int x, int y, int z, byte yaw, byte pitch)
     {
-        EntityId = entityId;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.yaw = (sbyte)yaw;
-        this.pitch = (sbyte)pitch;
+        var p = Get<EntityPositionS2CPacket>(PacketId.EntityPositionS2C);
+        p.EntityId = entityId;
+        p.x = x;
+        p.y = y;
+        p.z = z;
+        p.yaw = (sbyte)yaw;
+        p.pitch = (sbyte)pitch;
+        return p;
     }
 
-    public EntityPositionS2CPacket(Entity entity) : this()
+    public static EntityPositionS2CPacket Get(Entity entity)
     {
-        EntityId = entity.id;
-        x = MathHelper.Floor(entity.x * 32.0D);
-        y = MathHelper.Floor(entity.y * 32.0D);
-        z = MathHelper.Floor(entity.z * 32.0D);
-        yaw = (sbyte)(int)(entity.yaw * 256.0F / 360.0F);
-        pitch = (sbyte)(int)(entity.pitch * 256.0F / 360.0F);
+        var p = Get<EntityPositionS2CPacket>(PacketId.EntityPositionS2C);
+        p.EntityId = entity.id;
+        p.x = MathHelper.Floor(entity.x * 32.0D);
+        p.y = MathHelper.Floor(entity.y * 32.0D);
+        p.z = MathHelper.Floor(entity.z * 32.0D);
+        p.yaw = (sbyte)(int)(entity.yaw * 256.0F / 360.0F);
+        p.pitch = (sbyte)(int)(entity.pitch * 256.0F / 360.0F);
+        return p;
     }
 
     public override void Read(NetworkStream stream)

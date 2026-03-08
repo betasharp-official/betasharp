@@ -8,11 +8,13 @@ public class PlayerInteractEntityC2SPacket() : Packet(PacketId.PlayerInteractEnt
     public int entityId;
     public int isLeftClick;
 
-    public PlayerInteractEntityC2SPacket(int playerId, int entityId, int isLeftClick) : this()
+    public static PlayerInteractEntityC2SPacket Get(int playerId, int entityId, int isLeftClick)
     {
-        this.playerId = playerId;
-        this.entityId = entityId;
-        this.isLeftClick = isLeftClick;
+        var p = Get<PlayerInteractEntityC2SPacket>(PacketId.PlayerInteractEntityC2S);
+        p.playerId = playerId;
+        p.entityId = entityId;
+        p.isLeftClick = isLeftClick;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

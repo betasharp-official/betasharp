@@ -9,12 +9,14 @@ public class OpenScreenS2CPacket() : Packet(PacketId.OpenScreenS2C)
     public string name;
     public int slotsCount;
 
-    public OpenScreenS2CPacket(int syncId, int screenHandlerId, String name, int size) : this()
+    public static OpenScreenS2CPacket Get(int syncId, int screenHandlerId, string name, int size)
     {
-        this.syncId = syncId;
-        this.screenHandlerId = screenHandlerId;
-        this.name = name;
-        slotsCount = size;
+        var p = Get<OpenScreenS2CPacket>(PacketId.OpenScreenS2C);
+        p.syncId = syncId;
+        p.screenHandlerId = screenHandlerId;
+        p.name = name;
+        p.slotsCount = size;
+        return p;
     }
 
     public override void Apply(NetHandler handler)
@@ -42,5 +44,17 @@ public class OpenScreenS2CPacket() : Packet(PacketId.OpenScreenS2C)
     public override int Size()
     {
         return 3 + name.Length;
+    }
+
+    public enum KnownInventories : byte
+    {
+        Crafting = 1,
+        Chest = 2,
+        Furnace = 3,
+        /// <summary>
+        /// Also known as Dispenser
+        /// </summary>
+        Trap = 4,
+        Minecart = 5
     }
 }

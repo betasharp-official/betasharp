@@ -16,17 +16,19 @@ public class PlayerSpawnS2CPacket() : Packet(PacketId.PlayerSpawnS2C)
     public sbyte pitch;
     public int currentItem;
 
-    public PlayerSpawnS2CPacket(EntityPlayer ent) : this()
+    public static PlayerSpawnS2CPacket Get(EntityPlayer ent)
     {
-        entityId = ent.id;
-        name = ent.name;
-        xPosition = MathHelper.Floor(ent.x * 32.0D);
-        yPosition = MathHelper.Floor(ent.y * 32.0D);
-        zPosition = MathHelper.Floor(ent.z * 32.0D);
-        rotation = (sbyte)(int)(ent.yaw * 256.0F / 360.0F);
-        pitch = (sbyte)(int)(ent.pitch * 256.0F / 360.0F);
+        var p = Get<PlayerSpawnS2CPacket>(PacketId.PlayerSpawnS2C);
+        p.entityId = ent.id;
+        p.name = ent.name;
+        p.xPosition = MathHelper.Floor(ent.x * 32.0D);
+        p.yPosition = MathHelper.Floor(ent.y * 32.0D);
+        p.zPosition = MathHelper.Floor(ent.z * 32.0D);
+        p.rotation = (sbyte)(int)(ent.yaw * 256.0F / 360.0F);
+        p.pitch = (sbyte)(int)(ent.pitch * 256.0F / 360.0F);
         ItemStack itemStack = ent.inventory.getSelectedItem();
-        currentItem = itemStack == null ? 0 : itemStack.itemId;
+        p.currentItem = itemStack == null ? 0 : itemStack.itemId;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

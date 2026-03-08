@@ -63,7 +63,7 @@ public class LivingEntityRenderer : EntityRenderer
                 var15 = 1.0F;
             }
 
-            LoadDownloadableImageTexture(var1.skinUrl, var1.getTexture());
+            LoadDownloadableImageTexture((var1 as EntityPlayer)?.name, var1.getTexture());
             GLManager.GL.Enable(GLEnum.AlphaTest);
             mainModel.setLivingAnimations(var1, var16, var15, var9);
             mainModel.render(var16, var15, var13, var11 - var10, var12, var14);

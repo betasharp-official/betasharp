@@ -44,7 +44,7 @@ public class BlockEntitySign : BlockEntity
             lines[lineIndex] = Texts[lineIndex];
         }
 
-        return new UpdateSignPacket(X, Y, Z, lines);
+        return UpdateSignPacket.Get(X, Y, Z, lines);
     }
 
     public bool IsEditable()

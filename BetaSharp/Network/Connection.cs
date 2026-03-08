@@ -22,6 +22,7 @@ public class Connection
     protected List delayedSendQueue = Collections.synchronizedList(new ArrayList());
     protected NetHandler? networkHandler;
     protected bool closed;
+    public bool betaSharpClient = false;
     private readonly java.lang.Thread _writer;
     private readonly java.lang.Thread _reader;
     protected bool disconnected;
@@ -65,8 +66,11 @@ public class Connection
 
     public virtual void sendPacket(Packet packet)
     {
+        if (packet is ExtendedProtocolPacket && !betaSharpClient) return;
+
         if (!closed)
         {
+            packet.UseCount++;
             object lockObj = lck;
             lock (lockObj)
             {
@@ -266,6 +270,7 @@ public class Connection
         {
             Packet packet = (Packet)readQueue.remove(0);
             packet.Apply(networkHandler);
+            packet.Return();
         }
     }
 

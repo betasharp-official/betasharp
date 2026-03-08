@@ -8,10 +8,12 @@ public class ClientCommandC2SPacket() : Packet(PacketId.ClientCommandC2S)
     public int entityId;
     public int mode;
 
-    public ClientCommandC2SPacket(Entity ent, int mode) : this()
+    public static ClientCommandC2SPacket Get(Entity ent, int mode)
     {
-        entityId = ent.id;
-        this.mode = mode;
+        var p = Get<ClientCommandC2SPacket>(PacketId.ClientCommandC2S);
+        p.entityId = ent.id;
+        p.mode = mode;
+        return p;
     }
 
     public override void Read(NetworkStream stream)

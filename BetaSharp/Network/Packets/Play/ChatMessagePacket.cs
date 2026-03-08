@@ -6,14 +6,16 @@ public class ChatMessagePacket() : Packet(PacketId.ChatMessage)
 {
     public string chatMessage;
 
-    public ChatMessagePacket(string msg) : this()
+    public static ChatMessagePacket Get(string msg)
     {
+        var p = Get<ChatMessagePacket>(PacketId.ChatMessage);
         if (msg.Length > 119)
         {
             msg = msg.Substring(0, 119);
         }
 
-        chatMessage = msg;
+        p.chatMessage = msg;
+        return p;
     }
 
     public override void Read(NetworkStream stream)
