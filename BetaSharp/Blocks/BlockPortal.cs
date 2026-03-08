@@ -21,7 +21,7 @@ public class BlockPortal : BlockBreakable
     {
         float thickness;
         float halfExtent;
-        if (iBlockReader.getBlockId(x - 1, y, z) != id && iBlockReader.getBlockId(x + 1, y, z) != id)
+        if (iBlockReader.GetBlockId(x - 1, y, z) != id && iBlockReader.GetBlockId(x + 1, y, z) != id)
         {
             thickness = 2.0F / 16.0F;
             halfExtent = 0.5F;
@@ -116,37 +116,37 @@ public class BlockPortal : BlockBreakable
     {
         sbyte offsetX = 0;
         sbyte offsetZ = 1;
-        if (world.getBlockId(x - 1, y, z) == base.id || world.getBlockId(x + 1, y, z) == base.id)
+        if (world.GetBlockId(x - 1, y, z) == base.id || world.GetBlockId(x + 1, y, z) == base.id)
         {
             offsetX = 1;
             offsetZ = 0;
         }
 
         int portalBottomY;
-        for (portalBottomY = y; world.getBlockId(x, portalBottomY - 1, z) == base.id; --portalBottomY)
+        for (portalBottomY = y; world.GetBlockId(x, portalBottomY - 1, z) == base.id; --portalBottomY)
         {
         }
 
-        if (world.getBlockId(x, portalBottomY - 1, z) != Block.Obsidian.id)
+        if (world.GetBlockId(x, portalBottomY - 1, z) != Block.Obsidian.id)
         {
             world.setBlock(x, y, z, 0);
         }
         else
         {
             int blocksAbove;
-            for (blocksAbove = 1; blocksAbove < 4 && world.getBlockId(x, portalBottomY + blocksAbove, z) == base.id; ++blocksAbove)
+            for (blocksAbove = 1; blocksAbove < 4 && world.GetBlockId(x, portalBottomY + blocksAbove, z) == base.id; ++blocksAbove)
             {
             }
 
-            if (blocksAbove == 3 && world.getBlockId(x, portalBottomY + blocksAbove, z) == Block.Obsidian.id)
+            if (blocksAbove == 3 && world.GetBlockId(x, portalBottomY + blocksAbove, z) == Block.Obsidian.id)
             {
-                bool hasXNeighbors = world.getBlockId(x - 1, y, z) == base.id || world.getBlockId(x + 1, y, z) == base.id;
-                bool hasZNeighbors = world.getBlockId(x, y, z - 1) == base.id || world.getBlockId(x, y, z + 1) == base.id;
+                bool hasXNeighbors = world.GetBlockId(x - 1, y, z) == base.id || world.GetBlockId(x + 1, y, z) == base.id;
+                bool hasZNeighbors = world.GetBlockId(x, y, z - 1) == base.id || world.GetBlockId(x, y, z + 1) == base.id;
                 if (hasXNeighbors && hasZNeighbors)
                 {
                     world.setBlock(x, y, z, 0);
                 }
-                else if ((world.getBlockId(x + offsetX, y, z + offsetZ) != Block.Obsidian.id || world.getBlockId(x - offsetX, y, z - offsetZ) != base.id) && (world.getBlockId(x - offsetX, y, z - offsetZ) != Block.Obsidian.id || world.getBlockId(x + offsetX, y, z + offsetZ) != base.id))
+                else if ((world.GetBlockId(x + offsetX, y, z + offsetZ) != Block.Obsidian.id || world.GetBlockId(x - offsetX, y, z - offsetZ) != base.id) && (world.GetBlockId(x - offsetX, y, z - offsetZ) != Block.Obsidian.id || world.GetBlockId(x + offsetX, y, z + offsetZ) != base.id))
                 {
                     world.setBlock(x, y, z, 0);
                 }
@@ -160,16 +160,16 @@ public class BlockPortal : BlockBreakable
 
     public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side)
     {
-        if (iBlockReader.getBlockId(x, y, z) == id)
+        if (iBlockReader.GetBlockId(x, y, z) == id)
         {
             return false;
         }
         else
         {
-            bool edgeWest = iBlockReader.getBlockId(x - 1, y, z) == id && iBlockReader.getBlockId(x - 2, y, z) != id;
-            bool edgeEast = iBlockReader.getBlockId(x + 1, y, z) == id && iBlockReader.getBlockId(x + 2, y, z) != id;
-            bool edgeNorth = iBlockReader.getBlockId(x, y, z - 1) == id && iBlockReader.getBlockId(x, y, z - 2) != id;
-            bool edgeSouth = iBlockReader.getBlockId(x, y, z + 1) == id && iBlockReader.getBlockId(x, y, z + 2) != id;
+            bool edgeWest = iBlockReader.GetBlockId(x - 1, y, z) == id && iBlockReader.GetBlockId(x - 2, y, z) != id;
+            bool edgeEast = iBlockReader.GetBlockId(x + 1, y, z) == id && iBlockReader.GetBlockId(x + 2, y, z) != id;
+            bool edgeNorth = iBlockReader.GetBlockId(x, y, z - 1) == id && iBlockReader.GetBlockId(x, y, z - 2) != id;
+            bool edgeSouth = iBlockReader.GetBlockId(x, y, z + 1) == id && iBlockReader.GetBlockId(x, y, z + 2) != id;
             bool extendsInX = edgeWest || edgeEast;
             bool extendsInZ = edgeNorth || edgeSouth;
             return extendsInX && side == 4 ? true : (extendsInX && side == 5 ? true : (extendsInZ && side == 2 ? true : extendsInZ && side == 3));

@@ -16,26 +16,26 @@ internal class BlockReed : Block
         setTickRandomly(true);
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickContext ctx)
     {
-        if (worldView.isAir(x, y + 1, z))
+        if (ctx.WorldView.IsAir(ctx.X, ctx.Y + 1, ctx.Z))
         {
             int heightBelow;
-            for (heightBelow = 1; worldView.getBlockId(x, y - heightBelow, z) == id; ++heightBelow)
+            for (heightBelow = 1; ctx.WorldView.GetBlockId(ctx.X, ctx.Y - heightBelow, ctx.Z) == id; ++heightBelow)
             {
             }
 
             if (heightBelow < 3)
             {
-                int meta = worldView.getBlockMeta(x, y, z);
+                int meta = ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z);
                 if (meta == 15)
                 {
-                    worldView.setBlock(x, y + 1, z, id);
-                    worldView.setBlockMeta(x, y, z, 0);
+                    ctx.WorldView.setBlock(ctx.X, ctx.Y + 1, ctx.Z, id);
+                    ctx.WorldView.setBlockMeta(ctx.X, ctx.Y, ctx.Z, 0);
                 }
                 else
                 {
-                    worldView.setBlockMeta(x, y, z, meta + 1);
+                    ctx.WorldView.setBlockMeta(ctx.X, ctx.Y, ctx.Z, meta + 1);
                 }
             }
         }
@@ -44,28 +44,28 @@ internal class BlockReed : Block
 
     public override bool canPlaceAt(WorldBlockView world, int x, int y, int z)
     {
-        int blockBelowId = world.getBlockId(x, y - 1, z);
+        int blockBelowId = world.GetBlockId(x, y - 1, z);
         return blockBelowId == id ? true : (blockBelowId != Block.GrassBlock.id && blockBelowId != Block.Dirt.id ? false : (world.getMaterial(x - 1, y - 1, z) == Material.Water ? true : (world.getMaterial(x + 1, y - 1, z) == Material.Water ? true : (world.getMaterial(x, y - 1, z - 1) == Material.Water ? true : world.getMaterial(x, y - 1, z + 1) == Material.Water))));
     }
 
-    public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickContext ctx)
     {
-        breakIfCannotGrow(world, x, y, z);
+        breakIfCannotGrow(ctx);
     }
 
-    protected void breakIfCannotGrow(World world, int x, int y, int z)
+    protected void breakIfCannotGrow(OnTickContext ctx)
     {
-        if (!canGrow(world, x, y, z))
+        if (!canGrow(ctx))
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            dropStacks(ctx.WorldView, ctx.X, ctx.Y, ctx.Z, ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z));
+            ctx.WorldView.setBlock(ctx.X, ctx.Y, ctx.Z, 0);
         }
 
     }
 
-    public override bool canGrow(World world, int x, int y, int z)
+    public override bool canGrow(OnTickContext ctx)
     {
-        return canPlaceAt(world, x, y, z);
+        return canPlaceAt(ctx.WorldView, ctx.X, ctx.Y, ctx.Z);
     }
 
     public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)

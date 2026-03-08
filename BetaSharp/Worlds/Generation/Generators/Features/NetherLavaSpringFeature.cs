@@ -80,7 +80,7 @@ internal class NetherLavaSpringFeature : Feature
             world.setBlock(x, y, z, _lavaBlockId);
 
             world.InstantBlockUpdateEnabled = true;
-            Block.Blocks[_lavaBlockId].onTick(world.Blocks, x, y, z, rand, world.WorldEventBroadcaster, world.isRemote);
+            Block.Blocks[_lavaBlockId].onTick(world.BlocksView, x, y, z, rand, world.WorldEventBroadcaster, world.isRemote);
             world.InstantBlockUpdateEnabled = false;
         }
 

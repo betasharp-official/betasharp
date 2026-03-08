@@ -29,26 +29,26 @@ public class BlockRedstoneRepeater : Block
         return !world.shouldSuffocate(x, y - 1, z) ? false : base.canPlaceAt(world, x, y, z);
     }
 
-    public override bool canGrow(World world, int x, int y, int z)
+    public override bool canGrow(OnTickContext ctx)
     {
-        return !world.shouldSuffocate(x, y - 1, z) ? false : base.canGrow(world, x, y, z);
+        return !ctx.WorldView.shouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) ? false : base.canGrow(ctx);
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickContext ctx)
     {
-        int meta = worldView.getBlockMeta(x, y, z);
-        bool powered = isPowered(worldView, x, y, z, meta);
+        int meta = ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        bool powered = isPowered(ctx.WorldView, ctx.X, ctx.Y, ctx.Z, meta);
         if (lit && !powered)
         {
-            worldView.setBlock(x, y, z, Block.Repeater.id, meta);
+            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, Block.Repeater.id, meta);
         }
         else if (!lit)
         {
-            worldView.setBlock(x, y, z, Block.PoweredRepeater.id, meta);
+            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, Block.PoweredRepeater.id, meta);
             if (!powered)
             {
                 int delaySetting = (meta & 12) >> 2;
-                worldView.ScheduleBlockUpdate(x, y, z, PoweredRepeater.id, DELAY[delaySetting] * 2);
+                ctx.WorldWrite.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, PoweredRepeater.id, DELAY[delaySetting] * 2);
             }
         }
 
@@ -92,43 +92,43 @@ public class BlockRedstoneRepeater : Block
         }
     }
 
-    public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickContext ctx)
     {
-        if (!canGrow(world, x, y, z))
+        if (!canGrow(ctx))
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            dropStacks(ctx.WorldView, ctx.X, ctx.Y, ctx.Z, ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z));
+            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
         }
         else
         {
-            int meta = world.getBlockMeta(x, y, z);
-            bool powered = isPowered(world, x, y, z, meta);
+            int meta = ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z);
+            bool powered = isPowered(ctx.WorldView, ctx.X, ctx.Y, ctx.Z, meta);
             int delaySetting = (meta & 12) >> 2;
             if (lit && !powered)
             {
-                world.ScheduleBlockUpdate(x, y, z, base.id, DELAY[delaySetting] * 2);
+                ctx.WorldWrite.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, base.id, DELAY[delaySetting] * 2);
             }
             else if (!lit && powered)
             {
-                world.ScheduleBlockUpdate(x, y, z, base.id, DELAY[delaySetting] * 2);
+                ctx.WorldWrite.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, base.id, DELAY[delaySetting] * 2);
             }
 
         }
     }
 
-    private bool isPowered(World world, int x, int y, int z, int meta)
+    private bool isPowered(IBlockReader world, RedstoneEngine redstoneEngine, int x, int y, int z, int meta)
     {
         int facing = meta & 3;
         switch (facing)
         {
             case 0:
-                return world.isPoweringSide(x, y, z + 1, 3) || world.getBlockId(x, y, z + 1) == Block.RedstoneWire.id && world.getBlockMeta(x, y, z + 1) > 0;
+                return redstoneEngine.IsPoweringSide(x, y, z + 1, 3) || world.GetBlockId(x, y, z + 1) == Block.RedstoneWire.id && world.getBlockMeta(x, y, z + 1) > 0;
             case 1:
-                return world.isPoweringSide(x - 1, y, z, 4) || world.getBlockId(x - 1, y, z) == Block.RedstoneWire.id && world.getBlockMeta(x - 1, y, z) > 0;
+                return redstoneEngine.IsPoweringSide(x - 1, y, z, 4) || world.GetBlockId(x - 1, y, z) == Block.RedstoneWire.id && world.getBlockMeta(x - 1, y, z) > 0;
             case 2:
-                return world.isPoweringSide(x, y, z - 1, 2) || world.getBlockId(x, y, z - 1) == Block.RedstoneWire.id && world.getBlockMeta(x, y, z - 1) > 0;
+                return redstoneEngine.IsPoweringSide(x, y, z - 1, 2) || world.GetBlockId(x, y, z - 1) == Block.RedstoneWire.id && world.getBlockMeta(x, y, z - 1) > 0;
             case 3:
-                return world.isPoweringSide(x + 1, y, z, 5) || world.getBlockId(x + 1, y, z) == Block.RedstoneWire.id && world.getBlockMeta(x + 1, y, z) > 0;
+                return redstoneEngine.IsPoweringSide(x + 1, y, z, 5) || world.GetBlockId(x + 1, y, z) == Block.RedstoneWire.id && world.getBlockMeta(x + 1, y, z) > 0;
             default:
                 return false;
         }
@@ -148,7 +148,7 @@ public class BlockRedstoneRepeater : Block
         return false;
     }
 
-    public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
+    public override void onPlaced(OnPlacedContext ctx)
     {
         int facing = ((MathHelper.Floor((double)(placer.yaw * 4.0F / 360.0F) + 0.5D) & 3) + 2) % 4;
         world.setBlockMeta(x, y, z, facing);
@@ -160,14 +160,14 @@ public class BlockRedstoneRepeater : Block
 
     }
 
-    public override void onPlaced(World world, int x, int y, int z)
+    public override void onPlaced(OnPlacedContext ctx)
     {
-        world.notifyNeighbors(x + 1, y, z, id);
+        ctx.Broadcaster.NotifyNeighbors(ctx.X + 1, ctx.Y, ctx.Z, id);
         world.notifyNeighbors(x - 1, y, z, id);
-        world.notifyNeighbors(x, y, z + 1, id);
-        world.notifyNeighbors(x, y, z - 1, id);
-        world.notifyNeighbors(x, y - 1, z, id);
-        world.notifyNeighbors(x, y + 1, z, id);
+        ctx.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z + 1, id);
+        ctx.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z - 1, id);
+        ctx.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, id);
+        ctx.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y + 1, ctx.Z, id);
     }
 
     public override bool isOpaque()

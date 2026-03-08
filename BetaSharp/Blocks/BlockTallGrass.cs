@@ -37,9 +37,9 @@ public class BlockTallGrass : BlockPlant
             x = (int)((long)x + (positionSeed >> 14 & 31L));
             y = (int)((long)y + (positionSeed >> 19 & 31L));
             z = (int)((long)z + (positionSeed >> 24 & 31L));
-            iBlockReader.getBiomeSource().GetBiomesInArea(x, z, 1, 1);
-            double temperature = iBlockReader.getBiomeSource().TemperatureMap[0];
-            double downfall = iBlockReader.getBiomeSource().DownfallMap[0];
+            iBlockReader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
+            double temperature = iBlockReader.GetBiomeSource().TemperatureMap[0];
+            double downfall = iBlockReader.GetBiomeSource().DownfallMap[0];
             return GrassColors.getColor(temperature, downfall);
         }
     }

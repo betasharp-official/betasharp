@@ -1,7 +1,6 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Blocks;
 
@@ -24,38 +23,38 @@ internal class BlockSand : Block
         world.ScheduleBlockUpdate(x, y, z, id, getTickRate());
     }
 
-    public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickContext ctx)
     {
-        world.ScheduleBlockUpdate(x, y, z, base.id, getTickRate());
+        ctx.WorldView.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickContext ctx)
     {
-        processFall(worldView, x, y, z);
+        processFall(ctx);
     }
 
-    private void processFall(World world, int x, int y, int z)
+    private void processFall(OnTickContext ctx)
     {
-        if (canFallThrough(world, x, y - 1, z) && y >= 0)
+        if (canFallThrough(ctx) && ctx.Y >= 0)
         {
             sbyte checkRadius = 32;
-            if (!fallInstantly && world.isRegionLoaded(x - checkRadius, y - checkRadius, z - checkRadius, x + checkRadius, y + checkRadius, z + checkRadius))
+            if (!fallInstantly && ctx.WorldView.IsRegionLoaded(ctx.X - checkRadius, ctx.Y - checkRadius, ctx.Z - checkRadius, ctx.X + checkRadius, ctx.Y + checkRadius, ctx.Z + checkRadius))
             {
-                EntityFallingSand fallingSand = new EntityFallingSand(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), id);
-                world.SpawnEntity(fallingSand);
+                EntityFallingSand fallingSand = new EntityFallingSand(ctx.WorldView, (double)(ctx.X + 0.5F), (double)(ctx.Y + 0.5F), (double)(ctx.Z + 0.5F), id);
+                ctx.Entities.SpawnEntity(fallingSand);
             }
             else
             {
-                world.setBlock(x, y, z, 0);
+                ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
 
-                while (canFallThrough(world, x, y - 1, z) && y > 0)
+                while (canFallThrough(ctx) && ctx.Y > 0)
                 {
-                    --y;
+                    --ctx.Y;
                 }
 
-                if (y > 0)
+                if (ctx.Y > 0)
                 {
-                    world.setBlock(x, y, z, id);
+                    ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, id);
                 }
             }
         }
@@ -67,9 +66,9 @@ internal class BlockSand : Block
         return 3;
     }
 
-    public static bool canFallThrough(World world, int x, int y, int z)
+    public static bool canFallThrough(OnTickContext ctx)
     {
-        int blockId = world.getBlockId(x, y, z);
+        int blockId = ctx.WorldView.GetBlockId(ctx.X, ctx.Y, ctx.Z);
         if (blockId == 0)
         {
             return true;

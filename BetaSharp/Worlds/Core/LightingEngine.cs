@@ -54,7 +54,7 @@ public class LightingEngine
 
         if (checkNeighbors)
         {
-            int blockId = _blocks.getBlockId(x, y, z);
+            int blockId = _blocks.GetBlockId(x, y, z);
             if (blockId == Block.Slab.id || blockId == Block.Farmland.id ||
                 blockId == Block.CobblestoneStairs.id || blockId == Block.WoodenStairs.id)
             {
@@ -92,7 +92,7 @@ public class LightingEngine
             }
             else if (lightType == LightType.Block)
             {
-                int blockId = _blocks.getBlockId(x, y, z);
+                int blockId = _blocks.GetBlockId(x, y, z);
                 if (Block.BlocksLightLuminance[blockId] > targetLuminance)
                 {
                     targetLuminance = Block.BlocksLightLuminance[blockId];

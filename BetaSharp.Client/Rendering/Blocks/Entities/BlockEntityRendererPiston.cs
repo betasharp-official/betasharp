@@ -41,7 +41,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             tess.setColorOpaque(1, 1, 1);
 
             var baseCtx = new BlockRenderContext(
-                world: piston.World.Blocks,
+                world: piston.World.BlocksView,
                 tess: tess,
                 renderAllFaces: true,
                 aoBlendMode: BetaSharp.isAmbientOcclusionEnabled() ? 1 : 0

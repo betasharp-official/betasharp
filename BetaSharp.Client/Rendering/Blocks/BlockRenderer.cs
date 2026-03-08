@@ -178,7 +178,7 @@ public class BlockRenderer
         float lightX = 0.6F; // North/South faces
 
         var entityCtx = new BlockRenderContext(
-            world: world.Blocks,
+            world: world.BlocksView,
             tess: tess,
             renderAllFaces: true,
             enableAo: false

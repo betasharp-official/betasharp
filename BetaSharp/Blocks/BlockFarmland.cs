@@ -36,25 +36,25 @@ internal class BlockFarmland : Block
         return side == 1 && meta > 0 ? textureId - 1 : (side == 1 ? textureId : 2);
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickContext ctx)
     {
-        if (random.NextInt(5) == 0)
+        if (ctx.Random.NextInt(5) == 0)
         {
-            if (!isWaterNearby(worldView, x, y, z) && !worldView.isRaining(x, y + 1, z))
+            if (!isWaterNearby(ctx.WorldView, ctx.X, ctx.Y, ctx.Z) && !ctx.WorldView.isRaining(ctx.X, ctx.Y + 1, ctx.Z))
             {
-                int meta = worldView.getBlockMeta(x, y, z);
+                int meta = ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z);
                 if (meta > 0)
                 {
-                    worldView.setBlockMeta(x, y, z, meta - 1);
+                    ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, meta - 1);
                 }
-                else if (!hasCrop(worldView, x, y, z))
+                else if (!hasCrop(ctx.WorldView, ctx.X, ctx.Y, ctx.Z))
                 {
-                    worldView.setBlock(x, y, z, Block.Dirt.id);
+                    ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, Block.Dirt.id);
                 }
             }
             else
             {
-                worldView.setBlockMeta(x, y, z, 7);
+                ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 7);
             }
         }
 
@@ -77,7 +77,7 @@ internal class BlockFarmland : Block
         {
             for (int var7 = z - cropRadius; var7 <= z + cropRadius; ++var7)
             {
-                if (world.getBlockId(var6, y + 1, var7) == Block.Wheat.id)
+                if (world.GetBlockId(var6, y + 1, var7) == Block.Wheat.id)
                 {
                     return true;
                 }
@@ -106,13 +106,13 @@ internal class BlockFarmland : Block
         return false;
     }
 
-    public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickContext ctx)
     {
-        base.neighborUpdate(world, x, y, z, id);
-        Material material = world.getMaterial(x, y + 1, z);
+        base.neighborUpdate(ctx);
+        Material material = ctx.WorldView.getMaterial(ctx.X, ctx.Y + 1, ctx.Z);
         if (material.IsSolid)
         {
-            world.setBlock(x, y, z, Block.Dirt.id);
+            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, Block.Dirt.id);
         }
 
     }

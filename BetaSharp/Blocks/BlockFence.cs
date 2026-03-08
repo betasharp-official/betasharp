@@ -13,7 +13,7 @@ internal class BlockFence : Block
 
     public override bool canPlaceAt(WorldBlockView world, int x, int y, int z)
     {
-        return world.getBlockId(x, y - 1, z) == id ? true : (!world.getMaterial(x, y - 1, z).IsSolid ? false : base.canPlaceAt(world, x, y, z));
+        return world.GetBlockId(x, y - 1, z) == id ? true : (!world.getMaterial(x, y - 1, z).IsSolid ? false : base.canPlaceAt(world, x, y, z));
     }
 
     public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)

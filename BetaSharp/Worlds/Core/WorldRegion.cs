@@ -39,7 +39,7 @@ internal class WorldRegion : IBlockReader
         }
     }
 
-    public int getBlockId(int x, int y, int z)
+    public int GetBlockId(int x, int y, int z)
     {
         if (y is < 0 or >= 128)
         {
@@ -58,7 +58,7 @@ internal class WorldRegion : IBlockReader
         return 0;
     }
 
-    public BlockEntity? getBlockEntity(int x, int y, int z)
+    public BlockEntity? GetBlockEntity(int x, int y, int z)
     {
         int cx = (x >> 4) - _chunkX;
         int cz = (z >> 4) - _chunkZ;
@@ -93,21 +93,21 @@ internal class WorldRegion : IBlockReader
 
     public Material getMaterial(int x, int y, int z)
     {
-        int var4 = getBlockId(x, y, z);
+        int var4 = GetBlockId(x, y, z);
         return var4 == 0 ? Material.Air : Block.Blocks[var4].material;
     }
 
-    public BiomeSource getBiomeSource() => _world.GetBiomeSource();
+    public BiomeSource GetBiomeSource() => _world.GetBiomeSource();
 
-    public bool isOpaque(int x, int y, int z)
+    public bool IsOpaque(int x, int y, int z)
     {
-        Block block = Block.Blocks[getBlockId(x, y, z)];
+        Block block = Block.Blocks[GetBlockId(x, y, z)];
         return block != null && block.isOpaque();
     }
 
-    public bool shouldSuffocate(int x, int y, int z)
+    public bool ShouldSuffocate(int x, int y, int z)
     {
-        Block block = Block.Blocks[getBlockId(x, y, z)];
+        Block block = Block.Blocks[GetBlockId(x, y, z)];
         return block != null && block.material.BlocksMovement && block.isFullCube();
     }
 
@@ -123,7 +123,7 @@ internal class WorldRegion : IBlockReader
 
         if (useNeighborLight)
         {
-            int id = getBlockId(x, y, z);
+            int id = GetBlockId(x, y, z);
             if (id == Block.Slab.id || id == Block.Farmland.id || id == Block.WoodenStairs.id || id == Block.CobblestoneStairs.id)
             {
                 int max = getRawBrightness(x, y + 1, z, false);

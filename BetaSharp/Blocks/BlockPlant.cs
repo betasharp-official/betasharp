@@ -16,7 +16,7 @@ public class BlockPlant : Block
 
     public override bool canPlaceAt(WorldBlockView world, int x, int y, int z)
     {
-        return base.canPlaceAt(world, x, y, z) && canPlantOnTop(world.getBlockId(x, y - 1, z));
+        return base.canPlaceAt(world, x, y, z) && canPlantOnTop(world.GetBlockId(x, y - 1, z));
     }
 
     protected virtual bool canPlantOnTop(int id)

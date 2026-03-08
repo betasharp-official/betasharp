@@ -36,9 +36,9 @@ public class BlockLeaves : BlockLeavesBase
         }
         else
         {
-            iBlockReader.getBiomeSource().GetBiomesInArea(x, z, 1, 1);
-            double temperature = iBlockReader.getBiomeSource().TemperatureMap[0];
-            double downfall = iBlockReader.getBiomeSource().DownfallMap[0];
+            iBlockReader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
+            double temperature = iBlockReader.GetBiomeSource().TemperatureMap[0];
+            double downfall = iBlockReader.GetBiomeSource().DownfallMap[0];
             return FoliageColors.getFoliageColor(temperature, downfall);
         }
     }
@@ -102,7 +102,7 @@ public class BlockLeaves : BlockLeavesBase
                         {
                             for (dy = -decayRadius; dy <= decayRadius; ++dy)
                             {
-                                dz = worldView.getBlockId(x + distanceToLog, y + dx, z + dy);
+                                dz = worldView.GetBlockId(x + distanceToLog, y + dx, z + dy);
                                 if (dz == Block.Log.id)
                                 {
                                     decayRegion[(distanceToLog + centerOffset) * planeSize + (dx + centerOffset) * regionSize + dy + centerOffset] = 0;

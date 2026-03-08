@@ -24,10 +24,10 @@ internal class BlockLockedChest : Block
         }
         else
         {
-            int var6 = iBlockReader.getBlockId(x, y, z - 1);
-            int var7 = iBlockReader.getBlockId(x, y, z + 1);
-            int var8 = iBlockReader.getBlockId(x - 1, y, z);
-            int var9 = iBlockReader.getBlockId(x + 1, y, z);
+            int var6 = iBlockReader.GetBlockId(x, y, z - 1);
+            int var7 = iBlockReader.GetBlockId(x, y, z + 1);
+            int var8 = iBlockReader.GetBlockId(x - 1, y, z);
+            int var9 = iBlockReader.GetBlockId(x + 1, y, z);
             sbyte var10 = 3;
             if (Block.BlocksOpaque[var6] && !Block.BlocksOpaque[var7])
             {

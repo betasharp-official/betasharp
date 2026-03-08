@@ -168,10 +168,10 @@ internal class BlockStairs : Block
         return baseBlock.canPlaceAt(world, x, y, z);
     }
 
-    public override void onPlaced(World world, int x, int y, int z)
+    public override void onPlaced(OnPlacedContext ctx)
     {
-        neighborUpdate(world, x, y, z, 0);
-        baseBlock.onPlaced(world, x, y, z);
+        neighborUpdate(new UpdateContext(ctx.WorldView, ctx.WorldWrite, ctx.Broadcaster, ctx.Entities, ctx.Random, ctx.IsRemote, ctx.Time, ctx.X, ctx.Y, ctx.Z));
+        baseBlock.onPlaced(ctx);
     }
 
     public override void onBreak(World world, int x, int y, int z)
@@ -189,9 +189,9 @@ internal class BlockStairs : Block
         baseBlock.onSteppedOn(world, x, y, z, entity);
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickContext ctx)
     {
-        baseBlock.onTick(worldView, x, y, z, random);
+        baseBlock.onTick(ctx);
     }
 
     public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
@@ -204,27 +204,27 @@ internal class BlockStairs : Block
         baseBlock.onDestroyedByExplosion(world, x, y, z);
     }
 
-    public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
+    public override void onPlaced(OnPlacedContext ctx)
     {
-        int facing = MathHelper.Floor((double)(placer.yaw * 4.0F / 360.0F) + 0.5D) & 3;
+        int facing = MathHelper.Floor((ctx.Placer.yaw * 4.0F / 360.0F) + 0.5D) & 3;
         if (facing == 0)
         {
-            world.setBlockMeta(x, y, z, 2);
+            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 2);
         }
 
         if (facing == 1)
         {
-            world.setBlockMeta(x, y, z, 1);
+            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 1);
         }
 
         if (facing == 2)
         {
-            world.setBlockMeta(x, y, z, 3);
+            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 3);
         }
 
         if (facing == 3)
         {
-            world.setBlockMeta(x, y, z, 0);
+            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 0);
         }
 
     }

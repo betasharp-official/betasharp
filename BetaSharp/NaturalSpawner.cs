@@ -25,7 +25,7 @@ internal static class NaturalSpawner
 
     private static BlockPos GetRandomSpawningPointInChunk(World world, PathFinder pathFinder, int centerX, int centerZ)
     {
-        pathFinder.SetWorld(world.Blocks);
+        pathFinder.SetWorld(world.BlocksView);
         int x = centerX + world.random.NextInt(16);
         int y = world.random.NextInt(128);
         int z = centerZ + world.random.NextInt(16);
@@ -34,7 +34,7 @@ internal static class NaturalSpawner
 
     internal static void DoSpawning(World world, PathFinder pathFinder, bool spawnHostile, bool spawnPeaceful)
     {
-        pathFinder.SetWorld(world.Blocks);
+        pathFinder.SetWorld(world.BlocksView);
         if (!spawnHostile && !spawnPeaceful) return;
 
         ChunksForSpawning.Clear();
@@ -120,7 +120,7 @@ internal static class NaturalSpawner
 
     internal static bool SpawnMonstersAndWakePlayers(World world, PathFinder pathFinder, List<EntityPlayer> players)
     {
-        pathFinder.SetWorld(world.Blocks);
+        pathFinder.SetWorld(world.BlocksView);
         bool monstersSpawned = false;
         foreach (var player in players)
         {

@@ -424,7 +424,7 @@ public class EntityManager
                 {
                     for (int y = minY - 1; y < maxY; ++y)
                     {
-                        Block block = Block.Blocks[_blocks.getBlockId(x, y, z)];
+                        Block block = Block.Blocks[_blocks.GetBlockId(x, y, z)];
                         if (block != null)
                         {
                             block.addIntersectingBoundingBox(_blocks, x, y, z, area, collidingBoundingBoxes);

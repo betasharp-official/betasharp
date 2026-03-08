@@ -38,8 +38,10 @@ public abstract class World : IBlockWorldContext
     public readonly WorldTickScheduler TickScheduler;
     public readonly LightingEngine Lighting;
     public readonly EnvironmentManager Environment;
-    public readonly RedstoneEngine Redstone;
-    public readonly WorldBlockView Blocks;
+    private readonly RedstoneEngine Redstone;
+    private readonly BlockHost _blockHost;
+    public readonly WorldBlockView BlocksView;
+    public readonly WorldBlockWrite BlockWriter;
     protected readonly IWorldStorage Storage;
     public readonly WorldEventBroadcaster WorldEventBroadcaster;
 
@@ -54,14 +56,14 @@ public abstract class World : IBlockWorldContext
     public bool IsNewWorld;
     public bool isRemote { set; get; } = false;
 
-    public bool PauseTicking { get => Blocks.PauseTicking; set => Blocks.PauseTicking = value; }
+    public bool PauseTicking { get => BlocksView.PauseTicking; set => BlocksView.PauseTicking = value; }
 
     public bool InstantBlockUpdateEnabled { get => TickScheduler.instantBlockUpdateEnabled; set => TickScheduler.instantBlockUpdateEnabled = value; }
 
     public PersistentStateManager PersistentStateManager;
 
     public WorldProperties Properties { get; protected set; }
-    public JavaRandom random = new();
+    public JavaRandom random { get; } = new();
 
     protected World(IWorldStorage worldStorage, string levelName, Dimension dim, long seed)
     {
@@ -77,19 +79,21 @@ public abstract class World : IBlockWorldContext
             ? RuleSet.FromNBT(RuleRegistry.Instance, Properties.RulesTag)
             : new RuleSet(RuleRegistry.Instance);
 
-        Blocks = new WorldBlockView(chunkSource, dim, isRemote, this);
-        Blocks.OnBlockChanged += this.BlockUpdate;
-        Blocks.OnNeighborsShouldUpdate += notifyNeighbors;
+        _blockHost = new BlockHost(chunkSource, dim, EventListeners);
+        BlockWriter = new WorldBlockWrite(_blockHost);
+        BlockWriter.OnBlockChanged += this.BlockUpdate;
+        BlockWriter.OnNeighborsShouldUpdate += notifyNeighbors;
+        BlocksView = new WorldBlockView(_blockHost, BlockWriter, isRemote, this);
         WorldEventBroadcaster = new WorldEventBroadcaster(EventListeners);
 
-        Redstone = new RedstoneEngine(Blocks);
-        Lighting = new LightingEngine(Blocks, dim);
+        Redstone = new RedstoneEngine(BlocksView);
+        Lighting = new LightingEngine(BlocksView, dim);
         Lighting.OnLightUpdated += (x, y, z) => blockUpdateEvent(x, y, z);
 
-        TickScheduler = new WorldTickScheduler(Blocks, random, isRemote, WorldEventBroadcaster);
+        TickScheduler = new WorldTickScheduler(BlocksView, random, isRemote, WorldEventBroadcaster);
 
-        Environment = new EnvironmentManager(Properties, dim, Blocks, random);
-        Entities = new EntityManager(Blocks, Rules);
+        Environment = new EnvironmentManager(Properties, dim, BlocksView, random);
+        Entities = new EntityManager(BlocksView, Rules);
 
         Entities.OnBlockUpdateRequired += (x, y, z) => blockUpdateEvent(x, y, z);
 
@@ -139,19 +143,21 @@ public abstract class World : IBlockWorldContext
             ? RuleSet.FromNBT(RuleRegistry.Instance, Properties.RulesTag)
             : new RuleSet(RuleRegistry.Instance);
 
-        Blocks = new WorldBlockView(chunkSource, dimension, isRemote, this);
-        Blocks.OnBlockChanged += BlockUpdate;
-        Blocks.OnNeighborsShouldUpdate += notifyNeighbors;
+        _blockHost = new BlockHost(chunkSource);
+        BlockWriter = new WorldBlockWrite(_blockHost);
+        BlockWriter.OnBlockChanged += BlockUpdate;
+        BlockWriter.OnNeighborsShouldUpdate += notifyNeighbors;
+        BlocksView = new WorldBlockView(_blockHost, this);
         WorldEventBroadcaster = new WorldEventBroadcaster(EventListeners);
 
-        Redstone = new RedstoneEngine(Blocks);
-        Lighting = new LightingEngine(Blocks, dimension);
+        Redstone = new RedstoneEngine(BlocksView);
+        Lighting = new LightingEngine(BlocksView, dimension);
         Lighting.OnLightUpdated += (x, y, z) => blockUpdateEvent(x, y, z);
 
-        TickScheduler = new WorldTickScheduler(Blocks, random, isRemote, WorldEventBroadcaster);
+        TickScheduler = new WorldTickScheduler(BlocksView, random, isRemote, WorldEventBroadcaster);
 
-        Environment = new EnvironmentManager(Properties, dimension, Blocks, random);
-        Entities = new EntityManager(Blocks, Rules);
+        Environment = new EnvironmentManager(Properties, dimension, BlocksView, random);
+        Entities = new EntityManager(BlocksView, Rules);
 
         Entities.OnBlockUpdateRequired += (x, y, z) => blockUpdateEvent(x, y, z);
 
@@ -180,6 +186,7 @@ public abstract class World : IBlockWorldContext
     }
 
     public RuleSet Rules { get; protected set; }
+
 
     public BiomeSource GetBiomeSource() => dimension.BiomeSource;
 
@@ -238,11 +245,11 @@ public abstract class World : IBlockWorldContext
     public int GetSpawnBlockId(int x, int z)
     {
         int y;
-        for (y = 63; !Blocks.IsAir(x, y + 1, z); ++y)
+        for (y = 63; !BlocksView.IsAir(x, y + 1, z); ++y)
         {
         }
 
-        return Blocks.getBlockId(x, y, z);
+        return BlocksView.GetBlockId(x, y, z);
     }
 
     public void AddPlayer(EntityPlayer player)
@@ -266,7 +273,7 @@ public abstract class World : IBlockWorldContext
 
     public void SaveWithLoadingDisplay(bool saveEntities, LoadingDisplay? loadingDisplay)
     {
-        if (Blocks.ChunkSource.CanSave())
+        if (_blockHost.ChunkSource.CanSave())
         {
             if (loadingDisplay != null)
             {
@@ -282,7 +289,7 @@ public abstract class World : IBlockWorldContext
             }
 
             Profiler.Start("saveChunks");
-            Blocks.ChunkSource.Save(saveEntities, loadingDisplay);
+            _blockHost.ChunkSource.Save(saveEntities, loadingDisplay);
             Profiler.Stop("saveChunks");
         }
     }
@@ -306,7 +313,7 @@ public abstract class World : IBlockWorldContext
 
     public bool AttemptSaving(int i)
     {
-        if (Blocks.ChunkSource.CanSave())
+        if (_blockHost.ChunkSource.CanSave())
         {
             return true;
         }
@@ -316,7 +323,7 @@ public abstract class World : IBlockWorldContext
             Save();
         }
 
-        return Blocks.ChunkSource.Save(false, null);
+        return _blockHost.ChunkSource.Save(false, null);
     }
 
     public bool canMonsterSpawn() => Environment.AmbientDarkness < 4;
@@ -340,15 +347,15 @@ public abstract class World : IBlockWorldContext
         int currentY = MathHelper.Floor(start.y);
         int currentZ = MathHelper.Floor(start.z);
 
-        int initialId = Blocks.getBlockId(currentX, currentY, currentZ);
-        int initialMeta = Blocks.getBlockMeta(currentX, currentY, currentZ);
+        int initialId = BlocksView.GetBlockId(currentX, currentY, currentZ);
+        int initialMeta = BlocksView.GetBlockMeta(currentX, currentY, currentZ);
         Block? initialBlock = Block.Blocks[initialId];
 
         if ((!ignoreNonSolid || initialBlock == null ||
-             initialBlock.getCollisionShape(Blocks, currentX, currentY, currentZ) != null) &&
+             initialBlock.getCollisionShape(BlocksView, currentX, currentY, currentZ) != null) &&
             initialId > 0 && initialBlock.hasCollision(initialMeta, includeFluids))
         {
-            HitResult result = initialBlock.raycast(Blocks, currentX, currentY, currentZ, start, target);
+            HitResult result = initialBlock.raycast(BlocksView, currentX, currentY, currentZ, start, target);
             if (result.Type != HitResultType.MISS)
             {
                 return result;
@@ -475,15 +482,15 @@ public abstract class World : IBlockWorldContext
                 currentStepPos.z++;
             }
 
-            int blockIdAtStep = Blocks.getBlockId(currentX, currentY, currentZ);
-            int metaAtStep = Blocks.getBlockMeta(currentX, currentY, currentZ);
+            int blockIdAtStep = BlocksView.GetBlockId(currentX, currentY, currentZ);
+            int metaAtStep = BlocksView.GetBlockMeta(currentX, currentY, currentZ);
             Block blockAtStep = Block.Blocks[blockIdAtStep];
 
             if ((!ignoreNonSolid || blockAtStep == null ||
-                 blockAtStep.getCollisionShape(Blocks, currentX, currentY, currentZ) != null) &&
+                 blockAtStep.getCollisionShape(BlocksView, currentX, currentY, currentZ) != null) &&
                 blockIdAtStep > 0 && blockAtStep.hasCollision(metaAtStep, includeFluids))
             {
-                HitResult hit = blockAtStep.raycast(Blocks, currentX, currentY, currentZ, start, target);
+                HitResult hit = blockAtStep.raycast(BlocksView, currentX, currentY, currentZ, start, target);
                 if (hit.Type != HitResultType.MISS)
                 {
                     return hit;
@@ -495,7 +502,7 @@ public abstract class World : IBlockWorldContext
     }
 
     [Obsolete("Use Blocks.NotifyNeighbors instead.")]
-    public void notifyNeighbors(int x, int y, int z, int blockId) => Blocks.NotifyNeighbors(x, y, z, blockId);
+    public void notifyNeighbors(int x, int y, int z, int blockId) => WorldEventBroadcaster.NotifyNeighbors(x, y, z, blockId);
 
     [Obsolete("Use SoundManager.blockUpdateEvent instead.")]
     public void blockUpdateEvent(int x, int y, int z) => WorldEventBroadcaster.BlockUpdateEvent(x, y, z);
@@ -571,7 +578,7 @@ public abstract class World : IBlockWorldContext
             {
                 for (int z = minZ; z < maxZ; z++)
                 {
-                    if (Blocks.getBlockId(x, y, z) > 0)
+                    if (BlocksView.GetBlockId(x, y, z) > 0)
                     {
                         return true;
                     }
@@ -612,7 +619,7 @@ public abstract class World : IBlockWorldContext
             {
                 for (int z = minZ; z < maxZ; ++z)
                 {
-                    Block block = Block.Blocks[Blocks.getBlockId(x, y, z)];
+                    Block block = Block.Blocks[BlocksView.GetBlockId(x, y, z)];
                     if (block != null && block.material.IsFluid)
                     {
                         return true;
@@ -633,7 +640,7 @@ public abstract class World : IBlockWorldContext
         int minZ = MathHelper.Floor(area.MinZ);
         int maxZ = MathHelper.Floor(area.MaxZ + 1.0D);
 
-        if (Blocks.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
+        if (_blockHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
         {
             for (int x = minX; x < maxX; ++x)
             {
@@ -641,7 +648,7 @@ public abstract class World : IBlockWorldContext
                 {
                     for (int z = minZ; z < maxZ; ++z)
                     {
-                        int blockId = Blocks.getBlockId(x, y, z);
+                        int blockId = BlocksView.GetBlockId(x, y, z);
                         if (blockId == Block.Fire.id || blockId == Block.FlowingLava.id || blockId == Block.Lava.id)
                         {
                             return true;
@@ -663,7 +670,7 @@ public abstract class World : IBlockWorldContext
         int minZ = MathHelper.Floor(entityBox.MinZ);
         int maxZ = MathHelper.Floor(entityBox.MaxZ + 1.0D);
 
-        if (!Blocks.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
+        if (!_blockHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
         {
             return false;
         }
@@ -677,10 +684,10 @@ public abstract class World : IBlockWorldContext
             {
                 for (int z = minZ; z < maxZ; ++z)
                 {
-                    Block block = Block.Blocks[Blocks.getBlockId(x, y, z)];
+                    Block block = Block.Blocks[BlocksView.GetBlockId(x, y, z)];
                     if (block != null && block.material == fluidMaterial)
                     {
-                        double fluidSurfaceY = y + 1 - BlockFluid.getFluidHeightFromMeta(Blocks.getBlockMeta(x, y, z));
+                        double fluidSurfaceY = y + 1 - BlockFluid.getFluidHeightFromMeta(BlocksView.GetBlockMeta(x, y, z));
 
                         if (maxY >= fluidSurfaceY)
                         {
@@ -719,7 +726,7 @@ public abstract class World : IBlockWorldContext
             {
                 for (int z = minZ; z < maxZ; ++z)
                 {
-                    Block block = Block.Blocks[Blocks.getBlockId(x, y, z)];
+                    Block block = Block.Blocks[BlocksView.GetBlockId(x, y, z)];
                     if (block != null && block.material == material)
                     {
                         return true;
@@ -746,10 +753,10 @@ public abstract class World : IBlockWorldContext
             {
                 for (int z = minZ; z < maxZ; ++z)
                 {
-                    Block block = Block.Blocks[Blocks.getBlockId(x, y, z)];
+                    Block block = Block.Blocks[BlocksView.GetBlockId(x, y, z)];
                     if (block != null && block.material == fluid)
                     {
-                        int meta = Blocks.getBlockMeta(x, y, z);
+                        int meta = BlocksView.GetBlockMeta(x, y, z);
                         double waterLevel = y + 1;
                         if (meta < 8)
                         {
@@ -842,16 +849,16 @@ public abstract class World : IBlockWorldContext
             ++x;
         }
 
-        if (Blocks.getBlockId(x, y, z) == Block.Fire.id)
+        if (BlocksView.GetBlockId(x, y, z) == Block.Fire.id)
         {
-            worldEvent(player, 1004, x, y, z, 0);
-            Blocks.setBlock(x, y, z, 0);
+            WorldEventBroadcaster.WorldEvent(player, 1004, x, y, z, 0);
+            BlockWriter.SetBlock(x, y, z, 0);
         }
     }
 
     public Entity? GetPlayerForProxy(Type type) => null;
 
-    public string GetDebugInfo() => Blocks.ChunkSource.GetDebugInfo();
+    public string GetDebugInfo() => _blockHost.ChunkSource.GetDebugInfo();
 
     public void SavingProgress(LoadingDisplay display) => SaveWithLoadingDisplay(true, display);
 
@@ -889,7 +896,7 @@ public abstract class World : IBlockWorldContext
         Profiler.Stop("performSpawning");
 
         Profiler.Start("unload100OldestChunks");
-        Blocks.ChunkSource.Tick();
+        _blockHost.ChunkSource.Tick();
         Profiler.Stop("unload100OldestChunks");
 
         Profiler.Start("updateSkylightSubtracted");
@@ -952,7 +959,7 @@ public abstract class World : IBlockWorldContext
         {
             int worldXBase = chunkPos.X * 16;
             int worldZBase = chunkPos.Z * 16;
-            Chunk currentChunk = Blocks.GetChunk(chunkPos.X, chunkPos.Z);
+            Chunk currentChunk = _blockHost.GetChunk(chunkPos.X, chunkPos.Z);
 
             if (_soundCounter == 0)
             {
@@ -965,7 +972,7 @@ public abstract class World : IBlockWorldContext
                 int blockId = currentChunk.GetBlockId(localX, localY, localZ);
                 int worldX = localX + worldXBase;
                 int worldZ = localZ + worldZBase;
-                if (blockId == 0 && Blocks.GetBrightness(worldX, localY, worldZ) <= random.NextInt(8) &&
+                if (blockId == 0 && BlocksView.GetBrightness(worldX, localY, worldZ) <= random.NextInt(8) &&
                     Lighting.GetBrightness(LightType.Sky, worldX, localY, worldZ) <= 0)
                 {
                     EntityPlayer closest = Entities.GetClosestPlayer(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, 8.0D);
@@ -985,7 +992,7 @@ public abstract class World : IBlockWorldContext
                 int randomVal = _lcgBlockSeed >> 2;
                 int worldX = worldXBase + (randomVal & 15);
                 int worldZ = worldZBase + ((randomVal >> 8) & 15);
-                int worldY = Blocks.GetTopSolidBlockY(worldX, worldZ);
+                int worldY = BlocksView.GetTopSolidBlockY(worldX, worldZ);
 
                 if (Environment.IsRainingAt(worldX, worldY, worldZ))
                 {
@@ -1002,7 +1009,7 @@ public abstract class World : IBlockWorldContext
                 int localZ = (randomVal >> 8) & 15;
                 int worldX = localX + worldXBase;
                 int worldZ = localZ + worldZBase;
-                int worldY = Blocks.GetTopSolidBlockY(worldX, worldZ);
+                int worldY = BlocksView.GetTopSolidBlockY(worldX, worldZ);
 
                 if (GetBiomeSource().GetBiome(worldX, worldZ).GetEnableSnow() && worldY >= 0 && worldY < 128 &&
                     currentChunk.GetLight(LightType.Block, localX, worldY, localZ) < 10)
@@ -1010,16 +1017,16 @@ public abstract class World : IBlockWorldContext
                     int blockBelowId = currentChunk.GetBlockId(localX, worldY - 1, localZ);
                     int currentBlockId = currentChunk.GetBlockId(localX, worldY, localZ);
 
-                    if (Environment.IsRaining && currentBlockId == 0 && Block.Snow.canPlaceAt(Blocks, worldX, worldY, worldZ) &&
+                    if (Environment.IsRaining && currentBlockId == 0 && Block.Snow.canPlaceAt(BlocksView, worldX, worldY, worldZ) &&
                         blockBelowId != 0 && blockBelowId != Block.Ice.id &&
                         Block.Blocks[blockBelowId].material.BlocksMovement)
                     {
-                        Blocks.setBlock(worldX, worldY, worldZ, Block.Snow.id);
+                        BlockWriter.SetBlock(worldX, worldY, worldZ, Block.Snow.id);
                     }
 
                     if (blockBelowId == Block.Water.id && currentChunk.GetBlockMeta(localX, worldY - 1, localZ) == 0)
                     {
-                        Blocks.setBlock(worldX, worldY - 1, worldZ, Block.Ice.id);
+                        BlockWriter.SetBlock(worldX, worldY - 1, worldZ, Block.Ice.id);
                     }
                 }
             }
@@ -1035,7 +1042,7 @@ public abstract class World : IBlockWorldContext
                 int blockId = currentChunk.Blocks[(localX << 11) | (localZ << 7) | localY] & 255;
                 if (Block.BlocksRandomTick[blockId])
                 {
-                    Block.Blocks[blockId].onTick(Blocks, localX + worldXBase, localY, localZ + worldZBase, random, WorldEventBroadcaster, isRemote);
+                    Block.Blocks[blockId].onTick(new WorldTickContext(this, BlocksView, BlockWriter, WorldEventBroadcaster, isRemote, localX + worldXBase, localY, localZ + worldZBase, random));
                 }
             }
         }
@@ -1052,7 +1059,7 @@ public abstract class World : IBlockWorldContext
             int targetY = centerY + random.NextInt(searchRadius) - random.NextInt(searchRadius);
             int targetZ = centerZ + random.NextInt(searchRadius) - random.NextInt(searchRadius);
 
-            int blockId = Blocks.getBlockId(targetX, targetY, targetZ);
+            int blockId = BlocksView.GetBlockId(targetX, targetY, targetZ);
             if (blockId > 0)
             {
                 Block.Blocks[blockId].randomDisplayTick(this, targetX, targetY, targetZ, particleRandom);
@@ -1062,9 +1069,9 @@ public abstract class World : IBlockWorldContext
 
     public void UpdateBlockEntity(int x, int y, int z, BlockEntity blockEntity)
     {
-        if (Blocks.IsPosLoaded(x, y, z))
+        if (_blockHost.IsPosLoaded(x, y, z))
         {
-            Blocks.GetChunkFromPos(x, z).MarkDirty();
+            _blockHost.GetChunkFromPos(x, z).MarkDirty();
         }
 
         for (int i = 0; i < EventListeners.Count; ++i)
@@ -1075,18 +1082,18 @@ public abstract class World : IBlockWorldContext
 
     public void TickChunks()
     {
-        while (Blocks.ChunkSource.Tick())
+        while (_blockHost.ChunkSource.Tick())
         {
         }
     }
 
     public bool canPlace(int blockId, int x, int y, int z, bool isFallingBlock, int side)
     {
-        int existingBlockId = Blocks.getBlockId(x, y, z);
+        int existingBlockId = BlocksView.GetBlockId(x, y, z);
         Block? existingBlock = Block.Blocks[existingBlockId];
         Block? newBlock = Block.Blocks[blockId];
 
-        Box? collisionBox = newBlock?.getCollisionShape(Blocks, x, y, z);
+        Box? collisionBox = newBlock?.getCollisionShape(BlocksView, x, y, z);
 
         if (isFallingBlock)
         {
@@ -1105,7 +1112,7 @@ public abstract class World : IBlockWorldContext
             existingBlock = null;
         }
 
-        return blockId > 0 && existingBlock == null && newBlock != null && newBlock.canPlaceAt(Blocks, x, y, z, side);
+        return blockId > 0 && existingBlock == null && newBlock != null && newBlock.canPlaceAt(BlocksView, x, y, z, side);
     }
 
     internal PathEntity findPath(Entity entity, Entity target, float range)
@@ -1178,7 +1185,7 @@ public abstract class World : IBlockWorldContext
                 int localStartZ = Math.Max(0, z - chunkZ * 16);
                 int localEndZ = Math.Min(16, z + sizeZ - chunkZ * 16);
 
-                currentBufferOffset = Blocks.GetChunk(chunkX, chunkZ).LoadFromPacket(
+                    currentBufferOffset = _blockHost.GetChunk(chunkX, chunkZ).LoadFromPacket(
                     chunkData,
                     localStartX, minY, localStartZ,
                     localEndX, maxY, localEndZ,
@@ -1218,7 +1225,7 @@ public abstract class World : IBlockWorldContext
                 int localStartZ = Math.Max(0, z - chunkZ * 16);
                 int localEndZ = Math.Min(16, z + sizeZ - chunkZ * 16);
 
-                currentBufferOffset = Blocks.GetChunk(chunkX, chunkZ).ToPacket(
+                currentBufferOffset = _blockHost.GetChunk(chunkX, chunkZ).ToPacket(
                     chunkData,
                     localStartX, minY, localStartZ,
                     localEndX, maxY, localEndZ,
@@ -1247,7 +1254,7 @@ public abstract class World : IBlockWorldContext
 
     public virtual void playNoteBlockActionAt(int x, int y, int z, int soundType, int pitch)
     {
-        int blockId = Blocks.getBlockId(x, y, z);
+        int blockId = BlocksView.GetBlockId(x, y, z);
         if (blockId > 0)
         {
             Block.Blocks[blockId].onBlockAction(this, x, y, z, soundType, pitch);
@@ -1286,91 +1293,81 @@ public abstract class World : IBlockWorldContext
 
     public int getIdCount(string id) => PersistentStateManager.GetUniqueDataId(id);
 
-    public void worldEvent(int @event, int x, int y, int z, int data) => worldEvent(null, @event, x, y, z, data);
-
-    public void worldEvent(EntityPlayer player, int @event, int x, int y, int z, int data)
-    {
-        for (int index = 0; index < EventListeners.Count; ++index)
-        {
-            EventListeners[index].worldEvent(player, @event, x, y, z, data);
-        }
-    }
-
     // TODO: These are marked [Obsolete]. In future PRs, update the calling code
     // to use the specific engines (e.g., world.Blocks.GetBlockId) and delete these.
 
     #region Block & Chunk Proxy (Routes to WorldBlockView)
 
-    public IChunkSource getChunkSource() => Blocks.ChunkSource;
+    public IChunkSource getChunkSource() => _blockHost.ChunkSource;
 
     [Obsolete("Use Blocks.GetBlockId instead.")]
-    public int getBlockId(int x, int y, int z) => Blocks.getBlockId(x, y, z);
+    public int getBlockId(int x, int y, int z) => BlocksView.GetBlockId(x, y, z);
 
     [Obsolete("Use Blocks.IsAir instead.")]
-    public bool isAir(int x, int y, int z) => Blocks.IsAir(x, y, z);
+    public bool isAir(int x, int y, int z) => BlocksView.IsAir(x, y, z);
 
     [Obsolete("Use Blocks.IsPosLoaded instead.")]
-    public bool isPosLoaded(int x, int y, int z) => Blocks.IsPosLoaded(x, y, z);
+    public bool isPosLoaded(int x, int y, int z) => _blockHost.IsPosLoaded(x, y, z);
 
     [Obsolete("Use Blocks.IsRegionLoaded instead.")]
-    public bool isRegionLoaded(int x, int y, int z, int range) => Blocks.IsRegionLoaded(x, y, z, range);
+    public bool isRegionLoaded(int x, int y, int z, int range) => _blockHost.IsRegionLoaded(x, y, z, range);
 
     [Obsolete("Use Blocks.IsRegionLoaded instead.")]
-    public bool isRegionLoaded(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) => Blocks.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ);
+    public bool isRegionLoaded(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) => _blockHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ);
 
     [Obsolete("Use Blocks.HasChunk instead.")]
-    private bool hasChunk(int x, int z) => Blocks.HasChunk(x, z);
+    private bool hasChunk(int x, int z) => _blockHost.HasChunk(x, z);
 
     [Obsolete("Use Blocks.GetChunkFromPos instead.")]
-    public Chunk GetChunkFromPos(int x, int z) => Blocks.GetChunkFromPos(x, z);
+    public Chunk GetChunkFromPos(int x, int z) => _blockHost.GetChunkFromPos(x, z);
 
     [Obsolete("Use Blocks.GetChunk instead.")]
-    public Chunk GetChunk(int chunkX, int chunkZ) => Blocks.GetChunk(chunkX, chunkZ);
+    public Chunk GetChunk(int chunkX, int chunkZ) => _blockHost.GetChunk(chunkX, chunkZ);
 
     [Obsolete("Use Blocks.SetBlockWithoutNotifyingNeighbors instead.")]
-    public virtual bool setBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, int meta) => Blocks.SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta);
+    public virtual bool setBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, int meta) => BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta);
 
     [Obsolete("Use Blocks.SetBlockWithoutNotifyingNeighbors instead.")]
-    public virtual bool setBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId) => Blocks.SetBlockWithoutNotifyingNeighbors(x, y, z, blockId);
+    public virtual bool setBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId) => BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y, z, blockId);
 
     [Obsolete("Use Blocks.GetMaterial instead.")]
-    public Material getMaterial(int x, int y, int z) => Blocks.getMaterial(x, y, z);
+    public Material getMaterial(int x, int y, int z) => BlocksView.GetMaterial(x, y, z);
 
     [Obsolete("Use Blocks.GetBlockMeta instead.")]
-    public int getBlockMeta(int x, int y, int z) => Blocks.getBlockMeta(x, y, z);
+    public int getBlockMeta(int x, int y, int z) => BlocksView.GetBlockMeta(x, y, z);
 
     [Obsolete("Use Blocks.SetBlockMeta instead.")]
-    public void setBlockMeta(int x, int y, int z, int meta) => Blocks.setBlockMeta(x, y, z, meta);
+        public void setBlockMeta(int x, int y, int z, int meta) => BlockWriter.SetBlockMeta(x, y, z, meta);
 
     [Obsolete("Use Blocks.SetBlockMetaWithoutNotifyingNeighbors instead.")]
-    public virtual bool SetBlockMetaWithoutNotifyingNeighbors(int x, int y, int z, int meta) => Blocks.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, meta);
+    public virtual bool SetBlockMetaWithoutNotifyingNeighbors(int x, int y, int z, int meta) => BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, meta);
 
     [Obsolete("Use Blocks.SetBlock instead.")]
-    public bool setBlock(int x, int y, int z, int blockId) => Blocks.setBlock(x, y, z, blockId);
+    public bool setBlock(int x, int y, int z, int blockId) => BlockWriter.SetBlock(x, y, z, blockId);
 
     [Obsolete("Use Blocks.SetBlock instead.")]
-    public bool setBlock(int x, int y, int z, int blockId, int meta) => Blocks.setBlock(x, y, z, blockId, meta);
+    public bool setBlock(int x, int y, int z, int blockId, int meta) => BlockWriter.SetBlock(x, y, z, blockId, meta);
 
     [Obsolete("Use Blocks.IsTopY instead.")]
-    public bool isTopY(int x, int y, int z) => Blocks.IsTopY(x, y, z);
+    public bool isTopY(int x, int y, int z) => BlocksView.IsTopY(x, y, z);
 
     [Obsolete("Use Blocks.GetTopY instead.")]
-    public int getTopY(int x, int z) => Blocks.GetTopY(x, z);
+    public int getTopY(int x, int z) => BlocksView.GetTopY(x, z);
 
     [Obsolete("Use Blocks.GetTopSolidBlockY instead.")]
-    public int getTopSolidBlockY(int x, int z) => Blocks.GetTopSolidBlockY(x, z);
+    public int getTopSolidBlockY(int x, int z) => BlocksView.GetTopSolidBlockY(x, z);
 
     [Obsolete("Use Blocks.GetSpawnPositionValidityY instead.")]
-    public int getSpawnPositionValidityY(int x, int z) => Blocks.GetSpawnPositionValidityY(x, z);
+    public int getSpawnPositionValidityY(int x, int z) => BlocksView.GetSpawnPositionValidityY(x, z);
 
     [Obsolete("Use Blocks.IsOpaque instead.")]
-    public bool isOpaque(int x, int y, int z) => Blocks.isOpaque(x, y, z);
+    public bool isOpaque(int x, int y, int z) => BlocksView.IsOpaque(x, y, z);
 
     [Obsolete("Use Blocks.ShouldSuffocate instead.")]
-    public bool shouldSuffocate(int x, int y, int z) => Blocks.shouldSuffocate(x, y, z);
+    public bool shouldSuffocate(int x, int y, int z) => BlocksView.ShouldSuffocate(x, y, z);
 
     [Obsolete("Use Blocks.GetBlockEntity instead.")]
-    public BlockEntity? getBlockEntity(int x, int y, int z) => Blocks.getBlockEntity(x, y, z);
+    public BlockEntity? getBlockEntity(int x, int y, int z) => BlocksView.GetBlockEntity(x, y, z);
 
     #endregion
 

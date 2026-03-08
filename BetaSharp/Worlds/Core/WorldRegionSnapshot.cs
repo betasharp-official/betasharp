@@ -51,7 +51,7 @@ public class WorldRegionSnapshot : IBlockReader, IDisposable
         _skylightSubtracted = world.Environment.AmbientDarkness;
     }
 
-    public int getBlockId(int x, int y, int z)
+    public int GetBlockId(int x, int y, int z)
     {
         if (y is < 0 or >= 128)
         {
@@ -73,7 +73,7 @@ public class WorldRegionSnapshot : IBlockReader, IDisposable
 
     public Material getMaterial(int x, int y, int z)
     {
-        int blockId = getBlockId(x, y, z);
+        int blockId = GetBlockId(x, y, z);
         return blockId == 0 ? Material.Air : Block.Blocks[blockId].material;
     }
 
@@ -89,7 +89,7 @@ public class WorldRegionSnapshot : IBlockReader, IDisposable
         return _chunks[chunkIdxX][chunkIdxZ].getBlockMetadata(x & 15, y, z & 15);
     }
 
-    public BlockEntity? getBlockEntity(int x, int y, int z)
+    public BlockEntity? GetBlockEntity(int x, int y, int z)
     {
         if (y is < 0 or >= 128)
         {
@@ -137,17 +137,17 @@ public class WorldRegionSnapshot : IBlockReader, IDisposable
 
     public float GetLuminance(int x, int y, int z) => _lightTable[getLightValue(x, y, z)];
 
-    public BiomeSource getBiomeSource() => _biomeSource;
+    public BiomeSource GetBiomeSource() => _biomeSource;
 
-    public bool shouldSuffocate(int x, int y, int z)
+    public bool ShouldSuffocate(int x, int y, int z)
     {
-        Block block = Block.Blocks[getBlockId(x, y, z)];
+        Block block = Block.Blocks[GetBlockId(x, y, z)];
         return block != null && block.material.BlocksMovement && block.isFullCube();
     }
 
-    public bool isOpaque(int x, int y, int z)
+    public bool IsOpaque(int x, int y, int z)
     {
-        Block block = Block.Blocks[getBlockId(x, y, z)];
+        Block block = Block.Blocks[GetBlockId(x, y, z)];
         return block != null && block.isOpaque();
     }
 
@@ -181,7 +181,7 @@ public class WorldRegionSnapshot : IBlockReader, IDisposable
 
         if (checkStairs)
         {
-            int blockId = getBlockId(x, y, z);
+            int blockId = GetBlockId(x, y, z);
             if (blockId == Block.Slab.id || blockId == Block.Farmland.id || blockId == Block.WoodenStairs.id || blockId == Block.CobblestoneStairs.id)
             {
                 int maxLight = GetLightValueExt(x, y + 1, z, false);

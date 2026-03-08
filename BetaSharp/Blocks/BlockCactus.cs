@@ -13,26 +13,26 @@ internal class BlockCactus : Block
         setTickRandomly(true);
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickContext ctx)
     {
-        if (worldView.isAir(x, y + 1, z))
+        if (ctx.WorldView.IsAir(ctx.X, ctx.Y + 1, ctx.Z))
         {
             int heightBelow;
-            for (heightBelow = 1; worldView.getBlockId(x, y - heightBelow, z) == id; ++heightBelow)
+            for (heightBelow = 1; ctx.WorldView.GetBlockId(ctx.X, ctx.Y - heightBelow, ctx.Z) == id; ++heightBelow)
             {
             }
 
             if (heightBelow < 3)
             {
-                int growthStage = worldView.getBlockMeta(x, y, z);
+                int growthStage = ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z);
                 if (growthStage == 15)
                 {
-                    worldView.setBlock(x, y + 1, z, id);
-                    worldView.setBlockMeta(x, y, z, 0);
+                    ctx.WorldWrite.SetBlock(ctx.X, ctx.Y + 1, ctx.Z, id);
+                    ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 0);
                 }
                 else
                 {
-                    worldView.setBlockMeta(x, y, z, growthStage + 1);
+                    ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, growthStage + 1);
                 }
             }
         }
@@ -76,22 +76,22 @@ internal class BlockCactus : Block
         return !base.canPlaceAt(world, x, y, z) ? false : canGrow(world, x, y, z);
     }
 
-    public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickContext ctx)
     {
-        if (!canGrow(world, x, y, z))
+        if (!canGrow(ctx))
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            dropStacks(ctx.WorldView, ctx.X, ctx.Y, ctx.Z, ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z));
+            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
         }
 
     }
 
-    public override bool canGrow(World world, int x, int y, int z)
+    public override bool canGrow(OnTickContext ctx)
     {
-        return canGrow(world.Blocks, x, y, z);
+        return canGrow(ctx.WorldView, ctx.X, ctx.Y, ctx.Z);
     }
 
-    private static bool canGrow(IBlockReader world, int x, int y, int z)
+    private static bool canGrow(WorldBlockView world, int x, int y, int z)
     {
         if (world.getMaterial(x - 1, y, z).IsSolid)
         {
@@ -111,7 +111,7 @@ internal class BlockCactus : Block
         }
         else
         {
-            int blockBelowId = world.getBlockId(x, y - 1, z);
+            int blockBelowId = world.GetBlockId(x, y - 1, z);
             return blockBelowId == Block.Cactus.id || blockBelowId == Block.Sand.id;
         }
     }

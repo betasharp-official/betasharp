@@ -15,7 +15,7 @@ internal class BlockCake : Block
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
     {
-        int slicesEaten = iBlockReader.getBlockMeta(x, y, z);
+        int slicesEaten = iBlockReader.GetBlockMeta(x, y, z);
         float edgeInset = 1.0F / 16.0F;
         float minX = (float)(1 + slicesEaten * 2) / 16.0F;
         float height = 0.5F;
@@ -31,7 +31,7 @@ internal class BlockCake : Block
 
     public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)
     {
-        int slicesEaten = world.getBlockMeta(x, y, z);
+        int slicesEaten = world.GetBlockMeta(x, y, z);
         float edgeInset = 1.0F / 16.0F;
         float minX = (float)(1 + slicesEaten * 2) / 16.0F;
         float height = 0.5F;
@@ -67,59 +67,66 @@ internal class BlockCake : Block
         return false;
     }
 
-    public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
+    public override bool onUse(OnUseContext ctx)
     {
-        tryEat(world, x, y, z, player);
-        return true;
-    }
-
-    public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
-    {
-        tryEat(world, x, y, z, player);
-    }
-
-    private void tryEat(World world, int x, int y, int z, EntityPlayer player)
-    {
-        if (player.health < 20)
+        if (ctx.Player.health < 20)
         {
-            player.heal(3);
-            int var6 = world.getBlockMeta(x, y, z) + 1;
-            if (var6 >= 6)
+            ctx.Player.heal(3);
+            int slicesEaten = ctx.WorldView.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) + 1;
+            if (slicesEaten >= 6)
             {
-                world.setBlock(x, y, z, 0);
+                ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             }
             else
             {
-                world.setBlockMeta(x, y, z, var6);
-                world.setBlocksDirty(x, y, z);
+                ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, slicesEaten);
+                ctx.WorldWrite.SetBlocksDirty(ctx.X, ctx.Y, ctx.Z);
             }
         }
-
+        return true;
     }
 
-    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z)
+    public override void onBlockBreakStart(OnBlockBreakStartContext ctx)
     {
-        return !base.canPlaceAt(world, x, y, z) ? false : canGrow(world, x, y, z);
-    }
-
-    public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
-    {
-        if (!canGrow(world, x, y, z))
+        if (ctx.Player.health < 20)
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            ctx.Player.heal(3);
+            int slicesEaten = ctx.WorldView.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) + 1;
+            if (slicesEaten >= 6)
+            {
+                ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+            }
+            else
+            {
+                ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, slicesEaten);
+                ctx.WorldWrite.SetBlocksDirty(ctx.X, ctx.Y, ctx.Z);
+            }
+        }
+    }
+
+    public override bool canPlaceAt(OnPlacedContext ctx)
+    {
+        return !base.canPlaceAt(ctx) ? false : canGrow(ctx.WorldView, ctx.X, ctx.Y, ctx.Z);
+    }
+
+    public override void neighborUpdate(OnTickContext ctx)
+    {
+        if (!canGrow(ctx.WorldView, ctx.X, ctx.Y, ctx.Z))
+        {
+            dropStacks(ctx.WorldView, ctx.X, ctx.Y, ctx.Z, ctx.WorldView.GetBlockMeta(ctx.X, ctx.Y, ctx.Z));
+            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
         }
 
     }
 
-    public override bool canGrow(World world, int x, int y, int z)
+    public override bool canGrow(OnTickContext ctx)
     {
-        return canGrow(world.Blocks, x, y, z);
+        return canGrow(ctx.WorldView, ctx.X, ctx.Y, ctx.Z);
     }
 
     private static bool canGrow(IBlockReader world, int x, int y, int z)
     {
-        return world.getMaterial(x, y - 1, z).IsSolid;
+        return world.GetMaterial(x, y - 1, z).IsSolid;
     }
 
     public override int getDroppedItemCount(JavaRandom random)

@@ -17,9 +17,9 @@ public sealed class NullBlockReader : IBlockReader
     {
     }
 
-    public int getBlockId(int x, int y, int z) => 0;
+    public int GetBlockId(int x, int y, int z) => 0;
 
-    public BlockEntity? getBlockEntity(int x, int y, int z) => null;
+    public BlockEntity? GetBlockEntity(int x, int y, int z) => null;
 
     public float GetNaturalBrightness(int x, int y, int z, int blockLight) => 1.0f;
 
@@ -29,9 +29,9 @@ public sealed class NullBlockReader : IBlockReader
 
     public Material getMaterial(int x, int y, int z) => Material.Air;
 
-    public bool isOpaque(int x, int y, int z) => false;
+    public bool IsOpaque(int x, int y, int z) => false;
 
-    public bool shouldSuffocate(int x, int y, int z) => false;
+    public bool ShouldSuffocate(int x, int y, int z) => false;
 
-    public BiomeSource getBiomeSource() => null!;
+    public BiomeSource GetBiomeSource() => null!;
 }

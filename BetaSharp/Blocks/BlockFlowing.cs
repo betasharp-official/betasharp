@@ -22,9 +22,9 @@ internal class BlockFlowing : BlockFluid
         world.blockUpdateEvent(x, y, z);
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickContext ctx)
     {
-        int currentState = getLiquidState(worldView, x, y, z);
+        int currentState = getLiquidState(ctx);
         sbyte spreadRate = 1;
         if (material == Material.Lava && !worldView.dimension.EvaporatesWater)
         {

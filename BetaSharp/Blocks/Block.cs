@@ -7,8 +7,80 @@ using BetaSharp.Stats;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Dimensions;
 
 namespace BetaSharp.Blocks;
+
+public struct OnTickContext
+{
+    public WorldBlockView WorldView;
+    public WorldBlockWrite WorldWrite;
+    public WorldEventBroadcaster Broadcaster;
+    public RedstoneEngine RedstoneEngine;
+    public EntityManager Entities;
+    public Dimension Dimension;
+    public LightingEngine Lighting;
+    public JavaRandom Random;
+    public bool IsRemote;
+    public long Time;
+    public int X;
+    public int Y;
+    public int Z;
+    public int Meta;
+    public int BlockId;
+}
+
+public struct OnPlacedContext
+{
+    public WorldBlockView WorldView;
+    public WorldBlockWrite WorldWrite;
+    public EntityLiving Placer;
+    public WorldEventBroadcaster Broadcaster;
+    public bool IsRemote;
+    public int Direction;
+    public int Side;
+    public int X;
+    public int Y;
+    public int Z;
+}
+
+public struct OnUseContext
+{
+    public WorldBlockView WorldView;
+    public WorldBlockWrite WorldWrite;
+    public Dimension Dimension;
+    public EntityManager Entities;
+    public EntityPlayer Player;
+    public bool IsRemote;
+    public int X;
+    public int Y;
+    public int Z;
+}
+
+public struct OnBreakContext
+{
+    public WorldBlockView WorldView;
+    public WorldBlockWrite WorldWrite;
+    public Dimension Dimension;
+    public EntityManager Entities;
+    public Entity Entity;
+    public bool IsRemote;
+    public int X;
+    public int Y;
+    public int Z;
+}
+
+public struct OnBlockBreakStartContext
+{
+    public WorldBlockView WorldView;
+    public WorldBlockWrite WorldWrite;
+    public Dimension Dimension;
+    public EntityPlayer Player;
+    public bool IsRemote;
+    public int X;
+    public int Y;
+    public int Z;
+}
 
 public class Block
 {
@@ -264,17 +336,17 @@ public class Block
         var maxZ = BoundingBox.MaxZ;
         return side == 0 && minY > 0.0D
             ? true
-            : (side == 1 && maxY < 1.0D ? true : (side == 2 && minZ > 0.0D ? true : (side == 3 && maxZ < 1.0D ? true : (side == 4 && minX > 0.0D ? true : (side == 5 && maxX < 1.0D ? true : !iBlockReader.isOpaque(x, y, z))))));
+            : (side == 1 && maxY < 1.0D ? true : (side == 2 && minZ > 0.0D ? true : (side == 3 && maxZ < 1.0D ? true : (side == 4 && minX > 0.0D ? true : (side == 5 && maxX < 1.0D ? true : !iBlockReader.IsOpaque(x, y, z))))));
     }
 
     public virtual bool isSolidFace(IBlockReader iBlockReader, int x, int y, int z, int face)
     {
-        return iBlockReader.getMaterial(x, y, z).IsSolid;
+        return iBlockReader.GetMaterial(x, y, z).IsSolid;
     }
 
     public virtual int getTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
     {
-        return getTexture(side, iBlockReader.getBlockMeta(x, y, z));
+        return getTexture(side, iBlockReader.GetBlockMeta(x, y, z));
     }
 
     public virtual int getTexture(int side, int meta)
@@ -321,7 +393,7 @@ public class Block
         return true;
     }
 
-    public virtual void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public virtual void onTick(OnTickContext ctx)
     {
     }
 
@@ -333,7 +405,7 @@ public class Block
     {
     }
 
-    public virtual void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
+    public virtual void neighborUpdate(OnTickContext ctx)
     {
     }
 
@@ -342,11 +414,11 @@ public class Block
         return 10;
     }
 
-    public virtual void onPlaced(World world, int x, int y, int z)
+    public virtual void onPlaced(OnPlacedContext ctx)
     {
     }
 
-    public virtual void onBreak(World world, int x, int y, int z)
+    public virtual void onBreak(OnBreakContext ctx)
     {
     }
 
@@ -434,18 +506,13 @@ public class Block
         return 0;
     }
 
-    public virtual bool canPlaceAt(WorldBlockView world, int x, int y, int z, int side)
+    public virtual bool canPlaceAt(OnPlacedContext ctx)
     {
-        return canPlaceAt(world, x, y, z);
-    }
-
-    public virtual bool canPlaceAt(WorldBlockView world, int x, int y, int z)
-    {
-        int blockId = world.getBlockId(x, y, z);
+        int blockId = ctx.WorldView.GetBlockId(ctx.X, ctx.Y, ctx.Z);
         return blockId == 0 || Blocks[blockId].material.IsReplaceable;
     }
 
-    public virtual bool onUse(World world, int x, int y, int z, EntityPlayer player)
+    public virtual bool onUse(OnUseContext ctx)
     {
         return false;
     }
@@ -454,11 +521,7 @@ public class Block
     {
     }
 
-    public virtual void onPlaced(World world, int x, int y, int z, int direction)
-    {
-    }
-
-    public virtual void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
+    public virtual void onBlockBreakStart(OnBlockBreakStartContext ctx)
     {
     }
 
@@ -513,16 +576,12 @@ public class Block
     public virtual void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta)
     {
         player.increaseStat(Stats.Stats.MineBlockStatArray[id], 1);
-        dropStacks(world, x, y, z, meta);
+        dropStacks(world.BlocksView, x, y, z, meta);
     }
 
-    public virtual bool canGrow(World world, int x, int y, int z)
+    public virtual bool canGrow(OnTickContext ctx)
     {
         return true;
-    }
-
-    public virtual void onPlaced(World world, int x, int y, int z, EntityLiving placer)
-    {
     }
 
     public Block setBlockName(string name)

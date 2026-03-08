@@ -53,7 +53,7 @@ internal class BlockPumpkin : Block
 
     public override bool canPlaceAt(WorldBlockView world, int x, int y, int z)
     {
-        int blockId = world.getBlockId(x, y, z);
+        int blockId = world.GetBlockId(x, y, z);
         return (blockId == 0 || Block.Blocks[blockId].material.IsReplaceable) && world.shouldSuffocate(x, y - 1, z);
     }
 

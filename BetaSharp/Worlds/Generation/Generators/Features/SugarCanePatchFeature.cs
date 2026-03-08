@@ -19,10 +19,10 @@ internal class SugarCanePatchFeature : Feature
                 continue;
             }
 
-            bool hasWaterNearby = world.Blocks.getMaterial(genX - 1, y - 1, genZ) == Material.Water ||
-                                  world.Blocks.getMaterial(genX + 1, y - 1, genZ) == Material.Water ||
-                                  world.Blocks.getMaterial(genX, y - 1, genZ - 1) == Material.Water ||
-                                  world.Blocks.getMaterial(genX, y - 1, genZ + 1) == Material.Water;
+            bool hasWaterNearby = world.BlocksView.getMaterial(genX - 1, y - 1, genZ) == Material.Water ||
+                                  world.BlocksView.getMaterial(genX + 1, y - 1, genZ) == Material.Water ||
+                                  world.BlocksView.getMaterial(genX, y - 1, genZ - 1) == Material.Water ||
+                                  world.BlocksView.getMaterial(genX, y - 1, genZ + 1) == Material.Water;
 
             if (hasWaterNearby)
             {

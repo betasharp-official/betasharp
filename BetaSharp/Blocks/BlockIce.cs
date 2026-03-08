@@ -40,12 +40,12 @@ internal class BlockIce : BlockBreakable
         return 0;
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickContext ctx)
     {
-        if (worldView.getBrightness(LightType.Block, x, y, z) > 11 - Block.BlockLightOpacity[id])
+        if (ctx.Lighting.GetBrightness(LightType.Block, ctx.X, ctx.Y, ctx.Z) > 11 - BlockLightOpacity[id])
         {
-            dropStacks(worldView, x, y, z, worldView.getBlockMeta(x, y, z));
-            worldView.setBlock(x, y, z, Block.Water.id);
+            dropStacks(ctx.WorldView, ctx.X, ctx.Y, ctx.Z, ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z));
+            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, Block.Water.id);
         }
 
     }

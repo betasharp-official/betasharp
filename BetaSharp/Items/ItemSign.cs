@@ -51,7 +51,7 @@ internal class ItemSign : Item
                 ++x;
             }
 
-            if (!Block.Sign.canPlaceAt(world.Blocks, x, y, z))
+            if (!Block.Sign.canPlaceAt(world.BlocksView, x, y, z))
             {
                 return false;
             }

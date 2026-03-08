@@ -44,9 +44,9 @@ public class BlockGrass : Block
 
     public override int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z)
     {
-        iBlockReader.getBiomeSource().GetBiomesInArea(x, z, 1, 1);
-        double temperature = iBlockReader.getBiomeSource().TemperatureMap[0];
-        double downfall = iBlockReader.getBiomeSource().DownfallMap[0];
+        iBlockReader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
+        double temperature = iBlockReader.GetBiomeSource().TemperatureMap[0];
+        double downfall = iBlockReader.GetBiomeSource().DownfallMap[0];
         return GrassColors.getColor(temperature, downfall);
     }
 
@@ -54,7 +54,7 @@ public class BlockGrass : Block
     {
         if (!worldView.isRemote)
         {
-            if (worldView.getLightLevel(x, y + 1, z) < 4 && Block.BlockLightOpacity[worldView.getBlockId(x, y + 1, z)] > 2)
+            if (worldView.getLightLevel(x, y + 1, z) < 4 && Block.BlockLightOpacity[worldView.GetBlockId(x, y + 1, z)] > 2)
             {
                 if (random.NextInt(4) != 0)
                 {
@@ -68,8 +68,8 @@ public class BlockGrass : Block
                 int spreadX = x + random.NextInt(3) - 1;
                 int spreadY = y + random.NextInt(5) - 3;
                 int spreadZ = z + random.NextInt(3) - 1;
-                int blockAboveId = worldView.getBlockId(spreadX, spreadY + 1, spreadZ);
-                if (worldView.getBlockId(spreadX, spreadY, spreadZ) == Block.Dirt.id && worldView.getLightLevel(spreadX, spreadY + 1, spreadZ) >= 4 && Block.BlockLightOpacity[blockAboveId] <= 2)
+                int blockAboveId = worldView.GetBlockId(spreadX, spreadY + 1, spreadZ);
+                if (worldView.GetBlockId(spreadX, spreadY, spreadZ) == Block.Dirt.id && worldView.getLightLevel(spreadX, spreadY + 1, spreadZ) >= 4 && Block.BlockLightOpacity[blockAboveId] <= 2)
                 {
                     worldView.setBlock(spreadX, spreadY, spreadZ, Block.GrassBlock.id);
                 }

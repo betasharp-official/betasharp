@@ -18,7 +18,7 @@ internal class PathFinder
 
     public PathFinder(World world)
     {
-        _worldMap = world.Blocks;
+        _worldMap = world.BlocksView;
         for (int i = 0; i < _pointPool.Length; i++)
         {
             _pointPool[i] = new PathPoint(0, 0, 0);
@@ -244,7 +244,7 @@ internal class PathFinder
             {
                 for (int iz = z; iz < z + size.Z; ++iz)
                 {
-                    int blockId = _worldMap.getBlockId(ix, iy, iz);
+                    int blockId = _worldMap.GetBlockId(ix, iy, iz);
                     if (blockId > 0)
                     {
                         if (blockId != Block.IronDoor.id && blockId != Block.Door.id)

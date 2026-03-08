@@ -23,7 +23,7 @@ public class FireRenderer : IBlockRenderer
         float fireHeight = 1.4F;
 
         // If not on a solid/flammable floor, render climbing flames on walls
-        if (!ctx.World.shouldSuffocate(pos.x, pos.y - 1, pos.z) && !Block.Fire.isFlammable(ctx.World, pos.x, pos.y - 1, pos.z))
+        if (!ctx.World.ShouldSuffocate(pos.x, pos.y - 1, pos.z) && !Block.Fire.isFlammable(ctx.World, pos.x, pos.y - 1, pos.z))
         {
             float sideInset = 0.2F;
             float yOffset = 1.0F / 16.0F;

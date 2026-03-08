@@ -384,28 +384,28 @@ public class BlockRedstoneWire : Block
         }
         else
         {
-            bool var6 = isPowerProviderOrWire(var1, var2 - 1, var3, var4, 1) || !var1.shouldSuffocate(var2 - 1, var3, var4) && isPowerProviderOrWire(var1, var2 - 1, var3 - 1, var4, -1);
-            bool var7 = isPowerProviderOrWire(var1, var2 + 1, var3, var4, 3) || !var1.shouldSuffocate(var2 + 1, var3, var4) && isPowerProviderOrWire(var1, var2 + 1, var3 - 1, var4, -1);
-            bool var8 = isPowerProviderOrWire(var1, var2, var3, var4 - 1, 2) || !var1.shouldSuffocate(var2, var3, var4 - 1) && isPowerProviderOrWire(var1, var2, var3 - 1, var4 - 1, -1);
-            bool var9 = isPowerProviderOrWire(var1, var2, var3, var4 + 1, 0) || !var1.shouldSuffocate(var2, var3, var4 + 1) && isPowerProviderOrWire(var1, var2, var3 - 1, var4 + 1, -1);
-            if (!var1.shouldSuffocate(var2, var3 + 1, var4))
+            bool var6 = isPowerProviderOrWire(var1, var2 - 1, var3, var4, 1) || !var1.ShouldSuffocate(var2 - 1, var3, var4) && isPowerProviderOrWire(var1, var2 - 1, var3 - 1, var4, -1);
+            bool var7 = isPowerProviderOrWire(var1, var2 + 1, var3, var4, 3) || !var1.ShouldSuffocate(var2 + 1, var3, var4) && isPowerProviderOrWire(var1, var2 + 1, var3 - 1, var4, -1);
+            bool var8 = isPowerProviderOrWire(var1, var2, var3, var4 - 1, 2) || !var1.ShouldSuffocate(var2, var3, var4 - 1) && isPowerProviderOrWire(var1, var2, var3 - 1, var4 - 1, -1);
+            bool var9 = isPowerProviderOrWire(var1, var2, var3, var4 + 1, 0) || !var1.ShouldSuffocate(var2, var3, var4 + 1) && isPowerProviderOrWire(var1, var2, var3 - 1, var4 + 1, -1);
+            if (!var1.ShouldSuffocate(var2, var3 + 1, var4))
             {
-                if (var1.shouldSuffocate(var2 - 1, var3, var4) && isPowerProviderOrWire(var1, var2 - 1, var3 + 1, var4, -1))
+                if (var1.ShouldSuffocate(var2 - 1, var3, var4) && isPowerProviderOrWire(var1, var2 - 1, var3 + 1, var4, -1))
                 {
                     var6 = true;
                 }
 
-                if (var1.shouldSuffocate(var2 + 1, var3, var4) && isPowerProviderOrWire(var1, var2 + 1, var3 + 1, var4, -1))
+                if (var1.ShouldSuffocate(var2 + 1, var3, var4) && isPowerProviderOrWire(var1, var2 + 1, var3 + 1, var4, -1))
                 {
                     var7 = true;
                 }
 
-                if (var1.shouldSuffocate(var2, var3, var4 - 1) && isPowerProviderOrWire(var1, var2, var3 + 1, var4 - 1, -1))
+                if (var1.ShouldSuffocate(var2, var3, var4 - 1) && isPowerProviderOrWire(var1, var2, var3 + 1, var4 - 1, -1))
                 {
                     var8 = true;
                 }
 
-                if (var1.shouldSuffocate(var2, var3, var4 + 1) && isPowerProviderOrWire(var1, var2, var3 + 1, var4 + 1, -1))
+                if (var1.ShouldSuffocate(var2, var3, var4 + 1) && isPowerProviderOrWire(var1, var2, var3 + 1, var4 + 1, -1))
                 {
                     var9 = true;
                 }
@@ -454,7 +454,7 @@ public class BlockRedstoneWire : Block
 
     public static bool isPowerProviderOrWire(IBlockReader var0, int var1, int var2, int var3, int var4)
     {
-        int var5 = var0.getBlockId(var1, var2, var3);
+        int var5 = var0.GetBlockId(var1, var2, var3);
         if (var5 == Block.RedstoneWire.id)
         {
             return true;

@@ -36,7 +36,7 @@ public class WorldTickScheduler
         {
             if (instantBlockUpdateEnabled)
             {
-                int currentBlockId = _blockView.getBlockId(x, y, z);
+                int currentBlockId = _blockView.GetBlockId(x, y, z);
                 if (currentBlockId == blockId && currentBlockId > 0)
                 {
                     Block.Blocks[currentBlockId].onTick(_blockView, x, y, z, _random, _broadcaster, _isRemote);
@@ -74,7 +74,7 @@ public class WorldTickScheduler
                 )
                )
             {
-                int currentBlockId = _blockView.getBlockId(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
+                int currentBlockId = _blockView.GetBlockId(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
                 if (currentBlockId == blockUpdate.BlockId && currentBlockId > 0)
                 {
                     Block.Blocks[currentBlockId].onTick(_blockView, blockUpdate.X, blockUpdate.Y, blockUpdate.Z, _random, _broadcaster, _isRemote);

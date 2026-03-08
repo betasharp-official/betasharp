@@ -176,7 +176,7 @@ public class BlockPistonMoving : BlockWithEntity
 
     private BlockEntityPiston getPistonBlockEntity(IBlockReader iBlockReader, int x, int y, int z)
     {
-        BlockEntity? var5 = iBlockReader.getBlockEntity(x, y, z);
+        BlockEntity? var5 = iBlockReader.GetBlockEntity(x, y, z);
         return var5 != null && var5 is BlockEntityPiston ? (BlockEntityPiston)var5 : null;
     }
 }

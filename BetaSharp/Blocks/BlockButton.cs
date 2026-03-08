@@ -76,47 +76,47 @@ internal class BlockButton : Block
         return world.shouldSuffocate(x - 1, y, z) ? 1 : (world.shouldSuffocate(x + 1, y, z) ? 2 : (world.shouldSuffocate(x, y, z - 1) ? 3 : (world.shouldSuffocate(x, y, z + 1) ? 4 : 1)));
     }
 
-    public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickContext ctx)
     {
-        if (breakIfCannotPlaceAt(world, x, y, z))
+        if (breakIfCannotPlaceAt(ctx.WorldView, ctx.X, ctx.Y, ctx.Z))
         {
-            int facing = world.getBlockMeta(x, y, z) & 7;
+            int facing = ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z) & 7;
             bool shouldBreak = false;
-            if (!world.shouldSuffocate(x - 1, y, z) && facing == 1)
+            if (!ctx.WorldView.shouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z) && facing == 1)
             {
                 shouldBreak = true;
             }
 
-            if (!world.shouldSuffocate(x + 1, y, z) && facing == 2)
+            if (!ctx.WorldView.shouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z) && facing == 2)
             {
                 shouldBreak = true;
             }
 
-            if (!world.shouldSuffocate(x, y, z - 1) && facing == 3)
+            if (!ctx.WorldView.shouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1) && facing == 3)
             {
                 shouldBreak = true;
             }
 
-            if (!world.shouldSuffocate(x, y, z + 1) && facing == 4)
+            if (!ctx.WorldView.shouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1) && facing == 4)
             {
                 shouldBreak = true;
             }
 
             if (shouldBreak)
             {
-                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-                world.setBlock(x, y, z, 0);
+                dropStacks(ctx.WorldView, ctx.X, ctx.Y, ctx.Z, ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z));
+                ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             }
         }
 
     }
 
-    private bool breakIfCannotPlaceAt(WorldBlockView world, int x, int y, int z)
+    private bool breakIfCannotPlaceAt(IBlockReader reader, IBlockWriter writer, int x, int y, int z)
     {
-        if (!canPlaceAt(world, x, y, z))
+        if (!canPlaceAt(reader, writer, x, y, z))
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            dropStacks(reader, writer, x, y, z, reader.GetBlockMeta(x, y, z));
+            writer.SetBlock(x, y, z, 0);
             return false;
         }
         else
@@ -127,7 +127,7 @@ internal class BlockButton : Block
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
     {
-        int meta = iBlockReader.getBlockMeta(x, y, z);
+        int meta = iBlockReader.GetBlockMeta(x, y, z);
         int facing = meta & 7;
         bool isPressed = (meta & 8) > 0;
         float minY = 6.0F / 16.0F;
@@ -176,7 +176,7 @@ internal class BlockButton : Block
         {
             world.setBlockMeta(x, y, z, facing + pressToggle);
             world.setBlocksDirty(x, y, z, x, y, z);
-            world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "random.click", 0.3F, 0.6F);
+            world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "random.click", 0.3F, 0.6F);
             world.notifyNeighbors(x, y, z, id);
             if (facing == 1)
             {
@@ -235,8 +235,8 @@ internal class BlockButton : Block
 
         base.onBreak(world, x, y, z);
     }
-
-    public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side)
+    
+    public override bool isPoweringSide(IBlockReader reader, IBlockWrite writer, int x, int y, int z, int side)
     {
         return (iBlockReader.getBlockMeta(x, y, z) & 8) > 0;
     }
@@ -260,39 +260,39 @@ internal class BlockButton : Block
         return true;
     }
 
-    public override void onTick(WorldBlockView worldView,int x,int y,int z, JavaRandom random,WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickContext ctx)
     {
-        if (!isRemote)
+        if (!ctx.IsRemote)
         {
-            int meta = worldView.getBlockMeta(x, y, z);
+            int meta = ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z);
             if ((meta & 8) != 0)
             {
-                worldView.setBlockMeta(x, y, z, meta & 7);
-                worldView.NotifyNeighbors(x, y, z, id);
+                ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, meta & 7);
+                ctx.WorldView.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, id);
                 int facing = meta & 7;
                 if (facing == 1)
                 {
-                    worldView.NotifyNeighbors(x - 1, y, z, id);
+                    ctx.WorldView.NotifyNeighbors(ctx.X - 1, ctx.Y, ctx.Z, id);
                 }
                 else if (facing == 2)
                 {
-                    worldView.NotifyNeighbors(x + 1, y, z, id);
+                    ctx.WorldView.NotifyNeighbors(ctx.X + 1, ctx.Y, ctx.Z, id);
                 }
                 else if (facing == 3)
                 {
-                    worldView.NotifyNeighbors(x, y, z - 1, id);
+                    ctx.WorldView.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z - 1, id);
                 }
                 else if (facing == 4)
                 {
-                    worldView.NotifyNeighbors(x, y, z + 1, id);
+                    ctx.WorldView.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z + 1, id);
                 }
                 else
                 {
-                    worldView.NotifyNeighbors(x, y - 1, z, id);
+                    ctx.WorldView.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, id);
                 }
 
-                broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.click", 0.3F, 0.5F);
-                broadcaster.setBlocksDirty(x, y, z, x, y, z);
+                ctx.Broadcaster.PlaySoundAtPos(ctx.X + 0.5D, ctx.Y + 0.5D, ctx.Z + 0.5D, "random.click", 0.3F, 0.5F);
+                ctx.WorldWrite.SetBlocksDirty(ctx.X, ctx.Y, ctx.Z);
             }
         }
     }

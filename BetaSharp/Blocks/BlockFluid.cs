@@ -37,9 +37,9 @@ public abstract class BlockFluid : Block
         return side != 0 && side != 1 ? textureId + 1 : textureId;
     }
 
-    protected int getLiquidState(World world, int x, int y, int z)
+    protected int getLiquidState(OnTickContext ctx)
     {
-        return world.getMaterial(x, y, z) != material ? -1 : world.getBlockMeta(x, y, z);
+        return ctx.WorldView.getMaterial(ctx.X, ctx.Y, ctx.Z) != material ? -1 : ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z);
     }
 
     protected int getLiquidDepth(IBlockReader iBlockReader, int x, int y, int z)
@@ -216,7 +216,7 @@ public abstract class BlockFluid : Block
 
     public override void applyVelocity(World world, int x, int y, int z, Entity entity, Vec3D velocity)
     {
-        Vector3D<double> flowVec = getFlow(world.Blocks, x, y, z);
+        Vector3D<double> flowVec = getFlow(world.BlocksView, x, y, z);
         velocity.x += flowVec.X;
         velocity.y += flowVec.Y;
         velocity.z += flowVec.Z;
@@ -234,9 +234,9 @@ public abstract class BlockFluid : Block
         return luminance > luminanceAbove ? luminance : luminanceAbove;
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickContext ctx)
     {
-        base.onTick(worldView, x, y, z, random, broadcaster, isRemote);
+        base.onTick(ctx);
     }
 
     public override int getRenderLayer()
@@ -251,7 +251,7 @@ public abstract class BlockFluid : Block
             int meta = world.getBlockMeta(x, y, z);
             if (meta > 0 && meta < 8)
             {
-                world.playSound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), "liquid.water", random.NextFloat() * 0.25F + 12.0F / 16.0F, random.NextFloat() * 1.0F + 0.5F);
+                world.playSound((double)x + 0.5F, (double)y + 0.5F, (double)z + 0.5F, "liquid.water", random.NextFloat() * 0.25F + 12.0F / 16.0F, random.NextFloat() * 1.0F + 0.5F);
             }
         }
 
@@ -280,74 +280,74 @@ public abstract class BlockFluid : Block
         return flowVec.X == 0.0D && flowVec.Z == 0.0D ? -1000.0D : Math.Atan2(flowVec.Z, flowVec.X) - Math.PI * 0.5D;
     }
 
-    public override void onPlaced(World world, int x, int y, int z)
+    public override void onPlaced(OnPlacedContext ctx)
     {
-        checkBlockCollisions(world, x, y, z);
+        checkBlockCollisions(ctx.WorldView, ctx.WorldWrite, ctx.Broadcaster, ctx.X, ctx.Y, ctx.Z);
     }
 
-    public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int var5)
+    public override void neighborUpdate(OnTickContext ctx)
     {
-        checkBlockCollisions(world, x, y, z);
+        checkBlockCollisions(ctx.WorldView, ctx.WorldWrite, ctx.Broadcaster, ctx.X, ctx.Y, ctx.Z);
     }
 
-    private void checkBlockCollisions(World world, int x, int y, int z)
+    private void checkBlockCollisions(WorldBlockView WorldView,WorldBlockWrite WorldWrite,WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        if (world.getBlockId(x, y, z) == id)
+        if (WorldView.GetBlockId(x, y, z) == id)
         {
             if (material == Material.Lava)
             {
                 bool hasWaterAdjacent = false;
-                if (hasWaterAdjacent || world.getMaterial(x, y, z - 1) == Material.Water)
+                if (hasWaterAdjacent || WorldView.getMaterial(x, y, z - 1) == Material.Water)
                 {
                     hasWaterAdjacent = true;
                 }
 
-                if (hasWaterAdjacent || world.getMaterial(x, y, z + 1) == Material.Water)
+                if (hasWaterAdjacent || WorldView.getMaterial(x, y, z + 1) == Material.Water)
                 {
                     hasWaterAdjacent = true;
                 }
 
-                if (hasWaterAdjacent || world.getMaterial(x - 1, y, z) == Material.Water)
+                if (hasWaterAdjacent || WorldView.getMaterial(x - 1, y, z) == Material.Water)
                 {
                     hasWaterAdjacent = true;
                 }
 
-                if (hasWaterAdjacent || world.getMaterial(x + 1, y, z) == Material.Water)
+                if (hasWaterAdjacent || WorldView.getMaterial(x + 1, y, z) == Material.Water)
                 {
                     hasWaterAdjacent = true;
                 }
 
-                if (hasWaterAdjacent || world.getMaterial(x, y + 1, z) == Material.Water)
+                if (hasWaterAdjacent || WorldView.getMaterial(x, y + 1, z) == Material.Water)
                 {
                     hasWaterAdjacent = true;
                 }
 
                 if (hasWaterAdjacent)
                 {
-                    int var6 = world.getBlockMeta(x, y, z);
+                    int var6 = WorldView.getBlockMeta(x, y, z);
                     if (var6 == 0)
                     {
-                        world.setBlock(x, y, z, Block.Obsidian.id);
+                        WorldWrite.SetBlock(x, y, z, Block.Obsidian.id);
                     }
                     else if (var6 <= 4)
                     {
-                        world.setBlock(x, y, z, Block.Cobblestone.id);
+                        WorldWrite.SetBlock(x, y, z, Block.Cobblestone.id);
                     }
 
-                    fizz(world, x, y, z);
+                    fizz(broadcaster, x, y, z);
                 }
             }
 
         }
     }
 
-    protected void fizz(World world, int x, int y, int z)
+    protected void fizz(WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        world.playSound(x + 0.5F, y + 0.5F, z + 0.5F, "random.fizz", 0.5F, 2.6F + (world.random.NextFloat() - world.random.NextFloat()) * 0.8F);
+        broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, "random.fizz", 0.5F, 2.6F + (Random.Shared.NextSingle() - Random.Shared.NextSingle()) * 0.8F);
 
         for (int particleIndex = 0; particleIndex < 8; ++particleIndex)
         {
-            world.addParticle("largesmoke", x + Random.Shared.NextDouble(), y + 1.2D, (double)z + Random.Shared.NextDouble(), 0.0D, 0.0D, 0.0D);
+            broadcaster.AddParticle("largesmoke", x + Random.Shared.NextDouble(), y + 1.2D, z + Random.Shared.NextDouble(), 0.0D, 0.0D, 0.0D);
         }
 
     }

@@ -33,14 +33,14 @@ internal class BlockDetectorRail : BlockRail
         }
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickContext ctx)
     {
-        if (!worldView.isRemote)
+        if (!ctx.IsRemote)
         {
-            int meta = worldView.getBlockMeta(x, y, z);
+            int meta = ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z);
             if ((meta & 8) != 0)
             {
-                updatePoweredStatus(worldView, x, y, z, meta);
+                updatePoweredStatus(ctx, meta);
             }
         }
     }
@@ -55,12 +55,12 @@ internal class BlockDetectorRail : BlockRail
         return (world.getBlockMeta(x, y, z) & 8) == 0 ? false : side == 1;
     }
 
-    private void updatePoweredStatus(World world, int x, int y, int z, int meta)
+    private void updatePoweredStatus(OnTickContext ctx, int meta)
     {
         bool isPowered = (meta & 8) != 0;
         bool hasMinecart = false;
         float detectionInset = 2.0F / 16.0F;
-        var minecartsOnRail = world.CollectEntitiesOfType<EntityMinecart>(new Box((double)((float)x + detectionInset), (double)y, (double)((float)z + detectionInset), (double)((float)(x + 1) - detectionInset), (double)y + 0.25D, (double)((float)(z + 1) - detectionInset)));
+        var minecartsOnRail = ctx.Entities.CollectEntitiesOfType<EntityMinecart>(new Box((double)((float)ctx.X + detectionInset), (double)ctx.Y, (double)((float)ctx.Z + detectionInset), (double)((float)(ctx.X + 1) - detectionInset), (double)ctx.Y + 0.25D, (double)((float)(ctx.Z + 1) - detectionInset)));
         if (minecartsOnRail.Count > 0)
         {
             hasMinecart = true;
@@ -68,23 +68,23 @@ internal class BlockDetectorRail : BlockRail
 
         if (hasMinecart && !isPowered)
         {
-            world.setBlockMeta(x, y, z, meta | 8);
-            world.notifyNeighbors(x, y, z, id);
-            world.notifyNeighbors(x, y - 1, z, id);
-            world.setBlocksDirty(x, y, z, x, y, z);
+            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, meta | 8);
+            ctx.WorldView.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, id);
+            ctx.WorldView.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, id);
+            ctx.WorldWrite.SetBlocksDirty(ctx.X, ctx.Y, ctx.Z, ctx.X, ctx.Y, ctx.Z);
         }
 
         if (!hasMinecart && isPowered)
         {
-            world.setBlockMeta(x, y, z, meta & 7);
-            world.notifyNeighbors(x, y, z, id);
-            world.notifyNeighbors(x, y - 1, z, id);
-            world.setBlocksDirty(x, y, z, x, y, z);
+            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, meta & 7);
+            ctx.WorldView.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, id);
+            ctx.WorldView.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, id);
+            ctx.WorldWrite.SetBlocksDirty(ctx.X, ctx.Y, ctx.Z, ctx.X, ctx.Y, ctx.Z);
         }
 
         if (hasMinecart)
         {
-            world.ScheduleBlockUpdate(x, y, z, id, getTickRate());
+            ctx.WorldView.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
         }
 
     }

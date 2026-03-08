@@ -83,6 +83,6 @@ internal class BlockSlab : Block
             base.isSideVisible(iBlockReader, x, y, z, side);
         }
 
-        return side == 1 ? true : (!base.isSideVisible(iBlockReader, x, y, z, side) ? false : (side == 0 ? true : iBlockReader.getBlockId(x, y, z) != id));
+        return side == 1 ? true : (!base.isSideVisible(iBlockReader, x, y, z, side) ? false : (side == 0 ? true : iBlockReader.GetBlockId(x, y, z) != id));
     }
 }

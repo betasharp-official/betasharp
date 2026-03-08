@@ -30,10 +30,10 @@ internal class BlockChest : BlockWithEntity
         }
         else
         {
-            int blockNorth = iBlockReader.getBlockId(x, y, z - 1);
-            int blockSouth = iBlockReader.getBlockId(x, y, z + 1);
-            int blockWest = iBlockReader.getBlockId(x - 1, y, z);
-            int blockEast = iBlockReader.getBlockId(x + 1, y, z);
+            int blockNorth = iBlockReader.GetBlockId(x, y, z - 1);
+            int blockSouth = iBlockReader.GetBlockId(x, y, z + 1);
+            int blockWest = iBlockReader.GetBlockId(x - 1, y, z);
+            int blockEast = iBlockReader.GetBlockId(x + 1, y, z);
             int textureOffset;
             int cornerBlock1;
             int cornerBlock2;
@@ -73,8 +73,8 @@ internal class BlockChest : BlockWithEntity
                         textureOffset = -1;
                     }
 
-                    cornerBlock1 = iBlockReader.getBlockId(blockWest == id ? x - 1 : x + 1, y, z - 1);
-                    cornerBlock2 = iBlockReader.getBlockId(blockWest == id ? x - 1 : x + 1, y, z + 1);
+                    cornerBlock1 = iBlockReader.GetBlockId(blockWest == id ? x - 1 : x + 1, y, z - 1);
+                    cornerBlock2 = iBlockReader.GetBlockId(blockWest == id ? x - 1 : x + 1, y, z + 1);
                     if (side == 3)
                     {
                         textureOffset = -1 - textureOffset;
@@ -106,8 +106,8 @@ internal class BlockChest : BlockWithEntity
                     textureOffset = -1;
                 }
 
-                cornerBlock1 = iBlockReader.getBlockId(x - 1, y, blockNorth == id ? z - 1 : z + 1);
-                cornerBlock2 = iBlockReader.getBlockId(x + 1, y, blockNorth == id ? z - 1 : z + 1);
+                cornerBlock1 = iBlockReader.GetBlockId(x - 1, y, blockNorth == id ? z - 1 : z + 1);
+                cornerBlock2 = iBlockReader.GetBlockId(x + 1, y, blockNorth == id ? z - 1 : z + 1);
                 if (side == 4)
                 {
                     textureOffset = -1 - textureOffset;
@@ -138,44 +138,44 @@ internal class BlockChest : BlockWithEntity
         return side == 1 ? textureId - 1 : (side == 0 ? textureId - 1 : (side == 3 ? textureId + 1 : textureId));
     }
 
-    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z)
+    public override bool canPlaceAt(OnPlacedContext ctx)
     {
         int adjacentChestCount = 0;
-        if (world.getBlockId(x - 1, y, z) == id)
+        if (ctx.WorldView.GetBlockId(ctx.X - 1, ctx.Y, ctx.Z) == id)
         {
             ++adjacentChestCount;
         }
 
-        if (world.getBlockId(x + 1, y, z) == id)
+        if (ctx.WorldView.GetBlockId(ctx.X + 1, ctx.Y, ctx.Z) == id)
         {
             ++adjacentChestCount;
         }
 
-        if (world.getBlockId(x, y, z - 1) == id)
+        if (ctx.WorldView.GetBlockId(ctx.X, ctx.Y, ctx.Z - 1) == id)
         {
             ++adjacentChestCount;
         }
 
-        if (world.getBlockId(x, y, z + 1) == id)
+        if (ctx.WorldView.GetBlockId(ctx.X, ctx.Y, ctx.Z + 1) == id)
         {
             ++adjacentChestCount;
         }
 
-        return adjacentChestCount > 1 ? false : (hasNeighbor(world, x - 1, y, z) ? false : (hasNeighbor(world, x + 1, y, z) ? false : (hasNeighbor(world, x, y, z - 1) ? false : !hasNeighbor(world, x, y, z + 1))));
+        return adjacentChestCount > 1 ? false : (hasNeighbor(ctx) ? false : (hasNeighbor(ctx) ? false : (hasNeighbor(ctx) ? false : !hasNeighbor(ctx))));
     }
 
-    private bool hasNeighbor(World world, int x, int y, int z)
+    private bool hasNeighbor(OnPlacedContext ctx)
     {
-        return world.getBlockId(x, y, z) != id ? false : (world.getBlockId(x - 1, y, z) == id ? true : (world.getBlockId(x + 1, y, z) == id ? true : (world.getBlockId(x, y, z - 1) == id ? true : world.getBlockId(x, y, z + 1) == id)));
+        return ctx.WorldView.GetBlockId(ctx.X, ctx.Y, ctx.Z) != id ? false : (ctx.WorldView.GetBlockId(ctx.X - 1, ctx.Y, ctx.Z) == id ? true : (ctx.WorldView.GetBlockId(ctx.X + 1, ctx.Y, ctx.Z) == id ? true : (ctx.WorldView.GetBlockId(ctx.X, ctx.Y, ctx.Z - 1) == id ? true : ctx.WorldView.GetBlockId(ctx.X, ctx.Y, ctx.Z + 1) == id)));
     }
 
-    public override void onBreak(World world, int x, int y, int z)
+    public override void onBreak(OnBreakContext ctx)
     {
-        BlockEntityChest chest = (BlockEntityChest)world.getBlockEntity(x, y, z);
+        BlockEntityChest? chest = (BlockEntityChest?)ctx.WorldView.GetBlockEntity(ctx.X, ctx.Y, ctx.Z);
 
-        for (int slot = 0; slot < chest.size(); ++slot)
+        for (int slot = 0; slot < chest!.size(); ++slot)
         {
-            ItemStack stack = chest.getStack(slot);
+            ItemStack stack = chest!.getStack(slot);
             if (stack != null)
             {
                 float offsetX = random.NextFloat() * 0.8F + 0.1F;
@@ -191,71 +191,71 @@ internal class BlockChest : BlockWithEntity
                     }
 
                     stack.count -= amount;
-                    EntityItem entityItem = new EntityItem(world, (double)((float)x + offsetX), (double)((float)y + offsetY), (double)((float)z + offsetZ), new ItemStack(stack.itemId, amount, stack.getDamage()));
+                    EntityItem entityItem = new EntityItem(ctx.World, ctx.X + offsetX, ctx.Y + offsetY, ctx.Z + offsetZ, new ItemStack(stack.itemId, amount, stack.getDamage()));
                     float var13 = 0.05F;
-                    entityItem.velocityX = (double)((float)random.NextGaussian() * var13);
-                    entityItem.velocityY = (double)((float)random.NextGaussian() * var13 + 0.2F);
-                    entityItem.velocityZ = (double)((float)random.NextGaussian() * var13);
-                    world.SpawnEntity(entityItem);
+                    entityItem.velocityX = random.NextGaussian() * var13 ;
+                    entityItem.velocityY = random.NextGaussian() * var13 + 0.2F;
+                    entityItem.velocityZ = random.NextGaussian() * var13 ;
+                    ctx.Entities.SpawnEntity(entityItem);
                 }
             }
         }
 
-        base.onBreak(world, x, y, z);
+        base.onBreak(ctx);
     }
 
-    public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
+    public override bool onUse(OnUseContext ctx)
     {
-        IInventory chestInventory = (BlockEntityChest)world.getBlockEntity(x, y, z);
-        if (world.shouldSuffocate(x, y + 1, z))
+        IInventory chestInventory = (BlockEntityChest)ctx.WorldView.GetBlockEntity(ctx.X, ctx.Y, ctx.Z);
+        if (ctx.WorldView.ShouldSuffocate(ctx.X, ctx.Y + 1, ctx.Z))
         {
             return true;
         }
-        else if (world.getBlockId(x - 1, y, z) == id && world.shouldSuffocate(x - 1, y + 1, z))
+        else if (ctx.WorldView.GetBlockId(ctx.X - 1, ctx.Y, ctx.Z) == id && ctx.WorldView.ShouldSuffocate(ctx.X - 1, ctx.Y + 1, ctx.Z))
         {
             return true;
         }
-        else if (world.getBlockId(x + 1, y, z) == id && world.shouldSuffocate(x + 1, y + 1, z))
+        else if (ctx.WorldView.GetBlockId(ctx.X + 1, ctx.Y, ctx.Z) == id && ctx.WorldView.ShouldSuffocate(ctx.X + 1, ctx.Y + 1, ctx.Z))
         {
             return true;
         }
-        else if (world.getBlockId(x, y, z - 1) == id && world.shouldSuffocate(x, y + 1, z - 1))
+        else if (ctx.WorldView.GetBlockId(ctx.X, ctx.Y, ctx.Z - 1) == id && ctx.WorldView.ShouldSuffocate(ctx.X, ctx.Y + 1, ctx.Z - 1))
         {
             return true;
         }
-        else if (world.getBlockId(x, y, z + 1) == id && world.shouldSuffocate(x, y + 1, z + 1))
+        else if (ctx.WorldView.GetBlockId(ctx.X, ctx.Y, ctx.Z + 1) == id && ctx.WorldView.ShouldSuffocate(ctx.X, ctx.Y + 1, ctx.Z + 1))
         {
             return true;
         }
         else
         {
-            if (world.getBlockId(x - 1, y, z) == id)
+            if (ctx.WorldView.GetBlockId(ctx.X - 1, ctx.Y, ctx.Z) == id)
             {
-                chestInventory = new InventoryLargeChest("Large chest", (BlockEntityChest)world.getBlockEntity(x - 1, y, z), (IInventory)chestInventory);
+                chestInventory = new InventoryLargeChest("Large chest", (BlockEntityChest)ctx.WorldView.GetBlockEntity(ctx.X - 1, ctx.Y, ctx.Z), chestInventory);
             }
 
-            if (world.getBlockId(x + 1, y, z) == id)
+            if (ctx.WorldView.GetBlockId(ctx.X + 1, ctx.Y, ctx.Z) == id)
             {
-                chestInventory = new InventoryLargeChest("Large chest", (IInventory)chestInventory, (BlockEntityChest)world.getBlockEntity(x + 1, y, z));
+                chestInventory = new InventoryLargeChest("Large chest", chestInventory, (BlockEntityChest)ctx.WorldView.GetBlockEntity(ctx.X + 1, ctx.Y, ctx.Z));
             }
 
-            if (world.getBlockId(x, y, z - 1) == id)
+            if (ctx.WorldView.GetBlockId(ctx.X, ctx.Y, ctx.Z - 1) == id)
             {
-                chestInventory = new InventoryLargeChest("Large chest", (BlockEntityChest)world.getBlockEntity(x, y, z - 1), (IInventory)chestInventory);
+                chestInventory = new InventoryLargeChest("Large chest", (BlockEntityChest)ctx.WorldView.GetBlockEntity(ctx.X, ctx.Y, ctx.Z - 1), chestInventory);
             }
 
-            if (world.getBlockId(x, y, z + 1) == id)
+            if (ctx.WorldView.GetBlockId(ctx.X, ctx.Y, ctx.Z + 1) == id)
             {
-                chestInventory = new InventoryLargeChest("Large chest", (IInventory)chestInventory, (BlockEntityChest)world.getBlockEntity(x, y, z + 1));
+                chestInventory = new InventoryLargeChest("Large chest", chestInventory, (BlockEntityChest)ctx.WorldView.GetBlockEntity(ctx.X, ctx.Y, ctx.Z + 1));
             }
 
-            if (world.isRemote)
+            if (ctx.IsRemote)
             {
                 return true;
             }
             else
             {
-                player.openChestScreen((IInventory)chestInventory);
+                ctx.Player.openChestScreen(chestInventory);
                 return true;
             }
         }

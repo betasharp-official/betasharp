@@ -19,7 +19,7 @@ public class BlockBreakable : Block
 
     public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side)
     {
-        int neighborBlockId = iBlockReader.getBlockId(x, y, z);
+        int neighborBlockId = iBlockReader.GetBlockId(x, y, z);
         return !hideAdjacentFaces && neighborBlockId == id ? false : base.isSideVisible(iBlockReader, x, y, z, side);
     }
 }

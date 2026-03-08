@@ -5,7 +5,6 @@ namespace BetaSharp.Blocks;
 
 internal class BlockRedstoneTorch : BlockTorch
 {
-
     private readonly bool _lit = false;
     private static readonly ThreadLocal<List<RedstoneUpdateInfo>> s_torchUpdates = new(() => []);
 
@@ -14,12 +13,12 @@ internal class BlockRedstoneTorch : BlockTorch
         return side == 1 ? Block.RedstoneWire.getTexture(side, meta) : base.getTexture(side, meta);
     }
 
-    private bool isBurnedOut(World world, int x, int y, int z, bool recordUpdate)
+    private bool isBurnedOut(OnTickContext ctx, bool recordUpdate)
     {
         List<RedstoneUpdateInfo> updates = s_torchUpdates.Value!;
         if (recordUpdate)
         {
-            updates.Add(new RedstoneUpdateInfo(x, y, z, world.getTime()));
+            updates.Add(new RedstoneUpdateInfo(ctx.X, ctx.Y, ctx.Z, ctx.Time));
         }
 
         int updateCount = 0;
@@ -27,7 +26,7 @@ internal class BlockRedstoneTorch : BlockTorch
         for (int i = 0; i < updates.Count; ++i)
         {
             RedstoneUpdateInfo updateInfo = updates[i];
-            if (updateInfo.x == x && updateInfo.y == y && updateInfo.z == z)
+            if (updateInfo.x == ctx.X && updateInfo.y == ctx.Y && updateInfo.z == ctx.Z)
             {
                 ++updateCount;
                 if (updateCount >= 8)
@@ -67,7 +66,6 @@ internal class BlockRedstoneTorch : BlockTorch
             world.notifyNeighbors(x, y, z - 1, id);
             world.notifyNeighbors(x, y, z + 1, id);
         }
-
     }
 
     public override void onBreak(World world, int x, int y, int z)
@@ -81,7 +79,6 @@ internal class BlockRedstoneTorch : BlockTorch
             world.notifyNeighbors(x, y, z - 1, id);
             world.notifyNeighbors(x, y, z + 1, id);
         }
-
     }
 
     public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side)
@@ -97,18 +94,26 @@ internal class BlockRedstoneTorch : BlockTorch
         }
     }
 
-    private bool shouldUnpower(World world, int x, int y, int z)
+    private bool shouldUnpower(OnTickContext ctx)
     {
-        int meta = world.getBlockMeta(x, y, z);
-        return meta == 5 && world.isPoweringSide(x, y - 1, z, 0) || (meta == 3 && world.isPoweringSide(x, y, z - 1, 2) || (meta == 4 && world.isPoweringSide(x, y, z + 1, 3) || (meta == 1 && world.isPoweringSide(x - 1, y, z, 4) || meta == 2 && world.isPoweringSide(x + 1, y, z, 5))));
+        int x = ctx.X;
+        int y = ctx.Y;
+        int z = ctx.Z;
+        var redstoneEngine = ctx.RedstoneEngine;
+        int meta = ctx.WorldView.getBlockMeta(x, y, z);
+        return meta == 5 && redstoneEngine.IsPoweringSide(x, y - 1, z, 0) || (meta == 3 && redstoneEngine.IsPoweringSide(x, y, z - 1, 2) ||
+                                                                     (meta == 4 && redstoneEngine.IsPoweringSide(x, y, z + 1, 3) || (meta == 1 && redstoneEngine.IsPoweringSide(x - 1, y, z, 4) || meta == 2 && redstoneEngine.IsPoweringSide(x + 1, y, z, 5))));
     }
 
-    public override void onTick(WorldBlockView world, int x, int y, int z, JavaRandom random)
+    public override void onTick(OnTickContext ctx)
     {
-        bool shouldTurnOff = shouldUnpower(world, x, y, z);
+        int x = ctx.X;
+        int y = ctx.Y;
+        int z = ctx.Z;
+        bool shouldTurnOff = shouldUnpower(ctx);
         List<RedstoneUpdateInfo> updates = s_torchUpdates.Value!;
 
-        while (updates.Count > 0 && world.getTime() - updates[0].updateTime > 100L)
+        while (updates.Count > 0 && ctx.Time - updates[0].updateTime > 100L)
         {
             updates.RemoveAt(0);
         }
@@ -117,26 +122,25 @@ internal class BlockRedstoneTorch : BlockTorch
         {
             if (shouldTurnOff)
             {
-                world.setBlock(x, y, z, Block.RedstoneTorch.id, world.getBlockMeta(x, y, z));
-                if (isBurnedOut(world, x, y, z, true))
+                ctx.WorldWrite.SetBlock(x, y, z, RedstoneTorch.id, ctx.WorldView.getBlockMeta(x, y, z));
+                if (isBurnedOut(ctx, true))
                 {
-                    world.playSound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), "random.fizz", 0.5F, 2.6F + (world.random.NextFloat() - world.random.NextFloat()) * 0.8F);
+                    ctx.Broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, "random.fizz", 0.5F, 2.6F + (ctx.Random.NextFloat() - ctx.Random.NextFloat()) * 0.8F);
 
                     for (int particleIndex = 0; particleIndex < 5; ++particleIndex)
                     {
-                        double particleX = (double)x + random.NextDouble() * 0.6D + 0.2D;
-                        double particleY = (double)y + random.NextDouble() * 0.6D + 0.2D;
-                        double particleZ = (double)z + random.NextDouble() * 0.6D + 0.2D;
-                        world.addParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+                        double particleX = x + ctx.Random.NextDouble() * 0.6D + 0.2D;
+                        double particleY = y + ctx.Random.NextDouble() * 0.6D + 0.2D;
+                        double particleZ = z + ctx.Random.NextDouble() * 0.6D + 0.2D;
+                        ctx.Broadcaster.AddParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                     }
                 }
             }
         }
-        else if (!shouldTurnOff && !isBurnedOut(world, x, y, z, false))
+        else if (!shouldTurnOff && !isBurnedOut(ctx, false))
         {
-            world.setBlock(x, y, z, Block.LitRedstoneTorch.id, world.getBlockMeta(x, y, z));
+            ctx.WorldView.setBlock(x, y, z, Block.LitRedstoneTorch.id, ctx.WorldView.getBlockMeta(x, y, z));
         }
-
     }
 
     public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
@@ -190,7 +194,6 @@ internal class BlockRedstoneTorch : BlockTorch
             {
                 world.addParticle("reddust", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
             }
-
         }
     }
 }

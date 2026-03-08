@@ -23,5 +23,5 @@ public interface IWorldAccess
 
     void updateBlockEntity(int var1, int var2, int var3, BlockEntity var4);
 
-    void worldEvent(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6);
+    void worldEvent(EntityPlayer? player, int @event, int x, int y, int z, int data);
 }

@@ -22,7 +22,7 @@ public class EntityLightningBolt : EntityWeatherEffect
             int strikeX = MathHelper.Floor(x);
             int strikeY = MathHelper.Floor(y);
             int strikeZ = MathHelper.Floor(z);
-            if (world.getBlockId(strikeX, strikeY, strikeZ) == 0 && Block.Fire.canPlaceAt(world.Blocks, strikeX, strikeY, strikeZ))
+            if (world.getBlockId(strikeX, strikeY, strikeZ) == 0 && Block.Fire.canPlaceAt(world.BlocksView, strikeX, strikeY, strikeZ))
             {
                 world.setBlock(strikeX, strikeY, strikeZ, Block.Fire.id);
             }
@@ -32,7 +32,7 @@ public class EntityLightningBolt : EntityWeatherEffect
                 strikeY = MathHelper.Floor(x) + random.NextInt(3) - 1;
                 strikeZ = MathHelper.Floor(y) + random.NextInt(3) - 1;
                 int fireZ = MathHelper.Floor(z) + random.NextInt(3) - 1;
-                if (world.getBlockId(strikeY, strikeZ, fireZ) == 0 && Block.Fire.canPlaceAt(world.Blocks, strikeY, strikeZ, fireZ))
+                if (world.getBlockId(strikeY, strikeZ, fireZ) == 0 && Block.Fire.canPlaceAt(world.BlocksView, strikeY, strikeZ, fireZ))
                 {
                     world.setBlock(strikeY, strikeZ, fireZ, Block.Fire.id);
                 }
@@ -67,7 +67,7 @@ public class EntityLightningBolt : EntityWeatherEffect
                     int floorX = MathHelper.Floor(x);
                     int floorY = MathHelper.Floor(y);
                     int floorZ = MathHelper.Floor(z);
-                    if (world.getBlockId(floorX, floorY, floorZ) == 0 && Block.Fire.canPlaceAt(world.Blocks, floorX, floorY, floorZ))
+                    if (world.getBlockId(floorX, floorY, floorZ) == 0 && Block.Fire.canPlaceAt(world.BlocksView, floorX, floorY, floorZ))
                     {
                         world.setBlock(floorX, floorY, floorZ, Block.Fire.id);
                     }

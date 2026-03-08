@@ -109,27 +109,27 @@ internal class BlockTrapDoor : Block
         }
     }
 
-    public void setOpen(World world, int x, int y, int z, bool open)
+    public void setOpen(OnTickContext ctx, bool open)
     {
-        int meta = world.getBlockMeta(x, y, z);
+        int meta = ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z);
         bool isOpen = (meta & 4) > 0;
         if (isOpen != open)
         {
-            world.setBlockMeta(x, y, z, meta ^ 4);
-            world.worldEvent((EntityPlayer)null, 1003, x, y, z, 0);
+            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, meta ^ 4);
+            ctx.Broadcaster.WorldEvent(1003, ctx.X, ctx.Y, ctx.Z, 0);
         }
     }
 
-    public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickContext ctx)
     {
-        if (!world.isRemote)
+        if (!ctx.IsRemote)
         {
-            int meta = world.getBlockMeta(x, y, z);
-            int xPos = x;
-            int zPos = z;
+            int meta = ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z);
+            int xPos = ctx.X;
+            int zPos = ctx.Z;
             if ((meta & 3) == 0)
             {
-                zPos = z + 1;
+                zPos = ctx.Z + 1;
             }
 
             if ((meta & 3) == 1)
@@ -139,7 +139,7 @@ internal class BlockTrapDoor : Block
 
             if ((meta & 3) == 2)
             {
-                xPos = x + 1;
+                xPos = ctx.X + 1;
             }
 
             if ((meta & 3) == 3)
@@ -147,16 +147,16 @@ internal class BlockTrapDoor : Block
                 --xPos;
             }
 
-            if (!world.shouldSuffocate(xPos, y, zPos))
+            if (!ctx.WorldView.shouldSuffocate(xPos, ctx.Y, zPos))
             {
-                world.setBlock(x, y, z, 0);
-                dropStacks(world, x, y, z, meta);
+                ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+                dropStacks(ctx.WorldView, ctx.X, ctx.Y, ctx.Z, meta);
             }
 
             if (id > 0 && Block.Blocks[id].canEmitRedstonePower())
             {
-                bool isPowered = world.isPowered(x, y, z);
-                setOpen(world, x, y, z, isPowered);
+                bool isPowered = ctx.RedstoneEngine.IsPowered(ctx.X, ctx.Y, ctx.Z);
+                setOpen(ctx, isPowered);
             }
 
         }

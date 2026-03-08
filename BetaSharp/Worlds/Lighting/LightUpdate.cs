@@ -87,7 +87,7 @@ internal struct LightUpdate
                         {
                             int var16 = lighting.GetBrightness(_lightType, var10, var27, var11);
                             bool var17 = false;
-                            int var18 = world.getBlockId(var10, var27, var11);
+                            int var18 = world.GetBlockId(var10, var27, var11);
                             int var19 = Block.BlockLightOpacity[var18];
                             if (var19 == 0)
                             {

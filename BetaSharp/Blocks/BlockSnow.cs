@@ -42,7 +42,7 @@ internal class BlockSnow : Block
 
     public override bool canPlaceAt(WorldBlockView world, int x, int y, int z)
     {
-        int blockBelowId = world.getBlockId(x, y - 1, z);
+        int blockBelowId = world.GetBlockId(x, y - 1, z);
         return blockBelowId != 0 && Block.Blocks[blockBelowId].isOpaque() ? world.getMaterial(x, y - 1, z).BlocksMovement : false;
     }
 
@@ -51,7 +51,7 @@ internal class BlockSnow : Block
         breakIfCannotPlace(world, x, y, z);
     }
 
-    private bool breakIfCannotPlace(World world, int x, int y, int z)
+    private bool breakIfCannotPlace(WorldBlockView world, int x, int y, int z)
     {
         if (!canPlaceAt(world, x, y, z))
         {
@@ -89,12 +89,12 @@ internal class BlockSnow : Block
         return 0;
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickContext ctx)
     {
-        if (worldView.getBrightness(LightType.Block, x, y, z) > 11)
+        if (ctx.Lighting.GetBrightness(LightType.Block, ctx.X, ctx.Y, ctx.Z) > 11)
         {
-            dropStacks(worldView, x, y, z, worldView.getBlockMeta(x, y, z));
-            worldView.setBlock(x, y, z, 0);
+            dropStacks(ctx.WorldView, ctx.X, ctx.Y, ctx.Z, ctx.WorldView.getBlockMeta(ctx.X, ctx.Y, ctx.Z));
+            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
         }
 
     }

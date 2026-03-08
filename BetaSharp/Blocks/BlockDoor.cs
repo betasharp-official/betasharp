@@ -67,7 +67,7 @@ internal class BlockDoor : Block
 
     public override Box getBoundingBox(World world, int x, int y, int z)
     {
-        updateBoundingBox(world.Blocks, x, y, z);
+        updateBoundingBox(world.BlocksView, x, y, z);
         return base.getBoundingBox(world, x, y, z);
     }
 
@@ -179,7 +179,7 @@ internal class BlockDoor : Block
         int meta = world.getBlockMeta(x, y, z);
         if ((meta & 8) != 0)
         {
-            if (world.getBlockId(x, y - 1, z) != base.id)
+            if (world.GetBlockId(x, y - 1, z) != base.id)
             {
                 world.setBlock(x, y, z, 0);
             }
@@ -192,7 +192,7 @@ internal class BlockDoor : Block
         else
         {
             bool wasBroken = false;
-            if (world.getBlockId(x, y + 1, z) != base.id)
+            if (world.GetBlockId(x, y + 1, z) != base.id)
             {
                 world.setBlock(x, y, z, 0);
                 wasBroken = true;
@@ -202,7 +202,7 @@ internal class BlockDoor : Block
             {
                 world.setBlock(x, y, z, 0);
                 wasBroken = true;
-                if (world.getBlockId(x, y + 1, z) == base.id)
+                if (world.GetBlockId(x, y + 1, z) == base.id)
                 {
                     world.setBlock(x, y + 1, z, 0);
                 }

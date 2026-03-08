@@ -159,27 +159,27 @@ internal class BlockFurnace : BlockWithEntity
         return new BlockEntityFurnace();
     }
 
-    public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
+    public override void onPlaced(OnPlacedContext ctx)
     {
-        int direction = MathHelper.Floor((double)(placer.yaw * 4.0F / 360.0F) + 0.5D) & 3;
+        int direction = MathHelper.Floor((ctx.Placer.yaw * 4.0F / 360.0F) + 0.5D) & 3;
         if (direction == 0)
         {
-            world.setBlockMeta(x, y, z, 2);
+            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 2);
         }
 
         if (direction == 1)
         {
-            world.setBlockMeta(x, y, z, 5);
+            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 5);
         }
 
         if (direction == 2)
         {
-            world.setBlockMeta(x, y, z, 3);
+            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 3);
         }
 
         if (direction == 3)
         {
-            world.setBlockMeta(x, y, z, 4);
+            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 4);
         }
 
     }
