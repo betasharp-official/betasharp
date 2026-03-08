@@ -1589,7 +1589,7 @@ public partial class BetaSharp
 
             newWorld.addPlayer(player);
 
-            skinManager.RequestDownload(session.username);
+            skinManager.RequestDownload(player.skinUrl);
 
             if (newWorld.isNewWorld)
             {
