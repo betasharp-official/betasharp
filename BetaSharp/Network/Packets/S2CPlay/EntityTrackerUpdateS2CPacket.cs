@@ -24,6 +24,7 @@ public class EntityTrackerUpdateS2CPacket() : PacketBaseEntity(PacketId.EntityTr
     {
         base.Write(stream);
         stream.Write(Data);
+        stream.WriteByte(127);
     }
 
     public override void Apply(NetHandler handler)
@@ -33,7 +34,6 @@ public class EntityTrackerUpdateS2CPacket() : PacketBaseEntity(PacketId.EntityTr
 
     public override int Size()
     {
-        // TODO : this is wrong
-        return 5;
+        return base.Size() + Data.Length + 1;
     }
 }
