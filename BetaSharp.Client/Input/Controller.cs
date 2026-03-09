@@ -1,101 +1,82 @@
 using Silk.NET.GLFW;
-using System;
-using System.Collections.Generic;
 
 namespace BetaSharp.Client.Input;
 
 public static class Controller
 {
-    private static bool created;
-    private static Glfw glfw;
-    private static unsafe WindowHandle* window;
+    private static bool s_created;
+    private static Glfw? s_glfw;
+    private static unsafe WindowHandle* s_window;
 
-    public static int GamepadJoystickIndex = -1;
+    private static int s_gamepadJoystickIndex = -1;
 
-    // We'll track the standard 15 gamepad buttons + 6 axes
-    private static readonly bool[] buttons = new bool[15];
-    private static readonly float[] axes = new float[6];
+    private static readonly bool[] s_buttons = new bool[15];
+    private static readonly float[] s_axes = new float[6];
 
-    // Previous state (to detect presses)
-    private static readonly bool[] lastButtons = new bool[15];
+    private static readonly bool[] s_lastButtons = new bool[15];
 
-    // Event queue for button presses
-    private static readonly Queue<ControllerEvent> eventQueue = new();
-    private static ControllerEvent current_event = new();
-
-    private static int _debugFrames = 0;
+    private static readonly Queue<ControllerEvent> s_eventQueue = new();
+    private static ControllerEvent s_current_event = new();
 
     public static unsafe void create(Glfw glfwApi, WindowHandle* windowHandle)
     {
-        if (created) return;
-        glfw = glfwApi;
-        window = windowHandle;
-        created = true;
+        if (s_created) return;
+        s_glfw = glfwApi;
+        s_window = windowHandle;
+        s_created = true;
 
-        Console.WriteLine("Controller.create called. Checking joysticks...");
-        bool found = false;
         for (int i = 0; i < 16; i++)
         {
-            if (glfw.JoystickPresent(i))
+            if (s_glfw.JoystickPresent(i))
             {
-                bool isGamepad = glfw.JoystickIsGamepad(i);
-                string name = glfw.GetJoystickName(i);
-                Console.WriteLine($"Joystick {i} present. Name: {name}, IsGamepad: {isGamepad}");
-                found = true;
+                bool isGamepad = s_glfw.JoystickIsGamepad(i);
+                string name = s_glfw.GetJoystickName(i);
 
                 if (isGamepad)
                 {
-                    // Prefer the first one we find, but override if we find "Xbox"
-                    if (GamepadJoystickIndex == -1 || name.Contains("Xbox", StringComparison.OrdinalIgnoreCase))
+                    if (s_gamepadJoystickIndex == -1 || name.Contains("Xbox", StringComparison.OrdinalIgnoreCase))
                     {
-                        GamepadJoystickIndex = i;
+                        s_gamepadJoystickIndex = i;
                     }
                 }
             }
         }
-        if (!found) Console.WriteLine("No joysticks present at all.");
-        Console.WriteLine($"Selected Gamepad Index: {GamepadJoystickIndex}");
     }
 
     public static bool IsGamepadConnected()
     {
-        if (!created || GamepadJoystickIndex == -1) return false;
-        return glfw.JoystickIsGamepad(GamepadJoystickIndex);
+        if (!s_created || s_gamepadJoystickIndex == -1 || s_glfw == null) return false;
+        return s_glfw.JoystickIsGamepad(s_gamepadJoystickIndex);
     }
 
-    // Call this every frame in the main loop to poll state and generate events
     public static unsafe void PollEvents()
     {
-        if (!created) return;
+        if (!s_created || s_glfw == null) return;
         if (!IsGamepadConnected())
         {
-            // Optional: periodically check if it got connected? Actually GLFW handles this, but let's just return.
             return;
         }
 
-        bool success = glfw.GetGamepadState(GamepadJoystickIndex, out GamepadState state);
+        bool success = s_glfw.GetGamepadState(s_gamepadJoystickIndex, out GamepadState state);
         if (!success)
         {
-            Console.WriteLine($"Failed to get GamepadState for index {GamepadJoystickIndex}");
             return;
         }
 
-        // Update Axes
         for (int i = 0; i < 6; i++)
         {
-            axes[i] = state.Axes[i];
+            s_axes[i] = state.Axes[i];
         }
 
-        // Update Buttons and generate events
         for (int i = 0; i < 15; i++)
         {
-            lastButtons[i] = buttons[i];
-            bool isDown = state.Buttons[i] == 1; // 1 represents GLFW_PRESS
-            buttons[i] = isDown;
+            s_lastButtons[i] = s_buttons[i];
+            bool isDown = state.Buttons[i] == 1;
+            s_buttons[i] = isDown;
 
-            if (isDown != lastButtons[i])
+            if (isDown != s_lastButtons[i])
             {
-                eventQueue.Enqueue(new ControllerEvent
+                s_eventQueue.Enqueue(new ControllerEvent
                 {
                     Button = i,
                     State = isDown,
@@ -107,42 +88,40 @@ public static class Controller
 
     public static bool Next()
     {
-        if (!created) return false;
+        if (!s_created) return false;
 
-        if (eventQueue.Count > 0)
+        if (s_eventQueue.Count > 0)
         {
-            current_event = eventQueue.Dequeue();
-            Console.WriteLine(current_event);
+            s_current_event = s_eventQueue.Dequeue();
+            Console.WriteLine(s_current_event);
             return true;
         }
 
         return false;
     }
 
-    public static int GetEventButton() => current_event.Button;
-    public static bool GetEventButtonState() => current_event.State;
-    public static long GetEventNanoseconds() => current_event.Nanos;
+    public static int GetEventButton() => s_current_event.Button;
+    public static bool GetEventButtonState() => s_current_event.State;
+    public static long GetEventNanoseconds() => s_current_event.Nanos;
 
     public static bool IsButtonDown(GamepadButton button)
     {
         int btnIdx = (int)button;
-        if (!created || btnIdx < 0 || btnIdx >= 15) return false;
-        return buttons[btnIdx];
+        if (!s_created || btnIdx < 0 || btnIdx >= 15) return false;
+        return s_buttons[btnIdx];
     }
 
     public static float GetAxis(int axisIdx)
     {
-        if (!created || axisIdx < 0 || axisIdx >= 6) return 0f;
-        return axes[axisIdx];
+        if (!s_created || axisIdx < 0 || axisIdx >= 6) return 0f;
+        return s_axes[axisIdx];
     }
 
-    // Helper properties for common sticks
     public static float LeftStickX => GetAxis(0);
     public static float LeftStickY => GetAxis(1);
     public static float RightStickX => GetAxis(2);
     public static float RightStickY => GetAxis(3);
 
-    // Helper to detect if controller is actively being used (any stick beyond deadzone or any button pressed)
     public static bool IsActive()
     {
         if (!IsGamepadConnected()) return false;
@@ -156,19 +135,19 @@ public static class Controller
 
         for (int i = 0; i < 15; i++)
         {
-            if (buttons[i]) return true;
+            if (s_buttons[i]) return true;
         }
 
         return false;
     }
 
-    public static bool IsCreated() => created;
+    public static bool IsCreated() => s_created;
 
     public static void Destroy()
     {
-        if (!created) return;
-        created = false;
-        eventQueue.Clear();
+        if (!s_created) return;
+        s_created = false;
+        s_eventQueue.Clear();
     }
 
     private static long GetNanos()
