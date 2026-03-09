@@ -26,8 +26,7 @@ public class ClientWorld : World
         StateManager = netHandler.clientPersistentStateManager;
         Entities.OnEntityAdded += HandleEntityAdded;
         Entities.OnEntityRemoved += HandleEntityRemoved;
-        BlockWriter.OnBlockChanged += HandleBlockChanged;
-        Environment.OnTickWeather += ClientWeatherTick;
+        BlockWriter.OnBlockChangedWithPrev += HandleBlockChanged;
     }
 
     public override void Tick()
@@ -64,12 +63,12 @@ public class ClientWorld : World
             BlockReset blockReset = _blockResets[i];
             if (--blockReset.Delay == 0)
             {
-                BlockWriter.OnBlockChanged -= HandleBlockChanged;
+                BlockWriter.OnBlockChangedWithPrev -= HandleBlockChanged;
 
                 BlockWriter.SetBlockWithoutNotifyingNeighbors(blockReset.X, blockReset.Y, blockReset.Z, blockReset.BlockId, blockReset.Meta);
                 Broadcaster.BlockUpdateEvent(blockReset.X, blockReset.Y, blockReset.Z);
 
-                BlockWriter.OnBlockChanged += HandleBlockChanged;
+                BlockWriter.OnBlockChangedWithPrev += HandleBlockChanged;
 
                 _blockResets.RemoveAt(i--);
             }
@@ -205,18 +204,4 @@ public class ClientWorld : World
     public override void Disconnect() => _networkHandler.sendPacketAndDisconnect(DisconnectPacket.Get("Quitting"));
 
 
-    private bool ClientWeatherTick()
-    {
-        if (dimension.HasCeiling) return false;
-
-        if (Environment.TicksSinceLightning > 0) --Environment.TicksSinceLightning;
-
-        Environment.PrevRainingStrength = Environment.RainingStrength;
-        Environment.RainingStrength = MathHelper.Clamp(Environment.RainingStrength + (Properties.IsRaining ? 0.01f : -0.01f), 0.0f, 1.0f);
-
-        Environment.PrevThunderingStrength = Environment.ThunderingStrength;
-        Environment.ThunderingStrength = MathHelper.Clamp(Environment.ThunderingStrength + (Properties.IsThundering ? 0.01f : -0.01f), 0.0f, 1.0f);
-
-        return false;
-    }
 }

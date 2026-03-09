@@ -75,6 +75,8 @@ internal class ChunkMeshGenerator : IDisposable
             pos.Z + SubChunkRenderer.Size + 1
         );
 
+        LightingEngine lighting = world.Lighting;
+
         Task.Run(async () =>
         {
             if (concurrencySemaphore != null)
@@ -82,7 +84,7 @@ internal class ChunkMeshGenerator : IDisposable
 
             try
             {
-                MeshBuildResult mesh = GenerateMesh(pos, version, cache);
+                MeshBuildResult mesh = GenerateMesh(pos, version, cache, lighting);
                 lock (results)
                     results.Enqueue(mesh);
             }
@@ -94,7 +96,7 @@ internal class ChunkMeshGenerator : IDisposable
         });
     }
 
-    private MeshBuildResult GenerateMesh(Vector3D<int> pos, long version, WorldRegionSnapshot cache)
+    private MeshBuildResult GenerateMesh(Vector3D<int> pos, long version, WorldRegionSnapshot cache, LightingEngine lighting)
     {
         int minX = pos.X;
         int minY = pos.Y;
@@ -134,7 +136,7 @@ internal class ChunkMeshGenerator : IDisposable
                         if (blockPass != pass)
                             hasNextPass = true;
                         else
-                            BlockRenderer.RenderBlockByRenderType(cache, b, new BlockPos(x, y, z), tess);
+                            BlockRenderer.RenderBlockByRenderType(cache, lighting, b, new BlockPos(x, y, z), tess);
                     }
                 }
             }

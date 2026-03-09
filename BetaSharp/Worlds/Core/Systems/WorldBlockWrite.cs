@@ -20,11 +20,19 @@ public sealed class WorldBlockWrite : IBlockWrite
     public event Action<int, int, int, int>? OnBlockChanged;
     public event Action<int, int, int, int>? OnNeighborsShouldUpdate;
 
+    /// <summary>
+    /// Fires after a block write, carrying (x, y, z, prevId, prevMeta, newId, newMeta).
+    /// </summary>
+    public event Action<int, int, int, int, int, int, int>? OnBlockChangedWithPrev;
+
     public bool SetBlock(int x, int y, int z, int blockId)
     {
+        int prevId = _reader.GetBlockId(x, y, z);
+        int prevMeta = _reader.GetMeta(x, y, z);
         if (SetBlockWithoutNotifyingNeighbors(x, y, z, blockId))
         {
             OnBlockChanged?.Invoke(x, y, z, blockId);
+            OnBlockChangedWithPrev?.Invoke(x, y, z, prevId, prevMeta, blockId, 0);
             return true;
         }
 
@@ -33,9 +41,12 @@ public sealed class WorldBlockWrite : IBlockWrite
 
     public bool SetBlock(int x, int y, int z, int blockId, int meta)
     {
+        int prevId = _reader.GetBlockId(x, y, z);
+        int prevMeta = _reader.GetMeta(x, y, z);
         if (SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta))
         {
             OnBlockChanged?.Invoke(x, y, z, blockId);
+            OnBlockChangedWithPrev?.Invoke(x, y, z, prevId, prevMeta, blockId, meta);
             return true;
         }
 

@@ -85,6 +85,7 @@ public class BlockRenderer
         var uiCtx = new BlockRenderContext(
             blockReader: NullBlockReader.Instance,
             tess: tess,
+            lighting: null,
             renderAllFaces: true,
             enableAo: false,
             overrideTexture: -1
@@ -165,7 +166,7 @@ public class BlockRenderer
             BlockPos itemPos = new BlockPos(0, 0, 0);
             tess.startDrawingQuads();
             tess.setNormal(0.0F, 1.0F, 0.0F);
-            RenderBlockByRenderType(NullBlockReader.Instance, block, itemPos, tess, uiCtx.OverrideTexture, true);
+            RenderBlockByRenderType(NullBlockReader.Instance, null, block, itemPos, tess, uiCtx.OverrideTexture, true);
             tess.draw();
             GLManager.GL.Translate(0.5F, 0.5F, 0.5F);
         }
