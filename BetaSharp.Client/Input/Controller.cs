@@ -131,6 +131,10 @@ public static class Controller
                 return axisValue;
             }
         }
+        else
+        {
+            return axisValue;
+        }
 
         return 0.0f;
     }
@@ -139,6 +143,8 @@ public static class Controller
     public static float LeftStickY => GetAxis(1);
     public static float RightStickX => GetAxis(2);
     public static float RightStickY => GetAxis(3);
+    public static float LeftTrigger => (GetAxis(4) + 1.0f) / 2.0f;
+    public static float RightTrigger => (GetAxis(5) + 1.0f) / 2.0f;
 
     public static float LeftStickDeadzone => 0.1f;
     public static float RightStickDeadzone => 0.1f;

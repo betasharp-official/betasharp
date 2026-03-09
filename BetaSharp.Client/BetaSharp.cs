@@ -103,6 +103,13 @@ public partial class BetaSharp
     public InternalServer? internalServer;
     private GLErrorHandler _glErrorHandler;
 
+    private bool _wasLeftBumperDown;
+    private bool _wasRightBumperDown;
+    private bool _wasLeftTriggerDown;
+    private bool _wasRightTriggerDown;
+    private bool _wasStartButtonDown;
+    private bool _wasYButtonDown;
+
     public bool isControllerMode;
     public float virtualCursorX;
     public float virtualCursorY;
@@ -1544,6 +1551,51 @@ public partial class BetaSharp
 
         if (currentScreen == null)
         {
+            if (isControllerMode && inGameHasFocus)
+            {
+                bool lbDown = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.LeftBumper);
+                bool rbDown = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.RightBumper);
+                bool ltDown = Controller.LeftTrigger > 0.5f;
+                bool rtDown = Controller.RightTrigger > 0.5f;
+                bool startDown = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.Start);
+                bool yDown = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.Y);
+
+                if (lbDown && !_wasLeftBumperDown) player.inventory.changeCurrentItem(1);
+                if (rbDown && !_wasRightBumperDown) player.inventory.changeCurrentItem(-1);
+
+                if (startDown && !_wasStartButtonDown) displayInGameMenu();
+                if (yDown && !_wasYButtonDown) displayGuiScreen(new GuiInventory(player));
+
+                if (rtDown && !_wasRightTriggerDown)
+                {
+                    clickMouse(0);
+                    mouseTicksRan = ticksRan;
+                }
+                else if (rtDown && (float)(ticksRan - mouseTicksRan) >= Timer.ticksPerSecond / 4.0F)
+                {
+                    clickMouse(0);
+                    mouseTicksRan = ticksRan;
+                }
+
+                if (ltDown && !_wasLeftTriggerDown)
+                {
+                    clickMouse(1);
+                    mouseTicksRan = ticksRan;
+                }
+                else if (ltDown && (float)(ticksRan - mouseTicksRan) >= Timer.ticksPerSecond / 4.0F)
+                {
+                    clickMouse(1);
+                    mouseTicksRan = ticksRan;
+                }
+
+                _wasLeftBumperDown = lbDown;
+                _wasRightBumperDown = rbDown;
+                _wasLeftTriggerDown = ltDown;
+                _wasRightTriggerDown = rtDown;
+                _wasStartButtonDown = startDown;
+                _wasYButtonDown = yDown;
+            }
+
             if (Mouse.isButtonDown(0) && (float)(ticksRan - mouseTicksRan) >= Timer.ticksPerSecond / 4.0F &&
                 inGameHasFocus)
             {
@@ -1559,7 +1611,7 @@ public partial class BetaSharp
             }
         }
 
-        func_6254_a(0, currentScreen == null && Mouse.isButtonDown(0) && inGameHasFocus);
+        func_6254_a(0, currentScreen == null && (Mouse.isButtonDown(0) || _wasRightTriggerDown) && inGameHasFocus);
     }
 
     private void forceReload()
