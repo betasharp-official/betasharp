@@ -55,7 +55,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
 
     public int getMaxCountPerStack() => 64;
 
-    public bool canPlayerUse(EntityPlayer player) => World.getBlockEntity(X, Y, Z) != this ? false : player.getSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
+    public bool canPlayerUse(EntityPlayer player) => Level.getBlockEntity(X, Y, Z) != this ? false : player.getSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
 
     public override void readNbt(NBTTagCompound nbt)
     {
@@ -122,7 +122,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             --burnTime;
         }
 
-        if (!World.isRemote)
+        if (!Level.IsRemote)
         {
             if (burnTime == 0 && canAcceptRecipeOutput())
             {
@@ -159,7 +159,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             if (wasBurning != burnTime > 0)
             {
                 stateChanged = true;
-                BlockFurnace.updateLitState(burnTime > 0, World, X, Y, Z);
+                BlockFurnace.updateLitState(burnTime > 0, Level, X, Y, Z);
             }
         }
 

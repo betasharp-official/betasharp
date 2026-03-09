@@ -1,9 +1,5 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
-
 namespace BetaSharp.Blocks;
 
 internal class BlockNote : BlockWithEntity
@@ -14,73 +10,74 @@ internal class BlockNote : BlockWithEntity
 
     public override int getTexture(int side) => textureId;
 
-    public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickEvt evt)
     {
-        if (id > 0 && Blocks[id].canEmitRedstonePower())
-        {
-            bool isPowered = world.isStrongPowered(x, y, z);
-            BlockEntityNote blockEntity = (BlockEntityNote)world.getBlockEntity(x, y, z);
-            if (blockEntity.powered != isPowered)
+        if (!(evt.BlockId > 0 && Blocks[evt.BlockId].canEmitRedstonePower())) return;
+        
+            bool isPowered = evt.Level.Redstone.IsStrongPowered(evt.X, evt.Y, evt.Z);
+            BlockEntityNote? blockEntity = (BlockEntityNote?)evt.Level.Entities.GetBlockEntity(evt.X, evt.Y, evt.Z);
+            if (blockEntity != null && blockEntity.powered != isPowered)
             {
                 if (isPowered)
                 {
-                    blockEntity.playNote(world, x, y, z);
+                    blockEntity.playNote(evt.Level, evt.X, evt.Y, evt.Z);
                 }
 
                 blockEntity.powered = isPowered;
             }
-        }
+        
     }
 
-    public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
+    public override bool onUse(OnUseEvt evt)
     {
-        if (world.isRemote)
+        if (evt.Level.IsRemote)
         {
             return true;
         }
 
-        BlockEntityNote blockEntity = (BlockEntityNote)world.getBlockEntity(x, y, z);
+        BlockEntityNote? blockEntity = (BlockEntityNote?)evt.Level.Entities.GetBlockEntity(evt.X, evt.Y, evt.Z);
+        if(blockEntity == null) return false;
         blockEntity.cycleNote();
-        blockEntity.playNote(world, x, y, z);
+        blockEntity.playNote(evt.Level, evt.X, evt.Y, evt.Z);
         return true;
     }
 
-    public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
+    public override void onBlockBreakStart(OnBlockBreakStartEvt evt)
     {
-        if (!world.isRemote)
+        if (!evt.Level.IsRemote)
         {
-            BlockEntityNote blockEntity = (BlockEntityNote)world.getBlockEntity(x, y, z);
-            blockEntity.playNote(world, x, y, z);
+            BlockEntityNote? blockEntity = (BlockEntityNote?)evt.Level.Entities.GetBlockEntity(evt.X, evt.Y, evt.Z);
+            blockEntity?.playNote(evt.Level, evt.X, evt.Y, evt.Z);
         }
     }
 
     protected override BlockEntity getBlockEntity() => new BlockEntityNote();
 
-    public override void onBlockAction(World world, int x, int y, int z, int data1, int data2)
+    public override void onBlockAction(OnBlockActionEvt evt)
     {
-        float pitch = (float)Math.Pow(2.0D, (data2 - 12) / 12.0D);
+        float pitch = (float)Math.Pow(2.0D, (evt.Data2 - 12) / 12.0D);
         string instrumentName = "harp";
-        if (data1 == 1)
+        if (evt.Data1 == 1)
         {
             instrumentName = "bd";
         }
 
-        if (data1 == 2)
+        if (evt.Data1 == 2)
         {
             instrumentName = "snare";
         }
 
-        if (data1 == 3)
+        if (evt.Data1 == 3)
         {
             instrumentName = "hat";
         }
 
-        if (data1 == 4)
+        if (evt.Data1 == 4)
         {
             instrumentName = "bassattack";
         }
 
-        world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "note." + instrumentName, 3.0F, pitch);
-        world.addParticle("note", x + 0.5D, y + 1.2D, z + 0.5D, data2 / 24.0D, 0.0D, 0.0D);
+        evt.Level.Broadcaster.PlaySoundAtPos(evt.X + 0.5D, evt.Y + 0.5D, evt.Z + 0.5D, "note." + instrumentName, 3.0F, pitch);
+        evt.Level.Broadcaster.AddParticle("note", evt.X + 0.5D, evt.Y + 1.2D, evt.Z + 0.5D, evt.Data2 / 24.0D, 0.0D, 0.0D);
     }
 }

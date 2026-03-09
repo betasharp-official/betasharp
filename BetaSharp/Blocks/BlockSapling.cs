@@ -1,6 +1,4 @@
-using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Generation.Generators.Features;
 
 namespace BetaSharp.Blocks;
@@ -13,21 +11,21 @@ internal class BlockSapling : BlockPlant
         setBoundingBox(0.5F - halfSize, 0.0F, 0.5F - halfSize, 0.5F + halfSize, halfSize * 2.0F, 0.5F + halfSize);
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickEvt evt)
     {
-        if (!isRemote)
+        if (!evt.Level.IsRemote)
         {
-            base.onTick(worldView, x, y, z, random, broadcaster, isRemote);
-            if (worldView.getLightLevel(x, y + 1, z) >= 9 && random.NextInt(30) == 0)
+            base.onTick(evt);
+            if (evt.Level.BlocksReader.GetBrightness(evt.X, evt.Y + 1, evt.Z) >= 9 && Random.Shared.Next(30) == 0)
             {
-                int saplingMeta = worldView.getBlockMeta(x, y, z);
+                int saplingMeta = evt.Level.BlocksReader.GetBlockMeta(evt.X, evt.Y, evt.Z);
                 if ((saplingMeta & 8) == 0)
                 {
-                    worldView.setBlockMeta(x, y, z, saplingMeta | 8);
+                    evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, saplingMeta | 8);
                 }
                 else
                 {
-                    generate(worldView, x, y, z, random);
+                    generate(evt.Level, evt.X, evt.Y, evt.Z);
                 }
             }
         }
@@ -39,10 +37,10 @@ internal class BlockSapling : BlockPlant
         return meta == 1 ? 63 : meta == 2 ? 79 : base.getTexture(side, meta);
     }
 
-    public void generate(World world, int x, int y, int z, JavaRandom random)
+    public void generate(IBlockWorldContext world, int x, int y, int z)
     {
-        int saplingType = world.getBlockMeta(x, y, z) & 3;
-        world.setBlockWithoutNotifyingNeighbors(x, y, z, 0);
+        int saplingType = world.BlocksReader.GetBlockMeta(x, y, z) & 3;
+        world.BlockWriter.SetBlock(x, y, z, 0);
         object treeFeature = null;
         if (saplingType == 1)
         {
@@ -55,15 +53,15 @@ internal class BlockSapling : BlockPlant
         else
         {
             treeFeature = new OakTreeFeature();
-            if (random.NextInt(10) == 0)
+            if (Random.Shared.Next(10) == 0)
             {
                 treeFeature = new LargeOakTreeFeature();
             }
         }
 
-        if (!((Feature)treeFeature).Generate(world, random, x, y, z))
+        if (!((Feature)treeFeature).Generate(world, x, y, z))
         {
-            world.setBlockWithoutNotifyingNeighbors(x, y, z, id, saplingType);
+            world.BlockWriter.SetBlock(x, y, z, id, saplingType);
         }
     }
 

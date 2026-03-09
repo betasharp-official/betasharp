@@ -1,6 +1,3 @@
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
@@ -13,18 +10,18 @@ internal class BlockMushroom : BlockPlant
         setTickRandomly(true);
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickEvt ctx)
     {
-        if (random.NextInt(100) == 0)
+        if (Random.Shared.Next(100) == 0)
         {
-            int tryX = x + random.NextInt(3) - 1;
-            int tryY = y + random.NextInt(2) - random.NextInt(2);
-            int tryZ = z + random.NextInt(3) - 1;
-            if (worldView.isAir(tryX, tryY, tryZ) && canGrow(worldView, tryX, tryY, tryZ))
+            int tryX = ctx.X + Random.Shared.Next(3) - 1;
+            int tryY = ctx.Y + Random.Shared.Next(2) - Random.Shared.Next(2);
+            int tryZ = ctx.Z + Random.Shared.Next(3) - 1;
+            if (ctx.Level.BlocksReader.IsAir(tryX, tryY, tryZ) && canGrow(new OnTickEvt(ctx.Level, tryX, tryY, tryZ, ctx.Level.BlocksReader.GetBlockMeta(tryX, tryY, tryZ), ctx.Level.BlocksReader.GetBlockId(tryX, tryY, tryZ))))
             {
-                if (worldView.isAir(tryX, tryY, tryZ) && canGrow(worldView, tryX, tryY, tryZ))
+                if (ctx.Level.BlocksReader.IsAir(tryX, tryY, tryZ) && canGrow(new OnTickEvt(ctx.Level, tryX, tryY, tryZ, ctx.Level.BlocksReader.GetBlockMeta(tryX, tryY, tryZ), ctx.Level.BlocksReader.GetBlockId(tryX, tryY, tryZ))))
                 {
-                    worldView.setBlock(tryX, tryY, tryZ, id);
+                    ctx.Level.BlockWriter.SetBlock(tryX, tryY, tryZ, id);
                 }
             }
         }
@@ -32,5 +29,5 @@ internal class BlockMushroom : BlockPlant
 
     protected override bool canPlantOnTop(int id) => BlocksOpaque[id];
 
-    public override bool canGrow(World world, int x, int y, int z) => y >= 0 && y < 128 ? world.getBrightness(x, y, z) < 13 && canPlantOnTop(world.getBlockId(x, y - 1, z)) : false;
+    public override bool canGrow(OnTickEvt ctx) => ctx.Y >= 0 && ctx.Y < 128 ? ctx.Level.BlocksReader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < 13 && canPlantOnTop(ctx.Level.BlocksReader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z)) : false;
 }

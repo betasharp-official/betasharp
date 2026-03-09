@@ -31,7 +31,7 @@ internal class BlockJukeBox : BlockWithEntity
 
     public void insertRecord(World world, int x, int y, int z, int id)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             BlockEntityRecordPlayer? jukebox = (BlockEntityRecordPlayer?)world.getBlockEntity(x, y, z);
             if (jukebox == null)

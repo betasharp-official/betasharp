@@ -1,16 +1,13 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
 using BetaSharp.Items;
-using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.ClientData.Colors;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
 public class BlockLeaves : BlockLeavesBase
 {
-    private readonly ThreadLocal<int[]> s_decayRegion = new(() => null);
+    private readonly ThreadLocal<int[]?> s_decayRegion = new(() => null);
     private readonly int spriteIndex;
 
     public BlockLeaves(int id, int textureId) : base(id, textureId, Material.Leaves, false)
@@ -21,9 +18,9 @@ public class BlockLeaves : BlockLeavesBase
 
     public override int getColor(int meta) => (meta & 1) == 1 ? FoliageColors.getSpruceColor() : (meta & 2) == 2 ? FoliageColors.getBirchColor() : FoliageColors.getDefaultColor();
 
-    public override int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z)
+    public override int getColorMultiplier(IBlockReader reader, int x, int y, int z)
     {
-        int meta = iBlockReader.getBlockMeta(x, y, z);
+        int meta = reader.GetBlockMeta(x, y, z);
         if ((meta & 1) == 1)
         {
             return FoliageColors.getSpruceColor();
@@ -34,17 +31,17 @@ public class BlockLeaves : BlockLeavesBase
             return FoliageColors.getBirchColor();
         }
 
-        iBlockReader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
-        double temperature = iBlockReader.GetBiomeSource().TemperatureMap[0];
-        double downfall = iBlockReader.GetBiomeSource().DownfallMap[0];
+        reader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
+        double temperature = reader.GetBiomeSource().TemperatureMap[0];
+        double downfall = reader.GetBiomeSource().DownfallMap[0];
         return FoliageColors.getFoliageColor(temperature, downfall);
     }
 
-    public override void onBreak(World world, int x, int y, int z)
+    public override void onBreak(OnBreakEvt ctx)
     {
         sbyte searchRadius = 1;
         int loadCheckExtent = searchRadius + 1;
-        if (world.isRegionLoaded(x - loadCheckExtent, y - loadCheckExtent, z - loadCheckExtent, x + loadCheckExtent, y + loadCheckExtent, z + loadCheckExtent))
+        if (ctx.Level.BlockHost.IsRegionLoaded(ctx.X - loadCheckExtent, ctx.Y - loadCheckExtent, ctx.Z - loadCheckExtent, ctx.X + loadCheckExtent, ctx.Y + loadCheckExtent, ctx.Z + loadCheckExtent))
         {
             for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
             {
@@ -52,11 +49,11 @@ public class BlockLeaves : BlockLeavesBase
                 {
                     for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                     {
-                        int blockId = world.getBlockId(x + offsetX, y + offsetY, z + offsetZ);
+                        int blockId = ctx.Level.BlocksReader.GetBlockId(ctx.X + offsetX, ctx.Y + offsetY, ctx.Z + offsetZ);
                         if (blockId == Leaves.id)
                         {
-                            int leavesMeta = world.getBlockMeta(x + offsetX, y + offsetY, z + offsetZ);
-                            world.SetBlockMetaWithoutNotifyingNeighbors(x + offsetX, y + offsetY, z + offsetZ, leavesMeta | 8);
+                            int leavesMeta = ctx.Level.BlocksReader.GetBlockMeta(ctx.X + offsetX, ctx.Y + offsetY, ctx.Z + offsetZ);
+                            ctx.Level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(ctx.X + offsetX, ctx.Y + offsetY, ctx.Z + offsetZ, leavesMeta | 8);
                         }
                     }
                 }
@@ -64,11 +61,11 @@ public class BlockLeaves : BlockLeavesBase
         }
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickEvt ctx)
     {
-        if (!worldView.isRemote)
+        if (!ctx.Level.IsRemote)
         {
-            int meta = worldView.getBlockMeta(x, y, z);
+            int meta = ctx.Level.BlocksReader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
             if ((meta & 8) != 0)
             {
                 sbyte decayRadius = 4;
@@ -84,7 +81,7 @@ public class BlockLeaves : BlockLeavesBase
                 int[] decayRegion = s_decayRegion.Value;
 
                 int distanceToLog;
-                if (worldView.isRegionLoaded(x - loadCheckExtent, y - loadCheckExtent, z - loadCheckExtent, x + loadCheckExtent, y + loadCheckExtent, z + loadCheckExtent))
+                if (ctx.Level.BlockHost.IsRegionLoaded(ctx.X - loadCheckExtent, ctx.Y - loadCheckExtent, ctx.Z - loadCheckExtent, ctx.X + loadCheckExtent, ctx.Y + loadCheckExtent, ctx.Z + loadCheckExtent))
                 {
                     distanceToLog = -decayRadius;
 
@@ -98,7 +95,7 @@ public class BlockLeaves : BlockLeavesBase
                         {
                             for (dy = -decayRadius; dy <= decayRadius; ++dy)
                             {
-                                dz = worldView.GetBlockId(x + distanceToLog, y + dx, z + dy);
+                                dz = ctx.Level.BlocksReader.GetBlockId(ctx.X + distanceToLog, ctx.Y + dx, ctx.Z + dy);
                                 if (dz == Log.id)
                                 {
                                     decayRegion[(distanceToLog + centerOffset) * planeSize + (dx + centerOffset) * regionSize + dy + centerOffset] = 0;
@@ -170,36 +167,36 @@ public class BlockLeaves : BlockLeavesBase
                 distanceToLog = decayRegion[centerOffset * planeSize + centerOffset * regionSize + centerOffset];
                 if (distanceToLog >= 0)
                 {
-                    worldView.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, meta & -9);
+                    ctx.Level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(ctx.X, ctx.Y, ctx.Z, meta & -9);
                 }
                 else
                 {
-                    breakLeaves(worldView, x, y, z);
+                    breakLeaves(ctx.Level, ctx.X, ctx.Y, ctx.Z);
                 }
             }
         }
     }
 
-    private void breakLeaves(World world, int x, int y, int z)
+    private void breakLeaves(IBlockWorldContext level, int x, int y, int z)
     {
-        dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-        world.setBlock(x, y, z, 0);
+        dropStacks(new OnDropEvt(level, x, y, z, level.BlocksReader.GetBlockMeta(x, y, z)));
+        level.BlockWriter.SetBlock(x, y, z, 0);
     }
 
-    public override int getDroppedItemCount() => random.NextInt(20) == 0 ? 1 : 0;
+    public override int getDroppedItemCount() => Random.Shared.Next(20) == 0 ? 1 : 0;
 
     public override int getDroppedItemId(int blockMeta) => Sapling.id;
 
-    public override void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta)
+    public override void afterBreak(OnAfterBreakEvt ctx)
     {
-        if (!world.isRemote && player.getHand() != null && player.getHand().itemId == Item.Shears.id)
+        if (!ctx.Level.IsRemote && ctx.Player.getHand() != null && ctx.Player.getHand().itemId == Item.Shears.id)
         {
-            player.increaseStat(Stats.Stats.MineBlockStatArray[id], 1);
-            dropStack(world, x, y, z, new ItemStack(Leaves.id, 1, meta & 3));
+            ctx.Player.increaseStat(Stats.Stats.MineBlockStatArray[id], 1);
+            dropStack(ctx.Level, ctx.X, ctx.Y, ctx.Z, new ItemStack(Leaves.id, 1, ctx.Meta & 3));
         }
         else
         {
-            base.afterBreak(world, player, x, y, z, meta);
+            base.afterBreak(ctx);
         }
     }
 
@@ -215,5 +212,5 @@ public class BlockLeaves : BlockLeavesBase
         textureId = spriteIndex + (bl ? 0 : 1);
     }
 
-    public override void onSteppedOn(World world, int x, int y, int z, Entity entity) => base.onSteppedOn(world, x, y, z, entity);
+    public override void onSteppedOn(OnEntityStepEvt ctx) => base.onSteppedOn(ctx);
 }

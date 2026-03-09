@@ -2,7 +2,6 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
@@ -26,128 +25,124 @@ internal class BlockPressurePlate : Block
 
     public override bool isFullCube() => false;
 
-    public override bool canPlaceAt(WorldBlockView world, int x, int y, int z) => world.shouldSuffocate(x, y - 1, z);
+    public override bool canPlaceAt(CanPlaceAtCtx ctx) => ctx.Level.BlocksReader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z);
 
-    public override void onPlaced(World world, int x, int y, int z)
+    public override void onPlaced(OnPlacedEvt ctx)
     {
     }
 
-    public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickEvt ctx)
     {
         bool shouldBreak = false;
-        if (!world.shouldSuffocate(x, y - 1, z))
+        if (!ctx.Level.BlocksReader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z))
         {
             shouldBreak = true;
         }
 
         if (shouldBreak)
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            dropStacks(new OnDropEvt(ctx.Level, ctx.X, ctx.Y, ctx.Z, ctx.Level.BlocksReader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z)));
+            ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
         }
     }
 
-    public override void onTick(WorldBlockView worldView, int x, int y, int z, JavaRandom random, WorldEventBroadcaster broadcaster, bool isRemote)
+    public override void onTick(OnTickEvt ctx)
     {
-        if (!worldView.isRemote)
+        if (!ctx.Level.IsRemote)
         {
-            if (worldView.getBlockMeta(x, y, z) != 0)
+            if (ctx.Level.BlocksReader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) != 0)
             {
-                updatePlateState(worldView, x, y, z);
+                updatePlateState(ctx.Level, ctx.X, ctx.Y, ctx.Z);
             }
         }
     }
 
-    public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
+    public override void onEntityCollision(OnEntityCollisionEvt ctx)
     {
-        if (!world.isRemote)
+        if (!ctx.Level.IsRemote)
         {
-            if (world.getBlockMeta(x, y, z) != 1)
+            if (ctx.Level.BlocksReader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) != 1)
             {
-                updatePlateState(world, x, y, z);
+                updatePlateState(ctx.Level, ctx.X, ctx.Y, ctx.Z);
             }
         }
     }
 
-    private void updatePlateState(World world, int x, int y, int z)
+    private void updatePlateState(IBlockWorldContext ctx, int x, int y, int z)
     {
-        bool wasPressed = world.getBlockMeta(x, y, z) == 1;
+        bool wasPressed = ctx.BlocksReader.GetBlockMeta(x, y, z) == 1;
         bool shouldBePressed = false;
         float detectionInset = 2.0F / 16.0F;
-        List<Entity> entitiesInBox = null;
+        List<Entity>? entitiesInBox = null;
         if (activationRule == PressurePlateActiviationRule.EVERYTHING)
         {
-            entitiesInBox = world.getEntities(null, new Box(x + detectionInset, y, z + detectionInset, x + 1 - detectionInset, y + 0.25D, z + 1 - detectionInset));
+            entitiesInBox = ctx.Entities.CollectEntitiesOfType<Entity>(new Box(x + detectionInset, y, z + detectionInset, x + 1 - detectionInset, y + 0.25D, z + 1 - detectionInset));
         }
 
         if (activationRule == PressurePlateActiviationRule.MOBS)
         {
-            entitiesInBox = world.CollectEntitiesOfType<EntityLiving>(new Box(x + detectionInset, y, z + detectionInset, x + 1 - detectionInset, y + 0.25D, z + 1 - detectionInset)).Cast<Entity>().ToList();
+            entitiesInBox = ctx.Entities.CollectEntitiesOfType<EntityLiving>(new Box(x + detectionInset, y, z + detectionInset, x + 1 - detectionInset, y + 0.25D, z + 1 - detectionInset)).Cast<Entity>().ToList();
         }
 
         if (activationRule == PressurePlateActiviationRule.PLAYERS)
         {
-            entitiesInBox = world.CollectEntitiesOfType<EntityPlayer>(new Box(x + detectionInset, y, z + detectionInset, x + 1 - detectionInset, y + 0.25D, z + 1 - detectionInset)).Cast<Entity>().ToList();
+            entitiesInBox = ctx.Entities.CollectEntitiesOfType<EntityPlayer>(new Box(x + detectionInset, y, z + detectionInset, x + 1 - detectionInset, y + 0.25D, z + 1 - detectionInset)).Cast<Entity>().ToList();
         }
 
-        if (entitiesInBox.Count > 0)
+        if (entitiesInBox?.Count > 0)
         {
             shouldBePressed = true;
         }
 
         if (shouldBePressed && !wasPressed)
         {
-            world.setBlockMeta(x, y, z, 1);
-            world.notifyNeighbors(x, y, z, id);
-            world.notifyNeighbors(x, y - 1, z, id);
-            world.setBlocksDirty(x, y, z, x, y, z);
-            world.playSound(x + 0.5D, y + 0.1D, z + 0.5D, "random.click", 0.3F, 0.6F);
+            ctx.BlockWriter.SetBlockMeta(x, y, z, 1);
+            ctx.Broadcaster.NotifyNeighbors(x, y, z, id);
+            ctx.Broadcaster.NotifyNeighbors(x, y - 1, z, id);
+            ctx.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
+            ctx.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.1D, z + 0.5D, "random.click", 0.3F, 0.6F);
         }
 
         if (!shouldBePressed && wasPressed)
         {
-            world.setBlockMeta(x, y, z, 0);
-            world.notifyNeighbors(x, y, z, id);
-            world.notifyNeighbors(x, y - 1, z, id);
-            world.setBlocksDirty(x, y, z, x, y, z);
-            world.playSound(x + 0.5D, y + 0.1D, z + 0.5D, "random.click", 0.3F, 0.5F);
+            ctx.BlockWriter.SetBlockMeta(x, y, z, 0);
+            ctx.Broadcaster.NotifyNeighbors(x, y, z, id);
+            ctx.Broadcaster.NotifyNeighbors(x, y - 1, z, id);
+            ctx.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
+            ctx.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.1D, z + 0.5D, "random.click", 0.3F, 0.5F);
         }
 
         if (shouldBePressed)
         {
-            world.ScheduleBlockUpdate(x, y, z, id, getTickRate());
+            ctx.BlockWriter.ScheduleBlockUpdate(x, y, z, id, getTickRate());
         }
     }
 
-    public override void onBreak(World world, int x, int y, int z)
+    public override void onBreak(OnBreakEvt ctx)
     {
-        int plateState = world.getBlockMeta(x, y, z);
+        int plateState = ctx.Level.BlocksReader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         if (plateState > 0)
         {
-            world.notifyNeighbors(x, y, z, id);
-            world.notifyNeighbors(x, y - 1, z, id);
+            ctx.Level.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, id);
+            ctx.Level.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, id);
         }
 
-        base.onBreak(world, x, y, z);
+        base.onBreak(ctx);
     }
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
     {
-        bool isPressed = iBlockReader.getBlockMeta(x, y, z) == 1;
+        bool isPressed = iBlockReader.GetBlockMeta(x, y, z) == 1;
         float edgeInset = 1.0F / 16.0F;
         if (isPressed)
-        {
             setBoundingBox(edgeInset, 0.0F, edgeInset, 1.0F - edgeInset, 1 / 32f, 1.0F - edgeInset);
-        }
         else
-        {
             setBoundingBox(edgeInset, 0.0F, edgeInset, 1.0F - edgeInset, 1.0F / 16.0F, 1.0F - edgeInset);
-        }
     }
 
-    public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => iBlockReader.getBlockMeta(x, y, z) > 0;
+    public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => iBlockReader.GetBlockMeta(x, y, z) > 0;
 
-    public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => world.getBlockMeta(x, y, z) == 0 ? false : side == 1;
+    public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => world.GetBlockMeta(x, y, z) == 0 ? false : side == 1;
 
     public override bool canEmitRedstonePower() => true;
 

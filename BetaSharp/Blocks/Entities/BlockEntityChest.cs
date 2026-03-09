@@ -54,7 +54,7 @@ internal class BlockEntityChest : BlockEntity, IInventory
 
     public int getMaxCountPerStack() => 64;
 
-    public bool canPlayerUse(EntityPlayer player) => World.getBlockEntity(X, Y, Z) != this ? false : player.getSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
+    public bool canPlayerUse(EntityPlayer player) => Level.getBlockEntity(X, Y, Z) != this ? false : player.getSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
 
     public override void readNbt(NBTTagCompound nbt)
     {

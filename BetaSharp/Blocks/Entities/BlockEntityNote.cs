@@ -1,7 +1,6 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.NBT;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks.Entities;
 
@@ -37,11 +36,11 @@ internal class BlockEntityNote : BlockEntity
         markDirty();
     }
 
-    public void playNote(World world, int x, int y, int z)
+    public void playNote(IBlockWorldContext level, int x, int y, int z)
     {
-        if (world.getMaterial(x, y + 1, z) == Material.Air)
+        if (level.BlocksReader.GetMaterial(x, y + 1, z) == Material.Air)
         {
-            Material material = world.getMaterial(x, y - 1, z);
+            Material material = level.BlocksReader.GetMaterial(x, y - 1, z);
             byte instrument = 0;
             if (material == Material.Stone)
             {
@@ -63,7 +62,7 @@ internal class BlockEntityNote : BlockEntity
                 instrument = 4;
             }
 
-            world.playNoteBlockActionAt(x, y, z, instrument, note);
+            level.Broadcaster.PlayNote(x, y, z, instrument, note);
         }
     }
 }

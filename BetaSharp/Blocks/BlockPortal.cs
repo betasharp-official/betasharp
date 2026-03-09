@@ -1,8 +1,6 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
@@ -86,7 +84,7 @@ public class BlockPortal : BlockBreakable
             }
         }
 
-        world.pauseTicking = true;
+        ctx.Level.PauseTicking = true;
 
         for (horizontalOffset = 0; horizontalOffset < 2; ++horizontalOffset)
         {
@@ -96,7 +94,7 @@ public class BlockPortal : BlockBreakable
             }
         }
 
-        world.pauseTicking = false;
+        ctx.Level.PauseTicking = false;
         return true;
     }
 
@@ -104,45 +102,45 @@ public class BlockPortal : BlockBreakable
     {
         sbyte offsetX = 0;
         sbyte offsetZ = 1;
-        if (ctx.WorldRead.GetBlockId(ctx.X - 1, ctx.Y, ctx.Z) == id || ctx.WorldRead.GetBlockId(ctx.X + 1, ctx.Y, ctx.Z) == id)
+        if (ctx.Level.BlocksReader.GetBlockId(ctx.X - 1, ctx.Y, ctx.Z) == id || ctx.Level.BlocksReader.GetBlockId(ctx.X + 1, ctx.Y, ctx.Z) == id)
         {
             offsetX = 1;
             offsetZ = 0;
         }
 
         int portalBottomY;
-        for (portalBottomY = ctx.Y; ctx.WorldRead.GetBlockId(ctx.X, portalBottomY - 1, ctx.Z) == id; --portalBottomY)
+        for (portalBottomY = ctx.Y; ctx.Level.BlocksReader.GetBlockId(ctx.X, portalBottomY - 1, ctx.Z) == id; --portalBottomY)
         {
         }
 
-        if (ctx.WorldRead.GetBlockId(ctx.X, portalBottomY - 1, ctx.Z) != Obsidian.id)
+        if (ctx.Level.BlocksReader.GetBlockId(ctx.X, portalBottomY - 1, ctx.Z) != Obsidian.id)
         {
-            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+            ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
         }
         else
         {
             int blocksAbove;
-            for (blocksAbove = 1; blocksAbove < 4 && ctx.WorldRead.GetBlockId(ctx.X, portalBottomY + blocksAbove, ctx.Z) == id; ++blocksAbove)
+            for (blocksAbove = 1; blocksAbove < 4 && ctx.Level.BlocksReader.GetBlockId(ctx.X, portalBottomY + blocksAbove, ctx.Z) == id; ++blocksAbove)
             {
             }
 
-            if (blocksAbove == 3 && ctx.WorldRead.GetBlockId(ctx.X, portalBottomY + blocksAbove, ctx.Z) == Obsidian.id)
+            if (blocksAbove == 3 && ctx.Level.BlocksReader.GetBlockId(ctx.X, portalBottomY + blocksAbove, ctx.Z) == Obsidian.id)
             {
-                bool hasXNeighbors = ctx.WorldRead.GetBlockId(ctx.X - 1, ctx.Y, ctx.Z) == id || ctx.WorldRead.GetBlockId(ctx.X + 1, ctx.Y, ctx.Z) == id;
-                bool hasZNeighbors = ctx.WorldRead.GetBlockId(ctx.X, ctx.Y, ctx.Z - 1) == id || ctx.WorldRead.GetBlockId(ctx.X, ctx.Y, ctx.Z + 1) == id;
+                bool hasXNeighbors = ctx.Level.BlocksReader.GetBlockId(ctx.X - 1, ctx.Y, ctx.Z) == id || ctx.Level.BlocksReader.GetBlockId(ctx.X + 1, ctx.Y, ctx.Z) == id;
+                bool hasZNeighbors = ctx.Level.BlocksReader.GetBlockId(ctx.X, ctx.Y, ctx.Z - 1) == id || ctx.Level.BlocksReader.GetBlockId(ctx.X, ctx.Y, ctx.Z + 1) == id;
                 if (hasXNeighbors && hasZNeighbors)
                 {
-                    ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+                    ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
                 }
-                else if ((ctx.WorldRead.GetBlockId(ctx.X + offsetX, ctx.Y, ctx.Z + offsetZ) != Obsidian.id || ctx.WorldRead.GetBlockId(ctx.X - offsetX, ctx.Y, ctx.Z - offsetZ) != id) &&
-                         (ctx.WorldRead.GetBlockId(ctx.X - offsetX, ctx.Y, ctx.Z - offsetZ) != Obsidian.id || ctx.WorldRead.GetBlockId(ctx.X + offsetX, ctx.Y, ctx.Z + offsetZ) != id))
+                else if ((ctx.Level.BlocksReader.GetBlockId(ctx.X + offsetX, ctx.Y, ctx.Z + offsetZ) != Obsidian.id || ctx.Level.BlocksReader.GetBlockId(ctx.X - offsetX, ctx.Y, ctx.Z - offsetZ) != id) &&
+                         (ctx.Level.BlocksReader.GetBlockId(ctx.X - offsetX, ctx.Y, ctx.Z - offsetZ) != Obsidian.id || ctx.Level.BlocksReader.GetBlockId(ctx.X + offsetX, ctx.Y, ctx.Z + offsetZ) != id))
                 {
-                    ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+                    ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
                 }
             }
             else
             {
-                ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+                ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             }
         }
     }
@@ -167,45 +165,42 @@ public class BlockPortal : BlockBreakable
 
     public override int getRenderLayer() => 1;
 
-    public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
+    public override void onEntityCollision(OnEntityCollisionEvt ctx)
     {
-        if (entity.vehicle == null && entity.passenger == null)
+        if (ctx.Entity.vehicle == null && ctx.Entity.passenger == null)
         {
-            entity.tickPortalCooldown();
+            ctx.Entity.tickPortalCooldown();
         }
     }
 
-    public override void randomDisplayTick(World world, int x, int y, int z, JavaRandom random)
+    public override void randomDisplayTick(OnTickEvt ctx)
     {
-        if (random.NextInt(100) == 0)
+        if (Random.Shared.Next(100) == 0)
         {
-            world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "portal.portal", 1.0F, random.NextFloat() * 0.4F + 0.8F);
+            ctx.Level.Broadcaster.PlaySoundAtPos(ctx.X + 0.5D, ctx.Y + 0.5D, ctx.Z + 0.5D, "portal.portal", 1.0F, Random.Shared.NextSingle() * 0.4F + 0.8F);
         }
 
         for (int particleIndex = 0; particleIndex < 4; ++particleIndex)
         {
-            double particleX = x + random.NextFloat();
-            double particleY = y + random.NextFloat();
-            double particleZ = z + random.NextFloat();
-            double velocityX = 0.0D;
-            double velocityY = 0.0D;
-            double velocityZ = 0.0D;
-            int direction = random.NextInt(2) * 2 - 1;
-            velocityX = (random.NextFloat() - 0.5D) * 0.5D;
-            velocityY = (random.NextFloat() - 0.5D) * 0.5D;
-            velocityZ = (random.NextFloat() - 0.5D) * 0.5D;
-            if (world.getBlockId(x - 1, y, z) != id && world.getBlockId(x + 1, y, z) != id)
+            double particleX = ctx.X + Random.Shared.NextSingle();
+            double particleY = ctx.Y + Random.Shared.NextSingle();
+            double particleZ = ctx.Z + Random.Shared.NextSingle();
+            int direction = Random.Shared.Next(2) * 2 - 1;
+           double velocityX = (Random.Shared.NextSingle() - 0.5D) * 0.5D;
+           double velocityY = (Random.Shared.NextSingle() - 0.5D) * 0.5D;
+           double velocityZ = (Random.Shared.NextSingle() - 0.5D) * 0.5D;
+            if (ctx.Level.BlocksReader.GetBlockId(ctx.X - 1, ctx.Y, ctx.Z) != id && ctx.Level.BlocksReader.GetBlockId(ctx.X + 1, ctx.Y, ctx.Z) != id)
             {
-                particleX = x + 0.5D + 0.25D * direction;
-                velocityX = random.NextFloat() * 2.0F * direction;
+                particleX = ctx.X + 0.5D + 0.25D * direction;
+                velocityX = Random.Shared.NextSingle() * 2.0F * direction;
             }
             else
             {
-                particleZ = z + 0.5D + 0.25D * direction;
-                velocityZ = random.NextFloat() * 2.0F * direction;
+                particleZ = ctx.Z + 0.5D + 0.25D * direction;
+                velocityZ = Random.Shared.NextSingle() * 2.0F * direction;
             }
 
-            world.addParticle("portal", particleX, particleY, particleZ, velocityX, velocityY, velocityZ);
+            ctx.Level.Broadcaster.AddParticle("portal", particleX, particleY, particleZ, velocityX, velocityY, velocityZ);
         }
     }
 }

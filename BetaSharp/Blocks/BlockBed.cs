@@ -15,7 +15,7 @@ public class BlockBed : Block
 
     public override bool onUse(OnUseEvt ctx)
     {
-        if (ctx.IsRemote)
+        if (ctx.Level.IsRemote)
         {
             return true;
         }
@@ -25,48 +25,49 @@ public class BlockBed : Block
         int y = ctx.Y;
         int z = ctx.Z;
 
-        int meta = ctx.WorldRead.GetBlockMeta(x, y, z);
+        int meta = ctx.Level.BlocksReader.GetBlockMeta(x, y, z);
         if (!isHeadOfBed(meta))
         {
             int direction = getDirection(meta);
             x += BED_OFFSETS[direction][0];
             z += BED_OFFSETS[direction][1];
 
-            if (ctx.WorldRead.GetBlockId(x, y, z) != id)
+            if (ctx.Level.BlocksReader.GetBlockId(x, y, z) != id)
             {
                 return true;
             }
 
-            meta = ctx.WorldRead.GetBlockMeta(x, y, z);
+            meta = ctx.Level.BlocksReader.GetBlockMeta(x, y, z);
         }
 
-        if (!ctx.Dimension.HasWorldSpawn)
+        if (!ctx.Level.dimension.HasWorldSpawn)
         {
             double posX = x + 0.5D;
             double posY = y + 0.5D;
             double posZ = z + 0.5D;
-            ctx.WorldWrite.SetBlock(x, y, z, 0);
+            ctx.Level.BlockWriter.SetBlock(x, y, z, 0);
 
             int direction = getDirection(meta);
             x += BED_OFFSETS[direction][0];
             z += BED_OFFSETS[direction][1];
 
-            if (ctx.WorldRead.GetBlockId(x, y, z) == id)
+            if (ctx.Level.BlocksReader.GetBlockId(x, y, z) == id)
             {
-                ctx.WorldWrite.SetBlock(x, y, z, 0);
+                ctx.Level.BlockWriter.SetBlock(x, y, z, 0);
                 posX = (posX + x + 0.5D) / 2.0D;
                 posY = (posY + y + 0.5D) / 2.0D;
                 posZ = (posZ + z + 0.5D) / 2.0D;
             }
 
-            //ctx.Broadcaster.CreateExplosion(null, x + 0.5F, y + 0.5F, z + 0.5F, 5.0F, true);
+// TODO: Implement this
+            //ctx.Level.CreateExplosion(null, x + 0.5F, y + 0.5F, z + 0.5F, 5.0F, true);
             return true;
         }
 
         if (isBedOccupied(meta))
         {
             EntityPlayer? occupant = null;
-            foreach (EntityPlayer otherPlayer in ctx.Entities.Players)
+            foreach (EntityPlayer otherPlayer in ctx.Level.Entities.Players)
             {
                 if (otherPlayer.isSleeping())
                 {
@@ -84,13 +85,13 @@ public class BlockBed : Block
                 return true;
             }
 
-            updateState(ctx.WorldWrite, x, y, z, meta, false);
+            updateState(ctx.Level.BlockWriter, x, y, z, meta, false);
         }
 
         SleepAttemptResult result = ctx.Player.trySleep(x, y, z);
         if (result == SleepAttemptResult.OK)
         {
-            updateState(ctx.WorldWrite, x, y, z, meta, true);
+            updateState(ctx.Level.BlockWriter, x, y, z, meta, true);
             return true;
         }
 
@@ -126,23 +127,22 @@ public class BlockBed : Block
 
     public override void neighborUpdate(OnTickEvt ctx)
     {
-        int blockMeta = ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        int blockMeta = ctx.Level.BlocksReader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         int direction = getDirection(blockMeta);
 
         if (isHeadOfBed(blockMeta))
         {
-            if (ctx.WorldRead.GetBlockId(ctx.X - BED_OFFSETS[direction][0], ctx.Y, ctx.Z - BED_OFFSETS[direction][1]) != id)
+            if (ctx.Level.BlocksReader.GetBlockId(ctx.X - BED_OFFSETS[direction][0], ctx.Y, ctx.Z - BED_OFFSETS[direction][1]) != id)
             {
-                ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+                ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             }
         }
-        else if (ctx.WorldRead.GetBlockId(ctx.X + BED_OFFSETS[direction][0], ctx.Y, ctx.Z + BED_OFFSETS[direction][1]) != id)
+        else if (ctx.Level.BlocksReader.GetBlockId(ctx.X + BED_OFFSETS[direction][0], ctx.Y, ctx.Z + BED_OFFSETS[direction][1]) != id)
         {
-            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
-            if (!ctx.IsRemote)
+            ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+            if (!ctx.Level.IsRemote)
             {
-                // Explicitly pass 1.0f for luck to avoid missing parameter issues
-                dropStacks(new OnDropEvt(ctx.WorldRead, ctx.Broadcaster, ctx.Rules, ctx.IsRemote, ctx.X, ctx.Y, ctx.Z, blockMeta));
+                dropStacks(new OnDropEvt(ctx.Level, ctx.X, ctx.Y, ctx.Z, blockMeta));
             }
         }
     }

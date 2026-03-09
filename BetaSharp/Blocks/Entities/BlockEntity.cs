@@ -12,7 +12,7 @@ public class BlockEntity
     private static readonly Dictionary<Type, string> s_classToId = new();
     private static readonly ILogger<BlockEntity> s_logger = Log.Instance.For<BlockEntity>();
     protected bool Removed;
-    public World World;
+    public IBlockWorldContext Level;
     public int X;
     public int Y;
     public int Z;
@@ -97,13 +97,13 @@ public class BlockEntity
         return blockEntity;
     }
 
-    public virtual int getPushedBlockData() => World.getBlockMeta(X, Y, Z);
+    public virtual int getPushedBlockData() => Level.BlocksReader.GetBlockMeta(X, Y, Z);
 
     public void markDirty()
     {
-        if (World != null)
+        if (Level != null)
         {
-            World.UpdateBlockEntity(X, Y, Z, this);
+            Level.BlockWriter.UpdateBlockEntity(X, Y, Z, this);
         }
     }
 
@@ -115,7 +115,7 @@ public class BlockEntity
         return dx * dx + dy * dy + dz * dz;
     }
 
-    public Block getBlock() => Block.Blocks[World.getBlockId(X, Y, Z)];
+    public Block getBlock() => Block.Blocks[Level.BlocksReader.GetBlockId(X, Y, Z)];
 
     public virtual Packet createUpdatePacket() => null;
 
@@ -126,9 +126,9 @@ public class BlockEntity
             return true;
         }
 
-        if (World != null)
+        if (Level != null)
         {
-            int id = World.getBlockId(X, Y, Z);
+            int id = Level.BlocksReader.GetBlockId(X, Y, Z);
             if (id == 0 || !Block.BlocksWithEntity[id])
             {
                 return true;

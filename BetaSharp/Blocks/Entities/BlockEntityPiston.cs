@@ -65,10 +65,10 @@ public class BlockEntityPiston : BlockEntity
             collisionShapeSizeMultiplier = 1.0F - collisionShapeSizeMultiplier;
         }
 
-        Box? pushCollisionBox = Block.MovingPiston.getPushedBlockCollisionShape(World, X, Y, Z, _pushedBlockId, collisionShapeSizeMultiplier, _facing);
+        Box? pushCollisionBox = Block.MovingPiston.getPushedBlockCollisionShape(Level, X, Y, Z, _pushedBlockId, collisionShapeSizeMultiplier, _facing);
         if (pushCollisionBox != null)
         {
-            List<Entity> entitiesToPush = World.getEntities(null!, pushCollisionBox.Value);
+            List<Entity> entitiesToPush = Level.getEntities(null!, pushCollisionBox.Value);
             if (entitiesToPush.Count > 0)
             {
                 List<Entity> pushedEntities = s_pushedEntities.Value!;
@@ -92,11 +92,11 @@ public class BlockEntityPiston : BlockEntity
         if (_progress < 1.0F)
         {
             _progress = _lastProgess = 1.0F;
-            World.Entities.RemoveBlockEntity(X, Y, Z);
+            Level.Entities.RemoveBlockEntity(X, Y, Z);
             markRemoved();
-            if (World.getBlockId(X, Y, Z) == Block.MovingPiston.id)
+            if (Level.getBlockId(X, Y, Z) == Block.MovingPiston.id)
             {
-                World.setBlock(X, Y, Z, _pushedBlockId, _pushedBlockData);
+                Level.setBlock(X, Y, Z, _pushedBlockId, _pushedBlockData);
             }
         }
     }
@@ -107,11 +107,11 @@ public class BlockEntityPiston : BlockEntity
         if (_progress >= 1.0F)
         {
             pushEntities(1.0F, 0.25F);
-            World.Entities.RemoveBlockEntity(X, Y, Z);
+            Level.Entities.RemoveBlockEntity(X, Y, Z);
             markRemoved();
-            if (World.getBlockId(X, Y, Z) == Block.MovingPiston.id)
+            if (Level.getBlockId(X, Y, Z) == Block.MovingPiston.id)
             {
-                World.setBlock(X, Y, Z, _pushedBlockId, _pushedBlockData);
+                Level.setBlock(X, Y, Z, _pushedBlockId, _pushedBlockData);
             }
         }
         else

@@ -2,6 +2,7 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
@@ -19,25 +20,25 @@ public class BlockRedstoneRepeater : Block
 
     public override bool isFullCube() => false;
 
-    public override bool canPlaceAt(OnPlacedEvt ctx) => !ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) ? false : base.canPlaceAt(ctx);
+    public override bool canPlaceAt(CanPlaceAtCtx ctx) => !ctx.Level.BlocksReader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) ? false : base.canPlaceAt(ctx);
 
-    public override bool canGrow(OnTickEvt ctx) => !ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) ? false : base.canGrow(ctx);
+    public override bool canGrow(OnTickEvt ctx) => !ctx.Level.BlocksReader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) ? false : base.canGrow(ctx);
 
     public override void onTick(OnTickEvt ctx)
     {
-        int meta = ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
-        bool powered = isPowered(ctx.WorldRead, ctx.Redstone, ctx.X, ctx.Y, ctx.Z, meta);
+        int meta = ctx.Level.BlocksReader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        bool powered = isPowered(ctx.Level.BlocksReader, ctx.Level.Redstone, ctx.X, ctx.Y, ctx.Z, meta);
         if (lit && !powered)
         {
-            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, Repeater.id, meta);
+            ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, Repeater.id, meta);
         }
         else if (!lit)
         {
-            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, PoweredRepeater.id, meta);
+            ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, PoweredRepeater.id, meta);
             if (!powered)
             {
                 int delaySetting = (meta & 12) >> 2;
-                ctx.WorldWrite.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, PoweredRepeater.id, DELAY[delaySetting] * 2);
+                ctx.Level.BlockWriter.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, PoweredRepeater.id, DELAY[delaySetting] * 2);
             }
         }
     }
@@ -67,21 +68,21 @@ public class BlockRedstoneRepeater : Block
     {
         if (!canGrow(ctx))
         {
-            dropStacks(ctx.WorldRead, ctx.X, ctx.Y, ctx.Z, ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z));
-            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+            dropStacks(new OnDropEvt(ctx.Level, ctx.X, ctx.Y, ctx.Z, ctx.Meta, ctx.BlockId ));
+            ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
         }
         else
         {
-            int meta = ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
-            bool powered = isPowered(ctx.WorldRead, ctx.Redstone, ctx.X, ctx.Y, ctx.Z, meta);
+            int meta = ctx.Level.BlocksReader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+            bool powered = isPowered(ctx.Level.BlocksReader, ctx.Level.Redstone, ctx.X, ctx.Y, ctx.Z, meta);
             int delaySetting = (meta & 12) >> 2;
             if (lit && !powered)
             {
-                ctx.WorldWrite.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, DELAY[delaySetting] * 2);
+                ctx.Level.BlockWriter.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, DELAY[delaySetting] * 2);
             }
             else if (!lit && powered)
             {
-                ctx.WorldWrite.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, DELAY[delaySetting] * 2);
+                ctx.Level.BlockWriter.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, DELAY[delaySetting] * 2);
             }
         }
     }
@@ -118,19 +119,19 @@ public class BlockRedstoneRepeater : Block
     public override void onPlaced(OnPlacedEvt ctx)
     {
         int facing = ((MathHelper.Floor(ctx.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3) + 2) % 4;
-        ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, facing);
-        bool powered = isPowered(ctx.WorldRead, ctx.Redstone, ctx.X, ctx.Y, ctx.Z, facing);
+        ctx.Level.BlockWriter.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, facing);
+        bool powered = isPowered(ctx.Level.BlocksReader, ctx.Level.Redstone, ctx.X, ctx.Y, ctx.Z, facing);
         if (powered)
         {
-            ctx.WorldWrite.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, 1);
+            ctx.Level.BlockWriter.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, 1);
         }
 
-        ctx.Broadcaster.NotifyNeighbors(ctx.X + 1, ctx.Y, ctx.Z, id);
-        ctx.Broadcaster.NotifyNeighbors(ctx.X - 1, ctx.Y, ctx.Z, id);
-        ctx.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z + 1, id);
-        ctx.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z - 1, id);
-        ctx.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, id);
-        ctx.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y + 1, ctx.Z, id);
+        ctx.Level.Broadcaster.NotifyNeighbors(ctx.X + 1, ctx.Y, ctx.Z, id);
+        ctx.Level.Broadcaster.NotifyNeighbors(ctx.X - 1, ctx.Y, ctx.Z, id);
+        ctx.Level.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z + 1, id);
+        ctx.Level.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z - 1, id);
+        ctx.Level.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, id);
+        ctx.Level.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y + 1, ctx.Z, id);
     }
 
     public override bool isOpaque() => false;
@@ -144,7 +145,7 @@ public class BlockRedstoneRepeater : Block
             return;
         }
 
-        int meta = ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        int meta = ctx.Level.BlocksReader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         double particleX = ctx.X + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
         double particleY = ctx.Y + 0.4F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
         double particleZ = ctx.Z + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
@@ -188,6 +189,6 @@ public class BlockRedstoneRepeater : Block
             }
         }
 
-        ctx.Broadcaster.AddParticle("reddust", particleX + offsetX, particleY, particleZ + offsetY, 0.0D, 0.0D, 0.0D);
+        ctx.Level.Broadcaster.AddParticle("reddust", particleX + offsetX, particleY, particleZ + offsetY, 0.0D, 0.0D, 0.0D);
     }
 }

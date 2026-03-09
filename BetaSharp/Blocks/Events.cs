@@ -1,43 +1,12 @@
 using BetaSharp.Entities;
-using BetaSharp.Rules;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Dimensions;
 
 namespace BetaSharp.Blocks;
 
-public struct OnTickEvt(
-    WorldBlockView worldRead,
-    WorldBlockWrite worldWrite,
-    WorldEventBroadcaster broadcaster,
-    RedstoneEngine redstone,
-    EntityManager entities,
-    RuleSet rules,
-    EnvironmentManager environment,
-    Dimension dimension,
-    LightingEngine lighting,
-    JavaRandom random,
-    bool isRemote,
-    long time,
-    int x,
-    int y,
-    int z,
-    int meta,
-    int blockId)
+public struct OnTickEvt(IBlockWorldContext level, int x, int y, int z, int meta, int blockId)
 {
-    public WorldBlockView WorldRead = worldRead;
-    public WorldBlockWrite WorldWrite = worldWrite;
-    public WorldEventBroadcaster Broadcaster = broadcaster;
-    public RedstoneEngine Redstone = redstone;
-    public EntityManager Entities = entities;
-    public RuleSet Rules = rules;
-    public EnvironmentManager Environment = environment;
-    public Dimension Dimension = dimension;
-    public LightingEngine Lighting = lighting;
-    public JavaRandom Random = random;
-    public bool IsRemote = isRemote;
-    public long Time = time;
+    public IBlockWorldContext Level = level;
     public int X = x;
     public int Y = y;
     public int Z = z;
@@ -45,14 +14,10 @@ public struct OnTickEvt(
     public int BlockId = blockId;
 }
 
-public struct OnPlacedEvt(WorldBlockView worldRead, WorldBlockWrite worldWrite, RedstoneEngine redstone, EntityLiving placer, WorldEventBroadcaster broadcaster, bool isRemote, int direction, int side, int x, int y, int z)
+public struct OnPlacedEvt(IBlockWorldContext level, EntityLiving? placer, int direction, int side, int x, int y, int z)
 {
-    public WorldBlockView WorldRead = worldRead;
-    public WorldBlockWrite WorldWrite = worldWrite;
-    public RedstoneEngine Redstone = redstone;
-    public EntityLiving Placer = placer;
-    public WorldEventBroadcaster Broadcaster = broadcaster;
-    public bool IsRemote = isRemote;
+    public IBlockWorldContext Level = level;
+    public EntityLiving? Placer = placer;
     public int Direction = direction;
     public int Side = side;
     public int X = x;
@@ -60,61 +25,45 @@ public struct OnPlacedEvt(WorldBlockView worldRead, WorldBlockWrite worldWrite, 
     public int Z = z;
 }
 
-public struct CanPlaceAtCtx(IBlockReader worldRead, IBlockWrite worldWrite, int direction, int x, int y, int z)
+public struct CanPlaceAtCtx(IBlockWorldContext level, int direction, int x, int y, int z)
 {
-    public IBlockReader WorldRead = worldRead;
-    public IBlockWrite WorldWrite = worldWrite;
+    public IBlockWorldContext Level = level;
     public int Direction = direction;
     public int X = x;
     public int Y = y;
     public int Z = z;
 }
 
-public struct OnUseEvt(WorldBlockView worldRead, WorldBlockWrite worldWrite, WorldEventBroadcaster broadcaster, Dimension dimension, EntityManager entities, EntityPlayer player, bool isRemote, int x, int y, int z)
+public struct OnUseEvt(IBlockWorldContext level, EntityPlayer player, int x, int y, int z)
 {
-    public WorldBlockView WorldRead = worldRead;
-    public WorldBlockWrite WorldWrite = worldWrite;
-    public WorldEventBroadcaster Broadcaster = broadcaster;
-    public Dimension Dimension = dimension;
-    public EntityManager Entities = entities;
-    public EntityPlayer Player = player;
-    public bool IsRemote = isRemote;
-    public int X = x;
-    public int Y = y;
-    public int Z = z;
-}
-
-public struct OnBreakEvt(WorldBlockView worldRead, WorldBlockWrite worldWrite, WorldEventBroadcaster broadcaster, IWorldAccess world, EntityManager entities, Entity entity, bool isRemote, int x, int y, int z)
-{
-    public WorldBlockView WorldRead = worldRead;
-    public WorldBlockWrite WorldWrite = worldWrite;
-    public WorldEventBroadcaster Broadcaster = broadcaster;
-    public IWorldAccess World = world;
-    public EntityManager Entities = entities;
-    public Entity Entity = entity;
-    public bool IsRemote = isRemote;
-    public int X = x;
-    public int Y = y;
-    public int Z = z;
-}
-
-public struct OnBlockBreakStartEvt(IBlockReader worldRead, IBlockWrite worldWrite, WorldEventBroadcaster broadcaster, EntityPlayer player, int x, int y, int z)
-{
-    public IBlockReader WorldRead = worldRead;
-    public IBlockWrite WorldWrite = worldWrite;
-    public WorldEventBroadcaster Broadcaster = broadcaster;
+    public IBlockWorldContext Level = level;
     public EntityPlayer Player = player;
     public int X = x;
     public int Y = y;
     public int Z = z;
 }
 
-public struct OnDropEvt(IBlockReader worldRead, IBlockWorldContext context, RuleSet rules, bool isRemote, int x, int y, int z, int meta, float luck = 1.0F)
+public struct OnBreakEvt(IBlockWorldContext level, Entity? entity, int x, int y, int z)
 {
-    public IBlockReader WorldRead = worldRead;
-    public IBlockWorldContext Context = context;
-    public RuleSet Rules = rules;
-    public bool IsRemote = isRemote;
+    public IBlockWorldContext Level = level;
+    public Entity? Entity = entity;
+    public int X = x;
+    public int Y = y;
+    public int Z = z;
+}
+
+public struct OnBlockBreakStartEvt(IBlockWorldContext level, EntityPlayer player, int x, int y, int z)
+{
+    public IBlockWorldContext Level = level;
+    public EntityPlayer Player = player;
+    public int X = x;
+    public int Y = y;
+    public int Z = z;
+}
+
+public struct OnDropEvt(IBlockWorldContext level, int x, int y, int z, int meta, float luck = 1.0F)
+{
+    public IBlockWorldContext Level = level;
     public int X = x;
     public int Y = y;
     public int Z = z;
@@ -122,46 +71,36 @@ public struct OnDropEvt(IBlockReader worldRead, IBlockWorldContext context, Rule
     public float Luck = luck;
 }
 
-public struct OnMetadataChangeEvt(IBlockReader read, IBlockWrite write, bool isRemote, int x, int y, int z, int meta)
+public struct OnMetadataChangeEvt(IBlockWorldContext level, int x, int y, int z, int meta)
 {
-    public IBlockReader WorldRead = read;
-    public IBlockWrite WorldWrite = write;
-    public bool IsRemote = isRemote;
+    public IBlockWorldContext Level = level;
     public int X = x;
     public int Y = y;
     public int Z = z;
     public int Meta = meta;
 }
 
-public struct OnEntityStepEvt(WorldBlockView worldRead, WorldBlockWrite worldWrite, WorldEventBroadcaster broadcaster, EntityManager entities, Entity entity, bool isRemote, int x, int y, int z)
+public struct OnEntityStepEvt(IBlockWorldContext level, Entity entity, int x, int y, int z)
 {
-    public WorldBlockView WorldRead = worldRead;
-    public WorldBlockWrite WorldWrite = worldWrite;
-    public WorldEventBroadcaster Broadcaster = broadcaster;
-    public EntityManager Entities = entities;
+    public IBlockWorldContext Level = level;
     public Entity Entity = entity;
-    public bool IsRemote = isRemote;
     public int X = x;
     public int Y = y;
     public int Z = z;
 }
 
-public struct OnEntityCollisionEvt(WorldBlockView worldRead, WorldBlockWrite worldWrite, WorldEventBroadcaster broadcaster, EntityManager entities, Entity entity, bool isRemote, int x, int y, int z)
+public struct OnEntityCollisionEvt(IBlockWorldContext level, Entity entity, int x, int y, int z)
 {
-    public WorldBlockView WorldRead = worldRead;
-    public WorldBlockWrite WorldWrite = worldWrite;
-    public WorldEventBroadcaster Broadcaster = broadcaster;
-    public EntityManager Entities = entities;
+    public IBlockWorldContext Level = level;
     public Entity Entity = entity;
-    public bool IsRemote = isRemote;
     public int X = x;
     public int Y = y;
     public int Z = z;
 }
 
-public struct OnApplyVelocityEvt(WorldBlockView worldRead, Entity entity, Vec3D velocity, int x, int y, int z)
+public struct OnApplyVelocityEvt(IBlockWorldContext level, Entity entity, Vec3D velocity, int x, int y, int z)
 {
-    public WorldBlockView WorldRead = worldRead;
+    public IBlockWorldContext Level = level;
     public Entity Entity = entity;
     public Vec3D Velocity = velocity;
     public int X = x;
@@ -169,36 +108,27 @@ public struct OnApplyVelocityEvt(WorldBlockView worldRead, Entity entity, Vec3D 
     public int Z = z;
 }
 
-public struct OnDestroyedByExplosionEvt(WorldBlockView worldRead, WorldBlockWrite worldWrite, WorldEventBroadcaster broadcaster, int x, int y, int z)
+public struct OnDestroyedByExplosionEvt(IBlockWorldContext level, int x, int y, int z)
 {
-    public WorldBlockView WorldRead = worldRead;
-    public WorldBlockWrite WorldWrite = worldWrite;
-    public WorldEventBroadcaster Broadcaster = broadcaster;
+    public IBlockWorldContext Level = level;
     public int X = x;
     public int Y = y;
     public int Z = z;
 }
 
-public struct OnAfterBreakEvt(WorldBlockView worldRead, WorldBlockWrite worldWrite, WorldEventBroadcaster broadcaster, RuleSet rules, JavaRandom random, EntityPlayer player, int meta, bool isRemote, int x, int y, int z)
+public struct OnAfterBreakEvt(IBlockWorldContext level, EntityPlayer player, int meta, int x, int y, int z)
 {
-    public WorldBlockView WorldRead = worldRead;
-    public WorldBlockWrite WorldWrite = worldWrite;
-    public WorldEventBroadcaster Broadcaster = broadcaster;
-    public RuleSet Rules = rules;
-    public JavaRandom Random = random;
+    public IBlockWorldContext Level = level;
     public EntityPlayer Player = player;
     public int Meta = meta;
-    public bool IsRemote = isRemote;
     public int X = x;
     public int Y = y;
     public int Z = z;
 }
 
-public struct OnBlockActionEvt(WorldBlockView worldRead, WorldBlockWrite worldWrite, WorldEventBroadcaster broadcaster, int data1, int data2, int x, int y, int z)
+public struct OnBlockActionEvt(IBlockWorldContext level, int data1, int data2, int x, int y, int z)
 {
-    public WorldBlockView WorldRead = worldRead;
-    public WorldBlockWrite WorldWrite = worldWrite;
-    public WorldEventBroadcaster Broadcaster = broadcaster;
+    public IBlockWorldContext Level = level;
     public int Data1 = data1;
     public int Data2 = data2;
     public int X = x;

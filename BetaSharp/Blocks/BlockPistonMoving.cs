@@ -1,9 +1,7 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
@@ -13,20 +11,20 @@ public class BlockPistonMoving : BlockWithEntity
 
     protected override BlockEntity getBlockEntity() => null;
 
-    public override void onPlaced(World world, int x, int y, int z)
+    public override void onPlaced(OnPlacedEvt ctx)
     {
     }
 
-    public override void onBreak(World world, int x, int y, int z)
+    public override void onBreak(OnBreakEvt ctx)
     {
-        BlockEntity var5 = world.getBlockEntity(x, y, z);
+        BlockEntity var5 = ctx.Level.Entities.GetBlockEntity(ctx.X, ctx.Y, ctx.Z);
         if (var5 != null && var5 is BlockEntityPiston)
         {
             ((BlockEntityPiston)var5).finish();
         }
         else
         {
-            base.onBreak(world, x, y, z);
+            base.onBreak(ctx);
         }
     }
 
@@ -40,9 +38,9 @@ public class BlockPistonMoving : BlockWithEntity
 
     public override bool onUse(OnUseEvt ctx)
     {
-        if (!ctx.IsRemote && ctx.WorldRead.GetBlockEntity(ctx.X, ctx.Y, ctx.Z) == null)
+        if (!ctx.Level.IsRemote && ctx.Level.Entities.GetBlockEntity(ctx.X, ctx.Y, ctx.Z) == null)
         {
-            ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+            ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             return true;
         }
 
@@ -53,20 +51,19 @@ public class BlockPistonMoving : BlockWithEntity
 
     public override void dropStacks(OnDropEvt ctx)
     {
-        if (!ctx.IsRemote)
+        if (!ctx.Level.IsRemote)
         {
-            BlockEntityPiston? piston = getPistonBlockEntity(ctx.WorldRead, ctx.X, ctx.Y, ctx.Z);
+            BlockEntityPiston? piston = getPistonBlockEntity(ctx.Level.BlocksReader, ctx.X, ctx.Y, ctx.Z);
             if (piston != null)
             {
-                // TODO: Implement this
-                // Blocks[piston.getPushedBlockId()].dropStacks(ctx.WorldRead, ctx.X, ctx.Y, ctx.Z, piston.getPushedBlockData());
+                Blocks[piston.getPushedBlockId()].dropStacks(new OnDropEvt(ctx.Level, ctx.X, ctx.Y, ctx.Z, piston.getPushedBlockData()));
             }
         }
     }
 
     public override void neighborUpdate(OnTickEvt ctx)
     {
-        if (!ctx.IsRemote && ctx.WorldRead.GetBlockEntity(ctx.X, ctx.Y, ctx.Z) == null)
+        if (!ctx.Level.IsRemote && ctx.Level.Entities.GetBlockEntity(ctx.X, ctx.Y, ctx.Z) == null)
         {
         }
     }

@@ -15,7 +15,7 @@ public class BlockPistonBase : Block
     public BlockPistonBase(int id, int textureId, bool sticky) : base(id, textureId, Material.Piston)
     {
         this.sticky = sticky;
-        setSoundGroup(SoundStoneFootstep);
+        setSoundGroup(s_soundStoneFootstep);
         setHardness(0.5F);
     }
 
@@ -45,156 +45,163 @@ public class BlockPistonBase : Block
 
     public override bool isOpaque() => false;
 
-    public override bool onUse(World world, int x, int y, int z, EntityPlayer player) => false;
+    public override bool onUse(OnUseEvt ctx) => false;
 
-    public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
+    public override void onPlaced(OnPlacedEvt ctx)
     {
-        int var6 = getFacingForPlacement(world, x, y, z, (EntityPlayer)placer);
-        world.setBlockMeta(x, y, z, var6);
-        if (!world.isRemote)
+        int facing = getFacingForPlacement(ctx.Level, ctx.X, ctx.Y, ctx.Z, (EntityPlayer)ctx.Placer);
+        ctx.Level.BlockWriter.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, facing);
+        
+        if (!ctx.Level.IsRemote)
         {
-            checkExtended(world, x, y, z);
+            checkExtended(ctx.Level, ctx.X, ctx.Y, ctx.Z);
         }
     }
 
-    public override void neighborUpdate(WorldBlockView world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickEvt ctx)
     {
-        if (!world.isRemote && !deaf)
+        if (!ctx.Level.IsRemote && ctx.Level.Entities.GetBlockEntity(ctx.X, ctx.Y, ctx.Z) == null)
         {
-            checkExtended(world, x, y, z);
+            checkExtended(ctx.Level, ctx.X, ctx.Y, ctx.Z);
         }
     }
 
-    public override void onPlaced(World world, int x, int y, int z)
+    private void checkExtended(IBlockWorldContext ctx, int x, int y, int z)
     {
-        if (!world.isRemote && world.getBlockEntity(x, y, z) == null)
+        int meta = ctx.BlocksReader.GetBlockMeta(x, y, z);
+        int facing = getFacing(meta);
+        bool needsExtension = shouldExtend(ctx, x, y, z, facing);
+        
+        if (meta != 7)
         {
-            checkExtended(world, x, y, z);
-        }
-    }
-
-    private void checkExtended(World world, int x, int y, int z)
-    {
-        int var5 = world.getBlockMeta(x, y, z);
-        int var6 = getFacing(var5);
-        bool var7 = shouldExtend(world, x, y, z, var6);
-        if (var5 != 7)
-        {
-            if (var7 && !isExtended(var5))
+            if (needsExtension && !isExtended(meta))
             {
-                if (canExtend(world, x, y, z, var6))
+                if (canExtend(ctx, x, y, z, facing))
                 {
-                    world.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, var6 | 8);
-                    world.playNoteBlockActionAt(x, y, z, 0, var6);
+                    ctx.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, facing | 8);
+                    // Routed directly into the block action system
+                    onBlockAction(new OnBlockActionEvt(ctx, 0, facing, x, y, z));
                 }
             }
-            else if (!var7 && isExtended(var5))
+            else if (!needsExtension && isExtended(meta))
             {
-                world.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, var6);
-                world.playNoteBlockActionAt(x, y, z, 1, var6);
+                ctx.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, facing);
+                // Routed directly into the block action system
+                onBlockAction(new OnBlockActionEvt(ctx, 1, facing, x, y, z));
             }
         }
     }
 
-    private bool shouldExtend(World world, int x, int y, int z, int facing) =>
-        facing != 0 && world.isPoweringSide(x, y - 1, z, 0)
+    private bool shouldExtend(IBlockWorldContext ctx, int x, int y, int z, int facing) =>
+        facing != 0 && ctx.Redstone.IsPoweringSide(x, y - 1, z, 0)
             ? true
-            : facing != 1 && world.isPoweringSide(x, y + 1, z, 1)
+            : facing != 1 && ctx.Redstone.IsPoweringSide(x, y + 1, z, 1)
                 ? true
-                : facing != 2 && world.isPoweringSide(x, y, z - 1, 2)
+                : facing != 2 && ctx.Redstone.IsPoweringSide(x, y, z - 1, 2)
                     ? true
-                    : facing != 3 && world.isPoweringSide(x, y, z + 1, 3)
+                    : facing != 3 && ctx.Redstone.IsPoweringSide(x, y, z + 1, 3)
                         ? true
-                        : facing != 5 && world.isPoweringSide(x + 1, y, z, 5)
+                        : facing != 5 && ctx.Redstone.IsPoweringSide(x + 1, y, z, 5)
                             ? true
-                            : facing != 4 && world.isPoweringSide(x - 1, y, z, 4)
+                            : facing != 4 && ctx.Redstone.IsPoweringSide(x - 1, y, z, 4)
                                 ? true
-                                : world.isPoweringSide(x, y, z, 0)
+                                : ctx.Redstone.IsPoweringSide(x, y, z, 0)
                                     ? true
-                                    : world.isPoweringSide(x, y + 2, z, 1)
+                                    : ctx.Redstone.IsPoweringSide(x, y + 2, z, 1)
                                         ? true
-                                        : world.isPoweringSide(x, y + 1, z - 1, 2)
+                                        : ctx.Redstone.IsPoweringSide(x, y + 1, z - 1, 2)
                                             ? true
-                                            : world.isPoweringSide(x, y + 1, z + 1, 3)
+                                            : ctx.Redstone.IsPoweringSide(x, y + 1, z + 1, 3)
                                                 ? true
-                                                : world.isPoweringSide(x - 1, y + 1, z, 4)
+                                                : ctx.Redstone.IsPoweringSide(x - 1, y + 1, z, 4)
                                                     ? true
-                                                    : world.isPoweringSide(x + 1, y + 1, z, 5);
+                                                    : ctx.Redstone.IsPoweringSide(x + 1, y + 1, z, 5);
 
-    public override void onBlockAction(World world, int x, int y, int z, int data1, int data2)
+    public override void onBlockAction(OnBlockActionEvt ctx)
     {
         deaf = true;
-        if (data1 == 0)
+        int actionId = ctx.Data1;
+        int facing = ctx.Data2;
+
+        if (actionId == 0) // Extending
         {
-            if (push(world, x, y, z, data2))
+            if (push(ctx.Level, ctx.X, ctx.Y, ctx.Z, facing))
             {
-                world.setBlockMeta(x, y, z, data2 | 8);
-                world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "tile.piston.out", 0.5F, world.random.NextFloat() * 0.25F + 0.6F);
+                ctx.Level.BlockWriter.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, facing | 8);
+                ctx.Level.Broadcaster.PlaySoundAtPos(ctx.X + 0.5D, ctx.Y + 0.5D, ctx.Z + 0.5D, "tile.piston.out", 0.5F, Random.Shared.NextSingle() * 0.25F + 0.6F);
             }
         }
-        else if (data1 == 1)
+        else if (actionId == 1) // Retracting
         {
-            BlockEntity var8 = world.getBlockEntity(x + PistonConstants.HEAD_OFFSET_X[data2], y + PistonConstants.HEAD_OFFSET_Y[data2], z + PistonConstants.HEAD_OFFSET_Z[data2]);
-            if (var8 != null && var8 is BlockEntityPiston)
+            int headX = ctx.X + PistonConstants.HEAD_OFFSET_X[facing];
+            int headY = ctx.Y + PistonConstants.HEAD_OFFSET_Y[facing];
+            int headZ = ctx.Z + PistonConstants.HEAD_OFFSET_Z[facing];
+
+            BlockEntity? entityAtHead = ctx.Level.Entities.GetBlockEntity(headX, headY, headZ);
+            if (entityAtHead is BlockEntityPiston extendingPiston)
             {
-                ((BlockEntityPiston)var8).finish();
+                extendingPiston.finish();
             }
 
-            world.setBlockWithoutNotifyingNeighbors(x, y, z, MovingPiston.id, data2);
-            world.Entities.SetBlockEntity(x, y, z, BlockPistonMoving.createPistonBlockEntity(id, data2, data2, false, true));
+            ctx.Level.BlockWriter.SetBlockWithoutNotifyingNeighbors(ctx.X, ctx.Y, ctx.Z, MovingPiston.id, facing);
+            ctx.Level.Entities.SetBlockEntity(ctx.X, ctx.Y, ctx.Z, BlockPistonMoving.createPistonBlockEntity(id, facing, facing, false, true));
+            
             if (sticky)
             {
-                int var9 = x + PistonConstants.HEAD_OFFSET_X[data2] * 2;
-                int var10 = y + PistonConstants.HEAD_OFFSET_Y[data2] * 2;
-                int var11 = z + PistonConstants.HEAD_OFFSET_Z[data2] * 2;
-                int var12 = world.getBlockId(var9, var10, var11);
-                int var13 = world.getBlockMeta(var9, var10, var11);
-                bool var14 = false;
-                if (var12 == MovingPiston.id)
+                int targetX = ctx.X + PistonConstants.HEAD_OFFSET_X[facing] * 2;
+                int targetY = ctx.Y + PistonConstants.HEAD_OFFSET_Y[facing] * 2;
+                int targetZ = ctx.Z + PistonConstants.HEAD_OFFSET_Z[facing] * 2;
+                
+                int targetId = ctx.Level.BlocksReader.GetBlockId(targetX, targetY, targetZ);
+                int targetMeta = ctx.Level.BlocksReader.GetBlockMeta(targetX, targetY, targetZ);
+                bool wasRetractingMovingBlock = false;
+                
+                if (targetId == MovingPiston.id)
                 {
-                    BlockEntity var15 = world.getBlockEntity(var9, var10, var11);
-                    if (var15 != null && var15 is BlockEntityPiston)
+                    BlockEntity? movingTarget = ctx.Level.Entities.GetBlockEntity(targetX, targetY, targetZ);
+                    if (movingTarget is BlockEntityPiston movingPistonTarget)
                     {
-                        BlockEntityPiston var16 = (BlockEntityPiston)var15;
-                        if (var16.getFacing() == data2 && var16.isExtending())
+                        if (movingPistonTarget.getFacing() == facing && movingPistonTarget.isExtending())
                         {
-                            var16.finish();
-                            var12 = var16.getPushedBlockId();
-                            var13 = var16.getPushedBlockData();
-                            var14 = true;
+                            movingPistonTarget.finish();
+                            targetId = movingPistonTarget.getPushedBlockId();
+                            targetMeta = movingPistonTarget.getPushedBlockData();
+                            wasRetractingMovingBlock = true;
                         }
                     }
                 }
 
-                if (var14 || var12 <= 0 || !canMoveBlock(var12, world, var9, var10, var11, false) || (Blocks[var12].getPistonBehavior() != 0 && var12 != Piston.id && var12 != StickyPiston.id))
+                if (wasRetractingMovingBlock || targetId <= 0 || !canMoveBlock(targetId, ctx.Level, targetX, targetY, targetZ, false) || (Blocks[targetId].getPistonBehavior() != 0 && targetId != Piston.id && targetId != StickyPiston.id))
                 {
-                    if (!var14)
+                    if (!wasRetractingMovingBlock)
                     {
                         deaf = false;
-                        world.setBlock(x + PistonConstants.HEAD_OFFSET_X[data2], y + PistonConstants.HEAD_OFFSET_Y[data2], z + PistonConstants.HEAD_OFFSET_Z[data2], 0);
+                        ctx.Level.BlockWriter.SetBlock(headX, headY, headZ, 0);
                         deaf = true;
                     }
                 }
                 else
                 {
                     deaf = false;
-                    world.setBlock(var9, var10, var11, 0);
+                    ctx.Level.BlockWriter.SetBlock(targetX, targetY, targetZ, 0);
                     deaf = true;
-                    x += PistonConstants.HEAD_OFFSET_X[data2];
-                    y += PistonConstants.HEAD_OFFSET_Y[data2];
-                    z += PistonConstants.HEAD_OFFSET_Z[data2];
-                    world.setBlockWithoutNotifyingNeighbors(x, y, z, MovingPiston.id, var13);
-                    world.Entities.SetBlockEntity(x, y, z, BlockPistonMoving.createPistonBlockEntity(var12, var13, data2, false, false));
+                    
+                    ctx.X += PistonConstants.HEAD_OFFSET_X[facing];
+                    ctx.Y += PistonConstants.HEAD_OFFSET_Y[facing];
+                    ctx.Z += PistonConstants.HEAD_OFFSET_Z[facing];
+                    
+                    ctx.Level.BlockWriter.SetBlockWithoutNotifyingNeighbors(ctx.X, ctx.Y, ctx.Z, MovingPiston.id, targetMeta);
+                    ctx.Level.Entities.SetBlockEntity(ctx.X, ctx.Y, ctx.Z, BlockPistonMoving.createPistonBlockEntity(targetId, targetMeta, facing, false, false));
                 }
             }
             else
             {
                 deaf = false;
-                world.setBlock(x + PistonConstants.HEAD_OFFSET_X[data2], y + PistonConstants.HEAD_OFFSET_Y[data2], z + PistonConstants.HEAD_OFFSET_Z[data2], 0);
+                ctx.Level.BlockWriter.SetBlock(headX, headY, headZ, 0);
                 deaf = true;
             }
 
-            world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "tile.piston.in", 0.5F, world.random.NextFloat() * 0.15F + 0.6F);
+            ctx.Level.Broadcaster.PlaySoundAtPos(ctx.X + 0.5D, ctx.Y + 0.5D, ctx.Z + 0.5D, "tile.piston.in", 0.5F, Random.Shared.NextSingle() * 0.15F + 0.6F);
         }
 
         deaf = false;
@@ -202,29 +209,17 @@ public class BlockPistonBase : Block
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
     {
-        int var5 = iBlockReader.getBlockMeta(x, y, z);
-        if (isExtended(var5))
+        int meta = iBlockReader.GetBlockMeta(x, y, z);
+        if (isExtended(meta))
         {
-            switch (getFacing(var5))
+            switch (getFacing(meta))
             {
-                case 0:
-                    setBoundingBox(0.0F, 0.25F, 0.0F, 1.0F, 1.0F, 1.0F);
-                    break;
-                case 1:
-                    setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 12.0F / 16.0F, 1.0F);
-                    break;
-                case 2:
-                    setBoundingBox(0.0F, 0.0F, 0.25F, 1.0F, 1.0F, 1.0F);
-                    break;
-                case 3:
-                    setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 12.0F / 16.0F);
-                    break;
-                case 4:
-                    setBoundingBox(0.25F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-                    break;
-                case 5:
-                    setBoundingBox(0.0F, 0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F);
-                    break;
+                case 0: setBoundingBox(0.0F, 0.25F, 0.0F, 1.0F, 1.0F, 1.0F); break;
+                case 1: setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 12.0F / 16.0F, 1.0F); break;
+                case 2: setBoundingBox(0.0F, 0.0F, 0.25F, 1.0F, 1.0F, 1.0F); break;
+                case 3: setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 12.0F / 16.0F); break;
+                case 4: setBoundingBox(0.25F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F); break;
+                case 5: setBoundingBox(0.0F, 0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F); break;
             }
         }
         else
@@ -247,168 +242,129 @@ public class BlockPistonBase : Block
 
     public static bool isExtended(int meta) => (meta & 8) != 0;
 
-    private static int getFacingForPlacement(World world, int x, int y, int z, EntityPlayer player)
+    private static int getFacingForPlacement(IBlockWorldContext world, int x, int y, int z, EntityPlayer player)
     {
-        if (MathF.Abs((float)player.x - x) < 2.0F && MathHelper.Abs((float)player.z - z) < 2.0F)
+        if (MathF.Abs((float)player.x - x) < 2.0F && MathF.Abs((float)player.z - z) < 2.0F)
         {
-            double var5 = player.y + 1.82D - player.standingEyeHeight;
-            if (var5 - y > 2.0D)
-            {
-                return 1;
-            }
-
-            if (y - var5 > 0.0D)
-            {
-                return 0;
-            }
+            double diffY = player.y + 1.82D - player.standingEyeHeight;
+            if (diffY - y > 2.0D) return 1;
+            if (y - diffY > 0.0D) return 0;
         }
 
-        int var7 = MathHelper.Floor(player.yaw * 4.0F / 360.0F + 0.5D) & 3;
-        return var7 == 0 ? 2 : var7 == 1 ? 5 : var7 == 2 ? 3 : var7 == 3 ? 4 : 0;
+        int playerYaw = MathHelper.Floor(player.yaw * 4.0F / 360.0F + 0.5D) & 3;
+        return playerYaw == 0 ? 2 : playerYaw == 1 ? 5 : playerYaw == 2 ? 3 : playerYaw == 3 ? 4 : 0;
     }
 
-    private static bool canMoveBlock(int id, World world, int x, int y, int z, bool allowBreaking)
+    private static bool canMoveBlock(int id, IBlockWorldContext ctx, int x, int y, int z, bool allowBreaking)
     {
-        if (id == Obsidian.id)
-        {
-            return false;
-        }
+        if (id == Obsidian.id) return false;
 
         if (id != Piston.id && id != StickyPiston.id)
         {
-            if (Blocks[id].getHardness() == -1.0F)
-            {
-                return false;
-            }
-
-            if (Blocks[id].getPistonBehavior() == 2)
-            {
-                return false;
-            }
-
-            if (!allowBreaking && Blocks[id].getPistonBehavior() == 1)
-            {
-                return false;
-            }
+            if (Blocks[id].getHardness() == -1.0F) return false;
+            if (Blocks[id].getPistonBehavior() == 2) return false;
+            if (!allowBreaking && Blocks[id].getPistonBehavior() == 1) return false;
         }
-        else if (isExtended(world.getBlockMeta(x, y, z)))
+        else if (isExtended(ctx.BlocksReader.GetBlockMeta(x, y, z)))
         {
             return false;
         }
 
-        BlockEntity var6 = world.getBlockEntity(x, y, z);
-        return var6 == null;
+        BlockEntity? targetEntity = ctx.Entities.GetBlockEntity(x, y, z);
+        return targetEntity == null;
     }
 
-    private static bool canExtend(World world, int x, int y, int z, int dir)
+   private static bool canExtend(IBlockWorldContext ctx, int x, int y, int z, int dir)
     {
-        int var5 = x + PistonConstants.HEAD_OFFSET_X[dir];
-        int var6 = y + PistonConstants.HEAD_OFFSET_Y[dir];
-        int var7 = z + PistonConstants.HEAD_OFFSET_Z[dir];
-        int var8 = 0;
+        int checkX = x + PistonConstants.HEAD_OFFSET_X[dir];
+        int checkY = y + PistonConstants.HEAD_OFFSET_Y[dir];
+        int checkZ = z + PistonConstants.HEAD_OFFSET_Z[dir];
+        int pushCount = 0;
 
         while (true)
         {
-            if (var8 < 13)
+            if (pushCount < 13)
             {
-                if (var6 <= 0 || var6 >= 127)
+                if (checkY <= 0 || checkY >= 127) return false;
+
+                int blockId = ctx.BlocksReader.GetBlockId(checkX, checkY, checkZ);
+                if (blockId != 0)
                 {
-                    return false;
-                }
+                    if (!canMoveBlock(blockId, ctx, checkX, checkY, checkZ, true)) return false;
 
-                int var9 = world.getBlockId(var5, var6, var7);
-                if (var9 != 0)
-                {
-                    if (!canMoveBlock(var9, world, var5, var6, var7, true))
+                    if (Blocks[blockId].getPistonBehavior() != 1)
                     {
-                        return false;
-                    }
+                        if (pushCount == 12) return false;
 
-                    if (Blocks[var9].getPistonBehavior() != 1)
-                    {
-                        if (var8 == 12)
-                        {
-                            return false;
-                        }
-
-                        var5 += PistonConstants.HEAD_OFFSET_X[dir];
-                        var6 += PistonConstants.HEAD_OFFSET_Y[dir];
-                        var7 += PistonConstants.HEAD_OFFSET_Z[dir];
-                        ++var8;
+                        checkX += PistonConstants.HEAD_OFFSET_X[dir];
+                        checkY += PistonConstants.HEAD_OFFSET_Y[dir];
+                        checkZ += PistonConstants.HEAD_OFFSET_Z[dir];
+                        ++pushCount;
                         continue;
                     }
                 }
             }
-
             return true;
         }
     }
-
-    private bool push(World world, int x, int y, int z, int dir)
+    private bool push(IBlockWorldContext ctx, int x, int y, int z, int dir)
     {
-        int var6 = x + PistonConstants.HEAD_OFFSET_X[dir];
-        int var7 = y + PistonConstants.HEAD_OFFSET_Y[dir];
-        int var8 = z + PistonConstants.HEAD_OFFSET_Z[dir];
-        int var9 = 0;
+        int nextX = x + PistonConstants.HEAD_OFFSET_X[dir];
+        int nextY = y + PistonConstants.HEAD_OFFSET_Y[dir];
+        int nextZ = z + PistonConstants.HEAD_OFFSET_Z[dir];
+        int pushCount = 0;
 
         while (true)
         {
-            int var10;
-            if (var9 < 13)
+            int blockId;
+            if (pushCount < 13)
             {
-                if (var7 <= 0 || var7 >= 127)
+                if (nextY <= 0 || nextY >= 127) return false;
+
+                blockId = ctx.BlocksReader.GetBlockId(nextX, nextY, nextZ);
+                if (blockId != 0)
                 {
-                    return false;
-                }
+                    if (!canMoveBlock(blockId, ctx, nextX, nextY, nextZ, true)) return false;
 
-                var10 = world.getBlockId(var6, var7, var8);
-                if (var10 != 0)
-                {
-                    if (!canMoveBlock(var10, world, var6, var7, var8, true))
+                    if (Blocks[blockId].getPistonBehavior() != 1)
                     {
-                        return false;
-                    }
+                        if (pushCount == 12) return false;
 
-                    if (Blocks[var10].getPistonBehavior() != 1)
-                    {
-                        if (var9 == 12)
-                        {
-                            return false;
-                        }
-
-                        var6 += PistonConstants.HEAD_OFFSET_X[dir];
-                        var7 += PistonConstants.HEAD_OFFSET_Y[dir];
-                        var8 += PistonConstants.HEAD_OFFSET_Z[dir];
-                        ++var9;
+                        nextX += PistonConstants.HEAD_OFFSET_X[dir];
+                        nextY += PistonConstants.HEAD_OFFSET_Y[dir];
+                        nextZ += PistonConstants.HEAD_OFFSET_Z[dir];
+                        ++pushCount;
                         continue;
                     }
 
-                    Blocks[var10].dropStacks(world, var6, var7, var8, world.getBlockMeta(var6, var7, var8));
-                    world.setBlock(var6, var7, var8, 0);
+                    Blocks[blockId].dropStacks(new OnDropEvt(ctx, nextX, nextY, nextZ, ctx.BlocksReader.GetBlockMeta(nextX, nextY, nextZ)));
+                    ctx.BlockWriter.SetBlock(nextX, nextY, nextZ, 0);
                 }
             }
 
-            while (var6 != x || var7 != y || var8 != z)
+            while (nextX != x || nextY != y || nextZ != z)
             {
-                var9 = var6 - PistonConstants.HEAD_OFFSET_X[dir];
-                var10 = var7 - PistonConstants.HEAD_OFFSET_Y[dir];
-                int var11 = var8 - PistonConstants.HEAD_OFFSET_Z[dir];
-                int var12 = world.getBlockId(var9, var10, var11);
-                int var13 = world.getBlockMeta(var9, var10, var11);
-                if (var12 == id && var9 == x && var10 == y && var11 == z)
+                int prevX = nextX - PistonConstants.HEAD_OFFSET_X[dir];
+                int prevY = nextY - PistonConstants.HEAD_OFFSET_Y[dir];
+                int prevZ = nextZ - PistonConstants.HEAD_OFFSET_Z[dir];
+                
+                int prevBlockId = ctx.BlocksReader.GetBlockId(prevX, prevY, prevZ);
+                int prevMeta = ctx.BlocksReader.GetBlockMeta(prevX, prevY, prevZ);
+                
+                if (prevBlockId == id && prevX == x && prevY == y && prevZ == z)
                 {
-                    world.setBlockWithoutNotifyingNeighbors(var6, var7, var8, MovingPiston.id, dir | (sticky ? 8 : 0));
-                    world.Entities.SetBlockEntity(var6, var7, var8, BlockPistonMoving.createPistonBlockEntity(PistonHead.id, dir | (sticky ? 8 : 0), dir, true, false));
+                    ctx.BlockWriter.SetBlockWithoutNotifyingNeighbors(nextX, nextY, nextZ, MovingPiston.id, dir | (sticky ? 8 : 0));
+                    ctx.Entities.SetBlockEntity(nextX, nextY, nextZ, BlockPistonMoving.createPistonBlockEntity(PistonHead.id, dir | (sticky ? 8 : 0), dir, true, false));
                 }
                 else
                 {
-                    world.setBlockWithoutNotifyingNeighbors(var6, var7, var8, MovingPiston.id, var13);
-                    world.Entities.SetBlockEntity(var6, var7, var8, BlockPistonMoving.createPistonBlockEntity(var12, var13, dir, true, false));
+                    ctx.BlockWriter.SetBlockWithoutNotifyingNeighbors(nextX, nextY, nextZ, MovingPiston.id, prevMeta);
+                    ctx.Entities.SetBlockEntity(nextX, nextY, nextZ, BlockPistonMoving.createPistonBlockEntity(prevBlockId, prevMeta, dir, true, false));
                 }
 
-                var6 = var9;
-                var7 = var10;
-                var8 = var11;
+                nextX = prevX;
+                nextY = prevY;
+                nextZ = prevZ;
             }
 
             return true;

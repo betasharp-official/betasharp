@@ -20,126 +20,124 @@ internal class BlockTorch : Block
     private bool canPlaceOn(IBlockReader world, int x, int y, int z) => world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == Fence.id;
 
     public override bool canPlaceAt(CanPlaceAtCtx ctx) =>
-        ctx.WorldRead.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z) ||
-        ctx.WorldRead.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z) ||
-        ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1) ||
-        ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1) ||
-        canPlaceOn(ctx.WorldRead, ctx.X, ctx.Y - 1, ctx.Z);
+        ctx.Level.BlocksReader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z) ||
+        ctx.Level.BlocksReader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z) ||
+        ctx.Level.BlocksReader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1) ||
+        ctx.Level.BlocksReader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1) ||
+        canPlaceOn(ctx.Level.BlocksReader, ctx.X, ctx.Y - 1, ctx.Z);
 
-    public override void onPlaced(OnPlacedEvt ctx)
+    public override void onPlaced(OnPlacedEvt evt)
     {
-        int meta = ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
-        if (ctx.Direction == 1 && canPlaceOn(ctx.WorldRead, ctx.X, ctx.Y - 1, ctx.Z))
+        int meta = evt.Level.BlocksReader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+        if (evt.Direction == 1 && canPlaceOn(evt.Level.BlocksReader, evt.X, evt.Y - 1, evt.Z))
         {
             meta = 5;
         }
 
-        if (ctx.Direction == 2 && ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1))
+        if (evt.Direction == 2 && evt.Level.BlocksReader.ShouldSuffocate(evt.X, evt.Y, evt.Z + 1))
         {
             meta = 4;
         }
 
-        if (ctx.Direction == 3 && ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1))
+        if (evt.Direction == 3 && evt.Level.BlocksReader.ShouldSuffocate(evt.X, evt.Y, evt.Z - 1))
         {
             meta = 3;
         }
 
-        if (ctx.Direction == 4 && ctx.WorldRead.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z))
+        if (evt.Direction == 4 && evt.Level.BlocksReader.ShouldSuffocate(evt.X + 1, evt.Y, evt.Z))
         {
             meta = 2;
         }
 
-        if (ctx.Direction == 5 && ctx.WorldRead.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z))
+        if (evt.Direction == 5 && evt.Level.BlocksReader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z))
         {
             meta = 1;
         }
 
-        ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, meta);
+        evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, meta);
     }
 
-    public override void onTick(OnTickEvt ctx)
+    public override void onTick(OnTickEvt evt)
     {
-        base.onTick(ctx);
-        if (ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) == 0)
+        base.onTick(evt);
+        if (evt.Level.BlocksReader.GetBlockMeta(evt.X, evt.Y, evt.Z) == 0)
         {
-            onPlaced(ctx);
+            onPlaced(evt);
         }
     }
 
-    public virtual void onPlaced(OnTickEvt ctx)
+    public virtual void onPlaced(OnTickEvt evt)
     {
-        if (ctx.WorldRead.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z))
+        if (evt.Level.BlocksReader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z))
         {
-            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 1);
+            evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, 1);
         }
-        else if (ctx.WorldRead.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z))
+        else if (evt.Level.BlocksReader.ShouldSuffocate(evt.X + 1, evt.Y, evt.Z))
         {
-            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 2);
+            evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, 2);
         }
-        else if (ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1))
+        else if (evt.Level.BlocksReader.ShouldSuffocate(evt.X, evt.Y, evt.Z - 1))
         {
-            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 3);
+            evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, 3);
         }
-        else if (ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1))
+        else if (evt.Level.BlocksReader.ShouldSuffocate(evt.X, evt.Y, evt.Z + 1))
         {
-            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 4);
+            evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, 4);
         }
-        else if (canPlaceOn(ctx.WorldRead, ctx.X, ctx.Y - 1, ctx.Z))
+        else if (canPlaceOn(evt.Level.BlocksReader, evt.X, evt.Y - 1, evt.Z))
         {
-            ctx.WorldWrite.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, 5);
+            evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, 5);
         }
 
-        breakIfCannotPlaceAt(ctx.WorldRead, ctx.WorldWrite, ctx.X, ctx.Y, ctx.Z);
+        breakIfCannotPlaceAt(evt, evt.X, evt.Y, evt.Z);
     }
 
-    public override void neighborUpdate(OnTickEvt ctx)
+    public override void neighborUpdate(OnTickEvt evt)
     {
-        if (breakIfCannotPlaceAt(ctx.WorldRead, ctx.WorldWrite, ctx.X, ctx.Y, ctx.Z))
+        if (breakIfCannotPlaceAt(evt, evt.X, evt.Y, evt.Z))
         {
-            int meta = ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+            int meta = evt.Level.BlocksReader.GetBlockMeta(evt.X, evt.Y, evt.Z);
             bool shouldDrop = false;
 
-            if (!ctx.WorldRead.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z) && meta == 1)
+            if (!evt.Level.BlocksReader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z) && meta == 1)
             {
                 shouldDrop = true;
             }
 
-            if (!ctx.WorldRead.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z) && meta == 2)
+            if (!evt.Level.BlocksReader.ShouldSuffocate(evt.X + 1, evt.Y, evt.Z) && meta == 2)
             {
                 shouldDrop = true;
             }
 
-            if (!ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1) && meta == 3)
+            if (!evt.Level.BlocksReader.ShouldSuffocate(evt.X, evt.Y, evt.Z - 1) && meta == 3)
             {
                 shouldDrop = true;
             }
 
-            if (!ctx.WorldRead.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1) && meta == 4)
+            if (!evt.Level.BlocksReader.ShouldSuffocate(evt.X, evt.Y, evt.Z + 1) && meta == 4)
             {
                 shouldDrop = true;
             }
 
-            if (!canPlaceOn(ctx.WorldRead, ctx.X, ctx.Y - 1, ctx.Z) && meta == 5)
+            if (!canPlaceOn(evt.Level.BlocksReader, evt.X, evt.Y - 1, evt.Z) && meta == 5)
             {
                 shouldDrop = true;
             }
 
             if (shouldDrop)
             {
-                // TODO: Implement this
-                //dropStacks(ctx.WorldRead, ctx.X, ctx.Y, ctx.Z, ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z));
-                ctx.WorldWrite.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+                dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.BlocksReader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
+                evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
             }
         }
     }
 
-    private bool breakIfCannotPlaceAt(IBlockReader worldRead, IBlockWrite worldWrite, int x, int y, int z)
+    private bool breakIfCannotPlaceAt(OnTickEvt evt, int x, int y, int z)
     {
-        if (!canPlaceAt(new CanPlaceAtCtx(worldRead, worldWrite, 0, x, y, z)))
+        if (!canPlaceAt(new CanPlaceAtCtx(evt.Level, 0, x, y, z)))
         {
-            // TODO: Implement this
-            // dropStacks(worldRead, x, y, z, worldRead.GetBlockMeta(x, y, z));
-            worldWrite.SetBlock(x, y, z, 0);
+            dropStacks(new OnDropEvt(evt.Level, x, y, z, evt.Level.BlocksReader.GetBlockMeta(x, y, z)));
+            evt.Level.BlockWriter.SetBlock(x, y, z, 0);
             return false;
         }
 
@@ -175,39 +173,39 @@ internal class BlockTorch : Block
         return base.raycast(world, x, y, z, startPos, endPos);
     }
 
-    public override void randomDisplayTick(OnTickEvt ctx)
+    public override void randomDisplayTick(OnTickEvt evt)
     {
-        int meta = ctx.WorldRead.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
-        float flameX = ctx.X + 0.5F;
-        float flameY = ctx.Y + 0.7F;
-        float flameZ = ctx.Z + 0.5F;
+        int meta = evt.Level.BlocksReader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+        float flameX = evt.X + 0.5F;
+        float flameY = evt.Y + 0.7F;
+        float flameZ = evt.Z + 0.5F;
         float yOffset = 0.22F;
         float xOffset = 0.27F;
 
         if (meta == 1)
         {
-            ctx.Broadcaster.AddParticle("smoke", flameX - xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
-            ctx.Broadcaster.AddParticle("flame", flameX - xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
+            evt.Level.Broadcaster.AddParticle("smoke", flameX - xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
+            evt.Level.Broadcaster.AddParticle("flame", flameX - xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
         }
         else if (meta == 2)
         {
-            ctx.Broadcaster.AddParticle("smoke", flameX + xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
-            ctx.Broadcaster.AddParticle("flame", flameX + xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
+            evt.Level.Broadcaster.AddParticle("smoke", flameX + xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
+            evt.Level.Broadcaster.AddParticle("flame", flameX + xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
         }
         else if (meta == 3)
         {
-            ctx.Broadcaster.AddParticle("smoke", flameX, flameY + yOffset, flameZ - xOffset, 0.0D, 0.0D, 0.0D);
-            ctx.Broadcaster.AddParticle("flame", flameX, flameY + yOffset, flameZ - xOffset, 0.0D, 0.0D, 0.0D);
+            evt.Level.Broadcaster.AddParticle("smoke", flameX, flameY + yOffset, flameZ - xOffset, 0.0D, 0.0D, 0.0D);
+            evt.Level.Broadcaster.AddParticle("flame", flameX, flameY + yOffset, flameZ - xOffset, 0.0D, 0.0D, 0.0D);
         }
         else if (meta == 4)
         {
-            ctx.Broadcaster.AddParticle("smoke", flameX, flameY + yOffset, flameZ + xOffset, 0.0D, 0.0D, 0.0D);
-            ctx.Broadcaster.AddParticle("flame", flameX, flameY + yOffset, flameZ + xOffset, 0.0D, 0.0D, 0.0D);
+            evt.Level.Broadcaster.AddParticle("smoke", flameX, flameY + yOffset, flameZ + xOffset, 0.0D, 0.0D, 0.0D);
+            evt.Level.Broadcaster.AddParticle("flame", flameX, flameY + yOffset, flameZ + xOffset, 0.0D, 0.0D, 0.0D);
         }
         else
         {
-            ctx.Broadcaster.AddParticle("smoke", flameX, flameY, flameZ, 0.0D, 0.0D, 0.0D);
-            ctx.Broadcaster.AddParticle("flame", flameX, flameY, flameZ, 0.0D, 0.0D, 0.0D);
+            evt.Level.Broadcaster.AddParticle("smoke", flameX, flameY, flameZ, 0.0D, 0.0D, 0.0D);
+            evt.Level.Broadcaster.AddParticle("flame", flameX, flameY, flameZ, 0.0D, 0.0D, 0.0D);
         }
     }
 }
