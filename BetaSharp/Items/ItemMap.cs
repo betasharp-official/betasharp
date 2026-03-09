@@ -268,7 +268,7 @@ public class ItemMap : NetworkSyncedItem
 
     public override void inventoryTick(ItemStack itemStack, World world, Entity entity, int slotIndex, bool shouldUpdate)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             MapState mapState = getSavedMapState(itemStack, world);
             if (entity is EntityPlayer)

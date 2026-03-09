@@ -34,7 +34,7 @@ internal class ItemFishingRod : Item
         else
         {
             world.playSound(entityPlayer, "random.bow", 0.5F, 0.4F / (itemRand.NextFloat() * 0.4F + 0.8F));
-            if (!world.isRemote)
+            if (!world.IsRemote)
             {
                 world.SpawnEntity(new EntityFish(world, entityPlayer));
             }

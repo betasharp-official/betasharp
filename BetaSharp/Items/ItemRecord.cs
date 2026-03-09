@@ -20,7 +20,7 @@ public class ItemRecord : Item
     {
         if (world.getBlockId(x, y, z) == Block.Jukebox.id && world.getBlockMeta(x, y, z) == 0)
         {
-            if (world.isRemote)
+            if (world.IsRemote)
             {
                 return true;
             }

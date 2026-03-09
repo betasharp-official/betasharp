@@ -21,7 +21,7 @@ internal class ItemMinecart : Item
         int blockId = world.getBlockId(x, y, z);
         if (BlockRail.isRail(blockId))
         {
-            if (!world.isRemote)
+            if (!world.IsRemote)
             {
                 world.SpawnEntity(new EntityMinecart(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), minecartType));
             }
