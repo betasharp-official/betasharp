@@ -1,6 +1,5 @@
 using BetaSharp.Entities;
 using BetaSharp.Server.Worlds;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Dimensions;
 using BetaSharp.Worlds.Storage.RegionFormat;

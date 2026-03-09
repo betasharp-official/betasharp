@@ -1,23 +1,20 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
-using BetaSharp.Items;
 using BetaSharp.Rules;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Worlds.Core.Systems;
 
-public class WorldEventBroadcaster : IBlockWorldContext
+public class WorldEventBroadcaster 
 {
     private readonly List<IWorldAccess> _eventListeners;
-
     private readonly World _worldContext;
+    private readonly IBlockReader _reader;
 
     public bool PauseTicking = false;
-    private readonly IBlockReader _reader;
-    public bool isRemote => _worldContext.isRemote;
+    public bool isRemote => _worldContext.IsRemote;
     public RuleSet Rules => _worldContext.Rules;
     public JavaRandom random => _worldContext.random;
-
 
     public WorldEventBroadcaster(List<IWorldAccess> eventListeners, IBlockReader reader, World worldContext)
     {
@@ -30,8 +27,7 @@ public class WorldEventBroadcaster : IBlockWorldContext
     {
         foreach (var t in _eventListeners)
         {
-            t.playSound(sound, entity.x, entity.y - entity.standingEyeHeight, entity.z, volume,
-                pitch);
+            t.playSound(sound, entity.x, entity.y - entity.standingEyeHeight, entity.z, volume, pitch);
         }
     }
 
@@ -87,28 +83,20 @@ public class WorldEventBroadcaster : IBlockWorldContext
         NotifyUpdate(x, y, z + 1, blockId);
     }
 
-    void IBlockWorldContext.SpawnEntity(Entity entity)
-    {
-        if (_worldContext != null)
-            _worldContext.Entities.SpawnEntity(entity);
-    }
-
-    void IBlockWorldContext.SpawnItemDrop(double x, double y, double z, ItemStack itemStack)
-    {
-        if (_worldContext == null) return;
-        var droppedItem = new EntityItem(_worldContext, x, y, z, itemStack);
-        droppedItem.delayBeforeCanPickup = 10;
-        _worldContext.Entities.SpawnEntity(droppedItem);
-    }
-
     private void NotifyUpdate(int x, int y, int z, int blockId)
     {
         if (!PauseTicking && !isRemote)
         {
-            Block? block = Block.Blocks[_reader.GetBlockId(x, y, z)];
+            int targetBlockId = _reader.GetBlockId(x, y, z);
+            Block? block = Block.Blocks[targetBlockId];
+
             if (block != null)
             {
-                block.neighborUpdate(this, x, y, z, blockId);
+                int meta = _reader.GetBlockMeta(x, y, z);
+
+                OnTickEvt tickEvent = new OnTickEvt(_worldContext, x, y, z, meta, blockId);
+
+                block.neighborUpdate(tickEvent);
             }
         }
     }
@@ -116,4 +104,39 @@ public class WorldEventBroadcaster : IBlockWorldContext
     public void AddWorldAccess(IWorldAccess worldAccess) => _eventListeners.Add(worldAccess);
 
     public void RemoveWorldAccess(IWorldAccess worldAccess) => _eventListeners.Remove(worldAccess);
+
+    public void SetBlocksDirty(int x, int z, int minY, int maxY)
+    {
+        if (minY > maxY)
+        {
+            (maxY, minY) = (minY, maxY);
+        }
+
+        SetBlocksDirty(x, minY, z, x, maxY, z);
+    }
+
+    public virtual void PlayNote(int x, int y, int z, int soundType, int pitch)
+    {
+        int blockId = _reader.GetBlockId(x, y, z);
+        if (blockId > 0)
+        {
+            Block.Blocks[blockId].onBlockAction(new OnBlockActionEvt(_worldContext, soundType, pitch, x, y, z));
+        }
+    }
+
+    public void SetBlocksDirty(int x, int y, int z)
+    {
+        for (int i = 0; i < _eventListeners.Count; ++i)
+        {
+            _eventListeners[i].setBlocksDirty(x, y, z, x, y, z);
+        }
+    }
+
+    public void SetBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+    {
+        for (int i = 0; i < _eventListeners.Count; ++i)
+        {
+            _eventListeners[i].setBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ);
+        }
+    }
 }

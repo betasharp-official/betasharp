@@ -7,186 +7,136 @@ namespace BetaSharp.Worlds.Lighting;
 
 internal struct LightUpdate
 {
-    public readonly LightType _lightType;
+    public readonly LightType LightType;
 
-    private int minX;
-    private int minY;
-    private int minZ;
-    private int maxX;
-    private int maxY;
-    private int maxZ;
+    public int MinX;
+    public int MinY;
+    public int MinZ;
+    public int MaxX;
+    public int MaxY;
+    public int MaxZ;
 
-    public LightUpdate(LightType var1, int var2, int var3, int var4, int var5, int var6, int var7)
+    public LightUpdate(LightType lightType, int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
-        _lightType = var1;
-        minX = var2;
-        minY = var3;
-        minZ = var4;
-        maxX = var5;
-        maxY = var6;
-        maxZ = var7;
+        LightType = lightType;
+        MinX = minX;
+        MinY = minY;
+        MinZ = minZ;
+        MaxX = maxX;
+        MaxY = maxY;
+        MaxZ = maxZ;
     }
 
-    public void updateLight(WorldBlockView world,LightingEngine lighting)
+    public void UpdateLight(IBlockReader reader,BlockHost host, LightingEngine lighting)
     {
-        int var2 = maxX - minX + 1;
-        int var3 = maxY - minY + 1;
-        int var4 = maxZ - minZ + 1;
-        int var5 = var2 * var3 * var4;
-        if (var5 > -short.MinValue)
+        int sizeX = MaxX - MinX + 1;
+        int sizeY = MaxY - MinY + 1;
+        int sizeZ = MaxZ - MinZ + 1;
+        int updateVolume = sizeX * sizeY * sizeZ;
+
+        if (updateVolume > -short.MinValue)
         {
             // _logger.LogInformation("Light too large, skipping!");
+            return;
         }
-        else
+
+        int startY = MinY < 0 ? 0 : MinY;
+        int endY = MaxY >= 128 ? 127 : MaxY;
+
+        int cachedChunkX = 0;
+        int cachedChunkZ = 0;
+        bool isCacheValid = false;
+        bool isCachedChunkLoaded = false;
+
+        for (int x = MinX; x <= MaxX; ++x)
         {
-            int var6 = 0;
-            int var7 = 0;
-            bool var8 = false;
-            bool var9 = false;
-
-            for (int var10 = minX; var10 <= maxX; ++var10)
+            for (int z = MinZ; z <= MaxZ; ++z)
             {
-                for (int var11 = minZ; var11 <= maxZ; ++var11)
+                int chunkX = x >> 4;
+                int chunkZ = z >> 4;
+                bool isChunkLoaded;
+
+                if (isCacheValid && chunkX == cachedChunkX && chunkZ == cachedChunkZ)
                 {
-                    int var12 = var10 >> 4;
-                    int var13 = var11 >> 4;
-                    bool var14 = false;
-                    if (var8 && var12 == var6 && var13 == var7)
+                    isChunkLoaded = isCachedChunkLoaded;
+                }
+                else
+                {
+                    isChunkLoaded = host.IsRegionLoaded(x, 0, z, 1);
+                    if (isChunkLoaded)
                     {
-                        var14 = var9;
+                        Chunk chunk = host.GetChunk(chunkX, chunkZ);
+                        if (chunk.IsEmpty())
+                        {
+                            isChunkLoaded = false;
+                        }
                     }
-                    else
+                    isCachedChunkLoaded = isChunkLoaded;
+                    cachedChunkX = chunkX;
+                    cachedChunkZ = chunkZ;
+                    isCacheValid = true;
+                }
+
+                if (isChunkLoaded)
+                {
+                    for (int y = startY; y <= endY; ++y)
                     {
-                        var14 = world.IsRegionLoaded(var10, 0, var11, 1);
-                        if (var14)
+                        int currentLight = lighting.GetBrightness(LightType, x, y, z);
+                        int blockId = reader.GetBlockId(x, y, z);
+
+                        int opacity = Block.BlockLightOpacity[blockId];
+                        if (opacity == 0) opacity = 1;
+
+                        int emittedLight = 0;
+                        if (LightType == LightType.Sky)
                         {
-                            Chunk var15 = world.GetChunk(var10 >> 4, var11 >> 4);
-                            if (var15.IsEmpty())
-                            {
-                                var14 = false;
-                            }
+                            if (reader.IsTopY(x, y, z)) emittedLight = 15;
+                        }
+                        else if (LightType == LightType.Block)
+                        {
+                            emittedLight = Block.BlocksLightLuminance[blockId];
                         }
 
-                        var9 = var14;
-                        var6 = var12;
-                        var7 = var13;
-                    }
-
-                    if (var14)
-                    {
-                        if (minY < 0)
+                        int targetLight;
+                        if (opacity >= 15 && emittedLight == 0)
                         {
-                            minY = 0;
+                            targetLight = 0;
+                        }
+                        else
+                        {
+                            int l1 = lighting.GetBrightness(LightType, x - 1, y, z);
+                            int l2 = lighting.GetBrightness(LightType, x + 1, y, z);
+                            int l3 = lighting.GetBrightness(LightType, x, y - 1, z);
+                            int l4 = lighting.GetBrightness(LightType, x, y + 1, z);
+                            int l5 = lighting.GetBrightness(LightType, x, y, z - 1);
+                            int l6 = lighting.GetBrightness(LightType, x, y, z + 1);
+
+                            targetLight = l1;
+                            if (l2 > targetLight) targetLight = l2;
+                            if (l3 > targetLight) targetLight = l3;
+                            if (l4 > targetLight) targetLight = l4;
+                            if (l5 > targetLight) targetLight = l5;
+                            if (l6 > targetLight) targetLight = l6;
+
+                            targetLight -= opacity;
+                            if (targetLight < 0) targetLight = 0;
+                            if (emittedLight > targetLight) targetLight = emittedLight;
                         }
 
-                        if (maxY >= 128)
+                        if (currentLight != targetLight)
                         {
-                            maxY = 127;
-                        }
+                            lighting.SetLight(LightType, x, y, z, targetLight);
 
-                        for (int var27 = minY; var27 <= maxY; ++var27)
-                        {
-                            int var16 = lighting.GetBrightness(_lightType, var10, var27, var11);
-                            bool var17 = false;
-                            int var18 = world.GetBlockId(var10, var27, var11);
-                            int var19 = Block.BlockLightOpacity[var18];
-                            if (var19 == 0)
-                            {
-                                var19 = 1;
-                            }
+                            int prop = targetLight - 1;
+                            if (prop < 0) prop = 0;
 
-                            int var20 = 0;
-                            if (_lightType == LightType.Sky)
-                            {
-                                if (world.IsTopY(var10, var27, var11))
-                                {
-                                    var20 = 15;
-                                }
-                            }
-                            else if (_lightType == LightType.Block)
-                            {
-                                var20 = Block.BlocksLightLuminance[var18];
-                            }
+                            lighting.UpdateLight(LightType, x - 1, y, z, prop);
+                            lighting.UpdateLight(LightType, x, y - 1, z, prop);
+                            lighting.UpdateLight(LightType, x, y, z - 1, prop);
 
-                            int var21;
-                            int var28;
-                            if (var19 >= 15 && var20 == 0)
-                            {
-                                var28 = 0;
-                            }
-                            else
-                            {
-                                var21 = lighting.GetBrightness(_lightType, var10 - 1, var27, var11);
-                                int var22 = lighting.GetBrightness(_lightType, var10 + 1, var27, var11);
-                                int var23 = lighting.GetBrightness(_lightType, var10, var27 - 1, var11);
-                                int var24 = lighting.GetBrightness(_lightType, var10, var27 + 1, var11);
-                                int var25 = lighting.GetBrightness(_lightType, var10, var27, var11 - 1);
-                                int var26 = lighting.GetBrightness(_lightType, var10, var27, var11 + 1);
-                                var28 = var21;
-                                if (var22 > var21)
-                                {
-                                    var28 = var22;
-                                }
-
-                                if (var23 > var28)
-                                {
-                                    var28 = var23;
-                                }
-
-                                if (var24 > var28)
-                                {
-                                    var28 = var24;
-                                }
-
-                                if (var25 > var28)
-                                {
-                                    var28 = var25;
-                                }
-
-                                if (var26 > var28)
-                                {
-                                    var28 = var26;
-                                }
-
-                                var28 -= var19;
-                                if (var28 < 0)
-                                {
-                                    var28 = 0;
-                                }
-
-                                if (var20 > var28)
-                                {
-                                    var28 = var20;
-                                }
-                            }
-
-                            if (var16 != var28)
-                            {
-                                lighting.SetLight(_lightType, var10, var27, var11, var28);
-                                var21 = var28 - 1;
-                                if (var21 < 0)
-                                {
-                                    var21 = 0;
-                                }
-
-                                lighting.UpdateLight(_lightType, var10 - 1, var27, var11, var21);
-                                lighting.UpdateLight(_lightType, var10, var27 - 1, var11, var21);
-                                lighting.UpdateLight(_lightType, var10, var27, var11 - 1, var21);
-                                if (var10 + 1 >= maxX)
-                                {
-                                    lighting.UpdateLight(_lightType, var10 + 1, var27, var11, var21);
-                                }
-
-                                if (var27 + 1 >= maxY)
-                                {
-                                    lighting.UpdateLight(_lightType, var10, var27 + 1, var11, var21);
-                                }
-
-                                if (var11 + 1 >= maxZ)
-                                {
-                                    lighting.UpdateLight(_lightType, var10, var27, var11 + 1, var21);
-                                }
-                            }
+                            if (x + 1 >= MaxX) lighting.UpdateLight(LightType, x + 1, y, z, prop);
+                            if (y + 1 >= MaxY) lighting.UpdateLight(LightType, x, y + 1, z, prop);
+                            if (z + 1 >= MaxZ) lighting.UpdateLight(LightType, x, y, z + 1, prop);
                         }
                     }
                 }
@@ -194,62 +144,45 @@ internal struct LightUpdate
         }
     }
 
-    public bool expand(int var1, int var2, int var3, int var4, int var5, int var6)
+    public bool Expand(int reqMinX, int reqMinY, int reqMinZ, int reqMaxX, int reqMaxY, int reqMaxZ)
     {
-        if (var1 >= minX && var2 >= minY && var3 >= minZ && var4 <= maxX && var5 <= maxY && var6 <= maxZ)
+        if (reqMinX >= MinX && reqMinY >= MinY && reqMinZ >= MinZ &&
+            reqMaxX <= MaxX && reqMaxY <= MaxY && reqMaxZ <= MaxZ)
         {
             return true;
         }
 
-        byte var7 = 1;
-        if (var1 >= minX - var7 && var2 >= minY - var7 && var3 >= minZ - var7 && var4 <= maxX + var7 && var5 <= maxY + var7 && var6 <= maxZ + var7)
+        byte expandTolerance = 1;
+
+        if (reqMinX >= MinX - expandTolerance && reqMinY >= MinY - expandTolerance && reqMinZ >= MinZ - expandTolerance &&
+            reqMaxX <= MaxX + expandTolerance && reqMaxY <= MaxY + expandTolerance && reqMaxZ <= MaxZ + expandTolerance)
         {
-            int var8 = maxX - minX;
-            int var9 = maxY - minY;
-            int var10 = maxZ - minZ;
-            if (var1 > minX)
-            {
-                var1 = minX;
-            }
+            int oldVolumeX = MaxX - MinX;
+            int oldVolumeY = MaxY - MinY;
+            int oldVolumeZ = MaxZ - MinZ;
 
-            if (var2 > minY)
-            {
-                var2 = minY;
-            }
+            int newMinX = reqMinX > MinX ? MinX : reqMinX;
+            int newMinY = reqMinY > MinY ? MinY : reqMinY;
+            int newMinZ = reqMinZ > MinZ ? MinZ : reqMinZ;
+            int newMaxX = reqMaxX < MaxX ? MaxX : reqMaxX;
+            int newMaxY = reqMaxY < MaxY ? MaxY : reqMaxY;
+            int newMaxZ = reqMaxZ < MaxZ ? MaxZ : reqMaxZ;
 
-            if (var3 > minZ)
-            {
-                var3 = minZ;
-            }
+            int newVolumeX = newMaxX - newMinX;
+            int newVolumeY = newMaxY - newMinY;
+            int newVolumeZ = newMaxZ - newMinZ;
 
-            if (var4 < maxX)
-            {
-                var4 = maxX;
-            }
+            int oldVolume = oldVolumeX * oldVolumeY * oldVolumeZ;
+            int newVolume = newVolumeX * newVolumeY * newVolumeZ;
 
-            if (var5 < maxY)
+            if (newVolume - oldVolume <= 2)
             {
-                var5 = maxY;
-            }
-
-            if (var6 < maxZ)
-            {
-                var6 = maxZ;
-            }
-
-            int var11 = var4 - var1;
-            int var12 = var5 - var2;
-            int var13 = var6 - var3;
-            int var14 = var8 * var9 * var10;
-            int var15 = var11 * var12 * var13;
-            if (var15 - var14 <= 2)
-            {
-                minX = var1;
-                minY = var2;
-                minZ = var3;
-                maxX = var4;
-                maxY = var5;
-                maxZ = var6;
+                MinX = newMinX;
+                MinY = newMinY;
+                MinZ = newMinZ;
+                MaxX = newMaxX;
+                MaxY = newMaxY;
+                MaxZ = newMaxZ;
                 return true;
             }
         }

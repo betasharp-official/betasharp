@@ -10,6 +10,7 @@ using BetaSharp.Rules;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Chunks;
+using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Dimensions;
 using BetaSharp.Worlds.Generation.Biomes.Source;
 using BetaSharp.Worlds.Mechanics;
@@ -17,7 +18,7 @@ using BetaSharp.Worlds.Storage;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Worlds.Core.Systems;
+namespace BetaSharp.Worlds.Core;
 
 public abstract class World : IBlockWorldContext
 {
@@ -38,12 +39,13 @@ public abstract class World : IBlockWorldContext
     public readonly WorldTickScheduler TickScheduler;
     public readonly LightingEngine Lighting;
     public readonly EnvironmentManager Environment;
-    private readonly RedstoneEngine Redstone;
-    private readonly BlockHost _blockHost;
+    public readonly RedstoneEngine Redstone;
+    public readonly BlockHost _blockHost;
     public readonly WorldBlockView BlocksReader;
     public readonly WorldBlockWrite BlockWriter;
     protected readonly IWorldStorage Storage;
-    public readonly WorldEventBroadcaster WorldEventBroadcaster;
+
+    public readonly WorldEventBroadcaster Broadcaster;
 
     private int _lcgBlockSeed = Random.Shared.Next();
     private int _soundCounter = Random.Shared.Next(12000);
@@ -54,12 +56,12 @@ public abstract class World : IBlockWorldContext
     public int difficulty;
     public bool EventProcessingEnabled;
     public bool IsNewWorld;
-    public bool isRemote { set; get; } = false;
+    public bool IsRemote { set; get; } = false;
 
     public bool PauseTicking
     {
-        get => BlocksReader.PauseTicking;
-        set => BlocksReader.PauseTicking = value;
+        get => Broadcaster.PauseTicking;
+        set => Broadcaster.PauseTicking = value;
     }
 
     public bool InstantBlockUpdateEnabled
@@ -72,6 +74,16 @@ public abstract class World : IBlockWorldContext
 
     public WorldProperties Properties { get; protected set; }
     public JavaRandom random { get; } = new();
+
+    BlockHost IBlockWorldContext.BlockHost => _blockHost;
+    WorldBlockView IBlockWorldContext.BlocksReader => BlocksReader;
+    WorldBlockWrite IBlockWorldContext.BlockWriter => BlockWriter;
+    WorldEventBroadcaster IBlockWorldContext.Broadcaster => Broadcaster;
+    RedstoneEngine IBlockWorldContext.Redstone => Redstone;
+    EntityManager IBlockWorldContext.Entities => Entities;
+    LightingEngine IBlockWorldContext.Lighting => Lighting;
+    EnvironmentManager IBlockWorldContext.Environment => Environment;
+    Dimension IBlockWorldContext.dimension => dimension;
 
     protected World(IWorldStorage worldStorage, string levelName, Dimension dim, long seed)
     {
@@ -87,23 +99,25 @@ public abstract class World : IBlockWorldContext
             ? RuleSet.FromNBT(RuleRegistry.Instance, Properties.RulesTag)
             : new RuleSet(RuleRegistry.Instance);
 
-        _blockHost = new BlockHost(chunkSource, dim, EventListeners);
-        BlockWriter = new WorldBlockWrite(_blockHost);
+        _blockHost = new BlockHost(chunkSource);
+        BlockWriter = new WorldBlockWrite(_blockHost, BlocksReader);
         BlockWriter.OnBlockChanged += this.BlockUpdate;
-        BlockWriter.OnNeighborsShouldUpdate += notifyNeighbors;
-        BlocksReader = new WorldBlockView(_blockHost, BlockWriter, isRemote, this);
-        WorldEventBroadcaster = new WorldEventBroadcaster(EventListeners);
+
+        BlocksReader = new WorldBlockView(_blockHost, dim, BlockWriter, IsRemote);
+        Broadcaster = new WorldEventBroadcaster(EventListeners, BlocksReader, this);
+
+        BlockWriter.OnNeighborsShouldUpdate += (x, y, z, id) => Broadcaster.NotifyNeighbors(x, y, z, id);
 
         Redstone = new RedstoneEngine(BlocksReader);
-        Lighting = new LightingEngine(BlocksReader, dim);
-        Lighting.OnLightUpdated += (x, y, z) => blockUpdateEvent(x, y, z);
+        Lighting = new LightingEngine(BlocksReader, dim, _blockHost);
+        Lighting.OnLightUpdated += (x, y, z) => Broadcaster.BlockUpdateEvent(x, y, z);
 
-        TickScheduler = new WorldTickScheduler(BlocksReader, random, isRemote, WorldEventBroadcaster);
+        TickScheduler = new WorldTickScheduler(BlocksReader, _blockHost, random, IsRemote, Broadcaster);
 
         Environment = new EnvironmentManager(Properties, dim, BlocksReader, random);
-        Entities = new EntityManager(BlocksReader, Rules);
+        Entities = new EntityManager(BlocksReader, Rules, _blockHost);
 
-        Entities.OnBlockUpdateRequired += (x, y, z) => blockUpdateEvent(x, y, z);
+        Entities.OnBlockUpdateRequired += (x, y, z) => Broadcaster.BlockUpdateEvent(x, y, z);
 
         Environment.PrepareWeather();
         Environment.UpdateSkyBrightness();
@@ -152,22 +166,24 @@ public abstract class World : IBlockWorldContext
             : new RuleSet(RuleRegistry.Instance);
 
         _blockHost = new BlockHost(chunkSource);
-        BlockWriter = new WorldBlockWrite(_blockHost);
+        BlockWriter = new WorldBlockWrite(_blockHost, BlocksReader);
         BlockWriter.OnBlockChanged += BlockUpdate;
-        BlockWriter.OnNeighborsShouldUpdate += notifyNeighbors;
-        BlocksReader = new WorldBlockView(_blockHost, this);
-        WorldEventBroadcaster = new WorldEventBroadcaster(EventListeners);
+        
+        BlocksReader = new WorldBlockView(_blockHost,dimension, BlockWriter, IsRemote);
+        Broadcaster = new WorldEventBroadcaster(EventListeners, BlocksReader, this);
+        
+        BlockWriter.OnNeighborsShouldUpdate += (x, y, z, id) => Broadcaster.NotifyNeighbors(x, y, z, id);
 
         Redstone = new RedstoneEngine(BlocksReader);
-        Lighting = new LightingEngine(BlocksReader, dimension);
-        Lighting.OnLightUpdated += (x, y, z) => blockUpdateEvent(x, y, z);
+        Lighting = new LightingEngine(BlocksReader, dimension, _blockHost);
+        Lighting.OnLightUpdated += (x, y, z) => Broadcaster.BlockUpdateEvent(x, y, z);
 
-        TickScheduler = new WorldTickScheduler(BlocksReader, random, isRemote, WorldEventBroadcaster);
+        TickScheduler = new WorldTickScheduler(BlocksReader, _blockHost, random, IsRemote, Broadcaster);
 
         Environment = new EnvironmentManager(Properties, dimension, BlocksReader, random);
-        Entities = new EntityManager(BlocksReader, Rules);
+        Entities = new EntityManager(BlocksReader, Rules, _blockHost);
 
-        Entities.OnBlockUpdateRequired += (x, y, z) => blockUpdateEvent(x, y, z);
+        Entities.OnBlockUpdateRequired += (x, y, z) => Broadcaster.BlockUpdateEvent(x, y, z);
 
         Environment.PrepareWeather();
         Environment.UpdateSkyBrightness();
@@ -195,7 +211,6 @@ public abstract class World : IBlockWorldContext
 
     public RuleSet Rules { get; protected set; }
 
-
     public BiomeSource GetBiomeSource() => dimension.BiomeSource;
 
     public float GetNaturalBrightness(int x, int y, int z, int blockLight) => Lighting.GetNaturalBrightness(x, y, z, blockLight);
@@ -205,6 +220,17 @@ public abstract class World : IBlockWorldContext
     public IWorldStorage GetWorldStorage() => Storage;
 
     protected abstract IChunkSource CreateChunkCache();
+
+    public void SpawnEntity(Entity entity) => Entities.SpawnEntity(entity);
+
+    public void SpawnItemDrop(double x, double y, double z, ItemStack itemStack)
+    {
+        EntityItem droppedItem = new EntityItem(this, x, y, z, itemStack)
+        {
+            delayBeforeCanPickup = 10
+        };
+        Entities.SpawnEntity(droppedItem);
+    }
 
     private void InitializeSpawnPoint()
     {
@@ -509,36 +535,12 @@ public abstract class World : IBlockWorldContext
         return new HitResult(HitResultType.MISS);
     }
 
-    [Obsolete("Use Blocks.NotifyNeighbors instead.")]
-    public void notifyNeighbors(int x, int y, int z, int blockId) => WorldEventBroadcaster.NotifyNeighbors(x, y, z, blockId);
-
-    [Obsolete("Use SoundManager.blockUpdateEvent instead.")]
-    public void blockUpdateEvent(int x, int y, int z) => WorldEventBroadcaster.BlockUpdateEvent(x, y, z);
-
-    [Obsolete("Use SoundManager.PlaySoundToEntity instead.")]
-    public void playSound(Entity entity, string sound, float volume, float pitch) => WorldEventBroadcaster.PlaySoundToEntity(entity, sound, volume, pitch);
-
-    [Obsolete("Use SoundManager.PlaySoundAtPos instead.")]
-    public void playSound(double x, double y, double z, string sound, float volume, float pitch) => WorldEventBroadcaster.PlaySoundAtPos(x, y, z, sound, volume, pitch);
-
-    [Obsolete("Use SoundManager.PlayStreamingAtPos instead.")]
-    public void playStreaming(string? music, int x, int y, int z) => WorldEventBroadcaster.PlayStreamingAtPos(music, x, y, z);
-
-    [Obsolete("Use SoundManager.AddParticle instead.")]
-    public void addParticle(string particle, double x, double y, double z, double velocityX, double velocityY, double velocityZ) => WorldEventBroadcaster.AddParticle(particle, x, y, z, velocityX, velocityY, velocityZ);
-
-    [Obsolete("Use SoundManager.AddWorldAccess instead.")]
-    public void AddWorldAccess(IWorldAccess worldAccess) => WorldEventBroadcaster.AddWorldAccess(worldAccess);
-
-    [Obsolete("Use SoundManager.RemoveWorldAccess instead.")]
-    public void RemoveWorldAccess(IWorldAccess worldAccess) => WorldEventBroadcaster.RemoveWorldAccess(worldAccess);
-
     public float GetTime(float partialTicks) => dimension.GetTimeOfDay(Properties.WorldTime, partialTicks);
 
     protected void BlockUpdate(int x, int y, int z, int blockId)
     {
-        blockUpdateEvent(x, y, z);
-        notifyNeighbors(x, y, z, blockId);
+        Broadcaster.BlockUpdateEvent(x, y, z);
+        Broadcaster.NotifyNeighbors(x, y, z, blockId);
     }
 
     public Vector3D<double> GetFogColor(float partialTicks)
@@ -565,20 +567,9 @@ public abstract class World : IBlockWorldContext
         int minZ = MathHelper.Floor(area.MinZ);
         int maxZ = MathHelper.Floor(area.MaxZ + 1.0);
 
-        if (area.MinX < 0.0)
-        {
-            minX--;
-        }
-
-        if (area.MinY < 0.0)
-        {
-            minY--;
-        }
-
-        if (area.MinZ < 0.0)
-        {
-            minZ--;
-        }
+        if (area.MinX < 0.0) minX--;
+        if (area.MinY < 0.0) minY--;
+        if (area.MinZ < 0.0) minZ--;
 
         for (int x = minX; x < maxX; x++)
         {
@@ -606,20 +597,9 @@ public abstract class World : IBlockWorldContext
         int minZ = MathHelper.Floor(area.MinZ);
         int maxZ = MathHelper.Floor(area.MaxZ + 1.0D);
 
-        if (area.MinX < 0.0D)
-        {
-            minX--;
-        }
-
-        if (area.MinY < 0.0D)
-        {
-            minY--;
-        }
-
-        if (area.MinZ < 0.0D)
-        {
-            minZ--;
-        }
+        if (area.MinX < 0.0D) minX--;
+        if (area.MinY < 0.0D) minY--;
+        if (area.MinZ < 0.0D) minZ--;
 
         for (int x = minX; x < maxX; ++x)
         {
@@ -700,7 +680,7 @@ public abstract class World : IBlockWorldContext
                         if (maxY >= fluidSurfaceY)
                         {
                             isSubmerged = true;
-                            block.applyVelocity(this, x, y, z, entity, flowVector);
+                            block.applyVelocity(new OnApplyVelocityEvt(this, entity, flowVector, x, y, z)); 
                         }
                     }
                 }
@@ -827,39 +807,16 @@ public abstract class World : IBlockWorldContext
 
     public void ExtinguishFire(EntityPlayer player, int x, int y, int z, int direction)
     {
-        if (direction == 0)
-        {
-            --y;
-        }
-
-        if (direction == 1)
-        {
-            ++y;
-        }
-
-        if (direction == 2)
-        {
-            --z;
-        }
-
-        if (direction == 3)
-        {
-            ++z;
-        }
-
-        if (direction == 4)
-        {
-            --x;
-        }
-
-        if (direction == 5)
-        {
-            ++x;
-        }
+        if (direction == 0) --y;
+        if (direction == 1) ++y;
+        if (direction == 2) --z;
+        if (direction == 3) ++z;
+        if (direction == 4) --x;
+        if (direction == 5) ++x;
 
         if (BlocksReader.GetBlockId(x, y, z) == Block.Fire.id)
         {
-            WorldEventBroadcaster.WorldEvent(player, 1004, x, y, z, 0);
+            Broadcaster.WorldEvent(player, 1004, x, y, z, 0);
             BlockWriter.SetBlock(x, y, z, 0);
         }
     }
@@ -883,7 +840,7 @@ public abstract class World : IBlockWorldContext
 
         long nextWorldTime;
 
-        if (!isRemote && Entities.AreAllPlayersAsleep())
+        if (!IsRemote && Entities.AreAllPlayersAsleep())
         {
             bool wasSpawnInterrupted = false;
 
@@ -987,7 +944,7 @@ public abstract class World : IBlockWorldContext
                     if (closest != null &&
                         closest.getSquaredDistance(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D) > 4.0D)
                     {
-                        playSound(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, "ambient.cave.cave", 0.7F,
+                        Broadcaster.PlaySoundAtPos(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, "ambient.cave.cave", 0.7F,
                             0.8F + random.NextFloat() * 0.2F);
                         _soundCounter = random.NextInt(12000) + 6000;
                     }
@@ -1005,7 +962,7 @@ public abstract class World : IBlockWorldContext
                 if (Environment.IsRainingAt(worldX, worldY, worldZ))
                 {
                     Entities.SpawnGlobalEntity(new EntityLightningBolt(this, worldX, worldY, worldZ));
-                    Environment.LightningTicksLeft = 2; // Error
+                    Environment.LightningTicksLeft = 2;
                 }
             }
 
@@ -1025,7 +982,7 @@ public abstract class World : IBlockWorldContext
                     int blockBelowId = currentChunk.GetBlockId(localX, worldY - 1, localZ);
                     int currentBlockId = currentChunk.GetBlockId(localX, worldY, localZ);
 
-                    if (Environment.IsRaining && currentBlockId == 0 && Block.Snow.canPlaceAt(BlocksReader, worldX, worldY, worldZ) &&
+                    if (Environment.IsRaining && currentBlockId == 0 && Block.Snow.canPlaceAt(new CanPlaceAtCtx(this, 1, worldX, worldY, worldZ)) &&
                         blockBelowId != 0 && blockBelowId != Block.Ice.id &&
                         Block.Blocks[blockBelowId].material.BlocksMovement)
                     {
@@ -1050,7 +1007,7 @@ public abstract class World : IBlockWorldContext
                 int blockId = currentChunk.Blocks[(localX << 11) | (localZ << 7) | localY] & 255;
                 if (Block.BlocksRandomTick[blockId])
                 {
-                    Block.Blocks[blockId].onTick(new WorldTickContext(this, BlocksReader, BlockWriter, WorldEventBroadcaster, isRemote, localX + worldXBase, localY, localZ + worldZBase, random));
+                    Block.Blocks[blockId].onTick(new OnTickEvt(this, localX + worldXBase, localY, localZ + worldZBase, currentChunk.GetBlockMeta(localX, localY, localZ), blockId));
                 }
             }
         }
@@ -1059,7 +1016,6 @@ public abstract class World : IBlockWorldContext
     public void displayTick(int centerX, int centerY, int centerZ)
     {
         const byte searchRadius = 16;
-        JavaRandom particleRandom = new();
 
         for (int i = 0; i < 1000; ++i)
         {
@@ -1070,7 +1026,7 @@ public abstract class World : IBlockWorldContext
             int blockId = BlocksReader.GetBlockId(targetX, targetY, targetZ);
             if (blockId > 0)
             {
-                Block.Blocks[blockId].randomDisplayTick(this, targetX, targetY, targetZ, particleRandom);
+                Block.Blocks[blockId].randomDisplayTick(new OnTickEvt(this, targetX, targetY, targetZ, BlocksReader.GetBlockMeta(targetX, targetY, targetZ), blockId));
             }
         }
     }
@@ -1120,59 +1076,22 @@ public abstract class World : IBlockWorldContext
             existingBlock = null;
         }
 
-        return blockId > 0 && existingBlock == null && newBlock != null && newBlock.canPlaceAt(
-            new CanPlaceAtCtx(
-                BlocksReader,
-                BlockWriter,
-                x,
-                y,
-                z
-            )
-        );
+        return blockId > 0 && existingBlock == null && newBlock != null && newBlock.canPlaceAt(new CanPlaceAtCtx(this, side, x, y, z));
     }
 
-    internal PathEntity findPath(Entity entity, Entity target, float range)
+    internal PathEntity? findPath(Entity entity, Entity target, float range)
     {
         Profiler.Start("AI.PathFinding.FindPathToTarget");
-        int entityX = MathHelper.Floor(entity.x);
-        int entityY = MathHelper.Floor(entity.y);
-        int entityZ = MathHelper.Floor(entity.z);
-        int searchRadius = (int)(range + 16.0F);
-
-        int minX = entityX - searchRadius;
-        int minY = entityY - searchRadius;
-        int minZ = entityZ - searchRadius;
-        int maxX = entityX + searchRadius;
-        int maxY = entityY + searchRadius;
-        int maxZ = entityZ + searchRadius;
-
-        WorldRegion region = new(this, minX, minY, minZ, maxX, maxY, maxZ);
-
-        PathEntity result = _pathFinder.CreateEntityPathTo(entity, target, range);
+        PathEntity? result = _pathFinder.CreateEntityPathTo(entity, target, range);
         Profiler.Stop("AI.PathFinding.FindPathToTarget");
 
         return result;
     }
 
-    internal PathEntity findPath(Entity entity, int x, int y, int z, float range)
+    internal PathEntity? findPath(Entity entity, int x, int y, int z, float range)
     {
         Profiler.Start("AI.PathFinding.FindPathToPosition");
-        int entityX = MathHelper.Floor(entity.x);
-        int entityY = MathHelper.Floor(entity.y);
-        int entityZ = MathHelper.Floor(entity.z);
-        int searchRadius = (int)(range + 8.0F);
-
-        int minX = entityX - searchRadius;
-        int minY = entityY - searchRadius;
-        int minZ = entityZ - searchRadius;
-        int maxX = entityX + searchRadius;
-        int maxY = entityY + searchRadius;
-        int maxZ = entityZ + searchRadius;
-
-        WorldRegion region = new(this, minX, minY, minZ, maxX, maxY, maxZ);
-
-
-        PathEntity result = _pathFinder.CreateEntityPathTo(entity, x, y, z, range);
+        PathEntity? result = _pathFinder.CreateEntityPathTo(entity, x, y, z, range);
         Profiler.Stop("AI.PathFinding.FindPathToPosition");
 
         return result;
@@ -1268,15 +1187,6 @@ public abstract class World : IBlockWorldContext
     {
     }
 
-    public virtual void playNoteBlockActionAt(int x, int y, int z, int soundType, int pitch)
-    {
-        int blockId = BlocksReader.GetBlockId(x, y, z);
-        if (blockId > 0)
-        {
-            Block.Blocks[blockId].onBlockAction(this, x, y, z, soundType, pitch);
-        }
-    }
-
     public void setBlocksDirty(int x, int z, int minY, int maxY)
     {
         if (minY > maxY)
@@ -1308,174 +1218,4 @@ public abstract class World : IBlockWorldContext
     public PersistentState? getOrCreateState(Type type, string id) => PersistentStateManager.LoadData(type, id);
 
     public int getIdCount(string id) => PersistentStateManager.GetUniqueDataId(id);
-
-    // TODO: These are marked [Obsolete]. In future PRs, update the calling code
-    // to use the specific engines (e.g., world.Blocks.GetBlockId) and delete these.
-
-    #region Block & Chunk Proxy (Routes to WorldBlockView)
-
-    public IChunkSource getChunkSource() => _blockHost.ChunkSource;
-
-    [Obsolete("Use Blocks.GetBlockId instead.")]
-    public int getBlockId(int x, int y, int z) => BlocksReader.GetBlockId(x, y, z);
-
-    [Obsolete("Use Blocks.IsAir instead.")]
-    public bool isAir(int x, int y, int z) => BlocksReader.IsAir(x, y, z);
-
-    [Obsolete("Use Blocks.IsPosLoaded instead.")]
-    public bool isPosLoaded(int x, int y, int z) => _blockHost.IsPosLoaded(x, y, z);
-
-    [Obsolete("Use Blocks.IsRegionLoaded instead.")]
-    public bool isRegionLoaded(int x, int y, int z, int range) => _blockHost.IsRegionLoaded(x, y, z, range);
-
-    [Obsolete("Use Blocks.IsRegionLoaded instead.")]
-    public bool isRegionLoaded(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) => _blockHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ);
-
-    [Obsolete("Use Blocks.HasChunk instead.")]
-    private bool hasChunk(int x, int z) => _blockHost.HasChunk(x, z);
-
-    [Obsolete("Use Blocks.GetChunkFromPos instead.")]
-    public Chunk GetChunkFromPos(int x, int z) => _blockHost.GetChunkFromPos(x, z);
-
-    [Obsolete("Use Blocks.GetChunk instead.")]
-    public Chunk GetChunk(int chunkX, int chunkZ) => _blockHost.GetChunk(chunkX, chunkZ);
-
-    [Obsolete("Use Blocks.SetBlockWithoutNotifyingNeighbors instead.")]
-    public virtual bool setBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, int meta) => BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta);
-
-    [Obsolete("Use Blocks.SetBlockWithoutNotifyingNeighbors instead.")]
-    public virtual bool setBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId) => BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y, z, blockId);
-
-    [Obsolete("Use Blocks.GetMaterial instead.")]
-    public Material getMaterial(int x, int y, int z) => BlocksReader.GetMaterial(x, y, z);
-
-    [Obsolete("Use Blocks.GetBlockMeta instead.")]
-    public int getBlockMeta(int x, int y, int z) => BlocksReader.GetBlockMeta(x, y, z);
-
-    [Obsolete("Use Blocks.SetBlockMeta instead.")]
-    public void setBlockMeta(int x, int y, int z, int meta) => BlockWriter.SetBlockMeta(x, y, z, meta);
-
-    [Obsolete("Use Blocks.SetBlockMetaWithoutNotifyingNeighbors instead.")]
-    public virtual bool SetBlockMetaWithoutNotifyingNeighbors(int x, int y, int z, int meta) => BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, meta);
-
-    [Obsolete("Use Blocks.SetBlock instead.")]
-    public bool setBlock(int x, int y, int z, int blockId) => BlockWriter.SetBlock(x, y, z, blockId);
-
-    [Obsolete("Use Blocks.SetBlock instead.")]
-    public bool setBlock(int x, int y, int z, int blockId, int meta) => BlockWriter.SetBlock(x, y, z, blockId, meta);
-
-    [Obsolete("Use Blocks.IsTopY instead.")]
-    public bool isTopY(int x, int y, int z) => BlocksReader.IsTopY(x, y, z);
-
-    [Obsolete("Use Blocks.GetTopY instead.")]
-    public int getTopY(int x, int z) => BlocksReader.GetTopY(x, z);
-
-    [Obsolete("Use Blocks.GetTopSolidBlockY instead.")]
-    public int getTopSolidBlockY(int x, int z) => BlocksReader.GetTopSolidBlockY(x, z);
-
-    [Obsolete("Use Blocks.GetSpawnPositionValidityY instead.")]
-    public int getSpawnPositionValidityY(int x, int z) => BlocksReader.GetSpawnPositionValidityY(x, z);
-
-    [Obsolete("Use Blocks.IsOpaque instead.")]
-    public bool isOpaque(int x, int y, int z) => BlocksReader.IsOpaque(x, y, z);
-
-    [Obsolete("Use Blocks.ShouldSuffocate instead.")]
-    public bool shouldSuffocate(int x, int y, int z) => BlocksReader.ShouldSuffocate(x, y, z);
-
-    [Obsolete("Use Blocks.GetBlockEntity instead.")]
-    public BlockEntity? getBlockEntity(int x, int y, int z) => BlocksReader.GetBlockEntity(x, y, z);
-
-    #endregion
-
-    #region Lighting Proxy (Routes to LightingEngine)
-
-    [Obsolete("Use Lighting.HasSkyLight instead.")]
-    public bool hasSkyLight(int x, int y, int z) => Lighting.HasSkyLight(x, y, z);
-
-    [Obsolete("Use Lighting.GetBrightness instead.")]
-    public int getBrightness(int x, int y, int z) => Lighting.GetBrightness(x, y, z);
-
-    [Obsolete("Use Lighting.GetLightLevel instead.")]
-    public int getLightLevel(int x, int y, int z) => Lighting.GetLightLevel(x, y, z);
-
-    [Obsolete("Use Lighting.GetLightLevel instead.")]
-    public int getLightLevel(int x, int y, int z, bool checkNeighbors) => Lighting.GetLightLevel(x, y, z, checkNeighbors);
-
-    [Obsolete("Use Lighting.UpdateLight instead.")]
-    public void updateLight(LightType lightType, int x, int y, int z, int targetLuminance) => Lighting.UpdateLight(lightType, x, y, z, targetLuminance);
-
-    [Obsolete("Use Lighting.GetBrightness instead.")]
-    public int getBrightness(LightType type, int x, int y, int z) => Lighting.GetBrightness(type, x, y, z);
-
-    [Obsolete("Use Lighting.SetLight instead.")]
-    public void setLight(LightType lightType, int x, int y, int z, int value) => Lighting.SetLight(lightType, x, y, z, value);
-
-    [Obsolete("Use Lighting.GetNaturalBrightness instead.")]
-    public float getNaturalBrightness(int x, int y, int z, int blockLight) => Lighting.GetNaturalBrightness(x, y, z, blockLight);
-
-    [Obsolete("Use Lighting.GetLuminance instead.")]
-    public float getLuminance(int x, int y, int z) => Lighting.getLuminance(x, y, z);
-
-    [Obsolete("Use Lighting.DoLightingUpdates instead.")]
-    public bool doLightingUpdates() => Lighting.DoLightingUpdates();
-
-    [Obsolete("Use Lighting.QueueLightUpdate instead.")]
-    public void queueLightUpdate(LightType type, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) => Lighting.QueueLightUpdate(type, minX, minY, minZ, maxX, maxY, maxZ);
-
-    [Obsolete("Use Lighting.QueueLightUpdate instead.")]
-    public void queueLightUpdate(LightType type, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, bool attemptMerge) => Lighting.QueueLightUpdate(type, minX, minY, minZ, maxX, maxY, maxZ, attemptMerge);
-
-    #endregion
-
-    #region Environment Proxy (Routes to EnvironmentManager)
-
-    [Obsolete("Use Environment.IsRainingAt instead.")]
-    public bool isRaining(int x, int y, int z) => Environment.IsRainingAt(x, y, z);
-
-    #endregion
-
-    #region Entity Proxy (Routes to EntityManager)
-
-    [Obsolete("Use Entities.SpawnEntity instead.")]
-    public virtual bool SpawnEntity(Entity entity) => Entities.SpawnEntity(entity);
-
-    void IBlockWorldContext.SpawnEntity(Entity entity) => Entities.SpawnEntity(entity);
-
-    void IBlockWorldContext.SpawnItemDrop(double x, double y, double z, ItemStack itemStack)
-    {
-        var droppedItem = new EntityItem(this, x, y, z, itemStack);
-        droppedItem.delayBeforeCanPickup = 10;
-        Entities.SpawnEntity(droppedItem);
-    }
-
-    [Obsolete("Use Entities.GetEntityCollisions instead.")]
-    public List<Box> getEntityCollisionsScratch(Entity entity, Box area) => Entities.GetEntityCollisions(entity, area);
-
-    [Obsolete("Use Entities.GetEntities instead.")]
-    public List<Entity> getEntities(Entity? excludeEntity, Box area) => Entities.GetEntities(excludeEntity, area);
-
-    [Obsolete("Use Entities.CollectEntitiesOfType instead.")]
-    public List<T> CollectEntitiesOfType<T>(Box area) where T : Entity => Entities.CollectEntitiesOfType<T>(area);
-
-    [Obsolete("Use Entities.GetClosestPlayer instead.")]
-    public EntityPlayer getClosestPlayer(double x, double y, double z, double range) => Entities.GetClosestPlayer(x, y, z, range);
-
-    #endregion
-
-    #region Redstone Proxy (Routes to RedstoneEngine)
-
-    [Obsolete("Use Redstone.IsPoweringSide instead.")]
-    public bool isPoweringSide(int x, int y, int z, int side) => Redstone.IsPoweringSide(x, y, z, side);
-
-    [Obsolete("Use Redstone.IsPowered instead.")]
-    public bool isPowered(int x, int y, int z) => Redstone.IsPowered(x, y, z);
-
-    #endregion
-
-    #region Scheduler Proxy (Routes to WorldTickScheduler)
-
-    [Obsolete("Use TickScheduler.ScheduleBlockUpdate instead.")]
-    public virtual void ScheduleBlockUpdate(int x, int y, int z, int blockId, int tickRate) => TickScheduler.ScheduleBlockUpdate(x, y, z, blockId, tickRate);
-
-    #endregion
 }

@@ -9,13 +9,15 @@ namespace BetaSharp.Worlds.Core.Systems;
 public sealed class WorldBlockWrite : IBlockWrite
 {
     private readonly BlockHost _host;
+    private readonly IBlockReader _reader;
 
     public event Action<int, int, int, int>? OnBlockChanged;
     public event Action<int, int, int, int>? OnNeighborsShouldUpdate;
 
-    public WorldBlockWrite(BlockHost host)
+    public WorldBlockWrite(BlockHost host, IBlockReader reader)
     {
         _host = host;
+        _reader = reader;
     }
 
     // --- IWorldBlockWrite ---
@@ -73,7 +75,7 @@ public sealed class WorldBlockWrite : IBlockWrite
     {
         if (SetBlockMetaWithoutNotifyingNeighbors(x, y, z, meta))
         {
-            int blockId = _host.GetBlockId(x, y, z);
+            int blockId = _reader.GetBlockId(x, y, z);
             if (Block.BlocksIgnoreMetaUpdate[blockId & 255])
             {
                 OnBlockChanged?.Invoke(x, y, z, blockId);
@@ -82,32 +84,6 @@ public sealed class WorldBlockWrite : IBlockWrite
             {
                 OnNeighborsShouldUpdate?.Invoke(x, y, z, blockId);
             }
-        }
-    }
-
-    public void SetBlocksDirty(int x, int z, int minY, int maxY)
-    {
-        if (minY > maxY)
-        {
-            (maxY, minY) = (minY, maxY);
-        }
-
-        SetBlocksDirty(x, minY, z, x, maxY, z);
-    }
-
-    public void SetBlocksDirty(int x, int y, int z)
-    {
-        for (int i = 0; i < _host.EventListeners.Count; ++i)
-        {
-            _host.EventListeners[i].setBlocksDirty(x, y, z, x, y, z);
-        }
-    }
-
-    public void SetBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
-    {
-        for (int i = 0; i < _host.EventListeners.Count; ++i)
-        {
-            _host.EventListeners[i].setBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ);
         }
     }
 }

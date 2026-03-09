@@ -11,78 +11,78 @@ internal class NetherLavaSpringFeature : Feature
 
     public NetherLavaSpringFeature(int lavaBlockId) => _lavaBlockId = lavaBlockId;
 
-    public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
+    public override bool Generate(IBlockWorldContext level, int x, int y, int z)
     {
-        if (world.getBlockId(x, y + 1, z) != Block.Netherrack.id)
+        if (level.BlocksReader.GetBlockId(x, y + 1, z) != Block.Netherrack.id)
         {
             return false;
         }
 
-        if (world.getBlockId(x, y, z) != 0 && world.getBlockId(x, y, z) != Block.Netherrack.id)
+        if (level.BlocksReader.GetBlockId(x, y, z) != 0 && level.BlocksReader.GetBlockId(x, y, z) != Block.Netherrack.id)
         {
             return false;
         }
 
         int netherrackNeighbors = 0;
-        if (world.getBlockId(x - 1, y, z) == Block.Netherrack.id)
+        if (level.BlocksReader.GetBlockId(x - 1, y, z) == Block.Netherrack.id)
         {
             ++netherrackNeighbors;
         }
 
-        if (world.getBlockId(x + 1, y, z) == Block.Netherrack.id)
+        if (level.BlocksReader.GetBlockId(x + 1, y, z) == Block.Netherrack.id)
         {
             ++netherrackNeighbors;
         }
 
-        if (world.getBlockId(x, y, z - 1) == Block.Netherrack.id)
+        if (level.BlocksReader.GetBlockId(x, y, z - 1) == Block.Netherrack.id)
         {
             ++netherrackNeighbors;
         }
 
-        if (world.getBlockId(x, y, z + 1) == Block.Netherrack.id)
+        if (level.BlocksReader.GetBlockId(x, y, z + 1) == Block.Netherrack.id)
         {
             ++netherrackNeighbors;
         }
 
-        if (world.getBlockId(x, y - 1, z) == Block.Netherrack.id)
+        if (level.BlocksReader.GetBlockId(x, y - 1, z) == Block.Netherrack.id)
         {
             ++netherrackNeighbors;
         }
 
 
         int airNeighbors = 0;
-        if (world.isAir(x - 1, y, z))
+        if (level.BlocksReader.IsAir(x - 1, y, z))
         {
             ++airNeighbors;
         }
 
-        if (world.isAir(x + 1, y, z))
+        if (level.BlocksReader.IsAir(x + 1, y, z))
         {
             ++airNeighbors;
         }
 
-        if (world.isAir(x, y, z - 1))
+        if (level.BlocksReader.IsAir(x, y, z - 1))
         {
             ++airNeighbors;
         }
 
-        if (world.isAir(x, y, z + 1))
+        if (level.BlocksReader.IsAir(x, y, z + 1))
         {
             ++airNeighbors;
         }
 
-        if (world.isAir(x, y - 1, z))
+        if (level.BlocksReader.IsAir(x, y - 1, z))
         {
             ++airNeighbors;
         }
 
         if (netherrackNeighbors == 4 && airNeighbors == 1)
         {
-            world.setBlock(x, y, z, _lavaBlockId);
+            level.BlockWriter.SetBlock(x, y, z, _lavaBlockId);
 
-            world.InstantBlockUpdateEnabled = true;
-            Block.Blocks[_lavaBlockId].onTick(world.BlocksReader, x, y, z, rand, world.WorldEventBroadcaster, world.isRemote);
-            world.InstantBlockUpdateEnabled = false;
+            level.InstantBlockUpdateEnabled = true;
+            Block.Blocks[_lavaBlockId].onTick(new OnTickEvt(level, x, y, z, level.BlocksReader.GetBlockMeta(x, y, z), level.BlocksReader.GetBlockId(x, y, z)));
+            level.InstantBlockUpdateEnabled = false;
         }
 
         return true;

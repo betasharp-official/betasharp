@@ -1,6 +1,5 @@
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
 
@@ -9,7 +8,6 @@ internal class LargeOakTreeFeature : Feature
     private static readonly sbyte[] MINOR_AXES = [2, 0, 0, 1, 2, 1];
     private readonly double branchSlope = 0.381D;
     private readonly int[] origin = [0, 0, 0];
-    private readonly JavaRandom random = new();
     private readonly double trunkScale = 0.618D;
     private readonly int trunkWidth = 1;
     private int[][] branches;
@@ -19,7 +17,7 @@ internal class LargeOakTreeFeature : Feature
     private int height;
     private int maxTrunkHeight = 12;
     private int trunkHeight;
-    private World world;
+    private IBlockWorldContext _level;
 
     private void makeBranches()
     {
@@ -67,8 +65,8 @@ internal class LargeOakTreeFeature : Feature
                 {
                     for (double var9 = 0.5D; var7 < var1; ++var7)
                     {
-                        double var11 = branchLengthScale * var8 * (random.NextFloat() + 0.328D);
-                        double var13 = random.NextFloat() * 2.0D * 3.14159D;
+                        double var11 = branchLengthScale * var8 * (_level.random.NextFloat() + 0.328D);
+                        double var13 = _level.random.NextFloat() * 2.0D * 3.14159D;
                         int var15 = MathHelper.Floor(var11 * Math.Sin(var13) + origin[0] + var9);
                         int var16 = MathHelper.Floor(var11 * Math.Cos(var13) + origin[2] + var9);
                         int[] var17 = [var15, var3, var16];
@@ -144,7 +142,7 @@ internal class LargeOakTreeFeature : Feature
                 }
 
                 var11[var9] = var10[var9] + var13;
-                int var14 = world.getBlockId(var11[0], var11[1], var11[2]);
+                int var14 = _level.BlocksReader.GetBlockId(var11[0], var11[1], var11[2]);
 
                 if (var14 != 0 && var14 != 18)
                 {
@@ -152,7 +150,7 @@ internal class LargeOakTreeFeature : Feature
                     continue;
                 }
 
-                world.setBlockWithoutNotifyingNeighbors(var11[0], var11[1], var11[2], var6);
+                _level.BlockWriter.SetBlock(var11[0], var11[1], var11[2], var6);
                 ++var13;
             }
         }
@@ -237,7 +235,7 @@ internal class LargeOakTreeFeature : Feature
                 var14[var6] = MathHelper.Floor(var1[var6] + var15 + 0.5D);
                 var14[var7] = MathHelper.Floor(var1[var7] + var15 * var10 + 0.5D);
                 var14[var8] = MathHelper.Floor(var1[var8] + var15 * var12 + 0.5D);
-                world.setBlockWithoutNotifyingNeighbors(var14[0], var14[1], var14[2], var3);
+                _level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(var14[0], var14[1], var14[2], var3);
             }
         }
     }
@@ -341,7 +339,7 @@ internal class LargeOakTreeFeature : Feature
             var13[var5] = var1[var5] + var14;
             var13[var6] = MathHelper.Floor(var1[var6] + var14 * var9);
             var13[var7] = MathHelper.Floor(var1[var7] + var14 * var11);
-            int var16 = world.getBlockId(var13[0], var13[1], var13[2]);
+            int var16 = _level.BlocksReader.GetBlockId(var13[0], var13[1], var13[2]);
             if (var16 != 0 && var16 != 18)
             {
                 break;
@@ -355,7 +353,7 @@ internal class LargeOakTreeFeature : Feature
     {
         int[] var1 = [origin[0], origin[1], origin[2]];
         int[] var2 = [origin[0], origin[1] + height - 1, origin[2]];
-        int var3 = world.getBlockId(origin[0], origin[1] - 1, origin[2]);
+        int var3 = _level.BlocksReader.GetBlockId(origin[0], origin[1] - 1, origin[2]);
         if (var3 != 2 && var3 != 3)
         {
             return false;
@@ -388,17 +386,17 @@ internal class LargeOakTreeFeature : Feature
         foliageDensity = d2;
     }
 
-    public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
+    public override bool Generate(IBlockWorldContext level, int x, int y, int z)
     {
-        this.world = world;
-        long var6 = rand.NextLong();
-        random.SetSeed(var6);
+        _level = level;
+        long var6 = _level.random.NextLong();
+        _level.random.SetSeed(var6);
         origin[0] = x;
         origin[1] = y;
         origin[2] = z;
         if (height == 0)
         {
-            height = 5 + random.NextInt(maxTrunkHeight);
+            height = 5 + _level.random.NextInt(maxTrunkHeight);
         }
 
         if (!canPlace())

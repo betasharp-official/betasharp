@@ -1,6 +1,6 @@
 using BetaSharp.Blocks;
 
-namespace BetaSharp.Worlds.Core;
+namespace BetaSharp.Worlds.Core.Systems;
 
 public class RedstoneEngine
 {

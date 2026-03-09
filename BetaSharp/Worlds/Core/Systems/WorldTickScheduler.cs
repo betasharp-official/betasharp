@@ -6,6 +6,7 @@ namespace BetaSharp.Worlds.Core.Systems;
 public class WorldTickScheduler
 {
     private readonly WorldBlockView _blockView;
+    private readonly BlockHost _host;
     private readonly JavaRandom _random;
     private readonly bool _isRemote;
     private readonly WorldEventBroadcaster _broadcaster;
@@ -13,9 +14,10 @@ public class WorldTickScheduler
     private readonly PriorityQueue<BlockUpdate, (long, long)> _scheduledUpdates = new();
     public bool instantBlockUpdateEnabled = false;
 
-    public WorldTickScheduler(WorldBlockView blockView, JavaRandom random, bool isRemote, WorldEventBroadcaster broadcaster)
+    public WorldTickScheduler(WorldBlockView blockView, BlockHost host, JavaRandom random, bool isRemote, WorldEventBroadcaster broadcaster)
     {
         _blockView = blockView;
+        _host = host;
         _random = random;
         _isRemote = isRemote;
         _broadcaster = broadcaster;
@@ -32,7 +34,7 @@ public class WorldTickScheduler
         if (_isRemote) return;
 
         const byte loadRadius = 8;
-        if (_blockView.IsRegionLoaded(x - loadRadius, y - loadRadius, z - loadRadius, x + loadRadius, y + loadRadius, z + loadRadius))
+        if (_host.IsRegionLoaded(x - loadRadius, y - loadRadius, z - loadRadius, x + loadRadius, y + loadRadius, z + loadRadius))
         {
             if (instantBlockUpdateEnabled)
             {
@@ -64,7 +66,7 @@ public class WorldTickScheduler
             var blockUpdate = _scheduledUpdates.Dequeue();
 
             const byte loadRadius = 8;
-            if (_blockView.IsRegionLoaded(
+            if (_host.IsRegionLoaded(
                     blockUpdate.X - loadRadius,
                     blockUpdate.Y - loadRadius,
                     blockUpdate.Z - loadRadius,

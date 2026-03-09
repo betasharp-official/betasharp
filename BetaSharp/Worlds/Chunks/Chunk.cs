@@ -297,7 +297,7 @@ public class Chunk
         int worldZ = Z * 16 + localZ;
         Blocks[(localX << 11) | (localZ << 7) | y] = newId;
 
-        if (oldId != 0 && !World.isRemote)
+        if (oldId != 0 && !World.IsRemote)
         {
             Block.Blocks[oldId].onBreak(World, worldX, y, worldZ);
         }
@@ -372,7 +372,7 @@ public class Chunk
         World.Lighting.QueueLightUpdate(LightType.Block, worldX, y, worldZ, worldX, y, worldZ);
         LightGaps(localX, localZ);
 
-        if (rawId != 0 && !World.isRemote)
+        if (rawId != 0 && !World.IsRemote)
         {
             Block.Blocks[rawId].onPlaced(World, worldX, y, worldZ);
         }

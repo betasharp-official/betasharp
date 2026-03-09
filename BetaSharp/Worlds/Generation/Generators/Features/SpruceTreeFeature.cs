@@ -1,18 +1,16 @@
 using BetaSharp.Blocks;
-using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class SpruceTreeFeature : Feature
 {
-    public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
+    public override bool Generate(IBlockWorldContext level, int x, int y, int z)
     {
-        int totalHeight = rand.NextInt(4) + 6;
-        int topTrunkNoLeaves = 1 + rand.NextInt(2);
+        int totalHeight = level.random.NextInt(4) + 6;
+        int topTrunkNoLeaves = 1 + level.random.NextInt(2);
         int leafStartOffset = totalHeight - topTrunkNoLeaves;
-        int maxLeafRadius = 2 + rand.NextInt(2);
+        int maxLeafRadius = 2 + level.random.NextInt(2);
 
         bool canPlace = true;
 
@@ -39,7 +37,7 @@ internal class SpruceTreeFeature : Feature
                 {
                     if (cy >= 0 && cy < 128)
                     {
-                        int blockId = world.getBlockId(cx, cy, cz);
+                        int blockId = level.BlocksReader.GetBlockId(cx, cy, cz);
                         if (blockId != 0 && blockId != Block.Leaves.id)
                         {
                             canPlace = false;
@@ -58,14 +56,14 @@ internal class SpruceTreeFeature : Feature
             return false;
         }
 
-        int groundId = world.getBlockId(x, y - 1, z);
+        int groundId = level.BlocksReader.GetBlockId(x, y - 1, z);
         if (!((groundId == Block.GrassBlock.id || groundId == Block.Dirt.id) && y < 128 - totalHeight - 1))
         {
             return false;
         }
 
-        world.setBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id);
-        int currentRadius = rand.NextInt(2);
+        level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id);
+        int currentRadius = level.random.NextInt(2);
         int radiusTarget = 1;
         byte radiusStep = 0;
 
@@ -81,9 +79,9 @@ internal class SpruceTreeFeature : Feature
                 {
                     int offsetZ = cz - z;
 
-                    if ((Math.Abs(offsetX) != currentRadius || Math.Abs(offsetZ) != currentRadius || currentRadius <= 0) && !Block.BlocksOpaque[world.getBlockId(cx, leafY, cz)])
+                    if ((Math.Abs(offsetX) != currentRadius || Math.Abs(offsetZ) != currentRadius || currentRadius <= 0) && !Block.BlocksOpaque[level.BlocksReader.GetBlockId(cx, leafY, cz)])
                     {
-                        world.setBlockWithoutNotifyingNeighbors(cx, leafY, cz, Block.Leaves.id, 1);
+                        level.BlockWriter.SetBlockWithoutNotifyingNeighbors(cx, leafY, cz, Block.Leaves.id, 1);
                     }
                 }
             }
@@ -104,14 +102,14 @@ internal class SpruceTreeFeature : Feature
             }
         }
 
-        int trunkVariability = rand.NextInt(3);
+        int trunkVariability = level.random.NextInt(3);
 
         for (int trunkY = 0; trunkY < totalHeight - trunkVariability; ++trunkY)
         {
-            int blockAtTrunk = world.getBlockId(x, y + trunkY, z);
+            int blockAtTrunk = level.BlocksReader.GetBlockId(x, y + trunkY, z);
             if (blockAtTrunk == 0 || blockAtTrunk == Block.Leaves.id)
             {
-                world.setBlockWithoutNotifyingNeighbors(x, y + trunkY, z, Block.Log.id, 1);
+                level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, Block.Log.id, 1);
             }
         }
 

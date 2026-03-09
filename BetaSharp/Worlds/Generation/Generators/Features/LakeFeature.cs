@@ -1,8 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
 
@@ -12,29 +10,29 @@ internal class LakeFeature : Feature
 
     public LakeFeature(int waterBlockId) => _waterBlockId = waterBlockId;
 
-    public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
+    public override bool Generate(IBlockWorldContext level, int x, int y, int z)
     {
         x -= 8;
 
-        while (y > 0 && world.isAir(x, y, z))
+        while (y > 0 && level.BlocksReader.IsAir(x, y, z))
         {
             y--;
         }
 
         y -= 4;
         bool[] lakeMask = new bool[2048];
-        int blobCount = rand.NextInt(4) + 4;
+        int blobCount = level.random.NextInt(4) + 4;
 
 
         for (int i = 0; i < blobCount; ++i)
         {
-            double radiusH = rand.NextDouble() * 6.0D + 3.0D;
-            double radiusV = rand.NextDouble() * 4.0D + 2.0D;
-            double radiusH2 = rand.NextDouble() * 6.0D + 3.0D;
+            double radiusH = level.random.NextDouble() * 6.0D + 3.0D;
+            double radiusV = level.random.NextDouble() * 4.0D + 2.0D;
+            double radiusH2 = level.random.NextDouble() * 6.0D + 3.0D;
 
-            double centerX = rand.NextDouble() * (16.0D - radiusH - 2.0D) + 1.0D + radiusH / 2.0D;
-            double centerY = rand.NextDouble() * (8.0D - radiusV - 4.0D) + 2.0D + radiusV / 2.0D;
-            double centerZ = rand.NextDouble() * (16.0D - radiusH2 - 2.0D) + 1.0D + radiusH2 / 2.0D;
+            double centerX = level.random.NextDouble() * (16.0D - radiusH - 2.0D) + 1.0D + radiusH / 2.0D;
+            double centerY = level.random.NextDouble() * (8.0D - radiusV - 4.0D) + 2.0D + radiusV / 2.0D;
+            double centerZ = level.random.NextDouble() * (16.0D - radiusH2 - 2.0D) + 1.0D + radiusH2 / 2.0D;
 
             for (int dx = 1; dx < 15; ++dx)
             {
@@ -67,13 +65,13 @@ internal class LakeFeature : Feature
                                                                          (dz > 0 && lakeMask[(dx * 16 + (dz - 1)) * 8 + dy]) || (dy < 7 && lakeMask[(dx * 16 + dz) * 8 + dy + 1]) || (dy > 0 && lakeMask[(dx * 16 + dz) * 8 + (dy - 1)]));
                     if (isEdge)
                     {
-                        Material mat = world.getMaterial(x + dx, y + dy, z + dz);
+                        Material mat = level.BlocksReader.GetMaterial(x + dx, y + dy, z + dz);
                         if (dy >= 4 && mat.IsFluid)
                         {
                             return false;
                         }
 
-                        if (dy < 4 && !mat.IsSolid && world.getBlockId(x + dx, y + dy, z + dz) != _waterBlockId)
+                        if (dy < 4 && !mat.IsSolid && level.BlocksReader.GetBlockId(x + dx, y + dy, z + dz) != _waterBlockId)
                         {
                             return false;
                         }
@@ -91,7 +89,7 @@ internal class LakeFeature : Feature
                     if (lakeMask[(dx * 16 + dy) * 8 + dz])
                     {
                         int blockId = dz >= 4 ? 0 : _waterBlockId;
-                        world.setBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, blockId);
+                        level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, blockId);
                     }
                 }
             }
@@ -104,10 +102,10 @@ internal class LakeFeature : Feature
                 for (int dz = 4; dz < 8; ++dz)
                 {
                     if (lakeMask[(dx * 16 + dy) * 8 + dz] &&
-                        world.getBlockId(x + dx, y + dz - 1, z + dy) == Block.Dirt.id &&
-                        world.Lighting.GetBrightness(LightType.Sky, x + dx, y + dz, z + dy) > 0)
+                        level.BlocksReader.GetBlockId(x + dx, y + dz - 1, z + dy) == Block.Dirt.id &&
+                        level.Lighting.GetBrightness(LightType.Sky, x + dx, y + dz, z + dy) > 0)
                     {
-                        world.setBlockWithoutNotifyingNeighbors(x + dx, y + dz - 1, z + dy, Block.GrassBlock.id);
+                        level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz - 1, z + dy, Block.GrassBlock.id);
                     }
                 }
             }
@@ -130,9 +128,9 @@ internal class LakeFeature : Feature
                                           (dz < 7 && lakeMask[(dx * 16 + dy) * 8 + dz + 1]) ||
                                           (dz > 0 && lakeMask[(dx * 16 + dy) * 8 + (dz - 1)])
                                       );
-                        if (isEdge && (dz < 4 || rand.NextInt(2) != 0) && world.getMaterial(x + dx, y + dz, z + dy).IsSolid)
+                        if (isEdge && (dz < 4 || level.random.NextInt(2) != 0) && level.BlocksReader.GetMaterial(x + dx, y + dz, z + dy).IsSolid)
                         {
-                            world.setBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, Block.Stone.id);
+                            level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, Block.Stone.id);
                         }
                     }
                 }

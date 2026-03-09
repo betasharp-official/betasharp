@@ -1,7 +1,5 @@
 using BetaSharp.Blocks;
-using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
 
@@ -11,63 +9,63 @@ internal class SpringFeature : Feature
 
     public SpringFeature(int liquidBlockId) => _liquidBlockId = liquidBlockId;
 
-    public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
+    public override bool Generate(IBlockWorldContext level, int x, int y, int z)
     {
-        if (world.getBlockId(x, y + 1, z) != Block.Stone.id)
+        if (level.BlocksReader.GetBlockId(x, y + 1, z) != Block.Stone.id)
         {
             return false;
         }
 
-        if (world.getBlockId(x, y - 1, z) != Block.Stone.id)
+        if (level.BlocksReader.GetBlockId(x, y - 1, z) != Block.Stone.id)
         {
             return false;
         }
 
-        int targetId = world.getBlockId(x, y, z);
+        int targetId = level.BlocksReader.GetBlockId(x, y, z);
         if (targetId != 0 && targetId != Block.Stone.id)
         {
             return false;
         }
 
         int stoneNeighbors = 0;
-        if (world.getBlockId(x - 1, y, z) == Block.Stone.id)
+        if (level.BlocksReader.GetBlockId(x - 1, y, z) == Block.Stone.id)
         {
             ++stoneNeighbors;
         }
 
-        if (world.getBlockId(x + 1, y, z) == Block.Stone.id)
+        if (level.BlocksReader.GetBlockId(x + 1, y, z) == Block.Stone.id)
         {
             ++stoneNeighbors;
         }
 
-        if (world.getBlockId(x, y, z - 1) == Block.Stone.id)
+        if (level.BlocksReader.GetBlockId(x, y, z - 1) == Block.Stone.id)
         {
             ++stoneNeighbors;
         }
 
-        if (world.getBlockId(x, y, z + 1) == Block.Stone.id)
+        if (level.BlocksReader.GetBlockId(x, y, z + 1) == Block.Stone.id)
         {
             ++stoneNeighbors;
         }
 
 
         int airNeighbors = 0;
-        if (world.isAir(x - 1, y, z))
+        if (level.BlocksReader.IsAir(x - 1, y, z))
         {
             ++airNeighbors;
         }
 
-        if (world.isAir(x + 1, y, z))
+        if (level.BlocksReader.IsAir(x + 1, y, z))
         {
             ++airNeighbors;
         }
 
-        if (world.isAir(x, y, z - 1))
+        if (level.BlocksReader.IsAir(x, y, z - 1))
         {
             ++airNeighbors;
         }
 
-        if (world.isAir(x, y, z + 1))
+        if (level.BlocksReader.IsAir(x, y, z + 1))
         {
             ++airNeighbors;
         }
@@ -75,11 +73,11 @@ internal class SpringFeature : Feature
 
         if (stoneNeighbors == 3 && airNeighbors == 1)
         {
-            world.setBlock(x, y, z, _liquidBlockId);
+            level.BlockWriter.SetBlock(x, y, z, _liquidBlockId);
 
-            world.InstantBlockUpdateEnabled = true;
-            Block.Blocks[_liquidBlockId].onTick(world.BlocksReader, x, y, z, rand, world.WorldEventBroadcaster, world.isRemote);
-            world.InstantBlockUpdateEnabled = false;
+            level.InstantBlockUpdateEnabled = true;
+            Block.Blocks[_liquidBlockId].onTick(new OnTickEvt(level, x, y, z, level.BlocksReader.GetBlockMeta(x, y, z), level.BlocksReader.GetBlockId(x, y, z)));
+            level.InstantBlockUpdateEnabled = false;
         }
 
         return true;

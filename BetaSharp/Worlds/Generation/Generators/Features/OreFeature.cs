@@ -1,7 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
 
@@ -16,9 +15,9 @@ internal class OreFeature : Feature
         _numberOfBlocks = numberOfBlocks;
     }
 
-    public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
+    public override bool Generate(IBlockWorldContext ctx, int x, int y, int z)
     {
-        float angle = rand.NextFloat() * (float)Math.PI;
+        float angle = ctx.random.NextFloat() * (float)Math.PI;
         double spread = _numberOfBlocks / 8.0;
 
         double startX = x + 8 + MathHelper.Sin(angle) * spread;
@@ -26,8 +25,8 @@ internal class OreFeature : Feature
         double startZ = z + 8 + MathHelper.Cos(angle) * spread;
         double endZ = z + 8 - MathHelper.Cos(angle) * spread;
 
-        double startY = y + rand.NextInt(3) + 2;
-        double endY = y + rand.NextInt(3) + 2;
+        double startY = y + ctx.random.NextInt(3) + 2;
+        double endY = y + ctx.random.NextInt(3) + 2;
 
         for (int i = 0; i <= _numberOfBlocks; ++i)
         {
@@ -35,7 +34,7 @@ internal class OreFeature : Feature
             double centerY = startY + (endY - startY) * i / _numberOfBlocks;
             double centerZ = startZ + (endZ - startZ) * i / _numberOfBlocks;
 
-            double sizeMultiplier = rand.NextDouble() * _numberOfBlocks / 16.0D;
+            double sizeMultiplier = ctx.random.NextDouble() * _numberOfBlocks / 16.0D;
             double radiusH = (MathHelper.Sin(i * (float)Math.PI / _numberOfBlocks) + 1.0F) * sizeMultiplier + 1.0D;
             double radiusV = (MathHelper.Sin(i * (float)Math.PI / _numberOfBlocks) + 1.0F) * sizeMultiplier + 1.0D;
 
@@ -66,9 +65,9 @@ internal class OreFeature : Feature
                     {
                         double dz = (blockZ + 0.5 - centerZ) / (radiusH / 2.0);
 
-                        if (dx * dx + dy * dy + dz * dz < 1.0 && world.getBlockId(blockX, blockY, blockZ) == Block.Stone.id)
+                        if (dx * dx + dy * dy + dz * dz < 1.0 && ctx.BlocksReader.GetBlockId(blockX, blockY, blockZ) == Block.Stone.id)
                         {
-                            world.setBlockWithoutNotifyingNeighbors(blockX, blockY, blockZ, _minableBlockId);
+                            ctx.BlockWriter.SetBlockWithoutNotifyingNeighbors(blockX, blockY, blockZ, _minableBlockId);
                         }
                     }
                 }

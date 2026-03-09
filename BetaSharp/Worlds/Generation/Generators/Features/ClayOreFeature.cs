@@ -2,7 +2,6 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
 
@@ -13,14 +12,14 @@ internal class ClayOreFeature : Feature
 
     public ClayOreFeature(int numberOfBlocks) => _numberOfBlocks = numberOfBlocks;
 
-    public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
+    public override bool Generate(IBlockWorldContext level, int x, int y, int z)
     {
-        if (world.getMaterial(x, y, z) != Material.Water)
+        if (level.BlocksReader.GetMaterial(x, y, z) != Material.Water)
         {
             return false;
         }
 
-        float angle = rand.NextFloat() * (float)Math.PI;
+        float angle = level.random.NextFloat() * (float)Math.PI;
         double spread = _numberOfBlocks / 8.0;
 
         double startX = x + 8 + MathHelper.Sin(angle) * spread;
@@ -28,8 +27,8 @@ internal class ClayOreFeature : Feature
         double startZ = z + 8 + MathHelper.Cos(angle) * spread;
         double enZ = z + 8 - MathHelper.Cos(angle) * spread;
 
-        double startY = y + rand.NextInt(3) + 2;
-        double endY = y + rand.NextInt(3) + 2;
+        double startY = y + level.random.NextInt(3) + 2;
+        double endY = y + level.random.NextInt(3) + 2;
 
         for (int i = 0; i <= _numberOfBlocks; ++i)
         {
@@ -38,7 +37,7 @@ internal class ClayOreFeature : Feature
             double centerY = startY + (endY - startY) * lerp;
             double centerZ = startZ + (enZ - startZ) * lerp;
 
-            double sizeMultiplier = rand.NextDouble() * _numberOfBlocks / 16.0D;
+            double sizeMultiplier = level.random.NextDouble() * _numberOfBlocks / 16.0D;
             double radiusH = (MathHelper.Sin(i * (float)Math.PI / _numberOfBlocks) + 1.0F) * sizeMultiplier + 1.0D;
             double radiusV = (MathHelper.Sin(i * (float)Math.PI / _numberOfBlocks) + 1.0F) * sizeMultiplier + 1.0D;
 
@@ -61,10 +60,10 @@ internal class ClayOreFeature : Feature
                         double dz = (blockZ + 0.5D - centerZ) / (radiusH / 2.0D);
                         if (dx * dx + dy * dy + dz * dz < 1.0D)
                         {
-                            int var47 = world.getBlockId(blockX, blockY, blockZ);
+                            int var47 = level.BlocksReader.GetBlockId(blockX, blockY, blockZ);
                             if (var47 == Block.Sand.id)
                             {
-                                world.setBlockWithoutNotifyingNeighbors(blockX, blockY, blockZ, _clayBlockId);
+                                level.BlockWriter.SetBlockWithoutNotifyingNeighbors(blockX, blockY, blockZ, _clayBlockId);
                             }
                         }
                     }

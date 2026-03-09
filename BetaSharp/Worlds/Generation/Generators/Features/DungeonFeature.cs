@@ -4,17 +4,16 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class DungeonFeature : Feature
 {
-    public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
+    public override bool Generate(IBlockWorldContext level, int x, int y, int z)
     {
         byte height = 3;
-        int radiusX = rand.NextInt(2) + 2;
-        int radiusZ = rand.NextInt(2) + 2;
+        int radiusX = level.random.NextInt(2) + 2;
+        int radiusZ = level.random.NextInt(2) + 2;
         int openingsCount = 0;
 
 
@@ -24,7 +23,7 @@ internal class DungeonFeature : Feature
             {
                 for (int cz = z - radiusZ - 1; cz <= z + radiusZ + 1; ++cz)
                 {
-                    Material mat = world.getMaterial(cx, cy, cz);
+                    Material mat = level.BlocksReader.GetMaterial(cx, cy, cz);
                     if ((cy == y - 1 || cy == y + height + 1) && !mat.IsSolid)
                     {
                         return false;
@@ -35,7 +34,7 @@ internal class DungeonFeature : Feature
                                   cz == z - radiusZ - 1 ||
                                   cz == z + radiusZ + 1;
 
-                    if (isWall && cy == y && world.isAir(cx, cy, cz) && world.isAir(cx, cy + 1, cz))
+                    if (isWall && cy == y && level.BlocksReader.IsAir(cx, cy, cz) && level.BlocksReader.IsAir(cx, cy + 1, cz))
                     {
                         ++openingsCount;
                     }
@@ -62,21 +61,21 @@ internal class DungeonFeature : Feature
                                     cz != z + radiusZ + 1;
                     if (isInside)
                     {
-                        world.setBlock(cx, cy, cz, 0);
+                        level.BlockWriter.SetBlock(cx, cy, cz, 0);
                     }
-                    else if (cy >= 0 && !world.getMaterial(cx, cy - 1, cz).IsSolid)
+                    else if (cy >= 0 && !level.BlocksReader.GetMaterial(cx, cy - 1, cz).IsSolid)
                     {
-                        world.setBlock(cx, cy, cz, 0);
+                        level.BlockWriter.SetBlock(cx, cy, cz, 0);
                     }
-                    else if (world.getMaterial(cx, cy, cz).IsSolid)
+                    else if (level.BlocksReader.GetMaterial(cx, cy, cz).IsSolid)
                     {
-                        if (cy == y - 1 && rand.NextInt(4) != 0)
+                        if (cy == y - 1 && level.random.NextInt(4) != 0)
                         {
-                            world.setBlock(cx, cy, cz, Block.MossyCobblestone.id);
+                            level.BlockWriter.SetBlock(cx, cy, cz, Block.MossyCobblestone.id);
                         }
                         else
                         {
-                            world.setBlock(cx, cy, cz, Block.Cobblestone.id);
+                            level.BlockWriter.SetBlock(cx, cy, cz, Block.Cobblestone.id);
                         }
                     }
                 }
@@ -88,27 +87,27 @@ internal class DungeonFeature : Feature
         {
             for (int j = 0; j < 3; ++j)
             {
-                int chestX = x + rand.NextInt(radiusX * 2 + 1) - radiusX;
-                int chestZ = z + rand.NextInt(radiusZ * 2 + 1) - radiusZ;
-                if (world.isAir(chestX, y, chestZ))
+                int chestX = x + level.random.NextInt(radiusX * 2 + 1) - radiusX;
+                int chestZ = z + level.random.NextInt(radiusZ * 2 + 1) - radiusZ;
+                if (level.BlocksReader.IsAir(chestX, y, chestZ))
                 {
                     int neighbors = 0;
-                    if (world.getMaterial(chestX - 1, y, chestZ).IsSolid)
+                    if (level.BlocksReader.GetMaterial(chestX - 1, y, chestZ).IsSolid)
                     {
                         ++neighbors;
                     }
 
-                    if (world.getMaterial(chestX + 1, y, chestZ).IsSolid)
+                    if (level.BlocksReader.GetMaterial(chestX + 1, y, chestZ).IsSolid)
                     {
                         ++neighbors;
                     }
 
-                    if (world.getMaterial(chestX, y, chestZ - 1).IsSolid)
+                    if (level.BlocksReader.GetMaterial(chestX, y, chestZ - 1).IsSolid)
                     {
                         ++neighbors;
                     }
 
-                    if (world.getMaterial(chestX, y, chestZ + 1).IsSolid)
+                    if (level.BlocksReader.GetMaterial(chestX, y, chestZ + 1).IsSolid)
                     {
                         ++neighbors;
                     }
@@ -118,24 +117,24 @@ internal class DungeonFeature : Feature
                         continue;
                     }
 
-                    world.setBlock(chestX, y, chestZ, Block.Chest.id);
+                    level.BlockWriter.SetBlock(chestX, y, chestZ, Block.Chest.id);
 
-                    BlockEntityChest chest = (BlockEntityChest)world.getBlockEntity(chestX, y, chestZ);
+                    BlockEntityChest? chest = (BlockEntityChest?)level.BlocksReader.GetBlockEntity(chestX, y, chestZ);
                     for (int k = 0; k < 8; ++k)
                     {
-                        ItemStack? loot = PickCheckLootItem(rand);
+                        ItemStack? loot = PickCheckLootItem(level.random);
                         if (loot != null)
                         {
-                            chest.setStack(rand.NextInt(chest.size()), loot);
+                            chest!.setStack(level.random.NextInt(chest!.size()), loot);
                         }
                     }
                 }
             }
         }
 
-        world.setBlock(x, y, z, Block.Spawner.id);
-        BlockEntityMobSpawner var19 = (BlockEntityMobSpawner)world.getBlockEntity(x, y, z);
-        var19.SetSpawnedEntityId(PickMobSpawner(rand));
+        level.BlockWriter.SetBlock(x, y, z, Block.Spawner.id);
+        BlockEntityMobSpawner? spawner = (BlockEntityMobSpawner?)level.BlocksReader.GetBlockEntity(x, y, z);
+        spawner!.SetSpawnedEntityId(PickMobSpawner(level.random));
         return true;
     }
 

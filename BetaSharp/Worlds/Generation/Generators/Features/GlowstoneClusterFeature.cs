@@ -1,34 +1,32 @@
 using BetaSharp.Blocks;
-using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class GlowstoneClusterFeature : Feature
 {
-    public override bool Generate(World world, JavaRandom rand, int x, int y, int z)
+    public override bool Generate(IBlockWorldContext level, int x, int y, int z)
     {
-        if (!world.isAir(x, y, z))
+        if (!level.BlocksReader.IsAir(x, y, z))
         {
             return false;
         }
 
-        if (world.getBlockId(x, y + 1, z) != Block.Netherrack.id)
+        if (level.BlocksReader.GetBlockId(x, y + 1, z) != Block.Netherrack.id)
         {
             return false;
         }
 
 
-        world.setBlock(x, y, z, Block.Glowstone.id);
+        level.BlockWriter.SetBlock(x, y, z, Block.Glowstone.id);
 
         for (int i = 0; i < 1500; ++i)
         {
-            int genX = x + rand.NextInt(8) - rand.NextInt(8);
-            int genY = y - rand.NextInt(12);
-            int genZ = z + rand.NextInt(8) - rand.NextInt(8);
+            int genX = x + level.random.NextInt(8) - level.random.NextInt(8);
+            int genY = y - level.random.NextInt(12);
+            int genZ = z + level.random.NextInt(8) - level.random.NextInt(8);
 
-            if (world.getBlockId(genX, genY, genZ) == 0)
+            if (level.BlocksReader.GetBlockId(genX, genY, genZ) == 0)
             {
                 int GlowstoneNeighbors = 0;
 
@@ -37,32 +35,32 @@ internal class GlowstoneClusterFeature : Feature
                     int blockId = 0;
                     if (j == 0)
                     {
-                        blockId = world.getBlockId(genX - 1, genY, genZ);
+                        blockId = level.BlocksReader.GetBlockId(genX - 1, genY, genZ);
                     }
 
                     if (j == 1)
                     {
-                        blockId = world.getBlockId(genX + 1, genY, genZ);
+                        blockId = level.BlocksReader.GetBlockId(genX + 1, genY, genZ);
                     }
 
                     if (j == 2)
                     {
-                        blockId = world.getBlockId(genX, genY - 1, genZ);
+                        blockId = level.BlocksReader.GetBlockId(genX, genY - 1, genZ);
                     }
 
                     if (j == 3)
                     {
-                        blockId = world.getBlockId(genX, genY + 1, genZ);
+                        blockId = level.BlocksReader.GetBlockId(genX, genY + 1, genZ);
                     }
 
                     if (j == 4)
                     {
-                        blockId = world.getBlockId(genX, genY, genZ - 1);
+                        blockId = level.BlocksReader.GetBlockId(genX, genY, genZ - 1);
                     }
 
                     if (j == 5)
                     {
-                        blockId = world.getBlockId(genX, genY, genZ + 1);
+                        blockId = level.BlocksReader.GetBlockId(genX, genY, genZ + 1);
                     }
 
                     if (blockId == Block.Glowstone.id)
@@ -73,7 +71,7 @@ internal class GlowstoneClusterFeature : Feature
 
                 if (GlowstoneNeighbors == 1)
                 {
-                    world.setBlock(genX, genY, genZ, Block.Glowstone.id);
+                    level.BlockWriter.SetBlock(genX, genY, genZ, Block.Glowstone.id);
                 }
             }
         }
