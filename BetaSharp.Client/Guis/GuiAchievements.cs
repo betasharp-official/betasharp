@@ -6,6 +6,7 @@ using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
+using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.Guis;
 
@@ -71,7 +72,7 @@ public class GuiAchievements : GuiScreen
 
     public override void Render(int var1, int var2, float var3)
     {
-        if (Mouse.isButtonDown(0))
+        if (Mouse.isButtonDown(0) || (Game.isControllerMode && Controller.IsButtonDown(GamepadButton.A)))
         {
             int var4 = (Width - field_27121_a) / 2;
             int var5 = (Height - field_27119_i) / 2;
