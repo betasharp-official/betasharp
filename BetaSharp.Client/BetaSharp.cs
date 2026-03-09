@@ -422,6 +422,12 @@ public partial class BetaSharp
 
         currentScreen = newScreen;
 
+        if (currentScreen != null)
+        {
+            virtualCursorX = displayWidth / 2.0f;
+            virtualCursorY = displayHeight / 2.0f;
+        }
+
         if (internalServer != null)
         {
             bool shouldPause = newScreen?.PausesGame ?? false;
