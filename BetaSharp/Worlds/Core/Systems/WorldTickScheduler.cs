@@ -74,4 +74,24 @@ public class WorldTickScheduler
         int meta = _context.BlocksReader.GetMeta(x, y, z);
         Block.Blocks[blockId].onTick(new OnTickEvt(_context, x, y, z, meta, blockId));
     }
+
+    /// <summary>
+    /// Returns pending block updates whose (x,z) falls within the given chunk bounds.
+    /// Used for persisting scheduled ticks to chunk NBT (TileTicks) on save.
+    /// </summary>
+    public IEnumerable<(int X, int Y, int Z, int BlockId, long ScheduledTime)> GetPendingTicksInChunk(int chunkX, int chunkZ)
+    {
+        int minX = chunkX * 16;
+        int maxX = minX + 15;
+        int minZ = chunkZ * 16;
+        int maxZ = minZ + 15;
+
+        foreach (var (blockUpdate, _) in _scheduledUpdates.UnorderedItems)
+        {
+            if (blockUpdate.X >= minX && blockUpdate.X <= maxX && blockUpdate.Z >= minZ && blockUpdate.Z <= maxZ)
+            {
+                yield return (blockUpdate.X, blockUpdate.Y, blockUpdate.Z, blockUpdate.BlockId, blockUpdate.ScheduledTime);
+            }
+        }
+    }
 }

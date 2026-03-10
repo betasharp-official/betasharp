@@ -131,6 +131,22 @@ internal class RegionChunkStorage : IChunkStorage
         }
 
         nbt.SetTag("TileEntities", var8);
+
+        // Save scheduled block updates (TileTicks) so redstone clocks, flowing blocks, etc. persist across world reloads
+        NBTTagList tileTicks = new();
+        long currentTime = world.GetTime();
+        foreach (var (x, y, z, blockId, scheduledTime) in world.TickScheduler.GetPendingTicksInChunk(chunk.X, chunk.Z))
+        {
+            int ticksUntilProcessing = (int)Math.Clamp(scheduledTime - currentTime, int.MinValue, int.MaxValue);
+            NBTTagCompound tick = new();
+            tick.SetInteger("x", x);
+            tick.SetInteger("y", y);
+            tick.SetInteger("z", z);
+            tick.SetInteger("i", blockId);
+            tick.SetInteger("t", ticksUntilProcessing);
+            tileTicks.SetTag(tick);
+        }
+        nbt.SetTag("TileTicks", tileTicks);
     }
 
     public static Chunk LoadChunkFromNbt(World world, NBTTagCompound nbt)
@@ -188,6 +204,25 @@ internal class RegionChunkStorage : IChunkStorage
                 {
                     var4.AddBlockEntity(var9);
                 }
+            }
+        }
+
+        // Restore scheduled block updates (TileTicks). We store them on the chunk and schedule in Chunk.Load()
+        // because the chunk isn't in BlockHost yet at this point, and ScheduleBlockUpdate requires IsPosLoaded.
+        NBTTagList tileTicks = nbt.GetTagList("TileTicks");
+        if (tileTicks != null && tileTicks.TagCount() > 0)
+        {
+            var4.PendingTileTicks = new List<(int X, int Y, int Z, int BlockId, int TickRate)>(tileTicks.TagCount());
+            for (int i = 0; i < tileTicks.TagCount(); ++i)
+            {
+                NBTTagCompound tickTag = (NBTTagCompound)tileTicks.TagAt(i);
+                int x = tickTag.GetInteger("x");
+                int y = tickTag.GetInteger("y");
+                int z = tickTag.GetInteger("z");
+                int blockId = tickTag.GetInteger("i");
+                int ticksUntilProcessing = tickTag.GetInteger("t");
+                int tickRate = ticksUntilProcessing <= 0 ? 1 : ticksUntilProcessing;
+                var4.PendingTileTicks.Add((x, y, z, blockId, tickRate));
             }
         }
 

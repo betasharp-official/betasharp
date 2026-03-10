@@ -28,6 +28,13 @@ public class Chunk
     public IBlockWorldContext Level;
 
     public bool Loaded;
+
+    /// <summary>
+    /// Tile ticks loaded from NBT, to be scheduled when the chunk is loaded (Chunk.Load).
+    /// Null if none were loaded.
+    /// </summary>
+    public List<(int X, int Y, int Z, int BlockId, int TickRate)>? PendingTileTicks;
+
     public ChunkNibbleArray Meta;
     public int MinHeightMapValue;
     public ChunkNibbleArray SkyLight;
@@ -537,6 +544,17 @@ public class Chunk
     public virtual void Load()
     {
         Loaded = true;
+
+        // Schedule block updates loaded from TileTicks NBT (chunk is now in BlockHost, so ScheduleBlockUpdate will succeed)
+        if (PendingTileTicks != null)
+        {
+            foreach (var (x, y, z, blockId, tickRate) in PendingTileTicks)
+            {
+                Level.TickScheduler.ScheduleBlockUpdate(x, y, z, blockId, tickRate);
+            }
+            PendingTileTicks = null;
+        }
+
         Level.Entities.ProcessBlockUpdates(BlockEntities.Values);
 
         foreach (List<Entity> list in Entities)
