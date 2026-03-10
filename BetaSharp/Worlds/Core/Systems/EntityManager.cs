@@ -69,7 +69,8 @@ public class EntityManager
                 _host.GetChunk(chunkX, chunkZ).RemoveEntity(entity);
             }
 
-            _entitiesById.Remove(entity.id);
+            if (_entitiesById.TryGetValue(entity.id, out Entity? current) && ReferenceEquals(current, entity))
+                _entitiesById.Remove(entity.id);
             NotifyEntityRemoved(entity);
         }
 
@@ -102,7 +103,8 @@ public class EntityManager
                 }
 
                 Entities.RemoveAt(i--);
-                _entitiesById.Remove(entity.id);
+                if (_entitiesById.TryGetValue(entity.id, out Entity? current2) && ReferenceEquals(current2, entity))
+                    _entitiesById.Remove(entity.id);
                 NotifyEntityRemoved(entity);
             }
         }
@@ -280,7 +282,8 @@ public class EntityManager
                 }
 
                 Entities.RemoveAt(i--);
-                _entitiesById.Remove(entity.id);
+                if (_entitiesById.TryGetValue(entity.id, out Entity? current) && ReferenceEquals(current, entity))
+                    _entitiesById.Remove(entity.id);
                 NotifyEntityRemoved(entity);
             }
         }

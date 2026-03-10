@@ -1,4 +1,4 @@
-﻿using BetaSharp.Blocks;
+using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Network.Packets;
@@ -78,7 +78,7 @@ internal class EntityTrackerEntry
             int var8 = var3 - lastY;
             int var9 = var4 - lastZ;
             object? var10 = null;
-            bool var11 = Math.Abs(var2) >= 8 || Math.Abs(var3) >= 8 || Math.Abs(var4) >= 8;
+            bool var11 = Math.Abs(var7) >= 8 || Math.Abs(var8) >= 8 || Math.Abs(var9) >= 8;
             bool var12 = Math.Abs(var5 - lastYaw) >= 8 || Math.Abs(var6 - lastPitch) >= 8;
             if (var7 < -128 || var7 >= 128 || var8 < -128 || var8 >= 128 || var9 < -128 || var9 >= 128 || ticksSinceLastDismount > 400)
             {

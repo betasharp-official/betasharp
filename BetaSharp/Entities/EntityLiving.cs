@@ -1,4 +1,4 @@
-﻿using BetaSharp.Blocks;
+using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
 using BetaSharp.NBT;
@@ -365,7 +365,15 @@ public class EntityLiving : Entity
 
         walkAnimationSpeed = 1.5F;
         bool var3 = true;
-        if (hearts > maxHealth / 2.0F)
+        if (hearts <= maxHealth / 2.0F)
+        {
+            damageForDisplay = amount;
+            lastHealth = health;
+            hearts = maxHealth;
+            applyDamage(amount);
+            hurtTime = maxHurtTime = 10;
+        }
+        else
         {
             if (amount <= damageForDisplay)
             {
@@ -375,14 +383,6 @@ public class EntityLiving : Entity
             applyDamage(amount - damageForDisplay);
             damageForDisplay = amount;
             var3 = false;
-        }
-        else
-        {
-            damageForDisplay = amount;
-            lastHealth = health;
-            hearts = maxHealth;
-            applyDamage(amount);
-            hurtTime = maxHurtTime = 10;
         }
 
         attackedAtYaw = 0.0F;
@@ -684,23 +684,6 @@ public class EntityLiving : Entity
             --newPosRotationIncrements;
             setPosition(newX, newY, newZ);
             setRotation(yaw, pitch);
-            List<Box> collisions = _level.Entities.GetEntityCollisionsScratch(this, boundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
-            if (collisions.Count > 0)
-            {
-                double highestCollisionY = 0.0D;
-
-                for (int i = 0; i < collisions.Count; ++i)
-                {
-                    Box box = collisions[i];
-                    if (box.MaxY > highestCollisionY)
-                    {
-                        highestCollisionY = box.MaxY;
-                    }
-                }
-
-                newY += highestCollisionY - boundingBox.MinY;
-                setPosition(newX, newY, newZ);
-            }
         }
 
         if (isMovementBlocked())
@@ -713,6 +696,10 @@ public class EntityLiving : Entity
         else if (!interpolateOnly)
         {
             tickLiving();
+
+            // Only apply gravity, friction, and walking when we own the entity.
+            // Interpolated client-side mobs follow server position packets only.
+            travel(sidewaysSpeed, forwardSpeed);
         }
 
         bool isInWater = base.isInWater();
@@ -736,7 +723,6 @@ public class EntityLiving : Entity
         sidewaysSpeed *= 0.98F;
         forwardSpeed *= 0.98F;
         rotationSpeed *= 0.9F;
-        travel(sidewaysSpeed, forwardSpeed);
         List<Entity>? nearbyEntities = _level.Entities.GetEntitiesScratch(this, boundingBox.Expand(0.2F, 0.0D, 0.2F));
         if (nearbyEntities != null && nearbyEntities.Count > 0)
         {

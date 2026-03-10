@@ -48,6 +48,7 @@ internal class BlockPumpkin : Block
 
     public override void onPlaced(OnPlacedEvt evt)
     {
+        if (evt.Placer == null) return;
         int direction = MathHelper.Floor(evt.Placer.yaw * 4.0F / 360.0F + 2.5D) & 3;
         evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, direction);
     }

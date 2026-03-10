@@ -300,7 +300,7 @@ public class ClientNetworkHandler : NetHandler
             ent.trackedPosY = packet.y;
             ent.trackedPosZ = packet.z;
             double posX = ent.trackedPosX / 32.0D;
-            double posY = ent.trackedPosY / 32.0D + 1.0D / 64.0D;
+            double posY = ent.trackedPosY / 32.0D;
             double posZ = ent.trackedPosZ / 32.0D;
             float yaw = packet.yaw * 360 / 256.0F;
             float pitch = packet.pitch * 360 / 256.0F;
