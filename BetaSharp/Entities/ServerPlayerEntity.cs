@@ -299,9 +299,8 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         {
             EntityTracker et = server.getEntityTracker(dimensionId);
             PlayerSleepUpdateS2CPacket packet = PlayerSleepUpdateS2CPacket.Get(this, 0, x, y, z);
-            et.sendToListeners(this, packet);
+            et.sendToAround(this, packet);
             networkHandler.teleport(x, y, z, yaw, pitch);
-            networkHandler.sendPacket(packet);
         }
 
         return sleepAttemptResult;

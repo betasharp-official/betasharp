@@ -167,7 +167,10 @@ public class EntityTracker
         {
             ent.sendToListeners(packet);
         }
-        packet.ReturnNoCount();
+        else
+        {
+            packet.Return();
+        }
     }
 
     public void sendToAround(Entity entity, Packet packet)
@@ -176,7 +179,10 @@ public class EntityTracker
         {
             ent.sendToAround(packet);
         }
-        packet.ReturnNoCount();
+        else
+        {
+            packet.Return();
+        }
     }
 
     public void removeListener(ServerPlayerEntity player)

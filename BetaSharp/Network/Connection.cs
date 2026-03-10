@@ -59,7 +59,7 @@ public class Connection
 
         if (!closed)
         {
-            packet.UseCount++;
+            Interlocked.Increment(ref packet.UseCount);
             if (Packet.Registry[packet.Id]!.WorldPacket)
             {
                 delayedSendQueue.Enqueue(packet);
@@ -208,7 +208,7 @@ public class Connection
                         continue;
                     }
 
-                    packet.UseCount++;
+                    Interlocked.Increment(ref packet.UseCount);
 
                     Packet.Write(packet, _networkStream);
                     packet.Return();
@@ -221,7 +221,7 @@ public class Connection
                         continue;
                     }
 
-                    packet.UseCount++;
+                    Interlocked.Increment(ref packet.UseCount);
 
                     _delay = 0;
 

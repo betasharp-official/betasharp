@@ -1,25 +1,27 @@
+using System.Collections.Concurrent;
+
 namespace BetaSharp.Util;
 
 public class ObjectPool<T> : IDisposable where T : class
 {
     private readonly Func<T> factory;
-    private readonly PooledQueue<T> pool;
+    private readonly ConcurrentBag<T> pool;
     private readonly int capacity;
 
     public ObjectPool(Func<T> factory, int capacity = 32)
     {
         this.factory = factory;
         this.capacity = capacity;
-        pool = new PooledQueue<T>(capacity);
+        pool = new ConcurrentBag<T>();
     }
 
-    public T Get() => pool.IsEmpty ? factory() : pool.Dequeue();
+    public T Get() => pool.TryTake(out T? item) ? item : factory();
 
     public void Return(T obj)
     {
         if (pool.Count < capacity)
         {
-            pool.Enqueue(obj);
+            pool.Add(obj);
         }
         else if (obj is IDisposable d)
         {
@@ -29,9 +31,9 @@ public class ObjectPool<T> : IDisposable where T : class
 
     public void Dispose()
     {
-        while (!pool.IsEmpty)
+        while (pool.TryTake(out T? obj))
         {
-            if (pool.Dequeue() is IDisposable d) d.Dispose();
+            if (obj is IDisposable d) d.Dispose();
         }
     }
 }

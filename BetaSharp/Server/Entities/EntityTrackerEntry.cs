@@ -159,7 +159,7 @@ internal class EntityTrackerEntry
         {
             player.networkHandler.sendPacket(packet);
         }
-        packet.ReturnNoCount();
+        packet.Return();
     }
 
     public void sendToAround(Packet packet)
@@ -172,7 +172,7 @@ internal class EntityTrackerEntry
         {
             entity.networkHandler.sendPacket(packet);
         }
-        packet.ReturnNoCount();
+        packet.Return();
     }
 
     public void notifyEntityRemoved()
@@ -182,7 +182,7 @@ internal class EntityTrackerEntry
 
     public void notifyEntityRemoved(ServerPlayerEntity player)
     {
-            listeners.Remove(player);
+        listeners.Remove(player);
     }
 
     public void updateListener(ServerPlayerEntity player)

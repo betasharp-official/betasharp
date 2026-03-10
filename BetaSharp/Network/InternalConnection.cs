@@ -31,7 +31,7 @@ public class InternalConnection : Connection
 
             if (RemoteConnection != null && !RemoteConnection.closed)
             {
-                packet.UseCount++;
+                Interlocked.Increment(ref packet.UseCount);
                 RemoteConnection.ReceivePacket(packet);
             }
         }
