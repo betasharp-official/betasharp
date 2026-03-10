@@ -234,4 +234,70 @@ public abstract class GuiContainer : GuiScreen
         }
 
     }
+
+    public bool HandleDPadNavigation(int dpadX, int dpadY, ref float cursorX, ref float cursorY)
+    {
+        int guiLeft = (Width - _xSize) / 2;
+        int guiTop = (Height - _ySize) / 2;
+
+        ScaledResolution sr = new(Game.options, Game.displayWidth, Game.displayHeight);
+
+        int scaledMouseX = (int)(cursorX * sr.ScaledWidth / Game.displayWidth);
+        int scaledMouseY = (int)(cursorY * sr.ScaledHeight / Game.displayHeight);
+
+        Slot currentSlot = GetSlotAtPosition(scaledMouseX, scaledMouseY);
+
+        float refX, refY;
+        if (currentSlot != null)
+        {
+            refX = currentSlot.xDisplayPosition + 8;
+            refY = currentSlot.yDisplayPosition + 8;
+        }
+        else
+        {
+            refX = scaledMouseX - guiLeft;
+            refY = scaledMouseY - guiTop;
+        }
+
+        Slot? bestSlot = null;
+        float bestScore = float.MaxValue;
+
+        for (int i = 0; i < InventorySlots.Slots.Count; i++)
+        {
+            Slot slot = InventorySlots.Slots[i];
+            if (slot == currentSlot) continue;
+
+            float slotCenterX = slot.xDisplayPosition + 8;
+            float slotCenterY = slot.yDisplayPosition + 8;
+
+            float dx = slotCenterX - refX;
+            float dy = slotCenterY - refY;
+
+            if (dpadX > 0 && dx <= 0) continue;
+            if (dpadX < 0 && dx >= 0) continue;
+            if (dpadY > 0 && dy <= 0) continue;
+            if (dpadY < 0 && dy >= 0) continue;
+
+            float primaryDist = dpadX != 0 ? Math.Abs(dx) : Math.Abs(dy);
+            float crossDist = dpadX != 0 ? Math.Abs(dy) : Math.Abs(dx);
+            float score = primaryDist + crossDist * 3f;
+
+            if (score < bestScore)
+            {
+                bestScore = score;
+                bestSlot = slot;
+            }
+        }
+
+        if (bestSlot != null)
+        {
+            float targetScaledX = guiLeft + bestSlot.xDisplayPosition + 8;
+            float targetScaledY = guiTop + bestSlot.yDisplayPosition + 8;
+            cursorX = targetScaledX * Game.displayWidth / sr.ScaledWidth;
+            cursorY = targetScaledY * Game.displayHeight / sr.ScaledHeight;
+            return true;
+        }
+
+        return false;
+    }
 }

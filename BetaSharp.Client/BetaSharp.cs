@@ -113,6 +113,10 @@ public partial class BetaSharp
     private bool _wasRightTriggerDown;
     private bool _wasStartButtonDown;
     private bool _wasYButtonDown;
+    private bool _wasDpadLeftDown;
+    private bool _wasDpadRightDown;
+    private bool _wasDpadUpDown;
+    private bool _wasDpadDownDown;
 
     public bool isControllerMode;
     public float virtualCursorX;
@@ -566,12 +570,42 @@ public partial class BetaSharp
                         float lx = Controller.LeftStickX;
                         float ly = Controller.LeftStickY;
 
-                        if (Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadLeft)) lx = -0.2f;
-                        if (Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadRight)) lx = 0.2f;
-                        if (Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadUp)) ly = -0.2f;
-                        if (Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadDown)) ly = 0.2f;
+                        bool dpadLeft = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadLeft);
+                        bool dpadRight = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadRight);
+                        bool dpadUp = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadUp);
+                        bool dpadDown = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadDown);
 
-                        const float speed = 600f; // Pixels per second
+                        bool dpadHandled = false;
+
+                        if (currentScreen is GuiContainer container)
+                        {
+                            int dpadX = 0, dpadY = 0;
+                            if (dpadLeft && !_wasDpadLeftDown) dpadX = -1;
+                            if (dpadRight && !_wasDpadRightDown) dpadX = 1;
+                            if (dpadUp && !_wasDpadUpDown) dpadY = -1;
+                            if (dpadDown && !_wasDpadDownDown) dpadY = 1;
+
+                            if (dpadX != 0 || dpadY != 0)
+                            {
+                                dpadHandled = container.HandleDPadNavigation(dpadX, dpadY, ref virtualCursorX, ref virtualCursorY);
+                            }
+                        }
+
+                        _wasDpadLeftDown = dpadLeft;
+                        _wasDpadRightDown = dpadRight;
+                        _wasDpadUpDown = dpadUp;
+                        _wasDpadDownDown = dpadDown;
+
+                        if (!dpadHandled)
+                        {
+                            if (dpadLeft) lx = -0.2f;
+                            if (dpadRight) lx = 0.2f;
+                            if (dpadUp) ly = -0.2f;
+                            if (dpadDown) ly = 0.2f;
+                        }
+
+                        ScaledResolution sr = new(options, displayWidth, displayHeight);
+                        float speed = 200f * sr.ScaleFactor;
 
                         virtualCursorX += lx * speed * Timer.DeltaTime;
                         virtualCursorY += ly * speed * Timer.DeltaTime;

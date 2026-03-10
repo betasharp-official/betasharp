@@ -37,7 +37,7 @@ public static class ControllerManager
         s_wasDropDown = Controller.IsButtonDown(GamepadButton.B);
         s_wasHotbarLeftDown = Controller.IsButtonDown(GamepadButton.LeftBumper);
         s_wasHotbarRightDown = Controller.IsButtonDown(GamepadButton.RightBumper);
-        s_wasCameraDown = Controller.IsButtonDown(GamepadButton.DPadDown);
+        s_wasCameraDown = Controller.IsButtonDown(GamepadButton.LeftStick);
         s_wasPauseDown = Controller.IsButtonDown(GamepadButton.Start);
         s_wasPlayerListDown = Controller.IsButtonDown(GamepadButton.Back);
         s_wasPickBlockDown = Controller.IsButtonDown(GamepadButton.DPadUp);
@@ -61,7 +61,7 @@ public static class ControllerManager
         bool dropHeld = Controller.IsButtonDown(GamepadButton.B);
         bool lbHeld = Controller.IsButtonDown(GamepadButton.LeftBumper);
         bool rbHeld = Controller.IsButtonDown(GamepadButton.RightBumper);
-        bool cameraHeld = Controller.IsButtonDown(GamepadButton.DPadDown);
+        bool cameraHeld = Controller.IsButtonDown(GamepadButton.LeftStick);
         bool pauseHeld = Controller.IsButtonDown(GamepadButton.Start);
         bool playerListHeld = Controller.IsButtonDown(GamepadButton.Back);
         bool pickBlockHeld = Controller.IsButtonDown(GamepadButton.DPadUp);

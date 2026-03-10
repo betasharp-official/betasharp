@@ -8,25 +8,25 @@ public class ScaledResolution
     public int ScaledHeight { get; private set; }
     public double ScaledWidthDouble { get; private set; }
     public double ScaledHeightDouble { get; private set; }
-    private readonly int scaleFactor;
+    public int ScaleFactor { get; private set; }
 
     public ScaledResolution(GameOptions options, int scaledWidth, int scaledHeight)
     {
         ScaledWidth = scaledWidth;
         ScaledHeight = scaledHeight;
         int guiScale = options.GuiScale;
-        scaleFactor = 1;
+        ScaleFactor = 1;
 
         if (guiScale == 0)
             guiScale = 1000;
 
-        while (scaleFactor < guiScale && ScaledWidth / (scaleFactor + 1) >= 320 && ScaledHeight / (scaleFactor + 1) >= 240)
+        while (ScaleFactor < guiScale && ScaledWidth / (ScaleFactor + 1) >= 320 && ScaledHeight / (ScaleFactor + 1) >= 240)
         {
-            ++scaleFactor;
+            ++ScaleFactor;
         }
 
-        ScaledWidthDouble = ScaledWidth / (double)scaleFactor;
-        ScaledHeightDouble = ScaledHeight / (double)scaleFactor;
+        ScaledWidthDouble = ScaledWidth / (double)ScaleFactor;
+        ScaledHeightDouble = ScaledHeight / (double)ScaleFactor;
         ScaledWidth = (int)Math.Ceiling(ScaledWidthDouble);
         ScaledHeight = (int)Math.Ceiling(ScaledHeightDouble);
     }
