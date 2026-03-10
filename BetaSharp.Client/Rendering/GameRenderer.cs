@@ -5,6 +5,7 @@ using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Entities;
 using BetaSharp.Profiling;
@@ -91,7 +92,7 @@ public class GameRenderer
                 Vec3D var8 = var6 + var2 * var7;
                 _targetedEntity = null;
                 float var9 = 1.0F;
-                var var10 = _client.world.getEntities(_client.camera, _client.camera.boundingBox.Stretch(var7.x * var2, var7.y * var2, var7.z * var2).Expand((double)var9, (double)var9, (double)var9));
+                List<Entity> var10 = _client.world.getEntities(_client.camera, _client.camera.boundingBox.Stretch(var7.x * var2, var7.y * var2, var7.z * var2).Expand((double)var9, (double)var9, (double)var9));
                 double var11 = 0.0D;
 
                 for (int var13 = 0; var13 < var10.Count; ++var13)
@@ -234,6 +235,20 @@ public class GameRenderer
             float var3 = var2 * var2 * var2 * 8.0F;
             float var4 = _client.mouseHelper.DeltaX * var3;
             float var5 = _client.mouseHelper.DeltaY * var3;
+
+            if (_client.isControllerMode)
+            {
+                float rx = Controller.RightStickX;
+                float ry = Controller.RightStickY;
+                float deadzone = Controller.RightStickDeadzone;
+
+                // quadratic curve
+                float activeRx = (Math.Abs(rx) - deadzone) / (1.0f - deadzone);
+                var4 += activeRx * activeRx * Math.Sign(rx) * 10f * var3;
+
+                float activeRy = (Math.Abs(ry) - deadzone) / (1.0f - deadzone);
+                var5 += activeRy * activeRy * Math.Sign(ry) * 10f * var3;
+            }
             int var6 = -1;
             if (_client.options.InvertMouse)
             {
@@ -252,14 +267,26 @@ public class GameRenderer
             ScaledResolution var13 = new(_client.options, _client.displayWidth, _client.displayHeight);
             int scaledWidth = var13.ScaledWidth;
             int scaledHeight = var13.ScaledHeight;
-            int scaledMouseX = Mouse.getX() * scaledWidth / _client.displayWidth;
-            int scaledMouseY = scaledHeight - Mouse.getY() * scaledHeight / _client.displayHeight - 1;
+            int scaledMouseX;
+            int scaledMouseY;
+            if (_client.isControllerMode)
+            {
+                scaledMouseX = (int)(_client.virtualCursorX * scaledWidth / _client.displayWidth);
+                scaledMouseY = (int)(_client.virtualCursorY * scaledHeight / _client.displayHeight);
+            }
+            else
+            {
+                scaledMouseX = Mouse.getX() * scaledWidth / _client.displayWidth;
+                scaledMouseY = scaledHeight - Mouse.getY() * scaledHeight / _client.displayHeight - 1;
+            }
             int var7 = 30 + (int)(_client.options.LimitFramerate * 210.0f);
 
             if (var7 < 240)
             {
                 Display.setVSyncEnabled(false);
             }
+
+            _client.PostProcessManager.Begin();
 
             if (_client.world != null)
             {
@@ -291,7 +318,14 @@ public class GameRenderer
                 {
                     _client.currentScreen.ParticlesGui.render(tickDelta);
                 }
+
+                if (_client.isControllerMode)
+                {
+                    DrawVirtualCursor(scaledMouseX, scaledMouseY);
+                }
             }
+
+            _client.PostProcessManager.End();
 
             if (var7 < 240)
             {
@@ -666,6 +700,39 @@ public class GameRenderer
         GLManager.GL.MatrixMode(GLEnum.Modelview);
         GLManager.GL.LoadIdentity();
         GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
+    }
+
+    public void DrawVirtualCursor(int x, int y)
+    {
+        if (_client.isControllerMode)
+        {
+            GLManager.GL.Disable(GLEnum.Lighting);
+            GLManager.GL.Disable(GLEnum.DepthTest);
+            GLManager.GL.Enable(GLEnum.Blend);
+            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+            GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+
+            TextureHandle textureId = _client.textureManager.GetTextureId("/gui/Pointer.png");
+            _client.textureManager.BindTexture(textureId);
+
+            const int width = 32;
+            const int height = 32;
+
+            x -= width / 2;
+            y -= height / 2;
+
+            const float zLevel = 10.0f;
+            Tessellator tess = Tessellator.instance;
+            tess.startDrawingQuads();
+            tess.addVertexWithUV(x, y + height, zLevel, 0.0, 1.0);
+            tess.addVertexWithUV(x + width, y + height, zLevel, 1.0, 1.0);
+            tess.addVertexWithUV(x + width, y, zLevel, 1.0, 0.0);
+            tess.addVertexWithUV(x, y, zLevel, 0.0, 0.0);
+            tess.draw();
+
+            GLManager.GL.Disable(GLEnum.Blend);
+            GLManager.GL.Enable(GLEnum.DepthTest);
+        }
     }
 
     private void updateSkyAndFogColors(float tickDelta)

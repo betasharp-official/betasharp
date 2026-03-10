@@ -108,6 +108,7 @@ public class AssetManager
         defineAsset("gui/slot.png", AssetType.Binary);
         defineAsset("gui/trap.png", AssetType.Binary);
         defineAsset("gui/unknown_pack.png", AssetType.Binary);
+        defineAsset("gui/Pointer.png", AssetType.Binary);
 
         defineAsset("item/arrows.png", AssetType.Binary);
         defineAsset("item/boat.png", AssetType.Binary);

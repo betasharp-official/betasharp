@@ -37,6 +37,7 @@ public class GameOptions
     public FloatOption MouseSensitivityOption { get; private set; }
     public FloatOption FramerateLimitOption { get; private set; }
     public FloatOption FovOption { get; private set; }
+    public FloatOption GammaOption { get; private set; }
 
 
     public BoolOption InvertMouseOption { get; private set; }
@@ -63,7 +64,7 @@ public class GameOptions
     [
         RenderDistanceOption, FramerateLimitOption, VSyncOption,
         ViewBobbingOption, GuiScaleOption, AnisotropicOption,
-        MipmapsOption, MsaaOption, EnvironmentAnimationOption, ChunkFadeOption
+        MipmapsOption, MsaaOption, EnvironmentAnimationOption, ChunkFadeOption, GammaOption
     ];
 
     public GameOption[] DebugScreenOptions => [DebugModeOption, RenderOccludedOption];
@@ -84,6 +85,7 @@ public class GameOptions
     public float MouseSensitivity => MouseSensitivityOption.Value;
     public float LimitFramerate => FramerateLimitOption.Value;
     public float Fov => FovOption.Value;
+    public float Gamma => GammaOption.Value * 100f;
     public bool InvertMouse
     {
         get => InvertMouseOption.Value;
@@ -204,6 +206,12 @@ public class GameOptions
             Steps = 90,
             Formatter = (v, _) => (30 + (int)(v * 90.0f)).ToString()
         };
+        GammaOption = new FloatOption("Gamma", "gamma", 0.5F)
+        {
+            LabelOverride = "Gamma",
+            Steps = 100,
+            Formatter = (v, _) => $"{(int)(v * 100.0f)}"
+        };
 
         InvertMouseOption = new BoolOption("options.invertMouse", "invertYMouse");
         ViewBobbingOption = new BoolOption("options.viewBobbing", "bobView", true);
@@ -287,6 +295,7 @@ public class GameOptions
         yield return MouseSensitivityOption;
         yield return FramerateLimitOption;
         yield return FovOption;
+        yield return GammaOption;
         yield return InvertMouseOption;
         yield return ViewBobbingOption;
         yield return VSyncOption;

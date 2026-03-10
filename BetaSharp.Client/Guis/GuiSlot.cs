@@ -1,6 +1,7 @@
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
+using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.Guis;
 
@@ -123,7 +124,12 @@ public abstract class GuiSlot
         int scrollbarXStart = _width / 2 + 124;
         int scrollbarXEnd = scrollbarXStart + 6;
 
-        if (Mouse.isButtonDown(0))
+        if (_game.isControllerMode)
+        {
+            _amountScrolled += Controller.RightStickY;
+        }
+
+        if (Mouse.isButtonDown(0) || (_game.isControllerMode && Controller.IsButtonDown(GamepadButton.A)))
         {
             if (_initialClickY == -1.0f)
             {

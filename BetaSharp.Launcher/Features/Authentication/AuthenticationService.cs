@@ -29,7 +29,11 @@ internal sealed class AuthenticationService
                                """;
 
         // Need better way to store the HTML responses.
-        _webViewOptions = new SystemWebViewOptions { HtmlMessageSuccess = success, HtmlMessageError = failure };
+        _webViewOptions = new SystemWebViewOptions
+        {
+            HtmlMessageSuccess = success,
+            HtmlMessageError = failure
+        };
 
         // Probably not the best idea to use Prism's ID?
         _application = PublicClientApplicationBuilder

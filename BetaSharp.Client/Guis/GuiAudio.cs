@@ -1,3 +1,4 @@
+using BetaSharp.Client.Input;
 using BetaSharp.Client.Options;
 
 namespace BetaSharp.Client.Guis;
@@ -65,5 +66,14 @@ public class GuiAudio : GuiScreen
         DrawDefaultBackground();
         DrawCenteredString(FontRenderer, _screenTitle, Width / 2, 20, Color.White);
         base.Render(mouseX, mouseY, partialTicks);
+    }
+
+    protected override void KeyTyped(char eventChar, int eventKey)
+    {
+        if (eventKey == Keyboard.KEY_ESCAPE || eventKey == Keyboard.KEY_NONE)
+        {
+            Game.options.SaveOptions();
+            Game.displayGuiScreen(_parentScreen);
+        }
     }
 }

@@ -7,7 +7,7 @@
         Padding="25" CanResize="False" WindowStartupLocation="CenterScreen">
 
     <StackPanel Spacing="10" VerticalAlignment="Center">
-        <TextBlock x:Name="AlertBlock" TextWrapping="Wrap" />
+        <SelectableTextBlock x:Name="AlertBlock" TextWrapping="Wrap"/>
         <Button Content="Close" Click="CloseClick" HorizontalAlignment="Right" />
     </StackPanel>
 </Window>

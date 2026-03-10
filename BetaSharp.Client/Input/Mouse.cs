@@ -260,6 +260,14 @@ public static class Mouse
         _discardNextMove = true;
     }
 
+    public static unsafe void setCursorVisible(bool visible)
+    {
+        if (!created || _isGrabbed) return;
+        
+        glfw.SetInputMode(window, CursorStateAttribute.Cursor, 
+            visible ? CursorModeValue.CursorNormal : CursorModeValue.CursorHidden);
+    }
+
     public static bool isCreated() => created;
 
     public static void destroy()

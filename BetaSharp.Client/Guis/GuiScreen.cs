@@ -80,7 +80,7 @@ public class GuiScreen : Gui
                 if (control.MousePressed(Game, mouseX, mouseY))
                 {
                     SelectedButton = control;
-                    Game.sndManager.PlaySoundFX("random.click", 1.0F, 1.0F);
+                    Game.sndManager.PlaySoundFX(Game.isControllerMode ? "random.wood click" : "random.click", 1.0F, 1.0F);
                     ActionPerformed(control);
                 }
             }
@@ -124,10 +124,21 @@ public class GuiScreen : Gui
         {
             HandleKeyboardInput();
         }
+
+        while (Controller.Next())
+        {
+            HandleControllerInput();
+        }
     }
 
     public virtual void HandleMouseInput()
     {
+        if (Mouse.getEventDX() != 0 || Mouse.getEventDY() != 0 || Mouse.getEventButton() != -1)
+        {
+            Game.isControllerMode = false;
+            Mouse.setCursorVisible(true);
+        }
+
         int x = Mouse.getEventX() * Width / Game.displayWidth;
         int y = Height - Mouse.getEventY() * Height / Game.displayHeight - 1;
         if (Mouse.getEventButtonState())
@@ -140,10 +151,49 @@ public class GuiScreen : Gui
         }
     }
 
+    public virtual void HandleControllerInput()
+    {
+        int scaledMouseX = (int)(Game.virtualCursorX * Width / Game.displayWidth);
+        int scaledMouseY = (int)(Game.virtualCursorY * Height / Game.displayHeight);
+
+        if (Controller.GetEventButton() == 0) // A on Xbox layout
+        {
+            if (Controller.GetEventButtonState())
+            {
+                MouseClicked(scaledMouseX, scaledMouseY, 0);
+            }
+            else
+            {
+                MouseMovedOrUp(scaledMouseX, scaledMouseY, 0);
+            }
+        }
+        else if (Controller.GetEventButton() == (int)Silk.NET.GLFW.GamepadButton.LeftBumper)
+        {
+            if (Controller.GetEventButtonState())
+            {
+                MouseClicked(scaledMouseX, scaledMouseY, 1);
+            }
+            else
+            {
+                MouseMovedOrUp(scaledMouseX, scaledMouseY, 1);
+            }
+        }
+        else if (Controller.GetEventButton() == 1) // B on Xbox layout
+        {
+            if (Controller.GetEventButtonState())
+            {
+                KeyTyped('\0', Keyboard.KEY_ESCAPE);
+            }
+        }
+    }
+
     public void HandleKeyboardInput()
     {
         if (Keyboard.getEventKeyState())
         {
+            Game.isControllerMode = false;
+            Mouse.setCursorVisible(true);
+
             int key = Keyboard.getEventKey();
             char c = Keyboard.getEventCharacter();
 

@@ -35,7 +35,13 @@ public abstract class Packet
 
     public void Return()
     {
-        if (--UseCount > 0) return;
+        UseCount--;
+        ReturnNoCount();
+    }
+
+    public void ReturnNoCount()
+    {
+        if (UseCount > 0) return;
 
         if (Registry.TryGet(Id, out PacketRegisterItem? item))
         {
@@ -194,8 +200,39 @@ public abstract class Packet
         ]);
     }
 
-    public class PacketRegisterItem(byte rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) : FactoryPoolItem<Packet>(rawId, item: factory)
+    public class PacketRegisterItem(byte rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) : FactoryPoolItem<Packet>(rawId, item: factory, PoolSize(rawId))
     {
+        private static int PoolSize(byte rawId)
+        {
+            switch (rawId)
+            {
+                case (byte)PacketId.EntityRotateAndMoveRelativeS2C:
+                case (byte)PacketId.EntityMoveRelativeS2C:
+                case (byte)PacketId.EntityPositionS2C:
+                    return 256;
+                case (byte)PacketId.ChunkStatusUpdateS2C:
+                case (byte)PacketId.BlockUpdateS2C:
+                case (byte)PacketId.PlayerActionC2S:
+                case (byte)PacketId.ChunkDataS2C:
+                case (byte)PacketId.LivingEntitySpawnS2C:
+                case (byte)PacketId.EntityDestroyS2C:
+                    return 64;
+                case (byte)PacketId.KeepAlive:
+                case (byte)PacketId.UpdateSign:
+                case (byte)PacketId.PlayerConnectionUpdateS2C:
+                case (byte)PacketId.Disconnect:
+                case (byte)PacketId.LoginHello:
+                case (byte)PacketId.Handshake:
+                case (byte)PacketId.ChatMessage:
+                case (byte)PacketId.EntityEquipmentUpdateS2C:
+                case (byte)PacketId.PlayerSpawnPositionS2C:
+                case (byte)PacketId.PaintingEntitySpawnS2C:
+                    return 16;
+                default:
+                    return 32;
+            }
+        }
+
         public override Packet Get()
         {
             var p = Item.Get();

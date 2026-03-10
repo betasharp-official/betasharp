@@ -405,6 +405,7 @@ internal class ChunkMap
                     var3.networkHandler.sendPacket(packet);
                 }
             }
+            packet.ReturnNoCount();
         }
 
         public void updateChunk()

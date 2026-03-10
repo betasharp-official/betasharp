@@ -10,14 +10,16 @@ internal sealed class StorageService(ILogger<StorageService> logger)
 {
     public async Task<T?> GetAsync<T>(JsonTypeInfo<T> typeInfo) where T : class
     {
+        string path = $"{Path.Combine(App.Folder, typeInfo.Type.Name.ToLowerInvariant())}.json";
+
         try
         {
-            await using var stream = File.Open($"{Path.Combine(App.Folder, typeInfo.Type.Name.ToLowerInvariant())}.json", FileMode.OpenOrCreate);
+            await using var stream = File.Open(path, FileMode.OpenOrCreate);
             return await JsonSerializer.DeserializeAsync(stream, typeInfo);
         }
         catch (JsonException)
         {
-            logger.LogWarning("Failed to read {Name}", typeInfo.Type.Name);
+            logger.LogWarning("Failed to read {Path}", path);
             return null;
         }
     }

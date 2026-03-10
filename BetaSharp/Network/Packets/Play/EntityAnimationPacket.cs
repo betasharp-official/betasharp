@@ -16,12 +16,6 @@ public class EntityAnimationPacket() : PacketBaseEntity(PacketId.EntityAnimation
         return p;
     }
 
-    public EntityAnimationPacket(Entity ent, EntityAnimation animationId) : this()
-    {
-        EntityId = ent.id;
-        this.animationId = (int)animationId;
-    }
-
     public override void Read(NetworkStream stream)
     {
         base.Read(stream);

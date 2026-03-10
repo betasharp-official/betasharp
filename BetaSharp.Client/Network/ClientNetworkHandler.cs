@@ -86,6 +86,10 @@ public class ClientNetworkHandler : NetHandler
             netManager.sendPacket(packet);
             lastKeepAliveTime = ticks;
         }
+        else
+        {
+            packet.ReturnNoCount();
+        }
     }
 
     public override void onHello(LoginHelloPacket packet)
@@ -431,10 +435,7 @@ public class ClientNetworkHandler : NetHandler
 
     public void addToSendQueue(Packet packet)
     {
-        if (!disconnected)
-        {
-            SendPacket(packet);
-        }
+        SendPacket(packet);
     }
 
     public override void onItemPickupAnimation(ItemPickupAnimationS2CPacket packet)

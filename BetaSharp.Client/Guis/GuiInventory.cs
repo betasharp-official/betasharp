@@ -97,4 +97,16 @@ public class GuiInventory : GuiContainer
         }
 
     }
+
+    public override void HandleControllerInput()
+    {
+        base.HandleControllerInput();
+        if (Input.Controller.GetEventButton() == (int)Silk.NET.GLFW.GamepadButton.Y)
+        {
+            if (Input.Controller.GetEventButtonState())
+            {
+                KeyTyped('\0', Game.options.KeyBindInventory.keyCode);
+            }
+        }
+    }
 }

@@ -1,3 +1,4 @@
+using BetaSharp.Client.Input;
 using BetaSharp.Client.Options;
 
 namespace BetaSharp.Client.Guis;
@@ -79,7 +80,15 @@ public class GuiControls : GuiScreen
         }
         else
         {
-            base.KeyTyped(eventChar, eventKey);
+            if (eventKey == Keyboard.KEY_ESCAPE || eventKey == Keyboard.KEY_NONE)
+            {
+                Game.options.SaveOptions();
+                Game.displayGuiScreen(_parentScreen);
+            }
+            else
+            {
+                base.KeyTyped(eventChar, eventKey);
+            }
         }
 
     }

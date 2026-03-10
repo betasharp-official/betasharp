@@ -7,7 +7,7 @@
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
         <!-- ReSharper disable once Xaml.StyleClassNotFound -->
         <Button Content="Authenticate with Microsoft" Classes="accent" Command="{CompiledBinding AuthenticateCommand}"
-                ToolTip.Tip="A Web browser tab may be opened" />
+                ToolTip.Tip="A Web browser tab may open" />
 
         <TextBlock Text="You must own a copy of Minecraft Java edition to use this launcher"
                    Opacity="0.5" TextWrapping="Wrap" TextAlignment="Center" />

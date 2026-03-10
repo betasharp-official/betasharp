@@ -1,16 +1,13 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using Avalonia.Media.Imaging;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Sessions;
 using BetaSharp.Launcher.Features.Shell;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Launcher.Features.Home;
 
@@ -43,13 +40,16 @@ internal sealed partial class HomeViewModel : ObservableObject
             return;
         }
 
-        await _clientService.DownloadAsync();
+        string directory = Path.Combine(AppContext.BaseDirectory, "Client");
+
+        await _clientService.DownloadAsync(directory);
 
         var info = new ProcessStartInfo
         {
             Arguments = $"{Session.Name} {Session.Token}",
             CreateNoWindow = true,
-            FileName = Path.Combine(AppContext.BaseDirectory, "Client", "BetaSharp.Client")
+            FileName = Path.Combine(directory, "BetaSharp.Client"),
+            WorkingDirectory = directory
         };
 
         // Probably should move this into a service/view-model.

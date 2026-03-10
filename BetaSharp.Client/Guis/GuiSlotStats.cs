@@ -2,6 +2,7 @@ using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Items;
 using BetaSharp.Stats;
+using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.Guis;
 
@@ -23,7 +24,7 @@ public abstract class GuiSlotStats<T, K>(GuiStats statsGui) : GuiSlot(statsGui.G
 
     protected override void DrawHeader(int x, int y, Tessellator tess)
     {
-        if (!Mouse.isButtonDown(0))
+        if (!Mouse.isButtonDown(0) && !(statsGui.Game.isControllerMode && Controller.IsButtonDown(GamepadButton.A)))
             HoveredColumn = -1;
 
         for (int i = 0; i < 3; i++)
@@ -51,7 +52,7 @@ public abstract class GuiSlotStats<T, K>(GuiStats statsGui) : GuiSlot(statsGui.G
         if (HoveredColumn >= 0)
         {
             SortByColumn(HoveredColumn);
-            statsGui.Game.sndManager.PlaySoundFX("random.click", 1.0F, 1.0F);
+            statsGui.Game.sndManager.PlaySoundFX(statsGui.Game.isControllerMode ? "random.wood click" : "random.click", 1.0F, 1.0F);
         }
     }
 

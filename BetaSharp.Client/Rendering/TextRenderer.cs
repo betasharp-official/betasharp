@@ -17,7 +17,7 @@ public class TextRenderer
     private readonly ILogger<TextRenderer> _logger = Log.Instance.For<TextRenderer>();
 
     private const char ColorCodeChar = '§';
-    private const string FontPath = "font/Monocraft.ttc";
+    private const string FontPath = "assets/font/Monocraft.ttc";
     private const int AtlasSize = 2048;
     private const int AtlasFontSize = 64;
     private const int GlyphPadding = 2;

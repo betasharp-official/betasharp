@@ -159,6 +159,7 @@ internal class EntityTrackerEntry
         {
             player.networkHandler.sendPacket(packet);
         }
+        packet.ReturnNoCount();
     }
 
     public void sendToAround(Packet packet)
@@ -168,6 +169,7 @@ internal class EntityTrackerEntry
         {
             entity.networkHandler.sendPacket(packet);
         }
+        packet.ReturnNoCount();
     }
 
     public void notifyEntityRemoved()
