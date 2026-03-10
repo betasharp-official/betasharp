@@ -6,17 +6,9 @@ public class WorldTickScheduler
 {
     private readonly IBlockWorldContext _context;
     private readonly PriorityQueue<BlockUpdate, (long, long)> _scheduledUpdates = new();
-    private long _absoluteTickCounter;
 
-    public WorldTickScheduler(IBlockWorldContext context)
-    {
-        _context = context;
-    }
-    public void Tick(bool forceFlush = false)
-    {
-        _absoluteTickCounter++;
-        ProcessScheduledTicks(forceFlush);
-    }
+    public WorldTickScheduler(IBlockWorldContext context) => _context = context;
+    public void Tick(bool forceFlush = false) => ProcessScheduledTicks(forceFlush);
 
     public virtual void ScheduleBlockUpdate(int x, int y, int z, int blockId, int tickRate, bool instantBlockUpdateEnabled = false)
     {
@@ -48,6 +40,8 @@ public class WorldTickScheduler
             return;
         }
 
+        long currentTime = _context.GetTime();
+
         for (int i = 0; i < 1000; ++i)
         {
             if (_scheduledUpdates.Count == 0)
@@ -55,7 +49,7 @@ public class WorldTickScheduler
                 break;
             }
 
-            if (!forceFlush && _scheduledUpdates.Peek().ScheduledTime > _absoluteTickCounter)
+            if (!forceFlush && _scheduledUpdates.Peek().ScheduledTime > currentTime)
             {
                 break;
             }

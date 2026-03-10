@@ -242,6 +242,7 @@ internal class BlockButton : Block
         int meta = evt.Level.BlocksReader.GetMeta(evt.X, evt.Y, evt.Z);
         if ((meta & 8) != 0)
         {
+            Console.WriteLine($"[BlockButton] Scheduled tick fired at ({evt.X}, {evt.Y}, {evt.Z}) with meta={meta} and id={id}");
             evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, meta & 7);
             evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y, evt.Z, id);
             int facing = meta & 7;
