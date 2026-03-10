@@ -1,9 +1,0 @@
-commit 4b8a7c36ba40c796e8ce27d1beb36ebbdb509b2f
-Merge: c032aeeb 2ad52479
-Author: Starlk <45287860+TheVeryStarlk@users.noreply.github.com>
-Date:   Tue Mar 10 00:29:45 2026 +0300
-
-    Merge pull request #409 from millennIumAMbiguity/packet-pooling-work
-    
-    Optimized and fixes in pooling
-
