@@ -41,7 +41,7 @@ public abstract class Entity
     public double lastTickZ;
     protected int maxAir = 300;
     public float minBrightness = 0.0F;
-    private int nextStepSoundDistance = 1;
+    protected int nextStepSoundDistance = 1;
     public bool noClip = false;
     public bool onGround;
     public Entity? passenger;
@@ -525,11 +525,11 @@ public abstract class Entity
                         if (_level.BlocksReader.GetBlockId(var38, var26 + 1, var39) == Block.Snow.id)
                         {
                             soundGroup = Block.Snow.soundGroup;
-                            _level.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
+                            _level.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.3F, soundGroup.Pitch);
                         }
                         else if (!Block.Blocks[var28].material.IsFluid)
                         {
-                            _level.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
+                            _level.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.3F, soundGroup.Pitch);
                         }
 
                         Block.Blocks[var28].onSteppedOn(new OnEntityStepEvt(_level, this, var38, var26, var39));

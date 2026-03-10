@@ -760,9 +760,76 @@ public class EntityLiving : Entity
             }
         }
 
-        // FIX: Prevent ghost velocity from accumulating indefinitely on client-side interpolated mobs
         if (interpolateOnly)
         {
+            double dx = x - prevX;
+            double dy = y - prevY; // Include vertical movement for bobbing/jumping
+            double dz = z - prevZ;
+            double dist = MathHelper.Sqrt(dx * dx + dy * dy + dz * dz);
+
+            if (bypassesSteppingEffects() && !isSneaking() && vehicle == null && dist > 0.0D)
+            {
+                // Use a slightly higher factor than the base (0.6) to keep steps responsive but stable.
+                horizontalSpeed = (float)(horizontalSpeed + dist * 1.0D);
+
+                if (horizontalSpeed > nextStepSoundDistance)
+                {
+                    ++nextStepSoundDistance;
+
+                    bool isFluid = false;
+                    if (_level != null)
+                    {
+                        // Full AABB Fluid Check
+                        int minX = MathHelper.Floor(boundingBox.MinX);
+                        int maxX = MathHelper.Floor(boundingBox.MaxX + 1.0D);
+                        int minY = MathHelper.Floor(boundingBox.MinY);
+                        int maxY = MathHelper.Floor(boundingBox.MaxY + 0.2D);
+                        int minZ = MathHelper.Floor(boundingBox.MinZ);
+                        int maxZ = MathHelper.Floor(boundingBox.MaxZ + 1.0D);
+
+                        for (int bx = minX; bx < maxX && !isFluid; ++bx)
+                        {
+                            for (int by = minY; by < maxY && !isFluid; ++by)
+                            {
+                                for (int bz = minZ; bz < maxZ; ++bz)
+                                {
+                                    int blockId = _level.BlocksReader.GetBlockId(bx, by, bz);
+                                    if (blockId > 0 && Block.Blocks[blockId].material.IsFluid)
+                                    {
+                                        isFluid = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (isFluid)
+                    {
+                        _level.Broadcaster.PlaySoundAtEntity(this, "random.splash", 0.4F,
+                            1.0F + (random.NextFloat() - random.NextFloat()) * 0.4F);
+                    }
+                    else
+                    {
+                        int bx = MathHelper.Floor(x);
+                        int by = MathHelper.Floor(boundingBox.MinY - 0.2F);
+                        int bz = MathHelper.Floor(z);
+                        int blockId = _level.BlocksReader.GetBlockId(bx, by, bz);
+                        if (_level.BlocksReader.GetBlockId(bx, by - 1, bz) == Block.Fence.id)
+                        {
+                            blockId = _level.BlocksReader.GetBlockId(bx, by - 1, bz);
+                        }
+
+                        if (blockId > 0)
+                        {
+                            _level.Broadcaster.PlaySoundAtEntity(this, Block.Blocks[blockId].soundGroup.StepSound,
+                                Block.Blocks[blockId].soundGroup.Volume * 0.3F,
+                                Block.Blocks[blockId].soundGroup.Pitch);
+                        }
+                    }
+                }
+            }
+
             velocityX = 0.0D;
             velocityY = 0.0D;
             velocityZ = 0.0D;
