@@ -43,35 +43,30 @@ internal sealed class AuthenticationService
             .Build();
     }
 
-    public async Task InitializeAsync()
-    {
-        if (_initialized)
-        {
-            return;
-        }
-
-        _logger.LogInformation("Initializing authentication service");
-
-        string path = Path.Combine(App.Folder, "betasharp.launcher.cache");
-
-        var properties = new StorageCreationPropertiesBuilder(Path.GetFileName(path), Path.GetDirectoryName(path))
-            .WithLinuxKeyring(
-                "betasharp.launcher",
-                MsalCacheHelper.LinuxKeyRingDefaultCollection,
-                "MSAL cache for BetaSharp's launcher",
-                new KeyValuePair<string, string>("Version", "1"),
-                new KeyValuePair<string, string>("Application", "BetaSharp.Launcher"))
-            .WithMacKeyChain("betasharp.launcher", "betasharp")
-            .Build();
-
-        var helper = await MsalCacheHelper.CreateAsync(properties);
-        helper.RegisterCache(_application.UserTokenCache);
-
-        _initialized = true;
-    }
-
     public async Task<string> AuthenticateAsync()
     {
+        if (!_initialized)
+        {
+            _logger.LogInformation("Initializing authentication service");
+
+            string path = Path.Combine(App.Folder, "betasharp.launcher.cache");
+
+            var properties = new StorageCreationPropertiesBuilder(Path.GetFileName(path), Path.GetDirectoryName(path))
+                .WithLinuxKeyring(
+                    "betasharp.launcher",
+                    MsalCacheHelper.LinuxKeyRingDefaultCollection,
+                    "MSAL cache for BetaSharp's launcher",
+                    new KeyValuePair<string, string>("Version", "1"),
+                    new KeyValuePair<string, string>("Application", "BetaSharp.Launcher"))
+                .WithMacKeyChain("betasharp.launcher", "betasharp")
+                .Build();
+
+            var helper = await MsalCacheHelper.CreateAsync(properties);
+            helper.RegisterCache(_application.UserTokenCache);
+
+            _initialized = true;
+        }
+
         try
         {
             var accounts = await _application.GetAccountsAsync();

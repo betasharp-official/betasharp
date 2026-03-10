@@ -9,8 +9,7 @@
         <Grid ColumnDefinitions="* Auto" Grid.Row="0">
             <StackPanel Spacing="25" HorizontalAlignment="Stretch" Orientation="Horizontal" Grid.Row="0">
                 <Border Width="50" Height="50" ClipToBounds="True" CornerRadius="{StaticResource ControlCornerRadius}">
-                    <asyncImageLoader:AdvancedImage Source="{Binding Session.Face, FallbackValue='...'}" Stretch="UniformToFill"
-                                                    RenderOptions.BitmapInterpolationMode="None">
+                    <asyncImageLoader:AdvancedImage Source="{Binding Session.Face, FallbackValue='...'}" RenderOptions.BitmapInterpolationMode="None" Stretch="UniformToFill">
                         <asyncImageLoader:AdvancedImage.Styles>
                             <Style Selector="asyncImageLoader|AdvancedImage">
                                 <Setter Property="Transitions">
@@ -39,11 +38,10 @@
                 </StackPanel>
             </StackPanel>
 
-            <Button Content="Switch" VerticalAlignment="Center" Command="{CompiledBinding SwitchCommand}"
-                    ToolTip.Tip="Change your Microsoft account" Grid.Column="1" />
+            <Button Content="Sign out" Command="{CompiledBinding SignOutCommand}" VerticalAlignment="Center" Grid.Column="1" />
         </Grid>
 
         <!-- ReSharper disable once Xaml.StyleClassNotFound -->
-        <Button Content="Play" Classes="accent" VerticalAlignment="Bottom" Command="{CompiledBinding PlayCommand}" Grid.Row="1" />
+        <Button Content="Play" Classes="accent" Command="{CompiledBinding PlayCommand}" VerticalAlignment="Bottom" Grid.Row="1" />
     </Grid>
 </UserControl>
