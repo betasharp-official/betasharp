@@ -82,15 +82,13 @@ public class BlockPistonBase : Block
                 if (canExtend(ctx, x, y, z, facing))
                 {
                     ctx.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, facing | 8);
-                    // Routed directly into the block action system
-                    onBlockAction(new OnBlockActionEvt(ctx, 0, facing, x, y, z));
+                    ctx.Broadcaster.PlayNote(x, y, z, 0, facing); // 0 = Extending
                 }
             }
             else if (!needsExtension && isExtended(meta))
             {
                 ctx.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, facing);
-                // Routed directly into the block action system
-                onBlockAction(new OnBlockActionEvt(ctx, 1, facing, x, y, z));
+                ctx.Broadcaster.PlayNote(x, y, z, 1, facing); // 1 = Retracting
             }
         }
     }
