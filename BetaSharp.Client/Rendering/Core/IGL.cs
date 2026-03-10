@@ -105,4 +105,15 @@ public unsafe interface IGL
     void VertexAttribPointer(uint index, int size, GLEnum type, bool normalized, uint stride, void* pointer);
     void VertexPointer(int size, GLEnum type, uint stride, void* pointer);
     void Viewport(int x, int y, uint width, uint height);
+    uint GenFramebuffer();
+    void BindFramebuffer(FramebufferTarget target, uint framebuffer);
+    void FramebufferTexture2D(FramebufferTarget target, FramebufferAttachment attachment, TextureTarget textarget, uint texture, int level);
+    void GenRenderbuffers(Span<uint> renderbuffers);
+    void BindRenderbuffer(RenderbufferTarget target, uint renderbuffer);
+    void RenderbufferStorage(RenderbufferTarget target, InternalFormat internalformat, uint width, uint height);
+    void FramebufferRenderbuffer(FramebufferTarget target, FramebufferAttachment attachment, RenderbufferTarget renderbuffertarget, uint renderbuffer);
+    Silk.NET.OpenGL.GLEnum CheckFramebufferStatus(FramebufferTarget target);
+    void DeleteFramebuffer(uint framebuffer);
+    void DeleteRenderbuffer(uint renderbuffer);
+    void ActiveTexture(GLEnum texture);
 }

@@ -16,6 +16,7 @@ using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Items;
+using BetaSharp.Client.Rendering.PostProcessing;
 using BetaSharp.Client.Resource;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.Sound;
@@ -36,6 +37,7 @@ using Silk.NET.GLFW;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
+using Silk.NET.Windowing;
 using Exception = System.Exception;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
@@ -67,6 +69,7 @@ public partial class BetaSharp
     public GuiScreen currentScreen;
     public LoadingScreenRenderer loadingScreen;
     public GameRenderer gameRenderer;
+    public PostProcessManager PostProcessManager { get; private set; }
     private int ticksRan;
     private int leftClickCounter;
     private int tempDisplayWidth;
@@ -262,8 +265,8 @@ public partial class BetaSharp
 
         try
         {
-            var window = Display.getWindow();
-            var input = window.CreateInput();
+            IWindow window = Display.getWindow();
+            IInputContext input = window.CreateInput();
             imGuiController = new(((LegacyGL)GLManager.GL).SilkGL, window, input);
             imGuiController.MakeCurrent();
         }
@@ -320,6 +323,7 @@ public partial class BetaSharp
 
         checkGLError("Post startup");
         ingameGUI = new GuiIngame(this);
+        PostProcessManager = new PostProcessManager(displayWidth, displayHeight, options);
 
         statFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
         if (serverName != null)
@@ -1165,7 +1169,7 @@ public partial class BetaSharp
                 }
 
                 // Center the window
-                var desktopMode = Display.getDesktopDisplayMode();
+                DisplayMode desktopMode = Display.getDesktopDisplayMode();
                 int centerX = (desktopMode.getWidth() - displayWidth) / 2;
                 int centerY = (desktopMode.getHeight() - displayHeight) / 2;
                 Display.setLocation(centerX, centerY);
@@ -1207,6 +1211,8 @@ public partial class BetaSharp
             int scaledHeight = scaledResolution.ScaledHeight;
             currentScreen.SetWorldAndResolution(this, scaledWidth, scaledHeight);
         }
+
+        PostProcessManager.Resize(displayWidth, displayHeight);
     }
 
     private void clickMiddleMouseButton()

@@ -1,5 +1,4 @@
 using Silk.NET.OpenGL;
-using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering.Core.OpenGL;
 
@@ -222,7 +221,7 @@ public abstract unsafe class LegacyGL : IGL
 
     public virtual void GetFloat(GLEnum pname, out float data)
     {
-        fixed(float* ptr = &data) { SilkGL.GetFloat(pname.ToModern(), ptr); }
+        fixed (float* ptr = &data) { SilkGL.GetFloat(pname.ToModern(), ptr); }
     }
 
     public virtual void GetFloat(GLEnum pname, float* data)
@@ -403,4 +402,17 @@ public abstract unsafe class LegacyGL : IGL
     {
         SilkGL.Viewport(x, y, width, height);
     }
+
+    public uint GenFramebuffer() => SilkGL.GenFramebuffer();
+    public void BindFramebuffer(FramebufferTarget target, uint framebuffer) => SilkGL.BindFramebuffer(target, framebuffer);
+    public void FramebufferTexture2D(FramebufferTarget target, FramebufferAttachment attachment, TextureTarget textarget, uint texture, int level) => SilkGL.FramebufferTexture2D(target, attachment, textarget, texture, level);
+    public void GenRenderbuffers(Span<uint> renderbuffers) => SilkGL.GenRenderbuffers(renderbuffers);
+    public void BindRenderbuffer(RenderbufferTarget target, uint renderbuffer) => SilkGL.BindRenderbuffer(target, renderbuffer);
+    public void RenderbufferStorage(RenderbufferTarget target, InternalFormat internalformat, uint width, uint height) => SilkGL.RenderbufferStorage(target, internalformat, width, height);
+    public void FramebufferRenderbuffer(FramebufferTarget target, FramebufferAttachment attachment, RenderbufferTarget renderbuffertarget, uint renderbuffer) => SilkGL.FramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer);
+    public Silk.NET.OpenGL.GLEnum CheckFramebufferStatus(FramebufferTarget target) => SilkGL.CheckFramebufferStatus(target);
+    public void DeleteFramebuffer(uint framebuffer) => SilkGL.DeleteFramebuffer(framebuffer);
+    public void DeleteRenderbuffer(uint renderbuffer) => SilkGL.DeleteRenderbuffer(renderbuffer);
+
+    public void ActiveTexture(GLEnum texture) => SilkGL.ActiveTexture((TextureUnit)texture.ToModern());
 }

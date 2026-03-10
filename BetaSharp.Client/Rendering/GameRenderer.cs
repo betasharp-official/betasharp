@@ -286,6 +286,8 @@ public class GameRenderer
                 Display.setVSyncEnabled(false);
             }
 
+            _client.PostProcessManager.Begin();
+
             if (_client.world != null)
             {
                 Profiler.PushGroup("renderWorld");
@@ -322,6 +324,8 @@ public class GameRenderer
                     DrawVirtualCursor(scaledMouseX, scaledMouseY);
                 }
             }
+
+            _client.PostProcessManager.End();
 
             if (var7 < 240)
             {
