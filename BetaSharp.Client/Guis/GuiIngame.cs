@@ -280,7 +280,9 @@ public class GuiIngame : Gui
 
             if (_game.internalServer != null)
             {
-                DrawString(font, $"Server TPS: {_game.internalServer.Tps:F1}", 2, 104, Color.GrayE0);
+                DrawString(font,
+                    $"Server TPS: {_game.internalServer.Tps:F1}  Mean Tick: {_game.internalServer.MeanTickTimeMs:F2} ms",
+                    2, 104, Color.GrayE0);
             }
 
             GLManager.GL.PopMatrix();

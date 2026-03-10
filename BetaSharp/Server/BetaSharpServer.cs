@@ -43,6 +43,11 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
     private int _ticksThisSecond;
     private float _currentTps;
 
+    // Accumulated tick timing, used to compute mean tick time for diagnostics.
+    private long _tickTimeAccumulated;
+    private int _tickTimeCount;
+    private float _meanTickTimeMs;
+
     private volatile bool _isPaused;
 
     public float Tps
@@ -52,6 +57,17 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
             lock (_tpsLock)
             {
                 return _currentTps;
+            }
+        }
+    }
+
+    public float MeanTickTimeMs
+    {
+        get
+        {
+            lock (_tpsLock)
+            {
+                return _meanTickTimeMs;
             }
         }
     }
@@ -294,8 +310,7 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
 
                     if (worlds[0].Entities.AreAllPlayersAsleep())
                     {
-                        tick();
-                        _ticksThisSecond++;
+                        TickWithProfiling();
                         accumulatedTime = 0L;
                     }
                     else
@@ -303,8 +318,7 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
                         while (accumulatedTime > 50L)
                         {
                             accumulatedTime -= 50L;
-                            tick();
-                            _ticksThisSecond++;
+                            TickWithProfiling();
                         }
                     }
 
@@ -316,6 +330,18 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
                         lock (_tpsLock)
                         {
                             _currentTps = _ticksThisSecond * 1000.0f / tpsElapsed;
+                            if (_tickTimeCount > 0)
+                            {
+                                // Convert Stopwatch ticks to milliseconds and average over the samples.
+                                _meanTickTimeMs = (float)(_tickTimeAccumulated * 1000.0 / Stopwatch.Frequency / _tickTimeCount);
+                            }
+                            else
+                            {
+                                _meanTickTimeMs = 0.0f;
+                            }
+
+                            _tickTimeAccumulated = 0;
+                            _tickTimeCount = 0;
                         }
                         _ticksThisSecond = 0;
                         _lastTpsTime = tpsNow;
@@ -378,6 +404,21 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
                 }
             }
         }
+    }
+
+    private void TickWithProfiling()
+    {
+        long startTicks = Stopwatch.GetTimestamp();
+        tick();
+        long elapsedTicks = Stopwatch.GetTimestamp() - startTicks;
+
+        lock (_tpsLock)
+        {
+            _tickTimeAccumulated += elapsedTicks;
+            _tickTimeCount++;
+        }
+
+        _ticksThisSecond++;
     }
 
     private void tick()
