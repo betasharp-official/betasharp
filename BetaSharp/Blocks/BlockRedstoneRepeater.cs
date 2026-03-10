@@ -28,13 +28,17 @@ public class BlockRedstoneRepeater : Block
     {
         int meta = evt.Level.BlocksReader.GetMeta(evt.X, evt.Y, evt.Z);
         bool powered = isPowered(evt.Level.BlocksReader, evt.Level.Redstone, evt.X, evt.Y, evt.Z, meta);
+
         if (lit && !powered)
         {
             evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, Repeater.id, meta);
+            NotifyOutputNeighbor(evt.Level, evt.X, evt.Y, evt.Z, meta);
         }
         else if (!lit)
         {
             evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, PoweredRepeater.id, meta);
+            NotifyOutputNeighbor(evt.Level, evt.X, evt.Y, evt.Z, meta);
+
             if (!powered)
             {
                 int delaySetting = (meta & 12) >> 2;
@@ -61,7 +65,7 @@ public class BlockRedstoneRepeater : Block
         }
 
         int facing = reader.GetMeta(x, y, z) & 3;
-        return facing == 0 && side == 2 ? true : facing == 1 && side == 5 ? true : facing == 2 && side == 3 ? true : facing == 3 && side == 4;
+        return facing == 0 && side == 3 ? true : facing == 1 && side == 4 ? true : facing == 2 && side == 2 ? true : facing == 3 && side == 5;
     }
 
     public override void neighborUpdate(OnTickEvt evt)
@@ -118,10 +122,16 @@ public class BlockRedstoneRepeater : Block
 
     public override void onPlaced(OnPlacedEvt evt)
     {
-        float yaw = evt.Placer?.yaw ?? 0.0F;
-        int facing = ((MathHelper.Floor(yaw * 4.0F / 360.0F + 0.5D) & 3) + 2) % 4;
-        evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, facing);
-        bool powered = isPowered(evt.Level.BlocksReader, evt.Level.Redstone, evt.X, evt.Y, evt.Z, facing);
+        if (evt.Placer != null)
+        {
+            float yaw = evt.Placer.yaw;
+            int facing = ((MathHelper.Floor(yaw * 4.0F / 360.0F + 0.5D) & 3) + 2) % 4;
+            evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, facing);
+        }
+
+        int meta = evt.Level.BlocksReader.GetMeta(evt.X, evt.Y, evt.Z);
+
+        bool powered = isPowered(evt.Level.BlocksReader, evt.Level.Redstone, evt.X, evt.Y, evt.Z, meta);
         if (powered)
         {
             evt.Level.TickScheduler.ScheduleBlockUpdate(evt.X, evt.Y, evt.Z, id, 1);
@@ -191,5 +201,17 @@ public class BlockRedstoneRepeater : Block
         }
 
         ctx.Level.Broadcaster.AddParticle("reddust", particleX + offsetX, particleY, particleZ + offsetY, 0.0D, 0.0D, 0.0D);
+    }
+
+    private void NotifyOutputNeighbor(IBlockWorldContext level, int x, int y, int z, int meta)
+    {
+        int facing = meta & 3;
+        switch (facing)
+        {
+            case 0: level.Broadcaster.NotifyNeighbors(x, y, z - 1, id); break; // Outputs North
+            case 1: level.Broadcaster.NotifyNeighbors(x + 1, y, z, id); break; // Outputs East
+            case 2: level.Broadcaster.NotifyNeighbors(x, y, z + 1, id); break; // Outputs South
+            case 3: level.Broadcaster.NotifyNeighbors(x - 1, y, z, id); break; // Outputs West
+        }
     }
 }

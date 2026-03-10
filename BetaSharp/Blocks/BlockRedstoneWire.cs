@@ -28,7 +28,8 @@ public class BlockRedstoneWire : Block
     private void updateAndPropagateCurrentStrength(IBlockWorldContext level, int x, int y, int z)
     {
         HashSet<BlockPos> neighbors = [];
-        func_21030_a(level, x, y, z, x, y, z, neighbors);
+        CalculateCurrentChanges(level, x, y, z, x, y, z, neighbors);
+
         List<BlockPos> neighborsCopy = [.. neighbors];
         neighbors.Clear();
 
@@ -38,144 +39,119 @@ public class BlockRedstoneWire : Block
         }
     }
 
-    private void func_21030_a(IBlockWorldContext level, int var2, int var3, int var4, int var5, int var6, int var7, HashSet<BlockPos> neighbors)
+    private void CalculateCurrentChanges(IBlockWorldContext level, int x, int y, int z, int srcX, int srcY, int srcZ, HashSet<BlockPos> neighbors)
     {
-        int var8 = level.BlocksReader.GetMeta(var2, var3, var4);
-        int var9 = 0;
+        int oldMeta = level.BlocksReader.GetMeta(x, y, z);
+        int newMeta = 0;
+
         s_wiresProvidePower.Value = false;
-        bool var10 = level.Redstone.IsPowered(var2, var3, var4);
+        bool isPowered = level.Redstone.IsPowered(x, y, z);
         s_wiresProvidePower.Value = true;
-        int var11;
-        int var12;
-        int var13;
-        if (var10)
+
+        if (isPowered)
         {
-            var9 = 15;
+            newMeta = 15;
         }
         else
         {
-            for (var11 = 0; var11 < 4; ++var11)
+            for (int dir = 0; dir < 4; ++dir)
             {
-                var12 = var2;
-                var13 = var4;
-                if (var11 == 0)
+                int nx = x;
+                int nz = z;
+
+                if (dir == 0) nx = x - 1;
+                if (dir == 1) ++nx;
+                if (dir == 2) nz = z - 1;
+                if (dir == 3) ++nz;
+
+                if (nx != srcX || y != srcY || nz != srcZ)
                 {
-                    var12 = var2 - 1;
+                    newMeta = getMaxCurrentStrength(level.BlocksReader, nx, y, nz, newMeta);
                 }
 
-                if (var11 == 1)
+                // Check if power can travel up/down blocks (Redstone staircasing)
+                if (level.BlocksReader.ShouldSuffocate(nx, y, nz) && !level.BlocksReader.ShouldSuffocate(x, y + 1, z))
                 {
-                    ++var12;
-                }
-
-                if (var11 == 2)
-                {
-                    var13 = var4 - 1;
-                }
-
-                if (var11 == 3)
-                {
-                    ++var13;
-                }
-
-                if (var12 != var5 || var3 != var6 || var13 != var7)
-                {
-                    var9 = getMaxCurrentStrength(level.BlocksReader, var12, var3, var13, var9);
-                }
-
-                if (level.BlocksReader.ShouldSuffocate(var12, var3, var13) && !level.BlocksReader.ShouldSuffocate(var2, var3 + 1, var4))
-                {
-                    if (var12 != var5 || var3 + 1 != var6 || var13 != var7)
+                    if (nx != srcX || y + 1 != srcY || nz != srcZ)
                     {
-                        var9 = getMaxCurrentStrength(level.BlocksReader, var12, var3 + 1, var13, var9);
+                        newMeta = getMaxCurrentStrength(level.BlocksReader, nx, y + 1, nz, newMeta);
                     }
                 }
-                else if (!level.BlocksReader.ShouldSuffocate(var12, var3, var13) && (var12 != var5 || var3 - 1 != var6 || var13 != var7))
+                else if (!level.BlocksReader.ShouldSuffocate(nx, y, nz) && (nx != srcX || y - 1 != srcY || nz != srcZ))
                 {
-                    var9 = getMaxCurrentStrength(level.BlocksReader, var12, var3 - 1, var13, var9);
+                    newMeta = getMaxCurrentStrength(level.BlocksReader, nx, y - 1, nz, newMeta);
                 }
             }
 
-            if (var9 > 0)
+            // Decay the signal strength by 1
+            if (newMeta > 0)
             {
-                --var9;
+                --newMeta;
             }
             else
             {
-                var9 = 0;
+                newMeta = 0;
             }
         }
 
-        if (var8 != var9)
+        // Only update if the strength actually changed
+        if (oldMeta != newMeta)
         {
-            level.BlockWriter.SetBlockMetaInternal(var2, var3, var4, var9);
-            level.Broadcaster.SetBlocksDirty(var2, var3, var4, var2, var3, var4);
+            // FIX: Replaced internal setter with standard setter to broadcast to clients/neighbors!
+            level.BlockWriter.SetBlockMeta(x, y, z, newMeta);
+            level.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
 
-            for (var11 = 0; var11 < 4; ++var11)
+            for (int dir = 0; dir < 4; ++dir)
             {
-                var12 = var2;
-                var13 = var4;
-                int var14 = var3 - 1;
-                if (var11 == 0)
+                int nx = x;
+                int nz = z;
+                int ny = y - 1;
+
+                if (dir == 0) nx = x - 1;
+                if (dir == 1) ++nx;
+                if (dir == 2) nz = z - 1;
+                if (dir == 3) ++nz;
+
+                if (level.BlocksReader.ShouldSuffocate(nx, y, nz))
                 {
-                    var12 = var2 - 1;
+                    ny += 2;
                 }
 
-                if (var11 == 1)
+                int neighborMeta = getMaxCurrentStrength(level.BlocksReader, nx, y, nz, -1);
+                newMeta = level.BlocksReader.GetMeta(x, y, z);
+                if (newMeta > 0)
                 {
-                    ++var12;
+                    --newMeta;
                 }
 
-                if (var11 == 2)
+                if (neighborMeta >= 0 && neighborMeta != newMeta)
                 {
-                    var13 = var4 - 1;
+                    CalculateCurrentChanges(level, nx, y, nz, x, y, z, neighbors);
                 }
 
-                if (var11 == 3)
+                neighborMeta = getMaxCurrentStrength(level.BlocksReader, nx, ny, nz, -1);
+                newMeta = level.BlocksReader.GetMeta(x, y, z);
+                if (newMeta > 0)
                 {
-                    ++var13;
+                    --newMeta;
                 }
 
-                if (level.BlocksReader.ShouldSuffocate(var12, var3, var13))
+                if (neighborMeta >= 0 && neighborMeta != newMeta)
                 {
-                    var14 += 2;
-                }
-
-                bool var15 = false;
-                int var16 = getMaxCurrentStrength(level.BlocksReader, var12, var3, var13, -1);
-                var9 = level.BlocksReader.GetMeta(var2, var3, var4);
-                if (var9 > 0)
-                {
-                    --var9;
-                }
-
-                if (var16 >= 0 && var16 != var9)
-                {
-                    func_21030_a(level, var12, var3, var13, var2, var3, var4, neighbors);
-                }
-
-                var16 = getMaxCurrentStrength(level.BlocksReader, var12, var14, var13, -1);
-                var9 = level.BlocksReader.GetMeta(var2, var3, var4);
-                if (var9 > 0)
-                {
-                    --var9;
-                }
-
-                if (var16 >= 0 && var16 != var9)
-                {
-                    func_21030_a(level, var12, var14, var13, var2, var3, var4, neighbors);
+                    CalculateCurrentChanges(level, nx, ny, nz, x, y, z, neighbors);
                 }
             }
 
-            if (var8 == 0 || var9 == 0)
+            // If the wire turned completely off or on, trigger deep neighbor updates
+            if (oldMeta == 0 || newMeta == 0)
             {
-                neighbors.Add(new BlockPos(var2, var3, var4));
-                neighbors.Add(new BlockPos(var2 - 1, var3, var4));
-                neighbors.Add(new BlockPos(var2 + 1, var3, var4));
-                neighbors.Add(new BlockPos(var2, var3 - 1, var4));
-                neighbors.Add(new BlockPos(var2, var3 + 1, var4));
-                neighbors.Add(new BlockPos(var2, var3, var4 - 1));
-                neighbors.Add(new BlockPos(var2, var3, var4 + 1));
+                neighbors.Add(new BlockPos(x, y, z));
+                neighbors.Add(new BlockPos(x - 1, y, z));
+                neighbors.Add(new BlockPos(x + 1, y, z));
+                neighbors.Add(new BlockPos(x, y - 1, z));
+                neighbors.Add(new BlockPos(x, y + 1, z));
+                neighbors.Add(new BlockPos(x, y, z - 1));
+                neighbors.Add(new BlockPos(x, y, z + 1));
             }
         }
     }
