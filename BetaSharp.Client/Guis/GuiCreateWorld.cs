@@ -91,7 +91,7 @@ public class GuiCreateWorld : GuiScreen
             switch (button.Id)
             {
                 case ButtonCancel:
-                    Game.displayGuiScreen(_parentScreen);
+                    CloseScreen();
                     break;
                 case ButtonCreate:
                     {
@@ -151,8 +151,7 @@ public class GuiCreateWorld : GuiScreen
         }
         else if (eventKey == Keyboard.KEY_ESCAPE)
         {
-            Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
-            ActionPerformed(_controlList[1]);
+            CloseScreen();
         }
 
         _controlList[0].Enabled = _textboxWorldName.GetText().Length > 0;
@@ -184,18 +183,9 @@ public class GuiCreateWorld : GuiScreen
         base.Render(mouseX, mouseY, partialTicks);
     }
 
-    public override void SelectNextField()
+    protected override void CloseScreen()
     {
-        if (_textboxWorldName.IsFocused)
-        {
-            _textboxWorldName.SetFocused(false);
-            _textboxSeed.SetFocused(true);
-        }
-        else
-        {
-            _textboxWorldName.SetFocused(true);
-            _textboxSeed.SetFocused(false);
-        }
-
+        Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
+        Game.displayGuiScreen(_parentScreen);
     }
 }

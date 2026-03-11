@@ -39,6 +39,7 @@ public class GuiSelectWorld : GuiScreen
         unsupportedFormatMessage = "Unsupported Format!";
         loadSaves();
         worldSlotContainer = new GuiWorldSlot(this);
+        _mainSlot = worldSlotContainer;
         worldSlotContainer.RegisterScrollButtons(_controlList, 4, 5);
         initButtons();
     }
@@ -116,7 +117,7 @@ public class GuiSelectWorld : GuiScreen
                     Game.displayGuiScreen(new GuiRenameWorld(this, getSaveFileName(selectedWorld)));
                     break;
                 case BUTTON_CANCEL:
-                    Game.displayGuiScreen(parentScreen);
+                    CloseScreen();
                     break;
                 default:
                     worldSlotContainer.ActionPerformed(button);
@@ -161,17 +162,14 @@ public class GuiSelectWorld : GuiScreen
 
     public override void Render(int mouseX, int mouseY, float partialTicks)
     {
-        worldSlotContainer.DrawScreen(mouseX, mouseY, partialTicks);
         DrawCenteredString(FontRenderer, screenTitle, Width / 2, 20, Color.White);
         base.Render(mouseX, mouseY, partialTicks);
     }
 
-    public override void HandleMouseInput()
+    protected override void CloseScreen()
     {
-        int x = Mouse.getEventX() * Width / Game.displayWidth;
-        int y = Height - Mouse.getEventY() * Height / Game.displayHeight - 1;
-        worldSlotContainer.HandleMouseInput(x, y);
-        base.HandleMouseInput();
+        Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
+        Game.displayGuiScreen(parentScreen);
     }
     
     public static List<WorldSaveInfo> GetSize(GuiSelectWorld screen) => screen.saveList;

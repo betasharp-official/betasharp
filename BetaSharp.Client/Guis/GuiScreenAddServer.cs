@@ -51,7 +51,7 @@ public class GuiScreenAddServer : GuiScreen
         {
             if (button.Id == 1)
             {
-                _parentScreen.ConfirmClicked(false, 0);
+                CloseScreen();
             }
             else if (button.Id == 0)
             {
@@ -87,8 +87,7 @@ public class GuiScreenAddServer : GuiScreen
         }
         else if (eventKey == Keyboard.KEY_ESCAPE)
         {
-            Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
-            ActionPerformed(_controlList[1]);
+            CloseScreen();
         }
 
         _controlList[0].Enabled = _serverName.GetText().Length > 0 && _serverAddress.GetText().Length > 0 && _serverAddress.GetText().Split(":").Length > 0;
@@ -110,5 +109,11 @@ public class GuiScreenAddServer : GuiScreen
         _serverName.DrawTextBox();
         _serverAddress.DrawTextBox();
         base.Render(mouseX, mouseY, partialTicks);
+    }
+
+    protected override void CloseScreen()
+    {
+        Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
+        _parentScreen.ConfirmClicked(false, 0);
     }
 }

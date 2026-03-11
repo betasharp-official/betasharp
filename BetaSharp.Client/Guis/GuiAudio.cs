@@ -55,8 +55,7 @@ public class GuiAudio : GuiScreen
 
             if (btn.Id == 200)
             {
-                Game.options.SaveOptions();
-                Game.displayGuiScreen(_parentScreen);
+                CloseScreen();
             }
         }
     }
@@ -68,13 +67,10 @@ public class GuiAudio : GuiScreen
         base.Render(mouseX, mouseY, partialTicks);
     }
 
-    protected override void KeyTyped(char eventChar, int eventKey)
+    protected override void CloseScreen()
     {
-        if (eventKey == Keyboard.KEY_ESCAPE || eventKey == Keyboard.KEY_NONE)
-        {
-            Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
-            Game.options.SaveOptions();
-            Game.displayGuiScreen(_parentScreen);
-        }
+        Game.options.SaveOptions();
+        Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
+        Game.displayGuiScreen(_parentScreen);
     }
 }

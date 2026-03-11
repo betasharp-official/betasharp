@@ -52,7 +52,7 @@ public class GuiControls : GuiScreen
         switch (button.Id)
         {
             case ButtonDone:
-                Game.displayGuiScreen(_parentScreen);
+                CloseScreen();
                 break;
             case InvertMouseId:
                 _options.InvertMouseOption.Toggle();
@@ -82,9 +82,7 @@ public class GuiControls : GuiScreen
         {
             if (eventKey == Keyboard.KEY_ESCAPE || eventKey == Keyboard.KEY_NONE)
             {
-                Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
-                Game.options.SaveOptions();
-                Game.displayGuiScreen(_parentScreen);
+                CloseScreen();
             }
             else
             {
@@ -106,5 +104,12 @@ public class GuiControls : GuiScreen
         }
 
         base.Render(mouseX, mouseY, partialTicks);
+    }
+
+    protected override void CloseScreen()
+    {
+        Game.options.SaveOptions();
+        Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
+        Game.displayGuiScreen(_parentScreen);
     }
 }

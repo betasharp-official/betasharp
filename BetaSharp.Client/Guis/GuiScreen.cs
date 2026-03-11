@@ -22,10 +22,12 @@ public class GuiScreen : Gui
     protected GuiButton? _hoveredButton = null;
     protected GuiButton? _lastHoveredButton = null;
     protected bool _isSubscribedToKeyboard = false;
+    protected GuiSlot? _mainSlot = null;
 
     public virtual void Render(int mouseX, int mouseY, float partialTicks)
     {
         _hoveredButton = null;
+        _mainSlot?.DrawScreen(mouseX, mouseY, partialTicks);
         foreach (GuiButton control in _controlList)
         {
             control.DrawButton(Game, mouseX, mouseY);
@@ -55,13 +57,18 @@ public class GuiScreen : Gui
         }
     }
 
+    protected virtual void CloseScreen()
+    {
+        Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
+        Game.displayGuiScreen(null);
+        Game.setIngameFocus();
+    }
+
     protected virtual void KeyTyped(char eventChar, int eventKey)
     {
         if (eventKey == Keyboard.KEY_ESCAPE)
         {
-            Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
-            Game.displayGuiScreen(null);
-            Game.setIngameFocus();
+            CloseScreen();
         }
     }
 
@@ -165,6 +172,9 @@ public class GuiScreen : Gui
 
         int x = Mouse.getEventX() * Width / Game.displayWidth;
         int y = Height - Mouse.getEventY() * Height / Game.displayHeight - 1;
+
+        _mainSlot?.HandleMouseInput(x, y);
+
         if (Mouse.getEventButtonState())
         {
             MouseClicked(x, y, Mouse.getEventButton());
@@ -206,8 +216,7 @@ public class GuiScreen : Gui
         {
             if (Controller.GetEventButtonState())
             {
-                Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
-                KeyTyped('\0', Keyboard.KEY_ESCAPE);
+                CloseScreen();
             }
         }
         else if (Controller.GetEventButton() == (int)Silk.NET.GLFW.GamepadButton.Y)

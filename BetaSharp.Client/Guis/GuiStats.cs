@@ -35,6 +35,7 @@ public class GuiStats : GuiScreen
         slotBlock = new GuiSlotStatsBlock(this);
         slotBlock.RegisterScrollButtons(_controlList, 1, 1);
         currentSlot = slotGeneral;
+        _mainSlot = currentSlot;
         initButtons();
     }
     public void initButtons()
@@ -69,16 +70,19 @@ public class GuiStats : GuiScreen
             switch (button.Id)
             {
                 case 0: // DONE
-                    Game.displayGuiScreen(parentScreen);
+                    CloseScreen();
                     break;
                 case 1: // GENERAL
                     currentSlot = slotGeneral;
+                    _mainSlot = currentSlot;
                     break;
                 case 3: // ITEMS
                     currentSlot = slotItem;
+                    _mainSlot = currentSlot;
                     break;
                 case 2: // BLOCKS
                     currentSlot = slotBlock;
+                    _mainSlot = currentSlot;
                     break;
                 default:
                     currentSlot.ActionPerformed(button);
@@ -90,17 +94,14 @@ public class GuiStats : GuiScreen
 
     public override void Render(int mouseX, int mouseY, float partialTicks)
     {
-        currentSlot.DrawScreen(mouseX, mouseY, partialTicks);
         DrawCenteredString(FontRenderer, screenTitle, Width / 2, 20, Color.White);
         base.Render(mouseX, mouseY, partialTicks);
     }
 
-    public override void HandleMouseInput()
+    protected override void CloseScreen()
     {
-        int x = Mouse.getEventX() * Width / Game.displayWidth;
-        int y = Height - Mouse.getEventY() * Height / Game.displayHeight - 1;
-        currentSlot.HandleMouseInput(x, y);
-        base.HandleMouseInput();
+        Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
+        Game.displayGuiScreen(parentScreen);
     }
 
     public void drawItemSlot(int x, int y, int itemId)
@@ -155,6 +156,7 @@ public class GuiStats : GuiScreen
             if (slotItem.GetSize() > 0) currentSlot = slotItem;
             else if (slotBlock.GetSize() > 0) currentSlot = slotBlock;
         }
+        _mainSlot = currentSlot;
     }
 
     protected override void HandleTabRight()
@@ -173,5 +175,6 @@ public class GuiStats : GuiScreen
         {
             currentSlot = slotGeneral;
         }
+        _mainSlot = currentSlot;
     }
 }

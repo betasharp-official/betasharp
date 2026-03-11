@@ -222,10 +222,14 @@ public abstract class GuiContainer : GuiScreen
     {
         if (eventKey == Keyboard.KEY_ESCAPE || eventKey == Game.options.KeyBindInventory.keyCode)
         {
-            Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
-            Game.player.closeHandledScreen();
+            CloseScreen();
         }
+    }
 
+    protected override void CloseScreen()
+    {
+        Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
+        Game.player.closeHandledScreen();
     }
 
     public override void OnGuiClosed()

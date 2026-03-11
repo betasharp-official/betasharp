@@ -55,6 +55,7 @@ public class GuiMultiplayer : GuiScreen
         Keyboard.enableRepeatEvents(true);
         _controlList.Clear();
         _serverListSelector = new GuiSlotServer(this);
+        _mainSlot = _serverListSelector;
 
         _controlList.Add(_btnEdit = new GuiButton(7, Width / 2 - 154, Height - 28, 70, 20, "Edit"));
         _controlList.Add(_btnDelete = new GuiButton(2, Width / 2 - 74, Height - 28, 70, 20, "Delete"));
@@ -168,7 +169,7 @@ public class GuiMultiplayer : GuiScreen
         }
         else if (button.Id == 0) // Cancel
         {
-            Game.displayGuiScreen(_parentScreen);
+            CloseScreen();
         }
         else if (button.Id == 8) // Refresh
         {
@@ -254,17 +255,14 @@ public class GuiMultiplayer : GuiScreen
     public override void Render(int mouseX, int mouseY, float partialTicks)
     {
         DrawDefaultBackground();
-        _serverListSelector.DrawScreen(mouseX, mouseY, partialTicks);
         DrawCenteredString(FontRenderer, "Play Multiplayer", Width / 2, 20, Color.White);
         base.Render(mouseX, mouseY, partialTicks);
     }
 
-    public override void HandleMouseInput()
+    protected override void CloseScreen()
     {
-        int x = Mouse.getEventX() * Width / Game.displayWidth;
-        int y = Height - Mouse.getEventY() * Height / Game.displayHeight - 1;
-        _serverListSelector.HandleMouseInput(x, y);
-        base.HandleMouseInput();
+        Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
+        Game.displayGuiScreen(_parentScreen);
     }
 
     private void JoinServer(ServerData server)

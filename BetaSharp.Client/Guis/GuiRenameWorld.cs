@@ -53,7 +53,7 @@ public class GuiRenameWorld : GuiScreen
             switch (button.Id)
             {
                 case ButtonCancel:
-                    Game.displayGuiScreen(parentScreen);
+                    CloseScreen();
                     break;
                 case ButtonRename:
                     IWorldStorageSource worldStorage = Game.getSaveLoader();
@@ -74,8 +74,7 @@ public class GuiRenameWorld : GuiScreen
         }
         else if (eventKey == Keyboard.KEY_ESCAPE)
         {
-            Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
-            ActionPerformed(_controlList[1]);
+            CloseScreen();
         }
 
     }
@@ -86,13 +85,9 @@ public class GuiRenameWorld : GuiScreen
         nameInputField.MouseClicked(x, y, button);
     }
 
-    public override void Render(int mouseX, int mouseY, float partialTicks)
+    protected override void CloseScreen()
     {
-        TranslationStorage translations = TranslationStorage.Instance;
-        DrawDefaultBackground();
-        DrawCenteredString(FontRenderer, translations.TranslateKey("selectWorld.renameTitle"), Width / 2, Height / 4 - 60 + 20, Color.White);
-        DrawString(FontRenderer, translations.TranslateKey("selectWorld.enterName"), Width / 2 - 100, 47, Color.GrayA0);
-        nameInputField.DrawTextBox();
-        base.Render(mouseX, mouseY, partialTicks);
+        Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
+        Game.displayGuiScreen(parentScreen);
     }
 }

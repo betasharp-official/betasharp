@@ -49,8 +49,7 @@ public class GuiAchievements : GuiScreen
     {
         if (var1.Id == 1)
         {
-            Game.displayGuiScreen(null);
-            Game.setIngameFocus();
+            CloseScreen();
         }
 
         base.ActionPerformed(var1);
@@ -60,15 +59,12 @@ public class GuiAchievements : GuiScreen
     {
         if (eventKey == Game.options.KeyBindInventory.keyCode)
         {
-            Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
-            Game.displayGuiScreen(null);
-            Game.setIngameFocus();
+            CloseScreen();
         }
         else
         {
             base.KeyTyped(eventChar, eventKey);
         }
-
     }
 
     public override void Render(int var1, int var2, float var3)

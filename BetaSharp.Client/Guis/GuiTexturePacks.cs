@@ -32,6 +32,7 @@ public class GuiTexturePacks : GuiScreen
         _texturePackFolder = Path.GetFullPath(Path.Combine(baseDir, "texturepacks"));
         
         _guiTexturePackSlot = new GuiTexturePackSlot(this);
+        _mainSlot = _guiTexturePackSlot;
         _guiTexturePackSlot.RegisterScrollButtons(_controlList, 7, 8);
     }
 
@@ -79,7 +80,6 @@ public class GuiTexturePacks : GuiScreen
 
     public override void Render(int mouseX, int mouseY, float partialTicks)
     {
-        _guiTexturePackSlot.DrawScreen(mouseX, mouseY, partialTicks);
         if (_refreshTimer <= 0)
         {
             Game.texturePackList.updateAvaliableTexturePacks();
@@ -92,12 +92,11 @@ public class GuiTexturePacks : GuiScreen
         base.Render(mouseX, mouseY, partialTicks);
     }
 
-    public override void HandleMouseInput()
+    protected override void CloseScreen()
     {
-        int x = Mouse.getEventX() * Width / Game.displayWidth;
-        int y = Height - Mouse.getEventY() * Height / Game.displayHeight - 1;
-        _guiTexturePackSlot.HandleMouseInput(x, y);
-        base.HandleMouseInput();
+        Game.textureManager.Reload();
+        Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
+        Game.displayGuiScreen(_parentScreen);
     }
 
     public override void UpdateScreen()
