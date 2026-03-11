@@ -20,7 +20,7 @@ internal class CactusPatchFeature : Feature
                 {
                     if (Block.Cactus.canGrow(new OnTickEvt(level, genX, genY + h, genZ, level.BlocksReader.GetMeta(genX, genY + h, genZ), level.BlocksReader.GetBlockId(genX, genY + h, genZ))))
                     {
-                        level.BlockWriter.SetBlockWithoutNotifyingNeighbors(genX, genY + h, genZ, Block.Cactus.id);
+                        level.BlockWriter.SetBlockWithoutNotifyingNeighbors(genX, genY + h, genZ, Block.Cactus.id, 0, notifyBlockPlaced: false);
                     }
                 }
             }

@@ -33,8 +33,8 @@ public class EmptyChunk : Chunk
 
     public override int GetBlockId(int x, int y, int z) => 0;
 
-    public override bool SetBlock(int x, int y, int z, int blockId, int meta) => true;
-    public override bool SetBlock(int x, int y, int z, int blockId) => true;
+    public override bool SetBlock(int x, int y, int z, int blockId, int meta, bool notifyBlockPlaced = true) => true;
+    public override bool SetBlock(int x, int y, int z, int blockId, bool notifyBlockPlaced = true) => true;
 
     public override int GetBlockMeta(int x, int y, int z) => 0;
 

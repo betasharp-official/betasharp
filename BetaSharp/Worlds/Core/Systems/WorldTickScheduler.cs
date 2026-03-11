@@ -38,8 +38,8 @@ public class WorldTickScheduler
             }
             else
             {
-                long scheduledTime = _context.GetTime() + tickRate;
-                BlockUpdate blockUpdate = new(x, y, z, blockId, scheduledTime);
+                long executionTime = _context.GetTime() + tickRate;
+                BlockUpdate blockUpdate = new(x, y, z, blockId, executionTime);
                 _scheduledUpdates.Enqueue(blockUpdate, (blockUpdate.ScheduledTime, blockUpdate.ScheduledOrder));
             }
         }
@@ -61,7 +61,8 @@ public class WorldTickScheduler
                 break;
             }
 
-            if (!forceFlush && _scheduledUpdates.Peek().ScheduledTime > currentTime)
+            BlockUpdate peeked = _scheduledUpdates.Peek();
+            if (!forceFlush && peeked.ScheduledTime > currentTime)
             {
                 break;
             }

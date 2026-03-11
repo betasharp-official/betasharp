@@ -31,7 +31,7 @@ internal class SugarCanePatchFeature : Feature
                 {
                     if (Block.SugarCane.canGrow(new OnTickEvt(level, genX, y + h, genZ, level.BlocksReader.GetMeta(genX, y + h, genZ), level.BlocksReader.GetBlockId(genX, y + h, genZ))))
                     {
-                        level.BlockWriter.SetBlock(genX, y + h, genZ, Block.SugarCane.id);
+                        level.BlockWriter.SetBlock(genX, y + h, genZ, Block.SugarCane.id, 0, doUpdate: false);
                     }
                 }
             }

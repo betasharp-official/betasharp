@@ -18,7 +18,7 @@ internal class GlowstoneClusterFeature : Feature
         }
 
 
-        level.BlockWriter.SetBlock(x, y, z, Block.Glowstone.id);
+        level.BlockWriter.SetBlock(x, y, z, Block.Glowstone.id, 0, doUpdate: false);
 
         for (int i = 0; i < 1500; ++i)
         {
@@ -71,7 +71,7 @@ internal class GlowstoneClusterFeature : Feature
 
                 if (GlowstoneNeighbors == 1)
                 {
-                    level.BlockWriter.SetBlock(genX, genY, genZ, Block.Glowstone.id);
+                    level.BlockWriter.SetBlock(genX, genY, genZ, Block.Glowstone.id, 0, doUpdate: false);
                 }
             }
         }

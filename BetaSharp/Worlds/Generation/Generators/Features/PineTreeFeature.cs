@@ -60,7 +60,7 @@ internal class PineTreeFeature : Feature
         int groundId = level.BlocksReader.GetBlockId(x, y - 1, z);
         if ((groundId == Block.GrassBlock.id || groundId == Block.Dirt.id) && y < 128 - treeHeight - 1)
         {
-            level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id);
+            level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id, 0);
             int currentLeafRadius = 0;
 
             for (int cy = y + treeHeight; cy >= y + trunkWithNoLeaves; --cy)

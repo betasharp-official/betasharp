@@ -497,7 +497,7 @@ internal class OverworldIChunkGenerator : IChunkSource
                 if (temperatureSample < 0.5D && var22 > 0 && var22 < 128 && _level.BlocksReader.IsAir(x, var22, z) && _level.BlocksReader.GetMaterial(x, var22 - 1, z).BlocksMovement &&
                     _level.BlocksReader.GetMaterial(x, var22 - 1, z) != Material.Ice)
                 {
-                    _level.BlockWriter.SetBlock(x, var22, z, Block.Snow.id);
+                    _level.BlockWriter.SetBlock(x, var22, z, Block.Snow.id, 0, doUpdate: false);
                 }
             }
         }

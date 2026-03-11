@@ -288,7 +288,7 @@ public class Chunk
 
     public virtual int GetBlockId(int x, int y, int z) => Blocks[(x << 11) | (z << 7) | y] & 255;
 
-    public virtual bool SetBlock(int localX, int y, int localZ, int rawId, int meta)
+    public virtual bool SetBlock(int localX, int y, int localZ, int rawId, int meta, bool notifyBlockPlaced = true)
     {
         byte newId = (byte)rawId;
         int height = HeightMap[(localZ << 4) | localX];
@@ -303,7 +303,7 @@ public class Chunk
         int worldZ = Z * 16 + localZ;
         Blocks[(localX << 11) | (localZ << 7) | y] = newId;
 
-        if (oldId != 0 && !Level.IsRemote)
+        if (notifyBlockPlaced && oldId != 0 && !Level.IsRemote)
         {
             Block.Blocks[oldId].onBreak(new OnBreakEvt(Level, null, worldX, y, worldZ));
         }
@@ -331,7 +331,7 @@ public class Chunk
         LightGaps(localX, localZ);
         Meta.SetNibble(localX, y, localZ, meta);
 
-        if (rawId != 0)
+        if (notifyBlockPlaced && rawId != 0)
         {
             Block.Blocks[rawId].onPlaced(new OnPlacedEvt(Level, null, 0, 0, worldX, y, worldZ));
         }
@@ -340,7 +340,7 @@ public class Chunk
         return true;
     }
 
-    public virtual bool SetBlock(int localX, int y, int localZ, int rawId)
+    public virtual bool SetBlock(int localX, int y, int localZ, int rawId, bool notifyBlockPlaced = true)
     {
         byte newId = (byte)rawId;
         int height = HeightMap[(localZ << 4) | localX];
@@ -355,7 +355,7 @@ public class Chunk
         int worldZ = Z * 16 + localZ;
         Blocks[(localX << 11) | (localZ << 7) | y] = newId;
 
-        if (oldId != 0)
+        if (notifyBlockPlaced && oldId != 0)
         {
             Block.Blocks[oldId].onBreak(new OnBreakEvt(Level, null, worldX, y, worldZ));
         }
@@ -378,7 +378,7 @@ public class Chunk
         Level.Lighting.QueueLightUpdate(LightType.Block, worldX, y, worldZ, worldX, y, worldZ);
         LightGaps(localX, localZ);
 
-        if (rawId != 0 && !Level.IsRemote)
+        if (notifyBlockPlaced && rawId != 0 && !Level.IsRemote)
         {
             Block.Blocks[rawId].onPlaced(new OnPlacedEvt(Level, null, 0, 0, worldX, y, worldZ));
         }

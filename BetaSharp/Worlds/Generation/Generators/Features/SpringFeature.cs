@@ -73,7 +73,7 @@ internal class SpringFeature : Feature
 
         if (stoneNeighbors == 3 && airNeighbors == 1)
         {
-            level.BlockWriter.SetBlock(x, y, z, _liquidBlockId);
+            level.BlockWriter.SetBlock(x, y, z, _liquidBlockId, 0, doUpdate: false);
             level.TickScheduler.TriggerInstantTick(x, y, z, _liquidBlockId);
         }
 

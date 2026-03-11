@@ -326,7 +326,7 @@ internal class SkyIChunkGenerator : IChunkSource
                 if (temperatureSample < 0.5D && topBlockY > 0 && topBlockY < 128 && _level.BlocksReader.IsAir(x, topBlockY, z) && _level.BlocksReader.GetMaterial(x, topBlockY - 1, z).BlocksMovement &&
                     _level.BlocksReader.GetMaterial(x, topBlockY - 1, z) != Material.Ice)
                 {
-                    _level.BlockWriter.SetBlock(x, topBlockY, z, Block.Snow.id);
+                    _level.BlockWriter.SetBlock(x, topBlockY, z, Block.Snow.id, 0, doUpdate: false);
                 }
             }
         }

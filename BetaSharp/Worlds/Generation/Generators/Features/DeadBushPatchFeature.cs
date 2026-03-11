@@ -24,7 +24,7 @@ internal class DeadBushPatchFeature : Feature
                     if (level.BlocksReader.IsAir(genX, genY, genZ) &&
                         ((BlockPlant)Block.Blocks[_deadBushBlockId]).canGrow(new OnTickEvt(level, genX, genY, genZ, level.BlocksReader.GetMeta(genX, genY, genZ), level.BlocksReader.GetBlockId(genX, genY, genZ))))
                     {
-                        level.BlockWriter.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, _deadBushBlockId);
+                        level.BlockWriter.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, _deadBushBlockId, 0, notifyBlockPlaced: false);
                     }
                 }
 

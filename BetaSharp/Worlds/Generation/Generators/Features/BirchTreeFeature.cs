@@ -57,7 +57,7 @@ internal class BirchTreeFeature : Feature
         int soilId = level.BlocksReader.GetBlockId(x, y - 1, z);
         if ((soilId == Block.GrassBlock.id || soilId == Block.Dirt.id) && y < 128 - treeHeight - 1)
         {
-            level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id);
+            level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id, 0);
 
 
             for (int leafY = y - 3 + treeHeight; leafY <= y + treeHeight; ++leafY)

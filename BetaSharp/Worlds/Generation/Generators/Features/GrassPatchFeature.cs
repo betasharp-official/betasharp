@@ -29,7 +29,7 @@ internal class GrassPatchFeature : Feature
                     if (level.BlocksReader.IsAir(genX, genY, genZ) &&
                         ((BlockPlant)Block.Blocks[_tallGrassBlockId]).canGrow(new OnTickEvt(level, genX, genY, genZ, level.BlocksReader.GetMeta(genX, genY, genZ), level.BlocksReader.GetBlockId(genX, genY, genZ))))
                     {
-                        level.BlockWriter.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, _tallGrassBlockId, _tallGrassBlockMeta);
+                        level.BlockWriter.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, _tallGrassBlockId, _tallGrassBlockMeta, notifyBlockPlaced: false);
                     }
                 }
 

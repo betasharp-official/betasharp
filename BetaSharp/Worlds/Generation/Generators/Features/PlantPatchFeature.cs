@@ -19,7 +19,7 @@ internal class PlantPatchFeature : Feature
             if (level.BlocksReader.IsAir(genX, genY, genZ) &&
                 ((BlockPlant)Block.Blocks[plantBlockId]).canGrow(new OnTickEvt(level, genX, genY, genZ, level.BlocksReader.GetMeta(genX, genY, genZ), level.BlocksReader.GetBlockId(genX, genY, genZ))))
             {
-                level.BlockWriter.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, plantBlockId);
+                level.BlockWriter.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, plantBlockId, 0, notifyBlockPlaced: false);
             }
         }
 

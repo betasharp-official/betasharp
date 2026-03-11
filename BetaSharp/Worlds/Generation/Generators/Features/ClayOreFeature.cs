@@ -63,7 +63,7 @@ internal class ClayOreFeature : Feature
                             int var47 = level.BlocksReader.GetBlockId(blockX, blockY, blockZ);
                             if (var47 == Block.Sand.id)
                             {
-                                level.BlockWriter.SetBlockWithoutNotifyingNeighbors(blockX, blockY, blockZ, _clayBlockId);
+                                level.BlockWriter.SetBlockWithoutNotifyingNeighbors(blockX, blockY, blockZ, _clayBlockId, 0, notifyBlockPlaced: false);
                             }
                         }
                     }

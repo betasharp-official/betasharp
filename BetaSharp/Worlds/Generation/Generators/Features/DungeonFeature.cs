@@ -61,21 +61,21 @@ internal class DungeonFeature : Feature
                                     cz != z + radiusZ + 1;
                     if (isInside)
                     {
-                        level.BlockWriter.SetBlock(cx, cy, cz, 0);
+                        level.BlockWriter.SetBlock(cx, cy, cz, 0, 0, doUpdate: false);
                     }
                     else if (cy >= 0 && !level.BlocksReader.GetMaterial(cx, cy - 1, cz).IsSolid)
                     {
-                        level.BlockWriter.SetBlock(cx, cy, cz, 0);
+                        level.BlockWriter.SetBlock(cx, cy, cz, 0, 0, doUpdate: false);
                     }
                     else if (level.BlocksReader.GetMaterial(cx, cy, cz).IsSolid)
                     {
                         if (cy == y - 1 && level.random.NextInt(4) != 0)
                         {
-                            level.BlockWriter.SetBlock(cx, cy, cz, Block.MossyCobblestone.id);
+                            level.BlockWriter.SetBlock(cx, cy, cz, Block.MossyCobblestone.id, 0, doUpdate: false);
                         }
                         else
                         {
-                            level.BlockWriter.SetBlock(cx, cy, cz, Block.Cobblestone.id);
+                            level.BlockWriter.SetBlock(cx, cy, cz, Block.Cobblestone.id, 0, doUpdate: false);
                         }
                     }
                 }
@@ -117,7 +117,7 @@ internal class DungeonFeature : Feature
                         continue;
                     }
 
-                    level.BlockWriter.SetBlock(chestX, y, chestZ, Block.Chest.id);
+                    level.BlockWriter.SetBlock(chestX, y, chestZ, Block.Chest.id, 0, doUpdate: false);
 
                     BlockEntityChest? chest = (BlockEntityChest?)level.BlocksReader.GetBlockEntity(chestX, y, chestZ);
                     for (int k = 0; k < 8; ++k)
@@ -132,7 +132,7 @@ internal class DungeonFeature : Feature
             }
         }
 
-        level.BlockWriter.SetBlock(x, y, z, Block.Spawner.id);
+        level.BlockWriter.SetBlock(x, y, z, Block.Spawner.id, 0, doUpdate: false);
         BlockEntityMobSpawner? spawner = (BlockEntityMobSpawner?)level.BlocksReader.GetBlockEntity(x, y, z);
         spawner!.SetSpawnedEntityId(PickMobSpawner(level.random));
         return true;

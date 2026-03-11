@@ -41,12 +41,20 @@ public sealed class WorldBlockWrite : IBlockWrite
 
     public bool SetBlock(int x, int y, int z, int blockId, int meta)
     {
+        return SetBlock(x, y, z, blockId, meta, doUpdate: true);
+    }
+
+    public bool SetBlock(int x, int y, int z, int blockId, int meta, bool doUpdate)
+    {
         int prevId = _reader.GetBlockId(x, y, z);
         int prevMeta = _reader.GetMeta(x, y, z);
-        if (SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta))
+        if (SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta, notifyBlockPlaced: doUpdate))
         {
-            OnBlockChanged?.Invoke(x, y, z, blockId);
-            OnBlockChangedWithPrev?.Invoke(x, y, z, prevId, prevMeta, blockId, meta);
+            if (doUpdate)
+            {
+                OnBlockChanged?.Invoke(x, y, z, blockId);
+                OnBlockChangedWithPrev?.Invoke(x, y, z, prevId, prevMeta, blockId, meta);
+            }
             return true;
         }
 
@@ -71,19 +79,29 @@ public sealed class WorldBlockWrite : IBlockWrite
 
     public bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, int meta)
     {
+        return SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta, notifyBlockPlaced: true);
+    }
+
+    public bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, int meta, bool notifyBlockPlaced)
+    {
         if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
         {
             return false;
         }
 
-        return _host.GetChunk(x >> 4, z >> 4).SetBlock(x & 15, y, z & 15, blockId, meta);
+        return _host.GetChunk(x >> 4, z >> 4).SetBlock(x & 15, y, z & 15, blockId, meta, notifyBlockPlaced);
     }
 
     public bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId)
     {
+        return SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, notifyBlockPlaced: true);
+    }
+
+    public bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, bool notifyBlockPlaced)
+    {
         if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000 && y is >= 0 and < 128)
         {
-            return _host.GetChunk(x >> 4, z >> 4).SetBlock(x & 15, y, z & 15, blockId);
+            return _host.GetChunk(x >> 4, z >> 4).SetBlock(x & 15, y, z & 15, blockId, notifyBlockPlaced);
         }
 
         return false;

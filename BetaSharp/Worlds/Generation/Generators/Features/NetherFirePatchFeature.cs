@@ -14,7 +14,7 @@ internal class NetherFirePatchFeature : Feature
             int genZ = z + level.random.NextInt(8) - level.random.NextInt(8);
             if (level.BlocksReader.IsAir(genX, genY, genZ) && level.BlocksReader.GetBlockId(genX, genY - 1, genZ) == Block.Netherrack.id)
             {
-                level.BlockWriter.SetBlock(genX, genY, genZ, Block.Fire.id);
+                level.BlockWriter.SetBlock(genX, genY, genZ, Block.Fire.id, 0, doUpdate: false);
             }
         }
 

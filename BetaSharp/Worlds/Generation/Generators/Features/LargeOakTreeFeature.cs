@@ -150,7 +150,7 @@ internal class LargeOakTreeFeature : Feature
                     continue;
                 }
 
-                _level.BlockWriter.SetBlock(var11[0], var11[1], var11[2], var6);
+                _level.BlockWriter.SetBlock(var11[0], var11[1], var11[2], var6, 0, doUpdate: false);
                 ++var13;
             }
         }

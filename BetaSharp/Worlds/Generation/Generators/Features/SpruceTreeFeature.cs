@@ -62,7 +62,7 @@ internal class SpruceTreeFeature : Feature
             return false;
         }
 
-        level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id);
+        level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id, 0);
         int currentRadius = level.random.NextInt(2);
         int radiusTarget = 1;
         byte radiusStep = 0;

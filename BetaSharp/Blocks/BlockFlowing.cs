@@ -16,7 +16,7 @@ internal class BlockFlowing : BlockFluid
     private void convertToSource(IWorldContext world, int x, int y, int z)
     {
         int meta = world.BlocksReader.GetMeta(x, y, z);
-        world.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y, z, id + 1, meta);
+        world.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y, z, id + 1, meta, notifyBlockPlaced: false);
         world.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
         world.Broadcaster.BlockUpdateEvent(x, y, z);
     }
@@ -95,13 +95,23 @@ internal class BlockFlowing : BlockFluid
             {
                 this.convertToSource(ctx.Level, ctx.X, ctx.Y, ctx.Z);
             }
+            else
+            {
+                ctx.Level.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
+            }
         }
         else
         {
-            this.convertToSource(ctx.Level, ctx.X, ctx.Y, ctx.Z);
+            int minDepth = -100;
+            _adjacentSources.Value = 0;
+            getLowestDepth(ctx.Level.BlocksReader, ctx.X - 1, ctx.Y, ctx.Z, minDepth);
+            getLowestDepth(ctx.Level.BlocksReader, ctx.X + 1, ctx.Y, ctx.Z, minDepth);
+            getLowestDepth(ctx.Level.BlocksReader, ctx.X, ctx.Y, ctx.Z - 1, minDepth);
+            getLowestDepth(ctx.Level.BlocksReader, ctx.X, ctx.Y, ctx.Z + 1, minDepth);
         }
 
-        if (canSpreadTo(ctx.Level.BlocksReader, ctx.X, ctx.Y - 1, ctx.Z))
+        bool canSpreadDown = canSpreadTo(ctx.Level.BlocksReader, ctx.X, ctx.Y - 1, ctx.Z);
+        if (canSpreadDown)
         {
             if (currentState >= 8)
             {
@@ -114,37 +124,30 @@ internal class BlockFlowing : BlockFluid
         }
         else if (currentState >= 0 && (currentState == 0 || isLiquidBreaking(ctx.Level.BlocksReader, ctx.X, ctx.Y - 1, ctx.Z)))
         {
-            bool[] spreadDirections = getSpread(ctx.Level.BlocksReader, ctx.X, ctx.Y, ctx.Z);
             newLevel = currentState + spreadRate;
             if (currentState >= 8)
             {
                 newLevel = 1;
             }
 
-            if (newLevel >= 8)
-            {
-                return;
-            }
+            bool[] spreadArray = getSpread(ctx.Level.BlocksReader, ctx.X, ctx.Y, ctx.Z);
 
-            if (spreadDirections[0])
+            if (newLevel < 8)
             {
-                spreadTo(ctx.Level, ctx.X - 1, ctx.Y, ctx.Z, newLevel);
+                if (spreadArray[0])
+                    spreadTo(ctx.Level, ctx.X - 1, ctx.Y, ctx.Z, newLevel);
+                if (spreadArray[1])
+                    spreadTo(ctx.Level, ctx.X + 1, ctx.Y, ctx.Z, newLevel);
+                if (spreadArray[2])
+                    spreadTo(ctx.Level, ctx.X, ctx.Y, ctx.Z - 1, newLevel);
+                if (spreadArray[3])
+                    spreadTo(ctx.Level, ctx.X, ctx.Y, ctx.Z + 1, newLevel);
             }
+        }
 
-            if (spreadDirections[1])
-            {
-                spreadTo(ctx.Level, ctx.X + 1, ctx.Y, ctx.Z, newLevel);
-            }
-
-            if (spreadDirections[2])
-            {
-                spreadTo(ctx.Level, ctx.X, ctx.Y, ctx.Z - 1, newLevel);
-            }
-
-            if (spreadDirections[3])
-            {
-                spreadTo(ctx.Level, ctx.X, ctx.Y, ctx.Z + 1, newLevel);
-            }
+        if (currentState == 0 && ctx.Level.BlocksReader.GetBlockId(ctx.X, ctx.Y, ctx.Z) == id)
+        {
+            this.convertToSource(ctx.Level, ctx.X, ctx.Y, ctx.Z);
         }
     }
 
@@ -152,8 +155,8 @@ internal class BlockFlowing : BlockFluid
     {
         if (canSpreadTo(world.BlocksReader, x, y, z))
         {
-            int blockId = world.BlocksReader.GetBlockId(x, y, z);
-            if (blockId > 0)
+            int currentId = world.BlocksReader.GetBlockId(x, y, z);
+            if (currentId > 0)
             {
                 if (material == Material.Lava)
                 {
@@ -161,7 +164,7 @@ internal class BlockFlowing : BlockFluid
                 }
                 else
                 {
-                    Blocks[blockId].dropStacks(new OnDropEvt(world, x, y, z, world.BlocksReader.GetMeta(x, y, z)));
+                    Blocks[currentId].dropStacks(new OnDropEvt(world, x, y, z, world.BlocksReader.GetMeta(x, y, z)));
                 }
             }
 
@@ -323,14 +326,30 @@ internal class BlockFlowing : BlockFluid
 
     private bool canSpreadTo(IBlockReader reader, int x, int y, int z)
     {
-        Material material = reader.GetMaterial(x, y, z);
-        return material != this.material && material != Material.Lava && !isLiquidBreaking(reader, x, y, z);
+        int blockId = reader.GetBlockId(x, y, z);
+        if (blockId == 0)
+        {
+            return true;
+        }
+
+        Material mat = reader.GetMaterial(x, y, z);
+        return mat != this.material && mat != Material.Lava && !isLiquidBreaking(reader, x, y, z);
+    }
+
+    public override void neighborUpdate(OnTickEvt evt)
+    {
+        base.neighborUpdate(evt);
+        if (evt.Level.BlocksReader.GetBlockId(evt.X, evt.Y, evt.Z) == id)
+        {
+            evt.Level.TickScheduler.ScheduleBlockUpdate(evt.X, evt.Y, evt.Z, id, getTickRate());
+        }
     }
 
     public override void onPlaced(OnPlacedEvt ctx)
     {
         base.onPlaced(ctx);
-        if (ctx.Level.BlocksReader.GetBlockId(ctx.X, ctx.Y, ctx.Z) == id)
+        int placedId = ctx.Level.BlocksReader.GetBlockId(ctx.X, ctx.Y, ctx.Z);
+        if (placedId == id && !ctx.Level.IsRemote)
         {
             ctx.Level.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
         }

@@ -19,14 +19,16 @@ internal class BlockStationary : BlockFluid
         base.neighborUpdate(evt);
         if (evt.Level.BlocksReader.GetBlockId(evt.X, evt.Y, evt.Z) == id)
         {
-            evt.Level.TickScheduler.ScheduleBlockUpdate(evt.X, evt.Y, evt.Z, id, getTickRate());
+            int meta = evt.Level.BlocksReader.GetMeta(evt.X, evt.Y, evt.Z);
+            evt.Level.BlockWriter.SetBlockWithoutNotifyingNeighbors(evt.X, evt.Y, evt.Z, id - 1, meta, notifyBlockPlaced: false);
+            evt.Level.TickScheduler.ScheduleBlockUpdate(evt.X, evt.Y, evt.Z, id - 1, getTickRate());
         }
     }
 
     private void convertToFlowing(OnTickEvt evt)
     {
         int meta = evt.Level.BlocksReader.GetMeta(evt.X, evt.Y, evt.Z);
-        evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, id - 1, meta);
+        evt.Level.BlockWriter.SetBlockWithoutNotifyingNeighbors(evt.X, evt.Y, evt.Z, id - 1, meta, notifyBlockPlaced: false);
         evt.Level.Broadcaster.SetBlocksDirty(evt.X, evt.Y, evt.Z, evt.X, evt.Y, evt.Z);
         evt.Level.TickScheduler.ScheduleBlockUpdate(evt.X, evt.Y, evt.Z, id - 1, getTickRate());
     }
