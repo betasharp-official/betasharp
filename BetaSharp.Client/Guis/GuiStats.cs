@@ -129,4 +129,40 @@ public class GuiStats : GuiScreen
     {
         DrawGradientRect(right, bottom, left, top, Color.BlackAlphaC0, Color.BlackAlphaC0);
     }
+
+    protected override void HandleTabLeft()
+    {
+        if (currentSlot == slotItem)
+        {
+            if (slotBlock.GetSize() > 0) currentSlot = slotBlock;
+            else currentSlot = slotGeneral;
+        }
+        else if (currentSlot == slotBlock)
+        {
+            currentSlot = slotGeneral;
+        }
+        else
+        {
+            if (slotItem.GetSize() > 0) currentSlot = slotItem;
+            else if (slotBlock.GetSize() > 0) currentSlot = slotBlock;
+        }
+    }
+
+    protected override void HandleTabRight()
+    {
+        if (currentSlot == slotGeneral)
+        {
+            if (slotBlock.GetSize() > 0) currentSlot = slotBlock;
+            else if (slotItem.GetSize() > 0) currentSlot = slotItem;
+        }
+        else if (currentSlot == slotBlock)
+        {
+            if (slotItem.GetSize() > 0) currentSlot = slotItem;
+            else currentSlot = slotGeneral;
+        }
+        else
+        {
+            currentSlot = slotGeneral;
+        }
+    }
 }

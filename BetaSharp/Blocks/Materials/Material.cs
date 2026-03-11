@@ -1,35 +1,37 @@
+using BetaSharp.Worlds.Maps;
+
 namespace BetaSharp.Blocks.Materials
 {
     public class Material
     {
-        public static readonly Material Air = new MaterialTransparent(MapColor.airColor);
-        public static readonly Material SolidOrganic = new(MapColor.grassColor);
-        public static readonly Material Soil = new(MapColor.dirtColor);
-        public static readonly Material Wood = new Material(MapColor.woodColor).SetBurning();
-        public static readonly Material Stone = new Material(MapColor.stoneColor).SetRequiresTool();
-        public static readonly Material Metal = new Material(MapColor.ironColor).SetRequiresTool();
-        public static readonly Material Water = new MaterialLiquid(MapColor.waterColor).SetDestroyPistonBehavior();
-        public static readonly Material Lava = new MaterialLiquid(MapColor.tntColor).SetDestroyPistonBehavior();
-        public static readonly Material Leaves = new Material(MapColor.foliageColor).SetBurning().SetTransparent().SetDestroyPistonBehavior();
-        public static readonly Material Plant = new MaterialLogic(MapColor.foliageColor).SetDestroyPistonBehavior();
-        public static readonly Material Sponge = new(MapColor.clothColor);
-        public static readonly Material Wool = new Material(MapColor.clothColor).SetBurning();
-        public static readonly Material Fire = new MaterialTransparent(MapColor.airColor).SetDestroyPistonBehavior();
-        public static readonly Material Sand = new(MapColor.sandColor);
-        public static readonly Material PistonBreakable = new MaterialLogic(MapColor.airColor).SetDestroyPistonBehavior();
-        public static readonly Material Glass = new Material(MapColor.airColor).SetTransparent();
-        public static readonly Material Tnt = new Material(MapColor.tntColor).SetBurning().SetTransparent();
-        public static readonly Material Foliage = new Material(MapColor.foliageColor).SetDestroyPistonBehavior();
-        public static readonly Material Ice = new Material(MapColor.iceColor).SetTransparent();
-        public static readonly Material SnowLayer = new MaterialLogic(MapColor.snowColor).SetReplaceable().SetTransparent().SetRequiresTool().SetDestroyPistonBehavior();
-        public static readonly Material SnowBlock = new Material(MapColor.snowColor).SetRequiresTool();
-        public static readonly Material Cactus = new Material(MapColor.foliageColor).SetTransparent().SetDestroyPistonBehavior();
-        public static readonly Material Clay = new(MapColor.clayColor);
-        public static readonly Material Pumpkin = new Material(MapColor.foliageColor).SetDestroyPistonBehavior();
-        public static readonly Material NetherPortal = new MaterialPortal(MapColor.airColor).SetUnpushablePistonBehavior();
-        public static readonly Material Cake = new Material(MapColor.airColor).SetDestroyPistonBehavior();
-        public static readonly Material Cobweb = new Material(MapColor.clothColor).SetRequiresTool().SetDestroyPistonBehavior();
-        public static readonly Material Piston = new Material(MapColor.stoneColor).SetUnpushablePistonBehavior();
+        public static readonly Material Air = new MaterialTransparent(MapColor.Air);
+        public static readonly Material SolidOrganic = new(MapColor.Grass);
+        public static readonly Material Soil = new(MapColor.Dirt);
+        public static readonly Material Wood = new Material(MapColor.Wood).SetBurning();
+        public static readonly Material Stone = new Material(MapColor.Stone).SetRequiresTool();
+        public static readonly Material Metal = new Material(MapColor.Iron).SetRequiresTool();
+        public static readonly Material Water = new MaterialLiquid(MapColor.Water).SetDestroyPistonBehavior();
+        public static readonly Material Lava = new MaterialLiquid(MapColor.TNT).SetDestroyPistonBehavior();
+        public static readonly Material Leaves = new Material(MapColor.Foliage).SetBurning().SetTransparent().SetDestroyPistonBehavior();
+        public static readonly Material Plant = new MaterialLogic(MapColor.Foliage).SetDestroyPistonBehavior();
+        public static readonly Material Sponge = new(MapColor.Cloth);
+        public static readonly Material Wool = new Material(MapColor.Cloth).SetBurning();
+        public static readonly Material Fire = new MaterialTransparent(MapColor.Air).SetDestroyPistonBehavior();
+        public static readonly Material Sand = new(MapColor.Sand);
+        public static readonly Material PistonBreakable = new MaterialLogic(MapColor.Air).SetDestroyPistonBehavior();
+        public static readonly Material Glass = new Material(MapColor.Air).SetTransparent();
+        public static readonly Material Tnt = new Material(MapColor.TNT).SetBurning().SetTransparent();
+        public static readonly Material Foliage = new Material(MapColor.Foliage).SetDestroyPistonBehavior();
+        public static readonly Material Ice = new Material(MapColor.Ice).SetTransparent();
+        public static readonly Material SnowLayer = new MaterialLogic(MapColor.Snow).SetReplaceable().SetTransparent().SetRequiresTool().SetDestroyPistonBehavior();
+        public static readonly Material SnowBlock = new Material(MapColor.Snow).SetRequiresTool();
+        public static readonly Material Cactus = new Material(MapColor.Foliage).SetTransparent().SetDestroyPistonBehavior();
+        public static readonly Material Clay = new(MapColor.Clay);
+        public static readonly Material Pumpkin = new Material(MapColor.Foliage).SetDestroyPistonBehavior();
+        public static readonly Material NetherPortal = new MaterialPortal(MapColor.Air).SetUnpushablePistonBehavior();
+        public static readonly Material Cake = new Material(MapColor.Air).SetDestroyPistonBehavior();
+        public static readonly Material Cobweb = new Material(MapColor.Cloth).SetRequiresTool().SetDestroyPistonBehavior();
+        public static readonly Material Piston = new Material(MapColor.Stone).SetUnpushablePistonBehavior();
 
         private bool _transparent;
 

@@ -37,9 +37,6 @@ public class EntityBoat : Entity
         return false;
     }
 
-    protected override void initDataTracker()
-    {
-    }
 
     public override Box? getCollisionAgainstShape(Entity entity)
     {

@@ -1,5 +1,6 @@
 using BetaSharp.Items;
 using BetaSharp.NBT;
+using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
@@ -8,6 +9,7 @@ namespace BetaSharp.Entities;
 
 public class EntitySlime : EntityLiving, Monster
 {
+    public readonly SyncedProperty<byte> SlimeSize;
     public float squishAmount;
     public float prevSquishAmount;
     private int slimeJumpDelay;
@@ -15,21 +17,16 @@ public class EntitySlime : EntityLiving, Monster
     public EntitySlime(World world) : base(world)
     {
         texture = "/mob/slime.png";
+        SlimeSize = DataSynchronizer.MakeProperty<byte>(16, 1);
         int size = 1 << random.NextInt(3);
         standingEyeHeight = 0.0F;
         slimeJumpDelay = random.NextInt(20) + 10;
         setSlimeSize(size);
     }
 
-    protected override void initDataTracker()
-    {
-        base.initDataTracker();
-        dataWatcher.AddObject(16, (byte)1);
-    }
-
     public void setSlimeSize(int size)
     {
-        dataWatcher.UpdateObject(16, (byte)size);
+        SlimeSize.Value = (byte)size;
         setBoundingBoxSpacing(0.6F * (float)size, 0.6F * (float)size);
         health = size * size;
         setPosition(x, y, z);
@@ -37,7 +34,7 @@ public class EntitySlime : EntityLiving, Monster
 
     public int getSlimeSize()
     {
-        return dataWatcher.getWatchableObjectByte(16);
+        return SlimeSize.Value;
     }
 
     public override void writeNbt(NBTTagCompound nbt)

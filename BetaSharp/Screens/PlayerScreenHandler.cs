@@ -94,13 +94,37 @@ public class PlayerScreenHandler : ScreenHandler
             {
                 insertItem(var4, 9, 45, true);
             }
-            else if (slotNumber >= 9 && slotNumber < 36)
+            else if (slotNumber >= 5 && slotNumber < 9)
             {
-                insertItem(var4, 36, 45, false);
+                insertItem(var4, 9, 45, false);
             }
-            else if (slotNumber >= 36 && slotNumber < 45)
+            else if (slotNumber >= 9 && slotNumber < 45)
             {
-                insertItem(var4, 9, 36, false);
+                if (var4.getItem() is ItemArmor armor)
+                {
+                    int targetSlot = 5 + armor.armorType;
+                    int countBefore = var4.count;
+                    insertItem(var4, targetSlot, targetSlot + 1, false);
+                    if (var4.count == countBefore)
+                    {
+                        if (slotNumber < 36)
+                        {
+                            insertItem(var4, 36, 45, false);
+                        }
+                        else
+                        {
+                            insertItem(var4, 9, 36, false);
+                        }
+                    }
+                }
+                else if (slotNumber < 36)
+                {
+                    insertItem(var4, 36, 45, false);
+                }
+                else
+                {
+                    insertItem(var4, 9, 36, false);
+                }
             }
             else
             {

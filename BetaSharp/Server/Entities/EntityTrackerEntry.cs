@@ -3,6 +3,7 @@ using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Server.Entities;
@@ -126,10 +127,12 @@ internal class EntityTrackerEntry
                 sendToListeners((Packet)var10);
             }
 
-            DataWatcher var23 = currentTrackedEntity.getDataWatcher();
-            if (var23.dirty)
+            DataSynchronizer dataSync = currentTrackedEntity.DataSynchronizer;
+            if (dataSync.Dirty)
             {
-                sendToAround(EntityTrackerUpdateS2CPacket.Get(currentTrackedEntity.id, var23));
+                var stream = new MemoryStream();
+                dataSync.WriteChanges(stream);
+                sendToAround(EntityTrackerUpdateS2CPacket.Get(currentTrackedEntity.id, stream.ToArray()));
             }
 
             if (var11)
@@ -159,17 +162,20 @@ internal class EntityTrackerEntry
         {
             player.networkHandler.sendPacket(packet);
         }
-        packet.ReturnNoCount();
+        packet.Return();
     }
 
     public void sendToAround(Packet packet)
     {
-        sendToListeners(packet);
+        foreach (var p in listeners)
+        {
+            p.networkHandler.sendPacket(packet);
+        }
         if (currentTrackedEntity is ServerPlayerEntity entity)
         {
             entity.networkHandler.sendPacket(packet);
         }
-        packet.ReturnNoCount();
+        packet.Return();
     }
 
     public void notifyEntityRemoved()
@@ -179,7 +185,7 @@ internal class EntityTrackerEntry
 
     public void notifyEntityRemoved(ServerPlayerEntity player)
     {
-            listeners.Remove(player);
+        listeners.Remove(player);
     }
 
     public void updateListener(ServerPlayerEntity player)

@@ -15,9 +15,9 @@ internal class ItemSaddle : Item
         if (entityLiving is EntityPig)
         {
             EntityPig pig = (EntityPig)entityLiving;
-            if (!pig.getSaddled())
+            if (!pig.Saddled.Value)
             {
-                pig.setSaddled(true);
+                pig.Saddled.Value = true;
                 --itemStack.count;
             }
         }

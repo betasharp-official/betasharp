@@ -65,7 +65,7 @@ public class CreeperEntityRenderer : LivingEntityRenderer
 
     protected bool func_27006_a(EntityCreeper var1, int var2, float var3)
     {
-        if (var1.getPowered())
+        if (var1.Powered.Value)
         {
             if (var2 == 1)
             {

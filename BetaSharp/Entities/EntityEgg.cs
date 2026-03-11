@@ -23,9 +23,6 @@ public class EntityEgg : Entity
         setBoundingBoxSpacing(0.25F, 0.25F);
     }
 
-    protected override void initDataTracker()
-    {
-    }
 
     public override bool shouldRender(double var1)
     {

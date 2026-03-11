@@ -1,4 +1,5 @@
 using BetaSharp.Items;
+using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 
@@ -6,6 +7,7 @@ namespace BetaSharp.Entities;
 
 public class EntityGhast : EntityFlying, Monster
 {
+    public readonly SyncedProperty<bool> Charging;
     public int courseChangeCooldown;
     public double waypointX;
     public double waypointY;
@@ -20,19 +22,13 @@ public class EntityGhast : EntityFlying, Monster
         texture = "/mob/ghast.png";
         setBoundingBoxSpacing(4.0F, 4.0F);
         isImmuneToFire = true;
-    }
-
-    protected override void initDataTracker()
-    {
-        base.initDataTracker();
-        dataWatcher.AddObject(16, (byte)0);
+        Charging = DataSynchronizer.MakeProperty<bool>(16, false);
     }
 
     public override void tick()
     {
         base.tick();
-        sbyte data = dataWatcher.getWatchableObjectByte(16);
-        texture = data == 1 ? "/mob/ghast_fire.png" : "/mob/ghast.png";
+        texture = Charging.Value ? "/mob/ghast_fire.png" : "/mob/ghast.png";
     }
 
     public override void tickLiving()
@@ -130,14 +126,8 @@ public class EntityGhast : EntityFlying, Monster
 
         if (!world.isRemote)
         {
-            sbyte data = dataWatcher.getWatchableObjectByte(16);
-            byte isCharging = (byte)(attackCounter > 10 ? 1 : 0);
-            if (data != isCharging)
-            {
-                dataWatcher.UpdateObject(16, (byte)isCharging);
-            }
+            Charging.Value = attackCounter > 10;
         }
-
     }
 
     private bool isCourseTraversable(double targetX, double targety, double targetZ, double distance)

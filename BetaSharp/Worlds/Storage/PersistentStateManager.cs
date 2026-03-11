@@ -23,7 +23,7 @@ public class PersistentStateManager
         return (T?)LoadData(typeof(T), id);
     }
 
-    public PersistentState? LoadData(Type type, string id)
+    public PersistentState? LoadData(Type type, string id) // On server never returns null, on client always
     {
         if (_loadedDataMap.TryGetValue(id, out PersistentState? existingState))
         {
@@ -51,7 +51,7 @@ public class PersistentStateManager
                     using FileStream stream = file.OpenRead();
                     NBTTagCompound rootTag = NbtIo.ReadCompressed(stream);
 
-                    newState.readNBT(rootTag.GetCompoundTag("data"));
+                    newState.ReadNBT(rootTag.GetCompoundTag("data"));
                 }
             }
             catch (Exception ex)
@@ -86,10 +86,10 @@ public class PersistentStateManager
     {
         foreach (PersistentState state in _loadedDataList)
         {
-            if (state.isDirty())
+            if (state.Dirty)
             {
                 SaveData(state);
-                state.setDirty(false);
+                state.Dirty = false;
             }
         }
     }
@@ -100,11 +100,11 @@ public class PersistentStateManager
 
         try
         {
-            FileInfo? file = _saveHandler.GetWorldPropertiesFile(state.id);
+            FileInfo? file = _saveHandler.GetWorldPropertiesFile(state.Id);
             if (file != null)
             {
                 NBTTagCompound stateTag = new();
-                state.writeNBT(stateTag);
+                state.WriteNBT(stateTag);
 
                 NBTTagCompound rootTag = new();
                 rootTag.SetCompoundTag("data", stateTag);
@@ -115,7 +115,7 @@ public class PersistentStateManager
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Exception saving state: {state.id}");
+            _logger.LogError(ex, $"Exception saving state: {state.Id}");
         }
     }
 

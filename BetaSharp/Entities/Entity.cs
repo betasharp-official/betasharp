@@ -2,6 +2,7 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
 using BetaSharp.NBT;
+using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using Math = System.Math;
@@ -64,7 +65,7 @@ public abstract class Entity
     private bool firstTick = true;
     public string cloakUrl;
     protected bool isImmuneToFire = false;
-    protected DataWatcher dataWatcher = new();
+    public DataSynchronizer DataSynchronizer = new();
     public float minBrightness = 0.0F;
     private double vehiclePitchDelta;
     private double vehicleYawDelta;
@@ -76,30 +77,13 @@ public abstract class Entity
     public int trackedPosY;
     public int trackedPosZ;
     public bool ignoreFrustumCheck;
+    private readonly SyncedProperty<byte> Flags;
 
     public Entity(World world)
     {
         this.world = world;
         setPosition(0.0D, 0.0D, 0.0D);
-        dataWatcher.AddObject(0, (byte)0);
-        initDataTracker();
-    }
-
-    protected abstract void initDataTracker();
-
-    public DataWatcher getDataWatcher()
-    {
-        return dataWatcher;
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is Entity e && e.id == id;
-    }
-
-    public override int GetHashCode()
-    {
-        return id;
+        Flags = DataSynchronizer.MakeProperty<byte>(0, 0);
     }
 
     public Vec3D Position => new Vec3D(x, y, z);
@@ -267,8 +251,8 @@ public abstract class Entity
 
         if (!world.isRemote)
         {
-            setFlag(0, fireTicks > 0);
-            setFlag(2, vehicle != null);
+            SetFlag(0, fireTicks > 0);
+            SetFlag(2, vehicle != null);
         }
 
         firstTick = false;
@@ -1250,12 +1234,12 @@ public abstract class Entity
 
     public bool isOnFire()
     {
-        return fireTicks > 0 || getFlag(0);
+        return fireTicks > 0 || GetFlag(0);
     }
 
     public bool hasVehicle()
     {
-        return vehicle != null || getFlag(2);
+        return vehicle != null || GetFlag(2);
     }
 
     public virtual ItemStack[] getEquipment()
@@ -1265,33 +1249,33 @@ public abstract class Entity
 
     public virtual bool isSneaking()
     {
-        return getFlag(1);
+        return GetFlag(1);
     }
 
     public void setSneaking(bool sneaking)
     {
-        setFlag(1, sneaking);
+        SetFlag(1, sneaking);
     }
 
-    protected bool getFlag(int var1)
+    protected bool GetFlag(int index)
     {
-        return (dataWatcher.getWatchableObjectByte(0) & 1 << var1) != 0;
+        return (Flags.Value & (1 << index)) != 0;
     }
 
-    protected void setFlag(int var1, bool var2)
+    protected void SetFlag(int index, bool value)
     {
-        sbyte var3 = dataWatcher.getWatchableObjectByte(0);
+        byte oldValue = Flags.Value;
         byte newValue;
-        if (var2)
+        if (value)
         {
-            newValue = (byte)((byte)var3 | (1 << var1));
+            newValue = (byte)(oldValue | (1 << index));
         }
         else
         {
-            newValue = (byte)((byte)var3 & ~(1 << var1));
+            newValue = (byte)(oldValue & ~(1 << index));
         }
-        dataWatcher.UpdateObject(0, (byte)(newValue));
 
+        Flags.Value = newValue;
     }
 
     public virtual void onStruckByLightning(EntityLightningBolt bolt)
@@ -1396,5 +1380,15 @@ public abstract class Entity
         }
 
         return false;
+    }
+
+    public override bool Equals(object other)
+    {
+        return other is Entity e && e.id == id;
+    }
+
+    public override int GetHashCode()
+    {
+        return id;
     }
 }

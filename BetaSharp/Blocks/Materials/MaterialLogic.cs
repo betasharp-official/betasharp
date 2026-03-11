@@ -1,3 +1,5 @@
+using BetaSharp.Worlds.Maps;
+
 namespace BetaSharp.Blocks.Materials
 {
     internal class MaterialLogic : Material

@@ -64,10 +64,6 @@ public class EntityFX : Entity
         return false;
     }
 
-    protected override void initDataTracker()
-    {
-    }
-
     public override void tick()
     {
         prevX = x;

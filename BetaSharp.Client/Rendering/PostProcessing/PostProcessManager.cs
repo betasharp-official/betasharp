@@ -101,7 +101,7 @@ public class PostProcessManager
         _gammaShader.Bind();
 
         float slider = _options.Gamma / 100.0f;
-        float gammaValue = 0.5f + (slider * 1.5f);
+        float gammaValue = 0.25f + (slider * 1.5f);
 
         _gammaShader.SetUniform1("gamma", gammaValue);
         _gammaShader.SetUniform1("screenTexture", 0);

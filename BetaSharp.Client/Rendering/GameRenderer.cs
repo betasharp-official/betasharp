@@ -236,19 +236,7 @@ public class GameRenderer
             float var4 = _client.mouseHelper.DeltaX * var3;
             float var5 = _client.mouseHelper.DeltaY * var3;
 
-            if (_client.isControllerMode)
-            {
-                float rx = Controller.RightStickX;
-                float ry = Controller.RightStickY;
-                float deadzone = Controller.RightStickDeadzone;
-
-                // quadratic curve
-                float activeRx = (Math.Abs(rx) - deadzone) / (1.0f - deadzone);
-                var4 += activeRx * activeRx * Math.Sign(rx) * 10f * var3;
-
-                float activeRy = (Math.Abs(ry) - deadzone) / (1.0f - deadzone);
-                var5 += activeRy * activeRy * Math.Sign(ry) * 10f * var3;
-            }
+            ControllerManager.HandleLook(ref var4, ref var5, var3);
             int var6 = -1;
             if (_client.options.InvertMouse)
             {

@@ -79,9 +79,6 @@ public class EntityFish : Entity
         func_4042_a(base.velocityX, base.velocityY, base.velocityZ, 1.5F, 1.0F);
     }
 
-    protected override void initDataTracker()
-    {
-    }
 
     public override bool shouldRender(double var1)
     {

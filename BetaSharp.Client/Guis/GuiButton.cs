@@ -12,8 +12,8 @@ public class GuiButton : Gui
         Hovered = 2
     }
 
-    protected int _width;
-    protected int _height;
+    public int Width;
+    public int Height;
     public int XPosition;
     public int YPosition;
     public string DisplayString;
@@ -28,22 +28,22 @@ public class GuiButton : Gui
 
     public GuiButton(int _id, int xPos, int yPos, int wid, int hei, string displayStr)
     {
-        _width = 200;
-        _height = 20;
+        Width = 200;
+        Height = 20;
         Enabled = true;
         Visible = true;
         Id = _id;
         XPosition = xPos;
         YPosition = yPos;
-        _width = wid;
-        _height = hei;
+        Width = wid;
+        Height = hei;
         DisplayString = displayStr;
     }
 
     public GuiButton Size(int width, int height)
     {
-        _width = width;
-        _height = height;
+        Width = width;
+        Height = height;
         return this;
     }
 
@@ -64,25 +64,25 @@ public class GuiButton : Gui
         game.textureManager.BindTexture(game.textureManager.GetTextureId("/gui/gui.png"));
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
 
-        bool isHovered = mouseX >= XPosition && mouseY >= YPosition && mouseX < XPosition + _width && mouseY < YPosition + _height;
+        bool isHovered = mouseX >= XPosition && mouseY >= YPosition && mouseX < XPosition + Width && mouseY < YPosition + Height;
         HoverState hoverState = GetHoverState(isHovered);
 
-        DrawTexturedModalRect(XPosition, YPosition, 0, 46 + (int)hoverState * 20, _width / 2, _height);
-        DrawTexturedModalRect(XPosition + _width / 2, YPosition, 200 - _width / 2, 46 + (int)hoverState * 20, _width / 2, _height);
+        DrawTexturedModalRect(XPosition, YPosition, 0, 46 + (int)hoverState * 20, Width / 2, Height);
+        DrawTexturedModalRect(XPosition + Width / 2, YPosition, 200 - Width / 2, 46 + (int)hoverState * 20, Width / 2, Height);
 
         MouseDragged(game, mouseX, mouseY);
 
         if (!Enabled)
         {
-            DrawCenteredString(font, DisplayString, XPosition + _width / 2, YPosition + (_height - 8) / 2, Color.GrayA0);
+            DrawCenteredString(font, DisplayString, XPosition + Width / 2, YPosition + (Height - 8) / 2, Color.GrayA0);
         }
         else if (isHovered)
         {
-            DrawCenteredString(font, DisplayString, XPosition + _width / 2, YPosition + (_height - 8) / 2, Color.HoverYellow);
+            DrawCenteredString(font, DisplayString, XPosition + Width / 2, YPosition + (Height - 8) / 2, Color.HoverYellow);
         }
         else
         {
-            DrawCenteredString(font, DisplayString, XPosition + _width / 2, YPosition + (_height - 8) / 2, Color.GrayE0);
+            DrawCenteredString(font, DisplayString, XPosition + Width / 2, YPosition + (Height - 8) / 2, Color.GrayE0);
         }
     }
 
@@ -96,6 +96,6 @@ public class GuiButton : Gui
 
     public virtual bool MousePressed(BetaSharp game, int mouseX, int mouseY)
     {
-        return Enabled && mouseX >= XPosition && mouseY >= YPosition && mouseX < XPosition + _width && mouseY < YPosition + _height;
+        return Enabled && mouseX >= XPosition && mouseY >= YPosition && mouseX < XPosition + Width && mouseY < YPosition + Height;
     }
 }

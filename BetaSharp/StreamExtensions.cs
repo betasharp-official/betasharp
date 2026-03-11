@@ -158,5 +158,28 @@ internal static class StreamExtensions
 
             return Encoding.BigEndianUnicode.GetString(buffer);
         }
+
+        public byte[] ReadUntil(byte terminator)
+        {
+            List<byte> buffer = new();
+
+            while (true)
+            {
+                int b = stream.ReadByte();
+                if (b < 0)
+                {
+                    throw new EndOfStreamException("Unexpected end of stream while reading until terminator " + terminator);
+                }
+
+                if (b == terminator)
+                {
+                    break;
+                }
+
+                buffer.Add((byte)b);
+            }
+
+            return buffer.ToArray();
+        }
     }
 }

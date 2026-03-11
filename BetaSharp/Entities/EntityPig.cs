@@ -1,32 +1,31 @@
 using BetaSharp.Items;
 using BetaSharp.NBT;
+using BetaSharp.Util;
 using BetaSharp.Worlds;
 
 namespace BetaSharp.Entities;
 
 public class EntityPig : EntityAnimal
 {
+    public readonly SyncedProperty<bool> Saddled;
+
     public EntityPig(World world) : base(world)
     {
         texture = "/mob/pig.png";
         setBoundingBoxSpacing(0.9F, 0.9F);
-    }
-
-    protected override void initDataTracker()
-    {
-        dataWatcher.AddObject(16, (byte)0);
+        Saddled = DataSynchronizer.MakeProperty(16, false);
     }
 
     public override void writeNbt(NBTTagCompound nbt)
     {
         base.writeNbt(nbt);
-        nbt.SetBoolean("Saddle", getSaddled());
+        nbt.SetBoolean("Saddle", Saddled.Value);
     }
 
     public override void readNbt(NBTTagCompound nbt)
     {
         base.readNbt(nbt);
-        setSaddled(nbt.GetBoolean("Saddle"));
+        Saddled.Value = nbt.GetBoolean("Saddle");
     }
 
     protected override string getLivingSound()
@@ -46,7 +45,7 @@ public class EntityPig : EntityAnimal
 
     public override bool interact(EntityPlayer player)
     {
-        if (!getSaddled() || world.isRemote || passenger != null && passenger != player)
+        if (!Saddled.Value || world.isRemote || passenger != null && passenger != player)
         {
             return false;
         }
@@ -60,24 +59,6 @@ public class EntityPig : EntityAnimal
     protected override int getDropItemId()
     {
         return fireTicks > 0 ? Item.CookedPorkchop.id : Item.RawPorkchop.id;
-    }
-
-    public bool getSaddled()
-    {
-        return (dataWatcher.getWatchableObjectByte(16) & 1) != 0;
-    }
-
-    public void setSaddled(bool isSaddled)
-    {
-        if (isSaddled)
-        {
-            dataWatcher.UpdateObject(16, ((byte)1));
-        }
-        else
-        {
-            dataWatcher.UpdateObject(16, ((byte)0));
-        }
-
     }
 
     public override void onStruckByLightning(EntityLightningBolt bolt)

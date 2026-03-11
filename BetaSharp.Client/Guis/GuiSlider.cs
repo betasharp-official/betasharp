@@ -18,8 +18,8 @@ public class GuiSlider : GuiButton
 
     public GuiSlider Size(int width, int height)
     {
-        _width = width;
-        _height = height;
+        Width = width;
+        Height = height;
         return this;
     }
 
@@ -34,7 +34,7 @@ public class GuiSlider : GuiButton
         {
             if (dragging)
             {
-                sliderValue = (mouseX - (XPosition + 4)) / (float)(_width - 8);
+                sliderValue = (mouseX - (XPosition + 4)) / (float)(Width - 8);
                 if (sliderValue < 0.0F)
                 {
                     sliderValue = 0.0F;
@@ -50,8 +50,8 @@ public class GuiSlider : GuiButton
             }
 
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-            DrawTexturedModalRect(XPosition + (int)(sliderValue * (_width - 8)), YPosition, 0, 66, 4, 20);
-            DrawTexturedModalRect(XPosition + (int)(sliderValue * (_width - 8)) + 4, YPosition, 196, 66, 4, 20);
+            DrawTexturedModalRect(XPosition + (int)(sliderValue * (Width - 8)), YPosition, 0, 66, 4, 20);
+            DrawTexturedModalRect(XPosition + (int)(sliderValue * (Width - 8)) + 4, YPosition, 196, 66, 4, 20);
         }
     }
 
@@ -59,7 +59,7 @@ public class GuiSlider : GuiButton
     {
         if (base.MousePressed(game, mouseX, mouseY))
         {
-            sliderValue = (mouseX - (XPosition + 4)) / (float)(_width - 8);
+            sliderValue = (mouseX - (XPosition + 4)) / (float)(Width - 8);
             if (sliderValue < 0.0F)
             {
                 sliderValue = 0.0F;

@@ -63,9 +63,6 @@ public class EntityMinecart : Entity, IInventory
         return false;
     }
 
-    protected override void initDataTracker()
-    {
-    }
 
     public override Box? getCollisionAgainstShape(Entity entity)
     {

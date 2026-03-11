@@ -60,9 +60,6 @@ public class EntityPainting : Entity
         SetFacing(direction);
     }
 
-    protected override void initDataTracker()
-    {
-    }
 
     private void SetFacing(int facing)
     {

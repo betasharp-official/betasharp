@@ -48,17 +48,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         public bool priority = priority;
     }
 
-    private sealed class ChunkDistanceComparer : IComparer<ChunkToMeshInfo>
-    {
-        public Vector3D<double> Origin;
-        public int Compare(ChunkToMeshInfo a, ChunkToMeshInfo b)
-        {
-            double distA = Vector3D.DistanceSquared(ToDoubleVec(a.Pos), Origin);
-            double distB = Vector3D.DistanceSquared(ToDoubleVec(b.Pos), Origin);
-            return distA.CompareTo(distB);
-        }
-    }
-
     private sealed class TranslucentDistanceComparer : IComparer<SubChunkRenderer>
     {
         public Vector3D<double> Origin;
@@ -96,7 +85,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly ChunkOcclusionCuller _occlusionCuller = new();
     private readonly List<SubChunkRenderer> _visibleRenderers = [];
     private readonly List<SubChunkRenderer> _occludedRenderersBuffer = [];
-    private readonly ChunkDistanceComparer _chunkDistanceComparer = new();
     private readonly TranslucentDistanceComparer _translucentDistanceComparer = new();
     private int _frameIndex = 0;
 
@@ -439,20 +427,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     private void ProcessOneMeshUpdate(Culler camera)
     {
-        _chunkDistanceComparer.Origin = _lastViewPos;
-        _dirtyChunks.Sort(_chunkDistanceComparer);
-
+        _dirtyChunks.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
+        int bestIndex = -1;
+        double bestDist = double.MaxValue;
         for (int i = 0; i < _dirtyChunks.Count; i++)
         {
-            ChunkToMeshInfo info = _dirtyChunks[i];
-
-            if (!IsChunkInRenderDistance(info.Pos, _lastViewPos))
-            {
-                _dirtyChunks.RemoveAt(i);
-                i--;
-                continue;
-            }
-
+            var info = _dirtyChunks[i];
             var aabb = new Box(
                 info.Pos.X, info.Pos.Y, info.Pos.Z,
                 info.Pos.X + SubChunkRenderer.Size,
@@ -460,36 +440,42 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 info.Pos.Z + SubChunkRenderer.Size
             );
 
-            if (!camera.isBoundingBoxInFrustum(aabb))
+            double dist = Vector3D.DistanceSquared(ToDoubleVec(info.Pos), _lastViewPos);
+            if (dist < bestDist && camera.isBoundingBoxInFrustum(aabb))
             {
-                continue;
+                bestDist = dist;
+                bestIndex = i;
             }
+        }
 
-            _meshGenerator.MeshChunk(_world, info.Pos, info.Version);
-            _dirtyChunks.RemoveAt(i);
-            return;
+        if (bestIndex != -1)
+        {
+            var closest = _dirtyChunks[bestIndex];
+            _meshGenerator.MeshChunk(_world, closest.Pos, closest.Version);
+            _dirtyChunks.RemoveAt(bestIndex);
         }
     }
 
     private void ProcessOneLightingMeshUpdate()
     {
-        _chunkDistanceComparer.Origin = _lastViewPos;
-        _lightingUpdates.Sort(_chunkDistanceComparer);
-
+        _lightingUpdates.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
+        int bestIndex = -1;
+        double bestDist = double.MaxValue;
         for (int i = 0; i < _lightingUpdates.Count; i++)
         {
-            ChunkToMeshInfo update = _lightingUpdates[i];
-
-            if (!IsChunkInRenderDistance(update.Pos, _lastViewPos))
+            double dist = Vector3D.DistanceSquared(ToDoubleVec(_lightingUpdates[i].Pos), _lastViewPos);
+            if (dist < bestDist)
             {
-                _lightingUpdates.RemoveAt(i);
-                i--;
-                continue;
+                bestDist = dist;
+                bestIndex = i;
             }
+        }
 
+        if (bestIndex != -1)
+        {
+            var update = _lightingUpdates[bestIndex];
             _meshGenerator.MeshChunk(_world, update.Pos, update.Version);
-            _lightingUpdates.RemoveAt(i);
-            return;
+            _lightingUpdates.RemoveAt(bestIndex);
         }
     }
 

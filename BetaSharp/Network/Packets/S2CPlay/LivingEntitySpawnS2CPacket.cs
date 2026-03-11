@@ -13,8 +13,7 @@ public class LivingEntitySpawnS2CPacket() : Packet(PacketId.LivingEntitySpawnS2C
     public int zPosition;
     public sbyte yaw;
     public sbyte pitch;
-    private DataWatcher metaData;
-    private List<WatchableObject> receivedMetadata;
+    public byte[] Data;
 
     public static LivingEntitySpawnS2CPacket Get(EntityLiving ent)
     {
@@ -26,7 +25,9 @@ public class LivingEntitySpawnS2CPacket() : Packet(PacketId.LivingEntitySpawnS2C
         p.zPosition = MathHelper.Floor(ent.z * 32.0D);
         p.yaw = (sbyte)(int)(ent.yaw * 256.0F / 360.0F);
         p.pitch = (sbyte)(int)(ent.pitch * 256.0F / 360.0F);
-        p.metaData = ent.getDataWatcher();
+        var stream = new MemoryStream();
+        ent.DataSynchronizer.WriteAll(stream);
+        p.Data = stream.ToArray();
         return p;
     }
 
@@ -39,7 +40,7 @@ public class LivingEntitySpawnS2CPacket() : Packet(PacketId.LivingEntitySpawnS2C
         zPosition = stream.ReadInt();
         yaw = (sbyte)stream.ReadByte();
         pitch = (sbyte)stream.ReadByte();
-        receivedMetadata = DataWatcher.ReadWatchableObjects(stream);
+        Data = stream.ReadUntil(127);
     }
 
     public override void Write(NetworkStream stream)
@@ -51,7 +52,8 @@ public class LivingEntitySpawnS2CPacket() : Packet(PacketId.LivingEntitySpawnS2C
         stream.WriteInt(zPosition);
         stream.WriteByte((byte)yaw);
         stream.WriteByte((byte)pitch);
-        metaData.WriteWatchableObjects(stream);
+        stream.Write(Data);
+        stream.WriteByte(127);
     }
 
     public override void Apply(NetHandler handler)
@@ -62,10 +64,5 @@ public class LivingEntitySpawnS2CPacket() : Packet(PacketId.LivingEntitySpawnS2C
     public override int Size()
     {
         return 20;
-    }
-
-    public List<WatchableObject> GetMetadata()
-    {
-        return receivedMetadata;
     }
 }

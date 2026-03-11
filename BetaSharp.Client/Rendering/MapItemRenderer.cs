@@ -3,6 +3,7 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Entities;
+using BetaSharp.Worlds.Maps;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Color = BetaSharp.Client.Guis.Color;
@@ -33,7 +34,7 @@ public class MapItemRenderer
     {
         for (int i = 0; i < 128 * 128; ++i)
         {
-            byte color = mapState.colors[i];
+            byte color = mapState.Colors[i];
             if (color / 4 == 0)
             {
                 // render translucent checkerboard pattern for transparent pixels
@@ -41,7 +42,7 @@ public class MapItemRenderer
             }
             else
             {
-                uint colorValue = MapColor.mapColorArray[color / 4].colorValue;
+                uint colorValue = MapColor.ById(color / 4).ColorValue;
                 int lowest2Bits = color & 3;
                 byte brightness = lowest2Bits switch
                 {
@@ -72,17 +73,17 @@ public class MapItemRenderer
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.GL.Disable(GLEnum.Blend);
         textureManager.BindTexture(textureManager.GetTextureId("/misc/mapicons.png"));
-        foreach (MapCoord icon in mapState.icons)
+        foreach (var icon in mapState.Icons)
         {
             GLManager.GL.PushMatrix();
-            GLManager.GL.Translate((sbyte)icon.x / 2.0F + 64.0F, (sbyte)icon.z / 2.0F + 64.0F, -0.02F);
-            GLManager.GL.Rotate((sbyte)icon.rotation * 360 / 16.0F, 0.0F, 0.0F, 1.0F);
+            GLManager.GL.Translate((sbyte)icon.X / 2.0F + 64.0F, (sbyte)icon.Z / 2.0F + 64.0F, -0.02F);
+            GLManager.GL.Rotate((sbyte)icon.Rotation * 360 / 16.0F, 0.0F, 0.0F, 1.0F);
             GLManager.GL.Scale(4.0F, 4.0F, 3.0F);
             GLManager.GL.Translate(-(2.0F / 16.0F), 2.0F / 16.0F, 0.0F);
-            float uMin = (icon.type % 4 + 0) / 4.0F;
-            float vMin = (icon.type / 4 + 0) / 4.0F;
-            float uMax = (icon.type % 4 + 1) / 4.0F;
-            float vMax = (icon.type / 4 + 1) / 4.0F;
+            float uMin = (icon.Type % 4 + 0) / 4.0F;
+            float vMin = (icon.Type / 4 + 0) / 4.0F;
+            float uMax = (icon.Type % 4 + 1) / 4.0F;
+            float vMax = (icon.Type / 4 + 1) / 4.0F;
             tess.startDrawingQuads();
             tess.addVertexWithUV(-1, 1, 0, uMin, vMin);
             tess.addVertexWithUV(1, 1, 0, uMax, vMin);
@@ -95,7 +96,7 @@ public class MapItemRenderer
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate(0.0F, 0.0F, -0.04F);
         GLManager.GL.Scale(1.0F, 1.0F, 1.0F);
-        _textRenderer.DrawString(mapState.id, 0, 0, Color.White);
+        _textRenderer.DrawString(mapState.Id, 0, 0, Color.White);
         GLManager.GL.PopMatrix();
     }
 }

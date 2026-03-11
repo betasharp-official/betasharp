@@ -21,27 +21,44 @@ public abstract class Packet
     /// <summary>
     /// When sending to multiple clients, we only want to return when all packages have been sent
     /// </summary>
-    public short UseCount;
+    public int UseCount;
+
+#if DEBUG
+    public string AllocationTrace = string.Empty;
+    public string ReturnTrace = string.Empty;
+    public bool IsReturned = false;
+#endif
 
     protected Packet(byte id)
     {
         Id = id;
+        UseCount = 1;
     }
 
     protected Packet(PacketId id)
     {
         Id = (byte)id;
+        UseCount = 1;
     }
 
     public void Return()
     {
-        UseCount--;
+        Interlocked.Decrement(ref UseCount);
         ReturnNoCount();
     }
 
-    public void ReturnNoCount()
+    protected void ReturnNoCount()
     {
-        if (UseCount > 0) return;
+        if (Volatile.Read(ref UseCount) > 0) return;
+
+#if DEBUG
+        if (IsReturned)
+        {
+            throw new InvalidOperationException($"Packet double-returned! It was freed by an earlier call.\nAllocated at:\n{AllocationTrace}\n\nPreviously returned at:\n{ReturnTrace}\n\nDouble return at:\n{Environment.StackTrace}");
+        }
+        IsReturned = true;
+        ReturnTrace = Environment.StackTrace;
+#endif
 
         if (Registry.TryGet(Id, out PacketRegisterItem? item))
         {
@@ -50,11 +67,6 @@ public abstract class Packet
         }
 
         s_logger.LogError("Packet id " + Id + " not found");
-    }
-
-    public static void Return(Packet packet)
-    {
-        packet.Return();
     }
 
     public static T Get<T>(PacketId id) where T : Packet => (T)Get((byte)id);
@@ -121,6 +133,12 @@ public abstract class Packet
 
     public static void Write(Packet packet, NetworkStream stream)
     {
+#if DEBUG
+        if (packet.IsReturned)
+        {
+            throw new InvalidOperationException($"Packet used after return (Write). Allocated at:\n{packet.AllocationTrace}\n\nReturned at:\n{packet.ReturnTrace}\n\nWritten at:\n{Environment.StackTrace}");
+        }
+#endif
         stream.WriteByte((byte)packet.Id);
         packet.Write(stream);
         packet.Return();
@@ -235,10 +253,15 @@ public abstract class Packet
 
         public override Packet Get()
         {
-            var p = Item.Get();
+            Packet p = Item.Get();
             // note. DateTimeOffset.UtcNow.UtcTicks would be slightly faster as no conversion would be needed
             p.CreationTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            p.UseCount = 0;
+            p.UseCount = 1;
+#if DEBUG
+            p.IsReturned = false;
+            p.AllocationTrace = Environment.StackTrace;
+            p.ReturnTrace = string.Empty;
+#endif
             return p;
         }
 

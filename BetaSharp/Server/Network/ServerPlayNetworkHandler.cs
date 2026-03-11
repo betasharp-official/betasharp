@@ -13,7 +13,6 @@ using BetaSharp.Server.Internal;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
-using java.util;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Network;
@@ -459,6 +458,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
     {
         if (packet.selectedSlot >= 0 && packet.selectedSlot <= InventoryPlayer.getHotbarSize())
         {
+            player.interactionManager.UpdateMiningTool();
             player.inventory.selectedSlot = packet.selectedSlot;
         }
         else

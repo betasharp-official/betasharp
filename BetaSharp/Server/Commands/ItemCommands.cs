@@ -104,7 +104,7 @@ internal static class ItemCommands
         lookupTablesBuilt = true;
 
         var blockFields = typeof(Block).GetFields(BindingFlags.Static | BindingFlags.Public)
-            .Where(f => f.FieldType == typeof(Block));
+            .Where(f => f.FieldType.IsAssignableTo(typeof(Block)));
         foreach (var field in blockFields)
         {
             if (field.GetValue(null) is Block block)
@@ -114,7 +114,7 @@ internal static class ItemCommands
         }
 
         var itemFields = typeof(Item).GetFields(BindingFlags.Static | BindingFlags.Public)
-            .Where(f => f.FieldType == typeof(Item));
+            .Where(f => f.FieldType.IsAssignableTo(typeof(Item)));
         foreach (var field in itemFields)
         {
             if (field.GetValue(null) is Item item)

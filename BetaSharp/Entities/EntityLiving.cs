@@ -78,9 +78,6 @@ public class EntityLiving : Entity
 
     }
 
-    protected override void initDataTracker()
-    {
-    }
 
     public bool canSee(Entity entity)
     {
