@@ -1616,10 +1616,10 @@ public partial class BetaSharp
         return world != null && world.isRemote;
     }
 
-    public void startWorld(string worldName, string mainMenuText, long seed)
+    public void startWorld(string worldName, string mainMenuText, WorldSettings settings)
     {
         changeWorld((World)null);
-        displayGuiScreen(new GuiLevelLoading(worldName, seed));
+        displayGuiScreen(new GuiLevelLoading(worldName, settings));
     }
 
     public void changeWorld(World newWorld, string loadingText = "", EntityPlayer targetEntity = null)

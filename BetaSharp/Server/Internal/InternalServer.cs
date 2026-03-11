@@ -1,4 +1,5 @@
 using BetaSharp.Server.Network;
+using BetaSharp.Worlds;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Internal;
@@ -12,7 +13,7 @@ public class InternalServer : BetaSharpServer
 
     private int _lastDifficulty;
 
-    public InternalServer(string worldPath, string levelName, string seed, int viewDistance, int initialDifficulty) : base(new InternalServerConfiguration(levelName, seed, viewDistance))
+    public InternalServer(string worldPath, string levelName, WorldSettings settings, int viewDistance, int initialDifficulty) : base(new InternalServerConfiguration(levelName, settings.TerrainType.Name, settings.Seed.ToString(), viewDistance))
     {
         _worldPath = worldPath;
         logHelp = false;

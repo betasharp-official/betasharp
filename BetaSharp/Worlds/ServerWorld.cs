@@ -20,7 +20,7 @@ public class ServerWorld : World
     private readonly BetaSharpServer server;
     private readonly Dictionary<int, Entity> entitiesById = [];
 
-    public ServerWorld(BetaSharpServer server, IWorldStorage storage, String name, int dimensionId, long seed) : base(storage, name, seed, Dimension.FromId(dimensionId))
+    public ServerWorld(BetaSharpServer server, IWorldStorage storage, String name, int dimensionId, WorldSettings settings) : base(storage, name, settings, Dimension.FromId(dimensionId))
     {
         this.server = server;
     }

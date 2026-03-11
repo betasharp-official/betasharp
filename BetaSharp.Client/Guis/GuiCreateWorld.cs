@@ -1,6 +1,7 @@
 using BetaSharp.Client.Input;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds;
 using BetaSharp.Worlds.Storage;
 
 namespace BetaSharp.Client.Guis;
@@ -9,12 +10,19 @@ public class GuiCreateWorld : GuiScreen
 {
     private const int ButtonCreate = 0;
     private const int ButtonCancel = 1;
+    private const int ButtonMoreOptions = 2;
+    private const int ButtonWorldType = 3;
 
     private readonly GuiScreen _parentScreen;
     private GuiTextField _textboxWorldName;
     private GuiTextField _textboxSeed;
     private string _folderName;
     private bool _createClicked;
+    
+    private bool _moreOptions = false;
+    private int _worldTypeIndex = 0;
+    private GuiButton _btnMoreOptions;
+    private GuiButton _btnWorldType;
 
     public GuiCreateWorld(GuiScreen parentScreen)
     {
@@ -32,21 +40,34 @@ public class GuiCreateWorld : GuiScreen
         TranslationStorage translations = TranslationStorage.Instance;
         Keyboard.enableRepeatEvents(true);
 
-        int centerX = Width / 2;
-        int centerY = Height / 4;
+        _controlList.Clear();
+        _controlList.Add(new GuiButton(ButtonCreate, Width / 2 - 155, Height - 28, 150, 20, translations.TranslateKey("selectWorld.create")));
+        _controlList.Add(new GuiButton(ButtonCancel, Width / 2 + 5, Height - 28, 150, 20, translations.TranslateKey("gui.cancel")));
+        
+        _controlList.Add(_btnWorldType = new GuiButton(ButtonWorldType, Width / 2 - 75, 100, 150, 20, "World Type"));
+        _btnWorldType.Visible = false;
+        
+        _controlList.Add(_btnMoreOptions = new GuiButton(ButtonMoreOptions, Width / 2 - 75, 172, 150, 20, "More World Options..."));
 
-        _textboxWorldName = new GuiTextField(this, FontRenderer, centerX - 100, centerY, 200, 20, translations.TranslateKey("selectWorld.newWorld"))
+        _textboxWorldName = new GuiTextField(this, FontRenderer, Width / 2 - 100, 60, 200, 20, translations.TranslateKey("selectWorld.newWorld"))
         {
             IsFocused = true
         };
         _textboxWorldName.SetMaxStringLength(32);
-        _textboxSeed = new GuiTextField(this, FontRenderer, centerX - 100, centerY + 56, 200, 20, "");
-
-        _controlList.Clear();
-        _controlList.Add(new GuiButton(ButtonCreate, centerX - 100, centerY + 96 + 12, translations.TranslateKey("selectWorld.create")));
-        _controlList.Add(new GuiButton(ButtonCancel, centerX - 100, centerY + 120 + 12, translations.TranslateKey("gui.cancel")));
+        
+        _textboxSeed = new GuiTextField(this, FontRenderer, Width / 2 - 100, 60, 200, 20, "");
 
         UpdateFolderName();
+        UpdateButtonText();
+    }
+
+    private void UpdateButtonText()
+    {
+        WorldType selectedType = WorldType.worldTypes[_worldTypeIndex];
+        string typeName = selectedType.Name.ToUpper();
+        if (selectedType.Name == "flat") typeName = "SUPERFLAT";
+        
+        _btnWorldType.DisplayString = "World Type: " + typeName;
     }
 
     private void UpdateFolderName()
@@ -127,20 +148,55 @@ public class GuiCreateWorld : GuiScreen
 
                         Game.statFileWriter.ReadStat(Stats.Stats.CreateWorldStat, 1);
                         Game.playerController = new PlayerControllerSP(Game);
-                        Game.startWorld(_folderName, _textboxWorldName.GetText(), worldSeed);
+                        
+                        WorldType selectedType = WorldType.worldTypes[_worldTypeIndex];
+                        WorldSettings settings = new WorldSettings(worldSeed, selectedType);
+                        
+                        Game.startWorld(_folderName, _textboxWorldName.GetText(), settings);
                         break;
                     }
+                case ButtonMoreOptions:
+                    _moreOptions = !_moreOptions;
+                    _btnWorldType.Visible = _moreOptions;
+                    
+                    if (_moreOptions)
+                    {
+                        _btnMoreOptions.DisplayString = "Done";
+                    }
+                    else
+                    {
+                        _btnMoreOptions.DisplayString = "More World Options...";
+                    }
+                    break;
+                case ButtonWorldType:
+                    ++_worldTypeIndex;
+                    if (_worldTypeIndex >= WorldType.worldTypes.Length)
+                    {
+                        _worldTypeIndex = 0;
+                    }
+
+                    while (WorldType.worldTypes[_worldTypeIndex] == null || !WorldType.worldTypes[_worldTypeIndex].CanBeCreated)
+                    {
+                        ++_worldTypeIndex;
+                        if (_worldTypeIndex >= WorldType.worldTypes.Length)
+                        {
+                            _worldTypeIndex = 0;
+                        }
+                    }
+
+                    UpdateButtonText();
+                    break;
             }
         }
     }
 
     protected override void KeyTyped(char eventChar, int eventKey)
     {
-        if (_textboxWorldName.IsFocused)
+        if (_textboxWorldName.IsFocused && !_moreOptions)
         {
             _textboxWorldName.textboxKeyTyped(eventChar, eventKey);
         }
-        else
+        else if (_textboxSeed.IsFocused && _moreOptions)
         {
             _textboxSeed.textboxKeyTyped(eventChar, eventKey);
         }
@@ -157,25 +213,36 @@ public class GuiCreateWorld : GuiScreen
     protected override void MouseClicked(int x, int y, int button)
     {
         base.MouseClicked(x, y, button);
-        _textboxWorldName.MouseClicked(x, y, button);
-        _textboxSeed.MouseClicked(x, y, button);
+        if (!_moreOptions)
+        {
+            _textboxWorldName.MouseClicked(x, y, button);
+        }
+        else
+        {
+            _textboxSeed.MouseClicked(x, y, button);
+        }
     }
 
     public override void Render(int mouseX, int mouseY, float partialTicks)
     {
         TranslationStorage translations = TranslationStorage.Instance;
 
-        int centerX = Width / 2;
-        int centerY = Height / 4;
-
         DrawDefaultBackground();
-        DrawCenteredString(FontRenderer, translations.TranslateKey("selectWorld.create"), centerX, centerY - 60 + 20, Color.White);
-        DrawString(FontRenderer, translations.TranslateKey("selectWorld.enterName"), centerX - 100, centerY - 10, Color.GrayA0);
-        DrawString(FontRenderer, $"{translations.TranslateKey("selectWorld.resultFolder")} {_folderName}", centerX - 100, centerY + 24, Color.GrayA0);
-        DrawString(FontRenderer, translations.TranslateKey("selectWorld.enterSeed"), centerX - 100, centerY + 56 - 12, Color.GrayA0);
-        DrawString(FontRenderer, translations.TranslateKey("selectWorld.seedInfo"), centerX - 100, centerY + 56 + 24, Color.GrayA0);
-        _textboxWorldName.DrawTextBox();
-        _textboxSeed.DrawTextBox();
+        DrawCenteredString(FontRenderer, translations.TranslateKey("selectWorld.create"), Width / 2, 20, Color.White);
+        
+        if (!_moreOptions)
+        {
+            DrawString(FontRenderer, translations.TranslateKey("selectWorld.enterName"), Width / 2 - 100, 47, Color.GrayA0);
+            DrawString(FontRenderer, translations.TranslateKey("selectWorld.resultFolder") + " " + _folderName, Width / 2 - 100, 85, Color.GrayA0);
+            _textboxWorldName.DrawTextBox();
+        }
+        else
+        {
+            DrawString(FontRenderer, translations.TranslateKey("selectWorld.enterSeed"), Width / 2 - 100, 47, Color.GrayA0);
+            DrawString(FontRenderer, translations.TranslateKey("selectWorld.seedInfo"), Width / 2 - 100, 85, Color.GrayA0);
+            _textboxSeed.DrawTextBox();
+        }
+
         base.Render(mouseX, mouseY, partialTicks);
     }
 
@@ -191,6 +258,5 @@ public class GuiCreateWorld : GuiScreen
             _textboxWorldName.SetFocused(true);
             _textboxSeed.SetFocused(false);
         }
-
     }
 }
