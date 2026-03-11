@@ -12,7 +12,7 @@ namespace BetaSharp.Client.Guis;
 public abstract class GuiContainer : GuiScreen
 {
 
-    private static readonly ItemRenderer _itemRenderer = new();
+    private static readonly ItemRenderer s_itemRenderer = new();
     protected int _xSize = 176;
     protected int _ySize = 166;
     public ScreenHandler InventorySlots;
@@ -105,8 +105,8 @@ public abstract class GuiContainer : GuiScreen
             GLManager.GL.Enable(GLEnum.DepthTest);
 
             GLManager.GL.Translate(0.0F, 0.0F, 32.0F);
-            _itemRenderer.renderItemIntoGUI(FontRenderer, Game.textureManager, playerInv.getCursorStack(), mouseX - guiLeft - 8, mouseY - guiTop - 8);
-            _itemRenderer.renderItemOverlayIntoGUI(FontRenderer, Game.textureManager, playerInv.getCursorStack(), mouseX - guiLeft - 8, mouseY - guiTop - 8);
+            s_itemRenderer.renderItemIntoGUI(FontRenderer, Game.textureManager, playerInv.getCursorStack(), mouseX - guiLeft - 8, mouseY - guiTop - 8);
+            s_itemRenderer.renderItemOverlayIntoGUI(FontRenderer, Game.textureManager, playerInv.getCursorStack(), mouseX - guiLeft - 8, mouseY - guiTop - 8);
 
             Lighting.turnOff();
             GLManager.GL.Disable(GLEnum.Lighting);
@@ -143,15 +143,15 @@ public abstract class GuiContainer : GuiScreen
             }
         }
 
-        _itemRenderer.renderItemIntoGUI(FontRenderer, Game.textureManager, item, x, y);
-        _itemRenderer.renderItemOverlayIntoGUI(FontRenderer, Game.textureManager, item, x, y);
+        s_itemRenderer.renderItemIntoGUI(FontRenderer, Game.textureManager, item, x, y);
+        s_itemRenderer.renderItemOverlayIntoGUI(FontRenderer, Game.textureManager, item, x, y);
     }
 
-    private Slot GetSlotAtPosition(int mouseX, int mouseY)
+    private Slot? GetSlotAtPosition(int mouseX, int mouseY)
     {
         for (int i = 0; i < InventorySlots.Slots.Count; ++i)
         {
-            Slot slot = (Slot)InventorySlots.Slots[i];
+            Slot slot = InventorySlots.Slots[i];
             if (GetIsMouseOverSlot(slot, mouseX, mouseY))
             {
                 return slot;
@@ -179,7 +179,7 @@ public abstract class GuiContainer : GuiScreen
         base.MouseClicked(x, y, button);
         if (button == 0 || button == 1)
         {
-            Slot slot = GetSlotAtPosition(x, y);
+            Slot? slot = GetSlotAtPosition(x, y);
             int guiLeft = (Width - _xSize) / 2;
             int guiTop = (Height - _ySize) / 2;
 
@@ -199,7 +199,7 @@ public abstract class GuiContainer : GuiScreen
 
     protected override void HandleQuickMove(int x, int y)
     {
-        Slot slot = GetSlotAtPosition(x, y);
+        Slot? slot = GetSlotAtPosition(x, y);
         if (slot != null)
         {
             Game.playerController.func_27174_a(InventorySlots.SyncId, slot.id, 0, true, Game.player);
@@ -246,7 +246,7 @@ public abstract class GuiContainer : GuiScreen
         int scaledMouseX = (int)(cursorX * sr.ScaledWidth / Game.displayWidth);
         int scaledMouseY = (int)(cursorY * sr.ScaledHeight / Game.displayHeight);
 
-        Slot currentSlot = GetSlotAtPosition(scaledMouseX, scaledMouseY);
+        Slot? currentSlot = GetSlotAtPosition(scaledMouseX, scaledMouseY);
 
         float refX, refY;
         if (currentSlot != null)
@@ -316,11 +316,11 @@ public abstract class GuiContainer : GuiScreen
 
             if (_hoveredSlot.hasStack())
             {
+                tips.Add(new ActionTip(ControlIcon.Y, "Quick Move"));
                 if (_hoveredSlot.getStack().count > 1)
                 {
                     tips.Add(new ActionTip(ControlIcon.X, "Take Half"));
                 }
-                tips.Add(new ActionTip(ControlIcon.Y, "Quick Move"));
             }
         }
 

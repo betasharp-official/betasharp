@@ -11,19 +11,19 @@ namespace BetaSharp.Client.Guis;
 public enum ControlIcon
 {
     A, B, X, Y,
-    LT, RT, LB, RB,
-    LS, RS,
-    LS_CLICK, RS_CLICK,
-    DPAD_UP, DPAD_DOWN, DPAD_LEFT, DPAD_RIGHT,
-    START, BACK,
-    TOUCHPAD
+    Lt, Rt, Lb, Rb,
+    Ls, Rs,
+    LsClick, RsClick,
+    DPadUp, DPadDown, DPadLeft, DPadRight,
+    Start, Back,
+    TouchPad
 }
 
 public record ActionTip(ControlIcon Icon, string Action);
 
 public static class ControlTooltip
 {
-    private static readonly List<ActionTip> s_tips = new();
+    private static readonly List<ActionTip> s_tips = [];
     public static string ControllerType = "x360";
 
     public static void Clear() => s_tips.Clear();
@@ -65,16 +65,11 @@ public static class ControlTooltip
 
     private static void PopulateInGameTips(BetaSharp game)
     {
-        HitResult hit = game.objectMouseOver;
-        if (hit.Type != HitResultType.MISS)
-        {
-            string attackAction = "Mine";
-            if (hit.Type == HitResultType.ENTITY) attackAction = "Attack";
-            Add(ControlIcon.RT, attackAction);
-        }
+        Add(ControlIcon.Y, "Inventory");
 
         string? useAction = null;
         ItemStack held = game.player.inventory.getSelectedItem();
+        HitResult hit = game.objectMouseOver;
 
         if (hit.Type == HitResultType.TILE)
         {
@@ -120,10 +115,15 @@ public static class ControlTooltip
 
         if (useAction != null)
         {
-            Add(ControlIcon.LT, useAction);
+            Add(ControlIcon.Lt, useAction);
         }
 
-        Add(ControlIcon.Y, "Inventory");
+        if (hit.Type != HitResultType.MISS)
+        {
+            string attackAction = "Mine";
+            if (hit.Type == HitResultType.ENTITY) attackAction = "Attack";
+            Add(ControlIcon.Rt, attackAction);
+        }
 
         if (game.player.inventory.getSelectedItem() != null)
         {
@@ -219,21 +219,21 @@ public static class ControlTooltip
             ControlIcon.B => "right_button",
             ControlIcon.X => "left_button",
             ControlIcon.Y => "up_button",
-            ControlIcon.LT => "left_trigger",
-            ControlIcon.RT => "right_trigger",
-            ControlIcon.LB => "left_bumper",
-            ControlIcon.RB => "right_bumper",
-            ControlIcon.LS => "left_stick",
-            ControlIcon.RS => "right_stick",
-            ControlIcon.LS_CLICK => "left_stick_button",
-            ControlIcon.RS_CLICK => "right_stick_button",
-            ControlIcon.DPAD_UP => "dpad_up",
-            ControlIcon.DPAD_DOWN => "dpad_down",
-            ControlIcon.DPAD_LEFT => "dpad_left",
-            ControlIcon.DPAD_RIGHT => "dpad_right",
-            ControlIcon.START => "start_button",
-            ControlIcon.BACK => "back_button",
-            ControlIcon.TOUCHPAD => "touchpad",
+            ControlIcon.Lt => "left_trigger",
+            ControlIcon.Rt => "right_trigger",
+            ControlIcon.Lb => "left_bumper",
+            ControlIcon.Rb => "right_bumper",
+            ControlIcon.Ls => "left_stick",
+            ControlIcon.Rs => "right_stick",
+            ControlIcon.LsClick => "left_stick_button",
+            ControlIcon.RsClick => "right_stick_button",
+            ControlIcon.DPadUp => "dpad_up",
+            ControlIcon.DPadDown => "dpad_down",
+            ControlIcon.DPadLeft => "dpad_left",
+            ControlIcon.DPadRight => "dpad_right",
+            ControlIcon.Start => "start_button",
+            ControlIcon.Back => "back_button",
+            ControlIcon.TouchPad => "touchpad",
             _ => "unknown"
         };
 
