@@ -243,11 +243,11 @@ public class GameOptions
         ChunkFadeOption = new BoolOption("Chunk Fade", "chunkFade", true);
         MenuMusicOption = new BoolOption("Menu Music", "menuMusic", true);
 
-        RenderDistanceOption = new FloatOption("options.renderDistance", "viewDistance", 0.2f)
+        RenderDistanceOption = new FloatOption("options.renderDistance", "viewDistance", 8 / 60f)
         {
             LabelOverride = "Render Distance",
-            Steps = 28,
-            Formatter = (v, t) => $"{4 + (int)(v * 28.0f)} Chunks",
+            Steps = 60,
+            Formatter = (v, t) => $"{4 + (int)(v * 60)} Chunks",
             OnChanged = _ => {
                 if (_game?.internalServer != null)
                 {
