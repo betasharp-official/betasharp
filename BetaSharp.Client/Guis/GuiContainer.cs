@@ -17,6 +17,7 @@ public abstract class GuiContainer : GuiScreen
     protected int _ySize = 166;
     public ScreenHandler InventorySlots;
     protected Slot? _hoveredSlot;
+    protected Slot? _lastHoveredSlot;
 
     public override bool PausesGame => false;
 
@@ -112,6 +113,15 @@ public abstract class GuiContainer : GuiScreen
             GLManager.GL.Disable(GLEnum.Lighting);
             GLManager.GL.Disable(GLEnum.DepthTest);
             GLManager.GL.Disable(GLEnum.RescaleNormal);
+        }
+
+        if (_hoveredSlot != _lastHoveredSlot)
+        {
+            if (_hoveredSlot != null)
+            {
+                Game.sndManager.PlayUISound("", "console.focus", Game.isControllerMode);
+            }
+            _lastHoveredSlot = _hoveredSlot;
         }
 
         GLManager.GL.PopMatrix();
@@ -212,6 +222,7 @@ public abstract class GuiContainer : GuiScreen
     {
         if (eventKey == Keyboard.KEY_ESCAPE || eventKey == Game.options.KeyBindInventory.keyCode)
         {
+            Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
             Game.player.closeHandledScreen();
         }
 

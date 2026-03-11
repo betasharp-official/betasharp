@@ -165,6 +165,14 @@ public class GuiSelectWorld : GuiScreen
         DrawCenteredString(FontRenderer, screenTitle, Width / 2, 20, Color.White);
         base.Render(mouseX, mouseY, partialTicks);
     }
+
+    public override void HandleMouseInput()
+    {
+        int x = Mouse.getEventX() * Width / Game.displayWidth;
+        int y = Height - Mouse.getEventY() * Height / Game.displayHeight - 1;
+        worldSlotContainer.HandleMouseInput(x, y);
+        base.HandleMouseInput();
+    }
     
     public static List<WorldSaveInfo> GetSize(GuiSelectWorld screen) => screen.saveList;
     public static int onElementSelected(GuiSelectWorld screen, int worldIndex) => screen.selectedWorld = worldIndex;

@@ -72,6 +72,11 @@ public class GuiRenameWorld : GuiScreen
         {
             ActionPerformed(_controlList[0]);
         }
+        else if (eventKey == Keyboard.KEY_ESCAPE)
+        {
+            Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
+            ActionPerformed(_controlList[1]);
+        }
 
     }
 

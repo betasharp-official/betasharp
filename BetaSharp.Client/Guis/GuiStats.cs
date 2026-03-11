@@ -1,3 +1,4 @@
+using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
@@ -92,6 +93,14 @@ public class GuiStats : GuiScreen
         currentSlot.DrawScreen(mouseX, mouseY, partialTicks);
         DrawCenteredString(FontRenderer, screenTitle, Width / 2, 20, Color.White);
         base.Render(mouseX, mouseY, partialTicks);
+    }
+
+    public override void HandleMouseInput()
+    {
+        int x = Mouse.getEventX() * Width / Game.displayWidth;
+        int y = Height - Mouse.getEventY() * Height / Game.displayHeight - 1;
+        currentSlot.HandleMouseInput(x, y);
+        base.HandleMouseInput();
     }
 
     public void drawItemSlot(int x, int y, int itemId)

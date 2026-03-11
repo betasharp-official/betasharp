@@ -1,3 +1,4 @@
+using BetaSharp.Client.Input;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
@@ -89,6 +90,14 @@ public class GuiTexturePacks : GuiScreen
         DrawCenteredString(FontRenderer, translations.TranslateKey("texturePack.title"), Width / 2, 16, Color.White);
         DrawCenteredString(FontRenderer, translations.TranslateKey("texturePack.folderInfo"), Width / 2 - 77, Height - 26, Color.Gray80);
         base.Render(mouseX, mouseY, partialTicks);
+    }
+
+    public override void HandleMouseInput()
+    {
+        int x = Mouse.getEventX() * Width / Game.displayWidth;
+        int y = Height - Mouse.getEventY() * Height / Game.displayHeight - 1;
+        _guiTexturePackSlot.HandleMouseInput(x, y);
+        base.HandleMouseInput();
     }
 
     public override void UpdateScreen()

@@ -8,12 +8,15 @@ public class GuiSlider : GuiButton
 
     public float sliderValue = 1.0F;
     public bool dragging;
+    private float _lastPlayedValue = -1.0f;
     private readonly FloatOption _option;
+    private readonly BetaSharp _gameInstance;
 
-    public GuiSlider(int id, int x, int y, FloatOption option, string displayString, float value) : base(id, x, y, 150, 20, displayString)
+    public GuiSlider(int id, int x, int y, FloatOption option, string displayString, float value, BetaSharp game) : base(id, x, y, 150, 20, displayString)
     {
         _option = option;
         sliderValue = value;
+        _gameInstance = game;
     }
 
     public GuiSlider Size(int width, int height)
@@ -47,6 +50,12 @@ public class GuiSlider : GuiButton
 
                 _option.Set(sliderValue);
                 DisplayString = _option.GetDisplayString(TranslationStorage.Instance);
+
+                if (Math.Abs(sliderValue - _lastPlayedValue) > 0.05f)
+                {
+                    _gameInstance.sndManager.PlayUISound("", "console.scroll", _gameInstance.isControllerMode);
+                    _lastPlayedValue = sliderValue;
+                }
             }
 
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);

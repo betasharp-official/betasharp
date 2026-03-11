@@ -52,7 +52,7 @@ public abstract class GuiSlotStats<T, K>(GuiStats statsGui) : GuiSlot(statsGui.G
         if (HoveredColumn >= 0)
         {
             SortByColumn(HoveredColumn);
-            statsGui.Game.sndManager.PlaySoundFX(statsGui.Game.isControllerMode ? "random.wood click" : "random.click", 1.0F, 1.0F);
+            statsGui.Game.sndManager.PlayUISound("random.click", "console.select", statsGui.Game.isControllerMode);
         }
     }
 

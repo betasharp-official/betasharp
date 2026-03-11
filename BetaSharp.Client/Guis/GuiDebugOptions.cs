@@ -29,7 +29,7 @@ public class GuiDebugOptions : GuiScreen
 
             if (option is FloatOption floatOpt)
             {
-                _controlList.Add(new GuiSlider(id, x, y, floatOpt, option.GetDisplayString(translations), floatOpt.Value));
+                _controlList.Add(new GuiSlider(id, x, y, floatOpt, option.GetDisplayString(translations), floatOpt.Value, Game));
             }
             else
             {

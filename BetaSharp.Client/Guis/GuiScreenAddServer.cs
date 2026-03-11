@@ -85,6 +85,11 @@ public class GuiScreenAddServer : GuiScreen
         {
             ActionPerformed(_controlList[0]);
         }
+        else if (eventKey == Keyboard.KEY_ESCAPE)
+        {
+            Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
+            ActionPerformed(_controlList[1]);
+        }
 
         _controlList[0].Enabled = _serverName.GetText().Length > 0 && _serverAddress.GetText().Length > 0 && _serverAddress.GetText().Split(":").Length > 0;
     }

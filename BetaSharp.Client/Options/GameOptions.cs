@@ -49,6 +49,7 @@ public class GameOptions
     public BoolOption EnvironmentAnimationOption { get; private set; }
     public BoolOption ChunkFadeOption { get; private set; }
     public BoolOption MenuMusicOption { get; private set; }
+    public BoolOption ConsoleAudioOption { get; private set; }
 
 
     public FloatOption RenderDistanceOption { get; private set; }
@@ -59,7 +60,7 @@ public class GameOptions
 
 
     public GameOption[] MainScreenOptions => [DifficultyOption, FovOption];
-    public GameOption[] AudioScreenOptions => [MusicVolumeOption, SoundVolumeOption, MenuMusicOption];
+    public GameOption[] AudioScreenOptions => [MusicVolumeOption, SoundVolumeOption, MenuMusicOption, ConsoleAudioOption];
     public GameOption[] VideoScreenOptions =>
     [
         RenderDistanceOption, FramerateLimitOption, VSyncOption,
@@ -105,6 +106,7 @@ public class GameOptions
     public bool EnvironmentAnimation => EnvironmentAnimationOption.Value;
     public bool ChunkFade => ChunkFadeOption.Value;
     public bool MenuMusic => MenuMusicOption.Value;
+    public bool ConsoleAudio => ConsoleAudioOption.Value;
 
 
     public string Skin = "Default";
@@ -242,6 +244,7 @@ public class GameOptions
         EnvironmentAnimationOption = new BoolOption("Environment Anim", "envAnimation", true);
         ChunkFadeOption = new BoolOption("Chunk Fade", "chunkFade", true);
         MenuMusicOption = new BoolOption("Menu Music", "menuMusic", true);
+        ConsoleAudioOption = new BoolOption("Console Audio", "consoleAudio", false);
 
         RenderDistanceOption = new FloatOption("options.renderDistance", "viewDistance", 0.2f)
         {
@@ -305,6 +308,7 @@ public class GameOptions
         yield return EnvironmentAnimationOption;
         yield return ChunkFadeOption;
         yield return MenuMusicOption;
+        yield return ConsoleAudioOption;
         yield return RenderDistanceOption;
         yield return DifficultyOption;
         yield return GuiScaleOption;

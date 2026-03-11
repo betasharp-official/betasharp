@@ -149,6 +149,11 @@ public class GuiCreateWorld : GuiScreen
         {
             ActionPerformed(_controlList[0]);
         }
+        else if (eventKey == Keyboard.KEY_ESCAPE)
+        {
+            Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
+            ActionPerformed(_controlList[1]);
+        }
 
         _controlList[0].Enabled = _textboxWorldName.GetText().Length > 0;
         UpdateFolderName();

@@ -20,6 +20,7 @@ public class GuiScreen : Gui
     public GuiParticle ParticlesGui;
     private GuiButton SelectedButton = null;
     protected GuiButton? _hoveredButton = null;
+    protected GuiButton? _lastHoveredButton = null;
     protected bool _isSubscribedToKeyboard = false;
 
     public virtual void Render(int mouseX, int mouseY, float partialTicks)
@@ -32,6 +33,15 @@ public class GuiScreen : Gui
             {
                 _hoveredButton = control;
             }
+        }
+
+        if (_hoveredButton != _lastHoveredButton)
+        {
+            if (_hoveredButton != null)
+            {
+                Game.sndManager.PlayUISound("", "console.focus", Game.isControllerMode);
+            }
+            _lastHoveredButton = _hoveredButton;
         }
 
         ControlTooltip.Render(Game, Width, Height, partialTicks);
@@ -49,6 +59,7 @@ public class GuiScreen : Gui
     {
         if (eventKey == Keyboard.KEY_ESCAPE)
         {
+            Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
             Game.displayGuiScreen(null);
             Game.setIngameFocus();
         }
@@ -96,7 +107,7 @@ public class GuiScreen : Gui
                 if (control.MousePressed(Game, mouseX, mouseY))
                 {
                     SelectedButton = control;
-                    Game.sndManager.PlaySoundFX(Game.isControllerMode ? "random.wood click" : "random.click", 1.0F, 1.0F);
+                    Game.sndManager.PlayUISound("random.click", "console.select", Game.isControllerMode);
                     ActionPerformed(control);
                 }
             }
@@ -195,6 +206,7 @@ public class GuiScreen : Gui
         {
             if (Controller.GetEventButtonState())
             {
+                Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
                 KeyTyped('\0', Keyboard.KEY_ESCAPE);
             }
         }

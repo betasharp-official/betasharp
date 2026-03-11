@@ -240,6 +240,10 @@ public class GuiMultiplayer : GuiScreen
         {
             if (_btnSelect != null && _btnSelect.Enabled) ActionPerformed(_btnSelect);
         }
+        else
+        {
+            base.KeyTyped(eventChar, eventKey);
+        }
     }
 
     protected override void MouseClicked(int x, int y, int button)
@@ -253,6 +257,14 @@ public class GuiMultiplayer : GuiScreen
         _serverListSelector.DrawScreen(mouseX, mouseY, partialTicks);
         DrawCenteredString(FontRenderer, "Play Multiplayer", Width / 2, 20, Color.White);
         base.Render(mouseX, mouseY, partialTicks);
+    }
+
+    public override void HandleMouseInput()
+    {
+        int x = Mouse.getEventX() * Width / Game.displayWidth;
+        int y = Height - Mouse.getEventY() * Height / Game.displayHeight - 1;
+        _serverListSelector.HandleMouseInput(x, y);
+        base.HandleMouseInput();
     }
 
     private void JoinServer(ServerData server)

@@ -1719,9 +1719,8 @@ public partial class BetaSharp
 
     public void installResource(string resourcePath, FileInfo resourceFile)
     {
-        if (!resourceFile.FullName.EndsWith("ogg"))
+        if (!resourceFile.FullName.EndsWith("ogg") && !resourceFile.FullName.EndsWith("wav"))
         {
-            //TODO: ADD SUPPORT FOR MUS SFX?
             return;
         }
 

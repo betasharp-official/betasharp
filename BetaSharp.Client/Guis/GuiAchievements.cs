@@ -60,6 +60,7 @@ public class GuiAchievements : GuiScreen
     {
         if (eventKey == Game.options.KeyBindInventory.keyCode)
         {
+            Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
             Game.displayGuiScreen(null);
             Game.setIngameFocus();
         }

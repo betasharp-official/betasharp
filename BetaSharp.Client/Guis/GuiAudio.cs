@@ -30,7 +30,7 @@ public class GuiAudio : GuiScreen
 
             if (option is FloatOption floatOpt)
             {
-                _controlList.Add(new GuiSlider(id, x, y, floatOpt, option.GetDisplayString(translations), floatOpt.Value));
+                _controlList.Add(new GuiSlider(id, x, y, floatOpt, option.GetDisplayString(translations), floatOpt.Value, Game));
             }
             else
             {
@@ -72,6 +72,7 @@ public class GuiAudio : GuiScreen
     {
         if (eventKey == Keyboard.KEY_ESCAPE || eventKey == Keyboard.KEY_NONE)
         {
+            Game.sndManager.PlayUISound("", "console.back", Game.isControllerMode);
             Game.options.SaveOptions();
             Game.displayGuiScreen(_parentScreen);
         }

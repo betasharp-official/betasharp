@@ -35,7 +35,7 @@ public class GuiOptions : GuiScreen
 
             if (option is FloatOption floatOpt)
             {
-                _controlList.Add(new GuiSlider(id, xPos, yPos, floatOpt, option.GetDisplayString(translations), floatOpt.Value));
+                _controlList.Add(new GuiSlider(id, xPos, yPos, floatOpt, option.GetDisplayString(translations), floatOpt.Value, Game));
             }
             else
             {

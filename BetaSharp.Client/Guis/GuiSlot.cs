@@ -23,6 +23,8 @@ public abstract class GuiSlot
     private float _amountScrolled;
     private int _selectedElement = -1;
     private long _lastClicked;
+    private int _lastHoveredSlot = -1;
+    private float _lastPlayedScrollAmount;
 
     private bool _showSelectionHighlight = true;
     private bool _hasHeader;
@@ -116,8 +118,28 @@ public abstract class GuiSlot
         }
     }
 
+    public void HandleMouseInput(int mouseX, int mouseY)
+    {
+        int wheel = Mouse.getEventDWheel();
+        if (wheel != 0)
+        {
+            _amountScrolled -= wheel * _posZ;
+            BindAmountScrolled();
+        }
+    }
+
     public void DrawScreen(int mouseX, int mouseY, float partialTicks)
     {
+        int hoveredSlot = GetSlotAt(mouseX, mouseY);
+        if (hoveredSlot != _lastHoveredSlot)
+        {
+            if (hoveredSlot != -1)
+            {
+                _game.sndManager.PlayUISound("", "console.focus", _game.isControllerMode);
+            }
+            _lastHoveredSlot = hoveredSlot;
+        }
+
         DrawBackground();
 
         int listSize = GetSize();
@@ -126,7 +148,13 @@ public abstract class GuiSlot
 
         if (_game.isControllerMode)
         {
-            _amountScrolled += Controller.RightStickY;
+            _amountScrolled += Controller.RightStickY * 5.0f;
+        }
+
+        if (Math.Abs(_amountScrolled - _lastPlayedScrollAmount) >= _posZ)
+        {
+            _game.sndManager.PlayUISound("", "console.scroll", _game.isControllerMode);
+            _lastPlayedScrollAmount = _amountScrolled;
         }
 
         if (Mouse.isButtonDown(0) || (_game.isControllerMode && Controller.IsButtonDown(GamepadButton.A)))

@@ -1,6 +1,7 @@
 using BetaSharp.Client.Options;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
+using Microsoft.Extensions.Logging;
 using SFML.Audio;
 using SFML.System;
 
@@ -16,7 +17,7 @@ public class SoundManager
     private readonly Dictionary<string, List<SoundBuffer>> _soundBuffers = [];
 
     private const int MaxChannels = 32;
-    private readonly SFML.Audio.Sound[] soundChannels = new SFML.Audio.Sound[MaxChannels];
+    private readonly SFML.Audio.Sound[] _soundChannels = new SFML.Audio.Sound[MaxChannels];
 
     private int _soundSourceSuffix = 0;
     private GameOptions _options;
@@ -39,6 +40,18 @@ public class SoundManager
         if (!_started && (options == null || options.SoundVolume != 0.0F || options.MusicVolume != 0.0F))
         {
             TryToSetLibraryAndCodecs();
+        }
+        LoadConsoleSounds();
+    }
+
+    private void LoadConsoleSounds()
+    {
+        string sfxDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "sfx");
+        foreach (string file in Directory.GetFiles(sfxDir, "*.wav"))
+        {
+            string name = Path.GetFileNameWithoutExtension(file);
+            string resourceName = name.Replace("btn_", "console/").ToLower();
+            AddSound(resourceName, new FileInfo(file));
         }
     }
 
@@ -104,17 +117,17 @@ public class SoundManager
 
         for (int i = 0; i < MaxChannels; i++)
         {
-            if (soundChannels[i] != null)
+            if (_soundChannels[i] != null)
             {
-                soundChannels[i].Stop();
-                soundChannels[i].Dispose();
-                soundChannels[i] = null;
+                _soundChannels[i].Stop();
+                _soundChannels[i].Dispose();
+                _soundChannels[i] = null;
             }
         }
 
-        foreach (var bufferList in _soundBuffers.Values)
+        foreach (List<SoundBuffer> bufferList in _soundBuffers.Values)
         {
-            foreach (var buffer in bufferList)
+            foreach (SoundBuffer buffer in bufferList)
             {
                 buffer.Dispose();
             }
@@ -192,20 +205,20 @@ public class SoundManager
     {
         for (int i = 0; i < MaxChannels; i++)
         {
-            if (soundChannels[i] == null)
+            if (_soundChannels[i] == null)
             {
-                soundChannels[i] = new SFML.Audio.Sound(buffer);
-                return soundChannels[i];
+                _soundChannels[i] = new SFML.Audio.Sound(buffer);
+                return _soundChannels[i];
             }
 
-            if (soundChannels[i].Status == SoundStatus.Stopped)
+            if (_soundChannels[i].Status == SoundStatus.Stopped)
             {
-                soundChannels[i].SoundBuffer = buffer;
-                return soundChannels[i];
+                _soundChannels[i].SoundBuffer = buffer;
+                return _soundChannels[i];
             }
         }
 
-        SFML.Audio.Sound stolen = soundChannels[0];
+        SFML.Audio.Sound stolen = _soundChannels[0];
         stolen.Stop();
         stolen.SoundBuffer = buffer;
         return stolen;
@@ -388,5 +401,17 @@ public class SoundManager
         sound.Attenuation = 1.0f;
 
         sound.Play();
+    }
+
+    public void PlayUISound(string standardSound, string consoleSound, bool isControllerMode, float volume = 1.0f, float pitch = 1.0f)
+    {
+        bool useConsole = _options.ConsoleAudio || isControllerMode;
+
+        if (useConsole && consoleSound == "console.scroll")
+        {
+            volume *= 0.35f;
+        }
+
+        PlaySoundFX(useConsole ? consoleSound : standardSound, volume, pitch);
     }
 }
