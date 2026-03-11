@@ -415,6 +415,7 @@ public class GuiIngame : Gui
         }
 
         _game.guiAchievement.RenderAchievementOverlayIfAny(scaledWidth, scaledHeight);
+        ControlTooltip.Render(_game, scaledWidth, scaledHeight, partialTicks);
     }
 
     private void renderPumpkinBlur(int screenWidth, int screenHeight)

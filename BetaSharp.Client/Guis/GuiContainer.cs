@@ -300,4 +300,26 @@ public abstract class GuiContainer : GuiScreen
 
         return base.HandleDPadNavigation(dpadX, dpadY, ref cursorX, ref cursorY);
     }
+
+    public override List<ActionTip> GetTooltips(bool controller)
+    {
+        if (controller)
+        {
+            return new List<ActionTip>
+            {
+                new ActionTip(ControlIcon.A, "Move"),
+                new ActionTip(ControlIcon.X, "Take Half"),
+                new ActionTip(ControlIcon.Y, "Quick Move")
+            };
+        }
+        else
+        {
+            return new List<ActionTip>
+            {
+                new ActionTip(ControlIcon.MOUSE_LEFT, "Move"),
+                new ActionTip(ControlIcon.MOUSE_RIGHT, "Take Half"),
+                new ActionTip(ControlIcon.KEY_BASE, "Quick Move", "SHIFT")
+            };
+        }
+    }
 }

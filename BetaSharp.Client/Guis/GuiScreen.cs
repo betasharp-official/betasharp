@@ -27,6 +27,13 @@ public class GuiScreen : Gui
         {
             control.DrawButton(Game, mouseX, mouseY);
         }
+
+        ControlTooltip.Render(Game, Width, Height, partialTicks);
+    }
+
+    public virtual List<ActionTip> GetTooltips(bool controller)
+    {
+        return null;
     }
 
     protected virtual void KeyTyped(char eventChar, int eventKey)

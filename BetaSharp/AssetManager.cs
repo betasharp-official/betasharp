@@ -109,6 +109,30 @@ public class AssetManager
         defineAsset("gui/trap.png", AssetType.Binary);
         defineAsset("gui/unknown_pack.png", AssetType.Binary);
         defineAsset("gui/Pointer.png", AssetType.Binary);
+        
+        defineAsset("gui/controls/back_button.png", AssetType.Binary);
+        defineAsset("gui/controls/down_button.png", AssetType.Binary);
+        defineAsset("gui/controls/dpad_down.png", AssetType.Binary);
+        defineAsset("gui/controls/dpad_left.png", AssetType.Binary);
+        defineAsset("gui/controls/dpad_right.png", AssetType.Binary);
+        defineAsset("gui/controls/dpad_up.png", AssetType.Binary);
+        defineAsset("gui/controls/left_bumper.png", AssetType.Binary);
+        defineAsset("gui/controls/left_button.png", AssetType.Binary);
+        defineAsset("gui/controls/left_stick_button.png", AssetType.Binary);
+        defineAsset("gui/controls/left_stick.png", AssetType.Binary);
+        defineAsset("gui/controls/left_trigger.png", AssetType.Binary);
+        defineAsset("gui/controls/right_bumper.png", AssetType.Binary);
+        defineAsset("gui/controls/right_button.png", AssetType.Binary);
+        defineAsset("gui/controls/right_stick_button.png", AssetType.Binary);
+        defineAsset("gui/controls/right_stick.png", AssetType.Binary);
+        defineAsset("gui/controls/right_trigger.png", AssetType.Binary);
+        defineAsset("gui/controls/start_button.png", AssetType.Binary);
+        defineAsset("gui/controls/up_button.png", AssetType.Binary);
+
+        defineAsset("gui/controls/key_base.png", AssetType.Binary);
+        defineAsset("gui/controls/mouse_base.png", AssetType.Binary);
+        defineAsset("gui/controls/mouse_left.png", AssetType.Binary);
+        defineAsset("gui/controls/mouse_right.png", AssetType.Binary);
 
         defineAsset("item/arrows.png", AssetType.Binary);
         defineAsset("item/boat.png", AssetType.Binary);
@@ -194,16 +218,8 @@ public class AssetManager
     {
         Directory.CreateDirectory("assets");
 
-        foreach (var directory in assetDirectories)
-        {
-            Directory.CreateDirectory("assets/" + directory);
-        }
-
-        assetDirectories.Clear();
-
         using ZipArchive archive = ZipFile.OpenRead("b1.7.3.jar");
         Dictionary<string, ZipArchiveEntry> entries = [];
-
         foreach (var entry in archive.Entries)
         {
             entries[entry.FullName] = entry;
@@ -211,7 +227,12 @@ public class AssetManager
 
         foreach (var assetPath in assetsToLoad.Keys)
         {
-            var fsAssetPath = "assets/" + assetPath;
+            var fsAssetPath = Path.Combine("assets", assetPath);
+            var directory = Path.GetDirectoryName(fsAssetPath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
 
             if (!File.Exists(fsAssetPath))
             {
@@ -221,7 +242,11 @@ public class AssetManager
                 }
                 else
                 {
-                    throw new Exception($"Asset does not exist in jar: {assetPath}");
+                    _logger.LogWarning($"Asset does not exist in jar: {assetPath}. Ensuring it exists locally.");
+                    if (!File.Exists(fsAssetPath))
+                    {
+                        _logger.LogError($"Asset {assetPath} is missing both from jar and local assets folder!");
+                    }
                 }
             }
         }
