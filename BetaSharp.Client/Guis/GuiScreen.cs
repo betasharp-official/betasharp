@@ -37,16 +37,12 @@ public class GuiScreen : Gui
         ControlTooltip.Render(Game, Width, Height, partialTicks);
     }
 
-    public virtual List<ActionTip>? GetTooltips(bool controller)
+    public virtual void GetTooltips(List<ActionTip> tips)
     {
         if (_hoveredButton != null)
         {
-            return
-            [
-                new(ControlIcon.A, "Select")
-            ];
+            tips.Add(new(ControlIcon.A, "Select"));
         }
-        return null;
     }
 
     protected virtual void KeyTyped(char eventChar, int eventKey)

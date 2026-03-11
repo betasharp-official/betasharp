@@ -302,10 +302,8 @@ public abstract class GuiContainer : GuiScreen
         return base.HandleDPadNavigation(dpadX, dpadY, ref cursorX, ref cursorY);
     }
 
-    public override List<ActionTip> GetTooltips(bool controller)
+    public override void GetTooltips(List<ActionTip> tips)
     {
-        var tips = new List<ActionTip>();
-
         if (_hoveredSlot != null)
         {
             ItemStack cursorStack = Game.player.inventory.getCursorStack();
@@ -323,7 +321,5 @@ public abstract class GuiContainer : GuiScreen
                 }
             }
         }
-
-        return tips;
     }
 }

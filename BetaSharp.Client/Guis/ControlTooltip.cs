@@ -23,8 +23,10 @@ public record ActionTip(ControlIcon Icon, string Action);
 
 public static class ControlTooltip
 {
-    private static readonly List<ActionTip> s_tips = [];
     public static string ControllerType = "x360";
+
+    private static readonly List<ActionTip> s_tips = [];
+    private static readonly Dictionary<int, bool> s_usabilityCache = [];
 
     public static void Clear() => s_tips.Clear();
 
@@ -44,7 +46,7 @@ public static class ControlTooltip
         }
         else
         {
-            PopulateGuiTips(game, game.currentScreen);
+            PopulateGuiTips(game.currentScreen);
         }
 
         if (s_tips.Count == 0) return;
@@ -131,18 +133,12 @@ public static class ControlTooltip
         }
     }
 
-    private static void PopulateGuiTips(BetaSharp game, GuiScreen screen)
+    private static void PopulateGuiTips(GuiScreen screen)
     {
         Add(ControlIcon.B, "Back");
 
-        List<ActionTip>? extraTips = screen.GetTooltips(true);
-        if (extraTips != null)
-        {
-            foreach (ActionTip tip in extraTips) s_tips.Add(tip);
-        }
+        screen.GetTooltips(s_tips);
     }
-
-    private static readonly Dictionary<int, bool> s_usabilityCache = [];
 
     private static bool IsItemUsable(ItemStack stack)
     {
