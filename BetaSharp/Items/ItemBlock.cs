@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Items;
@@ -70,9 +71,20 @@ internal class ItemBlock : Item
         {
             return false;
         }
-        else if (Block.Blocks[blockID].canPlaceAt(new CanPlaceAtCtx(world, 0, x, y, z)))
+
+        Block block = Block.Blocks[blockID];
+        Box? collisionBox = block.getCollisionShape(world.BlocksReader, x, y, z);
+        if (collisionBox is { } box)
         {
-            Block block = Block.Blocks[blockID];
+            List<Entity> entitiesInBox = world.Entities.CollectEntitiesOfType<Entity>(box);
+            if (entitiesInBox.Count > 0)
+            {
+                return false;
+            }
+        }
+
+        if (block.canPlaceAt(new CanPlaceAtCtx(world, 0, x, y, z)))
+        {
             if (world.BlockWriter.SetBlock(x, y, z, blockID, getPlacementMetadata(itemStack.getDamage())))
             {
                 Block.Blocks[blockID].onPlaced(new OnPlacedEvt(world, entityPlayer, meta, meta, x, y, z));
