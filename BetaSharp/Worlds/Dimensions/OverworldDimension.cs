@@ -10,16 +10,16 @@ internal class OverworldDimension : Dimension
 {
     public override IChunkSource CreateChunkGenerator()
     {
-        WorldType terrainType = World.getProperties().TerrainType;
+        WorldType terrainType = World.Properties.TerrainType;
 
         if (terrainType == WorldType.Flat)
         {
-            return new FlatIChunkGenerator(World);
+            return new FlatChunkGenerator(World);
         }
 
         if (terrainType == WorldType.Sky)
         {
-            return new SkyIChunkGenerator(World, World.getSeed());
+            return new SkyIChunkGenerator(World, World.Seed);
         }
 
         return base.CreateChunkGenerator();
@@ -27,7 +27,7 @@ internal class OverworldDimension : Dimension
 
     public override bool IsValidSpawnPoint(int x, int z)
     {
-        if (World.getProperties().TerrainType == WorldType.Flat)
+        if (World.Properties.TerrainType == WorldType.Flat)
         {
             return true;
         }
