@@ -160,10 +160,11 @@ public class BlockRenderer
                 (color & 255) / 255.0F * brightness,
                 1.0F);
             GLManager.GL.Translate(-0.5F, -0.5F, -0.5F);
+            var itemWorld = new ItemRenderBlockAccess(block.id, metadata, brightness);
             BlockPos itemPos = new BlockPos(0, 0, 0);
             tess.startDrawingQuads();
             tess.setNormal(0.0F, 1.0F, 0.0F);
-            RenderBlockByRenderType(NullBlockAccess.Instance, block, itemPos, tess, uiCtx.OverrideTexture, true);
+            RenderBlockByRenderType(itemWorld, block, itemPos, tess, uiCtx.OverrideTexture, true);
             tess.draw();
             GLManager.GL.Translate(0.5F, 0.5F, 0.5F);
         }
