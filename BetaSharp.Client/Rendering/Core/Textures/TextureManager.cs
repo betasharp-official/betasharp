@@ -71,7 +71,7 @@ public class TextureManager : IDisposable
     {
         var texture = new GLTexture("Image_Direct");
         Load(image, texture, false);
-        var handle = new TextureHandle(this, texture);
+        var handle = new TextureHandle(texture);
         _images[texture.Id] = (image, handle);
         return handle;
     }
@@ -81,7 +81,7 @@ public class TextureManager : IDisposable
         if (_textures.TryGetValue(path, out TextureHandle? handle)) return handle;
 
         var texture = new GLTexture(path);
-        handle = new TextureHandle(this, texture);
+        handle = new TextureHandle(texture);
         _textures[path] = handle;
 
         try

@@ -33,7 +33,7 @@ public abstract class TexturePack
         {
             AssetManager.Asset asset = AssetManager.Instance.getAsset(path);
             if (asset == null) return null;
-            return new MemoryStream(asset.getBinaryContent());
+            return new MemoryStream(asset.GetBinaryContent());
         }
         catch (Exception)
         {

@@ -10,7 +10,9 @@ public interface IServerConfiguration
     bool GetPvpEnabled(bool fallback);
     bool GetAllowFlight(bool fallback);
     string GetLevelName(string fallback);
+    string GetLevelType(string fallback);
     string GetLevelSeed(string fallback);
+    string GetLevelOptions(string fallback);
     bool GetSpawnMonsters(bool fallback);
     bool GetAllowNether(bool fallback);
     int GetMaxPlayers(int fallback);

@@ -28,7 +28,7 @@ public class TranslationStorage
             var asset = AssetManager.Instance.getAsset(assetPath);
             if (asset == null) return;
 
-            using StringReader reader = new(asset.getTextContent());
+            using StringReader reader = new(asset.GetTextContent());
             string line;
             while ((line = reader.ReadLine()) != null)
             {

@@ -7,7 +7,7 @@ public class ChatAllowedCharacters
 
     private static string GetAllowedCharacters()
     {
-        string content = AssetManager.Instance.getAsset("font.txt").getTextContent();
+        string content = AssetManager.Instance.getAsset("font.txt").GetTextContent();
         if (string.IsNullOrWhiteSpace(content)) return string.Empty;
 
         return string.Concat(

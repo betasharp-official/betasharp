@@ -28,6 +28,7 @@ public abstract class World : IBlockAccess
     private ChunkSource _chunkSource;
     public PersistentStateManager persistentStateManager;
     protected WorldProperties Properties;
+    public WorldProperties WorldProperties => Properties;
     protected List<IWorldAccess> EventListeners = [];
 
     public RuleSet Rules { get; protected set; }
@@ -106,7 +107,7 @@ public abstract class World : IBlockAccess
         prepareWeather();
     }
 
-    protected World(IWorldStorage worldStorage, string levelName, long seed, Dimension? dim)
+    protected World(IWorldStorage worldStorage, string levelName, WorldSettings settings, Dimension? dim)
     {
         _pathFinder = new(this);
         Storage = worldStorage;
@@ -131,12 +132,17 @@ public abstract class World : IBlockAccess
         bool shouldInitializeSpawn = false;
         if (Properties == null)
         {
-            Properties = new WorldProperties(seed, levelName);
+            Properties = new WorldProperties(settings, levelName);
             shouldInitializeSpawn = true;
         }
         else
         {
             Properties.LevelName = levelName;
+        }
+
+        if (dimension is OverworldDimension && Properties.TerrainType == WorldType.Sky)
+        {
+            dimension = new SkyDimension();
         }
 
         dimension.SetWorld(this);
@@ -174,12 +180,18 @@ public abstract class World : IBlockAccess
         byte y = 64;
 
         int z;
+        int attempts = 0;
         for (
             z = 0;
             !dimension.IsValidSpawnPoint(x, z);
             z += random.NextInt(64) - random.NextInt(64))
         {
             x += random.NextInt(64) - random.NextInt(64);
+            attempts++;
+            if (attempts >= 1000)
+            {
+                break;
+            }
         }
 
         Properties.SetSpawn(x, y, z);
@@ -196,11 +208,17 @@ public abstract class World : IBlockAccess
         int spawnX = Properties.SpawnX;
 
         int spawnZ;
+        int attempts = 0;
         for (spawnZ = Properties.SpawnZ;
              getSpawnBlockId(spawnX, spawnZ) == 0;
              spawnZ += random.NextInt(8) - random.NextInt(8))
         {
             spawnX += random.NextInt(8) - random.NextInt(8);
+            attempts++;
+            if (attempts >= 10000)
+            {
+                break;
+            }
         }
 
         Properties.SpawnX = spawnX;

@@ -116,8 +116,9 @@ public class GuiIngame : Gui
         _game.textureManager.BindTexture(_game.textureManager.GetTextureId("/gui/gui.png"));
         InventoryPlayer inventory = _game.player.inventory;
         _zLevel = -90.0F;
-        DrawTexturedModalRect(scaledWidth / 2 - 91, scaledHeight - 22, 0, 0, 182, 22);
-        DrawTexturedModalRect(scaledWidth / 2 - 91 - 1 + inventory.selectedSlot * 20, scaledHeight - 22 - 1, 0, 22, 24, 22);
+        int yOffset = _game.isControllerMode ? -40 : 0;
+        DrawTexturedModalRect(scaledWidth / 2 - 91, scaledHeight - 22 + yOffset, 0, 0, 182, 22);
+        DrawTexturedModalRect(scaledWidth / 2 - 91 - 1 + inventory.selectedSlot * 20, scaledHeight - 22 - 1 + yOffset, 0, 22, 24, 22);
         _game.textureManager.BindTexture(_game.textureManager.GetTextureId("/gui/icons.png"));
         if (_game.options.CameraMode == EnumCameraMode.FirstPerson)
         {
@@ -145,7 +146,7 @@ public class GuiIngame : Gui
             int k;
             for (i = 0; i < 10; ++i)
             {
-                j = scaledHeight - 32;
+                j = scaledHeight - 32 + yOffset;
                 if (armorValue > 0)
                 {
                     k = scaledWidth / 2 + 91 - i * 8 - 9;
@@ -211,11 +212,11 @@ public class GuiIngame : Gui
                 {
                     if (k < i)
                     {
-                        DrawTexturedModalRect(scaledWidth / 2 - 91 + k * 8, scaledHeight - 32 - 9, 16, 18, 9, 9);
+                        DrawTexturedModalRect(scaledWidth / 2 - 91 + k * 8, scaledHeight - 32 - 9 + yOffset, 16, 18, 9, 9);
                     }
                     else
                     {
-                        DrawTexturedModalRect(scaledWidth / 2 - 91 + k * 8, scaledHeight - 32 - 9, 25, 18, 9, 9);
+                        DrawTexturedModalRect(scaledWidth / 2 - 91 + k * 8, scaledHeight - 32 - 9 + yOffset, 25, 18, 9, 9);
                     }
                 }
             }
@@ -231,7 +232,7 @@ public class GuiIngame : Gui
         for (armorValue = 0; armorValue < 9; ++armorValue)
         {
             i = scaledWidth / 2 - 90 + armorValue * 20 + 2;
-            j = scaledHeight - 16 - 3;
+            j = scaledHeight - 16 - 3 + yOffset;
             renderInventorySlot(armorValue, i, j, partialTicks);
         }
 
@@ -302,7 +303,7 @@ public class GuiIngame : Gui
             if (i > 0)
             {
                 GLManager.GL.PushMatrix();
-                GLManager.GL.Translate(scaledWidth / 2, scaledHeight - 48, 0.0F);
+                GLManager.GL.Translate(scaledWidth / 2, scaledHeight - 48 + yOffset, 0.0F);
                 GLManager.GL.Enable(GLEnum.Blend);
                 GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
 
@@ -330,7 +331,7 @@ public class GuiIngame : Gui
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
         GLManager.GL.Disable(GLEnum.AlphaTest);
         GLManager.GL.PushMatrix();
-        GLManager.GL.Translate(0.0F, scaledHeight - 48, 0.0F);
+        GLManager.GL.Translate(0.0F, scaledHeight - 48 + yOffset, 0.0F);
 
         for (j = 0; j < _chatMessageList.Count && j < linesToShow; ++j)
         {
@@ -386,8 +387,8 @@ public class GuiIngame : Gui
             int chatWidth = 320;
             int scrollbarX = left + chatWidth - 5;
             int scrollbarWidth = 6;
-            int bottom = scaledHeight - 48 + 6; // 2 pixels before message end
-            int top = scaledHeight - 48 - (linesToShowAbs - 1) * 9;
+            int bottom = scaledHeight - 48 + 6 + yOffset; // 2 pixels before message end
+            int top = scaledHeight - 48 - (linesToShowAbs - 1) * 9 + yOffset;
             int trackHeight = bottom - top;
 
             int totalLines = _chatMessageList.Count;
@@ -415,6 +416,7 @@ public class GuiIngame : Gui
         }
 
         _game.guiAchievement.RenderAchievementOverlayIfAny(scaledWidth, scaledHeight);
+        ControlTooltip.Render(_game, scaledWidth, scaledHeight, partialTicks);
     }
 
     private void renderPumpkinBlur(int screenWidth, int screenHeight)

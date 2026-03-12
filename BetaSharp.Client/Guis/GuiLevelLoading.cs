@@ -1,16 +1,17 @@
-﻿using BetaSharp.Client.Network;
+using BetaSharp.Client.Network;
 using BetaSharp.Network;
 using BetaSharp.Server.Internal;
 using BetaSharp.Server.Threading;
+using BetaSharp.Worlds;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Guis;
 
-public class GuiLevelLoading(string worldDir, long seed) : GuiScreen
+public class GuiLevelLoading(string worldDir, WorldSettings settings) : GuiScreen
 {
     private readonly ILogger<GuiLevelLoading> _logger = Log.Instance.For<GuiLevelLoading>();
     private readonly string _worldDir = worldDir;
-    private readonly long _seed = seed;
+    private readonly WorldSettings _settings = settings;
     private bool _serverStarted;
 
     public override bool PausesGame=> false;
@@ -21,7 +22,7 @@ public class GuiLevelLoading(string worldDir, long seed) : GuiScreen
         if (!_serverStarted)
         {
             _serverStarted = true;
-            Game.internalServer = new InternalServer(Path.Combine(BetaSharp.getBetaSharpDir(), "saves"), _worldDir, _seed.ToString(), Game.options.renderDistance, Game.options.Difficulty);
+            Game.internalServer = new InternalServer(Path.Combine(BetaSharp.getBetaSharpDir(), "saves"), _worldDir, _settings, Game.options.renderDistance, Game.options.Difficulty);
             new RunServerThread(Game.internalServer, "InternalServer").start();
         }
     }

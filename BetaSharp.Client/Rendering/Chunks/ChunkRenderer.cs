@@ -101,7 +101,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _meshGenerator = new();
         _world = world;
 
-        _chunkShader = new(AssetManager.Instance.getAsset("shaders/chunk.vert").getTextContent(), AssetManager.Instance.getAsset("shaders/chunk.frag").getTextContent());
+        _chunkShader = new(AssetManager.Instance.getAsset("shaders/chunk.vert").GetTextContent(), AssetManager.Instance.getAsset("shaders/chunk.frag").GetTextContent());
 
         GLManager.GL.UseProgram(0);
     }

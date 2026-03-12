@@ -3,13 +3,17 @@ namespace BetaSharp.Server.Internal;
 internal class InternalServerConfiguration : IServerConfiguration
 {
     private string levelName;
+    private string levelType;
     private string seed;
+    private string levelOptions;
     private int viewDistance;
 
-    public InternalServerConfiguration(string levelName, string seed, int viewDistance)
+    public InternalServerConfiguration(string levelName, string levelType, string seed, string levelOptions, int viewDistance)
     {
         this.levelName = levelName;
+        this.levelType = levelType;
         this.seed = seed;
+        this.levelOptions = levelOptions;
         this.viewDistance = viewDistance;
     }
 
@@ -33,9 +37,19 @@ internal class InternalServerConfiguration : IServerConfiguration
         return levelName;
     }
 
+    public string GetLevelType(string fallback)
+    {
+        return levelType ?? fallback;
+    }
+
     public string GetLevelSeed(string fallback)
     {
         return seed;
+    }
+
+    public string GetLevelOptions(string fallback)
+    {
+        return levelOptions ?? fallback;
     }
 
     public int GetMaxPlayers(int fallback)

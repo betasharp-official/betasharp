@@ -129,7 +129,9 @@ internal class DedicatedServerConfiguration : IServerConfiguration
     public bool GetPvpEnabled(bool fallback) => GetProperty("pvp", fallback);
     public bool GetAllowFlight(bool fallback) => GetProperty("allow-flight", fallback);
     public string GetLevelName(string fallback) => GetProperty("level-name", fallback);
+    public string GetLevelType(string fallback) => GetProperty("level-type", fallback);
     public string GetLevelSeed(string fallback) => GetProperty("level-seed", fallback);
+    public string GetLevelOptions(string fallback) => GetProperty("generator-settings", fallback);
     public bool GetSpawnMonsters(bool fallback) => GetProperty("spawn-monsters", fallback);
     public bool GetAllowNether(bool fallback) => GetProperty("allow-nether", fallback);
     public int GetMaxPlayers(int fallback) => GetProperty("max-players", fallback);

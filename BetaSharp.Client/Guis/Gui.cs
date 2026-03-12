@@ -43,7 +43,7 @@ public class Gui
         GLManager.GL.Disable(GLEnum.Blend);
     }
 
-    protected static void DrawGradientRect(int right, int bottom, int left, int top, Color topColor, Color bottomColor)
+    internal static void DrawGradientRect(int right, int bottom, int left, int top, Color topColor, Color bottomColor)
     {
         GLManager.GL.Disable(GLEnum.Texture2D);
         GLManager.GL.Enable(GLEnum.Blend);
@@ -86,6 +86,19 @@ public class Gui
         tess.addVertexWithUV(x + width, y + height, _zLevel, (double)((u + width) * f), (double)((v + height) * f));
         tess.addVertexWithUV(x + width, y + 0, _zLevel, (double)((u + width) * f), (double)((v + 0) * f));
         tess.addVertexWithUV(x + 0, y + 0, _zLevel, (double)((u + 0) * f), (double)((v + 0) * f));
+        tess.draw();
+    }
+
+    public void DrawTexturedModalRect(int x, int y, int u, int v, int width, int height, int textureWidth, int textureHeight)
+    {
+        float f = 1.0F / textureWidth;
+        float f1 = 1.0F / textureHeight;
+        Tessellator tess = Tessellator.instance;
+        tess.startDrawingQuads();
+        tess.addVertexWithUV(x + 0, y + height, _zLevel, (double)((u + 0) * f), (double)((v + height) * f1));
+        tess.addVertexWithUV(x + width, y + height, _zLevel, (double)((u + width) * f), (double)((v + height) * f1));
+        tess.addVertexWithUV(x + width, y + 0, _zLevel, (double)((u + width) * f), (double)((v + 0) * f1));
+        tess.addVertexWithUV(x + 0, y + 0, _zLevel, (double)((u + 0) * f), (double)((v + 0) * f1));
         tess.draw();
     }
 }

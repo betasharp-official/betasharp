@@ -5,7 +5,7 @@ namespace BetaSharp.Client.Rendering.Core;
 
 public unsafe class Lighting
 {
-    private static readonly float[] buffer = new float[4];
+    private static readonly float[] s_buffer = new float[4];
 
     public static void turnOff()
     {
@@ -26,7 +26,7 @@ public unsafe class Lighting
         float var1 = 0.6F;
         float var2 = 0.0F;
         Vec3D var3 = new Vec3D((double)0.2F, 1.0D, (double)-0.7F).normalize();
-        fixed (float* buf = buffer)
+        fixed (float* buf = s_buffer)
         {
             GLManager.GL.Light(GLEnum.Light0, GLEnum.Position, getBuffer(buf, var3.x, var3.y, var3.z, 0.0D));
             GLManager.GL.Light(GLEnum.Light0, GLEnum.Diffuse, getBuffer(buf, var1, var1, var1, 1.0F));

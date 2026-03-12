@@ -20,9 +20,7 @@ internal class ChunkSnapshot : IDisposable
     {
         _blocks = ArrayPool<byte>.Shared.Rent(32768);
         Buffer.BlockCopy(toSnapshot.Blocks, 0, _blocks, 0, toSnapshot.Blocks.Length);
-
-        _data = createNibbleArray(toSnapshot.Meta.Bytes);
-        SkylightMap = createNibbleArray(toSnapshot.SkyLight.Bytes);
+        
         _data = createNibbleArray(toSnapshot.Meta.Bytes);
         SkylightMap = createNibbleArray(toSnapshot.SkyLight.Bytes);
         BlocklightMap = createNibbleArray(toSnapshot.BlockLight.Bytes);

@@ -40,6 +40,18 @@ public static class Controller
                     {
                         s_gamepadJoystickIndex = i;
                         s_logger.LogInformation("Selected gamepad: {}", name);
+
+                        //TODO: IDK IF THIS WORKS
+                        if (name.Contains("Xbox", StringComparison.OrdinalIgnoreCase)) 
+                            Guis.ControlTooltip.ControllerType = "xone";
+                        else if (name.Contains("DualSense", StringComparison.OrdinalIgnoreCase) || name.Contains("PS5", StringComparison.OrdinalIgnoreCase)) 
+                            Guis.ControlTooltip.ControllerType = "ps5";
+                        else if (name.Contains("DualShock 4", StringComparison.OrdinalIgnoreCase) || name.Contains("PS4", StringComparison.OrdinalIgnoreCase)) 
+                            Guis.ControlTooltip.ControllerType = "ps4";
+                        else if (name.Contains("DualShock 3", StringComparison.OrdinalIgnoreCase) || name.Contains("PS3", StringComparison.OrdinalIgnoreCase)) 
+                            Guis.ControlTooltip.ControllerType = "ps3";
+                        else
+                            Guis.ControlTooltip.ControllerType = "xone";
                     }
                 }
             }
@@ -100,6 +112,12 @@ public static class Controller
         }
 
         return false;
+    }
+
+    public static void ClearEvents()
+    {
+        if (!s_created) return;
+        s_eventQueue.Clear();
     }
 
     public static int GetEventButton() => s_current_event.Button;

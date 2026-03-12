@@ -96,6 +96,6 @@ public class GuiButton : Gui
 
     public virtual bool MousePressed(BetaSharp game, int mouseX, int mouseY)
     {
-        return Enabled && mouseX >= XPosition && mouseY >= YPosition && mouseX < XPosition + Width && mouseY < YPosition + Height;
+        return Enabled && Visible && mouseX >= XPosition && mouseY >= YPosition && mouseX < XPosition + Width && mouseY < YPosition + Height;
     }
 }

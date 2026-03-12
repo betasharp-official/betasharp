@@ -272,9 +272,6 @@ public class ServerChunkCache : ChunkSource
         return "NOP";
     }
 
-    // Exposes storage loading so the parallel gen phase can skip already-saved chunks.
-    public Chunk? TryLoadFromStorage(int chunkX, int chunkZ) => LoadChunkFromStorage(chunkX, chunkZ);
-
     /// Creates a parallel-safe generator instance for off-thread terrain generation.
     public ChunkSource CreateParallelGenerator() => _generator.CreateParallelInstance();
 

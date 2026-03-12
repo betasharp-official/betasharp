@@ -18,7 +18,7 @@ public class BuiltInTexturePack : TexturePack
 
         try
         {
-            byte[] content = AssetManager.Instance.getAsset("pack.png").getBinaryContent();
+            byte[] content = AssetManager.Instance.getAsset("pack.png").GetBinaryContent();
             using (var ms = new MemoryStream(content))
             {
                 texturePackThumbnail = Image.Load<Rgba32>(ms);

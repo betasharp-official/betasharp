@@ -148,7 +148,7 @@ public class TextRenderer
         try
         {
             AssetManager.Asset asset = AssetManager.Instance.getAsset("font/default.png");
-            using var stream = new MemoryStream(asset.getBinaryContent());
+            using var stream = new MemoryStream(asset.GetBinaryContent());
             using var classicFontImage = Image.Load<Rgba32>(stream);
 
             LoadClassicFontIntoAtlas(classicFontImage);
@@ -196,7 +196,7 @@ public class TextRenderer
             _atlasY = 0;
 
             AssetManager.Asset asset = AssetManager.Instance.getAsset("font/default.png");
-            using var stream = new MemoryStream(asset.getBinaryContent());
+            using var stream = new MemoryStream(asset.GetBinaryContent());
             using var classicFontImage = Image.Load<Rgba32>(stream);
             LoadClassicFontIntoAtlas(classicFontImage);
         }

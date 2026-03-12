@@ -21,6 +21,8 @@ internal class DerivingWorldProperties : WorldProperties
     public override int RainTime { get => _baseProperties.RainTime; }
     public override bool IsThundering { get => _baseProperties.IsThundering; }
     public override int ThunderTime { get => _baseProperties.ThunderTime; }
+    public override WorldType TerrainType { get => _baseProperties.TerrainType; set => _baseProperties.TerrainType = value; }
+    public override string GeneratorOptions { get => _baseProperties.GeneratorOptions; set => _baseProperties.GeneratorOptions = value; }
 
     public DerivingWorldProperties(WorldProperties baseProperties)
     {

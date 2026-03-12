@@ -17,10 +17,12 @@ public class WorldProperties
     public virtual int Dimension { get; }
     public virtual string LevelName { get; set; }
     public virtual int SaveVersion { get; set; }
+    public virtual WorldType TerrainType { get; set; }
     public virtual bool IsRaining { get; set; }
     public virtual int RainTime { get; set; }
     public virtual bool IsThundering { get; set; }
     public virtual int ThunderTime { get; set; }
+    public virtual string GeneratorOptions { get; set; } = "";
 
     protected WorldProperties()
     {
@@ -40,6 +42,17 @@ public class WorldProperties
         IsRaining = nbt.GetBoolean("raining");
         ThunderTime = nbt.GetInteger("thunderTime");
         IsThundering = nbt.GetBoolean("thundering");
+        
+        if (nbt.HasKey("generatorName"))
+        {
+            string generatorName = nbt.GetString("generatorName");
+            TerrainType = WorldType.ParseWorldType(generatorName);
+        }
+        else
+        {
+            TerrainType = WorldType.Default;
+        }
+
         if (nbt.HasKey("Player"))
         {
             PlayerTag = nbt.GetCompoundTag("Player");
@@ -49,13 +62,25 @@ public class WorldProperties
         {
             RulesTag = nbt.GetCompoundTag("GameRules");
         }
-
+        if (nbt.HasKey("generatorOptions"))
+        {
+            GeneratorOptions = nbt.GetString("generatorOptions");
+        }
     }
 
     public WorldProperties(long randomSeed, string levelName)
     {
         RandomSeed = randomSeed;
         LevelName = levelName;
+        TerrainType = WorldType.Default;
+    }
+
+    public WorldProperties(WorldSettings settings, string levelName)
+    {
+        RandomSeed = settings.Seed;
+        LevelName = levelName;
+        TerrainType = settings.TerrainType;
+        GeneratorOptions = settings.GeneratorOptions;
     }
 
     public WorldProperties(WorldProperties WorldProp)
@@ -73,9 +98,11 @@ public class WorldProperties
         LevelName = WorldProp.LevelName;
         SaveVersion = WorldProp.SaveVersion;
         RainTime = WorldProp.RainTime;
+        TerrainType = WorldProp.TerrainType;
         IsRaining = WorldProp.IsRaining;
         ThunderTime = WorldProp.ThunderTime;
         IsThundering = WorldProp.IsThundering;
+        GeneratorOptions = WorldProp.GeneratorOptions;
     }
 
     public NBTTagCompound getNBTTagCompound()
@@ -117,6 +144,12 @@ public class WorldProperties
         worldNbt.SetBoolean("raining", IsRaining);
         worldNbt.SetInteger("thunderTime", ThunderTime);
         worldNbt.SetBoolean("thundering", IsThundering);
+        
+        if (TerrainType != null)
+        {
+            worldNbt.SetString("generatorName", TerrainType.Name);
+            worldNbt.SetString("generatorOptions", GeneratorOptions);
+        }
 
         if (playerNbt != null)
             worldNbt.SetCompoundTag("Player", playerNbt);

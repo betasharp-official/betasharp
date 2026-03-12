@@ -191,7 +191,7 @@ public class ItemRenderer : EntityRenderer
             renderTexturedQuad(var6, var7, var5 % 16 * 16, var5 / 16 * 16, 16, 16);
             GLManager.GL.Enable(GLEnum.Lighting);
         }
-
+ 
         GLManager.GL.Enable(GLEnum.CullFace);
     }
 
