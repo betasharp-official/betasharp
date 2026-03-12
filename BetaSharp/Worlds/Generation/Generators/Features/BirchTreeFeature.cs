@@ -57,7 +57,7 @@ internal class BirchTreeFeature : Feature
         int soilId = level.BlocksReader.GetBlockId(x, y - 1, z);
         if ((soilId == Block.GrassBlock.id || soilId == Block.Dirt.id) && y < 128 - treeHeight - 1)
         {
-            level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id, 0);
+            level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id, 0, notifyBlockPlaced: false);
 
 
             for (int leafY = y - 3 + treeHeight; leafY <= y + treeHeight; ++leafY)
@@ -76,7 +76,7 @@ internal class BirchTreeFeature : Feature
                                          (level.random.NextInt(2) != 0 && relativeY != 0)) && !Block.BlocksOpaque[level.BlocksReader.GetBlockId(leafX, leafY, leafZ)];
                         if (isCorner)
                         {
-                            level.BlockWriter.SetBlockWithoutNotifyingNeighbors(leafX, leafY, leafZ, Block.Leaves.id, 2);
+                            level.BlockWriter.SetBlockWithoutNotifyingNeighbors(leafX, leafY, leafZ, Block.Leaves.id, 2, notifyBlockPlaced: false);
                         }
                     }
                 }
@@ -87,7 +87,7 @@ internal class BirchTreeFeature : Feature
                 int blockAtTrunk = level.BlocksReader.GetBlockId(x, y + trunkY, z);
                 if (blockAtTrunk == 0 || blockAtTrunk == Block.Leaves.id)
                 {
-                    level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, Block.Log.id, 2);
+                    level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, Block.Log.id, 2, notifyBlockPlaced: false);
                 }
             }
 

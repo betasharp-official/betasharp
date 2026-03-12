@@ -235,7 +235,7 @@ internal class LargeOakTreeFeature : Feature
                 var14[var6] = MathHelper.Floor(var1[var6] + var15 + 0.5D);
                 var14[var7] = MathHelper.Floor(var1[var7] + var15 * var10 + 0.5D);
                 var14[var8] = MathHelper.Floor(var1[var8] + var15 * var12 + 0.5D);
-                _level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(var14[0], var14[1], var14[2], var3);
+                _level.BlockWriter.SetBlockWithoutNotifyingNeighbors(var14[0], var14[1], var14[2], var3, 0, notifyBlockPlaced: false);
             }
         }
     }

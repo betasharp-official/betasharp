@@ -184,18 +184,30 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
                 sw1.Stop();
                 _logger.LogInformation($"  Level {i} terrain: {sw1.ElapsedMilliseconds}ms");
 
-                // Phase 2: Sequential insert + decoration
+                // Phase 2a: Insert all chunks first (required so decoration can write to neighbors without hitting EmptyChunk)
                 var sw2 = Stopwatch.StartNew();
                 for (int idx = 0; idx < totalChunks && running; idx++)
                 {
                     long currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                     if (currentTime > lastTimeLogged + 1000L)
                     {
-                        logProgress("Preparing spawn area", (idx + 1) * 100 / totalChunks);
+                        logProgress("Preparing spawn area", (idx + 1) * 50 / totalChunks);
                         lastTimeLogged = currentTime;
                     }
                     var (cx, cz) = chunkList[idx];
                     world.ChunkCache.InsertPreGeneratedChunk(cx, cz, preGenerated[idx]);
+                }
+
+                // Phase 2b: Decorate all chunks (all neighbors now in cache, so no EmptyChunk writes)
+                for (int idx = 0; idx < totalChunks && running; idx++)
+                {
+                    long currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    if (currentTime > lastTimeLogged + 1000L)
+                    {
+                        logProgress("Preparing spawn area", 50 + (idx + 1) * 50 / totalChunks);
+                        lastTimeLogged = currentTime;
+                    }
+                    var (cx, cz) = chunkList[idx];
                     world.ChunkCache.DecorateIfReady(cx, cz);
                 }
                 sw2.Stop();
