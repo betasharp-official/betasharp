@@ -87,7 +87,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new LakeFeature(Block.Water.id).Generate(_level, featureX, featureY, featureZ);
+            new LakeFeature(Block.Water.id).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         if (_random.NextInt(8) == 0)
@@ -97,7 +97,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureZ = blockZ + _random.NextInt(16) + 8;
             if (featureY < 64 || _random.NextInt(10) == 0)
             {
-                new LakeFeature(Block.Lava.id).Generate(_level, featureX, featureY, featureZ);
+                new LakeFeature(Block.Lava.id).Generate(_level, _random, featureX, featureY, featureZ);
             }
         }
 
@@ -106,7 +106,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new DungeonFeature().Generate(_level, featureX, featureY, featureZ);
+            new DungeonFeature().Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 10; ++i)
@@ -114,7 +114,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16);
-            new ClayOreFeature(32).Generate(_level, featureX, featureY, featureZ);
+            new ClayOreFeature(32).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 20; ++i)
@@ -122,7 +122,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.Dirt.id, 32).Generate(_level, featureX, featureY, featureZ);
+            new OreFeature(Block.Dirt.id, 32).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 10; ++i)
@@ -130,7 +130,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.Gravel.id, 32).Generate(_level, featureX, featureY, featureZ);
+            new OreFeature(Block.Gravel.id, 32).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 20; ++i)
@@ -138,7 +138,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.CoalOre.id, 16).Generate(_level, featureX, featureY, featureZ);
+            new OreFeature(Block.CoalOre.id, 16).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 20; ++i)
@@ -146,7 +146,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(64);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.IronOre.id, 8).Generate(_level, featureX, featureY, featureZ);
+            new OreFeature(Block.IronOre.id, 8).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 2; ++i)
@@ -154,7 +154,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(32);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.GoldOre.id, 8).Generate(_level, featureX, featureY, featureZ);
+            new OreFeature(Block.GoldOre.id, 8).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 8; ++i)
@@ -162,7 +162,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(16);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.RedstoneOre.id, 7).Generate(_level, featureX, featureY, featureZ);
+            new OreFeature(Block.RedstoneOre.id, 7).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 1; ++i)
@@ -170,7 +170,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(16);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.DiamondOre.id, 7).Generate(_level, featureX, featureY, featureZ);
+            new OreFeature(Block.DiamondOre.id, 7).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 1; ++i)
@@ -178,7 +178,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(16) + _random.NextInt(16);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.LapisOre.id, 6).Generate(_level, featureX, featureY, featureZ);
+            new OreFeature(Block.LapisOre.id, 6).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         fraction = 0.5D;
@@ -231,7 +231,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureZ = blockZ + _random.NextInt(16) + 8;
             Feature treeFeature = chunkBiome.GetRandomWorldGenForTrees(_random);
             treeFeature.prepare(1.0D, 1.0D, 1.0D);
-            treeFeature.Generate(_level, featureX, _level.BlocksReader.GetTopY(featureX, featureZ), featureZ);
+            treeFeature.Generate(_level, _random, featureX, _level.BlocksReader.GetTopY(featureX, featureZ), featureZ);
         }
 
         for (int i = 0; i < 2; ++i)
@@ -239,7 +239,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new PlantPatchFeature(Block.Dandelion.id).Generate(_level, featureX, featureY, featureZ);
+            new PlantPatchFeature(Block.Dandelion.id).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         if (_random.NextInt(2) == 0)
@@ -247,7 +247,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new PlantPatchFeature(Block.Rose.id).Generate(_level, featureX, featureY, featureZ);
+            new PlantPatchFeature(Block.Rose.id).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         if (_random.NextInt(4) == 0)
@@ -255,7 +255,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new PlantPatchFeature(Block.BrownMushroom.id).Generate(_level, featureX, featureY, featureZ);
+            new PlantPatchFeature(Block.BrownMushroom.id).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         if (_random.NextInt(8) == 0)
@@ -263,7 +263,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new PlantPatchFeature(Block.RedMushroom.id).Generate(_level, featureX, featureY, featureZ);
+            new PlantPatchFeature(Block.RedMushroom.id).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 10; ++i)
@@ -271,7 +271,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new SugarCanePatchFeature().Generate(_level, featureX, featureY, featureZ);
+            new SugarCanePatchFeature().Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         if (_random.NextInt(32) == 0)
@@ -279,7 +279,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new PumpkinPatchFeature().Generate(_level, featureX, featureY, featureZ);
+            new PumpkinPatchFeature().Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         int amountOfCacti = 0;
@@ -293,7 +293,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new CactusPatchFeature().Generate(_level, featureX, featureY, featureZ);
+            new CactusPatchFeature().Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 50; ++i)
@@ -301,7 +301,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(_random.NextInt(120) + 8);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new SpringFeature(Block.FlowingWater.id).Generate(_level, featureX, featureY, featureZ);
+            new SpringFeature(Block.FlowingWater.id).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 20; ++i)
@@ -309,7 +309,7 @@ internal class SkyIChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(_random.NextInt(_random.NextInt(112) + 8) + 8);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new SpringFeature(Block.FlowingLava.id).Generate(_level, featureX, featureY, featureZ);
+            new SpringFeature(Block.FlowingLava.id).Generate(_level, _random, featureX, featureY, featureZ);
         }
 
         _temperatures = _level.BlocksReader.GetBiomeSource().GetTemperatures(_temperatures, blockX + 8, blockZ + 8, 16, 16);

@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
@@ -10,7 +11,7 @@ internal class LakeFeature : Feature
 
     public LakeFeature(int waterBlockId) => _waterBlockId = waterBlockId;
 
-    public override bool Generate(IWorldContext level, int x, int y, int z)
+    public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
         x -= 8;
 
@@ -21,18 +22,18 @@ internal class LakeFeature : Feature
 
         y -= 4;
         bool[] lakeMask = new bool[2048];
-        int blobCount = level.random.NextInt(4) + 4;
+        int blobCount = rand.NextInt(4) + 4;
 
 
         for (int i = 0; i < blobCount; ++i)
         {
-            double radiusH = level.random.NextDouble() * 6.0D + 3.0D;
-            double radiusV = level.random.NextDouble() * 4.0D + 2.0D;
-            double radiusH2 = level.random.NextDouble() * 6.0D + 3.0D;
+            double radiusH = rand.NextDouble() * 6.0D + 3.0D;
+            double radiusV = rand.NextDouble() * 4.0D + 2.0D;
+            double radiusH2 = rand.NextDouble() * 6.0D + 3.0D;
 
-            double centerX = level.random.NextDouble() * (16.0D - radiusH - 2.0D) + 1.0D + radiusH / 2.0D;
-            double centerY = level.random.NextDouble() * (8.0D - radiusV - 4.0D) + 2.0D + radiusV / 2.0D;
-            double centerZ = level.random.NextDouble() * (16.0D - radiusH2 - 2.0D) + 1.0D + radiusH2 / 2.0D;
+            double centerX = rand.NextDouble() * (16.0D - radiusH - 2.0D) + 1.0D + radiusH / 2.0D;
+            double centerY = rand.NextDouble() * (8.0D - radiusV - 4.0D) + 2.0D + radiusV / 2.0D;
+            double centerZ = rand.NextDouble() * (16.0D - radiusH2 - 2.0D) + 1.0D + radiusH2 / 2.0D;
 
             for (int dx = 1; dx < 15; ++dx)
             {
@@ -128,7 +129,7 @@ internal class LakeFeature : Feature
                                           (dz < 7 && lakeMask[(dx * 16 + dy) * 8 + dz + 1]) ||
                                           (dz > 0 && lakeMask[(dx * 16 + dy) * 8 + (dz - 1)])
                                       );
-                        if (isEdge && (dz < 4 || level.random.NextInt(2) != 0) && level.BlocksReader.GetMaterial(x + dx, y + dz, z + dy).IsSolid)
+                        if (isEdge && (dz < 4 || rand.NextInt(2) != 0) && level.BlocksReader.GetMaterial(x + dx, y + dz, z + dy).IsSolid)
                         {
                             level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, Block.Stone.id, 0, notifyBlockPlaced: false);
                         }

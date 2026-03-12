@@ -12,14 +12,14 @@ internal class ClayOreFeature : Feature
 
     public ClayOreFeature(int numberOfBlocks) => _numberOfBlocks = numberOfBlocks;
 
-    public override bool Generate(IWorldContext level, int x, int y, int z)
+    public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
         if (level.BlocksReader.GetMaterial(x, y, z) != Material.Water)
         {
             return false;
         }
 
-        float angle = level.random.NextFloat() * (float)Math.PI;
+        float angle = rand.NextFloat() * (float)Math.PI;
         double spread = _numberOfBlocks / 8.0;
 
         double startX = x + 8 + MathHelper.Sin(angle) * spread;
@@ -27,8 +27,8 @@ internal class ClayOreFeature : Feature
         double startZ = z + 8 + MathHelper.Cos(angle) * spread;
         double enZ = z + 8 - MathHelper.Cos(angle) * spread;
 
-        double startY = y + level.random.NextInt(3) + 2;
-        double endY = y + level.random.NextInt(3) + 2;
+        double startY = y + rand.NextInt(3) + 2;
+        double endY = y + rand.NextInt(3) + 2;
 
         for (int i = 0; i <= _numberOfBlocks; ++i)
         {
@@ -37,7 +37,7 @@ internal class ClayOreFeature : Feature
             double centerY = startY + (endY - startY) * lerp;
             double centerZ = startZ + (enZ - startZ) * lerp;
 
-            double sizeMultiplier = level.random.NextDouble() * _numberOfBlocks / 16.0D;
+            double sizeMultiplier = rand.NextDouble() * _numberOfBlocks / 16.0D;
             double radiusH = (MathHelper.Sin(i * (float)Math.PI / _numberOfBlocks) + 1.0F) * sizeMultiplier + 1.0D;
             double radiusV = (MathHelper.Sin(i * (float)Math.PI / _numberOfBlocks) + 1.0F) * sizeMultiplier + 1.0D;
 

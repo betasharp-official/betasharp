@@ -1,20 +1,21 @@
 using BetaSharp.Blocks;
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class CactusPatchFeature : Feature
 {
-    public override bool Generate(IWorldContext level, int x, int y, int z)
+    public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
         for (int i = 0; i < 10; ++i)
         {
-            int genX = x + level.random.NextInt(8) - level.random.NextInt(8);
-            int genY = y + level.random.NextInt(4) - level.random.NextInt(4);
-            int genZ = z + level.random.NextInt(8) - level.random.NextInt(8);
+            int genX = x + rand.NextInt(8) - rand.NextInt(8);
+            int genY = y + rand.NextInt(4) - rand.NextInt(4);
+            int genZ = z + rand.NextInt(8) - rand.NextInt(8);
             if (level.BlocksReader.IsAir(genX, genY, genZ))
             {
-                int height = 1 + level.random.NextInt(level.random.NextInt(3) + 1);
+                int height = 1 + rand.NextInt(rand.NextInt(3) + 1);
 
                 for (int h = 0; h < height; ++h)
                 {

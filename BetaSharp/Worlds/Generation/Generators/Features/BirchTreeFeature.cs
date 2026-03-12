@@ -1,13 +1,14 @@
 using BetaSharp.Blocks;
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class BirchTreeFeature : Feature
 {
-    public override bool Generate(IWorldContext level, int x, int y, int z)
+    public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
-        int treeHeight = level.random.NextInt(3) + 5;
+        int treeHeight = rand.NextInt(3) + 5;
         bool canPlace = true;
         if (!(y >= 1 && y + treeHeight + 1 <= 128))
         {
@@ -73,7 +74,7 @@ internal class BirchTreeFeature : Feature
                         int offsetZ = leafZ - z;
                         bool isCorner = (Math.Abs(offsetX) != leafRadius ||
                                          Math.Abs(offsetZ) != leafRadius ||
-                                         (level.random.NextInt(2) != 0 && relativeY != 0)) && !Block.BlocksOpaque[level.BlocksReader.GetBlockId(leafX, leafY, leafZ)];
+                                         (rand.NextInt(2) != 0 && relativeY != 0)) && !Block.BlocksOpaque[level.BlocksReader.GetBlockId(leafX, leafY, leafZ)];
                         if (isCorner)
                         {
                             level.BlockWriter.SetBlockWithoutNotifyingNeighbors(leafX, leafY, leafZ, Block.Leaves.id, 2, notifyBlockPlaced: false);

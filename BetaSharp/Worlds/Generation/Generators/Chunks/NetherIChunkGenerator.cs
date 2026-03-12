@@ -84,7 +84,7 @@ internal class NetherIChunkGenerator : IChunkSource
             featureX = blockX + random.NextInt(16) + 8;
             featureY = random.NextInt(120) + 4;
             featureZ = blockZ + random.NextInt(16) + 8;
-            _featureNetherLavaSpring.Generate(_world, featureX, featureY, featureZ);
+            _featureNetherLavaSpring.Generate(_world, random, featureX, featureY, featureZ);
         }
 
         numIterations = random.NextInt(random.NextInt(10) + 1) + 1;
@@ -95,7 +95,7 @@ internal class NetherIChunkGenerator : IChunkSource
             featureY = blockX + random.NextInt(16) + 8;
             featureZ = random.NextInt(120) + 4;
             featureZFallback = blockZ + random.NextInt(16) + 8;
-            _featureNetherFire.Generate(_world, featureY, featureZ, featureZFallback);
+            _featureNetherFire.Generate(_world, random, featureY, featureZ, featureZFallback);
         }
 
         numIterations = random.NextInt(random.NextInt(10) + 1);
@@ -105,7 +105,7 @@ internal class NetherIChunkGenerator : IChunkSource
             featureY = blockX + random.NextInt(16) + 8;
             featureZ = random.NextInt(120) + 4;
             featureZFallback = blockZ + random.NextInt(16) + 8;
-            _featureGlowstoneFull.Generate(_world, featureY, featureZ, featureZFallback);
+            _featureGlowstoneFull.Generate(_world, random, featureY, featureZ, featureZFallback);
         }
 
         for (featureX = 0; featureX < 10; ++featureX)
@@ -113,7 +113,7 @@ internal class NetherIChunkGenerator : IChunkSource
             featureY = blockX + random.NextInt(16) + 8;
             featureZ = random.NextInt(128);
             featureZFallback = blockZ + random.NextInt(16) + 8;
-            _featureGlowstoneRare.Generate(_world, featureY, featureZ, featureZFallback);
+            _featureGlowstoneRare.Generate(_world, random, featureY, featureZ, featureZFallback);
         }
 
         if (random.NextInt(1) == 0)
@@ -121,7 +121,7 @@ internal class NetherIChunkGenerator : IChunkSource
             featureX = blockX + random.NextInt(16) + 8;
             featureY = random.NextInt(128);
             featureZ = blockZ + random.NextInt(16) + 8;
-            _featureBrownMushroom.Generate(_world, featureX, featureY, featureZ);
+            _featureBrownMushroom.Generate(_world, random, featureX, featureY, featureZ);
         }
 
         if (random.NextInt(1) == 0)
@@ -129,7 +129,7 @@ internal class NetherIChunkGenerator : IChunkSource
             featureX = blockX + random.NextInt(16) + 8;
             featureY = random.NextInt(128);
             featureZ = blockZ + random.NextInt(16) + 8;
-            _featureRedMushroom.Generate(_world, featureX, featureY, featureZ);
+            _featureRedMushroom.Generate(_world, random, featureX, featureY, featureZ);
         }
 
         BlockSand.fallInstantly = false;

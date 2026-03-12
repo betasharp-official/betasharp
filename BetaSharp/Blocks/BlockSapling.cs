@@ -1,3 +1,4 @@
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Generation.Generators.Features;
 
@@ -5,8 +6,11 @@ namespace BetaSharp.Blocks;
 
 internal class BlockSapling : BlockPlant
 {
+    private readonly JavaRandom _random;
+
     public BlockSapling(int i, int j) : base(i, j)
     {
+        _random = new JavaRandom();
         float halfSize = 0.4F;
         setBoundingBox(0.5F - halfSize, 0.0F, 0.5F - halfSize, 0.5F + halfSize, halfSize * 2.0F, 0.5F + halfSize);
     }
@@ -59,7 +63,7 @@ internal class BlockSapling : BlockPlant
             }
         }
 
-        if (!((Feature)treeFeature).Generate(world, x, y, z))
+        if (!((Feature)treeFeature).Generate(world, _random, x, y, z))
         {
             world.BlockWriter.SetBlock(x, y, z, id, saplingType);
         }

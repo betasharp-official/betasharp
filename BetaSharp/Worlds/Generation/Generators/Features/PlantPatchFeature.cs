@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
@@ -9,13 +10,13 @@ internal class PlantPatchFeature : Feature
 
     public PlantPatchFeature(int plantBlockId) => this.plantBlockId = plantBlockId;
 
-    public override bool Generate(IWorldContext level, int x, int y, int z)
+    public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
         for (int i = 0; i < 64; ++i)
         {
-            int genX = x + level.random.NextInt(8) - level.random.NextInt(8);
-            int genY = y + level.random.NextInt(4) - level.random.NextInt(4);
-            int genZ = z + level.random.NextInt(8) - level.random.NextInt(8);
+            int genX = x + rand.NextInt(8) - rand.NextInt(8);
+            int genY = y + rand.NextInt(4) - rand.NextInt(4);
+            int genZ = z + rand.NextInt(8) - rand.NextInt(8);
             if (level.BlocksReader.IsAir(genX, genY, genZ) &&
                 ((BlockPlant)Block.Blocks[plantBlockId]).canGrow(new OnTickEvt(level, genX, genY, genZ, level.BlocksReader.GetMeta(genX, genY, genZ), level.BlocksReader.GetBlockId(genX, genY, genZ))))
             {

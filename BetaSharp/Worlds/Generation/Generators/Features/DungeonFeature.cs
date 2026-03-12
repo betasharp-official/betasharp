@@ -9,11 +9,11 @@ namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class DungeonFeature : Feature
 {
-    public override bool Generate(IWorldContext level, int x, int y, int z)
+    public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
         byte height = 3;
-        int radiusX = level.random.NextInt(2) + 2;
-        int radiusZ = level.random.NextInt(2) + 2;
+        int radiusX = rand.NextInt(2) + 2;
+        int radiusZ = rand.NextInt(2) + 2;
         int openingsCount = 0;
 
 
@@ -24,6 +24,7 @@ internal class DungeonFeature : Feature
                 for (int cz = z - radiusZ - 1; cz <= z + radiusZ + 1; ++cz)
                 {
                     Material mat = level.BlocksReader.GetMaterial(cx, cy, cz);
+
                     if ((cy == y - 1 || cy == y + height + 1) && !mat.IsSolid)
                     {
                         return false;
@@ -69,7 +70,7 @@ internal class DungeonFeature : Feature
                     }
                     else if (level.BlocksReader.GetMaterial(cx, cy, cz).IsSolid)
                     {
-                        if (cy == y - 1 && level.random.NextInt(4) != 0)
+                        if (cy == y - 1 && rand.NextInt(4) != 0)
                         {
                             level.BlockWriter.SetBlock(cx, cy, cz, Block.MossyCobblestone.id, 0, doUpdate: false);
                         }
@@ -87,8 +88,8 @@ internal class DungeonFeature : Feature
         {
             for (int j = 0; j < 3; ++j)
             {
-                int chestX = x + level.random.NextInt(radiusX * 2 + 1) - radiusX;
-                int chestZ = z + level.random.NextInt(radiusZ * 2 + 1) - radiusZ;
+                int chestX = x + rand.NextInt(radiusX * 2 + 1) - radiusX;
+                int chestZ = z + rand.NextInt(radiusZ * 2 + 1) - radiusZ;
                 if (level.BlocksReader.IsAir(chestX, y, chestZ))
                 {
                     int neighbors = 0;
@@ -117,24 +118,24 @@ internal class DungeonFeature : Feature
                         continue;
                     }
 
-                    level.BlockWriter.SetBlock(chestX, y, chestZ, Block.Chest.id, 0, doUpdate: false);
+                    level.BlockWriter.SetBlock(chestX, y, chestZ, Block.Chest.id, 0, doUpdate: true);
 
-                    BlockEntityChest? chest = (BlockEntityChest?)level.BlocksReader.GetBlockEntity(chestX, y, chestZ);
+                    BlockEntityChest? chest = (BlockEntityChest?)level.Entities.GetBlockEntity(chestX, y, chestZ);
                     for (int k = 0; k < 8; ++k)
                     {
-                        ItemStack? loot = PickCheckLootItem(level.random);
+                        ItemStack? loot = PickCheckLootItem(rand);
                         if (loot != null)
                         {
-                            chest!.setStack(level.random.NextInt(chest!.size()), loot);
+                            chest!.setStack(rand.NextInt(chest!.size()), loot);
                         }
                     }
                 }
             }
         }
 
-        level.BlockWriter.SetBlock(x, y, z, Block.Spawner.id, 0, doUpdate: false);
-        BlockEntityMobSpawner? spawner = (BlockEntityMobSpawner?)level.BlocksReader.GetBlockEntity(x, y, z);
-        spawner!.SetSpawnedEntityId(PickMobSpawner(level.random));
+        level.BlockWriter.SetBlock(x, y, z, Block.Spawner.id, 0, doUpdate: true);
+        BlockEntityMobSpawner? spawner = (BlockEntityMobSpawner?)level.Entities.GetBlockEntity(x, y, z);
+        spawner!.SetSpawnedEntityId(PickMobSpawner(rand));
         return true;
     }
 

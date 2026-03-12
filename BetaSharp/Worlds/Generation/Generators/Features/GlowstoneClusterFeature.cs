@@ -1,11 +1,12 @@
 using BetaSharp.Blocks;
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class GlowstoneClusterFeature : Feature
 {
-    public override bool Generate(IWorldContext level, int x, int y, int z)
+    public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
         if (!level.BlocksReader.IsAir(x, y, z))
         {
@@ -22,9 +23,9 @@ internal class GlowstoneClusterFeature : Feature
 
         for (int i = 0; i < 1500; ++i)
         {
-            int genX = x + level.random.NextInt(8) - level.random.NextInt(8);
-            int genY = y - level.random.NextInt(12);
-            int genZ = z + level.random.NextInt(8) - level.random.NextInt(8);
+            int genX = x + rand.NextInt(8) - rand.NextInt(8);
+            int genY = y - rand.NextInt(12);
+            int genZ = z + rand.NextInt(8) - rand.NextInt(8);
 
             if (level.BlocksReader.GetBlockId(genX, genY, genZ) == 0)
             {

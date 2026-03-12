@@ -1,16 +1,17 @@
 using BetaSharp.Blocks;
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class PineTreeFeature : Feature
 {
-    public override bool Generate(IWorldContext level, int x, int y, int z)
+    public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
-        int treeHeight = level.random.NextInt(5) + 7;
-        int trunkWithNoLeaves = treeHeight - level.random.NextInt(2) - 3;
+        int treeHeight = rand.NextInt(5) + 7;
+        int trunkWithNoLeaves = treeHeight - rand.NextInt(2) - 3;
         int canopyHeight = treeHeight - trunkWithNoLeaves;
-        int maxLeafRadius = 1 + level.random.NextInt(canopyHeight + 1);
+        int maxLeafRadius = 1 + rand.NextInt(canopyHeight + 1);
 
         bool canPlace = true;
 

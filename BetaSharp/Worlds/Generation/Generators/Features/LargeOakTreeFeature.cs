@@ -65,8 +65,8 @@ internal class LargeOakTreeFeature : Feature
                 {
                     for (double var9 = 0.5D; var7 < var1; ++var7)
                     {
-                        double var11 = branchLengthScale * var8 * (_level.random.NextFloat() + 0.328D);
-                        double var13 = _level.random.NextFloat() * 2.0D * 3.14159D;
+                        double var11 = branchLengthScale * var8 * (Random.Shared.NextSingle() + 0.328D);
+                        double var13 = Random.Shared.NextSingle() * 2.0D * 3.14159D;
                         int var15 = MathHelper.Floor(var11 * Math.Sin(var13) + origin[0] + var9);
                         int var16 = MathHelper.Floor(var11 * Math.Cos(var13) + origin[2] + var9);
                         int[] var17 = [var15, var3, var16];
@@ -386,17 +386,17 @@ internal class LargeOakTreeFeature : Feature
         foliageDensity = d2;
     }
 
-    public override bool Generate(IWorldContext level, int x, int y, int z)
+    public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
         _level = level;
-        long var6 = _level.random.NextLong();
-        _level.random.SetSeed(var6);
+        long var6 = rand.NextLong();
+        rand.SetSeed(var6);
         origin[0] = x;
         origin[1] = y;
         origin[2] = z;
         if (height == 0)
         {
-            height = 5 + _level.random.NextInt(maxTrunkHeight);
+            height = 5 + rand.NextInt(maxTrunkHeight);
         }
 
         if (!canPlace())

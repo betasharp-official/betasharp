@@ -15,9 +15,9 @@ internal class OreFeature : Feature
         _numberOfBlocks = numberOfBlocks;
     }
 
-    public override bool Generate(IWorldContext ctx, int x, int y, int z)
+    public override bool Generate(IWorldContext ctx, JavaRandom rand, int x, int y, int z)
     {
-        float angle = ctx.random.NextFloat() * (float)Math.PI;
+        float angle = rand.NextFloat() * (float)Math.PI;
         double spread = _numberOfBlocks / 8.0;
 
         double startX = x + 8 + MathHelper.Sin(angle) * spread;
@@ -25,8 +25,8 @@ internal class OreFeature : Feature
         double startZ = z + 8 + MathHelper.Cos(angle) * spread;
         double endZ = z + 8 - MathHelper.Cos(angle) * spread;
 
-        double startY = y + ctx.random.NextInt(3) + 2;
-        double endY = y + ctx.random.NextInt(3) + 2;
+        double startY = y + rand.NextInt(3) + 2;
+        double endY = y + rand.NextInt(3) + 2;
 
         for (int i = 0; i <= _numberOfBlocks; ++i)
         {
@@ -34,7 +34,7 @@ internal class OreFeature : Feature
             double centerY = startY + (endY - startY) * i / _numberOfBlocks;
             double centerZ = startZ + (endZ - startZ) * i / _numberOfBlocks;
 
-            double sizeMultiplier = ctx.random.NextDouble() * _numberOfBlocks / 16.0D;
+            double sizeMultiplier = rand.NextDouble() * _numberOfBlocks / 16.0D;
             double radiusH = (MathHelper.Sin(i * (float)Math.PI / _numberOfBlocks) + 1.0F) * sizeMultiplier + 1.0D;
             double radiusV = (MathHelper.Sin(i * (float)Math.PI / _numberOfBlocks) + 1.0F) * sizeMultiplier + 1.0D;
 

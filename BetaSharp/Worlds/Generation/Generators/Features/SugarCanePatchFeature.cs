@@ -1,17 +1,18 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
 
 internal class SugarCanePatchFeature : Feature
 {
-    public override bool Generate(IWorldContext level, int x, int y, int z)
+    public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
         for (int i = 0; i < 20; ++i)
         {
-            int genX = x + level.random.NextInt(4) - level.random.NextInt(4);
-            int genZ = z + level.random.NextInt(4) - level.random.NextInt(4);
+            int genX = x + rand.NextInt(4) - rand.NextInt(4);
+            int genZ = z + rand.NextInt(4) - rand.NextInt(4);
 
             if (!level.BlocksReader.IsAir(genX, y, genZ))
             {
@@ -25,7 +26,7 @@ internal class SugarCanePatchFeature : Feature
 
             if (hasWaterNearby)
             {
-                int height = 2 + level.random.NextInt(level.random.NextInt(3) + 1);
+                int height = 2 + rand.NextInt(rand.NextInt(3) + 1);
 
                 for (int h = 0; h < height; ++h)
                 {

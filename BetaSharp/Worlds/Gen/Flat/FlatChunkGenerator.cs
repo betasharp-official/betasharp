@@ -116,7 +116,7 @@ internal class FlatChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureWaterLake.Generate(_world, featureX, featureY, featureZ);
+            _featureWaterLake.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         if (hasLavaLakes && _random.NextInt(8) == 0)
@@ -126,7 +126,7 @@ internal class FlatChunkGenerator : IChunkSource
             featureZ = blockZ + _random.NextInt(16) + 8;
             if (featureY < 64 || _random.NextInt(10) == 0)
             {
-                _featureLavaLake.Generate(_world, featureX, featureY, featureZ);
+                _featureLavaLake.Generate(_world, _random, featureX, featureY, featureZ);
             }
         }
 
@@ -137,7 +137,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
                 featureZ = blockZ + _random.NextInt(16) + 8;
-                _featureDungeon.Generate(_world, featureX, featureY, featureZ);
+                _featureDungeon.Generate(_world, _random, featureX, featureY, featureZ);
             }
         }
 
@@ -149,7 +149,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16);
                 featureY = _random.NextInt(128);
                 featureZ = blockZ + _random.NextInt(16);
-                _featureClay.Generate(_world, featureX, featureY, featureZ);
+                _featureClay.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             for (int i = 0; i < 20; ++i)
@@ -157,7 +157,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16);
                 featureY = _random.NextInt(128);
                 featureZ = blockZ + _random.NextInt(16);
-                _featureDirt.Generate(_world, featureX, featureY, featureZ);
+                _featureDirt.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             for (int i = 0; i < 10; ++i)
@@ -165,7 +165,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16);
                 featureY = _random.NextInt(128);
                 featureZ = blockZ + _random.NextInt(16);
-                _featureGravel.Generate(_world, featureX, featureY, featureZ);
+                _featureGravel.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             for (int i = 0; i < 20; ++i)
@@ -173,7 +173,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16);
                 featureY = _random.NextInt(128);
                 featureZ = blockZ + _random.NextInt(16);
-                _featureCoal.Generate(_world, featureX, featureY, featureZ);
+                _featureCoal.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             for (int i = 0; i < 20; ++i)
@@ -181,7 +181,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16);
                 featureY = _random.NextInt(64);
                 featureZ = blockZ + _random.NextInt(16);
-                _featureIron.Generate(_world, featureX, featureY, featureZ);
+                _featureIron.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             for (int i = 0; i < 2; ++i)
@@ -189,7 +189,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16);
                 featureY = _random.NextInt(32);
                 featureZ = blockZ + _random.NextInt(16);
-                _featureGold.Generate(_world, featureX, featureY, featureZ);
+                _featureGold.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             for (int i = 0; i < 8; ++i)
@@ -197,7 +197,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16);
                 featureY = _random.NextInt(16);
                 featureZ = blockZ + _random.NextInt(16);
-                _featureRedstone.Generate(_world, featureX, featureY, featureZ);
+                _featureRedstone.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             for (int i = 0; i < 1; ++i)
@@ -205,7 +205,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16);
                 featureY = _random.NextInt(16);
                 featureZ = blockZ + _random.NextInt(16);
-                _featureDiamond.Generate(_world, featureX, featureY, featureZ);
+                _featureDiamond.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             for (int i = 0; i < 1; ++i)
@@ -213,7 +213,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16);
                 featureY = _random.NextInt(16) + _random.NextInt(16);
                 featureZ = blockZ + _random.NextInt(16);
-                _featureLapis.Generate(_world, featureX, featureY, featureZ);
+                _featureLapis.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             // Trees
@@ -226,7 +226,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureZ = blockZ + _random.NextInt(16) + 8;
                 Feature treeFeature = chunkBiome.GetRandomWorldGenForTrees(_random);
                 treeFeature.prepare(1.0D, 1.0D, 1.0D);
-                treeFeature.Generate(_world, featureX, _world.BlocksReader.GetTopY(featureX, featureZ), featureZ);
+                treeFeature.Generate(_world, _random, featureX, _world.BlocksReader.GetTopY(featureX, featureZ), featureZ);
             }
 
             // Flowers and Mushrooms
@@ -235,7 +235,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
                 featureZ = blockZ + _random.NextInt(16) + 8;
-                _featureDandelion.Generate(_world, featureX, featureY, featureZ);
+                _featureDandelion.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             if (_random.NextInt(2) == 0)
@@ -243,7 +243,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
                 featureZ = blockZ + _random.NextInt(16) + 8;
-                _featureRose.Generate(_world, featureX, featureY, featureZ);
+                _featureRose.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             if (_random.NextInt(4) == 0)
@@ -251,7 +251,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
                 featureZ = blockZ + _random.NextInt(16) + 8;
-                _featureBrownMushroom.Generate(_world, featureX, featureY, featureZ);
+                _featureBrownMushroom.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             if (_random.NextInt(8) == 0)
@@ -259,7 +259,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
                 featureZ = blockZ + _random.NextInt(16) + 8;
-                _featureRedMushroom.Generate(_world, featureX, featureY, featureZ);
+                _featureRedMushroom.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             // Sugarcane, Pumpkins
@@ -268,7 +268,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
                 featureZ = blockZ + _random.NextInt(16) + 8;
-                _featureSugarcane.Generate(_world, featureX, featureY, featureZ);
+                _featureSugarcane.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             if (_random.NextInt(32) == 0)
@@ -276,7 +276,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
                 featureZ = blockZ + _random.NextInt(16) + 8;
-                _featurePumpkin.Generate(_world, featureX, featureY, featureZ);
+                _featurePumpkin.Generate(_world, _random, featureX, featureY, featureZ);
             }
             // Grass, Dead Bush, Cactus
             for (int i = 0; i < 20; ++i)
@@ -284,7 +284,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
                 featureZ = blockZ + _random.NextInt(16) + 8;
-                _featureGrass.Generate(_world, featureX, featureY, featureZ);
+                _featureGrass.Generate(_world, _random, featureX, featureY, featureZ);
             }
  
             for (int i = 0; i < 2; ++i)
@@ -292,7 +292,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
                 featureZ = blockZ + _random.NextInt(16) + 8;
-                _featureDeadBush.Generate(_world, featureX, featureY, featureZ);
+                _featureDeadBush.Generate(_world, _random, featureX, featureY, featureZ);
             }
  
             for (int i = 0; i < 10; ++i)
@@ -300,7 +300,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(128);
                 featureZ = blockZ + _random.NextInt(16) + 8;
-                _featureCactus.Generate(_world, featureX, featureY, featureZ);
+                _featureCactus.Generate(_world, _random, featureX, featureY, featureZ);
             }
  
             // Spring Features
@@ -309,7 +309,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(_random.NextInt(120) + 8);
                 featureZ = blockZ + _random.NextInt(16) + 8;
-                _featureWaterSpring.Generate(_world, featureX, featureY, featureZ);
+                _featureWaterSpring.Generate(_world, _random, featureX, featureY, featureZ);
             }
 
             for (int i = 0; i < 20; ++i)
@@ -317,7 +317,7 @@ internal class FlatChunkGenerator : IChunkSource
                 featureX = blockX + _random.NextInt(16) + 8;
                 featureY = _random.NextInt(_random.NextInt(_random.NextInt(112) + 8) + 8);
                 featureZ = blockZ + _random.NextInt(16) + 8;
-                _featureLavaSpring.Generate(_world, featureX, featureY, featureZ);
+                _featureLavaSpring.Generate(_world, _random, featureX, featureY, featureZ);
             }
         }
     }
