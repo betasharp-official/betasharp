@@ -41,8 +41,12 @@ public class GuiCreateWorld : GuiScreen
         Keyboard.enableRepeatEvents(true);
 
         _controlList.Clear();
-        _controlList.Add(new GuiButton(ButtonCreate, Width / 2 - 155, Height - 28, 150, 20, translations.TranslateKey("selectWorld.create")));
-        _controlList.Add(new GuiButton(ButtonCancel, Width / 2 + 5, Height - 28, 150, 20, translations.TranslateKey("gui.cancel")));
+        GuiButton btnCreate, btnCancel;
+        _controlList.Add(btnCreate = new GuiButton(ButtonCreate, Width / 2 - 155, Height - 28, 150, 20, translations.TranslateKey("selectWorld.create")));
+        _controlList.Add(btnCancel = new GuiButton(ButtonCancel, Width / 2 + 5, Height - 28, 150, 20, translations.TranslateKey("gui.cancel")));
+
+        btnCreate.Visible = !_moreOptions;
+        btnCancel.Visible = !_moreOptions;
         
         const int moreOptionsY = 150;
         const int worldTypeY = 110;
@@ -175,6 +179,20 @@ public class GuiCreateWorld : GuiScreen
 
     protected override void KeyTyped(char eventChar, int eventKey)
     {
+        if (eventKey == Keyboard.KEY_ESCAPE)
+        {
+            if (_moreOptions)
+            {
+                _moreOptions = false;
+                InitGui();
+            }
+            else
+            {
+                Game.displayGuiScreen(_parentScreen);
+            }
+            return;
+        }
+
         if (_textboxWorldName.IsFocused && !_moreOptions)
         {
             _textboxWorldName.textboxKeyTyped(eventChar, eventKey);
@@ -184,7 +202,7 @@ public class GuiCreateWorld : GuiScreen
             _textboxSeed.textboxKeyTyped(eventChar, eventKey);
         }
 
-        if (eventChar == 13)
+        if (eventChar == 13) // Enter
         {
             ActionPerformed(_controlList[0]);
         }
