@@ -139,6 +139,11 @@ public abstract class World : IBlockAccess
             Properties.LevelName = levelName;
         }
 
+        if (dimension is OverworldDimension && Properties.TerrainType == WorldType.Sky)
+        {
+            dimension = new SkyDimension();
+        }
+
         dimension.SetWorld(this);
         _chunkSource = CreateChunkCache();
 

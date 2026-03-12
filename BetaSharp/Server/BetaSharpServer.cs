@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Server.Commands;
 using BetaSharp.Server.Entities;
@@ -9,10 +10,8 @@ using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Storage;
 using java.lang;
-using java.util;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
-using System.Threading;
+using Silk.NET.Maths;
 using Exception = System.Exception;
 
 namespace BetaSharp.Server;
@@ -144,6 +143,7 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
         for (int i = 0; i < worlds.Length; i++)
         {
             _logger.LogInformation($"Preparing start region for level {i}");
+
             // Only pre-generate the overworld spawn region. The nether is only accessible
             // via portal (which implies a teleport/load anyway), so on-demand generation
             // there is fine and avoids the 40+ second lava-sea light propagation cost.
@@ -152,22 +152,27 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
                 ServerWorld world = worlds[i];
                 Vec3i spawnPos = world.getSpawnPos();
 
-                var chunkList = new List<(int cx, int cz)>();
+                var chunkList = new List<Vector2D<int>>();
                 for (int x = -startRegionSize; x <= startRegionSize; x += 16)
+                {
                     for (int z = -startRegionSize; z <= startRegionSize; z += 16)
-                        chunkList.Add(((spawnPos.X + x) >> 4, (spawnPos.Z + z) >> 4));
+                    {
+                        chunkList.Add(new((spawnPos.X + x) >> 4, (spawnPos.Z + z) >> 4));
+                    }
+                }
+
+
                 int totalChunks = chunkList.Count;
                 var preGenerated = new Chunk[totalChunks];
 
                 // Phase 1: Parallel terrain generation
                 var sw1 = Stopwatch.StartNew();
-                var threadLocalGen = new ThreadLocal<ChunkSource>(
-                    () => world.chunkCache.CreateParallelGenerator(), trackAllValues: false);
+                var threadLocalGen = new ThreadLocal<ChunkSource>(world.chunkCache.CreateParallelGenerator, trackAllValues: false);
                 Parallel.For(0, totalChunks, idx =>
                 {
                     if (!running) return;
-                    var (cx, cz) = chunkList[idx];
-                    preGenerated[idx] = threadLocalGen.Value!.GetChunk(cx, cz);
+                    Vector2D<int> chunkPos = chunkList[idx];
+                    preGenerated[idx] = threadLocalGen.Value!.GetChunk(chunkPos.X, chunkPos.Y);
                 });
                 threadLocalGen.Dispose();
                 sw1.Stop();
@@ -183,9 +188,10 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
                         logProgress("Preparing spawn area", (idx + 1) * 100 / totalChunks);
                         lastTimeLogged = currentTime;
                     }
-                    var (cx, cz) = chunkList[idx];
-                    world.chunkCache.InsertPreGeneratedChunk(cx, cz, preGenerated[idx]);
-                    world.chunkCache.DecorateIfReady(cx, cz);
+
+                    Vector2D<int> chunkPos = chunkList[idx];
+                    world.chunkCache.InsertPreGeneratedChunk(chunkPos.X, chunkPos.Y, preGenerated[idx]);
+                    world.chunkCache.DecorateIfReady(chunkPos.X, chunkPos.Y);
                 }
                 sw2.Stop();
                 _logger.LogInformation($"  Level {i} decoration: {sw2.ElapsedMilliseconds}ms");

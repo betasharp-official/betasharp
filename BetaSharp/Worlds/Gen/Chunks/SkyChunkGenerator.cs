@@ -3,6 +3,7 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Util.Maths;
 using BetaSharp.Util.Maths.Noise;
 using BetaSharp.Worlds.Biomes;
+using BetaSharp.Worlds.Biomes.Source;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Gen.Carvers;
 using BetaSharp.Worlds.Gen.Features;
@@ -15,15 +16,12 @@ internal class SkyChunkGenerator : ChunkSource
     private readonly OctavePerlinNoiseSampler _minLimitPerlinNoise;
     private readonly OctavePerlinNoiseSampler _maxLimitPerlinNoise;
     private readonly OctavePerlinNoiseSampler _selectorNoise;
-    private readonly OctavePerlinNoiseSampler _sandGravelNoise;
     private readonly OctavePerlinNoiseSampler _depthNoise;
     private readonly OctavePerlinNoiseSampler _floatingIslandScale;
     private readonly OctavePerlinNoiseSampler _floatingIslandNoise;
     private readonly OctavePerlinNoiseSampler _forestNoise;
     private readonly World _world;
     private double[] _heightMap;
-    private double[] _sandBuffer = new double[256];
-    private double[] _gravelBuffer = new double[256];
     private double[] _depthBuffer = new double[256];
     private readonly Carver _carver = new CaveCarver();
     private Biome[] _biomes;
@@ -33,26 +31,68 @@ internal class SkyChunkGenerator : ChunkSource
     double[] _scaleNoiseBuffer;
     double[] _depthNoiseBuffer;
     private double[] _temperatures;
+    private readonly long _seed;
+    private readonly BiomeSource _biomeSource;
 
-    public SkyChunkGenerator(World world, long seed)
+    private readonly LakeFeature _featureWaterLake = new(Block.Water.id);
+    private readonly LakeFeature _featureLavaLake = new(Block.Lava.id);
+    private readonly DungeonFeature _featureDungeon = new();
+    private readonly ClayOreFeature _featureClay = new(32);
+    private readonly OreFeature _featureDirt = new(Block.Dirt.id, 32);
+    private readonly OreFeature _featureGravel = new(Block.Gravel.id, 32);
+    private readonly OreFeature _featureCoal = new(Block.CoalOre.id, 16);
+    private readonly OreFeature _featureIron = new(Block.IronOre.id, 8);
+    private readonly OreFeature _featureGold = new(Block.GoldOre.id, 8);
+    private readonly OreFeature _featureRedstone = new(Block.RedstoneOre.id, 7);
+    private readonly OreFeature _featureDiamond = new(Block.DiamondOre.id, 7);
+    private readonly OreFeature _featureLapis = new(Block.LapisOre.id, 6);
+    private readonly PlantPatchFeature _featureDandelion = new(Block.Dandelion.id);
+    private readonly PlantPatchFeature _featureRose = new(Block.Rose.id);
+    private readonly PlantPatchFeature _featureBrownMushroom = new(Block.BrownMushroom.id);
+    private readonly PlantPatchFeature _featureRedMushroom = new(Block.RedMushroom.id);
+    private readonly SugarCanePatchFeature _featureSugarcane = new();
+    private readonly PumpkinPatchFeature _featurePumpkin = new();
+    private readonly CactusPatchFeature _featureCactus = new();
+    private readonly SpringFeature _featureWaterSpring = new(Block.FlowingWater.id);
+    private readonly SpringFeature _featureLavaSpring = new(Block.FlowingLava.id);
+
+    public ChunkSource CreateParallelInstance() => new SkyChunkGenerator(_world, _seed, new BiomeSource(_world));
+
+    private SkyChunkGenerator(World world, long seed, BiomeSource biomeSource)
     {
         _world = world;
+        _seed = seed;
+        _biomeSource = biomeSource;
         _random = new JavaRandom(seed);
         _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
         _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
         _selectorNoise = new OctavePerlinNoiseSampler(_random, 8);
-        _sandGravelNoise = new OctavePerlinNoiseSampler(_random, 4);
         _depthNoise = new OctavePerlinNoiseSampler(_random, 4);
         _floatingIslandScale = new OctavePerlinNoiseSampler(_random, 10);
         _floatingIslandNoise = new OctavePerlinNoiseSampler(_random, 16);
         _forestNoise = new OctavePerlinNoiseSampler(_random, 8);
     }
 
-    public void BuildTerrain(int chunkX, int chunkZ, byte[] blocks, Biome[] biomes, double[] temperatures)
+    public SkyChunkGenerator(World world, long seed)
+    {
+        _world = world;
+        _seed = seed;
+        _biomeSource = world.getBiomeSource();
+        _random = new JavaRandom(seed);
+        _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
+        _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
+        _selectorNoise = new OctavePerlinNoiseSampler(_random, 8);
+        _depthNoise = new OctavePerlinNoiseSampler(_random, 4);
+        _floatingIslandScale = new OctavePerlinNoiseSampler(_random, 10);
+        _floatingIslandNoise = new OctavePerlinNoiseSampler(_random, 16);
+        _forestNoise = new OctavePerlinNoiseSampler(_random, 8);
+    }
+
+    public void BuildTerrain(int chunkX, int chunkZ, byte[] blocks)
     {
         byte horiScale = 2;
         int xMax = horiScale + 1;
-        byte yMax = 33;
+        byte yMax = 128 / 4 + 1;
         int zMax = horiScale + 1;
         _heightMap = GenerateHeightMap(_heightMap, chunkX * horiScale, 0, chunkZ * horiScale, xMax, yMax, zMax);
 
@@ -118,8 +158,6 @@ internal class SkyChunkGenerator : ChunkSource
     public void BuildSurfaces(int chunkX, int chunkZ, byte[] blocks, Biome[] biomes)
     {
         double chunkBiome = 1.0D / 32.0D;
-        _sandBuffer = _sandGravelNoise.create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome, chunkBiome, 1.0D);
-        _gravelBuffer = _sandGravelNoise.create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, chunkBiome, 1.0D, chunkBiome);
         _depthBuffer = _depthNoise.create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome * 2.0D, chunkBiome * 2.0D, chunkBiome * 2.0D);
 
         for (int localX = 0; localX < 16; ++localX)
@@ -184,11 +222,10 @@ internal class SkyChunkGenerator : ChunkSource
     public Chunk GetChunk(int chunkX, int chunkZ)
     {
         _random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
-        byte[] blocks = new byte[-short.MinValue];
-        Chunk chunk = new Chunk(_world, blocks, chunkX, chunkZ);
-        _biomes = _world.getBiomeSource().GetBiomesInArea(_biomes, chunkX * 16, chunkZ * 16, 16, 16);
-        double[] temperatureMap = _world.getBiomeSource().TemperatureMap;
-        BuildTerrain(chunkX, chunkZ, blocks, _biomes, temperatureMap);
+        byte[] blocks = new byte[32768];
+        Chunk chunk = new(_world, blocks, chunkX, chunkZ);
+        _biomes = _biomeSource.GetBiomesInArea(_biomes, chunkX * 16, chunkZ * 16, 16, 16);
+        BuildTerrain(chunkX, chunkZ, blocks);
         BuildSurfaces(chunkX, chunkZ, blocks, _biomes);
         _carver.carve(this, _world, chunkX, chunkZ, blocks);
         chunk.PopulateHeightMap();
@@ -197,15 +234,10 @@ internal class SkyChunkGenerator : ChunkSource
 
     private double[] GenerateHeightMap(double[]? heightMap, int x, int y, int z, int sizeX, int sizeY, int sizeZ)
     {
-        if (heightMap == null)
-        {
-            heightMap = new double[sizeX * sizeY * sizeZ];
-        }
+        heightMap ??= new double[sizeX * sizeY * sizeZ];
 
         double horizontalScale = 684.412D;
         double verticalScale = 684.412D;
-        double[] temperatureBuffer = _world.getBiomeSource().TemperatureMap;
-        double[] downfallBuffer = _world.getBiomeSource().DownfallMap;
         _scaleNoiseBuffer = _floatingIslandScale.create(_scaleNoiseBuffer, x, z, sizeX, sizeZ, 1.121D, 1.121D, 0.5D);
         _depthNoiseBuffer = _floatingIslandNoise.create(_depthNoiseBuffer, x, z, sizeX, sizeZ, 200.0D, 200.0D, 0.5D);
         horizontalScale *= 2.0D;
@@ -214,61 +246,16 @@ internal class SkyChunkGenerator : ChunkSource
         _maxLimitPerlinNoiseBuffer = _maxLimitPerlinNoise.create(_maxLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
         int xyzIndex = 0;
         int xzIndex = 0;
-        int scaleFraction = 16 / sizeX;
 
         for (int iX = 0; iX < sizeX; ++iX)
         {
-            int sampleX = iX * scaleFraction + scaleFraction / 2;
-
             for (int iZ = 0; iZ < sizeZ; ++iZ)
             {
-                int sampleZ = iZ * scaleFraction + scaleFraction / 2;
-                double temperatureSample = temperatureBuffer[sampleX * 16 + sampleZ];
-                double downfallSample = downfallBuffer[sampleX * 16 + sampleZ] * temperatureSample;
-                double downfallSampleMod = 1.0D - downfallSample;
-                downfallSampleMod *= downfallSampleMod;
-                downfallSampleMod *= downfallSampleMod;
-                downfallSampleMod = 1.0D - downfallSampleMod;
-                double scaleNoiseSample = (_scaleNoiseBuffer[xzIndex] + 256.0D) / 512.0D;
-                scaleNoiseSample *= downfallSampleMod;
-                if (scaleNoiseSample > 1.0D)
-                {
-                    scaleNoiseSample = 1.0D;
-                }
-
-                double depthNoiseSample = _depthNoiseBuffer[xzIndex] / 8000.0D;
-                if (depthNoiseSample < 0.0D)
-                {
-                    depthNoiseSample = -depthNoiseSample * 0.3D;
-                }
-
-                depthNoiseSample = depthNoiseSample * 3.0D - 2.0D;
-                if (depthNoiseSample > 1.0D)
-                {
-                    depthNoiseSample = 1.0D;
-                }
-
-                depthNoiseSample /= 8.0D;
-                depthNoiseSample = 0.0D;
-                if (scaleNoiseSample < 0.0D)
-                {
-                    scaleNoiseSample = 0.0D;
-                }
-
-                scaleNoiseSample += 0.5D;
-                depthNoiseSample = depthNoiseSample * sizeY / 16.0D;
                 ++xzIndex;
-                double elevationOffset = sizeY / 2.0D;
 
                 for (int iY = 0; iY < sizeY; ++iY)
                 {
-                    double terrainDensity = 0.0D;
-                    double densityOffset = (iY - elevationOffset) * 8.0D / scaleNoiseSample;
-                    if (densityOffset < 0.0D)
-                    {
-                        densityOffset *= -1.0D;
-                    }
-
+                    double terrainDensity;
                     double lowNoiseSample = _minLimitPerlinNoiseBuffer[xyzIndex] / 512.0D;
                     double highNoiseSample = _maxLimitPerlinNoiseBuffer[xyzIndex] / 512.0D;
                     double selectorNoiseSample = (_selectorNoiseBuffer[xyzIndex] / 10.0D + 1.0D) / 2.0D;
@@ -320,12 +307,12 @@ internal class SkyChunkGenerator : ChunkSource
         BlockSand.fallInstantly = true;
         int blockX = chunkX * 16;
         int blockZ = chunkZ * 16;
-        Biome chunkBiome = _world.getBiomeSource().GetBiome(blockX + 16, blockZ + 16);
+        Biome chunkBiome = _biomeSource.GetBiome(blockX + 16, blockZ + 16);
         _random.SetSeed(_world.getSeed());
         long xOffset = _random.NextLong() / 2L * 2L + 1L;
         long zOffset = _random.NextLong() / 2L * 2L + 1L;
         _random.SetSeed(chunkX * xOffset + chunkZ * zOffset ^ _world.getSeed());
-        double fraction = 0.25D;
+        double fraction;
         int featureX;
         int featureY;
         int featureZ;
@@ -335,7 +322,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new LakeFeature(Block.Water.id).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureWaterLake.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         if (_random.NextInt(8) == 0)
@@ -345,7 +332,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureZ = blockZ + _random.NextInt(16) + 8;
             if (featureY < 64 || _random.NextInt(10) == 0)
             {
-                new LakeFeature(Block.Lava.id).Generate(_world, _random, featureX, featureY, featureZ);
+                _featureLavaLake.Generate(_world, _random, featureX, featureY, featureZ);
             }
         }
 
@@ -354,7 +341,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new DungeonFeature().Generate(_world, _random, featureX, featureY, featureZ);
+            _featureDungeon.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 10; ++i)
@@ -362,7 +349,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16);
-            new ClayOreFeature(32).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureClay.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 20; ++i)
@@ -370,7 +357,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.Dirt.id, 32).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureDirt.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 10; ++i)
@@ -378,7 +365,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.Gravel.id, 32).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureGravel.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 20; ++i)
@@ -386,7 +373,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.CoalOre.id, 16).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureCoal.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 20; ++i)
@@ -394,7 +381,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(64);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.IronOre.id, 8).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureIron.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 2; ++i)
@@ -402,7 +389,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(32);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.GoldOre.id, 8).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureGold.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 8; ++i)
@@ -410,7 +397,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(16);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.RedstoneOre.id, 7).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureRedstone.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 1; ++i)
@@ -418,7 +405,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(16);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.DiamondOre.id, 7).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureDiamond.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 1; ++i)
@@ -426,7 +413,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(16) + _random.NextInt(16);
             featureZ = blockZ + _random.NextInt(16);
-            new OreFeature(Block.LapisOre.id, 6).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureLapis.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         fraction = 0.5D;
@@ -487,7 +474,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new PlantPatchFeature(Block.Dandelion.id).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureDandelion.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         if (_random.NextInt(2) == 0)
@@ -495,7 +482,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new PlantPatchFeature(Block.Rose.id).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureRose.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         if (_random.NextInt(4) == 0)
@@ -503,7 +490,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new PlantPatchFeature(Block.BrownMushroom.id).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureBrownMushroom.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         if (_random.NextInt(8) == 0)
@@ -511,7 +498,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new PlantPatchFeature(Block.RedMushroom.id).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureRedMushroom.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 10; ++i)
@@ -519,7 +506,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new SugarCanePatchFeature().Generate(_world, _random, featureX, featureY, featureZ);
+            _featureSugarcane.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         if (_random.NextInt(32) == 0)
@@ -527,7 +514,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new PumpkinPatchFeature().Generate(_world, _random, featureX, featureY, featureZ);
+            _featurePumpkin.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         int amountOfCacti = 0;
@@ -541,7 +528,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new CactusPatchFeature().Generate(_world, _random, featureX, featureY, featureZ);
+            _featureCactus.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 50; ++i)
@@ -549,7 +536,7 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(_random.NextInt(120) + 8);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new SpringFeature(Block.FlowingWater.id).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureWaterSpring.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         for (int i = 0; i < 20; ++i)
@@ -557,10 +544,10 @@ internal class SkyChunkGenerator : ChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(_random.NextInt(_random.NextInt(112) + 8) + 8);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            new SpringFeature(Block.FlowingLava.id).Generate(_world, _random, featureX, featureY, featureZ);
+            _featureLavaSpring.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        _temperatures = _world.getBiomeSource().GetTemperatures(_temperatures, blockX + 8, blockZ + 8, 16, 16);
+        _temperatures = _biomeSource.GetTemperatures(_temperatures, blockX + 8, blockZ + 8, 16, 16);
 
         for (int x = blockX + 8; x < blockX + 8 + 16; ++x)
         {
@@ -581,15 +568,11 @@ internal class SkyChunkGenerator : ChunkSource
         BlockSand.fallInstantly = false;
     }
 
-    public bool Save(bool var1, LoadingDisplay display) => true;
+    public bool Save(bool b, LoadingDisplay display) => true;
 
     public bool Tick() => false;
 
     public bool CanSave() => true;
 
     public string GetDebugInfo() => "RandomLevelSource";
-
-    public void markChunksForUnload(int _)
-    {
-    }
 }

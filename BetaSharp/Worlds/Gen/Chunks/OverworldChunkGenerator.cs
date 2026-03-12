@@ -912,8 +912,4 @@ internal class OverworldChunkGenerator : ChunkSource
     {
         return "RandomLevelSource";
     }
-
-    public void markChunksForUnload(int _)
-    {
-    }
 }

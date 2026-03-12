@@ -6,6 +6,7 @@ public class WorldType
 
     public static readonly WorldType Default = new WorldType(0, "default").SetCanBeCreated();
     public static readonly WorldType Flat = new WorldType(1, "flat").SetCanBeCreated();
+    public static readonly WorldType Sky = new WorldType(2, "sky").SetCanBeCreated();
 
     public string Name { get; }
     public bool CanBeCreated { get; private set; }
