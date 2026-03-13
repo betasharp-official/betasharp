@@ -49,6 +49,8 @@ internal static partial class Bootstrapper
     [Singleton(typeof(NavigationService))]
     [Singleton(typeof(AlertService))]
     [Singleton(typeof(ShellViewModel))]
+    [Singleton(typeof(DedicatedServerService))]
+    [Singleton(typeof(ServerPropertiesService))]
     [Transient(typeof(SessionService))]
     [Transient(typeof(StorageService))]
     [Transient(typeof(ClientService))]

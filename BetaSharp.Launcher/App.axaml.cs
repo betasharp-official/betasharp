@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using BetaSharp.Launcher.Features.Home;
 using BetaSharp.Launcher.Features.Shell;
 using BetaSharp.Launcher.Features.Splash;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,6 +58,10 @@ internal sealed class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var dedicatedServerService = _services.GetRequiredService<DedicatedServerService>();
+
+            desktop.Exit += (_, _) => dedicatedServerService.Dispose();
+
             _services
                 .GetRequiredService<NavigationService>()
                 .Navigate<SplashViewModel>();

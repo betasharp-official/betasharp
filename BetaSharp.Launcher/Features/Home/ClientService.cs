@@ -14,20 +14,28 @@ internal sealed class ClientService(IHttpClientFactory clientFactory)
 
     public async Task DownloadAsync(string directory)
     {
-        using var sha256 = SHA256.Create();
+        Directory.CreateDirectory(directory);
 
-        await using var file = File.Open(Path.Combine(directory, "b1.7.3.jar"), FileMode.OpenOrCreate);
+        string path = Path.Combine(directory, "b1.7.3.jar");
 
-        byte[] hash = await sha256.ComputeHashAsync(file);
-
-        if (hash.SequenceEqual(_expectedHash))
+        if (File.Exists(path))
         {
-            return;
+            using var sha256 = SHA256.Create();
+
+            await using var existingFile = File.OpenRead(path);
+
+            byte[] hash = await sha256.ComputeHashAsync(existingFile);
+
+            if (hash.SequenceEqual(_expectedHash))
+            {
+                return;
+            }
         }
 
         var client = clientFactory.CreateClient();
 
         await using var stream = await client.GetStreamAsync(Base);
+        await using var file = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.None);
         await stream.CopyToAsync(file);
     }
 }
