@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Achievements;
+using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.DynamicTexture;
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
@@ -102,6 +103,7 @@ public partial class BetaSharp
     private ImGuiController imGuiController;
     public InternalServer? internalServer;
     private GLErrorHandler _glErrorHandler;
+    private readonly DebugTelemetry _debugTelemetry = new();
 
     private bool _wasLeftBumperDown;
     private bool _wasRightBumperDown;
@@ -210,6 +212,14 @@ public partial class BetaSharp
             Display.getGlfw().SetWindowSizeLimits(Display.getWindowHandle(), 850, 480, maximumWidth, maximumHeight);
 
             GLManager.Init(Display.getGL()!);
+            if (GLManager.GL is LegacyGL legacyGl)
+            {
+                _debugTelemetry.CaptureSystemInfo(legacyGl);
+            }
+            else
+            {
+                _debugTelemetry.CaptureSystemInfo(null);
+            }
 
             Display.getGlfw().SwapInterval(options.VSync ? 1 : 0);
 
@@ -802,6 +812,7 @@ public partial class BetaSharp
                 {
                     long frameEndNano = java.lang.System.nanoTime();
                     double thisFrameTimeMs = (frameEndNano - frameStartNano) / 1000000.0;
+                    _debugTelemetry.RecordFrameTime(thisFrameTimeMs);
 
                     if (options.DebugMode)
                     {
@@ -1778,6 +1789,16 @@ public partial class BetaSharp
         return "P: " + particleManager.getStatistics() + ". T: " + world.getEntityCount();
     }
 
+    internal DebugSystemSnapshot GetDebugSystemSnapshot()
+    {
+        return _debugTelemetry.SystemSnapshot;
+    }
+
+    internal DebugFrameStatsSnapshot GetDebugFrameStatsSnapshot()
+    {
+        return _debugTelemetry.GetFrameStatsSnapshot();
+    }
+
     public void respawn(bool ignoreSpawnPosition, int newDimensionId)
     {
         Vec3i? playerSpawnPos = null;
@@ -1906,4 +1927,3 @@ public partial class BetaSharp
         return Instance != null && Instance.options.ShowDebugInfo;
     }
 }
-

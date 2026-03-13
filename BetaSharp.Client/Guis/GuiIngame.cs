@@ -1,11 +1,13 @@
 using BetaSharp.Client.Options;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
+using BetaSharp.Util.Hit;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using SixLabors.ImageSharp.PixelFormats;
@@ -29,6 +31,8 @@ public class GuiIngame : Gui
     private bool _isRecordMessageRainbow = false;
     public float _damageGuiPartialTime;
     float PrevVignetteBrightness = 1.0F;
+    private static readonly string[] s_cardinalDirections = ["South", "West", "North", "East"];
+    private static readonly string[] s_blockSides = ["Down", "Up", "North", "South", "West", "East"];
 
     public GuiIngame(BetaSharp gameInstance)
     {
@@ -263,27 +267,58 @@ public class GuiIngame : Gui
             if (BetaSharp.hasPaidCheckTime > 0L)
                 GLManager.GL.Translate(0.0F, 32.0F, 0.0F);
 
-            font.DrawStringWithShadow("Minecraft Beta 1.7.3 (" + _game.debug + ")", 2, 2, Color.White);
-            font.DrawStringWithShadow(_game.getEntityDebugInfo(), 2, 22, Color.White);
-            font.DrawStringWithShadow(_game.getParticleAndEntityCountDebugInfo(), 2, 32, Color.White);
-            font.DrawStringWithShadow(_game.getWorldDebugInfo(), 2, 42, Color.White);
             long maxMem = _gcMonitor.MaxMemoryBytes;
             long usedMem = _gcMonitor.UsedMemoryBytes;
             long heapMem = _gcMonitor.UsedHeapBytes;
-            debugStr = "Used memory: " + usedMem * 100L / maxMem + "% (" + usedMem / 1024L / 1024L + "MB) of " + maxMem / 1024L / 1024L + "MB";
-            DrawString(font, debugStr, scaledWidth - font.GetStringWidth(debugStr) - 2, 2, Color.GrayE0);
-            debugStr = "GC heap: " + heapMem * 100L / maxMem + "% (" + heapMem / 1024L / 1024L + "MB)";
-            DrawString(font, debugStr, scaledWidth - font.GetStringWidth(debugStr) - 2, 12, Color.GrayE0);
-            DrawString(font, "x: " + _game.player.x, 2, 64, Color.GrayE0);
-            DrawString(font, "y: " + _game.player.y, 2, 72, Color.GrayE0);
-            DrawString(font, "z: " + _game.player.z, 2, 80, Color.GrayE0);
-            DrawString(font, "f: " + (MathHelper.Floor((double)(_game.player.yaw * 4.0F / 360.0F) + 0.5D) & 3), 2, 88, Color.GrayE0);
+            int facingIndex = MathHelper.Floor((double)(_game.player.yaw * 4.0F / 360.0F) + 0.5D) & 3;
+            string cardinalDirection = GetCardinalDirection(facingIndex);
+            string verticalLookDirection = GetVerticalLookDirection(_game.player.pitch);
+
+            List<string> leftLines = new()
+            {
+                "Minecraft Beta 1.7.3 (" + _game.debug + ")",
+                _game.getEntityDebugInfo(),
+                _game.getParticleAndEntityCountDebugInfo(),
+                _game.getWorldDebugInfo(),
+                "x: " + _game.player.x,
+                "y: " + _game.player.y,
+                "z: " + _game.player.z,
+                $"f: {facingIndex} ({cardinalDirection}, {verticalLookDirection})",
+                $"Render distance: {_game.options.renderDistance} chunks",
+                GetTargetedBlockDebugLine()
+            };
 
             if (_game.internalServer != null)
             {
-                DrawString(font, $"Server TPS: {_game.internalServer.Tps:F1}", 2, 104, Color.GrayE0);
+                leftLines.Add($"Server TPS: {_game.internalServer.Tps:F1}");
             }
 
+            DebugSystemSnapshot systemSnapshot = _game.GetDebugSystemSnapshot();
+            DebugFrameStatsSnapshot frameSnapshot = _game.GetDebugFrameStatsSnapshot();
+            List<string> rightLines = new()
+            {
+                $"Used memory: {FormatPercentage(usedMem, maxMem)} ({FormatMegabytes(usedMem)}) of {FormatMegabytes(maxMem)}",
+                $"GC heap: {FormatPercentage(heapMem, maxMem)} ({FormatMegabytes(heapMem)})",
+                $"CPU: {FormatCpuInfo(systemSnapshot)}",
+                $"GPU: {systemSnapshot.GpuName} (VRAM: {systemSnapshot.GpuVram})",
+                $"OpenGL: {systemSnapshot.OpenGlVersion}",
+                $"GLSL: {systemSnapshot.GlslVersion}",
+                $"Driver: {systemSnapshot.DriverVersion}",
+                $"OS: {systemSnapshot.OsDescription}",
+                $".NET: {systemSnapshot.DotNetRuntime}"
+            };
+
+            if (frameSnapshot.HasData)
+            {
+                rightLines.Add($"Frame avg: {frameSnapshot.AverageFrameTimeMs:F2} ms");
+                rightLines.Add($"FPS min/max: {frameSnapshot.MinFps:F1}/{frameSnapshot.MaxFps:F1}");
+            }
+            else
+            {
+                rightLines.Add("Frame stats: collecting...");
+            }
+
+            DrawDebugColumns(font, leftLines, rightLines, scaledWidth);
             GLManager.GL.PopMatrix();
         }
         else
@@ -610,6 +645,110 @@ public class GuiIngame : Gui
         _chatScrollPos += amount;
         if (_chatScrollPos < 0) _chatScrollPos = 0;
         if (_chatScrollPos > maxScroll) _chatScrollPos = maxScroll;
+    }
+
+    private static string GetCardinalDirection(int facingIndex)
+    {
+        return facingIndex >= 0 && facingIndex < s_cardinalDirections.Length
+            ? s_cardinalDirections[facingIndex]
+            : "N/A";
+    }
+
+    private static string GetVerticalLookDirection(float pitch)
+    {
+        if (pitch <= -45.0F)
+        {
+            return "Up";
+        }
+
+        if (pitch >= 45.0F)
+        {
+            return "Down";
+        }
+
+        return "Level";
+    }
+
+    private static string GetTargetedSideName(int side)
+    {
+        return side >= 0 && side < s_blockSides.Length
+            ? s_blockSides[side]
+            : side.ToString();
+    }
+
+    private string GetTargetedBlockDebugLine()
+    {
+        if (_game.objectMouseOver.Type != HitResultType.TILE || _game.world == null)
+        {
+            return "Targeted block: none";
+        }
+
+        int blockX = _game.objectMouseOver.BlockX;
+        int blockY = _game.objectMouseOver.BlockY;
+        int blockZ = _game.objectMouseOver.BlockZ;
+        int blockId = _game.world.getBlockId(blockX, blockY, blockZ);
+        int blockMeta = _game.world.getBlockMeta(blockX, blockY, blockZ);
+        string sideName = GetTargetedSideName(_game.objectMouseOver.Side);
+
+        string blockName = "Unknown";
+        if (blockId == 0)
+        {
+            blockName = "Air";
+        }
+        else if (blockId > 0 && blockId < Block.Blocks.Length && Block.Blocks[blockId] != null)
+        {
+            Block block = Block.Blocks[blockId];
+            string translatedName = block.translateBlockName();
+            if (!string.IsNullOrWhiteSpace(translatedName))
+            {
+                blockName = translatedName;
+            }
+            else if (!string.IsNullOrWhiteSpace(block.getBlockName()))
+            {
+                blockName = block.getBlockName();
+            }
+        }
+
+        return $"Targeted block: {blockName} ({blockId}:{blockMeta}) [{blockX}, {blockY}, {blockZ}] {sideName}";
+    }
+
+    private static string FormatMegabytes(long bytes)
+    {
+        return bytes <= 0L ? "N/A" : $"{bytes / 1024L / 1024L}MB";
+    }
+
+    private static string FormatPercentage(long value, long total)
+    {
+        return total > 0L ? $"{value * 100L / total}%" : "N/A";
+    }
+
+    private static string FormatCpuInfo(DebugSystemSnapshot systemSnapshot)
+    {
+        string coreLabel = systemSnapshot.CpuCoreCount == 1 ? "core" : "cores";
+        if (systemSnapshot.CpuName == DebugTelemetry.UnknownValue)
+        {
+            return $"{systemSnapshot.CpuCoreCount} {coreLabel}";
+        }
+
+        return $"{systemSnapshot.CpuName} ({systemSnapshot.CpuCoreCount} {coreLabel})";
+    }
+
+    private void DrawDebugColumns(TextRenderer font, List<string> leftLines, List<string> rightLines, int scaledWidth)
+    {
+        const int startY = 2;
+        const int lineHeight = 10;
+
+        for (int i = 0; i < leftLines.Count; i++)
+        {
+            Color color = i < 4 ? Color.White : Color.GrayE0;
+            DrawString(font, leftLines[i], 2, startY + i * lineHeight, color);
+        }
+
+        for (int i = 0; i < rightLines.Count; i++)
+        {
+            string line = rightLines[i];
+            DrawString(font, line, scaledWidth - font.GetStringWidth(line) - 2, startY + i * lineHeight, Color.GrayE0);
+        }
     }
 
 
