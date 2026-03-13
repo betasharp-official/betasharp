@@ -26,7 +26,7 @@ public class BlockRedstoneRepeater : Block
 
     public override void onTick(OnTickEvt evt)
     {
-        int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+        int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
         bool powered = isPowered(evt.Level.Reader, evt.Level.Redstone, evt.X, evt.Y, evt.Z, meta);
 
         if (lit && !powered)
@@ -64,7 +64,7 @@ public class BlockRedstoneRepeater : Block
             return false;
         }
 
-        int facing = reader.GetMeta(x, y, z) & 3;
+        int facing = reader.GetBlockMeta(x, y, z) & 3;
         return facing == 0 && side == 3 ? true : facing == 1 && side == 4 ? true : facing == 2 && side == 2 ? true : facing == 3 && side == 5;
     }
 
@@ -77,7 +77,7 @@ public class BlockRedstoneRepeater : Block
         }
         else
         {
-            int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+            int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
             bool powered = isPowered(evt.Level.Reader, evt.Level.Redstone, evt.X, evt.Y, evt.Z, meta);
             int delaySetting = (meta & 12) >> 2;
             if (lit && !powered)
@@ -97,13 +97,13 @@ public class BlockRedstoneRepeater : Block
         switch (facing)
         {
             case 0:
-                return redstoneEngine.IsPoweringSide(x, y, z + 1, 3) || (world.GetBlockId(x, y, z + 1) == RedstoneWire.id && world.GetMeta(x, y, z + 1) > 0);
+                return redstoneEngine.IsPoweringSide(x, y, z + 1, 3) || (world.GetBlockId(x, y, z + 1) == RedstoneWire.id && world.GetBlockMeta(x, y, z + 1) > 0);
             case 1:
-                return redstoneEngine.IsPoweringSide(x - 1, y, z, 4) || (world.GetBlockId(x - 1, y, z) == RedstoneWire.id && world.GetMeta(x - 1, y, z) > 0);
+                return redstoneEngine.IsPoweringSide(x - 1, y, z, 4) || (world.GetBlockId(x - 1, y, z) == RedstoneWire.id && world.GetBlockMeta(x - 1, y, z) > 0);
             case 2:
-                return redstoneEngine.IsPoweringSide(x, y, z - 1, 2) || (world.GetBlockId(x, y, z - 1) == RedstoneWire.id && world.GetMeta(x, y, z - 1) > 0);
+                return redstoneEngine.IsPoweringSide(x, y, z - 1, 2) || (world.GetBlockId(x, y, z - 1) == RedstoneWire.id && world.GetBlockMeta(x, y, z - 1) > 0);
             case 3:
-                return redstoneEngine.IsPoweringSide(x + 1, y, z, 5) || (world.GetBlockId(x + 1, y, z) == RedstoneWire.id && world.GetMeta(x + 1, y, z) > 0);
+                return redstoneEngine.IsPoweringSide(x + 1, y, z, 5) || (world.GetBlockId(x + 1, y, z) == RedstoneWire.id && world.GetBlockMeta(x + 1, y, z) > 0);
             default:
                 return false;
         }
@@ -111,7 +111,7 @@ public class BlockRedstoneRepeater : Block
 
     public override bool onUse(OnUseEvt ctx)
     {
-        int meta = ctx.Level.Reader.GetMeta(ctx.X, ctx.Y, ctx.Z);
+        int meta = ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         int newDelaySetting = (meta & 12) >> 2;
         newDelaySetting = ((newDelaySetting + 1) << 2) & 12;
         ctx.Level.BlockWriter.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, newDelaySetting | (meta & 3));
@@ -129,7 +129,7 @@ public class BlockRedstoneRepeater : Block
             evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, facing);
         }
 
-        int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+        int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
 
         bool powered = isPowered(evt.Level.Reader, evt.Level.Redstone, evt.X, evt.Y, evt.Z, meta);
         if (powered)
@@ -156,7 +156,7 @@ public class BlockRedstoneRepeater : Block
             return;
         }
 
-        int meta = ctx.Level.Reader.GetMeta(ctx.X, ctx.Y, ctx.Z);
+        int meta = ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         double particleX = ctx.X + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
         double particleY = ctx.Y + 0.4F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
         double particleZ = ctx.Z + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;

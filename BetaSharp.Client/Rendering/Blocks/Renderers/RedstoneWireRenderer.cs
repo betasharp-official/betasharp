@@ -7,7 +7,7 @@ public class RedstoneWireRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int powerLevel = ctx.BlockReader.GetMeta(pos.x, pos.y, pos.z);
+        int powerLevel = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
 
         int textureId = block.getTexture(1, powerLevel);
         if (ctx.OverrideTexture >= 0) textureId = ctx.OverrideTexture;

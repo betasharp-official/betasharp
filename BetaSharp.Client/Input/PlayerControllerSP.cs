@@ -29,7 +29,7 @@ public class PlayerControllerSP : PlayerController
     public override bool sendBlockRemoved(int x, int y, int z, int var4)
     {
         int blockId = Game.world.Reader.GetBlockId(x, y, z);
-        int var6 = Game.world.Reader.GetMeta(x, y, z);
+        int var6 = Game.world.Reader.GetBlockMeta(x, y, z);
         bool var7 = base.sendBlockRemoved(x, y, z, var4);
         ItemStack var8 = Game.player.getHand();
         bool var9 = Game.player.canHarvest(Block.Blocks[blockId]);

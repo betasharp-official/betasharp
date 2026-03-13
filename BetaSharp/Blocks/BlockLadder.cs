@@ -13,7 +13,7 @@ internal class BlockLadder : Block
 
     public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)
     {
-        int meta = world.GetMeta(x, y, z);
+        int meta = world.GetBlockMeta(x, y, z);
         float thickness = 2.0F / 16.0F;
         if (meta == 2)
         {
@@ -40,7 +40,7 @@ internal class BlockLadder : Block
 
     public override Box getBoundingBox(IBlockReader world, int x, int y, int z)
     {
-        int meta = world.GetMeta(x, y, z);
+        int meta = world.GetBlockMeta(x, y, z);
         float thickness = 2.0F / 16.0F;
         if (meta == 2)
         {
@@ -78,7 +78,7 @@ internal class BlockLadder : Block
 
     public override void onPlaced(OnPlacedEvt ctx)
     {
-        int meta = ctx.Level.Reader.GetMeta(ctx.X, ctx.Y, ctx.Z);
+        int meta = ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         if ((meta == 0 || ctx.Direction == 2) && ctx.Level.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1))
         {
             meta = 2;
@@ -104,7 +104,7 @@ internal class BlockLadder : Block
 
     public override void neighborUpdate(OnTickEvt ctx)
     {
-        int meta = ctx.Level.Reader.GetMeta(ctx.X, ctx.Y, ctx.Z);
+        int meta = ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         bool hasSupport = false;
         if (meta == 2 && ctx.Level.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1))
         {

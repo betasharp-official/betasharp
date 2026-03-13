@@ -120,7 +120,7 @@ public class ServerPlayerInteractionManager
     public bool finishMining(int x, int y, int z)
     {
         Block block = Block.Blocks[world.Reader.GetBlockId(x, y, z)];
-        int blockMeta = world.Reader.GetMeta(x, y, z);
+        int blockMeta = world.Reader.GetBlockMeta(x, y, z);
         bool success = world.BlockWriter.SetBlock(x, y, z, 0);
         if (block != null && success)
         {
@@ -149,8 +149,8 @@ public class ServerPlayerInteractionManager
     public bool tryBreakBlock(int x, int y, int z)
     {
         int blockId = world.Reader.GetBlockId(x, y, z);
-        int blockMeta = world.Reader.GetMeta(x, y, z);
-        world.Broadcaster.WorldEvent(player, 2001, x, y, z, blockId + world.Reader.GetMeta(x, y, z) * 256);
+        int blockMeta = world.Reader.GetBlockMeta(x, y, z);
+        world.Broadcaster.WorldEvent(player, 2001, x, y, z, blockId + world.Reader.GetBlockMeta(x, y, z) * 256);
         bool success = finishMining(x, y, z);
 
         if (success && player.canHarvest(Block.Blocks[blockId]))

@@ -34,7 +34,7 @@ public abstract class BlockFluid : Block
 
     public override int getTexture(int side) => side != 0 && side != 1 ? textureId + 1 : textureId;
 
-    protected int getLiquidState(IBlockReader reader, int x, int y, int z) => reader.GetMaterial(x, y, z) != material ? -1 : reader.GetMeta(x, y, z);
+    protected int getLiquidState(IBlockReader reader, int x, int y, int z) => reader.GetMaterial(x, y, z) != material ? -1 : reader.GetBlockMeta(x, y, z);
 
     protected int getLiquidDepth(IBlockReader iBlockReader, int x, int y, int z)
     {
@@ -43,7 +43,7 @@ public abstract class BlockFluid : Block
             return -1;
         }
 
-        int depth = iBlockReader.GetMeta(x, y, z);
+        int depth = iBlockReader.GetBlockMeta(x, y, z);
         if (depth >= 8)
         {
             depth = 0;
@@ -153,7 +153,7 @@ public abstract class BlockFluid : Block
             }
         }
 
-        if (iBlockReader.GetMeta(x, y, z) >= 8)
+        if (iBlockReader.GetBlockMeta(x, y, z) >= 8)
         {
             bool hasAdjacentSolid = false;
             if (hasAdjacentSolid || isSolidFace(iBlockReader, x, y, z - 1, 2))
@@ -240,7 +240,7 @@ public abstract class BlockFluid : Block
     {
         if (material == Material.Water && Random.Shared.Next(64) == 0)
         {
-            int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+            int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
             if (meta > 0 && meta < 8)
             {
                 evt.Level.Broadcaster.PlaySoundAtPos(evt.X + 0.5F, evt.Y + 0.5F, evt.Z + 0.5F, "liquid.water", Random.Shared.NextSingle() * 0.25F + 12.0F / 16.0F, Random.Shared.NextSingle() * 1.0F + 0.5F);
@@ -315,7 +315,7 @@ public abstract class BlockFluid : Block
 
                 if (hasWaterAdjacent)
                 {
-                    int var6 = WorldView.GetMeta(x, y, z);
+                    int var6 = WorldView.GetBlockMeta(x, y, z);
                     if (var6 == 0)
                     {
                         WorldWrite.SetBlock(x, y, z, Obsidian.id);

@@ -113,7 +113,7 @@ public class RegionWorldStorageSource : IWorldStorageSource
 
             root.GetCompoundTag("Data").SetString("LevelName", newName);
 
-            using (FileStream writeStream = file.OpenWrite())
+            using (var writeStream = file.Create())
             {
                 NbtIo.WriteCompressed(root, writeStream);
             }

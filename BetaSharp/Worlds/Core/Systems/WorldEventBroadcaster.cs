@@ -92,7 +92,7 @@ public class WorldEventBroadcaster
 
             if (block != null)
             {
-                int meta = _reader.GetMeta(x, y, z);
+                int meta = _reader.GetBlockMeta(x, y, z);
 
                 OnTickEvt tickEvent = new(_worldContext, x, y, z, meta, blockId);
 

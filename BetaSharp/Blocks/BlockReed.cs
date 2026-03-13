@@ -27,7 +27,7 @@ internal class BlockReed : Block
 
             if (heightBelow < 3)
             {
-                int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+                int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
                 if (meta == 15)
                 {
                     evt.Level.BlockWriter.SetBlock(evt.X, evt.Y + 1, evt.Z, id);
@@ -58,7 +58,7 @@ internal class BlockReed : Block
         if (!canGrow(evt))
         {
             // TODO: Implement this
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z)));
+            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
             evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
         }
     }

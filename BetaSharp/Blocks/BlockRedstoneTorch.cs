@@ -46,7 +46,7 @@ internal class BlockRedstoneTorch : BlockTorch
 
     public override void onPlaced(OnPlacedEvt evt)
     {
-        if (evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z) == 0)
+        if (evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z) == 0)
         {
             base.onPlaced(evt);
         }
@@ -82,7 +82,7 @@ internal class BlockRedstoneTorch : BlockTorch
             return false;
         }
 
-        int meta = world.GetMeta(x, y, z);
+        int meta = world.GetBlockMeta(x, y, z);
         return (meta != 5 || side != 1) && (meta != 3 || side != 3) && (meta != 4 || side != 2) && (meta != 1 || side != 5) && (meta != 2 || side != 4);
     }
 
@@ -92,7 +92,7 @@ internal class BlockRedstoneTorch : BlockTorch
         int y = evt.Y;
         int z = evt.Z;
         RedstoneEngine redstoneEngine = evt.Level.Redstone;
-        int meta = evt.Level.Reader.GetMeta(x, y, z);
+        int meta = evt.Level.Reader.GetBlockMeta(x, y, z);
         return (meta == 5 && redstoneEngine.IsPoweringSide(x, y - 1, z, 0)) || (meta == 3 && redstoneEngine.IsPoweringSide(x, y, z - 1, 2)) ||
                (meta == 4 && redstoneEngine.IsPoweringSide(x, y, z + 1, 3)) || (meta == 1 && redstoneEngine.IsPoweringSide(x - 1, y, z, 4)) || (meta == 2 && redstoneEngine.IsPoweringSide(x + 1, y, z, 5));
     }
@@ -114,7 +114,7 @@ internal class BlockRedstoneTorch : BlockTorch
         {
             if (shouldTurnOff)
             {
-                evt.Level.BlockWriter.SetBlock(x, y, z, RedstoneTorch.id, evt.Level.Reader.GetMeta(x, y, z));
+                evt.Level.BlockWriter.SetBlock(x, y, z, RedstoneTorch.id, evt.Level.Reader.GetBlockMeta(x, y, z));
                 if (isBurnedOut(evt, true))
                 {
                     evt.Level.Broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, "random.fizz", 0.5F, 2.6F + (Random.Shared.NextSingle() - Random.Shared.NextSingle()) * 0.8F);
@@ -131,7 +131,7 @@ internal class BlockRedstoneTorch : BlockTorch
         }
         else if (!shouldTurnOff && !isBurnedOut(evt, false))
         {
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, LitRedstoneTorch.id, evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z));
+            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, LitRedstoneTorch.id, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z));
         }
     }
 
@@ -154,7 +154,7 @@ internal class BlockRedstoneTorch : BlockTorch
             return;
         }
 
-        int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+        int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
         double particleX = evt.X + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
         double particleY = evt.Y + 0.7F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
         double particleZ = evt.Z + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;

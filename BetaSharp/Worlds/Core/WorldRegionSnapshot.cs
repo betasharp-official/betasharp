@@ -128,7 +128,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         return block != null && block.isOpaque();
     }
 
-    public int GetMeta(int x, int y, int z) => getBlockMeta(x, y, z);
+    public int GetBlockMeta(int x, int y, int z) => getBlockMeta(x, y, z);
     public Material GetMaterial(int x, int y, int z) => getMaterial(x, y, z);
     public bool IsAir(int x, int y, int z) => GetBlockId(x, y, z) == 0;
     public int GetBrightness(int x, int y, int z) => getLightValue(x, y, z);

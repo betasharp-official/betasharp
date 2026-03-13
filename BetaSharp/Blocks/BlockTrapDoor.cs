@@ -39,7 +39,7 @@ internal class BlockTrapDoor : Block
         return base.getCollisionShape(world, x, y, z);
     }
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z) => updateBoundingBox(iBlockReader.GetMeta(x, y, z));
+    public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z) => updateBoundingBox(iBlockReader.GetBlockMeta(x, y, z));
 
     public override void setupRenderBoundingBox()
     {
@@ -82,7 +82,7 @@ internal class BlockTrapDoor : Block
             return true;
         }
 
-        int meta = worldRead.GetMeta(x, y, z);
+        int meta = worldRead.GetBlockMeta(x, y, z);
         worldWrite.SetBlockMeta(x, y, z, meta ^ 4);
         broadcaster.WorldEvent(1003, x, y, z, 0);
         return true;
@@ -95,7 +95,7 @@ internal class BlockTrapDoor : Block
 
     public void setOpen(OnTickEvt ctx, bool open)
     {
-        int meta = ctx.Level.Reader.GetMeta(ctx.X, ctx.Y, ctx.Z);
+        int meta = ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         bool isOpen = (meta & 4) > 0;
         if (isOpen != open)
         {
@@ -108,7 +108,7 @@ internal class BlockTrapDoor : Block
     {
         if (!ctx.Level.IsRemote)
         {
-            int meta = ctx.Level.Reader.GetMeta(ctx.X, ctx.Y, ctx.Z);
+            int meta = ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
             int xPos = ctx.X;
             int zPos = ctx.Z;
             if ((meta & 3) == 0)

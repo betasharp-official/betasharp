@@ -16,9 +16,9 @@ internal class BlockMushroom : BlockPlant
             int tryX = evt.X + Random.Shared.Next(3) - 1;
             int tryY = evt.Y + Random.Shared.Next(2) - Random.Shared.Next(2);
             int tryZ = evt.Z + Random.Shared.Next(3) - 1;
-            if (evt.Level.Reader.IsAir(tryX, tryY, tryZ) && canGrow(new OnTickEvt(evt.Level, tryX, tryY, tryZ, evt.Level.Reader.GetMeta(tryX, tryY, tryZ), evt.Level.Reader.GetBlockId(tryX, tryY, tryZ))))
+            if (evt.Level.Reader.IsAir(tryX, tryY, tryZ) && canGrow(new OnTickEvt(evt.Level, tryX, tryY, tryZ, evt.Level.Reader.GetBlockMeta(tryX, tryY, tryZ), evt.Level.Reader.GetBlockId(tryX, tryY, tryZ))))
             {
-                if (evt.Level.Reader.IsAir(tryX, tryY, tryZ) && canGrow(new OnTickEvt(evt.Level, tryX, tryY, tryZ, evt.Level.Reader.GetMeta(tryX, tryY, tryZ), evt.Level.Reader.GetBlockId(tryX, tryY, tryZ))))
+                if (evt.Level.Reader.IsAir(tryX, tryY, tryZ) && canGrow(new OnTickEvt(evt.Level, tryX, tryY, tryZ, evt.Level.Reader.GetBlockMeta(tryX, tryY, tryZ), evt.Level.Reader.GetBlockId(tryX, tryY, tryZ))))
                 {
                     evt.Level.BlockWriter.SetBlock(tryX, tryY, tryZ, id);
                 }

@@ -10,7 +10,7 @@ public class MinecartTrackRenderer : IBlockRenderer
         // Cast the generic block to a BlockRail to access rail-specific methods
         BlockRail rail = (BlockRail)block;
 
-        int metadata = ctx.BlockReader.GetMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
 
         int textureId = rail.getTexture(0, metadata);
         if (ctx.OverrideTexture >= 0)

@@ -88,7 +88,7 @@ internal class WorldRegion : IBlockReader
         return block != null && block.material.Suffocates && block.isFullCube();
     }
 
-    public int GetMeta(int x, int y, int z) => throw new NotImplementedException();
+    public int GetBlockMeta(int x, int y, int z) => throw new NotImplementedException();
     public Material GetMaterial(int x, int y, int z) => throw new NotImplementedException();
     public bool IsAir(int x, int y, int z) => throw new NotImplementedException();
     public int GetBrightness(int x, int y, int z) => throw new NotImplementedException();

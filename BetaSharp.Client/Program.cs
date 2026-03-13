@@ -3,6 +3,7 @@ using BetaSharp.Util;
 using Microsoft.Extensions.Logging;
 
 Log.Instance.Initialize(PathHelper.GetAppDir(nameof(BetaSharp)));
+AssetManager.Initialize(AssetManager.AssetProfile.Full);
 
 try
 {

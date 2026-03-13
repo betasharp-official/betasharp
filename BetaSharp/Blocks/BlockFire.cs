@@ -83,7 +83,7 @@ internal class BlockFire : Block
              !evt.Level.Environment.IsRainingAt(evt.X, evt.Y, evt.Z - 1) &&
              !evt.Level.Environment.IsRainingAt(evt.X, evt.Y, evt.Z + 1)))
         {
-            int fireAge = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+            int fireAge = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
             if (fireAge < 15)
             {
                 evt.Level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(evt.X, evt.Y, evt.Z, fireAge + evt.Level.random.NextInt(3) / 2);

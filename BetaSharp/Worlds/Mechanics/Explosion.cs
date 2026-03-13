@@ -171,7 +171,7 @@ public class Explosion
 
             if (var8 > 0)
             {
-                Block.Blocks[var8].dropStacks(new OnDropEvt(_level, var5, var6, var7, _level.Reader.GetMeta(var5, var6, var7), 0.3F));
+                Block.Blocks[var8].dropStacks(new OnDropEvt(_level, var5, var6, var7, _level.Reader.GetBlockMeta(var5, var6, var7), 0.3F));
                 _level.BlockWriter.SetBlock(var5, var6, var7, 0);
                 Block.Blocks[var8].onDestroyedByExplosion(new OnDestroyedByExplosionEvt(_level, var5, var6, var7));
             }

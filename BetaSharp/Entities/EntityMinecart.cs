@@ -297,7 +297,7 @@ public class EntityMinecart : Entity, IInventory
             if (BlockRail.IsRail(var9))
             {
                 Vec3D? var10 = func_514_g(x, y, z);
-                int var11 = world.Reader.GetMeta(floorX, floorY, floorZ);
+                int var11 = world.Reader.GetBlockMeta(floorX, floorY, floorZ);
                 y = floorY;
                 bool var12 = false;
                 bool var13 = false;
@@ -665,7 +665,7 @@ public class EntityMinecart : Entity, IInventory
             return null;
         }
 
-        int var13 = world.Reader.GetMeta(var9, var10, var11);
+        int var13 = world.Reader.GetBlockMeta(var9, var10, var11);
         if (((BlockRail)Block.Blocks[var12]).isAlwaysStraight())
         {
             var13 &= 7;
@@ -710,7 +710,7 @@ public class EntityMinecart : Entity, IInventory
         int blockId = world.Reader.GetBlockId(floorX, floorY, floorZ);
         if (BlockRail.IsRail(blockId))
         {
-            int meta = world.Reader.GetMeta(floorX, floorY, floorZ);
+            int meta = world.Reader.GetBlockMeta(floorX, floorY, floorZ);
             y = floorY;
             if (((BlockRail)Block.Blocks[blockId]).isAlwaysStraight())
             {

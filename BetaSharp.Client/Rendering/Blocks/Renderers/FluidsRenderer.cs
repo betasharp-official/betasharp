@@ -41,7 +41,7 @@ public class FluidsRenderer : IBlockRenderer
         float lightX = 0.6F; // East/West
 
         Material material = block.material;
-        int meta = ctx.BlockReader.GetMeta(pos.x, pos.y, pos.z);
+        int meta = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
 
         // Calculate the height of the fluid at each of the 4 corners of this block
         float heightNw = GetFluidVertexHeight(ref ctx, pos.x, pos.y, pos.z, material);
@@ -229,7 +229,7 @@ public class FluidsRenderer : IBlockRenderer
             }
             else
             {
-                int neighborMeta = ctx.BlockReader.GetMeta(checkX, y, checkZ);
+                int neighborMeta = ctx.BlockReader.GetBlockMeta(checkX, y, checkZ);
                 float fluidDepth = BlockFluid.getFluidHeightFromMeta(neighborMeta);
 
                 // Meta >= 8 (falling fluid) or Meta == 0 (source block)

@@ -36,7 +36,7 @@ internal class BlockLever : Block
 
     public override void onPlaced(OnPlacedEvt evt)
     {
-        int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+        int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
         int powered = meta & 8;
         meta &= 7;
         meta = -1;
@@ -72,7 +72,7 @@ internal class BlockLever : Block
 
         if (meta == -1)
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z)));
+            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
             evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
         }
         else
@@ -85,7 +85,7 @@ internal class BlockLever : Block
     {
         if (breakIfCannotPlaceAt(evt))
         {
-            int direction = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z) & 7;
+            int direction = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z) & 7;
             bool shouldDrop = false;
 
             if (!evt.Level.Reader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z) && direction == 1)
@@ -120,7 +120,7 @@ internal class BlockLever : Block
 
             if (shouldDrop)
             {
-                dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z)));
+                dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
                 evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
             }
         }
@@ -130,7 +130,7 @@ internal class BlockLever : Block
     {
         if (!canPlaceAt(new CanPlaceAtCtx(ctx.Level, 0, ctx.X, ctx.Y, ctx.Z)))
         {
-            dropStacks(new OnDropEvt(ctx.Level, ctx.X, ctx.Y, ctx.Z, ctx.Level.Reader.GetMeta(ctx.X, ctx.Y, ctx.Z)));
+            dropStacks(new OnDropEvt(ctx.Level, ctx.X, ctx.Y, ctx.Z, ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z)));
             ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             return false;
         }
@@ -140,7 +140,7 @@ internal class BlockLever : Block
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
     {
-        int meta = iBlockReader.GetMeta(x, y, z) & 7;
+        int meta = iBlockReader.GetBlockMeta(x, y, z) & 7;
         float width = 3.0F / 16.0F;
 
         if (meta == 1)
@@ -181,7 +181,7 @@ internal class BlockLever : Block
 
     private void toggleLever(IWorldContext world, int x, int y, int z)
     {
-        int meta = world.Reader.GetMeta(x, y, z);
+        int meta = world.Reader.GetBlockMeta(x, y, z);
         int direction = meta & 7;
         int powered = 8 - (meta & 8);
 
@@ -215,7 +215,7 @@ internal class BlockLever : Block
 
     public override void onBreak(OnBreakEvt ctx)
     {
-        int meta = ctx.Level.Reader.GetMeta(ctx.X, ctx.Y, ctx.Z);
+        int meta = ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         if ((meta & 8) > 0)
         {
             ctx.Level.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, id);
@@ -247,11 +247,11 @@ internal class BlockLever : Block
     }
 
     public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) =>
-        (iBlockReader.GetMeta(x, y, z) & 8) > 0;
+        (iBlockReader.GetBlockMeta(x, y, z) & 8) > 0;
 
     public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side)
     {
-        int meta = world.GetMeta(x, y, z);
+        int meta = world.GetBlockMeta(x, y, z);
         if ((meta & 8) == 0)
         {
             return false;

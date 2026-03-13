@@ -34,8 +34,8 @@ internal class BlockSlab : Block
         }
 
         int blockBelowId = etv.Level.Reader.GetBlockId(etv.X, etv.Y - 1, etv.Z);
-        int slabMeta = etv.Level.Reader.GetMeta(etv.X, etv.Y, etv.Z);
-        int blockBelowMeta = etv.Level.Reader.GetMeta(etv.X, etv.Y - 1, etv.Z);
+        int slabMeta = etv.Level.Reader.GetBlockMeta(etv.X, etv.Y, etv.Z);
+        int blockBelowMeta = etv.Level.Reader.GetBlockMeta(etv.X, etv.Y - 1, etv.Z);
         if (slabMeta == blockBelowMeta)
         {
             if (blockBelowId == Slab.id)

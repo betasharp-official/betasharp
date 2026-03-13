@@ -12,6 +12,12 @@ public class AssetManager
         Text
     }
 
+    public enum AssetProfile
+    {
+        Full,
+        Headless
+    }
+
     public class Asset
     {
         private readonly AssetType _type;
@@ -53,24 +59,81 @@ public class AssetManager
         }
     }
 
-    public static AssetManager Instance { get; } = new();
+    private static readonly object s_instanceLock = new();
+    private static AssetManager? s_instance;
+    private static AssetProfile? s_configuredProfile;
+
+    public static AssetManager Instance
+    {
+        get
+        {
+            lock (s_instanceLock)
+            {
+                s_instance ??= new AssetManager(s_configuredProfile ?? AssetProfile.Full);
+                return s_instance;
+            }
+        }
+    }
+
+    public static void Initialize(AssetProfile profile)
+    {
+        lock (s_instanceLock)
+        {
+            if (s_instance != null)
+            {
+                if (s_instance._assetProfile != profile)
+                {
+                    throw new InvalidOperationException($"AssetManager already initialized with profile {s_instance._assetProfile}, cannot reinitialize with {profile}.");
+                }
+
+                return;
+            }
+
+            s_configuredProfile = profile;
+            s_instance = new AssetManager(profile);
+        }
+    }
 
     private readonly Dictionary<string, AssetType> _assetsToLoad = [];
     private readonly Dictionary<string, Asset> _loadedAssets = [];
     private readonly HashSet<string> _assetDirectories = [];
     private int _embeddedAssetsLoaded;
+    private readonly AssetProfile _assetProfile;
     private readonly ILogger<AssetManager> _logger = Log.Instance.For<AssetManager>();
 
-    private AssetManager()
+    private AssetManager(AssetProfile assetProfile)
+    {
+        _assetProfile = assetProfile;
+
+        defineHeadlessAssets();
+
+        if (_assetProfile == AssetProfile.Full)
+        {
+            defineFullAssets();
+        }
+
+        _logger.LogInformation($"Asset profile: {_assetProfile}. Registered {_assetsToLoad.Count} assets.");
+
+        extractNeccessaryAssets();
+        loadAssets();
+
+        _logger.LogInformation($"Loaded {_embeddedAssetsLoaded} embedded assets");
+    }
+
+    private void defineHeadlessAssets()
+    {
+        defineAsset("font.txt", AssetType.Text);
+        defineAsset("achievement/map.txt", AssetType.Text);
+        defineAsset("lang/en_US.lang", AssetType.Text);
+        defineAsset("lang/stats_US.lang", AssetType.Text);
+    }
+
+    private void defineFullAssets()
     {
         defineAsset("title/splashes.txt", AssetType.Text);
         defineAsset("title/black.png", AssetType.Binary);
         defineAsset("title/mclogo.png", AssetType.Binary);
         defineAsset("title/mojang.png", AssetType.Binary);
-
-        defineAsset("font.txt", AssetType.Text);
-
-        defineAsset("achievement/map.txt", AssetType.Text);
         defineAsset("achievement/bg.png", AssetType.Binary);
         defineAsset("achievement/icons.png", AssetType.Binary);
 
@@ -150,9 +213,6 @@ public class AssetManager
         defineAsset("item/door.png", AssetType.Binary);
         defineAsset("item/sign.png", AssetType.Binary);
 
-        defineAsset("lang/en_US.lang", AssetType.Text);
-        defineAsset("lang/stats_US.lang", AssetType.Text);
-
         defineAsset("misc/dial.png", AssetType.Binary);
         defineAsset("misc/foliagecolor.png", AssetType.Binary);
         defineAsset("misc/footprint.png", AssetType.Binary);
@@ -198,13 +258,8 @@ public class AssetManager
 
         defineAsset("terrain.png", AssetType.Binary);
 
-        extractNeccessaryAssets();
-        loadAssets();
-
         defineEmbeddedAsset("shaders/chunk.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/chunk.frag", AssetType.Text);
-
-        _logger.LogInformation($"Loaded {_embeddedAssetsLoaded} embedded assets");
     }
 
     public Asset getAsset(string assetPath)

@@ -115,7 +115,7 @@ public class EntityArrow : Entity
         if (inGround)
         {
             blockId = world.Reader.GetBlockId(xTile, yTile, zTile);
-            int blockMeta = world.Reader.GetMeta(xTile, yTile, zTile);
+            int blockMeta = world.Reader.GetBlockMeta(xTile, yTile, zTile);
             if (blockId == inTile && blockMeta == inData)
             {
                 ++ticksInGround;
@@ -201,7 +201,7 @@ public class EntityArrow : Entity
                     yTile = hit.BlockY;
                     zTile = hit.BlockZ;
                     inTile = world.Reader.GetBlockId(xTile, yTile, zTile);
-                    inData = world.Reader.GetMeta(xTile, yTile, zTile);
+                    inData = world.Reader.GetBlockMeta(xTile, yTile, zTile);
                     velocityX = hit.Pos.x - x;
                     velocityY = hit.Pos.y - y;
                     velocityZ = hit.Pos.z - z;

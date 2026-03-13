@@ -35,7 +35,7 @@ public class WorldReader : IBlockReader
         return _context.BlockHost.GetChunk(x >> 4, z >> 4).GetBlockId(x & 15, y, z & 15);
     }
 
-    public int GetMeta(int x, int y, int z)
+    public int GetBlockMeta(int x, int y, int z)
     {
         if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
         {
@@ -193,7 +193,7 @@ public class WorldReader : IBlockReader
         int currentZ = MathHelper.Floor(start.z);
 
         int initialId = GetBlockId(currentX, currentY, currentZ);
-        int initialMeta = GetMeta(currentX, currentY, currentZ);
+        int initialMeta = GetBlockMeta(currentX, currentY, currentZ);
         Block? initialBlock = Block.Blocks[initialId];
 
         // Notice we pass "this" as the IBlockReader
@@ -329,7 +329,7 @@ public class WorldReader : IBlockReader
             }
 
             int blockIdAtStep = GetBlockId(currentX, currentY, currentZ);
-            int metaAtStep = GetMeta(currentX, currentY, currentZ);
+            int metaAtStep = GetBlockMeta(currentX, currentY, currentZ);
             Block? blockAtStep = Block.Blocks[blockIdAtStep];
 
             if ((!ignoreNonSolid || blockAtStep == null ||
@@ -517,7 +517,7 @@ public class WorldReader : IBlockReader
                     Block? block = Block.Blocks[GetBlockId(x, y, z)];
                     if (block != null && block.material == fluidMaterial)
                     {
-                        double fluidSurfaceY = y + 1 - BlockFluid.getFluidHeightFromMeta(GetMeta(x, y, z));
+                        double fluidSurfaceY = y + 1 - BlockFluid.getFluidHeightFromMeta(GetBlockMeta(x, y, z));
 
                         if (maxY >= fluidSurfaceY)
                         {
@@ -586,7 +586,7 @@ public class WorldReader : IBlockReader
                     Block? block = Block.Blocks[GetBlockId(x, y, z)];
                     if (block != null && block.material == fluid)
                     {
-                        int meta = GetMeta(x, y, z);
+                        int meta = GetBlockMeta(x, y, z);
                         double waterLevel = y + 1;
                         if (meta < 8)
                         {

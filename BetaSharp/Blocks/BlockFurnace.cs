@@ -105,7 +105,7 @@ internal class BlockFurnace : BlockWithEntity
             return textureId + 17;
         }
 
-        int meta = iBlockReader.GetMeta(x, y, z);
+        int meta = iBlockReader.GetBlockMeta(x, y, z);
         return side != meta ? textureId : _lit ? textureId + 16 : textureId - 1;
     }
 
@@ -116,7 +116,7 @@ internal class BlockFurnace : BlockWithEntity
             return;
         }
 
-        int var6 = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+        int var6 = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
         float particleX = evt.X + 0.5F;
         float particleY = evt.Y + 0.0F + Random.Shared.NextSingle() * 6.0F / 16.0F;
         float particleZ = evt.Z + 0.5F;
@@ -168,7 +168,7 @@ internal class BlockFurnace : BlockWithEntity
 
     public static void updateLitState(bool lit, IWorldContext world, int x, int y, int z)
     {
-        int meta = world.Reader.GetMeta(x, y, z);
+        int meta = world.Reader.GetBlockMeta(x, y, z);
         BlockEntity? furnace = world.Reader.GetBlockEntity(x, y, z);
         s_ignoreBlockRemoval.Value = true;
         if (lit)

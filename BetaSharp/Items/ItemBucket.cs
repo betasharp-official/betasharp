@@ -56,13 +56,13 @@ internal class ItemBucket : Item
 
                 if (isFull == 0)
                 {
-                    if (world.Reader.GetMaterial(hitX, hitY, hitZ) == Material.Water && world.Reader.GetMeta(hitX, hitY, hitZ) == 0)
+                    if (world.Reader.GetMaterial(hitX, hitY, hitZ) == Material.Water && world.Reader.GetBlockMeta(hitX, hitY, hitZ) == 0)
                     {
                         world.BlockWriter.SetBlock(hitX, hitY, hitZ, 0);
                         return new ItemStack(Item.WaterBucket);
                     }
 
-                    if (world.Reader.GetMaterial(hitX, hitY, hitZ) == Material.Lava && world.Reader.GetMeta(hitX, hitY, hitZ) == 0)
+                    if (world.Reader.GetMaterial(hitX, hitY, hitZ) == Material.Lava && world.Reader.GetBlockMeta(hitX, hitY, hitZ) == 0)
                     {
                         world.BlockWriter.SetBlock(hitX, hitY, hitZ, 0);
                         return new ItemStack(Item.LavaBucket);

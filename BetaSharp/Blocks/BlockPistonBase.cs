@@ -72,7 +72,7 @@ public class BlockPistonBase : Block
 
     private void checkExtended(IWorldContext ctx, int x, int y, int z)
     {
-        int meta = ctx.Reader.GetMeta(x, y, z);
+        int meta = ctx.Reader.GetBlockMeta(x, y, z);
         int facing = getFacing(meta);
         bool needsExtension = shouldExtend(ctx, x, y, z, facing);
 
@@ -155,7 +155,7 @@ public class BlockPistonBase : Block
                 int targetZ = evt.Z + PistonConstants.HEAD_OFFSET_Z[facing] * 2;
 
                 int targetId = evt.Level.Reader.GetBlockId(targetX, targetY, targetZ);
-                int targetMeta = evt.Level.Reader.GetMeta(targetX, targetY, targetZ);
+                int targetMeta = evt.Level.Reader.GetBlockMeta(targetX, targetY, targetZ);
                 bool wasRetractingMovingBlock = false;
 
                 if (targetId == MovingPiston.id)
@@ -211,7 +211,7 @@ public class BlockPistonBase : Block
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
     {
-        int meta = iBlockReader.GetMeta(x, y, z);
+        int meta = iBlockReader.GetBlockMeta(x, y, z);
         if (isExtended(meta))
         {
             switch (getFacing(meta))
@@ -288,7 +288,7 @@ public class BlockPistonBase : Block
                 return false;
             }
         }
-        else if (isExtended(ctx.Reader.GetMeta(x, y, z)))
+        else if (isExtended(ctx.Reader.GetBlockMeta(x, y, z)))
         {
             return false;
         }
@@ -380,7 +380,7 @@ public class BlockPistonBase : Block
                         continue;
                     }
 
-                    Blocks[blockId].dropStacks(new OnDropEvt(ctx, nextX, nextY, nextZ, ctx.Reader.GetMeta(nextX, nextY, nextZ)));
+                    Blocks[blockId].dropStacks(new OnDropEvt(ctx, nextX, nextY, nextZ, ctx.Reader.GetBlockMeta(nextX, nextY, nextZ)));
                     ctx.BlockWriter.SetBlock(nextX, nextY, nextZ, 0);
                 }
             }
@@ -392,7 +392,7 @@ public class BlockPistonBase : Block
                 int prevZ = nextZ - PistonConstants.HEAD_OFFSET_Z[dir];
 
                 int prevBlockId = ctx.Reader.GetBlockId(prevX, prevY, prevZ);
-                int prevMeta = ctx.Reader.GetMeta(prevX, prevY, prevZ);
+                int prevMeta = ctx.Reader.GetBlockMeta(prevX, prevY, prevZ);
 
                 if (prevBlockId == id && prevX == x && prevY == y && prevZ == z)
                 {

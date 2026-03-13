@@ -32,7 +32,7 @@ public sealed class PistonItemBlockReader : IBlockReader
     public bool ShouldSuffocate(int x, int y, int z) => false;
 
     public BiomeSource GetBiomeSource() => null!;
-    public int GetMeta(int x, int y, int z) => throw new NotImplementedException();
+    public int GetBlockMeta(int x, int y, int z) => throw new NotImplementedException();
     public Material GetMaterial(int x, int y, int z) => throw new NotImplementedException();
     public bool IsAir(int x, int y, int z) => throw new NotImplementedException();
     public int GetBrightness(int x, int y, int z) => throw new NotImplementedException();

@@ -20,7 +20,7 @@ internal class RailLogic
         _trackPos = pos;
 
         int blockId = level.Reader.GetBlockId(pos.X, pos.Y, pos.Z);
-        int meta = level.Reader.GetMeta(pos.X, pos.Y, pos.Z);
+        int meta = level.Reader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
         if (Block.Blocks[blockId] is BlockRail rail && rail.isAlwaysStraight())
         {
@@ -97,10 +97,10 @@ internal class RailLogic
         int finalMeta = meta;
         if (_isPoweredRail)
         {
-            finalMeta = _level.Reader.GetMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
+            finalMeta = _level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
         }
 
-        if (forceUpdate || _level.Reader.GetMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) != finalMeta)
+        if (forceUpdate || _level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) != finalMeta)
         {
             _level.BlockWriter.SetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
 
@@ -263,7 +263,7 @@ internal class RailLogic
         int finalMeta = meta;
         if (_isPoweredRail)
         {
-            finalMeta = _level.Reader.GetMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
+            finalMeta = _level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
         }
 
         _level.BlockWriter.SetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);

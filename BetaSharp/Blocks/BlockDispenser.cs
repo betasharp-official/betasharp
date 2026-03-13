@@ -103,7 +103,7 @@ internal class BlockDispenser : BlockWithEntity
             return textureId + 17;
         }
 
-        int meta = iBlockReader.GetMeta(x, y, z);
+        int meta = iBlockReader.GetBlockMeta(x, y, z);
         return side != meta ? textureId : textureId + 1;
     }
 
@@ -127,7 +127,7 @@ internal class BlockDispenser : BlockWithEntity
 
     private void dispense(OnTickEvt evt)
     {
-        int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+        int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
         int dirX = 0;
         int dirZ = 0;
 

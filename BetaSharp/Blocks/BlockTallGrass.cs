@@ -19,7 +19,7 @@ public class BlockTallGrass : BlockPlant
 
     public override int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z)
     {
-        int meta = iBlockReader.GetMeta(x, y, z);
+        int meta = iBlockReader.GetBlockMeta(x, y, z);
         if (meta == 0)
         {
             return 0xFFFFFF;

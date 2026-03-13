@@ -26,7 +26,7 @@ internal class BlockCrops : BlockPlant
         base.onTick(evt);
         if (evt.Level.Lighting.GetBrightness(LightType.Block, evt.X, evt.Y + 1, evt.Z) >= 9)
         {
-            int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+            int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
             if (meta < 7)
             {
                 float var7 = getAvailableMoisture(evt.Level.Reader, evt.X, evt.Y, evt.Z);
@@ -68,7 +68,7 @@ internal class BlockCrops : BlockPlant
                 if (blockBelow == Farmland.id)
                 {
                     cellMoisture = 1.0F;
-                    if (read.GetMeta(dx, y - 1, dz) > 0)
+                    if (read.GetBlockMeta(dx, y - 1, dz) > 0)
                     {
                         cellMoisture = 3.0F;
                     }

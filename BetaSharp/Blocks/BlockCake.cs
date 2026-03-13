@@ -11,7 +11,7 @@ internal class BlockCake : Block
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
     {
-        int slicesEaten = iBlockReader.GetMeta(x, y, z);
+        int slicesEaten = iBlockReader.GetBlockMeta(x, y, z);
         float edgeInset = 1.0F / 16.0F;
         float minX = (float)(1 + slicesEaten * 2) / 16.0F;
         float height = 0.5F;
@@ -27,7 +27,7 @@ internal class BlockCake : Block
 
     public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)
     {
-        int slicesEaten = world.GetMeta(x, y, z);
+        int slicesEaten = world.GetBlockMeta(x, y, z);
         float edgeInset = 1.0F / 16.0F;
         float minX = (1 + slicesEaten * 2) / 16.0F;
         float height = 0.5F;
@@ -36,7 +36,7 @@ internal class BlockCake : Block
 
     public override Box getBoundingBox(IBlockReader world, int x, int y, int z)
     {
-        int slicesEaten = world.GetMeta(x, y, z);
+        int slicesEaten = world.GetBlockMeta(x, y, z);
         float edgeInset = 1.0F / 16.0F;
         float minX = (float)(1 + slicesEaten * 2) / 16.0F;
         float height = 0.5F;
@@ -68,7 +68,7 @@ internal class BlockCake : Block
         if (evt.Player.health < 20)
         {
             evt.Player.heal(3);
-            int slicesEaten = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z) + 1;
+            int slicesEaten = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z) + 1;
             if (slicesEaten >= 6)
             {
                 evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
@@ -91,7 +91,7 @@ internal class BlockCake : Block
         }
 
         evt.Player.heal(3);
-        int slicesEaten = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z) + 1;
+        int slicesEaten = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z) + 1;
         if (slicesEaten >= 6)
         {
             evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
@@ -115,7 +115,7 @@ internal class BlockCake : Block
             return;
         }
 
-        dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z)));
+        dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
         evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
     }
 

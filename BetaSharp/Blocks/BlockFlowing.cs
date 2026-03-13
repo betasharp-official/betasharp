@@ -16,7 +16,7 @@ internal class BlockFlowing : BlockFluid
 
     private void convertToSource(IWorldContext world, int x, int y, int z)
     {
-        int meta = world.Reader.GetMeta(x, y, z);
+        int meta = world.Reader.GetBlockMeta(x, y, z);
         world.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y, z, id + 1, meta, notifyBlockPlaced: false);
         world.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
         world.Broadcaster.BlockUpdateEvent(x, y, z);
@@ -66,7 +66,7 @@ internal class BlockFlowing : BlockFluid
                 {
                     newLevel = 0;
                 }
-                else if (ctx.Level.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z) == material && ctx.Level.Reader.GetMeta(ctx.X, ctx.Y, ctx.Z) == 0)
+                else if (ctx.Level.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z) == material && ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) == 0)
                 {
                     newLevel = 0;
                 }
@@ -165,7 +165,7 @@ internal class BlockFlowing : BlockFluid
                 }
                 else
                 {
-                    Blocks[currentId].dropStacks(new OnDropEvt(world, x, y, z, world.Reader.GetMeta(x, y, z)));
+                    Blocks[currentId].dropStacks(new OnDropEvt(world, x, y, z, world.Reader.GetBlockMeta(x, y, z)));
                 }
             }
 
@@ -203,7 +203,7 @@ internal class BlockFlowing : BlockFluid
                     ++neighborZ;
                 }
 
-                if (!isLiquidBreaking(world, neighborX, y, neighborZ) && (world.GetMaterial(neighborX, y, neighborZ) != material || world.GetMeta(neighborX, y, neighborZ) != 0))
+                if (!isLiquidBreaking(world, neighborX, y, neighborZ) && (world.GetMaterial(neighborX, y, neighborZ) != material || world.GetBlockMeta(neighborX, y, neighborZ) != 0))
                 {
                     if (!isLiquidBreaking(world, neighborX, y - 1, neighborZ))
                     {
@@ -255,7 +255,7 @@ internal class BlockFlowing : BlockFluid
                 ++neighborZ;
             }
 
-            if (!isLiquidBreaking(world, neighborX, y, neighborZ) && (world.GetMaterial(neighborX, y, neighborZ) != material || world.GetMeta(neighborX, y, neighborZ) != 0))
+            if (!isLiquidBreaking(world, neighborX, y, neighborZ) && (world.GetMaterial(neighborX, y, neighborZ) != material || world.GetBlockMeta(neighborX, y, neighborZ) != 0))
             {
                 if (!isLiquidBreaking(world, neighborX, y - 1, neighborZ))
                 {

@@ -11,7 +11,7 @@ public interface IBlockReader
 {
     public int GetBlockId(int x, int y, int z);
     public BlockEntity? GetBlockEntity(int x, int y, int z);
-    public int GetMeta(int x, int y, int z);
+    public int GetBlockMeta(int x, int y, int z);
     public Material GetMaterial(int x, int y, int z);
     public bool IsOpaque(int x, int y, int z);
     public bool ShouldSuffocate(int x, int y, int z);

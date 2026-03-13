@@ -21,7 +21,7 @@ public class BlockLeaves : BlockLeavesBase
 
     public override int getColorMultiplier(IBlockReader reader, int x, int y, int z)
     {
-        int meta = reader.GetMeta(x, y, z);
+        int meta = reader.GetBlockMeta(x, y, z);
         if ((meta & 1) == 1)
         {
             return FoliageColors.getSpruceColor();
@@ -53,7 +53,7 @@ public class BlockLeaves : BlockLeavesBase
                         int blockId = evt.Level.Reader.GetBlockId(evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ);
                         if (blockId == Leaves.id)
                         {
-                            int leavesMeta = evt.Level.Reader.GetMeta(evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ);
+                            int leavesMeta = evt.Level.Reader.GetBlockMeta(evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ);
                             evt.Level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ, leavesMeta | 8);
                         }
                     }
@@ -66,7 +66,7 @@ public class BlockLeaves : BlockLeavesBase
     {
         if (!evt.Level.IsRemote)
         {
-            int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+            int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
             if ((meta & 8) != 0)
             {
                 sbyte decayRadius = 4;
@@ -180,7 +180,7 @@ public class BlockLeaves : BlockLeavesBase
 
     private void breakLeaves(IWorldContext level, int x, int y, int z)
     {
-        dropStacks(new OnDropEvt(level, x, y, z, level.Reader.GetMeta(x, y, z)));
+        dropStacks(new OnDropEvt(level, x, y, z, level.Reader.GetBlockMeta(x, y, z)));
         level.BlockWriter.SetBlock(x, y, z, 0);
     }
 

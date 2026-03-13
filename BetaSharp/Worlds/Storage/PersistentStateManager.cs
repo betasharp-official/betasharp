@@ -109,7 +109,7 @@ public class PersistentStateManager
                 NBTTagCompound rootTag = new();
                 rootTag.SetCompoundTag("data", stateTag);
 
-                using FileStream stream = file.OpenWrite();
+                using FileStream stream = file.Create();
                 NbtIo.WriteCompressed(rootTag, stream);
             }
         }
@@ -173,7 +173,7 @@ public class PersistentStateManager
                     rootTag.SetShort(kvp.Key, kvp.Value);
                 }
 
-                using FileStream stream = file.OpenWrite();
+                using FileStream stream = file.Create();
                 NbtIo.Write(rootTag, stream);
             }
         }

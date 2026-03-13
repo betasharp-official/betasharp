@@ -19,7 +19,7 @@ public class BlockUpdateS2CPacket() : Packet(PacketId.BlockUpdateS2C)
         p.y = y;
         p.z = z;
         p.blockRawId = world.Reader.GetBlockId(x, y, z);
-        p.blockMetadata = world.Reader.GetMeta(x, y, z);
+        p.blockMetadata = world.Reader.GetBlockMeta(x, y, z);
         return p;
     }
 

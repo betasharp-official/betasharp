@@ -34,7 +34,7 @@ internal class BlockSign : BlockWithEntity
     {
         if (!_standing)
         {
-            int facing = iBlockReader.GetMeta(x, y, z);
+            int facing = iBlockReader.GetBlockMeta(x, y, z);
             float topOffset = 9.0F / 32.0F;
             float bottomOffset = 25.0F / 32.0F;
             float minExtent = 0.0F;
@@ -95,7 +95,7 @@ internal class BlockSign : BlockWithEntity
         }
         else
         {
-            int facing = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+            int facing = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
             shouldBreak = true;
             if (facing == 2 && evt.Level.Reader.GetMaterial(evt.X, evt.Y, evt.Z + 1).IsSolid)
             {
@@ -120,7 +120,7 @@ internal class BlockSign : BlockWithEntity
 
         if (shouldBreak)
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z)));
+            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
             evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
         }
 

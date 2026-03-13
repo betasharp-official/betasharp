@@ -85,7 +85,7 @@ public class BlockEntity
         return blockEntity;
     }
 
-    public virtual int getPushedBlockData() => World.Reader.GetMeta(X, Y, Z);
+    public virtual int getPushedBlockData() => World.Reader.GetBlockMeta(X, Y, Z);
 
     public void markDirty()
     {

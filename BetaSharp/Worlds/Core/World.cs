@@ -603,7 +603,7 @@ public abstract class World : IWorldContext
             int blockId = Reader.GetBlockId(targetX, targetY, targetZ);
             if (blockId > 0)
             {
-                Block.Blocks[blockId].randomDisplayTick(new OnTickEvt(this, targetX, targetY, targetZ, Reader.GetMeta(targetX, targetY, targetZ), blockId));
+                Block.Blocks[blockId].randomDisplayTick(new OnTickEvt(this, targetX, targetY, targetZ, Reader.GetBlockMeta(targetX, targetY, targetZ), blockId));
             }
         }
     }

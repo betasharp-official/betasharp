@@ -33,7 +33,7 @@ internal class BlockStairs : Block
     public override void addIntersectingBoundingBox(IBlockReader world, int x, int y, int z, Box box, List<Box> boxes)
     {
         // Fixed capitalization on GetBlockMeta
-        int meta = world.GetMeta(x, y, z);
+        int meta = world.GetBlockMeta(x, y, z);
         if (meta == 0)
         {
             setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F);

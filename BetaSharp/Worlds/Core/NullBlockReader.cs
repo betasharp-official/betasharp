@@ -31,7 +31,7 @@ public sealed class NullBlockReader : IBlockReader
 
     public BiomeSource GetBiomeSource() => null!;
 
-    public int GetMeta(int x, int y, int z) => 0;
+    public int GetBlockMeta(int x, int y, int z) => 0;
 
     public Material GetMaterial(int x, int y, int z) => Material.Air;
 

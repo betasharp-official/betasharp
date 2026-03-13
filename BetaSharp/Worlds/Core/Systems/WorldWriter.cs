@@ -23,7 +23,7 @@ public sealed class WorldWriter : IBlockWrite
     public bool SetBlock(int x, int y, int z, int blockId)
     {
         int prevId = _reader.GetBlockId(x, y, z);
-        int prevMeta = _reader.GetMeta(x, y, z);
+        int prevMeta = _reader.GetBlockMeta(x, y, z);
         if (SetBlockWithoutNotifyingNeighbors(x, y, z, blockId))
         {
             OnBlockChanged?.Invoke(x, y, z, blockId);
@@ -70,7 +70,7 @@ public sealed class WorldWriter : IBlockWrite
     public bool SetBlock(int x, int y, int z, int blockId, int meta, bool doUpdate)
     {
         int prevId = _reader.GetBlockId(x, y, z);
-        int prevMeta = _reader.GetMeta(x, y, z);
+        int prevMeta = _reader.GetBlockMeta(x, y, z);
         if (SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta, doUpdate))
         {
             if (doUpdate)

@@ -108,7 +108,7 @@ public class GuiMultiplayer : GuiScreen
             tag.SetTag("servers", list);
 
             string path = Path.Combine(BetaSharp.getBetaSharpDir(), "servers.dat");
-            using FileStream stream = File.OpenWrite(path);
+            using FileStream stream = File.Create(path);
             NbtIo.WriteCompressed(tag, stream);
         }
         catch { }

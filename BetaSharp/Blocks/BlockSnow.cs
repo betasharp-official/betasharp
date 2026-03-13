@@ -17,7 +17,7 @@ internal class BlockSnow : Block
 
     public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)
     {
-        int meta = world.GetMeta(x, y, z) & 7;
+        int meta = world.GetBlockMeta(x, y, z) & 7;
         return meta >= 3 ? new Box(x + BoundingBox.MinX, y + BoundingBox.MinY, z + BoundingBox.MinZ, x + BoundingBox.MaxX, y + 0.5F, z + BoundingBox.MaxZ) : null;
     }
 
@@ -27,7 +27,7 @@ internal class BlockSnow : Block
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
     {
-        int meta = iBlockReader.GetMeta(x, y, z) & 7;
+        int meta = iBlockReader.GetBlockMeta(x, y, z) & 7;
         float height = 2 * (1 + meta) / 16.0F;
         setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, height, 1.0F);
     }
@@ -44,7 +44,7 @@ internal class BlockSnow : Block
     {
         if (!canPlaceAt(new CanPlaceAtCtx(evt.Level, 0, evt.X, evt.Y, evt.Z)))
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z)));
+            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
             evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
             return false;
         }
@@ -74,7 +74,7 @@ internal class BlockSnow : Block
     {
         if (evt.Level.Lighting.GetBrightness(LightType.Block, evt.X, evt.Y, evt.Z) > 11)
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z)));
+            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
             evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
         }
     }

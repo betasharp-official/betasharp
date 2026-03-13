@@ -26,7 +26,7 @@ internal class BlockDetectorRail : BlockRail
     {
         if (!evt.Level.IsRemote)
         {
-            int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+            int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
             if ((meta & 8) == 0)
             {
                 updatePoweredStatus(evt.Level, evt.X, evt.Y, evt.Z, id, meta);
@@ -38,7 +38,7 @@ internal class BlockDetectorRail : BlockRail
     {
         if (!evt.Level.IsRemote)
         {
-            int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+            int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
             if ((meta & 8) != 0)
             {
                 updatePoweredStatus(evt.Level, evt.X, evt.Y, evt.Z, id, meta);
@@ -48,12 +48,12 @@ internal class BlockDetectorRail : BlockRail
 
     public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side)
     {
-        return (iBlockReader.GetMeta(x, y, z) & 8) != 0;
+        return (iBlockReader.GetBlockMeta(x, y, z) & 8) != 0;
     }
 
     public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side)
     {
-        return (world.GetMeta(x, y, z) & 8) == 0 ? false : side == 1;
+        return (world.GetBlockMeta(x, y, z) & 8) == 0 ? false : side == 1;
     }
 
     private void updatePoweredStatus(IWorldContext context, int x, int y, int z, int id, int meta)

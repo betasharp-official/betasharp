@@ -274,7 +274,7 @@ public class Block
 
     public virtual int getTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
     {
-        return getTexture(side, iBlockReader.GetMeta(x, y, z));
+        return getTexture(side, iBlockReader.GetBlockMeta(x, y, z));
     }
 
     public virtual int getTexture(int side, int meta)

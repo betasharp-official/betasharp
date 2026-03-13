@@ -42,7 +42,7 @@ internal class BlockPressurePlate : Block
 
         if (shouldBreak)
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z)));
+            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
             evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
         }
     }
@@ -51,7 +51,7 @@ internal class BlockPressurePlate : Block
     {
         if (!evt.Level.IsRemote)
         {
-            if (evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z) != 0)
+            if (evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z) != 0)
             {
                 updatePlateState(evt.Level, evt.X, evt.Y, evt.Z);
             }
@@ -62,7 +62,7 @@ internal class BlockPressurePlate : Block
     {
         if (!evt.Level.IsRemote)
         {
-            if (evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z) != 1)
+            if (evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z) != 1)
             {
                 updatePlateState(evt.Level, evt.X, evt.Y, evt.Z);
             }
@@ -71,7 +71,7 @@ internal class BlockPressurePlate : Block
 
     private void updatePlateState(IWorldContext ctx, int x, int y, int z)
     {
-        bool wasPressed = ctx.Reader.GetMeta(x, y, z) == 1;
+        bool wasPressed = ctx.Reader.GetBlockMeta(x, y, z) == 1;
         bool shouldBePressed = false;
         float detectionInset = 2.0F / 16.0F;
         List<Entity>? entitiesInBox = null;
@@ -121,7 +121,7 @@ internal class BlockPressurePlate : Block
 
     public override void onBreak(OnBreakEvt evt)
     {
-        int plateState = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+        int plateState = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
         if (plateState > 0)
         {
             evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y, evt.Z, id);
@@ -133,7 +133,7 @@ internal class BlockPressurePlate : Block
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
     {
-        bool isPressed = iBlockReader.GetMeta(x, y, z) == 1;
+        bool isPressed = iBlockReader.GetBlockMeta(x, y, z) == 1;
         float edgeInset = 1.0F / 16.0F;
         if (isPressed)
         {
@@ -145,9 +145,9 @@ internal class BlockPressurePlate : Block
         }
     }
 
-    public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => iBlockReader.GetMeta(x, y, z) > 0;
+    public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => iBlockReader.GetBlockMeta(x, y, z) > 0;
 
-    public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => world.GetMeta(x, y, z) == 0 ? false : side == 1;
+    public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => world.GetBlockMeta(x, y, z) == 0 ? false : side == 1;
 
     public override bool canEmitRedstonePower() => true;
 

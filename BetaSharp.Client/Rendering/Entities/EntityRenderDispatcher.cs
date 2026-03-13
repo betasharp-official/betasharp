@@ -102,7 +102,7 @@ public class EntityRenderDispatcher
             int var7 = world.Reader.GetBlockId(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
             if (var7 == Block.Bed.id)
             {
-                int var8 = world.Reader.GetMeta(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
+                int var8 = world.Reader.GetBlockMeta(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
                 int var9 = var8 & 3;
                 playerViewY = var9 * 90 + 180;
                 playerViewX = 0.0F;

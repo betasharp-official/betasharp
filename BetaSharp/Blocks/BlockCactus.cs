@@ -20,7 +20,7 @@ internal class BlockCactus : Block
 
             if (heightBelow < 3)
             {
-                int growthStage = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+                int growthStage = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
                 if (growthStage == 15)
                 {
                     evt.Level.BlockWriter.SetBlock(evt.X, evt.Y + 1, evt.Z, id);
@@ -75,7 +75,7 @@ internal class BlockCactus : Block
     {
         if (!canGrow(evt))
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z)));
+            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
             evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
         }
     }

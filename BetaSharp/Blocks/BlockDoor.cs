@@ -73,7 +73,7 @@ internal class BlockDoor : Block
         return base.getCollisionShape(world, x, y, z);
     }
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z) => rotate(setOpen(iBlockReader.GetMeta(x, y, z)));
+    public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z) => rotate(setOpen(iBlockReader.GetBlockMeta(x, y, z)));
 
     public void rotate(int meta)
     {
@@ -109,7 +109,7 @@ internal class BlockDoor : Block
             return true;
         }
 
-        int meta = world.Reader.GetMeta(x, y, z);
+        int meta = world.Reader.GetBlockMeta(x, y, z);
         if ((meta & 8) != 0)
         {
             if (world.Reader.GetBlockId(x, y - 1, z) == id)
@@ -136,7 +136,7 @@ internal class BlockDoor : Block
 
     public void setOpen(IWorldContext world, int x, int y, int z, bool open)
     {
-        int meta = world.Reader.GetMeta(x, y, z);
+        int meta = world.Reader.GetBlockMeta(x, y, z);
         if ((meta & 8) != 0)
         {
             if (world.Reader.GetBlockId(x, y - 1, z) == id)
@@ -146,7 +146,7 @@ internal class BlockDoor : Block
         }
         else
         {
-            bool isOpen = (world.Reader.GetMeta(x, y, z) & 4) > 0;
+            bool isOpen = (world.Reader.GetBlockMeta(x, y, z) & 4) > 0;
             if (isOpen != open)
             {
                 if (world.Reader.GetBlockId(x, y + 1, z) == id)
@@ -163,7 +163,7 @@ internal class BlockDoor : Block
 
     public override void neighborUpdate(OnTickEvt evt)
     {
-        int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+        int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
         if ((meta & 8) != 0)
         {
             if (evt.Level.Reader.GetBlockId(evt.X, evt.Y - 1, evt.Z) != id)

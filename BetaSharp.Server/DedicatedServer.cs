@@ -72,6 +72,7 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
     public static void Main(string[] args)
     {
         Log.Instance.Initialize(Directory.GetCurrentDirectory());
+        AssetManager.Initialize(AssetManager.AssetProfile.Headless);
 
         try
         {

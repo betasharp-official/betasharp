@@ -27,7 +27,7 @@ internal class BlockLog : Block
                         int neighborBlockId = evt.Level.Reader.GetBlockId(evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ);
                         if (neighborBlockId == Leaves.id)
                         {
-                            int leavesMeta = evt.Level.Reader.GetMeta(evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ);
+                            int leavesMeta = evt.Level.Reader.GetBlockMeta(evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ);
                             if ((leavesMeta & 8) == 0)
                             {
                                 evt.Level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ, leavesMeta | 8);

@@ -38,7 +38,7 @@ public class BlockRail : Block
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
     {
-        int meta = iBlockReader.GetMeta(x, y, z);
+        int meta = iBlockReader.GetBlockMeta(x, y, z);
         if (meta >= 2 && meta <= 5)
         {
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 10.0F / 16.0F, 1.0F);
@@ -84,7 +84,7 @@ public class BlockRail : Block
     {
         if (!evt.Level.IsRemote)
         {
-            int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+            int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
             int railMeta = meta;
             if (alwaysStraight)
             {
@@ -119,7 +119,7 @@ public class BlockRail : Block
 
             if (shouldBreak)
             {
-                dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z)));
+                dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
                 evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
             }
             else if (id == PoweredRail.id)
@@ -261,7 +261,7 @@ public class BlockRail : Block
         int blockId = level.Reader.GetBlockId(x, y, z);
         if (blockId == PoweredRail.id)
         {
-            int meta = level.Reader.GetMeta(x, y, z);
+            int meta = level.Reader.GetBlockMeta(x, y, z);
             int railMeta = meta & 7;
             if (shape == 1 && (railMeta == 0 || railMeta == 4 || railMeta == 5))
             {

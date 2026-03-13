@@ -41,7 +41,7 @@ internal class BlockFarmland : Block
         {
             if (!isWaterNearby(evt.Level.Reader, evt.X, evt.Y, evt.Z) && !evt.Level.Environment.IsRaining)
             {
-                int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+                int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
                 if (meta > 0)
                 {
                     evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, meta - 1);

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
@@ -26,7 +26,7 @@ internal sealed class StorageService(ILogger<StorageService> logger)
 
     public async Task SetAsync<T>(T instance, JsonTypeInfo<T> typeInfo) where T : class
     {
-        await using var stream = File.OpenWrite($"{Path.Combine(App.Folder, typeInfo.Type.Name.ToLowerInvariant())}.json");
+        await using var stream = File.Create($"{Path.Combine(App.Folder, typeInfo.Type.Name.ToLowerInvariant())}.json");
         await JsonSerializer.SerializeAsync(stream, instance, typeInfo);
     }
 

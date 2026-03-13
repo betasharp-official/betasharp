@@ -20,7 +20,7 @@ internal class BlockJukeBox : BlockWithEntity
 
     public override bool onUse(OnUseEvt evt)
     {
-        if (evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z) == 0)
+        if (evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z) == 0)
         {
             return false;
         }

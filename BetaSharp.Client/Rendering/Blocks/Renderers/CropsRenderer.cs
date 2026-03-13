@@ -10,7 +10,7 @@ public class CropsRenderer : IBlockRenderer
         float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
         ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
 
-        int metadata = ctx.BlockReader.GetMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
 
         // Crops are pushed down slightly into the soil block
         float yOffset = pos.y - (1.0f / 16.0f);

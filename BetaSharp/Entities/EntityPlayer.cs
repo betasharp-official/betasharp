@@ -649,7 +649,7 @@ public abstract class EntityPlayer : EntityLiving
         standingEyeHeight = 0.2F;
         if (world.Reader.IsPosLoaded(x, y, z))
         {
-            int var4 = world.Reader.GetMeta(x, y, z);
+            int var4 = world.Reader.GetBlockMeta(x, y, z);
             int var5 = BlockBed.getDirection(var4);
             float var6 = 0.5F;
             float var7 = 0.5F;
@@ -717,7 +717,7 @@ public abstract class EntityPlayer : EntityLiving
         Vec3i? var4 = sleepingPos;
         if (var4 is (int x, int y, int z) && world.Reader.GetBlockId(x, y, z) == Block.Bed.id)
         {
-            int bedMeta = world.Reader.GetMeta(x, y, z);
+            int bedMeta = world.Reader.GetBlockMeta(x, y, z);
             BlockBed.updateState(world.BlockWriter, x, y, z, bedMeta, false);
             Vec3i? var5 = BlockBed.findWakeUpPosition(world.Reader, x, y, z, 0);
             if (var5 == null)
@@ -777,7 +777,7 @@ public abstract class EntityPlayer : EntityLiving
     {
         if (sleepingPos != null)
         {
-            int var1 = world.Reader.GetMeta(sleepingPos.X, sleepingPos.Y, sleepingPos.Z);
+            int var1 = world.Reader.GetBlockMeta(sleepingPos.X, sleepingPos.Y, sleepingPos.Z);
             int var2 = BlockBed.getDirection(var1);
             switch (var2)
             {

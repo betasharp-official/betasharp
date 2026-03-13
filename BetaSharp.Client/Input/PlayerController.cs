@@ -32,7 +32,7 @@ public class PlayerController
         World var5 = Game.world;
         Block var6 = Block.Blocks[var5.Reader.GetBlockId(var1, var2, var3)];
         var5.Broadcaster.NotifyNeighbors(var1, var2, var3, var5.Reader.GetBlockId(var1, var2, var3));
-        int var7 = var5.Reader.GetMeta(var1, var2, var3);
+        int var7 = var5.Reader.GetBlockMeta(var1, var2, var3);
         bool var8 = var5.BlockWriter.SetBlock(var1, var2, var3, 0);
         if (var6 != null && var8)
         {

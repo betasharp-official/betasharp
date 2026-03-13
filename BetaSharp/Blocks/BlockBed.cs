@@ -28,7 +28,7 @@ public class BlockBed : Block
         int y = evt.Y;
         int z = evt.Z;
 
-        int meta = evt.Level.Reader.GetMeta(x, y, z);
+        int meta = evt.Level.Reader.GetBlockMeta(x, y, z);
         if (!isHeadOfBed(meta))
         {
             int direction = getDirection(meta);
@@ -40,7 +40,7 @@ public class BlockBed : Block
                 return true;
             }
 
-            meta = evt.Level.Reader.GetMeta(x, y, z);
+            meta = evt.Level.Reader.GetBlockMeta(x, y, z);
         }
 
         if (!evt.Level.dimension.HasWorldSpawn)
@@ -141,7 +141,7 @@ public class BlockBed : Block
 
     public override void neighborUpdate(OnTickEvt ctx)
     {
-        int blockMeta = ctx.Level.Reader.GetMeta(ctx.X, ctx.Y, ctx.Z);
+        int blockMeta = ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         int direction = getDirection(blockMeta);
 
         if (isHeadOfBed(blockMeta))
@@ -203,7 +203,7 @@ public class BlockBed : Block
     // Updated 'World' to 'IBlockReader'
     public static Vec3i? findWakeUpPosition(IBlockReader reader, int x, int y, int z, int skip)
     {
-        int blockMeta = reader.GetMeta(x, y, z);
+        int blockMeta = reader.GetBlockMeta(x, y, z);
         int direction = getDirection(blockMeta);
 
         for (int bedHalf = 0; bedHalf <= 1; ++bedHalf)

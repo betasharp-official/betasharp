@@ -42,7 +42,7 @@ public class BlockRedstoneWire : Block
 
     private void CalculateCurrentChanges(IWorldContext level, int x, int y, int z, int srcX, int srcY, int srcZ, HashSet<BlockPos> neighbors)
     {
-        int oldMeta = level.Reader.GetMeta(x, y, z);
+        int oldMeta = level.Reader.GetBlockMeta(x, y, z);
         int newMeta = 0;
 
         s_wiresProvidePower.Value = false;
@@ -119,7 +119,7 @@ public class BlockRedstoneWire : Block
                 }
 
                 int neighborMeta = getMaxCurrentStrength(level.Reader, nx, y, nz, -1);
-                newMeta = level.Reader.GetMeta(x, y, z);
+                newMeta = level.Reader.GetBlockMeta(x, y, z);
                 if (newMeta > 0)
                 {
                     --newMeta;
@@ -131,7 +131,7 @@ public class BlockRedstoneWire : Block
                 }
 
                 neighborMeta = getMaxCurrentStrength(level.Reader, nx, ny, nz, -1);
-                newMeta = level.Reader.GetMeta(x, y, z);
+                newMeta = level.Reader.GetBlockMeta(x, y, z);
                 if (newMeta > 0)
                 {
                     --newMeta;
@@ -278,7 +278,7 @@ public class BlockRedstoneWire : Block
             return var5;
         }
 
-        int var6 = var1.GetMeta(var2, var3, var4);
+        int var6 = var1.GetBlockMeta(var2, var3, var4);
         return var6 > var5 ? var6 : var5;
     }
 
@@ -286,7 +286,7 @@ public class BlockRedstoneWire : Block
     {
         if (!evt.Level.IsRemote)
         {
-            int var6 = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+            int var6 = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
             bool var7 = canPlaceAt(new CanPlaceAtCtx(evt.Level, 0, evt.X, evt.Y, evt.Z));
             if (!var7)
             {
@@ -313,7 +313,7 @@ public class BlockRedstoneWire : Block
             return false;
         }
 
-        if (var1.GetMeta(var2, var3, var4) == 0)
+        if (var1.GetBlockMeta(var2, var3, var4) == 0)
         {
             return false;
         }
@@ -360,7 +360,7 @@ public class BlockRedstoneWire : Block
 
     public override void randomDisplayTick(OnTickEvt evt)
     {
-        int var6 = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+        int var6 = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
         if (var6 > 0)
         {
             double x = evt.X + 0.5D + (evt.Level.random.NextFloat() - 0.5D) * 0.2D;
@@ -412,7 +412,7 @@ public class BlockRedstoneWire : Block
             return false;
         }
 
-        int var6 = var0.GetMeta(var1, var2, var3);
+        int var6 = var0.GetBlockMeta(var1, var2, var3);
         return var4 == Facings.OPPOSITE[var6 & 3];
     }
 }

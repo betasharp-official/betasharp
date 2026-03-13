@@ -49,7 +49,7 @@ internal class BlockButton : Block
 
     public override void onPlaced(OnPlacedEvt evt)
     {
-        int facing = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+        int facing = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
         int pressedBit = facing & 8;
         facing &= 7;
         if (evt.Direction == 2 && evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z + 1))
@@ -88,7 +88,7 @@ internal class BlockButton : Block
             return;
         }
 
-        int facing = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z) & 7;
+        int facing = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z) & 7;
         bool shouldBreak = false;
         if (!evt.Level.Reader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z) && facing == 1)
         {
@@ -112,7 +112,7 @@ internal class BlockButton : Block
 
         if (shouldBreak)
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z)));
+            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
             evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
         }
     }
@@ -121,7 +121,7 @@ internal class BlockButton : Block
     {
         if (!IsValidPlacementSide(evt.Level.Reader, evt.X, evt.Y, evt.Z))
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z)));
+            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
             evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
             return false;
         }
@@ -131,7 +131,7 @@ internal class BlockButton : Block
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)
     {
-        int meta = iBlockReader.GetMeta(x, y, z);
+        int meta = iBlockReader.GetBlockMeta(x, y, z);
         int facing = meta & 7;
         bool isPressed = (meta & 8) > 0;
         float minY = 6.0F / 16.0F;
@@ -164,7 +164,7 @@ internal class BlockButton : Block
 
     private bool updateState(IWorldContext level, int x, int y, int z)
     {
-        int meta = level.Reader.GetMeta(x, y, z);
+        int meta = level.Reader.GetBlockMeta(x, y, z);
         int facing = meta & 7;
         int pressToggle = 8 - (meta & 8);
         if (pressToggle == 0)
@@ -213,7 +213,7 @@ internal class BlockButton : Block
 
     public override void onBreak(OnBreakEvt evt)
     {
-        int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+        int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
         if ((meta & 8) > 0)
         {
             evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y, evt.Z, id);
@@ -245,12 +245,12 @@ internal class BlockButton : Block
 
     public override bool isPoweringSide(IBlockReader reader, int x, int y, int z, int side)
     {
-        return (reader.GetMeta(x, y, z) & 8) > 0;
+        return (reader.GetBlockMeta(x, y, z) & 8) > 0;
     }
 
     public override bool isStrongPoweringSide(IBlockReader read, int x, int y, int z, int side)
     {
-        int meta = read.GetMeta(x, y, z);
+        int meta = read.GetBlockMeta(x, y, z);
         if ((meta & 8) == 0)
         {
             return false;
@@ -272,7 +272,7 @@ internal class BlockButton : Block
             return;
         }
 
-        int meta = evt.Level.Reader.GetMeta(evt.X, evt.Y, evt.Z);
+        int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
         if ((meta & 8) != 0)
         {
             evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, meta & 7);
