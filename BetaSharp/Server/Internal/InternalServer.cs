@@ -54,11 +54,6 @@ public class InternalServer : BetaSharpServer
         return result;
     }
 
-    public override java.io.File getFile(string path)
-    {
-        return new(System.IO.Path.Combine(_worldPath, path));
-    }
-
     public void SetDifficulty(int difficulty)
     {
         lock (_difficultyLock)

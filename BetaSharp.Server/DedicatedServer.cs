@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Sockets;
 using BetaSharp.Server.Network;
 using BetaSharp.Server.Threading;
 using DSharpPlus;
@@ -101,10 +100,5 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
         }
 
         await Task.Delay(-1);
-    }
-
-    public override java.io.File getFile(string path)
-    {
-        return new java.io.File(path);
     }
 }
