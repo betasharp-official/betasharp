@@ -24,7 +24,7 @@ public readonly record struct OnEntityStepEvt(IWorldContext Level, Entity Entity
 
 public readonly record struct OnEntityCollisionEvt(IWorldContext Level, Entity Entity, int X, int Y, int Z);
 
-public readonly record struct OnApplyVelocityEvt(IWorldContext Level, Entity Entity, Vec3D Velocity, int X, int Y, int Z);
+public readonly record struct OnApplyVelocityEvt(IWorldContext Level, Entity Entity, int X, int Y, int Z);
 
 public readonly record struct OnDestroyedByExplosionEvt(IWorldContext Level, int X, int Y, int Z);
 

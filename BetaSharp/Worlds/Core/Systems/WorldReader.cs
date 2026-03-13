@@ -522,7 +522,10 @@ public class WorldReader : IBlockReader
                         if (maxY >= fluidSurfaceY)
                         {
                             isSubmerged = true;
-                            block.applyVelocity(new OnApplyVelocityEvt(_context, entity, flowVector, x, y, z));
+                            Vec3D blockFlow = block.applyVelocity(new OnApplyVelocityEvt(_context, entity, x, y, z));
+                            flowVector.x += blockFlow.x;
+                            flowVector.y += blockFlow.y;
+                            flowVector.z += blockFlow.z;
                         }
                     }
                 }

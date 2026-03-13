@@ -448,8 +448,9 @@ public class Block
     {
     }
 
-    public virtual void applyVelocity(OnApplyVelocityEvt evt)
+    public virtual Vec3D applyVelocity(OnApplyVelocityEvt evt)
     {
+        return Vec3D.Zero;
     }
 
     public virtual void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)

@@ -94,7 +94,7 @@ internal class BlockStairs : Block
 
     public override Box getBoundingBox(IBlockReader world, int x, int y, int z) => baseBlock.getBoundingBox(world, x, y, z);
 
-    public override void applyVelocity(OnApplyVelocityEvt ctx) => baseBlock.applyVelocity(ctx);
+    public override Vec3D applyVelocity(OnApplyVelocityEvt ctx) => baseBlock.applyVelocity(ctx);
 
     public override bool hasCollision() => baseBlock.hasCollision();
 
