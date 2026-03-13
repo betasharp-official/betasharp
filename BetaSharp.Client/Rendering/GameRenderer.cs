@@ -409,7 +409,7 @@ public class GameRenderer
         {
             entityPlayer = (EntityPlayer)var4;
             GLManager.GL.Disable(GLEnum.AlphaTest);
-            var5.drawBlockBreaking(entityPlayer, _client.objectMouseOver, 0, entityPlayer.inventory.getSelectedItem(), tickDelta);
+            var5.drawBlockBreaking(entityPlayer, _client.objectMouseOver, entityPlayer.inventory.getSelectedItem(), tickDelta);
             var5.drawSelectionBox(entityPlayer, _client.objectMouseOver, 0, entityPlayer.inventory.getSelectedItem(), tickDelta);
             GLManager.GL.Enable(GLEnum.AlphaTest);
         }
@@ -437,7 +437,7 @@ public class GameRenderer
         {
             entityPlayer = (EntityPlayer)var4;
             GLManager.GL.Disable(GLEnum.AlphaTest);
-            var5.drawBlockBreaking(entityPlayer, _client.objectMouseOver, 0, entityPlayer.inventory.getSelectedItem(), tickDelta);
+            var5.drawBlockBreaking(entityPlayer, _client.objectMouseOver, entityPlayer.inventory.getSelectedItem(), tickDelta);
             var5.drawSelectionBox(entityPlayer, _client.objectMouseOver, 0, entityPlayer.inventory.getSelectedItem(), tickDelta);
             GLManager.GL.Enable(GLEnum.AlphaTest);
         }

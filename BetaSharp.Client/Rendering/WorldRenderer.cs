@@ -626,87 +626,46 @@ public class WorldRenderer : IWorldAccess
         GLManager.GL.Enable(GLEnum.CullFace);
     }
 
-    public void drawBlockBreaking(EntityPlayer entityPlayer, HitResult var2, int i, ItemStack itemStack, float tickDelta)
+    public void drawBlockBreaking(EntityPlayer entityPlayer, HitResult hit, ItemStack itemStack, float tickDelta)
     {
-        Tessellator var6 = Tessellator.instance;
+        Tessellator tessellator = Tessellator.instance;
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.One);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, (MathHelper.Sin(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
  / 100.0F) * 0.2F + 0.4F) * 0.5F);
-        int var8;
-        if (i == 0)
-        {
-            if (damagePartialTime > 0.0F)
-            {
-                GLManager.GL.BlendFunc(GLEnum.DstColor, GLEnum.SrcColor);
-                renderEngine.BindTexture(renderEngine.GetTextureId("/terrain.png"));
-                GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 0.5F);
-                GLManager.GL.PushMatrix();
-                var8 = world.getBlockId(var2.BlockX, var2.BlockY, var2.BlockZ);
-                Block var9 = var8 > 0 ? Block.Blocks[var8] : Block.Stone;
-                GLManager.GL.Disable(GLEnum.AlphaTest);
-                GLManager.GL.PolygonOffset(-3.0F, -3.0F);
-                GLManager.GL.Enable(GLEnum.PolygonOffsetFill);
-                double var10 = entityPlayer.lastTickX + (entityPlayer.x - entityPlayer.lastTickX) * (double)tickDelta;
-                double var12 = entityPlayer.lastTickY + (entityPlayer.y - entityPlayer.lastTickY) * (double)tickDelta;
-                double var14 = entityPlayer.lastTickZ + (entityPlayer.z - entityPlayer.lastTickZ) * (double)tickDelta;
 
-                GLManager.GL.Enable(GLEnum.AlphaTest);
-                var6.startDrawingQuads();
-                var6.setTranslationD(-var10, -var12, -var14);
-                var6.disableColor();
-                BlockRenderer.RenderBlockByRenderType(world, var9, new BlockPos(var2.BlockX, var2.BlockY, var2.BlockZ), var6, 240 + (int)(damagePartialTime * 10.0F), true);
-                var6.draw();
-                var6.setTranslationD(0.0D, 0.0D, 0.0D);
-                GLManager.GL.Disable(GLEnum.AlphaTest);
-                GLManager.GL.PolygonOffset(0.0F, 0.0F);
-                GLManager.GL.Disable(GLEnum.PolygonOffsetFill);
-                GLManager.GL.Enable(GLEnum.AlphaTest);
-                GLManager.GL.DepthMask(true);
-                GLManager.GL.PopMatrix();
-            }
-        }
-        else if (itemStack != null)
+        if (damagePartialTime > 0.0F)
         {
-            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-            float var16 = MathHelper.Sin(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
- / 100.0F) * 0.2F + 0.8F;
-            GLManager.GL.Color4(var16, var16, var16, MathHelper.Sin(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
- / 200.0F) * 0.2F + 0.5F);
+            GLManager.GL.BlendFunc(GLEnum.DstColor, GLEnum.SrcColor);
             renderEngine.BindTexture(renderEngine.GetTextureId("/terrain.png"));
-            int var17 = var2.BlockX;
-            int var18 = var2.BlockY;
-            int var11 = var2.BlockZ;
-            if (var2.Side == 0)
-            {
-                --var18;
-            }
+            GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 0.5F);
+            GLManager.GL.PushMatrix();
 
-            if (var2.Side == 1)
-            {
-                ++var18;
-            }
+            int targetBlockId = world.getBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
+            Block targetBlock = targetBlockId > 0 ? Block.Blocks[targetBlockId] : Block.Stone;
 
-            if (var2.Side == 2)
-            {
-                --var11;
-            }
+            GLManager.GL.Disable(GLEnum.AlphaTest);
+            GLManager.GL.PolygonOffset(-3.0F, -3.0F);
+            GLManager.GL.Enable(GLEnum.PolygonOffsetFill);
 
-            if (var2.Side == 3)
-            {
-                ++var11;
-            }
+            double renderX = entityPlayer.lastTickX + (entityPlayer.x - entityPlayer.lastTickX) * (double)tickDelta;
+            double renderY = entityPlayer.lastTickY + (entityPlayer.y - entityPlayer.lastTickY) * (double)tickDelta;
+            double renderZ = entityPlayer.lastTickZ + (entityPlayer.z - entityPlayer.lastTickZ) * (double)tickDelta;
 
-            if (var2.Side == 4)
-            {
-                --var17;
-            }
-
-            if (var2.Side == 5)
-            {
-                ++var17;
-            }
+            GLManager.GL.Enable(GLEnum.AlphaTest);
+            tessellator.startDrawingQuads();
+            tessellator.setTranslationD(-renderX, -renderY, -renderZ);
+            tessellator.disableColor();
+            BlockRenderer.RenderBlockByRenderType(world, targetBlock, new BlockPos(hit.BlockX, hit.BlockY, hit.BlockZ), tessellator, 240 + (int)(damagePartialTime * 10.0F), true);
+            tessellator.draw();
+            tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
+            GLManager.GL.Disable(GLEnum.AlphaTest);
+            GLManager.GL.PolygonOffset(0.0F, 0.0F);
+            GLManager.GL.Disable(GLEnum.PolygonOffsetFill);
+            GLManager.GL.Enable(GLEnum.AlphaTest);
+            GLManager.GL.DepthMask(true);
+            GLManager.GL.PopMatrix();
         }
 
         GLManager.GL.Disable(GLEnum.Blend);
