@@ -628,48 +628,44 @@ public class WorldRenderer : IWorldAccess
 
     public void drawBlockBreaking(EntityPlayer entityPlayer, HitResult hit, ItemStack itemStack, float tickDelta)
     {
+        if (damagePartialTime <= 0.0F) return;
+
         Tessellator tessellator = Tessellator.instance;
+
+        GLManager.GL.PushMatrix();
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.Enable(GLEnum.AlphaTest);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.One);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, (MathHelper.Sin(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
- / 100.0F) * 0.2F + 0.4F) * 0.5F);
+        GLManager.GL.Enable(GLEnum.PolygonOffsetFill);
 
-        if (damagePartialTime > 0.0F)
-        {
-            GLManager.GL.BlendFunc(GLEnum.DstColor, GLEnum.SrcColor);
-            renderEngine.BindTexture(renderEngine.GetTextureId("/terrain.png"));
-            GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 0.5F);
-            GLManager.GL.PushMatrix();
+        GLManager.GL.BlendFunc(GLEnum.DstColor, GLEnum.SrcColor);
+        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 0.5F);
+        GLManager.GL.PolygonOffset(-3.0F, -3.0F);
 
-            int targetBlockId = world.getBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
-            Block targetBlock = targetBlockId > 0 ? Block.Blocks[targetBlockId] : Block.Stone;
+        renderEngine.BindTexture(renderEngine.GetTextureId("/terrain.png"));
 
-            GLManager.GL.Disable(GLEnum.AlphaTest);
-            GLManager.GL.PolygonOffset(-3.0F, -3.0F);
-            GLManager.GL.Enable(GLEnum.PolygonOffsetFill);
+        int targetBlockId = world.getBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
+        Block targetBlock = targetBlockId > 0 ? Block.Blocks[targetBlockId] : Block.Stone;
 
-            double renderX = entityPlayer.lastTickX + (entityPlayer.x - entityPlayer.lastTickX) * (double)tickDelta;
-            double renderY = entityPlayer.lastTickY + (entityPlayer.y - entityPlayer.lastTickY) * (double)tickDelta;
-            double renderZ = entityPlayer.lastTickZ + (entityPlayer.z - entityPlayer.lastTickZ) * (double)tickDelta;
 
-            GLManager.GL.Enable(GLEnum.AlphaTest);
-            tessellator.startDrawingQuads();
-            tessellator.setTranslationD(-renderX, -renderY, -renderZ);
-            tessellator.disableColor();
-            BlockRenderer.RenderBlockByRenderType(world, targetBlock, new BlockPos(hit.BlockX, hit.BlockY, hit.BlockZ), tessellator, 240 + (int)(damagePartialTime * 10.0F), true);
-            tessellator.draw();
-            tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
-            GLManager.GL.Disable(GLEnum.AlphaTest);
-            GLManager.GL.PolygonOffset(0.0F, 0.0F);
-            GLManager.GL.Disable(GLEnum.PolygonOffsetFill);
-            GLManager.GL.Enable(GLEnum.AlphaTest);
-            GLManager.GL.DepthMask(true);
-            GLManager.GL.PopMatrix();
-        }
+        double renderX = entityPlayer.lastTickX + (entityPlayer.x - entityPlayer.lastTickX) * (double)tickDelta;
+        double renderY = entityPlayer.lastTickY + (entityPlayer.y - entityPlayer.lastTickY) * (double)tickDelta;
+        double renderZ = entityPlayer.lastTickZ + (entityPlayer.z - entityPlayer.lastTickZ) * (double)tickDelta;
 
-        GLManager.GL.Disable(GLEnum.Blend);
+        tessellator.startDrawingQuads();
+        tessellator.setTranslationD(-renderX, -renderY, -renderZ);
+        tessellator.disableColor();
+        BlockRenderer.RenderBlockByRenderType(world, targetBlock, new BlockPos(hit.BlockX, hit.BlockY, hit.BlockZ), tessellator, 240 + (int)(damagePartialTime * 10.0F), true);
+        tessellator.draw();
+
+        tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
+        GLManager.GL.PolygonOffset(0.0F, 0.0F);
+        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+
+        GLManager.GL.Disable(GLEnum.PolygonOffsetFill);
         GLManager.GL.Disable(GLEnum.AlphaTest);
+        GLManager.GL.Disable(GLEnum.Blend);
+        GLManager.GL.PopMatrix();
     }
 
     public void drawSelectionBox(EntityPlayer var1, HitResult var2, int var3, ItemStack var4, float var5)
