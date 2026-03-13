@@ -639,13 +639,12 @@ public class WorldRenderer : IWorldAccess
 
         GLManager.GL.BlendFunc(GLEnum.DstColor, GLEnum.SrcColor);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 0.5F);
-        GLManager.GL.PolygonOffset(-3.0F, -3.0F);
+        GLManager.GL.PolygonOffset(-3.0F, -50.0F);
 
         renderEngine.BindTexture(renderEngine.GetTextureId("/terrain.png"));
 
         int targetBlockId = world.getBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
         Block targetBlock = targetBlockId > 0 ? Block.Blocks[targetBlockId] : Block.Stone;
-
 
         double renderX = entityPlayer.lastTickX + (entityPlayer.x - entityPlayer.lastTickX) * (double)tickDelta;
         double renderY = entityPlayer.lastTickY + (entityPlayer.y - entityPlayer.lastTickY) * (double)tickDelta;
@@ -654,6 +653,7 @@ public class WorldRenderer : IWorldAccess
         tessellator.startDrawingQuads();
         tessellator.setTranslationD(-renderX, -renderY, -renderZ);
         tessellator.disableColor();
+
         BlockRenderer.RenderBlockByRenderType(world, targetBlock, new BlockPos(hit.BlockX, hit.BlockY, hit.BlockZ), tessellator, 240 + (int)(damagePartialTime * 10.0F), true);
         tessellator.draw();
 
