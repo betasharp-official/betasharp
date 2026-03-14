@@ -450,14 +450,87 @@ public class GameRenderer
 
         applyFog(0);
         GLManager.GL.Enable(GLEnum.Fog);
+
+        if (_client.ShowChunkBorders)
+        {
+            renderChunkBorders(var4, tickDelta);
+        }
+
         var5.renderClouds(tickDelta);
         GLManager.GL.Disable(GLEnum.Fog);
         applyFog(1);
+
         if (cameraController.CameraZoom == 1.0D)
         {
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
             renderFirstPersonHand(tickDelta);
         }
+    }
+
+    private void renderChunkBorders(EntityLiving camera, float tickDelta)
+    {
+        double camX = camera.lastTickX + (camera.x - camera.lastTickX) * (double)tickDelta;
+        double camY = camera.lastTickY + (camera.y - camera.lastTickY) * (double)tickDelta;
+        double camZ = camera.lastTickZ + (camera.z - camera.lastTickZ) * (double)tickDelta;
+
+        int playerChunkX = _client.player.chunkX;
+        int playerChunkZ = _client.player.chunkZ;
+
+        GLManager.GL.MatrixMode(GLEnum.Modelview);
+        GLManager.GL.PushMatrix();
+        GLManager.GL.Translate((float)-camX, (float)-camY, (float)-camZ);
+
+        GLManager.GL.Disable(GLEnum.Texture2D);
+        GLManager.GL.Disable(GLEnum.Lighting);
+        GLManager.GL.Disable(GLEnum.Fog);
+        GLManager.GL.Enable(GLEnum.DepthTest);
+        GLManager.GL.DepthMask(true);
+
+        Tessellator tess = Tessellator.instance;
+        tess.startDrawing(1);
+        tess.setColorRGBA_F(1.0F, 1.0F, 0.0F, 1.0F);
+
+        double minX = playerChunkX * 16.0;
+        double maxX = (playerChunkX + 1) * 16.0;
+        double minZ = playerChunkZ * 16.0;
+        double maxZ = (playerChunkZ + 1) * 16.0;
+
+        for (int i = 0; i <= 16; i += 4)
+        {
+            double x = minX + i;
+            double z = minZ + i;
+
+            tess.addVertex(x, 0.0, minZ);
+            tess.addVertex(x, 128.0, minZ);
+
+            tess.addVertex(x, 0.0, maxZ);
+            tess.addVertex(x, 128.0, maxZ);
+
+            tess.addVertex(minX, 0.0, z);
+            tess.addVertex(minX, 128.0, z);
+
+            tess.addVertex(maxX, 0.0, z);
+            tess.addVertex(maxX, 128.0, z);
+        }
+
+        for (int y = 0; y <= 128; y+=4)
+        {
+            tess.addVertex(minX, y, minZ);
+            tess.addVertex(minX, y, maxZ);
+
+            tess.addVertex(maxX, y, minZ);
+            tess.addVertex(maxX, y, maxZ);
+
+            tess.addVertex(minX, y, minZ);
+            tess.addVertex(maxX, y, minZ);
+
+            tess.addVertex(minX, y, maxZ);
+            tess.addVertex(maxX, y, maxZ);
+        }
+
+        tess.draw();
+        GLManager.GL.PopMatrix();
+        GLManager.GL.Enable(GLEnum.Texture2D);
     }
 
     private void renderRain()

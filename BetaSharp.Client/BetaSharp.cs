@@ -77,6 +77,7 @@ public partial class BetaSharp
     public bool skipRenderWorld;
     public HitResult objectMouseOver = new HitResult(HitResultType.MISS);
     public GameOptions options;
+    public bool ShowChunkBorders = false;
     public SoundManager sndManager = new();
     public MouseHelper mouseHelper;
     public TexturePacks texturePackList;
@@ -1552,6 +1553,11 @@ public partial class BetaSharp
                         if (Keyboard.getEventKey() == Keyboard.KEY_F8)
                         {
                             options.SmoothCamera = !options.SmoothCamera;
+                        }
+
+                        if (Keyboard.getEventKey() == Keyboard.KEY_F7)
+                        {
+                            ShowChunkBorders = !ShowChunkBorders;
                         }
 
                         if (Keyboard.getEventKey() == options.KeyBindInventory.keyCode)
