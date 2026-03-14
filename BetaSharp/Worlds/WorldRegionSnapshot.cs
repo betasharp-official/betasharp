@@ -194,4 +194,9 @@ public class WorldRegionSnapshot : IBlockAccess, IDisposable
             snapshot.Dispose();
         }
     }
+
+    ~WorldRegionSnapshot()
+    {
+        Dispose();
+    }
 }
