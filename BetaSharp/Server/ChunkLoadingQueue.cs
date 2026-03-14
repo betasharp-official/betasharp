@@ -119,23 +119,22 @@ internal class ChunkLoadingQueue(ChunkMap chunkMap)
 
         public ChunkPriority GetPriority()
         {
-            using HashSet<ServerPlayerEntity>.Enumerator enumerator = Players.GetEnumerator();
-            if (!enumerator.MoveNext())
-            {
-                return new ChunkPriority(int.MaxValue, double.MaxValue, Sequence);
-            }
+            bool hasAny = false;
+            ChunkPriority bestPriority = default;
 
-            ChunkPriority bestPriority = enumerator.Current.GetChunkPriority(ChunkPos, Sequence);
-            while (enumerator.MoveNext())
+            foreach (var player in Players)
             {
-                ChunkPriority candidate = enumerator.Current.GetChunkPriority(ChunkPos, Sequence);
-                if (candidate.CompareTo(bestPriority) < 0)
+                ChunkPriority candidate = player.GetChunkPriority(ChunkPos, Sequence);
+                if (!hasAny || candidate.CompareTo(bestPriority) < 0)
                 {
                     bestPriority = candidate;
+                    hasAny = true;
                 }
             }
 
-            return bestPriority;
+            return hasAny
+                ? bestPriority
+                : new ChunkPriority(int.MaxValue, double.MaxValue, Sequence);
         }
     }
 }
