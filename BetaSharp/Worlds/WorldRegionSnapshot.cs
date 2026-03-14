@@ -42,7 +42,7 @@ public class WorldRegionSnapshot : IBlockAccess, IDisposable
             }
         }
 
-        _lightTable = (float[])world.dimension.LightLevelToLuminance.Clone();
+        _lightTable = world.dimension.LightLevelToLuminance;
         _skylightSubtracted = world.ambientDarkness;
     }
 
