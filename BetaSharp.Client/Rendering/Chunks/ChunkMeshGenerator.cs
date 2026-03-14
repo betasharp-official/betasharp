@@ -38,15 +38,18 @@ internal class ChunkMeshGenerator : IDisposable
         MaxConcurrentTasks = maxConcurrentTasks;
     }
 
-    public MeshBuildResult? Mesh
+    public bool TryDequeueMesh(out MeshBuildResult result)
     {
-        get
+        lock (results)
         {
-            lock (results)
+            if (results.IsEmpty)
             {
-                if (results.IsEmpty) return null;
-                return results.Dequeue();
+                result = default;
+                return false;
             }
+
+            result = results.Dequeue();
+            return true;
         }
     }
 

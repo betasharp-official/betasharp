@@ -12,6 +12,9 @@ namespace BetaSharp.Client.Rendering.Chunks;
 
 public class ChunkRenderer : IChunkVisibilityVisitor
 {
+    private const int UpdateChunksPerFrame = 16;
+    private const int MeshChunksPerFrame = 32;
+
     private readonly ILogger<ChunkRenderer> _logger = Log.Instance.For<ChunkRenderer>();
 
     private class SubChunkState(bool isLit, SubChunkRenderer renderer)
@@ -251,11 +254,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Core.VertexArray.Unbind();
     }
 
-    private void LoadNewMeshes(Vector3D<double> viewPos, int maxChunks = 8)
+    private void LoadNewMeshes(Vector3D<double> viewPos)
     {
-        for (int i = 0; i < maxChunks; i++)
+        for (int i = 0; i < MeshChunksPerFrame; i++)
         {
-            if (_meshGenerator.Mesh is MeshBuildResult mesh)
+            if (_meshGenerator.TryDequeueMesh(out var mesh))
             {
                 if (IsChunkInRenderDistance(mesh.Pos, viewPos))
                 {
@@ -370,7 +373,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     private void ProcessUpdates()
     {
-        const int maxPerFrame = 16;
         int processed = 0;
 
         while (_dirtyChunks.TryDequeue(out var pos, out double _))
@@ -379,15 +381,18 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 continue;
             }
 
-            if (_chunkVersions.TryGetValue(pos, out var version))
+            if (!_chunkVersions.TryGetValue(pos, out var version))
             {
-                long? snapshot = version.SnapshotIfNeeded();
-                if (snapshot.HasValue)
-                {
-                    _meshGenerator.MeshChunk(_world, pos, snapshot.Value);
-                    processed++;
-                    if (processed >= maxPerFrame) return;
-                }
+                version = ChunkMeshVersion.Get();
+                _chunkVersions[pos] = version;
+            }
+
+            long? snapshot = version.SnapshotIfNeeded();
+            if (snapshot.HasValue)
+            {
+                _meshGenerator.MeshChunk(_world, pos, snapshot.Value);
+                processed++;
+                if (processed >= UpdateChunksPerFrame) return;
             }
         }
     }
