@@ -775,7 +775,11 @@ public class EntityManager
             else
             {
                 BlockEntities.Add(blockEntity);
-                _host.GetChunk(x >> 4, z >> 4)?.SetBlockEntity(x & 15, y, z & 15, blockEntity);
+                Chunk? chunk = _host.GetChunk(x >> 4, z >> 4);
+                if (chunk != null)
+                {
+                    chunk.SetBlockEntity(x & 15, y, z & 15, blockEntity);
+                }
             }
         }
     }
