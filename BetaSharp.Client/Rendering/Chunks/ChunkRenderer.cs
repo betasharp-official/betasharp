@@ -385,9 +385,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 if (snapshot.HasValue)
                 {
                     _meshGenerator.MeshChunk(_world, pos, snapshot.Value);
+                    processed++;
+                    if (processed >= maxPerFrame) return;
                 }
-                processed++;
-                if (processed >= maxPerFrame) return;
             }
         }
     }
