@@ -98,8 +98,8 @@ public class BlockRedstoneWire : Block
         // Only update if the strength actually changed
         if (oldMeta != newMeta)
         {
-            // FIX: Replaced internal setter with standard setter to broadcast to clients/neighbors!
-            level.BlockWriter.SetBlockMeta(x, y, z, newMeta);
+            level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, newMeta);
+            level.Broadcaster.BlockUpdateEvent(x, y, z);
             level.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
 
             for (int dir = 0; dir < 4; ++dir)

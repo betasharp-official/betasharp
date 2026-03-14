@@ -94,6 +94,9 @@ public class BlockPistonBase : Block
         }
     }
 
+    // Quasi-connectivity: only "does the block directly above me (y+1) power me?" not "is the block above me powered?"
+    // The removed checks (y+2, and diagonals at y+1) incorrectly powered a piston when the block above was powered
+    // by something else (e.g. solid above) but did not itself output power down, making stacked pistons both extend.
     private bool shouldExtend(IWorldContext ctx, int x, int y, int z, int facing) =>
         facing != 0 && ctx.Redstone.IsPoweringSide(x, y - 1, z, 0)
             ? true
@@ -107,17 +110,7 @@ public class BlockPistonBase : Block
                             ? true
                             : facing != 4 && ctx.Redstone.IsPoweringSide(x - 1, y, z, 4)
                                 ? true
-                                : ctx.Redstone.IsPoweringSide(x, y, z, 0)
-                                    ? true
-                                    : ctx.Redstone.IsPoweringSide(x, y + 2, z, 1)
-                                        ? true
-                                        : ctx.Redstone.IsPoweringSide(x, y + 1, z - 1, 2)
-                                            ? true
-                                            : ctx.Redstone.IsPoweringSide(x, y + 1, z + 1, 3)
-                                                ? true
-                                                : ctx.Redstone.IsPoweringSide(x - 1, y + 1, z, 4)
-                                                    ? true
-                                                    : ctx.Redstone.IsPoweringSide(x + 1, y + 1, z, 5);
+                                : ctx.Redstone.IsPoweringSide(x, y, z, 0);
 
     public override void onBlockAction(OnBlockActionEvt evt)
     {
