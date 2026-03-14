@@ -53,9 +53,8 @@ public class EntityCreeper : EntityMonster
         lastActiveTime = timeSinceIgnited;
         if (world.IsRemote)
         {
-            int state = CreeperState.Value;
-            if (state > 0 && timeSinceIgnited == 0)
-            {
+            int state = (sbyte)CreeperState.Value;
+            if (state > 0 && timeSinceIgnited == 0) {
                 world.Broadcaster.PlaySoundAtEntity(this, "random.fuse", 1.0F, 0.5F);
             }
 
@@ -72,7 +71,7 @@ public class EntityCreeper : EntityMonster
         }
 
         base.tick();
-        if (playerToAttack == null && timeSinceIgnited > 0)
+        if (!world.IsRemote && playerToAttack == null && timeSinceIgnited > 0)
         {
             CreeperState.Value = 255;
             --timeSinceIgnited;
@@ -87,7 +86,7 @@ public class EntityCreeper : EntityMonster
 
     protected override string getDeathSound() => "mob.creeperdeath";
 
-    public override void onKilledBy(Entity entity)
+    public override void onKilledBy(Entity? entity)
     {
         base.onKilledBy(entity);
         if (entity is EntitySkeleton)
@@ -100,8 +99,8 @@ public class EntityCreeper : EntityMonster
     {
         if (!world.IsRemote)
         {
-            int state = CreeperState.Value;
-            if ((state <= 0 && distance < 3.0F) || (state > 0 && distance < 7.0F))
+            int state = (sbyte)CreeperState.Value;
+            if (state <= 0 && distance < 3.0F || state > 0 && distance < 7.0F)
             {
                 if (timeSinceIgnited == 0)
                 {
@@ -138,7 +137,7 @@ public class EntityCreeper : EntityMonster
         }
     }
 
-    public float setCreeperFlashTime(float partialTick)
+    public float GetCreeperFlashTime(float partialTick)
     {
         return (lastActiveTime + (timeSinceIgnited - lastActiveTime) * partialTick) / 28.0F;
     }
