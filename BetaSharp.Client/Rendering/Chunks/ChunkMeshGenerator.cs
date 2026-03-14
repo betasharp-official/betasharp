@@ -66,6 +66,7 @@ internal class ChunkMeshGenerator : IDisposable
 
     public void MeshChunk(World world, Vector3D<int> pos, long version)
     {
+        //TODO: OPTIMIZE THIS
         WorldRegionSnapshot cache = new(
             world,
             pos.X - 1, pos.Y - 1, pos.Z - 1,
