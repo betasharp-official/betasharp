@@ -24,9 +24,9 @@ internal class DeadBushPatchFeature : Feature
                     int genY = y + rand.NextInt(4) - rand.NextInt(4);
                     int genZ = z + rand.NextInt(8) - rand.NextInt(8);
                     if (level.Reader.IsAir(genX, genY, genZ) &&
-                        ((BlockPlant)Block.Blocks[_deadBushBlockId]).canGrow(new OnTickEvt(level, genX, genY, genZ, level.Reader.GetBlockMeta(genX, genY, genZ), level.Reader.GetBlockId(genX, genY, genZ))))
+                        ((BlockPlant)Block.Blocks[_deadBushBlockId]).canGrow(new OnTickEvent(level, genX, genY, genZ, level.Reader.GetBlockMeta(genX, genY, genZ), level.Reader.GetBlockId(genX, genY, genZ))))
                     {
-                        level.BlockWriter.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, _deadBushBlockId, 0, notifyBlockPlaced: false);
+                        level.Writer.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, _deadBushBlockId, 0, notifyBlockPlaced: false);
                     }
                 }
 

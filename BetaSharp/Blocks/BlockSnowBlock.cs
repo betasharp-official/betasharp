@@ -11,12 +11,12 @@ internal class BlockSnowBlock : Block
 
     public override int getDroppedItemCount() => 4;
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
-        if (evt.Level.Lighting.GetBrightness(LightType.Block, evt.X, evt.Y, evt.Z) > 11)
+        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y, @event.Z) > 11)
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
     }
 }

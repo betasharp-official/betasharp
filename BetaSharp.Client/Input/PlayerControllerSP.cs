@@ -45,7 +45,7 @@ public class PlayerControllerSP : PlayerController
 
         if (var7 && var9)
         {
-            Block.Blocks[blockId].onBreak(new OnBreakEvt(Game.world, Game.player, x, y, z));
+            Block.Blocks[blockId].onBreak(new OnBreakEvent(Game.world, Game.player, x, y, z));
         }
 
         return var7;
@@ -57,7 +57,7 @@ public class PlayerControllerSP : PlayerController
         int var5 = Game.world.Reader.GetBlockId(var1, var2, var3);
         if (var5 > 0 && curBlockDamage == 0.0F)
         {
-            Block.Blocks[var5].onBlockBreakStart(new OnBlockBreakStartEvt(Game.world, Game.player, var1, var2, var3));
+            Block.Blocks[var5].onBlockBreakStart(new OnBlockBreakStartEvent(Game.world, Game.player, var1, var2, var3));
         }
 
         if (var5 > 0 && Block.Blocks[var5].getHardness(Game.player) >= 1.0F)

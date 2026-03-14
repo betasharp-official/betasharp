@@ -25,7 +25,7 @@ public class WorldTickScheduler
     public virtual void ScheduleBlockUpdate(int x, int y, int z, int blockId, int tickRate, bool instantBlockUpdateEnabled = false)
     {
         const byte loadRadius = 8;
-        if (_context.BlockHost.IsPosLoaded(x - loadRadius, y - loadRadius, z - loadRadius) && _context.BlockHost.IsPosLoaded(x + loadRadius, y + loadRadius, z + loadRadius))
+        if (_context.ChunkHost.IsPosLoaded(x - loadRadius, y - loadRadius, z - loadRadius) && _context.ChunkHost.IsPosLoaded(x + loadRadius, y + loadRadius, z + loadRadius))
         {
             if (instantBlockUpdateEnabled)
             {
@@ -33,7 +33,7 @@ public class WorldTickScheduler
                 if (currentBlockId == blockId && currentBlockId > 0)
                 {
                     int meta = _context.Reader.GetBlockMeta(x, y, z);
-                    Block.Blocks[currentBlockId].onTick(new OnTickEvt(_context, x, y, z, meta, currentBlockId));
+                    Block.Blocks[currentBlockId].onTick(new OnTickEvent(_context, x, y, z, meta, currentBlockId));
                 }
             }
             else
@@ -83,14 +83,14 @@ public class WorldTickScheduler
                 continue;
             }
 
-            Block.Blocks[currentBlockId].onTick(new OnTickEvt(_context, blockUpdate.X, blockUpdate.Y, blockUpdate.Z, _context.Reader.GetBlockMeta(blockUpdate.X, blockUpdate.Y, blockUpdate.Z), currentBlockId));
+            Block.Blocks[currentBlockId].onTick(new OnTickEvent(_context, blockUpdate.X, blockUpdate.Y, blockUpdate.Z, _context.Reader.GetBlockMeta(blockUpdate.X, blockUpdate.Y, blockUpdate.Z), currentBlockId));
         }
     }
 
     public void TriggerInstantTick(int x, int y, int z, int blockId)
     {
         int meta = _context.Reader.GetBlockMeta(x, y, z);
-        Block.Blocks[blockId].onTick(new OnTickEvt(_context, x, y, z, meta, blockId));
+        Block.Blocks[blockId].onTick(new OnTickEvent(_context, x, y, z, meta, blockId));
     }
 
     /// <summary>

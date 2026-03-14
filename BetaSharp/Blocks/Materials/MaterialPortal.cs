@@ -11,7 +11,5 @@ namespace BetaSharp.Blocks.Materials
         public MaterialPortal(MapColor mapColor) : base(mapColor)
         {
         }
-
     }
-
 }

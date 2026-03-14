@@ -25,7 +25,7 @@ public class EntitySheep : EntityAnimal
         SheepData = DataSynchronizer.MakeProperty<byte>(16, 0);
     }
 
-    public override void PostSpawn() => setFleeceColor(getRandomFleeceColor(world.random));
+    public override void PostSpawn() => setFleeceColor(getRandomFleeceColor(world.Random));
 
     protected override void dropFewItems()
     {

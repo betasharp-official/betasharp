@@ -114,15 +114,15 @@ internal class ItemDye : Item
                         {
                             if (itemRand.NextInt(10) != 0)
                             {
-                                world.BlockWriter.SetBlock(spawnX, spawnY, spawnZ, Block.Grass.id, 1);
+                                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Grass.id, 1);
                             }
                             else if (itemRand.NextInt(3) != 0)
                             {
-                                world.BlockWriter.SetBlock(spawnX, spawnY, spawnZ, Block.Dandelion.id);
+                                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Dandelion.id);
                             }
                             else
                             {
-                                world.BlockWriter.SetBlock(spawnX, spawnY, spawnZ, Block.Rose.id);
+                                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Rose.id);
                             }
                         }
                     }

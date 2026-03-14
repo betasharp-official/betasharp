@@ -26,7 +26,7 @@ internal class ItemSeeds : Item
             int blockId = world.Reader.GetBlockId(x, y, z);
             if (blockId == Block.Farmland.id && world.Reader.IsAir(x, y + 1, z))
             {
-                world.BlockWriter.SetBlock(x, y + 1, z, this.blockId);
+                world.Writer.SetBlock(x, y + 1, z, this.blockId);
                 --itemStack.count;
                 return true;
             }

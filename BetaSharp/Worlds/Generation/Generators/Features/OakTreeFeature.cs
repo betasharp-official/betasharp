@@ -58,7 +58,7 @@ internal class OakTreeFeature : Feature
         int groundId = level.Reader.GetBlockId(x, y - 1, z);
         if ((groundId == Block.GrassBlock.id || groundId == Block.Dirt.id) && y < 128 - treeHeight - 1)
         {
-            level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id, 0, notifyBlockPlaced: false);
+            level.Writer.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id, 0, notifyBlockPlaced: false);
 
             for (int leafY = y - 3 + treeHeight; leafY <= y + treeHeight; ++leafY)
             {
@@ -74,7 +74,7 @@ internal class OakTreeFeature : Feature
                         int offsetZ = leafZ - z;
                         if ((Math.Abs(offsetX) != leafRadius || Math.Abs(offsetZ) != leafRadius || (rand.NextInt(2) != 0 && relativeY != 0)) && !Block.BlocksOpaque[level.Reader.GetBlockId(leafX, leafY, leafZ)])
                         {
-                            level.BlockWriter.SetBlockWithoutNotifyingNeighbors(leafX, leafY, leafZ, Block.Leaves.id, 0, notifyBlockPlaced: false);
+                            level.Writer.SetBlockWithoutNotifyingNeighbors(leafX, leafY, leafZ, Block.Leaves.id, 0, notifyBlockPlaced: false);
                         }
                     }
                 }
@@ -85,7 +85,7 @@ internal class OakTreeFeature : Feature
                 int blockAtTrunk = level.Reader.GetBlockId(x, y + trunkY, z);
                 if (blockAtTrunk == 0 || blockAtTrunk == Block.Leaves.id)
                 {
-                    level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, Block.Log.id, 0, notifyBlockPlaced: false);
+                    level.Writer.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, Block.Log.id, 0, notifyBlockPlaced: false);
                 }
             }
 

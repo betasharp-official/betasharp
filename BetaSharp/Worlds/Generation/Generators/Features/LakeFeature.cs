@@ -91,7 +91,7 @@ internal class LakeFeature : Feature
                     if (lakeMask[(dx * 16 + dy) * 8 + dz])
                     {
                         int blockId = dz >= 4 ? 0 : _waterBlockId;
-                        level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, blockId, 0, notifyBlockPlaced: false);
+                        level.Writer.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, blockId, 0, notifyBlockPlaced: false);
                     }
                 }
             }
@@ -107,7 +107,7 @@ internal class LakeFeature : Feature
                         level.Reader.GetBlockId(x + dx, y + dz - 1, z + dy) == Block.Dirt.id &&
                         level.Lighting.GetBrightness(LightType.Sky, x + dx, y + dz, z + dy) > 0)
                     {
-                        level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz - 1, z + dy, Block.GrassBlock.id, 0, notifyBlockPlaced: false);
+                        level.Writer.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz - 1, z + dy, Block.GrassBlock.id, 0, notifyBlockPlaced: false);
                     }
                 }
             }
@@ -132,7 +132,7 @@ internal class LakeFeature : Feature
                                       );
                         if (isEdge && (dz < 4 || rand.NextInt(2) != 0) && level.Reader.GetMaterial(x + dx, y + dz, z + dy).IsSolid)
                         {
-                            level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, Block.Stone.id, 0, notifyBlockPlaced: false);
+                            level.Writer.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, Block.Stone.id, 0, notifyBlockPlaced: false);
                         }
                     }
                 }

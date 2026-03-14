@@ -92,52 +92,53 @@ public class BlockPortal : BlockBreakable
                 writer.SetBlockInternal(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset, NetherPortal.id);
             }
         }
+
         return true;
     }
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
         sbyte offsetX = 0;
         sbyte offsetZ = 1;
-        if (evt.Level.Reader.GetBlockId(evt.X - 1, evt.Y, evt.Z) == id || evt.Level.Reader.GetBlockId(evt.X + 1, evt.Y, evt.Z) == id)
+        if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == id || @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == id)
         {
             offsetX = 1;
             offsetZ = 0;
         }
 
         int portalBottomY;
-        for (portalBottomY = evt.Y; evt.Level.Reader.GetBlockId(evt.X, portalBottomY - 1, evt.Z) == id; --portalBottomY)
+        for (portalBottomY = @event.Y; @event.World.Reader.GetBlockId(@event.X, portalBottomY - 1, @event.Z) == id; --portalBottomY)
         {
         }
 
-        if (evt.Level.Reader.GetBlockId(evt.X, portalBottomY - 1, evt.Z) != Obsidian.id)
+        if (@event.World.Reader.GetBlockId(@event.X, portalBottomY - 1, @event.Z) != Obsidian.id)
         {
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
         else
         {
             int blocksAbove;
-            for (blocksAbove = 1; blocksAbove < 4 && evt.Level.Reader.GetBlockId(evt.X, portalBottomY + blocksAbove, evt.Z) == id; ++blocksAbove)
+            for (blocksAbove = 1; blocksAbove < 4 && @event.World.Reader.GetBlockId(@event.X, portalBottomY + blocksAbove, @event.Z) == id; ++blocksAbove)
             {
             }
 
-            if (blocksAbove == 3 && evt.Level.Reader.GetBlockId(evt.X, portalBottomY + blocksAbove, evt.Z) == Obsidian.id)
+            if (blocksAbove == 3 && @event.World.Reader.GetBlockId(@event.X, portalBottomY + blocksAbove, @event.Z) == Obsidian.id)
             {
-                bool hasXNeighbors = evt.Level.Reader.GetBlockId(evt.X - 1, evt.Y, evt.Z) == id || evt.Level.Reader.GetBlockId(evt.X + 1, evt.Y, evt.Z) == id;
-                bool hasZNeighbors = evt.Level.Reader.GetBlockId(evt.X, evt.Y, evt.Z - 1) == id || evt.Level.Reader.GetBlockId(evt.X, evt.Y, evt.Z + 1) == id;
+                bool hasXNeighbors = @event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == id || @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == id;
+                bool hasZNeighbors = @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z - 1) == id || @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1) == id;
                 if (hasXNeighbors && hasZNeighbors)
                 {
-                    evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+                    @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
                 }
-                else if ((evt.Level.Reader.GetBlockId(evt.X + offsetX, evt.Y, evt.Z + offsetZ) != Obsidian.id || evt.Level.Reader.GetBlockId(evt.X - offsetX, evt.Y, evt.Z - offsetZ) != id) &&
-                         (evt.Level.Reader.GetBlockId(evt.X - offsetX, evt.Y, evt.Z - offsetZ) != Obsidian.id || evt.Level.Reader.GetBlockId(evt.X + offsetX, evt.Y, evt.Z + offsetZ) != id))
+                else if ((@event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y, @event.Z + offsetZ) != Obsidian.id || @event.World.Reader.GetBlockId(@event.X - offsetX, @event.Y, @event.Z - offsetZ) != id) &&
+                         (@event.World.Reader.GetBlockId(@event.X - offsetX, @event.Y, @event.Z - offsetZ) != Obsidian.id || @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y, @event.Z + offsetZ) != id))
                 {
-                    evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+                    @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
                 }
             }
             else
             {
-                evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             }
         }
     }
@@ -162,42 +163,42 @@ public class BlockPortal : BlockBreakable
 
     public override int getRenderLayer() => 1;
 
-    public override void onEntityCollision(OnEntityCollisionEvt evt)
+    public override void onEntityCollision(OnEntityCollisionEvent @event)
     {
-        if (evt.Entity.vehicle == null && evt.Entity.passenger == null)
+        if (@event.Entity.vehicle == null && @event.Entity.passenger == null)
         {
-            evt.Entity.tickPortalCooldown();
+            @event.Entity.tickPortalCooldown();
         }
     }
 
-    public override void randomDisplayTick(OnTickEvt evt)
+    public override void randomDisplayTick(OnTickEvent @event)
     {
         if (Random.Shared.Next(100) == 0)
         {
-            evt.Level.Broadcaster.PlaySoundAtPos(evt.X + 0.5D, evt.Y + 0.5D, evt.Z + 0.5D, "portal.portal", 1.0F, Random.Shared.NextSingle() * 0.4F + 0.8F);
+            @event.World.Broadcaster.PlaySoundAtPos(@event.X + 0.5D, @event.Y + 0.5D, @event.Z + 0.5D, "portal.portal", 1.0F, Random.Shared.NextSingle() * 0.4F + 0.8F);
         }
 
         for (int particleIndex = 0; particleIndex < 4; ++particleIndex)
         {
-            double particleX = evt.X + Random.Shared.NextSingle();
-            double particleY = evt.Y + Random.Shared.NextSingle();
-            double particleZ = evt.Z + Random.Shared.NextSingle();
+            double particleX = @event.X + Random.Shared.NextSingle();
+            double particleY = @event.Y + Random.Shared.NextSingle();
+            double particleZ = @event.Z + Random.Shared.NextSingle();
             int direction = Random.Shared.Next(2) * 2 - 1;
             double velocityX = (Random.Shared.NextSingle() - 0.5D) * 0.5D;
             double velocityY = (Random.Shared.NextSingle() - 0.5D) * 0.5D;
             double velocityZ = (Random.Shared.NextSingle() - 0.5D) * 0.5D;
-            if (evt.Level.Reader.GetBlockId(evt.X - 1, evt.Y, evt.Z) != id && evt.Level.Reader.GetBlockId(evt.X + 1, evt.Y, evt.Z) != id)
+            if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) != id && @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) != id)
             {
-                particleX = evt.X + 0.5D + 0.25D * direction;
+                particleX = @event.X + 0.5D + 0.25D * direction;
                 velocityX = Random.Shared.NextSingle() * 2.0F * direction;
             }
             else
             {
-                particleZ = evt.Z + 0.5D + 0.25D * direction;
+                particleZ = @event.Z + 0.5D + 0.25D * direction;
                 velocityZ = Random.Shared.NextSingle() * 2.0F * direction;
             }
 
-            evt.Level.Broadcaster.AddParticle("portal", particleX, particleY, particleZ, velocityX, velocityY, velocityZ);
+            @event.World.Broadcaster.AddParticle("portal", particleX, particleY, particleZ, velocityX, velocityY, velocityZ);
         }
     }
 }

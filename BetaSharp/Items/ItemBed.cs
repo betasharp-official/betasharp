@@ -40,8 +40,8 @@ internal class ItemBed : Item
             return false;
         }
 
-        world.BlockWriter.SetBlock(x, y, z, Block.Bed.id, dir);
-        world.BlockWriter.SetBlock(x + offsetX, y, z + offsetZ, Block.Bed.id, dir + 8);
+        world.Writer.SetBlock(x, y, z, Block.Bed.id, dir);
+        world.Writer.SetBlock(x + offsetX, y, z + offsetZ, Block.Bed.id, dir + 8);
         world.Broadcaster.NotifyNeighbors(x, y, z, Block.Bed.id);
         world.Broadcaster.NotifyNeighbors(x + offsetX, y, z + offsetZ, Block.Bed.id);
         --itemStack.count;

@@ -37,11 +37,11 @@ public class BlockLeaves : BlockLeavesBase
         return FoliageColors.getFoliageColor(temperature, downfall);
     }
 
-    public override void onBreak(OnBreakEvt evt)
+    public override void onBreak(OnBreakEvent @event)
     {
         sbyte searchRadius = 1;
         int loadCheckExtent = searchRadius + 1;
-        if (evt.Level.BlockHost.IsRegionLoaded(evt.X - loadCheckExtent, evt.Y - loadCheckExtent, evt.Z - loadCheckExtent, evt.X + loadCheckExtent, evt.Y + loadCheckExtent, evt.Z + loadCheckExtent))
+        if (@event.World.ChunkHost.IsRegionLoaded(@event.X - loadCheckExtent, @event.Y - loadCheckExtent, @event.Z - loadCheckExtent, @event.X + loadCheckExtent, @event.Y + loadCheckExtent, @event.Z + loadCheckExtent))
         {
             for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
             {
@@ -49,11 +49,11 @@ public class BlockLeaves : BlockLeavesBase
                 {
                     for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                     {
-                        int blockId = evt.Level.Reader.GetBlockId(evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ);
+                        int blockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
                         if (blockId == Leaves.id)
                         {
-                            int leavesMeta = evt.Level.Reader.GetBlockMeta(evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ);
-                            evt.Level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ, leavesMeta | 8);
+                            int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
+                            @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, leavesMeta | 8);
                         }
                     }
                 }
@@ -61,11 +61,11 @@ public class BlockLeaves : BlockLeavesBase
         }
     }
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
-        if (!evt.Level.IsRemote)
+        if (!@event.World.IsRemote)
         {
-            int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             if ((meta & 8) != 0)
             {
                 sbyte decayRadius = 4;
@@ -81,7 +81,7 @@ public class BlockLeaves : BlockLeavesBase
                 int[] decayRegion = s_decayRegion.Value;
 
                 int distanceToLog;
-                if (evt.Level.BlockHost.IsRegionLoaded(evt.X - loadCheckExtent, evt.Y - loadCheckExtent, evt.Z - loadCheckExtent, evt.X + loadCheckExtent, evt.Y + loadCheckExtent, evt.Z + loadCheckExtent))
+                if (@event.World.ChunkHost.IsRegionLoaded(@event.X - loadCheckExtent, @event.Y - loadCheckExtent, @event.Z - loadCheckExtent, @event.X + loadCheckExtent, @event.Y + loadCheckExtent, @event.Z + loadCheckExtent))
                 {
                     distanceToLog = -decayRadius;
 
@@ -95,7 +95,7 @@ public class BlockLeaves : BlockLeavesBase
                         {
                             for (dy = -decayRadius; dy <= decayRadius; ++dy)
                             {
-                                dz = evt.Level.Reader.GetBlockId(evt.X + distanceToLog, evt.Y + dx, evt.Z + dy);
+                                dz = @event.World.Reader.GetBlockId(@event.X + distanceToLog, @event.Y + dx, @event.Z + dy);
                                 if (dz == Log.id)
                                 {
                                     decayRegion[(distanceToLog + centerOffset) * planeSize + (dx + centerOffset) * regionSize + dy + centerOffset] = 0;
@@ -167,11 +167,11 @@ public class BlockLeaves : BlockLeavesBase
                 distanceToLog = decayRegion[centerOffset * planeSize + centerOffset * regionSize + centerOffset];
                 if (distanceToLog >= 0)
                 {
-                    evt.Level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(evt.X, evt.Y, evt.Z, meta & -9);
+                    @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, meta & -9);
                 }
                 else
                 {
-                    breakLeaves(evt.Level, evt.X, evt.Y, evt.Z);
+                    breakLeaves(@event.World, @event.X, @event.Y, @event.Z);
                 }
             }
         }
@@ -179,20 +179,20 @@ public class BlockLeaves : BlockLeavesBase
 
     private void breakLeaves(IWorldContext level, int x, int y, int z)
     {
-        dropStacks(new OnDropEvt(level, x, y, z, level.Reader.GetBlockMeta(x, y, z)));
-        level.BlockWriter.SetBlock(x, y, z, 0);
+        dropStacks(new OnDropEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z)));
+        level.Writer.SetBlock(x, y, z, 0);
     }
 
     public override int getDroppedItemCount() => Random.Shared.Next(20) == 0 ? 1 : 0;
 
     public override int getDroppedItemId(int blockMeta) => Sapling.id;
 
-    public override void onAfterBreak(OnAfterBreakEvt ctx)
+    public override void onAfterBreak(OnAfterBreakEvent ctx)
     {
-        if (!ctx.Level.IsRemote && ctx.Player.getHand() != null && ctx.Player.getHand().itemId == Item.Shears.id)
+        if (!ctx.World.IsRemote && ctx.Player.getHand() != null && ctx.Player.getHand().itemId == Item.Shears.id)
         {
             ctx.Player.increaseStat(Stats.Stats.MineBlockStatArray[id], 1);
-            dropStack(ctx.Level, ctx.X, ctx.Y, ctx.Z, new ItemStack(Leaves.id, 1, ctx.Meta & 3));
+            dropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(Leaves.id, 1, ctx.Meta & 3));
         }
         else
         {
@@ -212,5 +212,5 @@ public class BlockLeaves : BlockLeavesBase
         textureId = spriteIndex + (bl ? 0 : 1);
     }
 
-    public override void onSteppedOn(OnEntityStepEvt ctx) => base.onSteppedOn(ctx);
+    public override void onSteppedOn(OnEntityStepEvent ctx) => base.onSteppedOn(ctx);
 }

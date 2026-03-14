@@ -12,14 +12,14 @@ namespace BetaSharp.Worlds.Core.Systems;
 public interface IWorldContext
 {
     public WorldReader Reader { get; }
-    public WorldWriter BlockWriter { get; }
-    public ChunkHost BlockHost { get; }
+    public WorldWriter Writer { get; }
+    public ChunkHost ChunkHost { get; }
     public WorldEventBroadcaster Broadcaster { get; }
     public RedstoneEngine Redstone { get; }
     public EntityManager Entities { get; }
     public LightingEngine Lighting { get; }
     public EnvironmentManager Environment { get; }
-    public Dimension dimension { get; }
+    public Dimension Dimension { get; }
     public WorldTickScheduler TickScheduler { get; }
     public long Seed { get; }
     public bool IsRemote { get; }
@@ -27,7 +27,7 @@ public interface IWorldContext
     public PersistentStateManager StateManager { get; }
     public int Difficulty { get; }
     public WorldProperties Properties { get; }
-    public JavaRandom random { get; }
+    public JavaRandom Random { get; }
     internal PathFinder Pathing { get; }
     public void SetDifficulty(int difficulty);
     public long GetTime();

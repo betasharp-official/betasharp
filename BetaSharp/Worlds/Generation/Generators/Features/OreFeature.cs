@@ -68,7 +68,7 @@ internal class OreFeature : Feature
 
                         if (dx * dx + dy * dy + dz * dz < 1.0 && ctx.Reader.GetBlockId(blockX, blockY, blockZ) == Block.Stone.id)
                         {
-                            ctx.BlockWriter.SetBlockWithoutNotifyingNeighbors(blockX, blockY, blockZ, _minableBlockId, 0, notifyBlockPlaced: false);
+                            ctx.Writer.SetBlockWithoutNotifyingNeighbors(blockX, blockY, blockZ, _minableBlockId, 0, notifyBlockPlaced: false);
                         }
                     }
                 }

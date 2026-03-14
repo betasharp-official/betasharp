@@ -28,8 +28,8 @@ public abstract class World : IWorldContext
     private readonly long _worldTimeMask = 0xFFFFFFL;
     public readonly Dimension dimension;
 
-    private int _lcgBlockSeed = Random.Shared.Next();
-    private int _soundCounter = Random.Shared.Next(12000);
+    private int _lcgBlockSeed = System.Random.Shared.Next();
+    private int _soundCounter = System.Random.Shared.Next(12000);
     private bool _spawnHostileMobs = true;
     private bool _spawnPeacefulMobs = true;
 
@@ -67,7 +67,7 @@ public abstract class World : IWorldContext
 
         TickScheduler = new WorldTickScheduler(this);
 
-        Environment = new EnvironmentManager(Properties, dim, Reader, random);
+        Environment = new EnvironmentManager(Properties, dim, Reader, Random);
         Entities = new EntityManager(Reader, Rules, BlockHost);
 
         Entities.OnBlockUpdateRequired += (x, y, z) => Broadcaster.BlockUpdateEvent(x, y, z);
@@ -113,17 +113,17 @@ public abstract class World : IWorldContext
 
     public WorldProperties Properties { get; protected set; }
     public bool IsRemote { set; get; } = false;
-    public JavaRandom random { get; } = new();
+    public JavaRandom Random { get; } = new();
 
-    ChunkHost IWorldContext.BlockHost => BlockHost;
+    ChunkHost IWorldContext.ChunkHost => BlockHost;
     WorldReader IWorldContext.Reader => Reader;
-    WorldWriter IWorldContext.BlockWriter => BlockWriter;
+    WorldWriter IWorldContext.Writer => BlockWriter;
     WorldEventBroadcaster IWorldContext.Broadcaster => Broadcaster;
     RedstoneEngine IWorldContext.Redstone => Redstone;
     EntityManager IWorldContext.Entities => Entities;
     LightingEngine IWorldContext.Lighting => Lighting;
     EnvironmentManager IWorldContext.Environment => Environment;
-    Dimension IWorldContext.dimension => dimension;
+    Dimension IWorldContext.Dimension => dimension;
     long IWorldContext.Seed => Properties.RandomSeed;
     PathFinder IWorldContext.Pathing => Pathing;
 
@@ -177,9 +177,9 @@ public abstract class World : IWorldContext
         for (
             z = 0;
             !dimension.IsValidSpawnPoint(x, z);
-            z += random.NextInt(64) - random.NextInt(64))
+            z += Random.NextInt(64) - Random.NextInt(64))
         {
-            x += random.NextInt(64) - random.NextInt(64);
+            x += Random.NextInt(64) - Random.NextInt(64);
         }
 
         Properties.SetSpawn(x, y, z);
@@ -198,9 +198,9 @@ public abstract class World : IWorldContext
         int spawnZ;
         for (spawnZ = Properties.SpawnZ;
              GetSpawnBlockId(spawnX, spawnZ) == 0;
-             spawnZ += random.NextInt(8) - random.NextInt(8))
+             spawnZ += Random.NextInt(8) - Random.NextInt(8))
         {
-            spawnX += random.NextInt(8) - random.NextInt(8);
+            spawnX += Random.NextInt(8) - Random.NextInt(8);
         }
 
         Properties.SpawnX = spawnX;
@@ -514,7 +514,7 @@ public abstract class World : IWorldContext
                 int blockId = currentChunk.GetBlockId(localX, localY, localZ);
                 int worldX = localX + worldXBase;
                 int worldZ = localZ + worldZBase;
-                if (blockId == 0 && Reader.GetBrightness(worldX, localY, worldZ) <= random.NextInt(8) &&
+                if (blockId == 0 && Reader.GetBrightness(worldX, localY, worldZ) <= Random.NextInt(8) &&
                     Lighting.GetBrightness(LightType.Sky, worldX, localY, worldZ) <= 0)
                 {
                     EntityPlayer closest = Entities.GetClosestPlayer(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, 8.0D);
@@ -522,13 +522,13 @@ public abstract class World : IWorldContext
                         closest.getSquaredDistance(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D) > 4.0D)
                     {
                         Broadcaster.PlaySoundAtPos(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, "ambient.cave.cave", 0.7F,
-                            0.8F + random.NextFloat() * 0.2F);
-                        _soundCounter = random.NextInt(12000) + 6000;
+                            0.8F + Random.NextFloat() * 0.2F);
+                        _soundCounter = Random.NextInt(12000) + 6000;
                     }
                 }
             }
 
-            if (random.NextInt(100000) == 0 && Environment.IsRaining && Environment.IsThundering())
+            if (Random.NextInt(100000) == 0 && Environment.IsRaining && Environment.IsThundering())
             {
                 _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
                 int randomVal = _lcgBlockSeed >> 2;
@@ -543,7 +543,7 @@ public abstract class World : IWorldContext
                 }
             }
 
-            if (random.NextInt(16) == 0)
+            if (Random.NextInt(16) == 0)
             {
                 _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
                 int randomVal = _lcgBlockSeed >> 2;
@@ -559,7 +559,7 @@ public abstract class World : IWorldContext
                     int blockBelowId = currentChunk.GetBlockId(localX, worldY - 1, localZ);
                     int currentBlockId = currentChunk.GetBlockId(localX, worldY, localZ);
 
-                    if (Environment.IsRaining && currentBlockId == 0 && Block.Snow.canPlaceAt(new CanPlaceAtCtx(this, 1, worldX, worldY, worldZ)) &&
+                    if (Environment.IsRaining && currentBlockId == 0 && Block.Snow.canPlaceAt(new CanPlaceAtContext(this, 1, worldX, worldY, worldZ)) &&
                         blockBelowId != 0 && blockBelowId != Block.Ice.id &&
                         Block.Blocks[blockBelowId].material.BlocksMovement)
                     {
@@ -584,7 +584,7 @@ public abstract class World : IWorldContext
                 int blockId = currentChunk.Blocks[(localX << 11) | (localZ << 7) | localY] & 255;
                 if (Block.BlocksRandomTick[blockId])
                 {
-                    Block.Blocks[blockId].onTick(new OnTickEvt(this, localX + worldXBase, localY, localZ + worldZBase, currentChunk.GetBlockMeta(localX, localY, localZ), blockId));
+                    Block.Blocks[blockId].onTick(new OnTickEvent(this, localX + worldXBase, localY, localZ + worldZBase, currentChunk.GetBlockMeta(localX, localY, localZ), blockId));
                 }
             }
         }
@@ -596,14 +596,14 @@ public abstract class World : IWorldContext
 
         for (int i = 0; i < 1000; ++i)
         {
-            int targetX = centerX + random.NextInt(searchRadius) - random.NextInt(searchRadius);
-            int targetY = centerY + random.NextInt(searchRadius) - random.NextInt(searchRadius);
-            int targetZ = centerZ + random.NextInt(searchRadius) - random.NextInt(searchRadius);
+            int targetX = centerX + Random.NextInt(searchRadius) - Random.NextInt(searchRadius);
+            int targetY = centerY + Random.NextInt(searchRadius) - Random.NextInt(searchRadius);
+            int targetZ = centerZ + Random.NextInt(searchRadius) - Random.NextInt(searchRadius);
 
             int blockId = Reader.GetBlockId(targetX, targetY, targetZ);
             if (blockId > 0)
             {
-                Block.Blocks[blockId].randomDisplayTick(new OnTickEvt(this, targetX, targetY, targetZ, Reader.GetBlockMeta(targetX, targetY, targetZ), blockId));
+                Block.Blocks[blockId].randomDisplayTick(new OnTickEvent(this, targetX, targetY, targetZ, Reader.GetBlockMeta(targetX, targetY, targetZ), blockId));
             }
         }
     }

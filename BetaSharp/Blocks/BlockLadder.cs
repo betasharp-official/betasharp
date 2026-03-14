@@ -71,65 +71,65 @@ internal class BlockLadder : Block
 
     public override BlockRendererType getRenderType() => BlockRendererType.Ladder;
 
-    public override bool canPlaceAt(CanPlaceAtCtx ctx) =>
-        ctx.Level.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z) ? true :
-        ctx.Level.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z) ? true :
-        ctx.Level.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1) ? true : ctx.Level.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1);
+    public override bool canPlaceAt(CanPlaceAtContext context) =>
+        context.World.Reader.ShouldSuffocate(context.X - 1, context.Y, context.Z) ? true :
+        context.World.Reader.ShouldSuffocate(context.X + 1, context.Y, context.Z) ? true :
+        context.World.Reader.ShouldSuffocate(context.X, context.Y, context.Z - 1) ? true : context.World.Reader.ShouldSuffocate(context.X, context.Y, context.Z + 1);
 
-    public override void onPlaced(OnPlacedEvt ctx)
+    public override void onPlaced(OnPlacedEvent ctx)
     {
-        int meta = ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
-        if ((meta == 0 || ctx.Direction == 2) && ctx.Level.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1))
+        int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        if ((meta == 0 || ctx.Direction == 2) && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1))
         {
             meta = 2;
         }
 
-        if ((meta == 0 || ctx.Direction == 3) && ctx.Level.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1))
+        if ((meta == 0 || ctx.Direction == 3) && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1))
         {
             meta = 3;
         }
 
-        if ((meta == 0 || ctx.Direction == 4) && ctx.Level.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z))
+        if ((meta == 0 || ctx.Direction == 4) && ctx.World.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z))
         {
             meta = 4;
         }
 
-        if ((meta == 0 || ctx.Direction == 5) && ctx.Level.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z))
+        if ((meta == 0 || ctx.Direction == 5) && ctx.World.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z))
         {
             meta = 5;
         }
 
-        ctx.Level.BlockWriter.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, meta);
+        ctx.World.Writer.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, meta);
     }
 
-    public override void neighborUpdate(OnTickEvt ctx)
+    public override void neighborUpdate(OnTickEvent ctx)
     {
-        int meta = ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         bool hasSupport = false;
-        if (meta == 2 && ctx.Level.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1))
+        if (meta == 2 && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1))
         {
             hasSupport = true;
         }
 
-        if (meta == 3 && ctx.Level.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1))
+        if (meta == 3 && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1))
         {
             hasSupport = true;
         }
 
-        if (meta == 4 && ctx.Level.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z))
+        if (meta == 4 && ctx.World.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z))
         {
             hasSupport = true;
         }
 
-        if (meta == 5 && ctx.Level.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z))
+        if (meta == 5 && ctx.World.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z))
         {
             hasSupport = true;
         }
 
         if (!hasSupport)
         {
-            dropStacks(new OnDropEvt(ctx.Level, ctx.X, ctx.Y, ctx.Z, meta));
-            ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+            dropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, meta));
+            ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
         }
 
         base.neighborUpdate(ctx);

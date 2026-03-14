@@ -21,22 +21,22 @@ internal class BlockRedstoneOre : Block
 
     public override int getTickRate() => 30;
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvt evt)
+    public override void onBlockBreakStart(OnBlockBreakStartEvent @event)
     {
-        light(evt.Level.BlockWriter, evt.Level.Reader, evt.Level.Broadcaster, evt.X, evt.Y, evt.Z);
-        base.onBlockBreakStart(evt);
+        light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        base.onBlockBreakStart(@event);
     }
 
-    public override void onSteppedOn(OnEntityStepEvt evt)
+    public override void onSteppedOn(OnEntityStepEvent @event)
     {
-        light(evt.Level.BlockWriter, evt.Level.Reader, evt.Level.Broadcaster, evt.X, evt.Y, evt.Z);
-        base.onSteppedOn(evt);
+        light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        base.onSteppedOn(@event);
     }
 
-    public override bool onUse(OnUseEvt evt)
+    public override bool onUse(OnUseEvent @event)
     {
-        light(evt.Level.BlockWriter, evt.Level.Reader, evt.Level.Broadcaster, evt.X, evt.Y, evt.Z);
-        return base.onUse(evt);
+        light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        return base.onUse(@event);
     }
 
     private void light(IBlockWrite worldWrite, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
@@ -48,11 +48,11 @@ internal class BlockRedstoneOre : Block
         }
     }
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
         if (id == LitRedstoneOre.id)
         {
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, RedstoneOre.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, RedstoneOre.id);
         }
     }
 
@@ -60,11 +60,11 @@ internal class BlockRedstoneOre : Block
 
     public override int getDroppedItemCount() => 4 + Random.Shared.Next(2);
 
-    public override void randomDisplayTick(OnTickEvt ctx)
+    public override void randomDisplayTick(OnTickEvent ctx)
     {
         if (lit)
         {
-            spawnParticles(ctx.Level.Reader, ctx.Level.Broadcaster, ctx.X, ctx.Y, ctx.Z);
+            spawnParticles(ctx.World.Reader, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
         }
     }
 

@@ -11,80 +11,80 @@ internal class BlockNote : BlockWithEntity
 
     public override int getTexture(int side) => textureId;
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        if (!(evt.BlockId > 0 && Blocks[evt.BlockId].canEmitRedstonePower()))
+        if (!(@event.BlockId > 0 && Blocks[@event.BlockId].canEmitRedstonePower()))
         {
             return;
         }
 
-        bool isPowered = evt.Level.Redstone.IsStrongPowered(evt.X, evt.Y, evt.Z);
-        BlockEntityNote? blockEntity = (BlockEntityNote?)evt.Level.Entities.GetBlockEntity(evt.X, evt.Y, evt.Z);
+        bool isPowered = @event.World.Redstone.IsStrongPowered(@event.X, @event.Y, @event.Z);
+        BlockEntityNote? blockEntity = (BlockEntityNote?)@event.World.Entities.GetBlockEntity(@event.X, @event.Y, @event.Z);
         if (blockEntity != null && blockEntity.powered != isPowered)
         {
             if (isPowered)
             {
-                blockEntity.playNote(evt.Level, evt.X, evt.Y, evt.Z);
+                blockEntity.playNote(@event.World, @event.X, @event.Y, @event.Z);
             }
 
             blockEntity.powered = isPowered;
         }
     }
 
-    public override bool onUse(OnUseEvt evt)
+    public override bool onUse(OnUseEvent @event)
     {
-        if (evt.Level.IsRemote)
+        if (@event.World.IsRemote)
         {
             return true;
         }
 
-        BlockEntityNote? blockEntity = (BlockEntityNote?)evt.Level.Entities.GetBlockEntity(evt.X, evt.Y, evt.Z);
+        BlockEntityNote? blockEntity = (BlockEntityNote?)@event.World.Entities.GetBlockEntity(@event.X, @event.Y, @event.Z);
         if (blockEntity == null)
         {
             return false;
         }
 
         blockEntity.cycleNote();
-        blockEntity.playNote(evt.Level, evt.X, evt.Y, evt.Z);
+        blockEntity.playNote(@event.World, @event.X, @event.Y, @event.Z);
         return true;
     }
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvt evt)
+    public override void onBlockBreakStart(OnBlockBreakStartEvent @event)
     {
-        if (!evt.Level.IsRemote)
+        if (!@event.World.IsRemote)
         {
-            BlockEntityNote? blockEntity = (BlockEntityNote?)evt.Level.Entities.GetBlockEntity(evt.X, evt.Y, evt.Z);
-            blockEntity?.playNote(evt.Level, evt.X, evt.Y, evt.Z);
+            BlockEntityNote? blockEntity = (BlockEntityNote?)@event.World.Entities.GetBlockEntity(@event.X, @event.Y, @event.Z);
+            blockEntity?.playNote(@event.World, @event.X, @event.Y, @event.Z);
         }
     }
 
     protected override BlockEntity getBlockEntity() => new BlockEntityNote();
 
-    public override void onBlockAction(OnBlockActionEvt evt)
+    public override void onBlockAction(OnBlockActionEvent @event)
     {
-        float pitch = (float)Math.Pow(2.0D, (evt.Data2 - 12) / 12.0D);
+        float pitch = (float)Math.Pow(2.0D, (@event.Data2 - 12) / 12.0D);
         string instrumentName = "harp";
-        if (evt.Data1 == 1)
+        if (@event.Data1 == 1)
         {
             instrumentName = "bd";
         }
 
-        if (evt.Data1 == 2)
+        if (@event.Data1 == 2)
         {
             instrumentName = "snare";
         }
 
-        if (evt.Data1 == 3)
+        if (@event.Data1 == 3)
         {
             instrumentName = "hat";
         }
 
-        if (evt.Data1 == 4)
+        if (@event.Data1 == 4)
         {
             instrumentName = "bassattack";
         }
 
-        evt.Level.Broadcaster.PlaySoundAtPos(evt.X + 0.5D, evt.Y + 0.5D, evt.Z + 0.5D, "note." + instrumentName, 3.0F, pitch);
-        evt.Level.Broadcaster.AddParticle("note", evt.X + 0.5D, evt.Y + 1.2D, evt.Z + 0.5D, evt.Data2 / 24.0D, 0.0D, 0.0D);
+        @event.World.Broadcaster.PlaySoundAtPos(@event.X + 0.5D, @event.Y + 0.5D, @event.Z + 0.5D, "note." + instrumentName, 3.0F, pitch);
+        @event.World.Broadcaster.AddParticle("note", @event.X + 0.5D, @event.Y + 1.2D, @event.Z + 0.5D, @event.Data2 / 24.0D, 0.0D, 0.0D);
     }
 }

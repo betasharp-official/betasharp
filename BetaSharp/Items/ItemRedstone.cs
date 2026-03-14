@@ -52,10 +52,10 @@ internal class ItemRedstone : Item
             }
         }
 
-        if (Block.RedstoneWire.canPlaceAt(new CanPlaceAtCtx(world, 0, x, y, z)))
+        if (Block.RedstoneWire.canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
             --itemStack.count;
-            world.BlockWriter.SetBlock(x, y, z, Block.RedstoneWire.id);
+            world.Writer.SetBlock(x, y, z, Block.RedstoneWire.id);
         }
 
         return true;

@@ -16,60 +16,60 @@ public class BlockBed : Block
         setDefaultShape();
     }
 
-    public override bool onUse(OnUseEvt evt)
+    public override bool onUse(OnUseEvent @event)
     {
-        if (evt.Level.IsRemote)
+        if (@event.World.IsRemote)
         {
             return true;
         }
 
         // Extract to local variables so we don't mutate the event struct
-        int x = evt.X;
-        int y = evt.Y;
-        int z = evt.Z;
+        int x = @event.X;
+        int y = @event.Y;
+        int z = @event.Z;
 
-        int meta = evt.Level.Reader.GetBlockMeta(x, y, z);
+        int meta = @event.World.Reader.GetBlockMeta(x, y, z);
         if (!isHeadOfBed(meta))
         {
             int direction = getDirection(meta);
             x += BED_OFFSETS[direction][0];
             z += BED_OFFSETS[direction][1];
 
-            if (evt.Level.Reader.GetBlockId(x, y, z) != id)
+            if (@event.World.Reader.GetBlockId(x, y, z) != id)
             {
                 return true;
             }
 
-            meta = evt.Level.Reader.GetBlockMeta(x, y, z);
+            meta = @event.World.Reader.GetBlockMeta(x, y, z);
         }
 
-        if (!evt.Level.dimension.HasWorldSpawn)
+        if (!@event.World.Dimension.HasWorldSpawn)
         {
             double posX = x + 0.5D;
             double posY = y + 0.5D;
             double posZ = z + 0.5D;
-            evt.Level.BlockWriter.SetBlock(x, y, z, 0);
+            @event.World.Writer.SetBlock(x, y, z, 0);
 
             int direction = getDirection(meta);
             x += BED_OFFSETS[direction][0];
             z += BED_OFFSETS[direction][1];
 
-            if (evt.Level.Reader.GetBlockId(x, y, z) == id)
+            if (@event.World.Reader.GetBlockId(x, y, z) == id)
             {
-                evt.Level.BlockWriter.SetBlock(x, y, z, 0);
+                @event.World.Writer.SetBlock(x, y, z, 0);
                 posX = (posX + x + 0.5D) / 2.0D;
                 posY = (posY + y + 0.5D) / 2.0D;
                 posZ = (posZ + z + 0.5D) / 2.0D;
             }
 
-            evt.Level.CreateExplosion(null, x + 0.5F, y + 0.5F, z + 0.5F, 5.0F, true);
+            @event.World.CreateExplosion(null, x + 0.5F, y + 0.5F, z + 0.5F, 5.0F, true);
             return true;
         }
 
         if (isBedOccupied(meta))
         {
             EntityPlayer? occupant = null;
-            foreach (EntityPlayer otherPlayer in evt.Level.Entities.Players)
+            foreach (EntityPlayer otherPlayer in @event.World.Entities.Players)
             {
                 if (otherPlayer.isSleeping())
                 {
@@ -83,23 +83,23 @@ public class BlockBed : Block
 
             if (occupant != null)
             {
-                evt.Player.sendMessage("tile.bed.occupied");
+                @event.Player.sendMessage("tile.bed.occupied");
                 return true;
             }
 
-            updateState(evt.Level.BlockWriter, x, y, z, meta, false);
+            updateState(@event.World.Writer, x, y, z, meta, false);
         }
 
-        SleepAttemptResult result = evt.Player.trySleep(x, y, z);
+        SleepAttemptResult result = @event.Player.trySleep(x, y, z);
         if (result == SleepAttemptResult.OK)
         {
-            updateState(evt.Level.BlockWriter, x, y, z, meta, true);
+            updateState(@event.World.Writer, x, y, z, meta, true);
             return true;
         }
 
         if (result == SleepAttemptResult.NOT_POSSIBLE_NOW)
         {
-            evt.Player.sendMessage("tile.bed.noSleep");
+            @event.Player.sendMessage("tile.bed.noSleep");
         }
 
         return true;
@@ -139,24 +139,24 @@ public class BlockBed : Block
         setDefaultShape();
     }
 
-    public override void neighborUpdate(OnTickEvt ctx)
+    public override void neighborUpdate(OnTickEvent ctx)
     {
-        int blockMeta = ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        int blockMeta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         int direction = getDirection(blockMeta);
 
         if (isHeadOfBed(blockMeta))
         {
-            if (ctx.Level.Reader.GetBlockId(ctx.X - BED_OFFSETS[direction][0], ctx.Y, ctx.Z - BED_OFFSETS[direction][1]) != id)
+            if (ctx.World.Reader.GetBlockId(ctx.X - BED_OFFSETS[direction][0], ctx.Y, ctx.Z - BED_OFFSETS[direction][1]) != id)
             {
-                ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+                ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             }
         }
-        else if (ctx.Level.Reader.GetBlockId(ctx.X + BED_OFFSETS[direction][0], ctx.Y, ctx.Z + BED_OFFSETS[direction][1]) != id)
+        else if (ctx.World.Reader.GetBlockId(ctx.X + BED_OFFSETS[direction][0], ctx.Y, ctx.Z + BED_OFFSETS[direction][1]) != id)
         {
-            ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
-            if (!ctx.Level.IsRemote)
+            ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+            if (!ctx.World.IsRemote)
             {
-                dropStacks(new OnDropEvt(ctx.Level, ctx.X, ctx.Y, ctx.Z, blockMeta));
+                dropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, blockMeta));
             }
         }
     }
@@ -233,11 +233,11 @@ public class BlockBed : Block
         return null;
     }
 
-    public override void dropStacks(OnDropEvt evt)
+    public override void dropStacks(OnDropEvent @event)
     {
-        if (!isHeadOfBed(evt.Meta))
+        if (!isHeadOfBed(@event.Meta))
         {
-            base.dropStacks(evt);
+            base.dropStacks(@event);
         }
     }
 

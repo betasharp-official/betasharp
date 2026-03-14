@@ -32,50 +32,50 @@ internal class BlockSnow : Block
         setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, height, 1.0F);
     }
 
-    public override bool canPlaceAt(CanPlaceAtCtx evt)
+    public override bool canPlaceAt(CanPlaceAtContext evt)
     {
-        int blockBelowId = evt.Level.Reader.GetBlockId(evt.X, evt.Y - 1, evt.Z);
-        return blockBelowId != 0 && Blocks[blockBelowId].isOpaque() ? evt.Level.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z).BlocksMovement : false;
+        int blockBelowId = evt.World.Reader.GetBlockId(evt.X, evt.Y - 1, evt.Z);
+        return blockBelowId != 0 && Blocks[blockBelowId].isOpaque() ? evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z).BlocksMovement : false;
     }
 
-    public override void neighborUpdate(OnTickEvt evt) => breakIfCannotPlace(evt);
+    public override void neighborUpdate(OnTickEvent @event) => breakIfCannotPlace(@event);
 
-    private bool breakIfCannotPlace(OnTickEvt evt)
+    private bool breakIfCannotPlace(OnTickEvent @event)
     {
-        if (!canPlaceAt(new CanPlaceAtCtx(evt.Level, 0, evt.X, evt.Y, evt.Z)))
+        if (!canPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z)))
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             return false;
         }
 
         return true;
     }
 
-    public override void onAfterBreak(OnAfterBreakEvt evt)
+    public override void onAfterBreak(OnAfterBreakEvent @event)
     {
         int snowballId = Item.Snowball.id;
         float spreadFactor = 0.7F;
         double offsetX = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5D;
         double offsetY = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5D;
         double offsetZ = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5D;
-        EntityItem entityItem = new(evt.Level, evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ, new ItemStack(snowballId, 1, 0));
+        EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(snowballId, 1, 0));
         entityItem.delayBeforeCanPickup = 10;
-        evt.Level.Entities.SpawnEntity(entityItem);
-        evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
-        evt.Player.increaseStat(Stats.Stats.MineBlockStatArray[id], 1);
+        @event.World.Entities.SpawnEntity(entityItem);
+        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
+        @event.Player.increaseStat(Stats.Stats.MineBlockStatArray[id], 1);
     }
 
     public override int getDroppedItemId(int blockMeta) => Item.Snowball.id;
 
     public override int getDroppedItemCount() => 0;
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
-        if (evt.Level.Lighting.GetBrightness(LightType.Block, evt.X, evt.Y, evt.Z) > 11)
+        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y, @event.Z) > 11)
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
     }
 

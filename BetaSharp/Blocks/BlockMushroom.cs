@@ -9,18 +9,18 @@ internal class BlockMushroom : BlockPlant
         setTickRandomly(true);
     }
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
         if (Random.Shared.Next(100) == 0)
         {
-            int tryX = evt.X + Random.Shared.Next(3) - 1;
-            int tryY = evt.Y + Random.Shared.Next(2) - Random.Shared.Next(2);
-            int tryZ = evt.Z + Random.Shared.Next(3) - 1;
-            if (evt.Level.Reader.IsAir(tryX, tryY, tryZ) && canGrow(new OnTickEvt(evt.Level, tryX, tryY, tryZ, evt.Level.Reader.GetBlockMeta(tryX, tryY, tryZ), evt.Level.Reader.GetBlockId(tryX, tryY, tryZ))))
+            int tryX = @event.X + Random.Shared.Next(3) - 1;
+            int tryY = @event.Y + Random.Shared.Next(2) - Random.Shared.Next(2);
+            int tryZ = @event.Z + Random.Shared.Next(3) - 1;
+            if (@event.World.Reader.IsAir(tryX, tryY, tryZ) && canGrow(new OnTickEvent(@event.World, tryX, tryY, tryZ, @event.World.Reader.GetBlockMeta(tryX, tryY, tryZ), @event.World.Reader.GetBlockId(tryX, tryY, tryZ))))
             {
-                if (evt.Level.Reader.IsAir(tryX, tryY, tryZ) && canGrow(new OnTickEvt(evt.Level, tryX, tryY, tryZ, evt.Level.Reader.GetBlockMeta(tryX, tryY, tryZ), evt.Level.Reader.GetBlockId(tryX, tryY, tryZ))))
+                if (@event.World.Reader.IsAir(tryX, tryY, tryZ) && canGrow(new OnTickEvent(@event.World, tryX, tryY, tryZ, @event.World.Reader.GetBlockMeta(tryX, tryY, tryZ), @event.World.Reader.GetBlockId(tryX, tryY, tryZ))))
                 {
-                    evt.Level.BlockWriter.SetBlock(tryX, tryY, tryZ, id);
+                    @event.World.Writer.SetBlock(tryX, tryY, tryZ, id);
                 }
             }
         }
@@ -28,5 +28,5 @@ internal class BlockMushroom : BlockPlant
 
     protected override bool canPlantOnTop(int id) => BlocksOpaque[id];
 
-    public override bool canGrow(OnTickEvt ctx) => ctx.Y >= 0 && ctx.Y < 128 ? ctx.Level.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < 13 && canPlantOnTop(ctx.Level.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z)) : false;
+    public override bool canGrow(OnTickEvent ctx) => ctx.Y >= 0 && ctx.Y < 128 ? ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < 13 && canPlantOnTop(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z)) : false;
 }

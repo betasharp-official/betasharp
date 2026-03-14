@@ -17,7 +17,7 @@ public class EntitySpider : EntityMonster
 
     public override void PostSpawn()
     {
-        if (world.random.NextInt(100) == 0)
+        if (world.Random.NextInt(100) == 0)
         {
             EntitySkeleton skeleton = new(world);
             skeleton.setPositionAndAnglesKeepPrevAngles(x, y, z, yaw, 0.0F);

@@ -24,7 +24,7 @@ internal class ItemDoor : Item
         y++;
 
         int blockId = doorMaterial == Material.Wood ? Block.Door.id : Block.IronDoor.id;
-        if (!Block.Blocks[blockId].canPlaceAt(new CanPlaceAtCtx(world, 0, x, y, z))) return false;
+        if (!Block.Blocks[blockId].canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z))) return false;
 
         // 1. Calculate base facing from player yaw
         int facing = MathHelper.Floor((entityPlayer.yaw + 180.0f) * 4.0f / 360.0f - 0.5f) & 3;
@@ -54,8 +54,8 @@ internal class ItemDoor : Item
         }
 
         // 4. Place BOTH halves of the door (bottom with facing+hinge, top with same + upper bit 8)
-        world.BlockWriter.SetBlock(x, y, z, blockId, facing);
-        world.BlockWriter.SetBlock(x, y + 1, z, blockId, facing + 8);
+        world.Writer.SetBlock(x, y, z, blockId, facing);
+        world.Writer.SetBlock(x, y + 1, z, blockId, facing + 8);
         world.Broadcaster.NotifyNeighbors(x, y, z, blockId);
         world.Broadcaster.NotifyNeighbors(x, y + 1, z, blockId);
         itemStack.count--;

@@ -22,26 +22,26 @@ internal class BlockDetectorRail : BlockRail
         return true;
     }
 
-    public override void onEntityCollision(OnEntityCollisionEvt evt)
+    public override void onEntityCollision(OnEntityCollisionEvent @event)
     {
-        if (!evt.Level.IsRemote)
+        if (!@event.World.IsRemote)
         {
-            int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             if ((meta & 8) == 0)
             {
-                updatePoweredStatus(evt.Level, evt.X, evt.Y, evt.Z, id, meta);
+                updatePoweredStatus(@event.World, @event.X, @event.Y, @event.Z, id, meta);
             }
         }
     }
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
-        if (!evt.Level.IsRemote)
+        if (!@event.World.IsRemote)
         {
-            int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             if ((meta & 8) != 0)
             {
-                updatePoweredStatus(evt.Level, evt.X, evt.Y, evt.Z, id, meta);
+                updatePoweredStatus(@event.World, @event.X, @event.Y, @event.Z, id, meta);
             }
         }
     }
@@ -69,7 +69,7 @@ internal class BlockDetectorRail : BlockRail
 
         if (hasMinecart && !isPowered)
         {
-            context.BlockWriter.SetBlockMeta(x, y, z, meta | 8);
+            context.Writer.SetBlockMeta(x, y, z, meta | 8);
             context.Broadcaster.NotifyNeighbors(x, y, z, id);
             context.Broadcaster.NotifyNeighbors(x, y - 1, z, id);
             context.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
@@ -77,7 +77,7 @@ internal class BlockDetectorRail : BlockRail
 
         if (!hasMinecart && isPowered)
         {
-            context.BlockWriter.SetBlockMeta(x, y, z, meta & 7);
+            context.Writer.SetBlockMeta(x, y, z, meta & 7);
             context.Broadcaster.NotifyNeighbors(x, y, z, id);
             context.Broadcaster.NotifyNeighbors(x, y - 1, z, id);
             context.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);

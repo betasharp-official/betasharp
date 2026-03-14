@@ -17,9 +17,9 @@ internal class BlockSoulSand : Block
         return new Box(x, y, z, x + 1, y + 1 - height, z + 1);
     }
 
-    public override void onEntityCollision(OnEntityCollisionEvt evt)
+    public override void onEntityCollision(OnEntityCollisionEvent @event)
     {
-        evt.Entity.velocityX *= 0.4;
-        evt.Entity.velocityZ *= 0.4;
+        @event.Entity.velocityX *= 0.4;
+        @event.Entity.velocityZ *= 0.4;
     }
 }

@@ -28,47 +28,47 @@ internal class BlockFurnace : BlockWithEntity
         return Furnace.id;
     }
 
-    public override void onPlaced(OnPlacedEvt evt)
+    public override void onPlaced(OnPlacedEvent @event)
     {
-        if (evt.Placer != null)
+        if (@event.Placer != null)
         {
-            int direction = MathHelper.Floor(evt.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
+            int direction = MathHelper.Floor(@event.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
             if (direction == 0)
             {
-                evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, 2);
+                @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 2);
             }
 
             if (direction == 1)
             {
-                evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, 5);
+                @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 5);
             }
 
             if (direction == 2)
             {
-                evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, 3);
+                @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 3);
             }
 
             if (direction == 3)
             {
-                evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, 4);
+                @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 4);
             }
         }
 
-        base.onPlaced(evt);
-        updateDirection(evt);
+        base.onPlaced(@event);
+        updateDirection(@event);
     }
 
-    private void updateDirection(OnPlacedEvt evt)
+    private void updateDirection(OnPlacedEvent @event)
     {
-        if (evt.Level.IsRemote)
+        if (@event.World.IsRemote)
         {
             return;
         }
 
-        int blockNorth = evt.Level.Reader.GetBlockId(evt.X, evt.Y, evt.Z - 1);
-        int blockSouth = evt.Level.Reader.GetBlockId(evt.X, evt.Y, evt.Z + 1);
-        int westBlockId = evt.Level.Reader.GetBlockId(evt.X - 1, evt.Y, evt.Z);
-        int eastBlockId = evt.Level.Reader.GetBlockId(evt.X + 1, evt.Y, evt.Z);
+        int blockNorth = @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z - 1);
+        int blockSouth = @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1);
+        int westBlockId = @event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z);
+        int eastBlockId = @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z);
         sbyte direction = 3;
         if (BlocksOpaque[blockNorth] && !BlocksOpaque[blockSouth])
         {
@@ -90,7 +90,7 @@ internal class BlockFurnace : BlockWithEntity
             direction = 4;
         }
 
-        evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, direction);
+        @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, direction);
     }
 
     public override int getTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
@@ -109,38 +109,38 @@ internal class BlockFurnace : BlockWithEntity
         return side != meta ? textureId : _lit ? textureId + 16 : textureId - 1;
     }
 
-    public override void randomDisplayTick(OnTickEvt evt)
+    public override void randomDisplayTick(OnTickEvent @event)
     {
         if (!_lit)
         {
             return;
         }
 
-        int var6 = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
-        float particleX = evt.X + 0.5F;
-        float particleY = evt.Y + 0.0F + Random.Shared.NextSingle() * 6.0F / 16.0F;
-        float particleZ = evt.Z + 0.5F;
+        int var6 = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        float particleX = @event.X + 0.5F;
+        float particleY = @event.Y + 0.0F + Random.Shared.NextSingle() * 6.0F / 16.0F;
+        float particleZ = @event.Z + 0.5F;
         float flameOffset = 0.52F;
         float randomOffset = Random.Shared.NextSingle() * 0.6F - 0.3F;
         if (var6 == 4)
         {
-            evt.Level.Broadcaster.AddParticle("smoke", particleX - flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
-            evt.Level.Broadcaster.AddParticle("flame", particleX - flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
+            @event.World.Broadcaster.AddParticle("smoke", particleX - flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
+            @event.World.Broadcaster.AddParticle("flame", particleX - flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
         }
         else if (var6 == 5)
         {
-            evt.Level.Broadcaster.AddParticle("smoke", particleX + flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
-            evt.Level.Broadcaster.AddParticle("flame", particleX + flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
+            @event.World.Broadcaster.AddParticle("smoke", particleX + flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
+            @event.World.Broadcaster.AddParticle("flame", particleX + flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
         }
         else if (var6 == 2)
         {
-            evt.Level.Broadcaster.AddParticle("smoke", particleX + randomOffset, particleY, particleZ - flameOffset, 0.0D, 0.0D, 0.0D);
-            evt.Level.Broadcaster.AddParticle("flame", particleX + randomOffset, particleY, particleZ - flameOffset, 0.0D, 0.0D, 0.0D);
+            @event.World.Broadcaster.AddParticle("smoke", particleX + randomOffset, particleY, particleZ - flameOffset, 0.0D, 0.0D, 0.0D);
+            @event.World.Broadcaster.AddParticle("flame", particleX + randomOffset, particleY, particleZ - flameOffset, 0.0D, 0.0D, 0.0D);
         }
         else if (var6 == 3)
         {
-            evt.Level.Broadcaster.AddParticle("smoke", particleX + randomOffset, particleY, particleZ + flameOffset, 0.0D, 0.0D, 0.0D);
-            evt.Level.Broadcaster.AddParticle("flame", particleX + randomOffset, particleY, particleZ + flameOffset, 0.0D, 0.0D, 0.0D);
+            @event.World.Broadcaster.AddParticle("smoke", particleX + randomOffset, particleY, particleZ + flameOffset, 0.0D, 0.0D, 0.0D);
+            @event.World.Broadcaster.AddParticle("flame", particleX + randomOffset, particleY, particleZ + flameOffset, 0.0D, 0.0D, 0.0D);
         }
     }
 
@@ -149,20 +149,20 @@ internal class BlockFurnace : BlockWithEntity
         return side == 1 ? textureId + 17 : side == 0 ? textureId + 17 : side == 3 ? textureId - 1 : textureId;
     }
 
-    public override bool onUse(OnUseEvt evt)
+    public override bool onUse(OnUseEvent @event)
     {
-        if (evt.Level.IsRemote)
+        if (@event.World.IsRemote)
         {
             return true;
         }
 
-        BlockEntityFurnace? furnace = (BlockEntityFurnace?)evt.Level.Reader.GetBlockEntity(evt.X, evt.Y, evt.Z);
+        BlockEntityFurnace? furnace = (BlockEntityFurnace?)@event.World.Reader.GetBlockEntity(@event.X, @event.Y, @event.Z);
         if (furnace == null)
         {
             return false;
         }
 
-        evt.Player.openFurnaceScreen(furnace);
+        @event.Player.openFurnaceScreen(furnace);
         return true;
     }
 
@@ -173,15 +173,15 @@ internal class BlockFurnace : BlockWithEntity
         s_ignoreBlockRemoval.Value = true;
         if (lit)
         {
-            world.BlockWriter.SetBlock(x, y, z, LitFurnace.id);
+            world.Writer.SetBlock(x, y, z, LitFurnace.id);
         }
         else
         {
-            world.BlockWriter.SetBlock(x, y, z, Furnace.id);
+            world.Writer.SetBlock(x, y, z, Furnace.id);
         }
 
         s_ignoreBlockRemoval.Value = false;
-        world.BlockWriter.SetBlockMeta(x, y, z, meta);
+        world.Writer.SetBlockMeta(x, y, z, meta);
         furnace?.cancelRemoval();
         world.Entities.SetBlockEntity(x, y, z, furnace!);
     }
@@ -191,14 +191,14 @@ internal class BlockFurnace : BlockWithEntity
         return new BlockEntityFurnace();
     }
 
-    public override void onBreak(OnBreakEvt evt)
+    public override void onBreak(OnBreakEvent @event)
     {
         if (!s_ignoreBlockRemoval.Value)
         {
-            BlockEntityFurnace? furnace = (BlockEntityFurnace?)evt.Level.Reader.GetBlockEntity(evt.X, evt.Y, evt.Z);
+            BlockEntityFurnace? furnace = (BlockEntityFurnace?)@event.World.Reader.GetBlockEntity(@event.X, @event.Y, @event.Z);
             if (furnace == null)
             {
-                s_logger.LogWarning("BlockEntityFurnace not found at {X}, {Y}, {Z}", evt.X, evt.Y, evt.Z);
+                s_logger.LogWarning("BlockEntityFurnace not found at {X}, {Y}, {Z}", @event.X, @event.Y, @event.Z);
                 return;
             }
 
@@ -220,17 +220,17 @@ internal class BlockFurnace : BlockWithEntity
                         }
 
                         stack.count -= var11;
-                        EntityItem droppedItem = new(evt.Level, evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ, new ItemStack(stack.itemId, var11, stack.getDamage()));
+                        EntityItem droppedItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, var11, stack.getDamage()));
                         float var13 = 0.05F;
                         droppedItem.velocityX = (float)_random.NextGaussian() * var13;
                         droppedItem.velocityY = (float)_random.NextGaussian() * var13 + 0.2F;
                         droppedItem.velocityZ = (float)_random.NextGaussian() * var13;
-                        evt.Level.SpawnEntity(droppedItem);
+                        @event.World.SpawnEntity(droppedItem);
                     }
                 }
             }
         }
 
-        base.onBreak(evt);
+        base.onBreak(@event);
     }
 }

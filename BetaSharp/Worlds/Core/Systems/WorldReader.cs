@@ -23,7 +23,7 @@ public class WorldReader : IBlockReader
 
     public int AmbientDarkness => _context.Environment?.AmbientDarkness ?? 0;
 
-    public bool IsPosLoaded(int x, int y, int z) => y >= 0 && y < 128 && _context.BlockHost.HasChunk(x >> 4, z >> 4);
+    public bool IsPosLoaded(int x, int y, int z) => y >= 0 && y < 128 && _context.ChunkHost.HasChunk(x >> 4, z >> 4);
 
     public int GetBlockId(int x, int y, int z)
     {
@@ -32,7 +32,7 @@ public class WorldReader : IBlockReader
             return 0;
         }
 
-        return _context.BlockHost.GetChunk(x >> 4, z >> 4).GetBlockId(x & 15, y, z & 15);
+        return _context.ChunkHost.GetChunk(x >> 4, z >> 4).GetBlockId(x & 15, y, z & 15);
     }
 
     public int GetBlockMeta(int x, int y, int z)
@@ -42,7 +42,7 @@ public class WorldReader : IBlockReader
             return 0;
         }
 
-        return _context.BlockHost.GetChunk(x >> 4, z >> 4).GetBlockMeta(x & 15, y, z & 15);
+        return _context.ChunkHost.GetChunk(x >> 4, z >> 4).GetBlockMeta(x & 15, y, z & 15);
     }
 
     public Material GetMaterial(int x, int y, int z)
@@ -53,7 +53,7 @@ public class WorldReader : IBlockReader
 
     public BlockEntity? GetBlockEntity(int x, int y, int z)
     {
-        Chunk? chunk = _context.BlockHost.GetChunk(x >> 4, z >> 4);
+        Chunk? chunk = _context.ChunkHost.GetChunk(x >> 4, z >> 4);
         return chunk?.GetBlockEntity(x & 15, y, z & 15);
     }
 
@@ -85,7 +85,7 @@ public class WorldReader : IBlockReader
             return !_dimension.HasCeiling ? 15 : 0;
         }
 
-        return _context.BlockHost.GetChunk(x >> 4, z >> 4).GetLight(x & 15, y, z & 15, 0);
+        return _context.ChunkHost.GetChunk(x >> 4, z >> 4).GetLight(x & 15, y, z & 15, 0);
     }
 
     public bool IsTopY(int x, int y, int z)
@@ -102,12 +102,12 @@ public class WorldReader : IBlockReader
                 return true;
             }
 
-            if (!_context.BlockHost.HasChunk(x >> 4, z >> 4))
+            if (!_context.ChunkHost.HasChunk(x >> 4, z >> 4))
             {
                 return false;
             }
 
-            Chunk chunk = _context.BlockHost.GetChunk(x >> 4, z >> 4);
+            Chunk chunk = _context.ChunkHost.GetChunk(x >> 4, z >> 4);
             return chunk.IsAboveMaxHeight(x & 15, y, z & 15);
         }
 
@@ -121,12 +121,12 @@ public class WorldReader : IBlockReader
             int chunkX = x >> 4;
             int chunkZ = z >> 4;
 
-            if (!_context.BlockHost.HasChunk(chunkX, chunkZ))
+            if (!_context.ChunkHost.HasChunk(chunkX, chunkZ))
             {
                 return 0;
             }
 
-            Chunk chunk = _context.BlockHost.GetChunk(chunkX, chunkZ);
+            Chunk chunk = _context.ChunkHost.GetChunk(chunkX, chunkZ);
             return chunk.GetHeight(x & 15, z & 15);
         }
 
@@ -135,7 +135,7 @@ public class WorldReader : IBlockReader
 
     public int GetTopSolidBlockY(int x, int z)
     {
-        Chunk chunk = _context.BlockHost.GetChunkFromPos(x, z);
+        Chunk chunk = _context.ChunkHost.GetChunkFromPos(x, z);
         int currentY = 127;
         int localX = x & 15;
         int localZ = z & 15;
@@ -156,7 +156,7 @@ public class WorldReader : IBlockReader
 
     public int GetSpawnPositionValidityY(int x, int z)
     {
-        Chunk chunk = _context.BlockHost.GetChunkFromPos(x, z);
+        Chunk chunk = _context.ChunkHost.GetChunkFromPos(x, z);
         int currentY = 127;
         int localX = x & 15;
         int localZ = z & 15;
@@ -470,7 +470,7 @@ public class WorldReader : IBlockReader
         int minZ = MathHelper.Floor(area.MinZ);
         int maxZ = MathHelper.Floor(area.MaxZ + 1.0D);
 
-        if (_context.BlockHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
+        if (_context.ChunkHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
         {
             for (int x = minX; x < maxX; ++x)
             {
@@ -500,7 +500,7 @@ public class WorldReader : IBlockReader
         int minZ = MathHelper.Floor(entityBox.MinZ);
         int maxZ = MathHelper.Floor(entityBox.MaxZ + 1.0D);
 
-        if (!_context.BlockHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
+        if (!_context.ChunkHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
         {
             return false;
         }
@@ -522,7 +522,7 @@ public class WorldReader : IBlockReader
                         if (maxY >= fluidSurfaceY)
                         {
                             isSubmerged = true;
-                            Vec3D blockFlow = block.applyVelocity(new OnApplyVelocityEvt(_context, entity, x, y, z));
+                            Vec3D blockFlow = block.applyVelocity(new OnApplyVelocityEvent(_context, entity, x, y, z));
                             flowVector.x += blockFlow.x;
                             flowVector.y += blockFlow.y;
                             flowVector.z += blockFlow.z;
@@ -612,7 +612,7 @@ public class WorldReader : IBlockReader
     {
         if (_context.Reader.IsPosLoaded(x, 0, z))
         {
-            _context.BlockHost.GetChunkFromPos(x, z).MarkDirty();
+            _context.ChunkHost.GetChunkFromPos(x, z).MarkDirty();
         }
     }
 }

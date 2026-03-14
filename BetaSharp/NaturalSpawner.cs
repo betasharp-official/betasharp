@@ -26,9 +26,9 @@ internal static class NaturalSpawner
     private static BlockPos GetRandomSpawningPointInChunk(IWorldContext world, PathFinder pathFinder, int centerX, int centerZ)
     {
         pathFinder.SetWorld(world.Reader);
-        int x = centerX + world.random.NextInt(16);
-        int y = world.random.NextInt(128);
-        int z = centerZ + world.random.NextInt(16);
+        int x = centerX + world.Random.NextInt(16);
+        int y = world.Random.NextInt(128);
+        int z = centerZ + world.Random.NextInt(16);
         return new BlockPos(x, y, z);
     }
 
@@ -62,10 +62,10 @@ internal static class NaturalSpawner
             {
                 foreach (var chunk in ChunksForSpawning)
                 {
-                    Biome biome = world.dimension.BiomeSource.GetBiome(chunk);
+                    Biome biome = world.Dimension.BiomeSource.GetBiome(chunk);
                     var spawnSelector = biome.GetSpawnableList(creatureKind);
                     if (spawnSelector.Empty) break;
-                    SpawnListEntry toSpawn = spawnSelector.GetNext(world.random);
+                    SpawnListEntry toSpawn = spawnSelector.GetNext(world.Random);
 
                     BlockPos spawnPos = GetRandomSpawningPointInChunk(world, pathFinder, chunk.X * 16, chunk.Z * 16);
                     if (world.Reader.ShouldSuffocate(spawnPos.x, spawnPos.y, spawnPos.z)) continue;
@@ -82,9 +82,9 @@ internal static class NaturalSpawner
 
                         for (int j = 0; j < 4 && !breakToNextChunk; ++j)
                         {
-                            x += world.random.NextInt(SpawnCloseness) - world.random.NextInt(SpawnCloseness);
-                            y += world.random.NextInt(1) - world.random.NextInt(1);
-                            z += world.random.NextInt(SpawnCloseness) - world.random.NextInt(SpawnCloseness);
+                            x += world.Random.NextInt(SpawnCloseness) - world.Random.NextInt(SpawnCloseness);
+                            y += world.Random.NextInt(1) - world.Random.NextInt(1);
+                            z += world.Random.NextInt(SpawnCloseness) - world.Random.NextInt(SpawnCloseness);
                             if (creatureKind.CanSpawnAtLocation(world.Reader, x, y, z))
                             {
                                 Vec3D entityPos = new Vec3D(x + 0.5D, y, z + 0.5D);
@@ -96,7 +96,7 @@ internal static class NaturalSpawner
                                 EntityLiving entity = toSpawn.Factory(world);
 
                                 entity.setPositionAndAnglesKeepPrevAngles(entityPos.x, entityPos.y, entityPos.z,
-                                    world.random.NextFloat() * 360.0F, 0.0F);
+                                    world.Random.NextFloat() * 360.0F, 0.0F);
 
                                 if (entity.canSpawn())
                                 {
@@ -126,9 +126,9 @@ internal static class NaturalSpawner
         {
             for (int i = 0; i < 20; ++i)
             {
-                int spawnX = MathHelper.Floor(player.x) + world.random.NextInt(32) - world.random.NextInt(32);
-                int spawnZ = MathHelper.Floor(player.z) + world.random.NextInt(32) - world.random.NextInt(32);
-                int spawnY = MathHelper.Floor(player.y) + world.random.NextInt(16) - world.random.NextInt(16);
+                int spawnX = MathHelper.Floor(player.x) + world.Random.NextInt(32) - world.Random.NextInt(32);
+                int spawnZ = MathHelper.Floor(player.z) + world.Random.NextInt(32) - world.Random.NextInt(32);
+                int spawnY = MathHelper.Floor(player.y) + world.Random.NextInt(16) - world.Random.NextInt(16);
                 if (spawnY < 1)
                 {
                     spawnY = 1;
@@ -138,7 +138,7 @@ internal static class NaturalSpawner
                     spawnY = 128;
                 }
 
-                int r = world.random.NextInt(Monsters.Length);
+                int r = world.Random.NextInt(Monsters.Length);
 
                 int newSpawnY;
                 for (newSpawnY = spawnY; newSpawnY > 2; --newSpawnY)
@@ -157,7 +157,7 @@ internal static class NaturalSpawner
                     EntityLiving entity = Monsters[r](world);
 
                     entity.setPositionAndAnglesKeepPrevAngles(spawnX + 0.5D, spawnY, spawnZ + 0.5D,
-                        world.random.NextFloat() * 360.0F, 0.0F);
+                        world.Random.NextFloat() * 360.0F, 0.0F);
                     if (entity.canSpawn())
                     {
                         var pathEntity = world.Pathing.findPath(entity, player, 32.0F);

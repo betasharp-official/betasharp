@@ -62,7 +62,7 @@ internal class PineTreeFeature : Feature
         int groundId = level.Reader.GetBlockId(x, y - 1, z);
         if ((groundId == Block.GrassBlock.id || groundId == Block.Dirt.id) && y < 128 - treeHeight - 1)
         {
-            level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id, 0, notifyBlockPlaced: false);
+            level.Writer.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id, 0, notifyBlockPlaced: false);
             int currentLeafRadius = 0;
 
             for (int cy = y + treeHeight; cy >= y + trunkWithNoLeaves; --cy)
@@ -76,7 +76,7 @@ internal class PineTreeFeature : Feature
                         int offsetZ = cz - z;
                         if ((Math.Abs(offsetX) != currentLeafRadius || Math.Abs(offsetZ) != currentLeafRadius || currentLeafRadius <= 0) && !Block.BlocksOpaque[level.Reader.GetBlockId(cx, cy, cz)])
                         {
-                            level.BlockWriter.SetBlockWithoutNotifyingNeighbors(cx, cy, cz, Block.Leaves.id, 1, notifyBlockPlaced: false);
+                            level.Writer.SetBlockWithoutNotifyingNeighbors(cx, cy, cz, Block.Leaves.id, 1, notifyBlockPlaced: false);
                         }
                     }
                 }
@@ -98,7 +98,7 @@ internal class PineTreeFeature : Feature
                 int blockAtTrunk = level.Reader.GetBlockId(x, y + trunkY, z);
                 if (blockAtTrunk == 0 || blockAtTrunk == Block.Leaves.id)
                 {
-                    level.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, Block.Log.id, 1, notifyBlockPlaced: false);
+                    level.Writer.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, Block.Log.id, 1, notifyBlockPlaced: false);
                 }
             }
 

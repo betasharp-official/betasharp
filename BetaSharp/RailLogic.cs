@@ -102,7 +102,7 @@ internal class RailLogic
 
         if (forceUpdate || _level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) != finalMeta)
         {
-            _level.BlockWriter.SetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
+            _level.Writer.SetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
 
             foreach (Vec3i pos in _connectedTracks)
             {
@@ -266,7 +266,7 @@ internal class RailLogic
             finalMeta = _level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
         }
 
-        _level.BlockWriter.SetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
+        _level.Writer.SetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
     }
 
     private bool AttemptConnectionAt(Vec3i pos)

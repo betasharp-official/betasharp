@@ -1,5 +1,4 @@
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Storage.RegionFormat;
@@ -7,9 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Worlds;
 
-public class ServerIChunkCache : IChunkSource
+public class ServerChunkCache : IChunkSource
 {
-    private readonly ILogger<ServerIChunkCache> _logger = Log.Instance.For<ServerIChunkCache>();
+    private readonly ILogger<ServerChunkCache> _logger = Log.Instance.For<ServerChunkCache>();
     private readonly HashSet<int> _chunksToUnload = [];
     private readonly Chunk _empty;
     private readonly IChunkSource _generator;
@@ -19,7 +18,7 @@ public class ServerIChunkCache : IChunkSource
     private readonly List<Chunk> _chunks = [];
     private readonly ServerWorld _world;
 
-    public ServerIChunkCache(ServerWorld world, IChunkStorage storage, IChunkSource generator)
+    public ServerChunkCache(ServerWorld world, IChunkStorage storage, IChunkSource generator)
     {
         _empty = new EmptyChunk(world, new byte[32768], 0, 0);
         _world = world;

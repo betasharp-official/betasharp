@@ -26,45 +26,45 @@ internal class BlockPressurePlate : Block
 
     public override bool isFullCube() => false;
 
-    public override bool canPlaceAt(CanPlaceAtCtx ctx) => ctx.Level.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z);
+    public override bool canPlaceAt(CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
 
-    public override void onPlaced(OnPlacedEvt evt)
+    public override void onPlaced(OnPlacedEvent @event)
     {
     }
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
         bool shouldBreak = false;
-        if (!evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y - 1, evt.Z))
+        if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z))
         {
             shouldBreak = true;
         }
 
         if (shouldBreak)
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
     }
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
-        if (!evt.Level.IsRemote)
+        if (!@event.World.IsRemote)
         {
-            if (evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z) != 0)
+            if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) != 0)
             {
-                updatePlateState(evt.Level, evt.X, evt.Y, evt.Z);
+                updatePlateState(@event.World, @event.X, @event.Y, @event.Z);
             }
         }
     }
 
-    public override void onEntityCollision(OnEntityCollisionEvt evt)
+    public override void onEntityCollision(OnEntityCollisionEvent @event)
     {
-        if (!evt.Level.IsRemote)
+        if (!@event.World.IsRemote)
         {
-            if (evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z) != 1)
+            if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) != 1)
             {
-                updatePlateState(evt.Level, evt.X, evt.Y, evt.Z);
+                updatePlateState(@event.World, @event.X, @event.Y, @event.Z);
             }
         }
     }
@@ -97,7 +97,7 @@ internal class BlockPressurePlate : Block
 
         if (shouldBePressed && !wasPressed)
         {
-            ctx.BlockWriter.SetBlockMeta(x, y, z, 1);
+            ctx.Writer.SetBlockMeta(x, y, z, 1);
             ctx.Broadcaster.NotifyNeighbors(x, y, z, id);
             ctx.Broadcaster.NotifyNeighbors(x, y - 1, z, id);
             ctx.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
@@ -106,7 +106,7 @@ internal class BlockPressurePlate : Block
 
         if (!shouldBePressed && wasPressed)
         {
-            ctx.BlockWriter.SetBlockMeta(x, y, z, 0);
+            ctx.Writer.SetBlockMeta(x, y, z, 0);
             ctx.Broadcaster.NotifyNeighbors(x, y, z, id);
             ctx.Broadcaster.NotifyNeighbors(x, y - 1, z, id);
             ctx.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
@@ -119,16 +119,16 @@ internal class BlockPressurePlate : Block
         }
     }
 
-    public override void onBreak(OnBreakEvt evt)
+    public override void onBreak(OnBreakEvent @event)
     {
-        int plateState = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+        int plateState = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (plateState > 0)
         {
-            evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y, evt.Z, id);
-            evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y - 1, evt.Z, id);
+            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, id);
+            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, id);
         }
 
-        base.onBreak(evt);
+        base.onBreak(@event);
     }
 
     public override void updateBoundingBox(IBlockReader iBlockReader, int x, int y, int z)

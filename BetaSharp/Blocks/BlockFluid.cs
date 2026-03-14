@@ -206,9 +206,9 @@ public abstract class BlockFluid : Block
         return flowVector;
     }
 
-    public override Vec3D applyVelocity(OnApplyVelocityEvt evt)
+    public override Vec3D applyVelocity(OnApplyVelocityEvent @event)
     {
-        Vector3D<double> flowVec = getFlow(evt.Level.Reader, evt.X, evt.Y, evt.Z);
+        Vector3D<double> flowVec = getFlow(@event.World.Reader, @event.X, @event.Y, @event.Z);
         return new Vec3D(flowVec.X, flowVec.Y, flowVec.Z);
     }
 
@@ -224,9 +224,9 @@ public abstract class BlockFluid : Block
         return luminance > luminanceAbove ? luminance : luminanceAbove;
     }
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
-        base.onTick(evt);
+        base.onTick(@event);
     }
 
     public override int getRenderLayer()
@@ -234,23 +234,23 @@ public abstract class BlockFluid : Block
         return material == Material.Water ? 1 : 0;
     }
 
-    public override void randomDisplayTick(OnTickEvt evt)
+    public override void randomDisplayTick(OnTickEvent @event)
     {
         if (material == Material.Water && Random.Shared.Next(64) == 0)
         {
-            int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             if (meta > 0 && meta < 8)
             {
-                evt.Level.Broadcaster.PlaySoundAtPos(evt.X + 0.5F, evt.Y + 0.5F, evt.Z + 0.5F, "liquid.water", Random.Shared.NextSingle() * 0.25F + 12.0F / 16.0F, Random.Shared.NextSingle() * 1.0F + 0.5F);
+                @event.World.Broadcaster.PlaySoundAtPos(@event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F, "liquid.water", Random.Shared.NextSingle() * 0.25F + 12.0F / 16.0F, Random.Shared.NextSingle() * 1.0F + 0.5F);
             }
         }
 
-        if (material == Material.Lava && evt.Level.Reader.GetMaterial(evt.X, evt.Y + 1, evt.Z) == Material.Air && !evt.Level.Reader.IsOpaque(evt.X, evt.Y + 1, evt.Z) && Random.Shared.Next(100) == 0)
+        if (material == Material.Lava && @event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z) == Material.Air && !@event.World.Reader.IsOpaque(@event.X, @event.Y + 1, @event.Z) && Random.Shared.Next(100) == 0)
         {
-            double particleX = evt.X + Random.Shared.NextSingle();
-            double particleY = evt.Y + BoundingBox.MaxY;
-            double particleZ = evt.Z + Random.Shared.NextSingle();
-            evt.Level.Broadcaster.AddParticle("lava", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+            double particleX = @event.X + Random.Shared.NextSingle();
+            double particleY = @event.Y + BoundingBox.MaxY;
+            double particleZ = @event.Z + Random.Shared.NextSingle();
+            @event.World.Broadcaster.AddParticle("lava", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
         }
     }
 
@@ -269,14 +269,14 @@ public abstract class BlockFluid : Block
         return flowVec.X == 0.0D && flowVec.Z == 0.0D ? -1000.0D : Math.Atan2(flowVec.Z, flowVec.X) - Math.PI * 0.5D;
     }
 
-    public override void onPlaced(OnPlacedEvt evt)
+    public override void onPlaced(OnPlacedEvent @event)
     {
-        checkBlockCollisions(evt.Level.Reader, evt.Level.BlockWriter, evt.Level.Broadcaster, evt.X, evt.Y, evt.Z);
+        checkBlockCollisions(@event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
     }
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        checkBlockCollisions(evt.Level.Reader, evt.Level.BlockWriter, evt.Level.Broadcaster, evt.X, evt.Y, evt.Z);
+        checkBlockCollisions(@event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
     }
 
     private void checkBlockCollisions(IBlockReader WorldView, WorldWriter WorldWrite, WorldEventBroadcaster broadcaster, int x, int y, int z)

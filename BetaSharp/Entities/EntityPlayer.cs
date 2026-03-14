@@ -629,7 +629,7 @@ public abstract class EntityPlayer : EntityLiving
                 return SleepAttemptResult.OTHER_PROBLEM;
             }
 
-            if (world.dimension.IsNether)
+            if (world.Dimension.IsNether)
             {
                 return SleepAttemptResult.NOT_POSSIBLE_HERE;
             }
@@ -718,7 +718,7 @@ public abstract class EntityPlayer : EntityLiving
         if (var4 is (int x, int y, int z) && world.Reader.GetBlockId(x, y, z) == Block.Bed.id)
         {
             int bedMeta = world.Reader.GetBlockMeta(x, y, z);
-            BlockBed.updateState(world.BlockWriter, x, y, z, bedMeta, false);
+            BlockBed.updateState(world.Writer, x, y, z, bedMeta, false);
             Vec3i? var5 = BlockBed.findWakeUpPosition(world.Reader, x, y, z, 0);
             if (var5 == null)
             {
@@ -758,7 +758,7 @@ public abstract class EntityPlayer : EntityLiving
             return null;
         }
 
-        IChunkSource chunkSource = world.BlockHost.ChunkSource;
+        IChunkSource chunkSource = world.ChunkHost.ChunkSource;
 
         chunkSource.LoadChunk((x - 3) >> 4, (z - 3) >> 4);
         chunkSource.LoadChunk((x + 3) >> 4, (z - 3) >> 4);

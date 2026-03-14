@@ -16,9 +16,9 @@ internal class PumpkinPatchFeature : Feature
             int genZ = z + rand.NextInt(8) - rand.NextInt(8);
             if (level.Reader.IsAir(genX, genY, genZ) &&
                 level.Reader.GetBlockId(genX, genY - 1, genZ) == Block.GrassBlock.id &&
-                Block.Pumpkin.canPlaceAt(new CanPlaceAtCtx(level, 0, genX, genY, genZ)))
+                Block.Pumpkin.canPlaceAt(new CanPlaceAtContext(level, 0, genX, genY, genZ)))
             {
-                level.BlockWriter.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, Block.Pumpkin.id, rand.NextInt(4), notifyBlockPlaced: false);
+                level.Writer.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, Block.Pumpkin.id, rand.NextInt(4), notifyBlockPlaced: false);
             }
         }
 

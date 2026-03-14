@@ -18,14 +18,14 @@ internal class BlockJukeBox : BlockWithEntity
 
     public override int getTexture(int side) => textureId + (side == 1 ? 1 : 0);
 
-    public override bool onUse(OnUseEvt evt)
+    public override bool onUse(OnUseEvent @event)
     {
-        if (evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z) == 0)
+        if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) == 0)
         {
             return false;
         }
 
-        tryEjectRecord(evt.Level, evt.X, evt.Y, evt.Z);
+        tryEjectRecord(@event.World, @event.X, @event.Y, @event.Z);
         return true;
     }
 
@@ -42,7 +42,7 @@ internal class BlockJukeBox : BlockWithEntity
 
             jukebox.recordId = id;
             jukebox.markDirty();
-            world.BlockWriter.SetBlockMeta(x, y, z, 1);
+            world.Writer.SetBlockMeta(x, y, z, 1);
         }
     }
 
@@ -58,7 +58,7 @@ internal class BlockJukeBox : BlockWithEntity
                 level.Broadcaster.PlayStreamingAtPos(null, x, y, z);
                 jukebox!.recordId = 0;
                 jukebox.markDirty();
-                level.BlockWriter.SetBlockMeta(x, y, z, 0);
+                level.Writer.SetBlockMeta(x, y, z, 0);
                 float spreadFactor = 0.7F;
                 double offsetX = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5D;
                 double offsetY = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.2D + 0.6D;
@@ -70,17 +70,17 @@ internal class BlockJukeBox : BlockWithEntity
         }
     }
 
-    public override void onBreak(OnBreakEvt evt)
+    public override void onBreak(OnBreakEvent @event)
     {
-        tryEjectRecord(evt.Level, evt.X, evt.Y, evt.Z);
-        base.onBreak(evt);
+        tryEjectRecord(@event.World, @event.X, @event.Y, @event.Z);
+        base.onBreak(@event);
     }
 
-    public override void dropStacks(OnDropEvt evt)
+    public override void dropStacks(OnDropEvent @event)
     {
-        if (!evt.Level.IsRemote)
+        if (!@event.World.IsRemote)
         {
-            base.dropStacks(evt);
+            base.dropStacks(@event);
         }
     }
 

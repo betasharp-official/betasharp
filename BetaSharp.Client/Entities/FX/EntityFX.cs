@@ -2,7 +2,6 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Entities;
 using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
@@ -86,7 +85,7 @@ public class EntityFX : Entity
 
     public virtual void renderParticle(Tessellator t, float partialTick, float rotX, float rotY, float rotZ, float upX, float upZ)
     {
-         float minU = (float)(particleTextureIndex % 16) / 16.0F;
+        float minU = (float)(particleTextureIndex % 16) / 16.0F;
         float maxU = minU + 0.999F / 16.0F;
         float minV = (float)(particleTextureIndex / 16) / 16.0F;
         float maxV = minV + 0.999F / 16.0F;

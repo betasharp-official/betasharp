@@ -54,7 +54,7 @@ public class Explosion
                         var6 /= var12;
                         var8 /= var12;
                         var10 /= var12;
-                        float var14 = explosionSize * (0.7F + _level.random.NextFloat() * 0.6F);
+                        float var14 = explosionSize * (0.7F + _level.Random.NextFloat() * 0.6F);
                         var15 = explosionX;
                         var17 = explosionY;
                         var19 = explosionZ;
@@ -130,7 +130,7 @@ public class Explosion
                 int var18 = _level.Reader.GetBlockId(var36, var37 - 1, var16);
                 if (var38 == 0 && Block.BlocksOpaque[var18] && ExplosionRNG.NextInt(3) == 0)
                 {
-                    _level.BlockWriter.SetBlock(var36, var37, var16, Block.Fire.id);
+                    _level.Writer.SetBlock(var36, var37, var16, Block.Fire.id);
                 }
             }
         }
@@ -138,7 +138,7 @@ public class Explosion
 
     public void doExplosionB(bool var1)
     {
-        _level.Broadcaster.PlaySoundAtPos(explosionX, explosionY, explosionZ, "random.explode", 4.0F, (1.0F + (_level.random.NextFloat() - _level.random.NextFloat()) * 0.2F) * 0.7F);
+        _level.Broadcaster.PlaySoundAtPos(explosionX, explosionY, explosionZ, "random.explode", 4.0F, (1.0F + (_level.Random.NextFloat() - _level.Random.NextFloat()) * 0.2F) * 0.7F);
         List<BlockPos> var2 = new(destroyedBlockPositions);
 
         for (int var3 = var2.Count - 1; var3 >= 0; --var3)
@@ -150,9 +150,9 @@ public class Explosion
             int var8 = _level.Reader.GetBlockId(var5, var6, var7);
             if (var1)
             {
-                double var9 = var5 + _level.random.NextFloat();
-                double var11 = var6 + _level.random.NextFloat();
-                double var13 = var7 + _level.random.NextFloat();
+                double var9 = var5 + _level.Random.NextFloat();
+                double var11 = var6 + _level.Random.NextFloat();
+                double var13 = var7 + _level.Random.NextFloat();
                 double var15 = var9 - explosionX;
                 double var17 = var11 - explosionY;
                 double var19 = var13 - explosionZ;
@@ -161,7 +161,7 @@ public class Explosion
                 var17 /= var21;
                 var19 /= var21;
                 double var23 = 0.5D / (var21 / explosionSize + 0.1D);
-                var23 *= _level.random.NextFloat() * _level.random.NextFloat() + 0.3F;
+                var23 *= _level.Random.NextFloat() * _level.Random.NextFloat() + 0.3F;
                 var15 *= var23;
                 var17 *= var23;
                 var19 *= var23;
@@ -171,9 +171,9 @@ public class Explosion
 
             if (var8 > 0)
             {
-                Block.Blocks[var8].dropStacks(new OnDropEvt(_level, var5, var6, var7, _level.Reader.GetBlockMeta(var5, var6, var7), 0.3F));
-                _level.BlockWriter.SetBlock(var5, var6, var7, 0);
-                Block.Blocks[var8].onDestroyedByExplosion(new OnDestroyedByExplosionEvt(_level, var5, var6, var7));
+                Block.Blocks[var8].dropStacks(new OnDropEvent(_level, var5, var6, var7, _level.Reader.GetBlockMeta(var5, var6, var7), 0.3F));
+                _level.Writer.SetBlock(var5, var6, var7, 0);
+                Block.Blocks[var8].onDestroyedByExplosion(new OnDestroyedByExplosionEvent(_level, var5, var6, var7));
             }
         }
     }

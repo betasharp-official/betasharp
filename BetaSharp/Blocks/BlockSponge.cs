@@ -6,17 +6,17 @@ internal class BlockSponge : Block
 {
     public BlockSponge(int id) : base(id, Material.Sponge) => textureId = 48;
 
-    public override void onPlaced(OnPlacedEvt evt)
+    public override void onPlaced(OnPlacedEvent @event)
     {
         sbyte radius = 2;
 
-        for (int checkX = evt.X - radius; checkX <= evt.X + radius; ++checkX)
+        for (int checkX = @event.X - radius; checkX <= @event.X + radius; ++checkX)
         {
-            for (int checkY = evt.Y - radius; checkY <= evt.Y + radius; ++checkY)
+            for (int checkY = @event.Y - radius; checkY <= @event.Y + radius; ++checkY)
             {
-                for (int checkZ = evt.Z - radius; checkZ <= evt.Z + radius; ++checkZ)
+                for (int checkZ = @event.Z - radius; checkZ <= @event.Z + radius; ++checkZ)
                 {
-                    if (evt.Level.Reader.GetMaterial(checkX, checkY, checkZ) == Material.Water)
+                    if (@event.World.Reader.GetMaterial(checkX, checkY, checkZ) == Material.Water)
                     {
                     }
                 }
@@ -24,17 +24,17 @@ internal class BlockSponge : Block
         }
     }
 
-    public override void onBreak(OnBreakEvt evt)
+    public override void onBreak(OnBreakEvent @event)
     {
         sbyte radius = 2;
 
-        for (int checkX = evt.X - radius; checkX <= evt.X + radius; ++checkX)
+        for (int checkX = @event.X - radius; checkX <= @event.X + radius; ++checkX)
         {
-            for (int checkY = evt.Y - radius; checkY <= evt.Y + radius; ++checkY)
+            for (int checkY = @event.Y - radius; checkY <= @event.Y + radius; ++checkY)
             {
-                for (int checkZ = evt.Z - radius; checkZ <= evt.Z + radius; ++checkZ)
+                for (int checkZ = @event.Z - radius; checkZ <= @event.Z + radius; ++checkZ)
                 {
-                    evt.Level.Broadcaster.NotifyNeighbors(checkX, checkY, checkZ, evt.Level.Reader.GetBlockId(checkX, checkY, checkZ));
+                    @event.World.Broadcaster.NotifyNeighbors(checkX, checkY, checkZ, @event.World.Reader.GetBlockId(checkX, checkY, checkZ));
                 }
             }
         }

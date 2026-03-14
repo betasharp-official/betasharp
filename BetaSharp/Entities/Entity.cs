@@ -526,7 +526,7 @@ public abstract class Entity
                             world.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.3F, soundGroup.Pitch);
                         }
 
-                        Block.Blocks[var28].onSteppedOn(new OnEntityStepEvt(world, this, var38, var26, var39));
+                        Block.Blocks[var28].onSteppedOn(new OnEntityStepEvent(world, this, var38, var26, var39));
                     }
                 }
             }
@@ -537,7 +537,7 @@ public abstract class Entity
             var28 = MathHelper.Floor(boundingBox.MaxX - 0.001D);
             int var40 = MathHelper.Floor(boundingBox.MaxY - 0.001D);
             int var30 = MathHelper.Floor(boundingBox.MaxZ - 0.001D);
-            if (world.BlockHost.IsRegionLoaded(var38, var26, var39, var28, var40, var30))
+            if (world.ChunkHost.IsRegionLoaded(var38, var26, var39, var28, var40, var30))
             {
                 for (int var31 = var38; var31 <= var28; ++var31)
                 {
@@ -548,7 +548,7 @@ public abstract class Entity
                             int var34 = world.Reader.GetBlockId(var31, var32, var33);
                             if (var34 > 0)
                             {
-                                Block.Blocks[var34].onEntityCollision(new OnEntityCollisionEvt(world, this, var31, var32, var33));
+                                Block.Blocks[var34].onEntityCollision(new OnEntityCollisionEvent(world, this, var31, var32, var33));
                             }
                         }
                     }
@@ -681,7 +681,7 @@ public abstract class Entity
         minY = Math.Min(127, Math.Max(0, minY));
         maxY = Math.Min(127, Math.Max(0, maxY));
 
-        if (world.BlockHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
+        if (world.ChunkHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
         {
             float var7 = world.Lighting.GetLuminance(var2, var5, var6);
             if (var7 < minBrightness)

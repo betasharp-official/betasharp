@@ -45,12 +45,12 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         {
             for (int cz = _chunkZ; cz <= maxChunkZ; ++cz)
             {
-                Chunk originalChunk = level.BlockHost.GetChunk(cx, cz);
+                Chunk originalChunk = level.ChunkHost.GetChunk(cx, cz);
                 _chunks[cx - _chunkX][cz - _chunkZ] = new ChunkSnapshot(originalChunk);
             }
         }
 
-        _lightTable = (float[])level.dimension.LightLevelToLuminance.Clone();
+        _lightTable = (float[])level.Dimension.LightLevelToLuminance.Clone();
         _skylightSubtracted = level.Environment.AmbientDarkness;
     }
 

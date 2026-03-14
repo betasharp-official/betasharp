@@ -126,7 +126,7 @@ public class Chunk
                     minHeight = y;
                 }
 
-                if (!Level.dimension.HasCeiling)
+                if (!Level.Dimension.HasCeiling)
                 {
                     int lightLevel = 15;
                     int currentY = 127;
@@ -306,12 +306,12 @@ public class Chunk
 
         if (notifyBlockPlaced && oldId != 0 && !Level.IsRemote)
         {
-            Block.Blocks[oldId].onBreak(new OnBreakEvt(Level, null, worldX, y, worldZ));
+            Block.Blocks[oldId].onBreak(new OnBreakEvent(Level, null, worldX, y, worldZ));
         }
 
         Meta.SetNibble(localX, y, localZ, meta);
 
-        if (!Level.dimension.HasCeiling)
+        if (!Level.Dimension.HasCeiling)
         {
             if (Block.BlockLightOpacity[newId] != 0)
             {
@@ -334,7 +334,7 @@ public class Chunk
 
         if (notifyBlockPlaced && rawId != 0)
         {
-            Block.Blocks[rawId].onPlaced(new OnPlacedEvt(Level, null, 0, 0, worldX, y, worldZ));
+            Block.Blocks[rawId].onPlaced(new OnPlacedEvent(Level, null, 0, worldX, y, worldZ));
         }
 
         Dirty = true;
@@ -358,7 +358,7 @@ public class Chunk
 
         if (notifyBlockPlaced && oldId != 0)
         {
-            Block.Blocks[oldId].onBreak(new OnBreakEvt(Level, null, worldX, y, worldZ));
+            Block.Blocks[oldId].onBreak(new OnBreakEvent(Level, null, worldX, y, worldZ));
         }
 
         Meta.SetNibble(localX, y, localZ, 0);
@@ -381,7 +381,7 @@ public class Chunk
 
         if (notifyBlockPlaced && rawId != 0 && !Level.IsRemote)
         {
-            Block.Blocks[rawId].onPlaced(new OnPlacedEvt(Level, null, 0, 0, worldX, y, worldZ));
+            Block.Blocks[rawId].onPlaced(new OnPlacedEvent(Level, null, 0, worldX, y, worldZ));
         }
 
         Dirty = true;
@@ -488,7 +488,7 @@ public class Chunk
             }
 
             BlockWithEntity blockWithEntity = (BlockWithEntity)Block.Blocks[id];
-            blockWithEntity.onPlaced(new OnPlacedEvt(Level, null, 0, 0, X * 16 + localX, y, Z * 16 + localZ));
+            blockWithEntity.onPlaced(new OnPlacedEvent(Level, null, 0, X * 16 + localX, y, Z * 16 + localZ));
             BlockEntities.TryGetValue(pos, out entity);
         }
 

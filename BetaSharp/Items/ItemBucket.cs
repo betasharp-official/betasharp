@@ -58,13 +58,13 @@ internal class ItemBucket : Item
                 {
                     if (world.Reader.GetMaterial(hitX, hitY, hitZ) == Material.Water && world.Reader.GetBlockMeta(hitX, hitY, hitZ) == 0)
                     {
-                        world.BlockWriter.SetBlock(hitX, hitY, hitZ, 0);
+                        world.Writer.SetBlock(hitX, hitY, hitZ, 0);
                         return new ItemStack(Item.WaterBucket);
                     }
 
                     if (world.Reader.GetMaterial(hitX, hitY, hitZ) == Material.Lava && world.Reader.GetBlockMeta(hitX, hitY, hitZ) == 0)
                     {
-                        world.BlockWriter.SetBlock(hitX, hitY, hitZ, 0);
+                        world.Writer.SetBlock(hitX, hitY, hitZ, 0);
                         return new ItemStack(Item.LavaBucket);
                     }
                 }
@@ -107,9 +107,9 @@ internal class ItemBucket : Item
 
                     if (world.Reader.IsAir(hitX, hitY, hitZ) || !world.Reader.GetMaterial(hitX, hitY, hitZ).IsSolid)
                     {
-                        if (world.dimension.EvaporatesWater && isFull == Block.FlowingWater.id)
+                        if (world.Dimension.EvaporatesWater && isFull == Block.FlowingWater.id)
                         {
-                            world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.fizz", 0.5F, 2.6F + (world.random.NextFloat() - world.random.NextFloat()) * 0.8F);
+                            world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.fizz", 0.5F, 2.6F + (world.Random.NextFloat() - world.Random.NextFloat()) * 0.8F);
 
                             for (int particleIndex = 0; particleIndex < 8; ++particleIndex)
                             {
@@ -119,7 +119,7 @@ internal class ItemBucket : Item
                         else
                         {
                             BetaSharp.Log.Instance.For<ItemBucket>().LogInformation($"[Fluid DEBUG] ItemBucket placing block id={isFull} at ({hitX},{hitY},{hitZ}) (Flowing Water=8, Flowing Lava=10, Stationary Water=9, Stationary Lava=11)");
-                            world.BlockWriter.SetBlock(hitX, hitY, hitZ, isFull, 0);
+                            world.Writer.SetBlock(hitX, hitY, hitZ, isFull, 0);
                         }
 
                         return new ItemStack(Item.Bucket);

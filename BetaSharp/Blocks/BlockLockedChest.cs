@@ -50,7 +50,7 @@ internal class BlockLockedChest : Block
 
     public override int getTexture(int side) => side == 1 ? textureId - 1 : side == 0 ? textureId - 1 : side == 3 ? textureId + 1 : textureId;
 
-    public override bool canPlaceAt(CanPlaceAtCtx ctx) => true;
+    public override bool canPlaceAt(CanPlaceAtContext context) => true;
 
-    public override void onTick(OnTickEvt evt) => evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+    public override void onTick(OnTickEvent @event) => @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
 }

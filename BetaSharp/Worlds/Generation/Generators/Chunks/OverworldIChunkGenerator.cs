@@ -80,7 +80,7 @@ internal class OverworldIChunkGenerator : IChunkSource
         _floatingIslandNoise = new OctavePerlinNoiseSampler(_random, 16);
         _forestNoise = new OctavePerlinNoiseSampler(_random, 8);
         _seed = seed;
-        _biomeSource = world.dimension.BiomeSource;
+        _biomeSource = world.Dimension.BiomeSource;
         InitFeatures();
     }
 
@@ -498,7 +498,7 @@ internal class OverworldIChunkGenerator : IChunkSource
                 if (temperatureSample < 0.5D && var22 > 0 && var22 < 128 && _level.Reader.IsAir(x, var22, z) && _level.Reader.GetMaterial(x, var22 - 1, z).BlocksMovement &&
                     _level.Reader.GetMaterial(x, var22 - 1, z) != Material.Ice)
                 {
-                    _level.BlockWriter.SetBlock(x, var22, z, Block.Snow.id, 0, doUpdate: false);
+                    _level.Writer.SetBlock(x, var22, z, Block.Snow.id, 0, doUpdate: false);
                 }
             }
         }

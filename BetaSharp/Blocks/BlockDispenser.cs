@@ -27,14 +27,14 @@ internal class BlockDispenser : BlockWithEntity
         return Dispenser.id;
     }
 
-    public override void onPlaced(OnPlacedEvt evt)
+    public override void onPlaced(OnPlacedEvent @event)
     {
-        base.onPlaced(evt);
+        base.onPlaced(@event);
 
         // If a player/entity placed it, use their yaw. Otherwise, use neighbor logic.
-        if (evt.Placer != null)
+        if (@event.Placer != null)
         {
-            int direction = MathHelper.Floor(evt.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
+            int direction = MathHelper.Floor(@event.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
             int meta = 0;
 
             if (direction == 0)
@@ -54,11 +54,11 @@ internal class BlockDispenser : BlockWithEntity
                 meta = 4;
             }
 
-            evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, meta);
+            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
         }
         else
         {
-            updateDirection(evt.Level.Reader, evt.Level.BlockWriter, evt.Level.IsRemote, evt.X, evt.Y, evt.Z);
+            updateDirection(@event.World.Reader, @event.World.Writer, @event.World.IsRemote, @event.X, @event.Y, @event.Z);
         }
     }
 
@@ -109,25 +109,25 @@ internal class BlockDispenser : BlockWithEntity
 
     public override int getTexture(int side) => side == 1 ? textureId + 17 : side == 0 ? textureId + 17 : side == 3 ? textureId + 1 : textureId;
 
-    public override bool onUse(OnUseEvt evt)
+    public override bool onUse(OnUseEvent @event)
     {
-        if (evt.Level.IsRemote)
+        if (@event.World.IsRemote)
         {
             return true;
         }
 
-        BlockEntityDispenser? dispenser = (BlockEntityDispenser?)evt.Level.Reader.GetBlockEntity(evt.X, evt.Y, evt.Z);
+        BlockEntityDispenser? dispenser = (BlockEntityDispenser?)@event.World.Reader.GetBlockEntity(@event.X, @event.Y, @event.Z);
         if (dispenser != null)
         {
-            evt.Player.openDispenserScreen(dispenser);
+            @event.Player.openDispenserScreen(dispenser);
         }
 
         return true;
     }
 
-    private void dispense(OnTickEvt evt)
+    private void dispense(OnTickEvent @event)
     {
-        int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         int dirX = 0;
         int dirZ = 0;
 
@@ -148,91 +148,91 @@ internal class BlockDispenser : BlockWithEntity
             dirX = -1;
         }
 
-        BlockEntityDispenser? dispenser = (BlockEntityDispenser?)evt.Level.Reader.GetBlockEntity(evt.X, evt.Y, evt.Z);
+        BlockEntityDispenser? dispenser = (BlockEntityDispenser?)@event.World.Reader.GetBlockEntity(@event.X, @event.Y, @event.Z);
         if (dispenser == null)
         {
             return;
         }
 
         ItemStack itemStack = dispenser.getItemToDispose();
-        double spawnX = evt.X + dirX * 0.6D + 0.5D;
-        double spawnY = evt.Y + 0.5D;
-        double spawnZ = evt.Z + dirZ * 0.6D + 0.5D;
+        double spawnX = @event.X + dirX * 0.6D + 0.5D;
+        double spawnY = @event.Y + 0.5D;
+        double spawnZ = @event.Z + dirZ * 0.6D + 0.5D;
 
         if (itemStack == null)
         {
-            evt.Level.Broadcaster.WorldEvent(1001, evt.X, evt.Y, evt.Z, 0);
+            @event.World.Broadcaster.WorldEvent(1001, @event.X, @event.Y, @event.Z, 0);
         }
         else
         {
             if (itemStack.itemId == Item.ARROW.id)
             {
-                EntityArrow arrow = new(evt.Level, spawnX, spawnY, spawnZ);
+                EntityArrow arrow = new(@event.World, spawnX, spawnY, spawnZ);
                 arrow.setArrowHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
                 arrow.doesArrowBelongToPlayer = true;
-                evt.Level.Entities.SpawnEntity(arrow);
-                evt.Level.Broadcaster.WorldEvent(1002, evt.X, evt.Y, evt.Z, 0);
+                @event.World.Entities.SpawnEntity(arrow);
+                @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
             }
             else if (itemStack.itemId == Item.Egg.id)
             {
-                EntityEgg egg = new(evt.Level, spawnX, spawnY, spawnZ);
+                EntityEgg egg = new(@event.World, spawnX, spawnY, spawnZ);
                 egg.setEggHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
-                evt.Level.Entities.SpawnEntity(egg);
-                evt.Level.Broadcaster.WorldEvent(1002, evt.X, evt.Y, evt.Z, 0);
+                @event.World.Entities.SpawnEntity(egg);
+                @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
             }
             else if (itemStack.itemId == Item.Snowball.id)
             {
-                EntitySnowball snowball = new(evt.Level, spawnX, spawnY, spawnZ);
+                EntitySnowball snowball = new(@event.World, spawnX, spawnY, spawnZ);
                 snowball.setSnowballHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
-                evt.Level.Entities.SpawnEntity(snowball);
-                evt.Level.Broadcaster.WorldEvent(1002, evt.X, evt.Y, evt.Z, 0);
+                @event.World.Entities.SpawnEntity(snowball);
+                @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
             }
             else
             {
-                EntityItem item = new(evt.Level, spawnX, spawnY - 0.3D, spawnZ, itemStack);
+                EntityItem item = new(@event.World, spawnX, spawnY - 0.3D, spawnZ, itemStack);
                 double randomVelocity = Random.Shared.NextDouble() * 0.1D + 0.2D;
                 item.velocityX = dirX * randomVelocity;
                 item.velocityY = 0.2F;
                 item.velocityZ = dirZ * randomVelocity;
 
                 // EntityItem velocity usually takes doubles in newer Beta engines
-                item.velocityX += evt.Level.random.NextGaussian() * 0.0075D * 6.0D;
-                item.velocityY += evt.Level.random.NextGaussian() * 0.0075D * 6.0D;
-                item.velocityZ += evt.Level.random.NextGaussian() * 0.0075D * 6.0D;
+                item.velocityX += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
+                item.velocityY += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
+                item.velocityZ += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
 
-                evt.Level.Entities.SpawnEntity(item);
-                evt.Level.Broadcaster.WorldEvent(1000, evt.X, evt.Y, evt.Z, 0);
+                @event.World.Entities.SpawnEntity(item);
+                @event.World.Broadcaster.WorldEvent(1000, @event.X, @event.Y, @event.Z, 0);
             }
 
-            evt.Level.Broadcaster.WorldEvent(2000, evt.X, evt.Y, evt.Z, dirX + 1 + (dirZ + 1) * 3);
+            @event.World.Broadcaster.WorldEvent(2000, @event.X, @event.Y, @event.Z, dirX + 1 + (dirZ + 1) * 3);
         }
     }
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        if (evt.BlockId > 0 && Blocks[evt.BlockId].canEmitRedstonePower())
+        if (@event.BlockId > 0 && Blocks[@event.BlockId].canEmitRedstonePower())
         {
-            bool isPowered = evt.Level.Redstone.IsPowered(evt.X, evt.Y, evt.Z) || evt.Level.Redstone.IsPowered(evt.X, evt.Y + 1, evt.Z);
+            bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
             if (isPowered)
             {
-                evt.Level.TickScheduler.ScheduleBlockUpdate(evt.X, evt.Y, evt.Z, id, getTickRate());
+                @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id, getTickRate());
             }
         }
     }
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
-        if (evt.Level.Redstone.IsPowered(evt.X, evt.Y, evt.Z) || evt.Level.Redstone.IsPowered(evt.X, evt.Y + 1, evt.Z))
+        if (@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z))
         {
-            dispense(evt);
+            dispense(@event);
         }
     }
 
     protected override BlockEntity getBlockEntity() => new BlockEntityDispenser();
 
-    public override void onBreak(OnBreakEvt evt)
+    public override void onBreak(OnBreakEvent @event)
     {
-        BlockEntityDispenser? dispenser = (BlockEntityDispenser?)evt.Level.Reader.GetBlockEntity(evt.X, evt.Y, evt.Z);
+        BlockEntityDispenser? dispenser = (BlockEntityDispenser?)@event.World.Reader.GetBlockEntity(@event.X, @event.Y, @event.Z);
 
         if (dispenser != null)
         {
@@ -256,19 +256,19 @@ internal class BlockDispenser : BlockWithEntity
                         }
 
                         stack.count -= amount;
-                        EntityItem entityItem = new(evt.Level, evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ, new ItemStack(stack.itemId, amount, stack.getDamage()));
+                        EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, amount, stack.getDamage()));
                         float floatVar = 0.05F;
 
                         entityItem.velocityX = (float)random.NextGaussian() * floatVar;
                         entityItem.velocityY = (float)random.NextGaussian() * floatVar + 0.2F;
                         entityItem.velocityZ = (float)random.NextGaussian() * floatVar;
 
-                        evt.Level.Entities.SpawnEntity(entityItem);
+                        @event.World.Entities.SpawnEntity(entityItem);
                     }
                 }
             }
         }
 
-        base.onBreak(evt);
+        base.onBreak(@event);
     }
 }

@@ -24,7 +24,7 @@ public class ChunkDeltaUpdateS2CPacket() : Packet(PacketId.ChunkDeltaUpdateS2C)
         p.positions = new short[size];
         p.blockRawIds = new byte[size];
         p.blockMetadata = new byte[size];
-        Chunk chunk = world.BlockHost.GetChunk(x, z);
+        Chunk chunk = world.ChunkHost.GetChunk(x, z);
 
         for (int i = 0; i < size; i++)
         {

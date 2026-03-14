@@ -20,29 +20,29 @@ public class BlockRedstoneRepeater : Block
 
     public override bool isFullCube() => false;
 
-    public override bool canPlaceAt(CanPlaceAtCtx ctx) => !ctx.Level.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) ? false : base.canPlaceAt(ctx);
+    public override bool canPlaceAt(CanPlaceAtContext context) => !context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z) ? false : base.canPlaceAt(context);
 
-    public override bool canGrow(OnTickEvt evt) => !evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y - 1, evt.Z) ? false : base.canGrow(evt);
+    public override bool canGrow(OnTickEvent @event) => !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) ? false : base.canGrow(@event);
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
-        int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
-        bool powered = isPowered(evt.Level.Reader, evt.Level.Redstone, evt.X, evt.Y, evt.Z, meta);
+        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        bool powered = isPowered(@event.World.Reader, @event.World.Redstone, @event.X, @event.Y, @event.Z, meta);
 
         if (lit && !powered)
         {
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, Repeater.id, meta);
-            NotifyOutputNeighbor(evt.Level, evt.X, evt.Y, evt.Z, meta);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Repeater.id, meta);
+            NotifyOutputNeighbor(@event.World, @event.X, @event.Y, @event.Z, meta);
         }
         else if (!lit)
         {
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, PoweredRepeater.id, meta);
-            NotifyOutputNeighbor(evt.Level, evt.X, evt.Y, evt.Z, meta);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, PoweredRepeater.id, meta);
+            NotifyOutputNeighbor(@event.World, @event.X, @event.Y, @event.Z, meta);
 
             if (!powered)
             {
                 int delaySetting = (meta & 12) >> 2;
-                evt.Level.TickScheduler.ScheduleBlockUpdate(evt.X, evt.Y, evt.Z, PoweredRepeater.id, DELAY[delaySetting] * 2);
+                @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, PoweredRepeater.id, DELAY[delaySetting] * 2);
             }
         }
     }
@@ -68,25 +68,25 @@ public class BlockRedstoneRepeater : Block
         return facing == 0 && side == 3 ? true : facing == 1 && side == 4 ? true : facing == 2 && side == 2 ? true : facing == 3 && side == 5;
     }
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        if (!canGrow(evt))
+        if (!canGrow(@event))
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Meta, evt.BlockId));
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.Meta, @event.BlockId));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
         else
         {
-            int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
-            bool powered = isPowered(evt.Level.Reader, evt.Level.Redstone, evt.X, evt.Y, evt.Z, meta);
+            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+            bool powered = isPowered(@event.World.Reader, @event.World.Redstone, @event.X, @event.Y, @event.Z, meta);
             int delaySetting = (meta & 12) >> 2;
             if (lit && !powered)
             {
-                evt.Level.TickScheduler.ScheduleBlockUpdate(evt.X, evt.Y, evt.Z, id, DELAY[delaySetting] * 2);
+                @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id, DELAY[delaySetting] * 2);
             }
             else if (!lit && powered)
             {
-                evt.Level.TickScheduler.ScheduleBlockUpdate(evt.X, evt.Y, evt.Z, id, DELAY[delaySetting] * 2);
+                @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id, DELAY[delaySetting] * 2);
             }
         }
     }
@@ -109,54 +109,54 @@ public class BlockRedstoneRepeater : Block
         }
     }
 
-    public override bool onUse(OnUseEvt ctx)
+    public override bool onUse(OnUseEvent ctx)
     {
-        int meta = ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         int newDelaySetting = (meta & 12) >> 2;
         newDelaySetting = ((newDelaySetting + 1) << 2) & 12;
-        ctx.Level.BlockWriter.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, newDelaySetting | (meta & 3));
+        ctx.World.Writer.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, newDelaySetting | (meta & 3));
         return true;
     }
 
     public override bool canEmitRedstonePower() => true;
 
-    public override void onPlaced(OnPlacedEvt evt)
+    public override void onPlaced(OnPlacedEvent @event)
     {
-        if (evt.Placer != null)
+        if (@event.Placer != null)
         {
-            float yaw = evt.Placer.yaw;
+            float yaw = @event.Placer.yaw;
             int facing = ((MathHelper.Floor(yaw * 4.0F / 360.0F + 0.5D) & 3) + 2) % 4;
-            evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, facing);
+            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, facing);
         }
 
-        int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
 
-        bool powered = isPowered(evt.Level.Reader, evt.Level.Redstone, evt.X, evt.Y, evt.Z, meta);
+        bool powered = isPowered(@event.World.Reader, @event.World.Redstone, @event.X, @event.Y, @event.Z, meta);
         if (powered)
         {
-            evt.Level.TickScheduler.ScheduleBlockUpdate(evt.X, evt.Y, evt.Z, id, 1);
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id, 1);
         }
 
-        evt.Level.Broadcaster.NotifyNeighbors(evt.X + 1, evt.Y, evt.Z, id);
-        evt.Level.Broadcaster.NotifyNeighbors(evt.X - 1, evt.Y, evt.Z, id);
-        evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y, evt.Z + 1, id);
-        evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y, evt.Z - 1, id);
-        evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y - 1, evt.Z, id);
-        evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y + 1, evt.Z, id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X + 1, @event.Y, @event.Z, id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X - 1, @event.Y, @event.Z, id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z + 1, id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z - 1, id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, id);
     }
 
     public override bool isOpaque() => false;
 
     public override int getDroppedItemId(int blockMeta) => Item.Repeater.id;
 
-    public override void randomDisplayTick(OnTickEvt ctx)
+    public override void randomDisplayTick(OnTickEvent ctx)
     {
         if (!lit)
         {
             return;
         }
 
-        int meta = ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         double particleX = ctx.X + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
         double particleY = ctx.Y + 0.4F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
         double particleZ = ctx.Z + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
@@ -200,7 +200,7 @@ public class BlockRedstoneRepeater : Block
             }
         }
 
-        ctx.Level.Broadcaster.AddParticle("reddust", particleX + offsetX, particleY, particleZ + offsetY, 0.0D, 0.0D, 0.0D);
+        ctx.World.Broadcaster.AddParticle("reddust", particleX + offsetX, particleY, particleZ + offsetY, 0.0D, 0.0D, 0.0D);
     }
 
     private void NotifyOutputNeighbor(IWorldContext level, int x, int y, int z, int meta)

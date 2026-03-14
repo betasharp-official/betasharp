@@ -21,7 +21,7 @@ public class WorldEventBroadcaster
 
     public bool isRemote => _worldContext.IsRemote;
     public RuleSet Rules => _worldContext.Rules;
-    public JavaRandom random => _worldContext.random;
+    public JavaRandom random => _worldContext.Random;
 
     public void PlaySoundAtEntity(Entity entity, string sound, float volume, float pitch)
     {
@@ -94,7 +94,7 @@ public class WorldEventBroadcaster
             {
                 int meta = _reader.GetBlockMeta(x, y, z);
 
-                OnTickEvt tickEvent = new(_worldContext, x, y, z, meta, blockId);
+                OnTickEvent tickEvent = new(_worldContext, x, y, z, meta, blockId);
 
                 block.neighborUpdate(tickEvent);
             }
@@ -120,7 +120,7 @@ public class WorldEventBroadcaster
         int blockId = _reader.GetBlockId(x, y, z);
         if (blockId > 0)
         {
-            Block.Blocks[blockId].onBlockAction(new OnBlockActionEvt(_worldContext, soundType, pitch, x, y, z));
+            Block.Blocks[blockId].onBlockAction(new OnBlockActionEvent(_worldContext, soundType, pitch, x, y, z));
         }
 
         for (int i = 0; i < _eventListeners.Count; ++i)

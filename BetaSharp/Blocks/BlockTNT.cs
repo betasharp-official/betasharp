@@ -12,60 +12,60 @@ internal class BlockTNT : Block
 
     public override int getTexture(int side) => side == 0 ? textureId + 2 : side == 1 ? textureId + 1 : textureId;
 
-    public override void onPlaced(OnPlacedEvt evt)
+    public override void onPlaced(OnPlacedEvent @event)
     {
-        base.onPlaced(evt);
-        if (evt.Level.Redstone.IsPowered(evt.X, evt.Y, evt.Z))
+        base.onPlaced(@event);
+        if (@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
         {
-            onMetadataChange(new OnMetadataChangeEvt(evt.Level, evt.X, evt.Y, evt.Z, 1));
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+            onMetadataChange(new OnMetadataChangeEvent(@event.World, @event.X, @event.Y, @event.Z, 1));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
     }
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        if (evt.BlockId > 0 && Blocks[evt.BlockId].canEmitRedstonePower() && evt.Level.Redstone.IsPowered(evt.X, evt.Y, evt.Z))
+        if (@event.BlockId > 0 && Blocks[@event.BlockId].canEmitRedstonePower() && @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
         {
-            onMetadataChange(new OnMetadataChangeEvt(evt.Level, evt.X, evt.Y, evt.Z, 1));
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+            onMetadataChange(new OnMetadataChangeEvent(@event.World, @event.X, @event.Y, @event.Z, 1));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
     }
 
     public override int getDroppedItemCount() => 0;
 
-    public override void onDestroyedByExplosion(OnDestroyedByExplosionEvt evt)
+    public override void onDestroyedByExplosion(OnDestroyedByExplosionEvent @event)
     {
-        EntityTNTPrimed entityTNTPrimed = new(evt.Level, evt.X + 0.5F, evt.Y + 0.5F, evt.Z + 0.5F);
-        entityTNTPrimed.fuse = evt.Level.random.NextInt(entityTNTPrimed.fuse / 4) + entityTNTPrimed.fuse / 8;
-        evt.Level.Entities.SpawnEntity(entityTNTPrimed);
+        EntityTNTPrimed entityTNTPrimed = new(@event.World, @event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F);
+        entityTNTPrimed.fuse = @event.World.Random.NextInt(entityTNTPrimed.fuse / 4) + entityTNTPrimed.fuse / 8;
+        @event.World.Entities.SpawnEntity(entityTNTPrimed);
     }
 
-    public override void onMetadataChange(OnMetadataChangeEvt evt)
+    public override void onMetadataChange(OnMetadataChangeEvent @event)
     {
-        if (!evt.Level.IsRemote)
+        if (!@event.World.IsRemote)
         {
-            if ((evt.Meta & 1) == 0)
+            if ((@event.Meta & 1) == 0)
             {
-                dropStack(evt.Level, evt.X, evt.Y, evt.Z, new ItemStack(TNT.id, 1, 0));
+                dropStack(@event.World, @event.X, @event.Y, @event.Z, new ItemStack(TNT.id, 1, 0));
             }
             else
             {
-                EntityTNTPrimed entityTNTPrimed = new EntityTNTPrimed(evt.Level, evt.X + 0.5F, evt.Y + 0.5F, evt.Z + 0.5F);
-                evt.Level.Entities.SpawnEntity(entityTNTPrimed);
-                evt.Level.Broadcaster.PlaySoundAtPos(evt.X + 0.5F, evt.Y + 0.5F, evt.Z + 0.5F, "random.fuse", 1.0F, 1.0F);
+                EntityTNTPrimed entityTNTPrimed = new EntityTNTPrimed(@event.World, @event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F);
+                @event.World.Entities.SpawnEntity(entityTNTPrimed);
+                @event.World.Broadcaster.PlaySoundAtPos(@event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F, "random.fuse", 1.0F, 1.0F);
             }
         }
     }
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvt ctx)
+    public override void onBlockBreakStart(OnBlockBreakStartEvent ctx)
     {
         if (ctx.Player.getHand() != null && ctx.Player.getHand().itemId == Item.FlintAndSteel.id)
         {
-            ctx.Level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(ctx.X, ctx.Y, ctx.Z, 1);
+            ctx.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(ctx.X, ctx.Y, ctx.Z, 1);
         }
 
         base.onBlockBreakStart(ctx);
     }
 
-    public override bool onUse(OnUseEvt ctx) => base.onUse(ctx);
+    public override bool onUse(OnUseEvent ctx) => base.onUse(ctx);
 }

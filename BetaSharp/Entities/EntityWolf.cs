@@ -99,12 +99,12 @@ public class EntityWolf : EntityAnimal
                 setWolfSitting(true);
             }
         }
-        else if (playerToAttack == null && !hasPath() && !isWolfTamed() && world.random.NextInt(100) == 0)
+        else if (playerToAttack == null && !hasPath() && !isWolfTamed() && world.Random.NextInt(100) == 0)
         {
             var nearbySheep = world.Entities.CollectEntitiesOfType<EntitySheep>(new Box(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D).Expand(16.0D, 4.0D, 16.0D));
             if (nearbySheep.Count > 0)
             {
-                setTarget(nearbySheep[world.random.NextInt(nearbySheep.Count)]);
+                setTarget(nearbySheep[world.Random.NextInt(nearbySheep.Count)]);
             }
         }
 

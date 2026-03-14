@@ -18,7 +18,7 @@ public class ServerWorld : World
     private readonly Dictionary<int, Entity> entitiesById = [];
     private readonly BetaSharpServer server;
     public bool bypassSpawnProtection = false;
-    public ServerIChunkCache ChunkCache;
+    public ServerChunkCache ChunkCache;
     public bool savingDisabled;
 
     public ServerWorld(BetaSharpServer server, IWorldStorage storage, string saveName, int dimension, WorldSettings settings, ServerWorld del) : base(storage, saveName, settings, Dimension.FromId(dimension))
@@ -36,7 +36,7 @@ public class ServerWorld : World
     protected override IChunkSource CreateChunkCache()
     {
         IChunkStorage? chunkStorage = Storage.GetChunkStorage(dimension);
-        ChunkCache = new ServerIChunkCache(this, chunkStorage, dimension.CreateChunkGenerator());
+        ChunkCache = new ServerChunkCache(this, chunkStorage, dimension.CreateChunkGenerator());
         return ChunkCache;
     }
 

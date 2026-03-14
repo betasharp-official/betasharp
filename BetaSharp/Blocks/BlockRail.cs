@@ -70,21 +70,21 @@ public class BlockRail : Block
 
     public override BlockRendererType getRenderType() => BlockRendererType.MinecartTrack;
 
-    public override bool canPlaceAt(CanPlaceAtCtx evt) => evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y - 1, evt.Z);
+    public override bool canPlaceAt(CanPlaceAtContext evt) => evt.World.Reader.ShouldSuffocate(evt.X, evt.Y - 1, evt.Z);
 
-    public override void onPlaced(OnPlacedEvt evt)
+    public override void onPlaced(OnPlacedEvent @event)
     {
-        if (!evt.Level.IsRemote)
+        if (!@event.World.IsRemote)
         {
-            updateShape(evt.Level, evt.X, evt.Y, evt.Z, true);
+            updateShape(@event.World, @event.X, @event.Y, @event.Z, true);
         }
     }
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        if (!evt.Level.IsRemote)
+        if (!@event.World.IsRemote)
         {
-            int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             int railMeta = meta;
             if (alwaysStraight)
             {
@@ -92,64 +92,64 @@ public class BlockRail : Block
             }
 
             bool shouldBreak = false;
-            if (!evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y - 1, evt.Z))
+            if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z))
             {
                 shouldBreak = true;
             }
 
-            if (railMeta == 2 && !evt.Level.Reader.ShouldSuffocate(evt.X + 1, evt.Y, evt.Z))
+            if (railMeta == 2 && !@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z))
             {
                 shouldBreak = true;
             }
 
-            if (railMeta == 3 && !evt.Level.Reader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z))
+            if (railMeta == 3 && !@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z))
             {
                 shouldBreak = true;
             }
 
-            if (railMeta == 4 && !evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z - 1))
+            if (railMeta == 4 && !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1))
             {
                 shouldBreak = true;
             }
 
-            if (railMeta == 5 && !evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z + 1))
+            if (railMeta == 5 && !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1))
             {
                 shouldBreak = true;
             }
 
             if (shouldBreak)
             {
-                dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
-                evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+                dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             }
             else if (id == PoweredRail.id)
             {
-                bool isPowered = evt.Level.Redstone.IsPowered(evt.X, evt.Y, evt.Z) || evt.Level.Redstone.IsPowered(evt.X, evt.Y + 1, evt.Z);
-                isPowered = isPowered || isPoweredByConnectedRails(evt.Level, evt.X, evt.Y, evt.Z, meta, true, 0) || isPoweredByConnectedRails(evt.Level, evt.X, evt.Y, evt.Z, meta, false, 0);
+                bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
+                isPowered = isPowered || isPoweredByConnectedRails(@event.World, @event.X, @event.Y, @event.Z, meta, true, 0) || isPoweredByConnectedRails(@event.World, @event.X, @event.Y, @event.Z, meta, false, 0);
                 bool stateChanged = false;
                 if (isPowered && (meta & 8) == 0)
                 {
-                    evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, railMeta | 8);
+                    @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, railMeta | 8);
                     stateChanged = true;
                 }
                 else if (!isPowered && (meta & 8) != 0)
                 {
-                    evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, railMeta);
+                    @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, railMeta);
                     stateChanged = true;
                 }
 
                 if (stateChanged)
                 {
-                    evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y - 1, evt.Z, id);
+                    @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, id);
                     if (railMeta == 2 || railMeta == 3 || railMeta == 4 || railMeta == 5)
                     {
-                        evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y + 1, evt.Z, id);
+                        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, id);
                     }
                 }
             }
-            else if (id > 0 && Blocks[id].canEmitRedstonePower() && !alwaysStraight && RailLogic.GetNAdjacentTracks(new RailLogic(this, evt.Level, new Vec3i(evt.X, evt.Y, evt.Z))) == 3)
+            else if (id > 0 && Blocks[id].canEmitRedstonePower() && !alwaysStraight && RailLogic.GetNAdjacentTracks(new RailLogic(this, @event.World, new Vec3i(@event.X, @event.Y, @event.Z))) == 3)
             {
-                updateShape(evt.Level, evt.X, evt.Y, evt.Z, false);
+                updateShape(@event.World, @event.X, @event.Y, @event.Z, false);
             }
         }
     }

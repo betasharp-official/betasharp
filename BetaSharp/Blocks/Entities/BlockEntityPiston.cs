@@ -111,7 +111,7 @@ public class BlockEntityPiston : BlockEntity
             markRemoved();
             if (World.Reader.GetBlockId(X, Y, Z) == Block.MovingPiston.id)
             {
-                World.BlockWriter.SetBlock(X, Y, Z, _pushedBlockId, _pushedBlockData);
+                World.Writer.SetBlock(X, Y, Z, _pushedBlockId, _pushedBlockData);
             }
         }
     }
@@ -126,7 +126,7 @@ public class BlockEntityPiston : BlockEntity
             markRemoved();
             if (World.Reader.GetBlockId(X, Y, Z) == Block.MovingPiston.id)
             {
-                World.BlockWriter.SetBlock(X, Y, Z, _pushedBlockId, _pushedBlockData);
+                World.Writer.SetBlock(X, Y, Z, _pushedBlockId, _pushedBlockData);
             }
         }
         else

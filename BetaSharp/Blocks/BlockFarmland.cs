@@ -35,34 +35,34 @@ internal class BlockFarmland : Block
         return side == 1 && meta > 0 ? textureId - 1 : side == 1 ? textureId : 2;
     }
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
         if (Random.Shared.Next(5) == 0)
         {
-            if (!isWaterNearby(evt.Level.Reader, evt.X, evt.Y, evt.Z) && !evt.Level.Environment.IsRaining)
+            if (!isWaterNearby(@event.World.Reader, @event.X, @event.Y, @event.Z) && !@event.World.Environment.IsRaining)
             {
-                int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+                int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
                 if (meta > 0)
                 {
-                    evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, meta - 1);
+                    @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta - 1);
                 }
-                else if (!hasCrop(evt.Level.Reader, evt.X, evt.Y, evt.Z))
+                else if (!hasCrop(@event.World.Reader, @event.X, @event.Y, @event.Z))
                 {
-                    evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, Dirt.id);
+                    @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Dirt.id);
                 }
             }
             else
             {
-                evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, 7);
+                @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 7);
             }
         }
     }
 
-    public override void onSteppedOn(OnEntityStepEvt evt)
+    public override void onSteppedOn(OnEntityStepEvent @event)
     {
         if (Random.Shared.Next(4) == 0)
         {
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, Dirt.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Dirt.id);
         }
     }
 
@@ -103,13 +103,13 @@ internal class BlockFarmland : Block
         return false;
     }
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        base.neighborUpdate(evt);
-        Material material = evt.Level.Reader.GetMaterial(evt.X, evt.Y + 1, evt.Z);
+        base.neighborUpdate(@event);
+        Material material = @event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z);
         if (material.IsSolid)
         {
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, Dirt.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Dirt.id);
         }
     }
 

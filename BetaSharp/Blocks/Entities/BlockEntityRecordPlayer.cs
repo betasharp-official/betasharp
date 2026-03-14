@@ -19,6 +19,5 @@ internal class BlockEntityRecordPlayer : BlockEntity
         {
             nbt.SetInteger("Record", recordId);
         }
-
     }
 }

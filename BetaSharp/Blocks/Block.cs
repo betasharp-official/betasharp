@@ -321,19 +321,19 @@ public class Block
         return true;
     }
 
-    public virtual void onTick(OnTickEvt e)
+    public virtual void onTick(OnTickEvent e)
     {
     }
 
-    public virtual void randomDisplayTick(OnTickEvt e)
+    public virtual void randomDisplayTick(OnTickEvent e)
     {
     }
 
-    public virtual void onMetadataChange(OnMetadataChangeEvt ctx)
+    public virtual void onMetadataChange(OnMetadataChangeEvent ctx)
     {
     }
 
-    public virtual void neighborUpdate(OnTickEvt e)
+    public virtual void neighborUpdate(OnTickEvent e)
     {
     }
 
@@ -342,11 +342,11 @@ public class Block
         return 10;
     }
 
-    public virtual void onPlaced(OnPlacedEvt e)
+    public virtual void onPlaced(OnPlacedEvent e)
     {
     }
 
-    public virtual void onBreak(OnBreakEvt e)
+    public virtual void onBreak(OnBreakEvent e)
     {
     }
 
@@ -365,9 +365,9 @@ public class Block
         return hardness < 0.0F ? 0.0F : (!player.canHarvest(this) ? 1.0F / hardness / 100.0F : player.getBlockBreakingSpeed(this) / hardness / 30.0F);
     }
 
-    public virtual void dropStacks(OnDropEvt ctx)
+    public virtual void dropStacks(OnDropEvent ctx)
     {
-        if (!ctx.Level.IsRemote && ctx.Level.Rules.GetBool(DefaultRules.DoTileDrops))
+        if (!ctx.World.IsRemote && ctx.World.Rules.GetBool(DefaultRules.DoTileDrops))
         {
             int dropCount = getDroppedItemCount();
 
@@ -378,7 +378,7 @@ public class Block
                     int itemId = getDroppedItemId(ctx.Meta);
                     if (itemId > 0)
                     {
-                        dropStack(ctx.Level, ctx.X, ctx.Y, ctx.Z, new ItemStack(itemId, 1, getDroppedItemMeta(ctx.Meta)));
+                        dropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(itemId, 1, getDroppedItemMeta(ctx.Meta)));
                     }
                 }
             }
@@ -424,31 +424,32 @@ public class Block
         return res;
     }
 
-    public virtual void onDestroyedByExplosion(OnDestroyedByExplosionEvt evt)
+    public virtual void onDestroyedByExplosion(OnDestroyedByExplosionEvent @event)
     {
     }
 
     public virtual int getRenderLayer() => 0;
 
-    public virtual bool canPlaceAt(CanPlaceAtCtx evt)
+    public virtual bool canPlaceAt(CanPlaceAtContext evt)
     {
-        int blockId = evt.Level.Reader.GetBlockId(evt.X, evt.Y, evt.Z);
+        int blockId = evt.World.Reader.GetBlockId(evt.X, evt.Y, evt.Z);
         return blockId == 0 || Blocks[blockId].material.IsReplaceable;
     }
 
-    public virtual bool onUse(OnUseEvt _)
+    public virtual bool onUse(OnUseEvent _)
     {
         return false;
     }
-    public virtual void onSteppedOn(OnEntityStepEvt evt)
+
+    public virtual void onSteppedOn(OnEntityStepEvent @event)
     {
     }
 
-    public virtual void onBlockBreakStart(OnBlockBreakStartEvt evt)
+    public virtual void onBlockBreakStart(OnBlockBreakStartEvent @event)
     {
     }
 
-    public virtual Vec3D applyVelocity(OnApplyVelocityEvt evt)
+    public virtual Vec3D applyVelocity(OnApplyVelocityEvent @event)
     {
         return Vec3D.Zero;
     }
@@ -484,7 +485,7 @@ public class Block
         return false;
     }
 
-    public virtual void onEntityCollision(OnEntityCollisionEvt evt)
+    public virtual void onEntityCollision(OnEntityCollisionEvent @event)
     {
     }
 
@@ -497,13 +498,13 @@ public class Block
     {
     }
 
-    public virtual void onAfterBreak(OnAfterBreakEvt ctx)
+    public virtual void onAfterBreak(OnAfterBreakEvent ctx)
     {
         ctx.Player.increaseStat(Stats.Stats.MineBlockStatArray[id], 1);
-        dropStacks(new OnDropEvt(ctx.Level, ctx.X, ctx.Y, ctx.Z, ctx.Meta));
+        dropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, ctx.Meta));
     }
 
-    public virtual bool canGrow(OnTickEvt ctx) => true;
+    public virtual bool canGrow(OnTickEvent ctx) => true;
 
     public Block setBlockName(string name)
     {
@@ -518,7 +519,7 @@ public class Block
         return blockName;
     }
 
-    public virtual void onBlockAction(OnBlockActionEvt ctx)
+    public virtual void onBlockAction(OnBlockActionEvent ctx)
     {
     }
 

@@ -8,9 +8,9 @@ internal class BlockWorkbench : Block
 
     public override int getTexture(int side) => side == 1 ? textureId - 16 : side == 0 ? Planks.getTexture(0) : side != 2 && side != 4 ? textureId : textureId + 1;
 
-    public override bool onUse(OnUseEvt ctx)
+    public override bool onUse(OnUseEvent ctx)
     {
-        if (ctx.Level.IsRemote)
+        if (ctx.World.IsRemote)
         {
             return true;
         }

@@ -78,7 +78,7 @@ internal class NetherLavaSpringFeature : Feature
 
         if (netherrackNeighbors == 4 && airNeighbors == 1)
         {
-            level.BlockWriter.SetBlock(x, y, z, _lavaBlockId, 0, doUpdate: false);
+            level.Writer.SetBlock(x, y, z, _lavaBlockId, 0, doUpdate: false);
             level.TickScheduler.TriggerInstantTick(x, y, z, _lavaBlockId);
         }
 

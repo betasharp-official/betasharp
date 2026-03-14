@@ -14,6 +14,7 @@ public class BlockEntityMobSpawner : BlockEntity
     {
         SpawnDelay = 20;
     }
+
     public int SpawnDelay { get; set; } = -1;
     public double Rotation { get; set; }
     public double LastRotation { get; set; }
@@ -38,9 +39,9 @@ public class BlockEntityMobSpawner : BlockEntity
         LastRotation = Rotation;
         if (IsPlayerInRange())
         {
-            double particleX = X + World.random.NextFloat();
-            double particleY = Y + World.random.NextFloat();
-            double particleZ = Z + World.random.NextFloat();
+            double particleX = X + World.Random.NextFloat();
+            double particleY = Y + World.Random.NextFloat();
+            double particleZ = Z + World.Random.NextFloat();
             World.Broadcaster.AddParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
             World.Broadcaster.AddParticle("flame", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
 
@@ -81,19 +82,19 @@ public class BlockEntityMobSpawner : BlockEntity
 
                     if (entityLiving != null)
                     {
-                        double posX = X + (World.random.NextDouble() - World.random.NextDouble()) * 4.0D;
-                        double posY = Y + World.random.NextInt(3) - 1;
-                        double posZ = Z + (World.random.NextDouble() - World.random.NextDouble()) * 4.0D;
-                        entityLiving.setPositionAndAnglesKeepPrevAngles(posX, posY, posZ, World.random.NextFloat() * 360.0F, 0.0F);
+                        double posX = X + (World.Random.NextDouble() - World.Random.NextDouble()) * 4.0D;
+                        double posY = Y + World.Random.NextInt(3) - 1;
+                        double posZ = Z + (World.Random.NextDouble() - World.Random.NextDouble()) * 4.0D;
+                        entityLiving.setPositionAndAnglesKeepPrevAngles(posX, posY, posZ, World.Random.NextFloat() * 360.0F, 0.0F);
                         if (entityLiving.canSpawn())
                         {
                             World.SpawnEntity(entityLiving);
 
                             for (int particleIndex = 0; particleIndex < 20; ++particleIndex)
                             {
-                                particleX = X + 0.5D + (World.random.NextFloat() - 0.5D) * 2.0D;
-                                particleY = Y + 0.5D + (World.random.NextFloat() - 0.5D) * 2.0D;
-                                particleZ = Z + 0.5D + (World.random.NextFloat() - 0.5D) * 2.0D;
+                                particleX = X + 0.5D + (World.Random.NextFloat() - 0.5D) * 2.0D;
+                                particleY = Y + 0.5D + (World.Random.NextFloat() - 0.5D) * 2.0D;
+                                particleZ = Z + 0.5D + (World.Random.NextFloat() - 0.5D) * 2.0D;
                                 World.Broadcaster.AddParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                                 World.Broadcaster.AddParticle("flame", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                             }
@@ -111,7 +112,7 @@ public class BlockEntityMobSpawner : BlockEntity
 
     private void ResetDelay()
     {
-        SpawnDelay = 200 + World.random.NextInt(600);
+        SpawnDelay = 200 + World.Random.NextInt(600);
         _logger.LogInformation("Spawn Delay: " + SpawnDelay);
     }
 

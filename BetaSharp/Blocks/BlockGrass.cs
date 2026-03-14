@@ -54,28 +54,28 @@ public class BlockGrass : Block
         return GrassColors.getColor(temperature, downfall);
     }
 
-    public override void onTick(OnTickEvt ctx)
+    public override void onTick(OnTickEvent ctx)
     {
-        if (!ctx.Level.IsRemote)
+        if (!ctx.World.IsRemote)
         {
-            if (ctx.Level.Lighting.GetLightLevel(ctx.X, ctx.Y + 1, ctx.Z) < 4 && BlockLightOpacity[ctx.Level.Reader.GetBlockId(ctx.X, ctx.Y + 1, ctx.Z)] > 2)
+            if (ctx.World.Lighting.GetLightLevel(ctx.X, ctx.Y + 1, ctx.Z) < 4 && BlockLightOpacity[ctx.World.Reader.GetBlockId(ctx.X, ctx.Y + 1, ctx.Z)] > 2)
             {
                 if (Random.Shared.Next(4) != 0)
                 {
                     return;
                 }
 
-                ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, Dirt.id);
+                ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, Dirt.id);
             }
-            else if (ctx.Level.Lighting.GetLightLevel(ctx.X, ctx.Y + 1, ctx.Z) >= 9)
+            else if (ctx.World.Lighting.GetLightLevel(ctx.X, ctx.Y + 1, ctx.Z) >= 9)
             {
                 int spreadX = ctx.X + Random.Shared.Next(3) - 1;
                 int spreadY = ctx.Y + Random.Shared.Next(5) - 3;
                 int spreadZ = ctx.Z + Random.Shared.Next(3) - 1;
-                int blockAboveId = ctx.Level.Reader.GetBlockId(spreadX, spreadY + 1, spreadZ);
-                if (ctx.Level.Reader.GetBlockId(spreadX, spreadY, spreadZ) == Dirt.id && ctx.Level.Lighting.GetLightLevel(spreadX, spreadY + 1, spreadZ) >= 4 && BlockLightOpacity[blockAboveId] <= 2)
+                int blockAboveId = ctx.World.Reader.GetBlockId(spreadX, spreadY + 1, spreadZ);
+                if (ctx.World.Reader.GetBlockId(spreadX, spreadY, spreadZ) == Dirt.id && ctx.World.Lighting.GetLightLevel(spreadX, spreadY + 1, spreadZ) >= 4 && BlockLightOpacity[blockAboveId] <= 2)
                 {
-                    ctx.Level.BlockWriter.SetBlock(spreadX, spreadY, spreadZ, GrassBlock.id);
+                    ctx.World.Writer.SetBlock(spreadX, spreadY, spreadZ, GrassBlock.id);
                 }
             }
         }

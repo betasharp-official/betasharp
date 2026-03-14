@@ -15,51 +15,51 @@ internal class BlockStationary : BlockFluid
         }
     }
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        base.neighborUpdate(evt);
-        if (evt.Level.Reader.GetBlockId(evt.X, evt.Y, evt.Z) == id)
+        base.neighborUpdate(@event);
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) == id)
         {
-            int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
-            evt.Level.BlockWriter.SetBlockWithoutNotifyingNeighbors(evt.X, evt.Y, evt.Z, id - 1, meta, notifyBlockPlaced: false);
-            evt.Level.TickScheduler.ScheduleBlockUpdate(evt.X, evt.Y, evt.Z, id - 1, getTickRate());
+            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+            @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, id - 1, meta, notifyBlockPlaced: false);
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id - 1, getTickRate());
         }
     }
 
-    private void convertToFlowing(OnTickEvt evt)
+    private void convertToFlowing(OnTickEvent @event)
     {
-        int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
-        evt.Level.BlockWriter.SetBlockWithoutNotifyingNeighbors(evt.X, evt.Y, evt.Z, id - 1, meta, notifyBlockPlaced: false);
-        evt.Level.Broadcaster.SetBlocksDirty(evt.X, evt.Y, evt.Z, evt.X, evt.Y, evt.Z);
-        evt.Level.TickScheduler.ScheduleBlockUpdate(evt.X, evt.Y, evt.Z, id - 1, getTickRate());
+        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, id - 1, meta, notifyBlockPlaced: false);
+        @event.World.Broadcaster.SetBlocksDirty(@event.X, @event.Y, @event.Z, @event.X, @event.Y, @event.Z);
+        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id - 1, getTickRate());
     }
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
-        int x = evt.X;
-        int y = evt.Y;
-        int z = evt.Z;
-        if (evt.Level.Reader.GetBlockId(x, y, z) == id)
+        int x = @event.X;
+        int y = @event.Y;
+        int z = @event.Z;
+        if (@event.World.Reader.GetBlockId(x, y, z) == id)
         {
-            convertToFlowing(evt);
+            convertToFlowing(@event);
         }
 
         if (material == Material.Lava)
         {
-            int attempts = evt.Level.random.NextInt(3);
+            int attempts = @event.World.Random.NextInt(3);
 
             for (int attempt = 0; attempt < attempts; ++attempt)
             {
-                x += evt.Level.random.NextInt(3) - 1;
+                x += @event.World.Random.NextInt(3) - 1;
                 ++y;
-                z += evt.Level.random.NextInt(3) - 1;
-                int neighborBlockId = evt.Level.Reader.GetBlockId(x, y, z);
+                z += @event.World.Random.NextInt(3) - 1;
+                int neighborBlockId = @event.World.Reader.GetBlockId(x, y, z);
                 if (neighborBlockId == 0)
                 {
-                    if (isFlammable(evt.Level.Reader, x - 1, y, z) || isFlammable(evt.Level.Reader, x + 1, y, z) || isFlammable(evt.Level.Reader, x, y, z - 1) ||
-                        isFlammable(evt.Level.Reader, x, y, z + 1) || isFlammable(evt.Level.Reader, x, y - 1, z) || isFlammable(evt.Level.Reader, x, y + 1, z))
+                    if (isFlammable(@event.World.Reader, x - 1, y, z) || isFlammable(@event.World.Reader, x + 1, y, z) || isFlammable(@event.World.Reader, x, y, z - 1) ||
+                        isFlammable(@event.World.Reader, x, y, z + 1) || isFlammable(@event.World.Reader, x, y - 1, z) || isFlammable(@event.World.Reader, x, y + 1, z))
                     {
-                        evt.Level.BlockWriter.SetBlock(x, y, z, Fire.id);
+                        @event.World.Writer.SetBlock(x, y, z, Fire.id);
                         return;
                     }
                 }

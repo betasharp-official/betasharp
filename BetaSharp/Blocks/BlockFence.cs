@@ -11,9 +11,9 @@ internal class BlockFence : Block
     {
     }
 
-    public override bool canPlaceAt(CanPlaceAtCtx ctx)
+    public override bool canPlaceAt(CanPlaceAtContext context)
     {
-        return ctx.Level.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == id ? true : !ctx.Level.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z).IsSolid ? false : base.canPlaceAt(ctx);
+        return context.World.Reader.GetBlockId(context.X, context.Y - 1, context.Z) == id ? true : !context.World.Reader.GetMaterial(context.X, context.Y - 1, context.Z).IsSolid ? false : base.canPlaceAt(context);
     }
 
     public override Box? getCollisionShape(IBlockReader world, int x, int y, int z)

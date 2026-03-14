@@ -14,7 +14,5 @@ namespace BetaSharp.Blocks.Materials
         {
             SetReplaceable();
         }
-
     }
-
 }

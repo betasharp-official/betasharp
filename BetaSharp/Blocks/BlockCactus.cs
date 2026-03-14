@@ -9,26 +9,26 @@ internal class BlockCactus : Block
 {
     public BlockCactus(int id, int textureId) : base(id, textureId, Material.Cactus) => setTickRandomly(true);
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
-        if (evt.Level.Reader.IsAir(evt.X, evt.Y + 1, evt.Z))
+        if (@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z))
         {
             int heightBelow;
-            for (heightBelow = 1; evt.Level.Reader.GetBlockId(evt.X, evt.Y - heightBelow, evt.Z) == id; ++heightBelow)
+            for (heightBelow = 1; @event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == id; ++heightBelow)
             {
             }
 
             if (heightBelow < 3)
             {
-                int growthStage = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+                int growthStage = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
                 if (growthStage == 15)
                 {
-                    evt.Level.BlockWriter.SetBlock(evt.X, evt.Y + 1, evt.Z, id);
-                    evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, 0);
+                    @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, id);
+                    @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 0);
                 }
                 else
                 {
-                    evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, growthStage + 1);
+                    @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, growthStage + 1);
                 }
             }
         }
@@ -66,23 +66,24 @@ internal class BlockCactus : Block
         return BlockRendererType.Cactus;
     }
 
-    public override bool canPlaceAt(CanPlaceAtCtx evt) {
-        return !base.canPlaceAt(evt) ? false : canGrow(evt.Level.Reader, evt.X, evt.Y, evt.Z);
-    } 
-        
-
-    public override void neighborUpdate(OnTickEvt evt)
+    public override bool canPlaceAt(CanPlaceAtContext evt)
     {
-        if (!canGrow(evt))
+        return !base.canPlaceAt(evt) ? false : canGrow(evt.World.Reader, evt.X, evt.Y, evt.Z);
+    }
+
+
+    public override void neighborUpdate(OnTickEvent @event)
+    {
+        if (!canGrow(@event))
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
     }
 
-    public override bool canGrow(OnTickEvt evt)
+    public override bool canGrow(OnTickEvent @event)
     {
-        return canGrow(evt.Level.Reader, evt.X, evt.Y, evt.Z);
+        return canGrow(@event.World.Reader, @event.X, @event.Y, @event.Z);
     }
 
     private static bool canGrow(WorldReader world, int x, int y, int z)
@@ -111,7 +112,7 @@ internal class BlockCactus : Block
         return blockBelowId == Cactus.id || blockBelowId == Sand.id;
     }
 
-    public override void onEntityCollision(OnEntityCollisionEvt ctx)
+    public override void onEntityCollision(OnEntityCollisionEvent ctx)
     {
         ctx.Entity.damage(null, 1);
     }

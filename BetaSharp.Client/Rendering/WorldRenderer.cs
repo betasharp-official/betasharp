@@ -888,7 +888,7 @@ public class WorldRenderer : IWorldEventListener
 
     public void worldEvent(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6)
     {
-        JavaRandom var7 = world.random;
+        JavaRandom var7 = world.Random;
         int var16;
         switch (var2)
         {
@@ -904,11 +904,11 @@ public class WorldRenderer : IWorldEventListener
             case 1003:
                 if (Random.Shared.NextDouble() < 0.5D)
                 {
-                    _game.sndManager.PlaySound("random.door_open", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 1.0F, world.random.NextFloat() * 0.1F + 0.9F);
+                    _game.sndManager.PlaySound("random.door_open", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 1.0F, world.Random.NextFloat() * 0.1F + 0.9F);
                 }
                 else
                 {
-                    _game.sndManager.PlaySound("random.door_close", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 1.0F, world.random.NextFloat() * 0.1F + 0.9F);
+                    _game.sndManager.PlaySound("random.door_close", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 1.0F, world.Random.NextFloat() * 0.1F + 0.9F);
                 }
                 break;
             case 1004:

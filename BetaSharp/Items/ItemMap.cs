@@ -42,7 +42,7 @@ public class ItemMap : NetworkSyncedItem
             mapState.CenterX = world.Properties.SpawnX;
             mapState.CenterZ = world.Properties.SpawnZ;
             mapState.Scale = 3;
-            mapState.Dimension = (sbyte)world.dimension.Id;
+            mapState.Dimension = (sbyte)world.Dimension.Id;
             mapState.MarkDirty();
             world.StateManager.SetData(mapName, mapState);
         }
@@ -52,7 +52,7 @@ public class ItemMap : NetworkSyncedItem
 
     public void update(IWorldContext world, Entity entity, MapState map)
     {
-        if (world.dimension.Id == map.Dimension)
+        if (world.Dimension.Id == map.Dimension)
         {
             short mapWidth = 128;
             short mapHeight = 128;
@@ -62,7 +62,7 @@ public class ItemMap : NetworkSyncedItem
             int entityPosX = MathHelper.Floor(entity.x - (double)centerX) / blocksPerPixel + mapWidth / 2;
             int entityPosZ = MathHelper.Floor(entity.z - (double)centerZ) / blocksPerPixel + mapHeight / 2;
             int scanRadius = 128 / blocksPerPixel;
-            if (world.dimension.HasCeiling)
+            if (world.Dimension.HasCeiling)
             {
                 scanRadius /= 2;
             }
@@ -90,7 +90,7 @@ public class ItemMap : NetworkSyncedItem
                             byte greenSum = 0;
                             byte blueSum = 0;
                             int[] blockHistogram = new int[256];
-                            Chunk chunk = world.BlockHost.GetChunkFromPos(worldX, worldZ);
+                            Chunk chunk = world.ChunkHost.GetChunkFromPos(worldX, worldZ);
                             int chunkOffsetX = worldX & 15;
                             int chunkOffsetZ = worldZ & 15;
                             int fluidDepth = 0;
@@ -99,7 +99,7 @@ public class ItemMap : NetworkSyncedItem
                             int sampleZ;
                             int currentY;
                             int colorIndex;
-                            if (world.dimension.HasCeiling)
+                            if (world.Dimension.HasCeiling)
                             {
                                 sampleX = worldX + worldZ * 231871;
                                 sampleX = sampleX * sampleX * 31287121 + sampleX * 11;
@@ -294,7 +294,7 @@ public class ItemMap : NetworkSyncedItem
         mapState.CenterX = MathHelper.Floor(entityPlayer.x);
         mapState.CenterZ = MathHelper.Floor(entityPlayer.z);
         mapState.Scale = 3;
-        mapState.Dimension = (sbyte)world.dimension.Id;
+        mapState.Dimension = (sbyte)world.Dimension.Id;
         mapState.MarkDirty();
     }
 

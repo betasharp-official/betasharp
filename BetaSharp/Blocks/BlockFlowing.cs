@@ -17,16 +17,16 @@ internal class BlockFlowing : BlockFluid
     private void convertToSource(IWorldContext world, int x, int y, int z)
     {
         int meta = world.Reader.GetBlockMeta(x, y, z);
-        world.BlockWriter.SetBlockWithoutNotifyingNeighbors(x, y, z, id + 1, meta, notifyBlockPlaced: false);
+        world.Writer.SetBlockWithoutNotifyingNeighbors(x, y, z, id + 1, meta, notifyBlockPlaced: false);
         world.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
         world.Broadcaster.BlockUpdateEvent(x, y, z);
     }
 
-    public override void onTick(OnTickEvt ctx)
+    public override void onTick(OnTickEvent ctx)
     {
-        int currentState = getLiquidState(ctx.Level.Reader, ctx.X, ctx.Y, ctx.Z);
+        int currentState = getLiquidState(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z);
         sbyte spreadRate = 1;
-        if (material == Material.Lava && !ctx.Level.dimension.EvaporatesWater)
+        if (material == Material.Lava && !ctx.World.Dimension.EvaporatesWater)
         {
             spreadRate = 2;
         }
@@ -37,19 +37,19 @@ internal class BlockFlowing : BlockFluid
         {
             int minDepth = -100;
             _adjacentSources.Value = 0;
-            int lowestNeighborDepth = getLowestDepth(ctx.Level.Reader, ctx.X - 1, ctx.Y, ctx.Z, minDepth);
-            lowestNeighborDepth = getLowestDepth(ctx.Level.Reader, ctx.X + 1, ctx.Y, ctx.Z, lowestNeighborDepth);
-            lowestNeighborDepth = getLowestDepth(ctx.Level.Reader, ctx.X, ctx.Y, ctx.Z - 1, lowestNeighborDepth);
-            lowestNeighborDepth = getLowestDepth(ctx.Level.Reader, ctx.X, ctx.Y, ctx.Z + 1, lowestNeighborDepth);
+            int lowestNeighborDepth = getLowestDepth(ctx.World.Reader, ctx.X - 1, ctx.Y, ctx.Z, minDepth);
+            lowestNeighborDepth = getLowestDepth(ctx.World.Reader, ctx.X + 1, ctx.Y, ctx.Z, lowestNeighborDepth);
+            lowestNeighborDepth = getLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z - 1, lowestNeighborDepth);
+            lowestNeighborDepth = getLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z + 1, lowestNeighborDepth);
             newLevel = lowestNeighborDepth + spreadRate;
             if (newLevel >= 8 || lowestNeighborDepth < 0)
             {
                 newLevel = -1;
             }
 
-            if (getLiquidState(ctx.Level.Reader, ctx.X, ctx.Y + 1, ctx.Z) >= 0)
+            if (getLiquidState(ctx.World.Reader, ctx.X, ctx.Y + 1, ctx.Z) >= 0)
             {
-                int stateAbove = getLiquidState(ctx.Level.Reader, ctx.X, ctx.Y + 1, ctx.Z);
+                int stateAbove = getLiquidState(ctx.World.Reader, ctx.X, ctx.Y + 1, ctx.Z);
                 if (stateAbove >= 8)
                 {
                     newLevel = stateAbove;
@@ -62,17 +62,17 @@ internal class BlockFlowing : BlockFluid
 
             if (_adjacentSources.Value >= 2 && material == Material.Water)
             {
-                if (ctx.Level.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z).IsSolid)
+                if (ctx.World.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z).IsSolid)
                 {
                     newLevel = 0;
                 }
-                else if (ctx.Level.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z) == material && ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) == 0)
+                else if (ctx.World.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z) == material && ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) == 0)
                 {
                     newLevel = 0;
                 }
             }
 
-            if (material == Material.Lava && currentState < 8 && newLevel < 8 && newLevel > currentState && ctx.Level.random.NextInt(4) != 0)
+            if (material == Material.Lava && currentState < 8 && newLevel < 8 && newLevel > currentState && ctx.World.Random.NextInt(4) != 0)
             {
                 newLevel = currentState;
                 convertToSource = false;
@@ -83,47 +83,47 @@ internal class BlockFlowing : BlockFluid
                 currentState = newLevel;
                 if (newLevel < 0)
                 {
-                    ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+                    ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
                 }
                 else
                 {
-                    ctx.Level.BlockWriter.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, newLevel);
-                    ctx.Level.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
-                    ctx.Level.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, id);
+                    ctx.World.Writer.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, newLevel);
+                    ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
+                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, id);
                 }
             }
             else if (convertToSource)
             {
-                this.convertToSource(ctx.Level, ctx.X, ctx.Y, ctx.Z);
+                this.convertToSource(ctx.World, ctx.X, ctx.Y, ctx.Z);
             }
             else
             {
-                ctx.Level.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
+                ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
             }
         }
         else
         {
             int minDepth = -100;
             _adjacentSources.Value = 0;
-            getLowestDepth(ctx.Level.Reader, ctx.X - 1, ctx.Y, ctx.Z, minDepth);
-            getLowestDepth(ctx.Level.Reader, ctx.X + 1, ctx.Y, ctx.Z, minDepth);
-            getLowestDepth(ctx.Level.Reader, ctx.X, ctx.Y, ctx.Z - 1, minDepth);
-            getLowestDepth(ctx.Level.Reader, ctx.X, ctx.Y, ctx.Z + 1, minDepth);
+            getLowestDepth(ctx.World.Reader, ctx.X - 1, ctx.Y, ctx.Z, minDepth);
+            getLowestDepth(ctx.World.Reader, ctx.X + 1, ctx.Y, ctx.Z, minDepth);
+            getLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z - 1, minDepth);
+            getLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z + 1, minDepth);
         }
 
-        bool canSpreadDown = canSpreadTo(ctx.Level.Reader, ctx.X, ctx.Y - 1, ctx.Z);
+        bool canSpreadDown = canSpreadTo(ctx.World.Reader, ctx.X, ctx.Y - 1, ctx.Z);
         if (canSpreadDown)
         {
             if (currentState >= 8)
             {
-                ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y - 1, ctx.Z, id, currentState);
+                ctx.World.Writer.SetBlock(ctx.X, ctx.Y - 1, ctx.Z, id, currentState);
             }
             else
             {
-                ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y - 1, ctx.Z, id, currentState + 8);
+                ctx.World.Writer.SetBlock(ctx.X, ctx.Y - 1, ctx.Z, id, currentState + 8);
             }
         }
-        else if (currentState >= 0 && (currentState == 0 || isLiquidBreaking(ctx.Level.Reader, ctx.X, ctx.Y - 1, ctx.Z)))
+        else if (currentState >= 0 && (currentState == 0 || isLiquidBreaking(ctx.World.Reader, ctx.X, ctx.Y - 1, ctx.Z)))
         {
             newLevel = currentState + spreadRate;
             if (currentState >= 8)
@@ -131,24 +131,24 @@ internal class BlockFlowing : BlockFluid
                 newLevel = 1;
             }
 
-            bool[] spreadArray = getSpread(ctx.Level.Reader, ctx.X, ctx.Y, ctx.Z);
+            bool[] spreadArray = getSpread(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z);
 
             if (newLevel < 8)
             {
                 if (spreadArray[0])
-                    spreadTo(ctx.Level, ctx.X - 1, ctx.Y, ctx.Z, newLevel);
+                    spreadTo(ctx.World, ctx.X - 1, ctx.Y, ctx.Z, newLevel);
                 if (spreadArray[1])
-                    spreadTo(ctx.Level, ctx.X + 1, ctx.Y, ctx.Z, newLevel);
+                    spreadTo(ctx.World, ctx.X + 1, ctx.Y, ctx.Z, newLevel);
                 if (spreadArray[2])
-                    spreadTo(ctx.Level, ctx.X, ctx.Y, ctx.Z - 1, newLevel);
+                    spreadTo(ctx.World, ctx.X, ctx.Y, ctx.Z - 1, newLevel);
                 if (spreadArray[3])
-                    spreadTo(ctx.Level, ctx.X, ctx.Y, ctx.Z + 1, newLevel);
+                    spreadTo(ctx.World, ctx.X, ctx.Y, ctx.Z + 1, newLevel);
             }
         }
 
-        if (currentState == 0 && ctx.Level.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z) == id)
+        if (currentState == 0 && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z) == id)
         {
-            this.convertToSource(ctx.Level, ctx.X, ctx.Y, ctx.Z);
+            this.convertToSource(ctx.World, ctx.X, ctx.Y, ctx.Z);
         }
     }
 
@@ -165,11 +165,11 @@ internal class BlockFlowing : BlockFluid
                 }
                 else
                 {
-                    Blocks[currentId].dropStacks(new OnDropEvt(world, x, y, z, world.Reader.GetBlockMeta(x, y, z)));
+                    Blocks[currentId].dropStacks(new OnDropEvent(world, x, y, z, world.Reader.GetBlockMeta(x, y, z)));
                 }
             }
 
-            world.BlockWriter.SetBlock(x, y, z, id, depth);
+            world.Writer.SetBlock(x, y, z, id, depth);
         }
     }
 
@@ -337,22 +337,22 @@ internal class BlockFlowing : BlockFluid
         return mat != this.material && mat != Material.Lava && !isLiquidBreaking(reader, x, y, z);
     }
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        base.neighborUpdate(evt);
-        if (evt.Level.Reader.GetBlockId(evt.X, evt.Y, evt.Z) == id)
+        base.neighborUpdate(@event);
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) == id)
         {
-            evt.Level.TickScheduler.ScheduleBlockUpdate(evt.X, evt.Y, evt.Z, id, getTickRate());
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id, getTickRate());
         }
     }
 
-    public override void onPlaced(OnPlacedEvt ctx)
+    public override void onPlaced(OnPlacedEvent ctx)
     {
         base.onPlaced(ctx);
-        int placedId = ctx.Level.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z);
-        if (placedId == id && !ctx.Level.IsRemote)
+        int placedId = ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z);
+        if (placedId == id && !ctx.World.IsRemote)
         {
-            ctx.Level.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
+            ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
         }
     }
 }

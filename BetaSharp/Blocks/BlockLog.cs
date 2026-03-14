@@ -10,13 +10,13 @@ internal class BlockLog : Block
 
     public override int getDroppedItemId(int blockMeta) => Log.id;
 
-    public override void onAfterBreak(OnAfterBreakEvt evt) => base.onAfterBreak(evt);
+    public override void onAfterBreak(OnAfterBreakEvent @event) => base.onAfterBreak(@event);
 
-    public override void onBreak(OnBreakEvt evt)
+    public override void onBreak(OnBreakEvent @event)
     {
         sbyte searchRadius = 4;
         int regionExtent = searchRadius + 1;
-        if (evt.Level.BlockHost.IsRegionLoaded(evt.X - regionExtent, evt.Y - regionExtent, evt.Z - regionExtent, evt.X + regionExtent, evt.Y + regionExtent, evt.Z + regionExtent))
+        if (@event.World.ChunkHost.IsRegionLoaded(@event.X - regionExtent, @event.Y - regionExtent, @event.Z - regionExtent, @event.X + regionExtent, @event.Y + regionExtent, @event.Z + regionExtent))
         {
             for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
             {
@@ -24,13 +24,13 @@ internal class BlockLog : Block
                 {
                     for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                     {
-                        int neighborBlockId = evt.Level.Reader.GetBlockId(evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ);
+                        int neighborBlockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
                         if (neighborBlockId == Leaves.id)
                         {
-                            int leavesMeta = evt.Level.Reader.GetBlockMeta(evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ);
+                            int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
                             if ((leavesMeta & 8) == 0)
                             {
-                                evt.Level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(evt.X + offsetX, evt.Y + offsetY, evt.Z + offsetZ, leavesMeta | 8);
+                                @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, leavesMeta | 8);
                             }
                         }
                     }

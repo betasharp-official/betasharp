@@ -19,25 +19,25 @@ public class BlockPistonExtension : Block
 
     public void clearSprite() => pistonHeadSprite = -1;
 
-    public override void onBreak(OnBreakEvt evt)
+    public override void onBreak(OnBreakEvent @event)
     {
-        base.onBreak(evt);
-        int x = evt.X;
-        int y = evt.Y;
-        int z = evt.Z;
-        int var5 = evt.Level.Reader.GetBlockMeta(x, y, z);
+        base.onBreak(@event);
+        int x = @event.X;
+        int y = @event.Y;
+        int z = @event.Z;
+        int var5 = @event.World.Reader.GetBlockMeta(x, y, z);
         int var6 = PistonConstants.field_31057_a[getFacing(var5)];
         x += PistonConstants.HEAD_OFFSET_X[var6];
         y += PistonConstants.HEAD_OFFSET_Y[var6];
         z += PistonConstants.HEAD_OFFSET_Z[var6];
-        int var7 = evt.Level.Reader.GetBlockId(x, y, z);
+        int var7 = @event.World.Reader.GetBlockId(x, y, z);
         if (var7 == Piston.id || var7 == StickyPiston.id)
         {
-            var5 = evt.Level.Reader.GetBlockMeta(x, y, z);
+            var5 = @event.World.Reader.GetBlockMeta(x, y, z);
             if (BlockPistonBase.isExtended(var5))
             {
-                Blocks[var7].dropStacks(new OnDropEvt(evt.Level, x, y, z, var5));
-                evt.Level.BlockWriter.SetBlock(x, y, z, 0);
+                Blocks[var7].dropStacks(new OnDropEvent(@event.World, x, y, z, var5));
+                @event.World.Writer.SetBlock(x, y, z, 0);
             }
         }
     }
@@ -54,7 +54,7 @@ public class BlockPistonExtension : Block
 
     public override bool isFullCube() => false;
 
-    public override bool canPlaceAt(CanPlaceAtCtx ctx) => false;
+    public override bool canPlaceAt(CanPlaceAtContext context) => false;
 
     public override int getDroppedItemCount() => 0;
 
@@ -130,18 +130,18 @@ public class BlockPistonExtension : Block
         }
     }
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        int facing = getFacing(evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z));
-        int var7 = evt.Level.Reader.GetBlockId(evt.X - PistonConstants.HEAD_OFFSET_X[facing], evt.Y - PistonConstants.HEAD_OFFSET_Y[facing], evt.Z - PistonConstants.HEAD_OFFSET_Z[facing]);
+        int facing = getFacing(@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z));
+        int var7 = @event.World.Reader.GetBlockId(@event.X - PistonConstants.HEAD_OFFSET_X[facing], @event.Y - PistonConstants.HEAD_OFFSET_Y[facing], @event.Z - PistonConstants.HEAD_OFFSET_Z[facing]);
         if (var7 != Piston.id && var7 != StickyPiston.id)
         {
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
         else
         {
-            Blocks[var7].neighborUpdate(new OnTickEvt(evt.Level, evt.X - PistonConstants.HEAD_OFFSET_X[facing], evt.Y - PistonConstants.HEAD_OFFSET_Y[facing], evt.Z - PistonConstants.HEAD_OFFSET_Z[facing],
-                evt.Level.Reader.GetBlockMeta(evt.X - PistonConstants.HEAD_OFFSET_X[facing], evt.Y - PistonConstants.HEAD_OFFSET_Y[facing], evt.Z - PistonConstants.HEAD_OFFSET_Z[facing]), id));
+            Blocks[var7].neighborUpdate(new OnTickEvent(@event.World, @event.X - PistonConstants.HEAD_OFFSET_X[facing], @event.Y - PistonConstants.HEAD_OFFSET_Y[facing], @event.Z - PistonConstants.HEAD_OFFSET_Z[facing],
+                @event.World.Reader.GetBlockMeta(@event.X - PistonConstants.HEAD_OFFSET_X[facing], @event.Y - PistonConstants.HEAD_OFFSET_Y[facing], @event.Z - PistonConstants.HEAD_OFFSET_Z[facing]), id));
         }
     }
 

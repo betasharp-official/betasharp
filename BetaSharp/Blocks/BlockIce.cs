@@ -16,24 +16,24 @@ internal class BlockIce : BlockBreakable
 
     public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side) => base.isSideVisible(iBlockReader, x, y, z, 1 - side);
 
-    public override void onAfterBreak(OnAfterBreakEvt evt)
+    public override void onAfterBreak(OnAfterBreakEvent @event)
     {
-        base.onAfterBreak(evt);
-        Material materialBelow = evt.Level.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z);
+        base.onAfterBreak(@event);
+        Material materialBelow = @event.World.Reader.GetMaterial(@event.X, @event.Y - 1, @event.Z);
         if (materialBelow.BlocksMovement || materialBelow.IsFluid)
         {
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, FlowingWater.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, FlowingWater.id);
         }
     }
 
     public override int getDroppedItemCount() => 0;
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
-        if (evt.Level.Lighting.GetBrightness(LightType.Block, evt.X, evt.Y, evt.Z) > 11 - BlockLightOpacity[id])
+        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y, @event.Z) > 11 - BlockLightOpacity[id])
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, Water.id);
+            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Water.id);
         }
     }
 

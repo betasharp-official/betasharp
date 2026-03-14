@@ -24,7 +24,7 @@ public class BlockRedstoneWire : Block
 
     public override int getColorMultiplier(IBlockReader var1, int var2, int var3, int var4) => 8388608;
 
-    public override bool canPlaceAt(CanPlaceAtCtx ctx) => ctx.Level.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z);
+    public override bool canPlaceAt(CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
 
     private void updateAndPropagateCurrentStrength(IWorldContext level, int x, int y, int z)
     {
@@ -98,7 +98,7 @@ public class BlockRedstoneWire : Block
         // Only update if the strength actually changed
         if (oldMeta != newMeta)
         {
-            level.BlockWriter.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, newMeta);
+            level.Writer.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, newMeta);
             level.Broadcaster.BlockUpdateEvent(x, y, z);
             level.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
 
@@ -171,102 +171,102 @@ public class BlockRedstoneWire : Block
         }
     }
 
-    public override void onPlaced(OnPlacedEvt evt)
+    public override void onPlaced(OnPlacedEvent @event)
     {
-        base.onPlaced(evt);
-        if (!evt.Level.IsRemote)
+        base.onPlaced(@event);
+        if (!@event.World.IsRemote)
         {
-            updateAndPropagateCurrentStrength(evt.Level, evt.X, evt.Y, evt.Z);
-            evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y + 1, evt.Z, id);
-            evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y - 1, evt.Z, id);
-            NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X - 1, evt.Y, evt.Z);
-            NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X + 1, evt.Y, evt.Z);
-            NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X, evt.Y, evt.Z - 1);
-            NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X, evt.Y, evt.Z + 1);
-            if (evt.Level.Reader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z))
+            updateAndPropagateCurrentStrength(@event.World, @event.X, @event.Y, @event.Z);
+            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, id);
+            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, id);
+            NotifyWireNeighborsOfNeighborChange(@event.World, @event.X - 1, @event.Y, @event.Z);
+            NotifyWireNeighborsOfNeighborChange(@event.World, @event.X + 1, @event.Y, @event.Z);
+            NotifyWireNeighborsOfNeighborChange(@event.World, @event.X, @event.Y, @event.Z - 1);
+            NotifyWireNeighborsOfNeighborChange(@event.World, @event.X, @event.Y, @event.Z + 1);
+            if (@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z))
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X - 1, evt.Y + 1, evt.Z);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X - 1, @event.Y + 1, @event.Z);
             }
             else
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X - 1, evt.Y - 1, evt.Z);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X - 1, @event.Y - 1, @event.Z);
             }
 
-            if (evt.Level.Reader.ShouldSuffocate(evt.X + 1, evt.Y, evt.Z))
+            if (@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z))
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X + 1, evt.Y + 1, evt.Z);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X + 1, @event.Y + 1, @event.Z);
             }
             else
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X + 1, evt.Y - 1, evt.Z);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X + 1, @event.Y - 1, @event.Z);
             }
 
-            if (evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z - 1))
+            if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1))
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X, evt.Y + 1, evt.Z - 1);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X, @event.Y + 1, @event.Z - 1);
             }
             else
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X, evt.Y - 1, evt.Z - 1);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X, @event.Y - 1, @event.Z - 1);
             }
 
-            if (evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z + 1))
+            if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1))
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X, evt.Y + 1, evt.Z + 1);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X, @event.Y + 1, @event.Z + 1);
             }
             else
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X, evt.Y - 1, evt.Z + 1);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X, @event.Y - 1, @event.Z + 1);
             }
         }
     }
 
-    public override void onBreak(OnBreakEvt evt)
+    public override void onBreak(OnBreakEvent @event)
     {
-        base.onBreak(evt);
-        if (!evt.Level.IsRemote)
+        base.onBreak(@event);
+        if (!@event.World.IsRemote)
         {
-            evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y + 1, evt.Z, id);
-            evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y - 1, evt.Z, id);
-            updateAndPropagateCurrentStrength(evt.Level, evt.X, evt.Y, evt.Z);
-            NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X - 1, evt.Y, evt.Z);
-            NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X + 1, evt.Y, evt.Z);
-            NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X, evt.Y, evt.Z - 1);
-            NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X, evt.Y, evt.Z + 1);
-            if (evt.Level.Reader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z))
+            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, id);
+            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, id);
+            updateAndPropagateCurrentStrength(@event.World, @event.X, @event.Y, @event.Z);
+            NotifyWireNeighborsOfNeighborChange(@event.World, @event.X - 1, @event.Y, @event.Z);
+            NotifyWireNeighborsOfNeighborChange(@event.World, @event.X + 1, @event.Y, @event.Z);
+            NotifyWireNeighborsOfNeighborChange(@event.World, @event.X, @event.Y, @event.Z - 1);
+            NotifyWireNeighborsOfNeighborChange(@event.World, @event.X, @event.Y, @event.Z + 1);
+            if (@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z))
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X - 1, evt.Y + 1, evt.Z);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X - 1, @event.Y + 1, @event.Z);
             }
             else
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X - 1, evt.Y - 1, evt.Z);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X - 1, @event.Y - 1, @event.Z);
             }
 
-            if (evt.Level.Reader.ShouldSuffocate(evt.X + 1, evt.Y, evt.Z))
+            if (@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z))
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X + 1, evt.Y + 1, evt.Z);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X + 1, @event.Y + 1, @event.Z);
             }
             else
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X + 1, evt.Y - 1, evt.Z);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X + 1, @event.Y - 1, @event.Z);
             }
 
-            if (evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z - 1))
+            if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1))
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X, evt.Y + 1, evt.Z - 1);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X, @event.Y + 1, @event.Z - 1);
             }
             else
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X, evt.Y - 1, evt.Z - 1);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X, @event.Y - 1, @event.Z - 1);
             }
 
-            if (evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z + 1))
+            if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1))
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X, evt.Y + 1, evt.Z + 1);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X, @event.Y + 1, @event.Z + 1);
             }
             else
             {
-                NotifyWireNeighborsOfNeighborChange(evt.Level, evt.X, evt.Y - 1, evt.Z + 1);
+                NotifyWireNeighborsOfNeighborChange(@event.World, @event.X, @event.Y - 1, @event.Z + 1);
             }
         }
     }
@@ -282,23 +282,23 @@ public class BlockRedstoneWire : Block
         return var6 > var5 ? var6 : var5;
     }
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        if (!evt.Level.IsRemote)
+        if (!@event.World.IsRemote)
         {
-            int var6 = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
-            bool var7 = canPlaceAt(new CanPlaceAtCtx(evt.Level, 0, evt.X, evt.Y, evt.Z));
+            int var6 = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+            bool var7 = canPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z));
             if (!var7)
             {
-                dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, var6));
-                evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+                dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, var6));
+                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             }
             else
             {
-                updateAndPropagateCurrentStrength(evt.Level, evt.X, evt.Y, evt.Z);
+                updateAndPropagateCurrentStrength(@event.World, @event.X, @event.Y, @event.Z);
             }
 
-            base.neighborUpdate(evt);
+            base.neighborUpdate(@event);
         }
     }
 
@@ -358,14 +358,14 @@ public class BlockRedstoneWire : Block
 
     public override bool canEmitRedstonePower() => s_wiresProvidePower.Value;
 
-    public override void randomDisplayTick(OnTickEvt evt)
+    public override void randomDisplayTick(OnTickEvent @event)
     {
-        int var6 = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+        int var6 = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (var6 > 0)
         {
-            double x = evt.X + 0.5D + (evt.Level.random.NextFloat() - 0.5D) * 0.2D;
-            double y = evt.Y + 1.0F / 16.0F;
-            double z = evt.Z + 0.5D + (evt.Level.random.NextFloat() - 0.5D) * 0.2D;
+            double x = @event.X + 0.5D + (@event.World.Random.NextFloat() - 0.5D) * 0.2D;
+            double y = @event.Y + 1.0F / 16.0F;
+            double z = @event.Z + 0.5D + (@event.World.Random.NextFloat() - 0.5D) * 0.2D;
             float var13 = var6 / 15.0F;
             float xVel = var13 * 0.6F + 0.4F;
             if (var6 == 0)
@@ -385,7 +385,7 @@ public class BlockRedstoneWire : Block
                 zVel = 0.0F;
             }
 
-            evt.Level.Broadcaster.AddParticle("reddust", x, y, z, xVel, yVle, zVel);
+            @event.World.Broadcaster.AddParticle("reddust", x, y, z, xVel, yVle, zVel);
         }
     }
 

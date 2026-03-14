@@ -16,54 +16,54 @@ internal class BlockReed : Block
         setTickRandomly(true);
     }
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
-        if (evt.Level.Reader.IsAir(evt.X, evt.Y + 1, evt.Z))
+        if (@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z))
         {
             int heightBelow;
-            for (heightBelow = 1; evt.Level.Reader.GetBlockId(evt.X, evt.Y - heightBelow, evt.Z) == id; ++heightBelow)
+            for (heightBelow = 1; @event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == id; ++heightBelow)
             {
             }
 
             if (heightBelow < 3)
             {
-                int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+                int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
                 if (meta == 15)
                 {
-                    evt.Level.BlockWriter.SetBlock(evt.X, evt.Y + 1, evt.Z, id);
-                    evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, 0);
+                    @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, id);
+                    @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 0);
                 }
                 else
                 {
-                    evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, meta + 1);
+                    @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta + 1);
                 }
             }
         }
     }
 
-    public override bool canPlaceAt(CanPlaceAtCtx evt)
+    public override bool canPlaceAt(CanPlaceAtContext evt)
     {
-        int blockBelowId = evt.Level.Reader.GetBlockId(evt.X, evt.Y - 1, evt.Z);
+        int blockBelowId = evt.World.Reader.GetBlockId(evt.X, evt.Y - 1, evt.Z);
         return blockBelowId == id ? true :
             blockBelowId != GrassBlock.id && blockBelowId != Dirt.id ? false :
-            evt.Level.Reader.GetMaterial(evt.X - 1, evt.Y - 1, evt.Z) == Material.Water ? true :
-            evt.Level.Reader.GetMaterial(evt.X + 1, evt.Y - 1, evt.Z) == Material.Water ? true :
-            evt.Level.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z - 1) == Material.Water ? true : evt.Level.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z + 1) == Material.Water;
+            evt.World.Reader.GetMaterial(evt.X - 1, evt.Y - 1, evt.Z) == Material.Water ? true :
+            evt.World.Reader.GetMaterial(evt.X + 1, evt.Y - 1, evt.Z) == Material.Water ? true :
+            evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z - 1) == Material.Water ? true : evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z + 1) == Material.Water;
     }
 
-    public override void neighborUpdate(OnTickEvt evt) => breakIfCannotGrow(evt);
+    public override void neighborUpdate(OnTickEvent @event) => breakIfCannotGrow(@event);
 
-    protected void breakIfCannotGrow(OnTickEvt evt)
+    protected void breakIfCannotGrow(OnTickEvent @event)
     {
-        if (!canGrow(evt))
+        if (!canGrow(@event))
         {
             // TODO: Implement this
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
     }
 
-    public override bool canGrow(OnTickEvt evt) => canPlaceAt(new CanPlaceAtCtx(evt.Level, 0, evt.X, evt.Y, evt.Z));
+    public override bool canGrow(OnTickEvent @event) => canPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z));
 
     public override Box? getCollisionShape(IBlockReader world, int x, int y, int z) => null;
 

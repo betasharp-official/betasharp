@@ -83,36 +83,36 @@ internal class BlockSign : BlockWithEntity
 
     public override int getDroppedItemId(int blockMeta) => Item.Sign.id;
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
         bool shouldBreak = false;
         if (_standing)
         {
-            if (!evt.Level.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z).IsSolid)
+            if (!@event.World.Reader.GetMaterial(@event.X, @event.Y - 1, @event.Z).IsSolid)
             {
                 shouldBreak = true;
             }
         }
         else
         {
-            int facing = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+            int facing = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             shouldBreak = true;
-            if (facing == 2 && evt.Level.Reader.GetMaterial(evt.X, evt.Y, evt.Z + 1).IsSolid)
+            if (facing == 2 && @event.World.Reader.GetMaterial(@event.X, @event.Y, @event.Z + 1).IsSolid)
             {
                 shouldBreak = false;
             }
 
-            if (facing == 3 && evt.Level.Reader.GetMaterial(evt.X, evt.Y, evt.Z - 1).IsSolid)
+            if (facing == 3 && @event.World.Reader.GetMaterial(@event.X, @event.Y, @event.Z - 1).IsSolid)
             {
                 shouldBreak = false;
             }
 
-            if (facing == 4 && evt.Level.Reader.GetMaterial(evt.X + 1, evt.Y, evt.Z).IsSolid)
+            if (facing == 4 && @event.World.Reader.GetMaterial(@event.X + 1, @event.Y, @event.Z).IsSolid)
             {
                 shouldBreak = false;
             }
 
-            if (facing == 5 && evt.Level.Reader.GetMaterial(evt.X - 1, evt.Y, evt.Z).IsSolid)
+            if (facing == 5 && @event.World.Reader.GetMaterial(@event.X - 1, @event.Y, @event.Z).IsSolid)
             {
                 shouldBreak = false;
             }
@@ -120,10 +120,10 @@ internal class BlockSign : BlockWithEntity
 
         if (shouldBreak)
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
 
-        base.neighborUpdate(evt);
+        base.neighborUpdate(@event);
     }
 }

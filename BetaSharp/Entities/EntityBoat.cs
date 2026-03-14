@@ -349,7 +349,7 @@ public class EntityBoat : Entity
                 int z = MathHelper.Floor(this.z + (i / 2 - 0.5D) * 0.8D);
                 if (world.Reader.GetBlockId(x, y, z) == Block.Snow.id)
                 {
-                    world.BlockWriter.SetBlock(x, y, z, 0);
+                    world.Writer.SetBlock(x, y, z, 0);
                 }
             }
 

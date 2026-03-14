@@ -26,7 +26,7 @@ public class ChunkDataS2CPacket() : Packet(PacketId.ChunkDataS2C)
         p.sizeX = sizeX;
         p.sizeY = sizeY;
         p.sizeZ = sizeZ;
-        p.rawData = world.BlockHost.GetChunkData(x, y, z, sizeX, sizeY, sizeZ);
+        p.rawData = world.ChunkHost.GetChunkData(x, y, z, sizeX, sizeY, sizeZ);
 
         using var output = new MemoryStream(sizeX * sizeY * sizeZ * 5 / 2);
         using var stream = new ZLibStream(output, CompressionLevel.Optimal);

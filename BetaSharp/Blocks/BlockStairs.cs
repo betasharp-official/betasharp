@@ -67,12 +67,12 @@ internal class BlockStairs : Block
     }
 
     // Migrated to OnTickEvt
-    public override void randomDisplayTick(OnTickEvt evt) => baseBlock.randomDisplayTick(evt);
+    public override void randomDisplayTick(OnTickEvent @event) => baseBlock.randomDisplayTick(@event);
 
     // Migrated to OnBlockBreakStartEvt
-    public override void onBlockBreakStart(OnBlockBreakStartEvt evt) => baseBlock.onBlockBreakStart(evt);
+    public override void onBlockBreakStart(OnBlockBreakStartEvent @event) => baseBlock.onBlockBreakStart(@event);
 
-    public override void onMetadataChange(OnMetadataChangeEvt evt) => baseBlock.onMetadataChange(evt);
+    public override void onMetadataChange(OnMetadataChangeEvent @event) => baseBlock.onMetadataChange(@event);
 
     public override float getLuminance(ILightProvider lighting, int x, int y, int z) => baseBlock.getLuminance(lighting, x, y, z);
 
@@ -94,21 +94,21 @@ internal class BlockStairs : Block
 
     public override Box getBoundingBox(IBlockReader world, int x, int y, int z) => baseBlock.getBoundingBox(world, x, y, z);
 
-    public override Vec3D applyVelocity(OnApplyVelocityEvt ctx) => baseBlock.applyVelocity(ctx);
+    public override Vec3D applyVelocity(OnApplyVelocityEvent ctx) => baseBlock.applyVelocity(ctx);
 
     public override bool hasCollision() => baseBlock.hasCollision();
 
     public override bool hasCollision(int meta, bool allowLiquids) => baseBlock.hasCollision(meta, allowLiquids);
 
-    public override bool canPlaceAt(CanPlaceAtCtx evt) => baseBlock.canPlaceAt(evt);
+    public override bool canPlaceAt(CanPlaceAtContext evt) => baseBlock.canPlaceAt(evt);
 
-    public override void onPlaced(OnPlacedEvt evt)
+    public override void onPlaced(OnPlacedEvent @event)
     {
         int meta = 0;
-        if (evt.Placer != null)
+        if (@event.Placer != null)
         {
             // 1. Calculate facing based on placer entity yaw
-            int facing = MathHelper.Floor(evt.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
+            int facing = MathHelper.Floor(@event.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
 
             if (facing == 0)
             {
@@ -131,22 +131,22 @@ internal class BlockStairs : Block
             }
         }
 
-        evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, meta);
-        evt.Level.Broadcaster.NotifyNeighbors(evt.X, evt.Y, evt.Z, id);
-        baseBlock.onPlaced(evt);
+        @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, id);
+        baseBlock.onPlaced(@event);
     }
 
     // Migrated to OnBreakEvt
-    public override void onBreak(OnBreakEvt ctx) => baseBlock.onBreak(ctx);
+    public override void onBreak(OnBreakEvent ctx) => baseBlock.onBreak(ctx);
 
-    public override void dropStacks(OnDropEvt ctx) => baseBlock.dropStacks(ctx);
+    public override void dropStacks(OnDropEvent ctx) => baseBlock.dropStacks(ctx);
 
-    public override void onSteppedOn(OnEntityStepEvt ctx) => baseBlock.onSteppedOn(ctx);
+    public override void onSteppedOn(OnEntityStepEvent ctx) => baseBlock.onSteppedOn(ctx);
 
-    public override void onTick(OnTickEvt ctx) => baseBlock.onTick(ctx);
+    public override void onTick(OnTickEvent ctx) => baseBlock.onTick(ctx);
 
     // Migrated to OnUseEvt
-    public override bool onUse(OnUseEvt ctx) => baseBlock.onUse(ctx);
+    public override bool onUse(OnUseEvent ctx) => baseBlock.onUse(ctx);
 
-    public override void onDestroyedByExplosion(OnDestroyedByExplosionEvt ctx) => baseBlock.onDestroyedByExplosion(ctx);
+    public override void onDestroyedByExplosion(OnDestroyedByExplosionEvent ctx) => baseBlock.onDestroyedByExplosion(ctx);
 }

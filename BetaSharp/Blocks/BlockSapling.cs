@@ -16,21 +16,21 @@ internal class BlockSapling : BlockPlant
         setBoundingBox(0.5F - halfSize, 0.0F, 0.5F - halfSize, 0.5F + halfSize, halfSize * 2.0F, 0.5F + halfSize);
     }
 
-    public override void onTick(OnTickEvt evt)
+    public override void onTick(OnTickEvent @event)
     {
-        if (!evt.Level.IsRemote)
+        if (!@event.World.IsRemote)
         {
-            base.onTick(evt);
-            if (evt.Level.Reader.GetBrightness(evt.X, evt.Y + 1, evt.Z) >= 9 && Random.Shared.Next(30) == 0)
+            base.onTick(@event);
+            if (@event.World.Reader.GetBrightness(@event.X, @event.Y + 1, @event.Z) >= 9 && Random.Shared.Next(30) == 0)
             {
-                int saplingMeta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+                int saplingMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
                 if ((saplingMeta & 8) == 0)
                 {
-                    evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, saplingMeta | 8);
+                    @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, saplingMeta | 8);
                 }
                 else
                 {
-                    generate(evt.Level, evt.X, evt.Y, evt.Z);
+                    generate(@event.World, @event.X, @event.Y, @event.Z);
                 }
             }
         }
@@ -45,7 +45,7 @@ internal class BlockSapling : BlockPlant
     public void generate(IWorldContext world, int x, int y, int z)
     {
         int saplingType = world.Reader.GetBlockMeta(x, y, z) & 3;
-        world.BlockWriter.SetBlock(x, y, z, 0);
+        world.Writer.SetBlock(x, y, z, 0);
         object treeFeature = null;
         if (saplingType == 1)
         {
@@ -66,7 +66,7 @@ internal class BlockSapling : BlockPlant
 
         if (!((Feature)treeFeature).Generate(world, _random, x, y, z))
         {
-            world.BlockWriter.SetBlock(x, y, z, id, saplingType);
+            world.Writer.SetBlock(x, y, z, id, saplingType);
         }
     }
 

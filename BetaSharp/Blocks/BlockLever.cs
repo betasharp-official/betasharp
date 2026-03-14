@@ -27,111 +27,111 @@ internal class BlockLever : Block
         (side == 4 && world.ShouldSuffocate(x + 1, y, z)) ||
         (side == 5 && world.ShouldSuffocate(x - 1, y, z));
 
-    public override bool canPlaceAt(CanPlaceAtCtx ctx) =>
-        ctx.Level.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z) ||
-        ctx.Level.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z) ||
-        ctx.Level.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1) ||
-        ctx.Level.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1) ||
-        ctx.Level.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z);
+    public override bool canPlaceAt(CanPlaceAtContext context) =>
+        context.World.Reader.ShouldSuffocate(context.X - 1, context.Y, context.Z) ||
+        context.World.Reader.ShouldSuffocate(context.X + 1, context.Y, context.Z) ||
+        context.World.Reader.ShouldSuffocate(context.X, context.Y, context.Z - 1) ||
+        context.World.Reader.ShouldSuffocate(context.X, context.Y, context.Z + 1) ||
+        context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
 
-    public override void onPlaced(OnPlacedEvt evt)
+    public override void onPlaced(OnPlacedEvent @event)
     {
-        int meta = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         int powered = meta & 8;
         meta &= 7;
         meta = -1;
 
-        if (evt.Direction == 1 && evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y - 1, evt.Z))
+        if (@event.Direction == 1 && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z))
         {
             meta = 5 + Random.Shared.Next(2);
         }
-        else if (evt.Direction == 2 && evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z + 1))
+        else if (@event.Direction == 2 && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1))
         {
             meta = 4;
         }
-        else if (evt.Direction == 3 && evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z - 1))
+        else if (@event.Direction == 3 && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1))
         {
             meta = 3;
         }
-        else if (evt.Direction == 4 && evt.Level.Reader.ShouldSuffocate(evt.X + 1, evt.Y, evt.Z))
+        else if (@event.Direction == 4 && @event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z))
         {
             meta = 2;
         }
-        else if (evt.Direction == 5 && evt.Level.Reader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z))
+        else if (@event.Direction == 5 && @event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z))
         {
             meta = 1;
         }
         else
         {
-            if (evt.Level.Reader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z)) meta = 1;
-            else if (evt.Level.Reader.ShouldSuffocate(evt.X + 1, evt.Y, evt.Z)) meta = 2;
-            else if (evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z - 1)) meta = 3;
-            else if (evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z + 1)) meta = 4;
-            else if (evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y - 1, evt.Z)) meta = 5 + Random.Shared.Next(2);
+            if (@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z)) meta = 1;
+            else if (@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z)) meta = 2;
+            else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1)) meta = 3;
+            else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1)) meta = 4;
+            else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z)) meta = 5 + Random.Shared.Next(2);
         }
 
         if (meta == -1)
         {
-            dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
-            evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
         else
         {
-            evt.Level.BlockWriter.SetBlockMeta(evt.X, evt.Y, evt.Z, meta + powered);
+            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta + powered);
         }
     }
 
-    public override void neighborUpdate(OnTickEvt evt)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        if (breakIfCannotPlaceAt(evt))
+        if (breakIfCannotPlaceAt(@event))
         {
-            int direction = evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z) & 7;
+            int direction = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) & 7;
             bool shouldDrop = false;
 
-            if (!evt.Level.Reader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z) && direction == 1)
+            if (!@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) && direction == 1)
             {
                 shouldDrop = true;
             }
 
-            if (!evt.Level.Reader.ShouldSuffocate(evt.X + 1, evt.Y, evt.Z) && direction == 2)
+            if (!@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) && direction == 2)
             {
                 shouldDrop = true;
             }
 
-            if (!evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z - 1) && direction == 3)
+            if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) && direction == 3)
             {
                 shouldDrop = true;
             }
 
-            if (!evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z + 1) && direction == 4)
+            if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1) && direction == 4)
             {
                 shouldDrop = true;
             }
 
-            if (!evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y - 1, evt.Z) && direction == 5)
+            if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && direction == 5)
             {
                 shouldDrop = true;
             }
 
-            if (!evt.Level.Reader.ShouldSuffocate(evt.X, evt.Y - 1, evt.Z) && direction == 6)
+            if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && direction == 6)
             {
                 shouldDrop = true;
             }
 
             if (shouldDrop)
             {
-                dropStacks(new OnDropEvt(evt.Level, evt.X, evt.Y, evt.Z, evt.Level.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z)));
-                evt.Level.BlockWriter.SetBlock(evt.X, evt.Y, evt.Z, 0);
+                dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             }
         }
     }
 
-    private bool breakIfCannotPlaceAt(OnTickEvt ctx)
+    private bool breakIfCannotPlaceAt(OnTickEvent ctx)
     {
-        if (!canPlaceAt(new CanPlaceAtCtx(ctx.Level, 0, ctx.X, ctx.Y, ctx.Z)))
+        if (!canPlaceAt(new CanPlaceAtContext(ctx.World, 0, ctx.X, ctx.Y, ctx.Z)))
         {
-            dropStacks(new OnDropEvt(ctx.Level, ctx.X, ctx.Y, ctx.Z, ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z)));
-            ctx.Level.BlockWriter.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+            dropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z)));
+            ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             return false;
         }
 
@@ -166,16 +166,16 @@ internal class BlockLever : Block
         }
     }
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvt ctx) => toggleLever(ctx.Level, ctx.X, ctx.Y, ctx.Z);
+    public override void onBlockBreakStart(OnBlockBreakStartEvent ctx) => toggleLever(ctx.World, ctx.X, ctx.Y, ctx.Z);
 
-    public override bool onUse(OnUseEvt ctx)
+    public override bool onUse(OnUseEvent ctx)
     {
-        if (ctx.Level.IsRemote)
+        if (ctx.World.IsRemote)
         {
             return true;
         }
 
-        toggleLever(ctx.Level, ctx.X, ctx.Y, ctx.Z);
+        toggleLever(ctx.World, ctx.X, ctx.Y, ctx.Z);
         return true;
     }
 
@@ -185,7 +185,7 @@ internal class BlockLever : Block
         int direction = meta & 7;
         int powered = 8 - (meta & 8);
 
-        world.BlockWriter.SetBlockMeta(x, y, z, direction + powered);
+        world.Writer.SetBlockMeta(x, y, z, direction + powered);
         world.Broadcaster.SetBlocksDirty(x, y, z);
         world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.click", 0.3F, powered > 0 ? 0.6F : 0.5F);
 
@@ -213,33 +213,33 @@ internal class BlockLever : Block
         }
     }
 
-    public override void onBreak(OnBreakEvt ctx)
+    public override void onBreak(OnBreakEvent ctx)
     {
-        int meta = ctx.Level.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         if ((meta & 8) > 0)
         {
-            ctx.Level.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, id);
+            ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, id);
             int direction = meta & 7;
 
             if (direction == 1)
             {
-                ctx.Level.Broadcaster.NotifyNeighbors(ctx.X - 1, ctx.Y, ctx.Z, id);
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X - 1, ctx.Y, ctx.Z, id);
             }
             else if (direction == 2)
             {
-                ctx.Level.Broadcaster.NotifyNeighbors(ctx.X + 1, ctx.Y, ctx.Z, id);
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X + 1, ctx.Y, ctx.Z, id);
             }
             else if (direction == 3)
             {
-                ctx.Level.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z - 1, id);
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z - 1, id);
             }
             else if (direction == 4)
             {
-                ctx.Level.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z + 1, id);
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z + 1, id);
             }
             else
             {
-                ctx.Level.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, id);
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, id);
             }
         }
 

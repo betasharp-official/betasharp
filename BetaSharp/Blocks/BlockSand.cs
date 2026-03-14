@@ -17,38 +17,38 @@ internal class BlockSand : Block
         set => s_fallInstantly.Value = value;
     }
 
-    public override void onPlaced(OnPlacedEvt ctx) => ctx.Level.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
+    public override void onPlaced(OnPlacedEvent ctx) => ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
 
-    public override void neighborUpdate(OnTickEvt ctx) => ctx.Level.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
+    public override void neighborUpdate(OnTickEvent ctx) => ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
 
-    public override void onTick(OnTickEvt evt) => processFall(evt);
+    public override void onTick(OnTickEvent @event) => processFall(@event);
 
-    private void processFall(OnTickEvt evt)
+    private void processFall(OnTickEvent @event)
     {
         // Check the block BELOW the sand (evt has sand position; canFallThrough checks ctx coords)
-        int x = evt.X;
-        int y = evt.Y;
-        int z = evt.Z;
-        if (y > 0 && canFallThrough(new OnTickEvt(evt.Level, x, y - 1, z, 0, evt.BlockId)))
+        int x = @event.X;
+        int y = @event.Y;
+        int z = @event.Z;
+        if (y > 0 && canFallThrough(new OnTickEvent(@event.World, x, y - 1, z, 0, @event.BlockId)))
         {
             sbyte checkRadius = 32;
-            if (!fallInstantly && evt.Level.BlockHost.IsRegionLoaded(x - checkRadius, y - checkRadius, z - checkRadius, x + checkRadius, y + checkRadius, z + checkRadius))
+            if (!fallInstantly && @event.World.ChunkHost.IsRegionLoaded(x - checkRadius, y - checkRadius, z - checkRadius, x + checkRadius, y + checkRadius, z + checkRadius))
             {
-                EntityFallingSand fallingSand = new(evt.Level, x + 0.5F, y + 0.5F, z + 0.5F, id);
-                evt.Level.Entities.SpawnEntity(fallingSand);
+                EntityFallingSand fallingSand = new(@event.World, x + 0.5F, y + 0.5F, z + 0.5F, id);
+                @event.World.Entities.SpawnEntity(fallingSand);
             }
             else
             {
-                evt.Level.BlockWriter.SetBlock(x, y, z, 0);
+                @event.World.Writer.SetBlock(x, y, z, 0);
 
-                while (canFallThrough(evt) && evt.Y > 0)
+                while (canFallThrough(@event) && @event.Y > 0)
                 {
                     --y;
                 }
 
                 if (y > 0)
                 {
-                    evt.Level.BlockWriter.SetBlock(x, y, z, id);
+                    @event.World.Writer.SetBlock(x, y, z, id);
                 }
             }
         }
@@ -56,9 +56,9 @@ internal class BlockSand : Block
 
     public override int getTickRate() => 3;
 
-    public static bool canFallThrough(OnTickEvt ctx)
+    public static bool canFallThrough(OnTickEvent ctx)
     {
-        int blockId = ctx.Level.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z);
+        int blockId = ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z);
         if (blockId == 0)
         {
             return true;
