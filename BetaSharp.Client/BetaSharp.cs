@@ -1553,7 +1553,7 @@ public partial class BetaSharp : IScreenNavigator
 
     public void StartInternalServer(string worldDir, WorldSettings worldSettings)
     {
-        InternalServer = new InternalServer(Path.Combine(BetaSharpDir, "saves"), worldDir, worldSettings, Options.renderDistance, Options.Difficulty);
+        InternalServer = new InternalServer(Path.Combine(BetaSharpDir, "saves"), worldDir, worldSettings, Options.RenderDistance, Options.Difficulty);
         InternalServer.RunThreaded("Internal Server");
     }
 

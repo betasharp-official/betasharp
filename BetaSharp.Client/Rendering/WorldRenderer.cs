@@ -178,7 +178,7 @@ public class WorldRenderer : IWorldEventListener
     public void LoadRenderers()
     {
         Block.Leaves.setGraphicsLevel(true);
-        _renderDistance = _game.Options.renderDistance;
+        _renderDistance = _game.Options.RenderDistance;
 
         ChunkRenderer?.Dispose();
         ChunkRenderer = new(_world, () => _game.Options.AlternateBlocksEnabled);
@@ -275,7 +275,7 @@ public class WorldRenderer : IWorldEventListener
 
     public int SortAndRender(EntityLiving var1, int pass, double var3, ICuller cam)
     {
-        if (_game.Options.renderDistance != _renderDistance)
+        if (_game.Options.RenderDistance != _renderDistance)
         {
             LoadRenderers();
         }

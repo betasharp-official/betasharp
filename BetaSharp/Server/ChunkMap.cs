@@ -24,9 +24,9 @@ internal class ChunkMap
 
     public ChunkMap(BetaSharpServer server, int dimensionId, int viewRadius)
     {
-        if (viewRadius > 32)
+        if (viewRadius > 64)
         {
-            throw new ArgumentException("Too big view Radius! Max is 32.", nameof(viewRadius));
+            throw new ArgumentException("Too big view Radius! Max is 64.", nameof(viewRadius));
         }
         if (viewRadius < 4)
         {

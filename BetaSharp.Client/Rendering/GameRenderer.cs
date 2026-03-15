@@ -137,7 +137,7 @@ public class GameRenderer
 
     private void renderWorld(float tickDelta)
     {
-        _viewDistance = _client.Options.renderDistance * 16.0f;
+        _viewDistance = _client.Options.RenderDistance * 16.0f;
         GLManager.GL.MatrixMode(GLEnum.Projection);
         GLManager.GL.LoadIdentity();
 
@@ -389,7 +389,7 @@ public class GameRenderer
         GLManager.GL.Enable(GLEnum.CullFace);
         renderWorld(tickDelta);
         Frustum.Instance();
-        if (_client.Options.renderDistance >= 8)
+        if (_client.Options.RenderDistance >= 8)
         {
             applyFog(-1);
             worldRenderer.RenderSky(tickDelta);
@@ -850,7 +850,7 @@ public class GameRenderer
     {
         World var2 = _client.World;
         EntityLiving var3 = _client.Camera;
-        float var4 = 4.0F / _client.Options.renderDistance;
+        float var4 = 4.0F / _client.Options.RenderDistance;
         var4 = System.Math.Clamp(var4, 0.25f, 1.0f);
         var4 = 1.0F - (float)Math.Pow(var4, 0.25D);
         Vector3D<double> var5 = var2.Environment.GetSkyColor(_client.Camera, tickDelta);
