@@ -451,9 +451,9 @@ public class GameRenderer
         applyFog(0);
         GLManager.GL.Enable(GLEnum.Fog);
 
-        if (_client.ShowChunkBorders && entityPlayer != null)
+        if (_client.ShowChunkBorders)
         {
-                renderChunkBorders(entityPlayer, tickDelta);
+                renderChunkBorders(tickDelta);
         }
 
         worldRenderer.renderClouds(tickDelta);
@@ -467,11 +467,12 @@ public class GameRenderer
         }
     }
 
-    private void renderChunkBorders(EntityPlayer entityPlayer, float tickDelta)
+    private void renderChunkBorders(float tickDelta)
     {
-        double camX = entityPlayer.lastTickX + (entityPlayer.x - entityPlayer.lastTickX) * (double)tickDelta;
-        double camY = entityPlayer.lastTickY + (entityPlayer.y - entityPlayer.lastTickY) * (double)tickDelta;
-        double camZ = entityPlayer.lastTickZ + (entityPlayer.z - entityPlayer.lastTickZ) * (double)tickDelta;
+        EntityLiving camera = _client.camera;
+        double camX = camera.lastTickX + (camera.x - camera.lastTickX) * tickDelta;
+        double camY = camera.lastTickY + (camera.y - camera.lastTickY) * tickDelta;
+        double camZ = camera.lastTickZ + (camera.z - camera.lastTickZ) * tickDelta;
 
         int playerChunkX = _client.player.chunkX;
         int playerChunkZ = _client.player.chunkZ;
@@ -486,14 +487,15 @@ public class GameRenderer
         GLManager.GL.Enable(GLEnum.DepthTest);
         GLManager.GL.DepthMask(true);
 
-        Tessellator tess = Tessellator.instance;
-        tess.startDrawing(1);
-        tess.setColorRGBA_F(1.0F, 1.0F, 0.0F, 1.0F);
-
         double minX = playerChunkX * 16.0;
         double maxX = (playerChunkX + 1) * 16.0;
         double minZ = playerChunkZ * 16.0;
         double maxZ = (playerChunkZ + 1) * 16.0;
+
+        Tessellator tess = Tessellator.instance;
+        tess.startDrawing(1);
+
+        tess.setColorRGBA_F(1.0F, 1.0F, 0.0F, 1.0F);
 
         for (int i = 0; i <= 16; i += 4)
         {
@@ -515,6 +517,7 @@ public class GameRenderer
 
         for (int y = 0; y <= 128; y+=4)
         {
+            if (y % 16 == 0) tess.setColorRGBA_F(0.0F, 0.0F, 1.0F, 1.0F);
             tess.addVertex(minX, y, minZ);
             tess.addVertex(minX, y, maxZ);
 
@@ -526,6 +529,32 @@ public class GameRenderer
 
             tess.addVertex(minX, y, maxZ);
             tess.addVertex(maxX, y, maxZ);
+            if (y % 16 == 0) tess.setColorRGBA_F(1.0F, 1.0F, 0.0F, 1.0F);
+        }
+
+        minX = (playerChunkX - 1) * 16.0;
+        maxX = (playerChunkX + 2) * 16.0;
+        minZ = (playerChunkZ - 1) * 16.0;
+        maxZ = (playerChunkZ + 2) * 16.0;
+
+        tess.setColorRGBA_F(1.0F, 0.0F, 0.0F, 1.0F);
+
+        for (int i = 0; i < 4; i++)
+        {
+            double x = minX + (i*16);
+            double z = minZ + (i*16);
+
+            tess.addVertex(x, 0.0, minZ);
+            tess.addVertex(x, 128.0, minZ);
+
+            tess.addVertex(x, 0.0, maxZ);
+            tess.addVertex(x, 128.0, maxZ);
+
+            tess.addVertex(minX, 0.0, z);
+            tess.addVertex(minX, 128.0, z);
+
+            tess.addVertex(maxX, 0.0, z);
+            tess.addVertex(maxX, 128.0, z);
         }
 
         tess.draw();
