@@ -320,7 +320,6 @@ public abstract class BetaSharpServer : CommandOutput
                             _currentTps = 0.0f;
                         }
                         Thread.Sleep(50);
-                        Thread.Sleep(50);
                         continue;
                     }
 
