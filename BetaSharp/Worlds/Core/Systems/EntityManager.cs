@@ -687,10 +687,10 @@ public class EntityManager
 
     public void UnloadEntities(List<Entity> entitiesToUnload) => _entitiesToUnload.AddRange(entitiesToUnload);
 
-    public EntityPlayer GetClosestPlayer(double x, double y, double z, double range)
+    public EntityPlayer? GetClosestPlayer(double x, double y, double z, double range)
     {
         double minDistanceSquared = -1.0D;
-        EntityPlayer closestPlayer = null;
+        EntityPlayer? closestPlayer = null;
 
         for (int i = 0; i < Players.Count; ++i)
         {

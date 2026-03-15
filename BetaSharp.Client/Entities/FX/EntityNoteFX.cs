@@ -1,13 +1,12 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
 public class EntityNoteFX : EntityFX
 {
-    private readonly float baseScale;
+    readonly float baseScale;
 
 
     public EntityNoteFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : this(world, x, y, z, velocityX, velocityY, velocityZ, 2.0F)
@@ -19,6 +18,7 @@ public class EntityNoteFX : EntityFX
         velocityX *= (double)0.01F;
         velocityY *= (double)0.01F;
         velocityZ *= (double)0.01F;
+        velocityY += 0.2D;
         particleRed = MathHelper.Sin(((float)notePitch + 0.0F) * (float)Math.PI * 2.0F) * 0.65F + 0.35F;
         particleGreen = MathHelper.Sin(((float)notePitch + 1.0F / 3.0F) * (float)Math.PI * 2.0F) * 0.65F + 0.35F;
         particleBlue = MathHelper.Sin(((float)notePitch + 2.0F / 3.0F) * (float)Math.PI * 2.0F) * 0.65F + 0.35F;

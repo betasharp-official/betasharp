@@ -2,19 +2,18 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
 public class EntityPickupFX : EntityFX
 {
-    private readonly int maxAge;
-    private readonly Entity source;
 
     private readonly Entity target;
-    private readonly float yOffset;
+    private readonly Entity source;
     private int currentAge;
+    private readonly int maxAge;
+    private readonly float yOffset;
 
     public EntityPickupFX(IWorldContext world, Entity target, Entity source, float yOffset) : base(world, target.x, target.y, target.z, target.velocityX, target.velocityY, target.velocityZ)
     {
@@ -55,6 +54,7 @@ public class EntityPickupFX : EntityFX
         {
             markDead();
         }
+
     }
 
     public override int getFXLayer()

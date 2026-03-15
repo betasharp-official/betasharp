@@ -1,6 +1,5 @@
 using BetaSharp.Blocks;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
@@ -22,7 +21,7 @@ internal class CactusPatchFeature : Feature
                 {
                     if (Block.Cactus.canGrow(new OnTickEvent(level, genX, genY + h, genZ, level.Reader.GetBlockMeta(genX, genY + h, genZ), level.Reader.GetBlockId(genX, genY + h, genZ))))
                     {
-                        level.Writer.SetBlockWithoutNotifyingNeighbors(genX, genY + h, genZ, Block.Cactus.id, 0, notifyBlockPlaced: false);
+                        level.Writer.SetBlockWithoutNotifyingNeighbors(genX, genY + h, genZ, Block.Cactus.id, 0, false);
                     }
                 }
             }

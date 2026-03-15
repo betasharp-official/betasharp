@@ -7,7 +7,7 @@ internal class BlockSource
 {
     private static readonly ILogger<BlockSource> _logger = Log.Instance.For<BlockSource>();
 
-    private static readonly byte[] SanitizationTable = new byte[256];
+    private static byte[] SanitizationTable = new byte[256];
 
     static BlockSource()
     {
@@ -18,9 +18,7 @@ internal class BlockSource
                 byte blockId = (byte)i;
 
                 if (blockId != 0 && Block.Blocks[blockId] == null)
-                {
                     blockId = 0;
-                }
 
                 SanitizationTable[i] = blockId;
             }

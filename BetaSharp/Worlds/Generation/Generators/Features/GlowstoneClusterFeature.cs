@@ -1,6 +1,5 @@
 using BetaSharp.Blocks;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
@@ -20,7 +19,7 @@ internal class GlowstoneClusterFeature : Feature
         }
 
 
-        level.Writer.SetBlock(x, y, z, Block.Glowstone.id, 0, doUpdate: false);
+        level.Writer.SetBlock(x, y, z, Block.Glowstone.id, 0, false);
 
         for (int i = 0; i < 1500; ++i)
         {
@@ -73,7 +72,7 @@ internal class GlowstoneClusterFeature : Feature
 
                 if (GlowstoneNeighbors == 1)
                 {
-                    level.Writer.SetBlock(genX, genY, genZ, Block.Glowstone.id, 0, doUpdate: false);
+                    level.Writer.SetBlock(genX, genY, genZ, Block.Glowstone.id, 0, false);
                 }
             }
         }

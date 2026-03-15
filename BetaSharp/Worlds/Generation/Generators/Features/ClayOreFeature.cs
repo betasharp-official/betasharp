@@ -1,7 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
@@ -64,7 +63,7 @@ internal class ClayOreFeature : Feature
                             int var47 = level.Reader.GetBlockId(blockX, blockY, blockZ);
                             if (var47 == Block.Sand.id)
                             {
-                                level.Writer.SetBlockWithoutNotifyingNeighbors(blockX, blockY, blockZ, _clayBlockId, 0, notifyBlockPlaced: false);
+                                level.Writer.SetBlockWithoutNotifyingNeighbors(blockX, blockY, blockZ, _clayBlockId, 0, false);
                             }
                         }
                     }

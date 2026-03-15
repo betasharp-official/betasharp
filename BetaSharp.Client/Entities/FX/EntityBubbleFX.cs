@@ -1,12 +1,12 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
 public class EntityBubbleFX : EntityFX
 {
+
     public EntityBubbleFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : base(world, x, y, z, velocityX, velocityY, velocityZ)
     {
         particleRed = 1.0F;
@@ -40,5 +40,6 @@ public class EntityBubbleFX : EntityFX
         {
             markDead();
         }
+
     }
 }

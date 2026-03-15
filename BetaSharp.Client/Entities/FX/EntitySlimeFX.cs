@@ -1,13 +1,13 @@
 using BetaSharp.Blocks;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Items;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
 public class EntitySlimeFX : EntityFX
 {
+
     public EntitySlimeFX(IWorldContext world, double x, double y, double z, Item item) : base(world, x, y, z, 0.0D, 0.0D, 0.0D)
     {
         particleTextureIndex = item.getTextureId(0);
@@ -20,7 +20,6 @@ public class EntitySlimeFX : EntityFX
     {
         return 2;
     }
-
 
     public override void renderParticle(Tessellator t, float partialTick, float rotX, float rotY, float rotZ, float upX, float upZ)
     {

@@ -1,11 +1,11 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
 public class EntityExplodeFX : EntityFX
 {
+
     public EntityExplodeFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : base(world, x, y, z, velocityX, velocityY, velocityZ)
     {
         base.velocityX = velocityX + (double)((float)(Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.05F);
@@ -42,5 +42,6 @@ public class EntityExplodeFX : EntityFX
             velocityX *= (double)0.7F;
             velocityZ *= (double)0.7F;
         }
+
     }
 }

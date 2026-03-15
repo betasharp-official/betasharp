@@ -1,15 +1,14 @@
 using BetaSharp.Blocks;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
 public class EntityDiggingFX : EntityFX
 {
-    private readonly int hitFace;
 
     private readonly Block targetedBlock;
+    private readonly int hitFace;
 
     public EntityDiggingFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, Block targetedBlock, int hitFace, int meta) : base(world, x, y, z, velocityX, velocityY, velocityZ)
     {
@@ -37,7 +36,10 @@ public class EntityDiggingFX : EntityFX
         }
     }
 
-    public override int getFXLayer() => 1;
+    public override int getFXLayer()
+    {
+        return 1;
+    }
 
     public override void renderParticle(Tessellator t, float partialTick, float rotX, float rotY, float rotZ, float upX, float upZ)
     {

@@ -1,6 +1,5 @@
 using BetaSharp.Blocks;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
@@ -78,7 +77,7 @@ internal class NetherLavaSpringFeature : Feature
 
         if (netherrackNeighbors == 4 && airNeighbors == 1)
         {
-            level.Writer.SetBlock(x, y, z, _lavaBlockId, 0, doUpdate: false);
+            level.Writer.SetBlock(x, y, z, _lavaBlockId, 0, false);
             level.TickScheduler.TriggerInstantTick(x, y, z, _lavaBlockId);
         }
 

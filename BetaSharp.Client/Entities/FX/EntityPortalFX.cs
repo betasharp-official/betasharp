@@ -1,11 +1,11 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
 public class EntityPortalFX : EntityFX
 {
+
     private readonly float baseScale;
     private readonly double spawnX;
     private readonly double spawnY;

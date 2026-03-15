@@ -1,14 +1,14 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
 public class EntityLavaFX : EntityFX
 {
+
     private readonly float baseScale;
 
-    public EntityLavaFX(IWorldContext world, double x, double y, double z) : base(world, x, y, z, 0.0D, 0.0D, 0.0D)
+    public EntityLavaFX(World world, double x, double y, double z) : base(world, x, y, z, 0.0D, 0.0D, 0.0D)
     {
         velocityX *= (double)0.8F;
         velocityY *= (double)0.8F;

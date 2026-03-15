@@ -2,13 +2,13 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
 public class EntityRainFX : EntityFX
 {
+
     public EntityRainFX(IWorldContext world, double x, double y, double z) : base(world, x, y, z, 0.0D, 0.0D, 0.0D)
     {
         velocityX *= (double)0.3F;
@@ -23,7 +23,10 @@ public class EntityRainFX : EntityFX
         particleMaxAge = (int)(8.0D / (Random.Shared.NextDouble() * 0.8D + 0.2D));
     }
 
-    public override void renderParticle(Tessellator t, float partialTick, float rotX, float rotY, float rotZ, float upX, float upZ) => base.renderParticle(t, partialTick, rotX, rotY, rotZ, upX, upZ);
+    public override void renderParticle(Tessellator t, float partialTick, float rotX, float rotY, float rotZ, float upX, float upZ)
+    {
+        base.renderParticle(t, partialTick, rotX, rotY, rotZ, upX, upZ);
+    }
 
     public override void tick()
     {
@@ -60,5 +63,6 @@ public class EntityRainFX : EntityFX
                 markDead();
             }
         }
+
     }
 }

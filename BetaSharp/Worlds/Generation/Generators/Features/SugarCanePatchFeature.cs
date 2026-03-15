@@ -1,7 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
@@ -33,7 +32,7 @@ internal class SugarCanePatchFeature : Feature
                 {
                     if (Block.SugarCane.canGrow(new OnTickEvent(level, genX, y + h, genZ, level.Reader.GetBlockMeta(genX, y + h, genZ), level.Reader.GetBlockId(genX, y + h, genZ))))
                     {
-                        level.Writer.SetBlock(genX, y + h, genZ, Block.SugarCane.id, 0, doUpdate: false);
+                        level.Writer.SetBlock(genX, y + h, genZ, Block.SugarCane.id, 0, false);
                     }
                 }
             }

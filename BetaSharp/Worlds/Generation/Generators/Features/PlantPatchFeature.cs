@@ -1,6 +1,5 @@
 using BetaSharp.Blocks;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
@@ -21,7 +20,7 @@ internal class PlantPatchFeature : Feature
             if (level.Reader.IsAir(genX, genY, genZ) &&
                 ((BlockPlant)Block.Blocks[plantBlockId]).canGrow(new OnTickEvent(level, genX, genY, genZ, level.Reader.GetBlockMeta(genX, genY, genZ), level.Reader.GetBlockId(genX, genY, genZ))))
             {
-                level.Writer.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, plantBlockId, 0, notifyBlockPlaced: false);
+                level.Writer.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, plantBlockId, 0, false);
             }
         }
 

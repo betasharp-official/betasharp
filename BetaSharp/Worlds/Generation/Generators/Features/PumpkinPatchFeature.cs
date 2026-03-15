@@ -1,6 +1,5 @@
 using BetaSharp.Blocks;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
@@ -18,7 +17,7 @@ internal class PumpkinPatchFeature : Feature
                 level.Reader.GetBlockId(genX, genY - 1, genZ) == Block.GrassBlock.id &&
                 Block.Pumpkin.canPlaceAt(new CanPlaceAtContext(level, 0, genX, genY, genZ)))
             {
-                level.Writer.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, Block.Pumpkin.id, rand.NextInt(4), notifyBlockPlaced: false);
+                level.Writer.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, Block.Pumpkin.id, rand.NextInt(4), false);
             }
         }
 

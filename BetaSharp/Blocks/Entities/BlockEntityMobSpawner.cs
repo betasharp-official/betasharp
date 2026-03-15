@@ -74,7 +74,10 @@ public class BlockEntityMobSpawner : BlockEntity
                         return;
                     }
 
-                    int count = World.Entities.CollectEntitiesOfType<EntityLiving>(new Box(X, Y, Z, X + 1, Y + 1, Z + 1).Expand(8.0D, 4.0D, 8.0D)).Where(e => e.GetType() == entityLiving.GetType()).Count();
+                    int count = World.Entities
+                        .CollectEntitiesOfType<EntityLiving>(new Box(X, Y, Z, X + 1, Y + 1, Z + 1)
+                        .Expand(8.0D, 4.0D, 8.0D))
+                        .Count(e => e.GetType() == entityLiving.GetType());
                     if (count >= 6)
                     {
                         ResetDelay();

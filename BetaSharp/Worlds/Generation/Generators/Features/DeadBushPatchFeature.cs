@@ -1,6 +1,5 @@
 using BetaSharp.Blocks;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
@@ -26,7 +25,7 @@ internal class DeadBushPatchFeature : Feature
                     if (level.Reader.IsAir(genX, genY, genZ) &&
                         ((BlockPlant)Block.Blocks[_deadBushBlockId]).canGrow(new OnTickEvent(level, genX, genY, genZ, level.Reader.GetBlockMeta(genX, genY, genZ), level.Reader.GetBlockId(genX, genY, genZ))))
                     {
-                        level.Writer.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, _deadBushBlockId, 0, notifyBlockPlaced: false);
+                        level.Writer.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, _deadBushBlockId, 0, false);
                     }
                 }
 
