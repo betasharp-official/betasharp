@@ -152,7 +152,7 @@ public class WorldRenderer : IWorldAccess
     {
         this.world?.removeWorldAccess(this);
 
-        EntityRenderDispatcher.instance.func_852_a(world);
+        EntityRenderDispatcher.instance.SetWorld(world);
         this.world = world;
         globalRenderBlocks = new BlockRenderer();
         if (world != null)

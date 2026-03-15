@@ -299,7 +299,7 @@ public abstract class EntityRenderer
     {
         if (ShadowRadius > 0.0F)
         {
-            double distance = Dispatcher.squareDistanceTo(target.x, target.y, target.z);
+            double distance = Dispatcher.GetSquareDistanceTo(target.x, target.y, target.z);
             float shadowiness = (float)((1.0D - distance / 256.0D) * ShadowStrength);
             if (shadowiness > 0.0F)
             {

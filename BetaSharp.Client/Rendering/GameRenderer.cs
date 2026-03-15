@@ -66,69 +66,72 @@ public class GameRenderer
         }
     }
 
-    public void updateTargetedEntity(float tickDelta)
+    public void UpdateTargetedEntity(float tickDelta)
     {
-        if (_client.camera != null)
+        if (_client.camera == null)
         {
-            if (_client.world != null)
+            return;
+        }
+
+        if (_client.world == null)
+        {
+            return;
+        }
+
+        double reachDistance = (double)_client.playerController.getBlockReachDistance();
+        _client.objectMouseOver = _client.camera.rayTrace(reachDistance, tickDelta);
+        Vec3D cameraPosition = _client.camera.getPosition(tickDelta);
+
+        if (_client.objectMouseOver.Type != HitResultType.MISS)
+        {
+            reachDistance = _client.objectMouseOver.Pos.distanceTo(cameraPosition);
+        }
+
+        if (reachDistance > 3.0D)
+        {
+            reachDistance = 3.0D;
+        }
+
+        Vec3D lookVec = _client.camera.getLook(tickDelta);
+        Vec3D targetVec = cameraPosition + reachDistance * lookVec;
+        _targetedEntity = null;
+
+        float searchMargin = 1.0F;
+        List<Entity> entities = _client.world.getEntities(_client.camera, _client.camera.boundingBox.Stretch(lookVec.x * reachDistance, lookVec.y * reachDistance, lookVec.z * reachDistance).Expand((double)searchMargin, (double)searchMargin, (double)searchMargin));
+
+        double closestDistance = 0.0D;
+        for (int i = 0; i < entities.Count; ++i)
+        {
+            Entity ent = entities[i];
+            if (ent.isCollidable())
             {
-                double var2 = (double)_client.playerController.getBlockReachDistance();
-                _client.objectMouseOver = _client.camera.rayTrace(var2, tickDelta);
-                double var4 = var2;
-                Vec3D var6 = _client.camera.getPosition(tickDelta);
-                if (_client.objectMouseOver.Type != HitResultType.MISS)
+                float targetingMargin = ent.getTargetingMargin();
+                Box box = ent.boundingBox.Expand((double)targetingMargin, (double)targetingMargin, (double)targetingMargin);
+                HitResult hit = box.Raycast(cameraPosition, targetVec);
+
+                if (box.Contains(cameraPosition))
                 {
-                    var4 = _client.objectMouseOver.Pos.distanceTo(var6);
-                }
-
-                if (var4 > 3.0D)
-                {
-                    var4 = 3.0D;
-                }
-
-                var2 = var4;
-
-                Vec3D var7 = _client.camera.getLook(tickDelta);
-                Vec3D var8 = var6 + var2 * var7;
-                _targetedEntity = null;
-                float var9 = 1.0F;
-                List<Entity> var10 = _client.world.getEntities(_client.camera, _client.camera.boundingBox.Stretch(var7.x * var2, var7.y * var2, var7.z * var2).Expand((double)var9, (double)var9, (double)var9));
-                double var11 = 0.0D;
-
-                for (int var13 = 0; var13 < var10.Count; ++var13)
-                {
-                    Entity var14 = var10[var13];
-                    if (var14.isCollidable())
+                    if (0.0D < closestDistance || closestDistance == 0.0D)
                     {
-                        float var15 = var14.getTargetingMargin();
-                        Box var16 = var14.boundingBox.Expand((double)var15, (double)var15, (double)var15);
-                        HitResult var17 = var16.Raycast(var6, var8);
-                        if (var16.Contains(var6))
-                        {
-                            if (0.0D < var11 || var11 == 0.0D)
-                            {
-                                _targetedEntity = var14;
-                                var11 = 0.0D;
-                            }
-                        }
-                        else if (var17.Type != HitResultType.MISS)
-                        {
-                            double var18 = var6.distanceTo(var17.Pos);
-                            if (var18 < var11 || var11 == 0.0D)
-                            {
-                                _targetedEntity = var14;
-                                var11 = var18;
-                            }
-                        }
+                        _targetedEntity = ent;
+                        closestDistance = 0.0D;
                     }
                 }
-
-                if (_targetedEntity != null)
+                else if (hit.Type != HitResultType.MISS)
                 {
-                    _client.objectMouseOver = new HitResult(_targetedEntity);
+                    double var18 = cameraPosition.distanceTo(hit.Pos);
+                    if (var18 < closestDistance || closestDistance == 0.0D)
+                    {
+                        _targetedEntity = ent;
+                        closestDistance = var18;
+                    }
                 }
-
             }
+        }
+
+        if (_targetedEntity != null)
+        {
+            _client.objectMouseOver = new HitResult(_targetedEntity);
         }
     }
 
@@ -348,7 +351,7 @@ public class GameRenderer
         _client.camera ??= _client.player;
 
         Profiler.Start("getMouseOver");
-        updateTargetedEntity(tickDelta);
+        UpdateTargetedEntity(tickDelta);
         Profiler.Stop("getMouseOver");
 
         EntityLiving var4 = _client.camera;

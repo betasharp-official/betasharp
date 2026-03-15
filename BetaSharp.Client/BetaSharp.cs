@@ -1285,7 +1285,7 @@ public partial class BetaSharp
         Profiler.Start("ingameGUI.updateTick");
         ingameGUI.updateTick();
         Profiler.Stop("ingameGUI.updateTick");
-        gameRenderer.updateTargetedEntity(1.0F);
+        gameRenderer.UpdateTargetedEntity(1.0F);
 
         gameRenderer.tick(partialTicks);
 
