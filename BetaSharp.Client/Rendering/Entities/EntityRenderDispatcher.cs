@@ -136,6 +136,7 @@ public class EntityRenderDispatcher
 
         entityRenderer.render(target, x, y, z, yaw, tickDelta);
         entityRenderer.PostRender(target, new Vec3D(x, y, z), yaw, tickDelta);
+        entityRenderer.RenderBoundingBox(target, new Vec3D(x, y, z), yaw, tickDelta);
     }
 
     public void SetWorld(World world)
