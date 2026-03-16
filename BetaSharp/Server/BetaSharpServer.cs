@@ -352,7 +352,6 @@ public abstract class BetaSharpServer : CommandOutput
                     }
 
                     Thread.Sleep(1);
-                    Thread.Sleep(1);
                 }
             }
             else
@@ -363,7 +362,6 @@ public abstract class BetaSharpServer : CommandOutput
 
                     try
                     {
-                        Thread.Sleep(10);
                         Thread.Sleep(10);
                     }
                     catch (ThreadInterruptedException ex)
@@ -383,7 +381,6 @@ public abstract class BetaSharpServer : CommandOutput
 
                 try
                 {
-                    Thread.Sleep(10);
                     Thread.Sleep(10);
                 }
                 catch (ThreadInterruptedException interruptedEx)
