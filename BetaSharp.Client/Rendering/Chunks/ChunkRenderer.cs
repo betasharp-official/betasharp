@@ -166,8 +166,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         Profiler.Stop("FindVisible");
 
-        AddNearbySections(cameraChunkPos, _frameIndex, renderParams.Camera);
-
         int frustumCount = 0;
         int visitedVisibleCount = _visibleRenderers.Count;
 
@@ -345,32 +343,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     public void Visit(SubChunkRenderer renderer)
     {
         _visibleRenderers.Add(renderer);
-    }
-
-    private void AddNearbySections(Vector3D<int> cameraChunkPos, int frame, Culler camera)
-    {
-        int size = SubChunkRenderer.Size;
-        for (int x = -size; x <= size; x += size)
-        {
-            for (int y = -size; y <= size; y += size)
-            {
-                for (int z = -size; z <= size; z += size)
-                {
-                    Vector3D<int> pos = cameraChunkPos + new Vector3D<int>(x, y, z);
-                    if (_renderers.TryGetValue(pos, out SubChunkState? state))
-                    {
-                        if (state.Renderer.LastVisibleFrame != frame)
-                        {
-                            state.Renderer.LastVisibleFrame = frame;
-                            if (camera.isBoundingBoxInFrustum(state.Renderer.BoundingBox))
-                            {
-                                Visit(state.Renderer);
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     private void ProcessUpdates()
