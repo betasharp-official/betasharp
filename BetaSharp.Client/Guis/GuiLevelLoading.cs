@@ -23,7 +23,7 @@ public class GuiLevelLoading(string worldDir, WorldSettings settings) : GuiScree
         {
             _serverStarted = true;
             Game.internalServer = new InternalServer(Path.Combine(BetaSharp.getBetaSharpDir(), "saves"), _worldDir, _settings, Game.options.renderDistance, Game.options.Difficulty);
-            new RunServerThread(Game.internalServer, "InternalServer").start();
+            Game.internalServer.RunThreaded("Internal Server");
         }
     }
 

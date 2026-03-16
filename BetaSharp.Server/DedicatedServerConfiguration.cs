@@ -1,6 +1,3 @@
-using java.io;
-using java.lang;
-using java.util;
 using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
 
@@ -8,18 +5,18 @@ namespace BetaSharp.Server;
 
 internal class DedicatedServerConfiguration : IServerConfiguration
 {
-    public static ILogger<DedicatedServerConfiguration> logger = Log.Instance.For<DedicatedServerConfiguration>();
-    private readonly Properties properties = new();
-    private readonly java.io.File propertiesFile;
+    private static ILogger<DedicatedServerConfiguration> logger = Log.Instance.For<DedicatedServerConfiguration>();
+    private readonly  Properties _properties = new();
+    private readonly FileInfo _propertiesFile;
 
-    public DedicatedServerConfiguration(java.io.File file)
+    public DedicatedServerConfiguration(FileInfo file)
     {
-        propertiesFile = file;
-        if (file.exists())
+        _propertiesFile = file;
+        if (file.Exists)
         {
             try
             {
-                properties.load(new FileInputStream(file));
+                _properties = Properties.Load(file.FullName);
             }
             catch (Exception ex)
             {
@@ -49,11 +46,11 @@ internal class DedicatedServerConfiguration : IServerConfiguration
     {
         try
         {
-            properties.store(new FileOutputStream(propertiesFile), "BetaSharp server properties");
+            _properties.Save(_propertiesFile.FullName, "BetaSharp server properties");
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to save " + propertiesFile);
+            logger.LogWarning(ex, "Failed to save " + _propertiesFile);
             generateNew();
         }
     }
@@ -65,13 +62,15 @@ internal class DedicatedServerConfiguration : IServerConfiguration
 
     public string GetProperty(string property, string fallback)
     {
-        if (!properties.containsKey(property))
+        if (_properties.TryGetValue(property, out string? propertyValue))
         {
-            properties.setProperty(property, fallback);
-            save();
+            return propertyValue;
         }
 
-        return properties.getProperty(property, fallback);
+        _properties.SetProperty(property, fallback);
+        save();
+
+        return propertyValue ?? fallback;
     }
 
     public int getProperty(string property, int fallback)
@@ -83,11 +82,11 @@ internal class DedicatedServerConfiguration : IServerConfiguration
     {
         try
         {
-            return Integer.parseInt(getProperty(property, "" + fallback));
+            return int.Parse(getProperty(property, "" + fallback));
         }
         catch (Exception)
         {
-            properties.setProperty(property, "" + fallback);
+            _properties.SetProperty(property, "" + fallback);
             return fallback;
         }
     }
@@ -101,11 +100,11 @@ internal class DedicatedServerConfiguration : IServerConfiguration
     {
         try
         {
-            return java.lang.Boolean.parseBoolean(getProperty(property, "" + fallback));
+            return bool.Parse(getProperty(property, "" + fallback));
         }
         catch (Exception)
         {
-            properties.setProperty(property, "" + fallback);
+            _properties.SetProperty(property, "" + fallback);
             return fallback;
         }
     }
@@ -117,7 +116,7 @@ internal class DedicatedServerConfiguration : IServerConfiguration
 
     public void SetProperty(string property, bool value)
     {
-        properties.setProperty(property, "" + value);
+        _properties.SetProperty(property, "" + value);
         save();
     }
 

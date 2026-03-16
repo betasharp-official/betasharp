@@ -18,7 +18,7 @@ internal class AdminCommands
         if (IsInternalServer(server, output)) return;
 
         LogCommand(server, senderName, "Stopping the server..");
-        server.stop();
+        server.Stop();
     }
 
     public static void SaveAll(BetaSharpServer server, string senderName, string[] args, CommandOutput output)

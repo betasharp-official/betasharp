@@ -1008,7 +1008,7 @@ public partial class BetaSharp
     {
         if (internalServer != null)
         {
-            internalServer.stop();
+            internalServer.Stop();
             while (!internalServer.stopped)
             {
                 Thread.Sleep(1);

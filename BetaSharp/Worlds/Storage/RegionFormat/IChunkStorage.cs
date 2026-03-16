@@ -5,7 +5,7 @@ namespace BetaSharp.Worlds.Storage.RegionFormat;
 
 public interface IChunkStorage
 {
-    Chunk LoadChunk(IWorldContext world, int chunkX, int chunkZ);
+    Chunk? LoadChunk(IWorldContext world, int chunkX, int chunkZ);
 
     void SaveChunk(IWorldContext world, Chunk chunk, Action onSave, long sequence);
 
