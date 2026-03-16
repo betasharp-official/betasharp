@@ -402,15 +402,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             if (IsChunkInRenderDistance(state.Renderer.Position, _lastViewPos) && state.IsLit)
             {
-                if (!_chunkVersions.TryGetValue(state.Renderer.Position, out ChunkMeshVersion? version))
-                {
-                    version = ChunkMeshVersion.Get();
-                    _chunkVersions[state.Renderer.Position] = version;
-                }
-
-                version.MarkDirty();
-
-                _dirtyChunks.Enqueue(state.Renderer.Position, Vector3D.DistanceSquared(ToDoubleVec(state.Renderer.Position), _lastViewPos));
+                MarkDirty(state.Renderer.Position);
             }
         }
     }
