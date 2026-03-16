@@ -299,7 +299,7 @@ public abstract class EntityRenderer
     {
         if (ShadowRadius > 0.0F)
         {
-            double distance = Dispatcher.squareDistanceTo(target.x, target.y, target.z);
+            double distance = Dispatcher.GetSquareDistanceTo(target.x, target.y, target.z);
             float shadowiness = (float)((1.0D - distance / 256.0D) * ShadowStrength);
             if (shadowiness > 0.0F)
             {
@@ -312,5 +312,59 @@ public abstract class EntityRenderer
             RenderOnFire(target, pos, tickDelta);
         }
 
+    }
+
+    public void RenderBoundingBox(Entity target, Vec3D pos, float yaw, float tickDelta)
+    {
+        if (!BetaSharp.isDebugInfoEnabled()) return;
+
+        GLManager.GL.Disable(GLEnum.Lighting);
+        GLManager.GL.Disable(GLEnum.Texture2D);
+        GLManager.GL.PushMatrix();
+        GLManager.GL.Translate((float)pos.x, (float)pos.y, (float)pos.z);
+        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+
+        Box bb = target.boundingBox;
+        double minX = bb.MinX - target.x;
+        double maxX = bb.MaxX - target.x;
+        double minY = bb.MinY - target.y;
+        double maxY = bb.MaxY - target.y;
+        double minZ = bb.MinZ - target.z;
+        double maxZ = bb.MaxZ - target.z;
+
+        Tessellator tess = Tessellator.instance;
+        tess.startDrawing(1);
+
+        tess.addVertex(minX, minY, minZ);
+        tess.addVertex(maxX, minY, minZ);
+        tess.addVertex(maxX, minY, minZ);
+        tess.addVertex(maxX, minY, maxZ);
+        tess.addVertex(maxX, minY, maxZ);
+        tess.addVertex(minX, minY, maxZ);
+        tess.addVertex(minX, minY, maxZ);
+        tess.addVertex(minX, minY, minZ);
+
+        tess.addVertex(minX, maxY, minZ);
+        tess.addVertex(maxX, maxY, minZ);
+        tess.addVertex(maxX, maxY, minZ);
+        tess.addVertex(maxX, maxY, maxZ);
+        tess.addVertex(maxX, maxY, maxZ);
+        tess.addVertex(minX, maxY, maxZ);
+        tess.addVertex(minX, maxY, maxZ);
+        tess.addVertex(minX, maxY, minZ);
+
+        tess.addVertex(minX, minY, minZ);
+        tess.addVertex(minX, maxY, minZ);
+        tess.addVertex(maxX, minY, minZ);
+        tess.addVertex(maxX, maxY, minZ);
+        tess.addVertex(maxX, minY, maxZ);
+        tess.addVertex(maxX, maxY, maxZ);
+        tess.addVertex(minX, minY, maxZ);
+        tess.addVertex(minX, maxY, maxZ);
+
+        tess.draw();
+        GLManager.GL.PopMatrix();
+        GLManager.GL.Enable(GLEnum.Texture2D);
+        GLManager.GL.Enable(GLEnum.Lighting);
     }
 }

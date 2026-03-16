@@ -131,26 +131,25 @@ public class EntityRenderDispatcher
 
     public void renderEntityWithPosYaw(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
-        EntityRenderer var10 = GetEntityRenderObject(target);
-        if (var10 != null)
-        {
-            var10.render(target, x, y, z, yaw, tickDelta);
-            var10.PostRender(target, new Vec3D(x, y, z), yaw, tickDelta);
-        }
+        EntityRenderer entityRenderer = GetEntityRenderObject(target);
+        if (entityRenderer == null) return;
 
+        entityRenderer.render(target, x, y, z, yaw, tickDelta);
+        entityRenderer.PostRender(target, new Vec3D(x, y, z), yaw, tickDelta);
+        entityRenderer.RenderBoundingBox(target, new Vec3D(x, y, z), yaw, tickDelta);
     }
 
-    public void func_852_a(World var1)
+    public void SetWorld(World world)
     {
-        world = var1;
+        this.world = world;
     }
 
-    public double squareDistanceTo(double var1, double var3, double var5)
+    public double GetSquareDistanceTo(double x, double y, double z)
     {
-        double var7 = var1 - x;
-        double var9 = var3 - y;
-        double var11 = var5 - z;
-        return var7 * var7 + var9 * var9 + var11 * var11;
+        double xDelta = x - this.x;
+        double yDelta = y - this.y;
+        double zDelta = z - this.z;
+        return xDelta * xDelta + yDelta * yDelta + zDelta * zDelta;
     }
 
     public TextRenderer getTextRenderer()
