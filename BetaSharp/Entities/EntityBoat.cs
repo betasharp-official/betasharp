@@ -9,6 +9,7 @@ namespace BetaSharp.Entities;
 
 public class EntityBoat : Entity
 {
+    public override EntityType Type => EntityRegistry.Boat;
     public int boatCurrentDamage;
     public int boatTimeSinceHit;
     public int boatRockDirection;

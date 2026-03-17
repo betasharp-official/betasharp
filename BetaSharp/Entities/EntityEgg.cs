@@ -8,6 +8,7 @@ namespace BetaSharp.Entities;
 
 public class EntityEgg : Entity
 {
+    public override EntityType Type => EntityRegistry.Egg;
     private int field_20056_b = -1;
     private int field_20055_c = -1;
     private int field_20054_d = -1;

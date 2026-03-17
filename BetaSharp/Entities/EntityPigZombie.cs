@@ -6,6 +6,7 @@ namespace BetaSharp.Entities;
 
 internal class EntityPigZombie : EntityZombie
 {
+    public override EntityType Type => EntityRegistry.PigZombie;
     private int angerLevel;
     private int randomSoundDelay;
     private static readonly ItemStack defaultHeldItem = new ItemStack(Item.GoldenSword, 1);

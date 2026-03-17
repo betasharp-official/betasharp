@@ -6,6 +6,7 @@ namespace BetaSharp.Entities;
 
 public class EntityZombie : EntityMonster
 {
+    public override EntityType Type => EntityRegistry.Zombie;
     public EntityZombie(World world) : base(world)
     {
         texture = "/mob/zombie.png";

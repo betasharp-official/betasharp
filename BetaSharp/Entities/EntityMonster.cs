@@ -4,7 +4,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Entities;
 
-public class EntityMonster : EntityCreature, Monster
+public abstract class EntityMonster : EntityCreature, Monster
 {
     protected int attackStrength = 2;
 

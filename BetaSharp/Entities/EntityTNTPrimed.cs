@@ -7,6 +7,7 @@ namespace BetaSharp.Entities;
 
 public class EntityTNTPrimed : Entity
 {
+    public override EntityType Type => EntityRegistry.PrimedTnt;
     public int fuse;
 
     public EntityTNTPrimed(World world) : base(world)

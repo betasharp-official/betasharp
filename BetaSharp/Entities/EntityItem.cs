@@ -9,6 +9,7 @@ namespace BetaSharp.Entities;
 
 public class EntityItem : Entity
 {
+    public override EntityType Type => EntityRegistry.Item;
     public ItemStack stack;
     public int itemAge;
     public int delayBeforeCanPickup;

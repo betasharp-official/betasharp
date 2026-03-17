@@ -161,7 +161,7 @@ internal class RegionChunkStorage : IChunkStorage
             for (int entityIndex = 0; entityIndex < entityTags.TagCount(); ++entityIndex)
             {
                 NBTTagCompound entityTag = (NBTTagCompound)entityTags.TagAt(entityIndex);
-                Entity? entity = EntityRegistry.getEntityFromNbt(entityTag, world);
+                Entity? entity = EntityRegistry.GetEntityFromNbt(entityTag, world);
                 chunk.LastSaveHadEntities = true;
                 if (entity != null)
                 {

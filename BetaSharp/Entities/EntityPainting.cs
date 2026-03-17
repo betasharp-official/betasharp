@@ -8,6 +8,7 @@ namespace BetaSharp.Entities;
 
 public class EntityPainting : Entity
 {
+    public override EntityType Type => EntityRegistry.Painting;
     private int _tickCounter;
     public int Direction;
     public int XPosition;

@@ -7,6 +7,7 @@ namespace BetaSharp.Entities;
 
 public class EntitySkeleton : EntityMonster
 {
+    public override EntityType Type => EntityRegistry.Skeleton;
     private static readonly ItemStack defaultHeldItem = new ItemStack(Item.BOW, 1);
 
     public EntitySkeleton(World world) : base(world)

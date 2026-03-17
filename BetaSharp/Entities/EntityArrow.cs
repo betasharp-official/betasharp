@@ -9,6 +9,7 @@ namespace BetaSharp.Entities;
 
 public class EntityArrow : Entity
 {
+    public override EntityType Type => EntityRegistry.Arrow;
     private int xTile = -1;
     private int yTile = -1;
     private int zTile = -1;

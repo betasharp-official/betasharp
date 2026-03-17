@@ -7,6 +7,7 @@ namespace BetaSharp.Entities;
 
 public class EntityFireball : Entity
 {
+    public override EntityType Type => EntityRegistry.Fireball;
     private int blockX = -1;
     private int blockY = -1;
     private int blockZ = -1;

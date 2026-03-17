@@ -7,6 +7,7 @@ namespace BetaSharp.Entities;
 
 public class EntitySpider : EntityMonster
 {
+    public override EntityType Type => EntityRegistry.Spider;
     public EntitySpider(World world) : base(world)
     {
         texture = "/mob/spider.png";

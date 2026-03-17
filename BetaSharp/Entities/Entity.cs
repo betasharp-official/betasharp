@@ -11,6 +11,7 @@ namespace BetaSharp.Entities;
 
 public abstract class Entity
 {
+    public abstract EntityType? Type { get; }
     private static int nextEntityID;
     public int id = nextEntityID++;
     public double renderDistanceWeight = 1.0D;

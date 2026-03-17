@@ -7,6 +7,7 @@ namespace BetaSharp.Entities;
 
 public class EntityGhast : EntityFlying, Monster
 {
+    public override EntityType Type => EntityRegistry.Ghast;
     public readonly SyncedProperty<bool> Charging;
     public int courseChangeCooldown;
     public double waypointX;

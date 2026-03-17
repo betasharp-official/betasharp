@@ -9,6 +9,7 @@ namespace BetaSharp.Entities;
 
 public class EntitySlime : EntityLiving, Monster
 {
+    public override EntityType Type => EntityRegistry.Slime;
     public readonly SyncedProperty<byte> SlimeSize;
     public float squishAmount;
     public float prevSquishAmount;

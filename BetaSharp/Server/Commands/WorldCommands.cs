@@ -123,7 +123,7 @@ internal static class WorldCommands
 
         for (int i = 0; i < count; i++)
         {
-            Entity? entity = EntityRegistry.createEntityAt(entityName, world, (float)player.x, (float)player.y, (float)player.z);
+            Entity? entity = EntityRegistry.CreateEntityAt(entityName, world, (float)player.x, (float)player.y, (float)player.z);
             if (entity != null)
             {
                 summoned++;

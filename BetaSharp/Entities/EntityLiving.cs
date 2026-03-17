@@ -1,4 +1,4 @@
-﻿using BetaSharp.Blocks;
+using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
 using BetaSharp.NBT;
@@ -8,7 +8,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Entities;
 
-public class EntityLiving : Entity
+public abstract class EntityLiving : Entity
 {
     public int maxHealth = 20;
     public float limbSwingPhase;

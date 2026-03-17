@@ -8,6 +8,7 @@ namespace BetaSharp.Entities;
 
 public class EntitySnowball : Entity
 {
+    public override EntityType Type => EntityRegistry.Snowball;
     private int xTileSnowball = -1;
     private int yTileSnowball = -1;
     private int zTileSnowball = -1;

@@ -7,6 +7,7 @@ namespace BetaSharp.Entities;
 
 public class EntityFallingSand : Entity
 {
+    public override EntityType Type => EntityRegistry.FallingSand;
     public int blockId;
     public int fallTime;
 

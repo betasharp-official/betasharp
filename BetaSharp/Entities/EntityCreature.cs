@@ -5,7 +5,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Entities;
 
-public class EntityCreature : EntityLiving
+public abstract class EntityCreature : EntityLiving
 {
     private PathEntity pathToEntity;
     protected Entity playerToAttack;

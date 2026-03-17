@@ -14,6 +14,7 @@ namespace BetaSharp.Client.Entities;
 
 public class ClientPlayerEntity : EntityPlayer
 {
+    public override EntityType Type => EntityRegistry.Player;
     public MovementInput movementInput;
     protected BetaSharp Game;
     private readonly MouseFilter field_21903_bJ = new();

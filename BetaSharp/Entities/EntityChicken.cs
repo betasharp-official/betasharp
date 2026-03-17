@@ -6,6 +6,7 @@ namespace BetaSharp.Entities;
 
 public class EntityChicken : EntityAnimal
 {
+    public override EntityType Type => EntityRegistry.Chicken;
     public bool field_753_a = false;
     public float field_752_b;
     public float destPos;

@@ -7,6 +7,7 @@ namespace BetaSharp.Entities;
 
 public class EntityCreeper : EntityMonster
 {
+    public override EntityType Type => EntityRegistry.Creeper;
     public readonly SyncedProperty<byte> CreeperState;
     public readonly SyncedProperty<bool> Powered;
     private int timeSinceIgnited;

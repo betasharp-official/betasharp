@@ -7,6 +7,9 @@ namespace BetaSharp.Entities;
 
 public class EntityLightningBolt : EntityWeatherEffect
 {
+    public override EntityType Type => EntityRegistry.LightningBolt;
+
+    public EntityLightningBolt(World world) : this(world, 0, 0, 0) { }
     private int flashTimer;
     public long renderSeed;
     private int flashCount;

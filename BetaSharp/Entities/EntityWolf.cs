@@ -9,6 +9,7 @@ namespace BetaSharp.Entities;
 
 public class EntityWolf : EntityAnimal
 {
+    public override EntityType Type => EntityRegistry.Wolf;
     private bool looksWithInterest;
     private float headTiltAmount;
     private float prevHeadTiltAmount;

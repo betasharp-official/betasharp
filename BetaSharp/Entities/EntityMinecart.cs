@@ -11,6 +11,7 @@ namespace BetaSharp.Entities;
 //TODO: BREAKING MINECART CRASHES THE GAME!!
 public class EntityMinecart : Entity, IInventory
 {
+    public override EntityType Type => EntityRegistry.Minecart;
     private ItemStack[] cargoItems;
     public int minecartCurrentDamage;
     public int minecartTimeSinceHit;

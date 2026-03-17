@@ -8,6 +8,7 @@ namespace BetaSharp.Entities;
 
 public class EntitySquid : EntityWaterMob
 {
+    public override EntityType Type => EntityRegistry.Squid;
     public float tiltAngle;
     public float prevTiltAngle;
     public float tentaclePhase;

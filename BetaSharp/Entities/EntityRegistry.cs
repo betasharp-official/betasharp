@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using BetaSharp.NBT;
+using BetaSharp.Util;
 using BetaSharp.Worlds;
 using Microsoft.Extensions.Logging;
 
@@ -8,183 +9,131 @@ namespace BetaSharp.Entities;
 public static class EntityRegistry
 {
     private static readonly ILogger s_logger = Log.Instance.For(nameof(EntityRegistry));
-    private static readonly Dictionary<string, Func<World, Entity>> idToFactory = new ();
-    private static readonly Dictionary<Type, string> typeToId = new ();
-    private static readonly Dictionary<int, Func<World, Entity>> rawIdToFactory = new ();
-    private static readonly Dictionary<Type, int> typeToRawId = new ();
+    private static readonly IRegistry<EntityType> s_registry = BuiltInRegistries.EntityTypes;
 
-    public static readonly Dictionary<string, int> namesToId = new();
+    public static readonly EntityType Arrow = Register(world => new EntityArrow(world), "Arrow", 10);
+    public static readonly EntityType Snowball = Register(world => new EntitySnowball(world), "Snowball", 11);
+    public static readonly EntityType Item = Register(world => new EntityItem(world), "Item", 1);
+    public static readonly EntityType Painting = Register(world => new EntityPainting(world), "Painting", 9);
+    public static readonly EntityType Creeper = Register(world => new EntityCreeper(world), "Creeper", 50);
+    public static readonly EntityType Skeleton = Register(world => new EntitySkeleton(world), "Skeleton", 51);
+    public static readonly EntityType Spider = Register(world => new EntitySpider(world), "Spider", 52);
+    public static readonly EntityType Giant = Register(world => new EntityGiantZombie(world), "Giant", 53);
+    public static readonly EntityType Zombie = Register(world => new EntityZombie(world), "Zombie", 54);
+    public static readonly EntityType Slime = Register(world => new EntitySlime(world), "Slime", 55);
+    public static readonly EntityType Ghast = Register(world => new EntityGhast(world), "Ghast", 56);
+    public static readonly EntityType PigZombie = Register(world => new EntityPigZombie(world), "PigZombie", 57);
+    public static readonly EntityType Pig = Register(world => new EntityPig(world), "Pig", 90);
+    public static readonly EntityType Sheep = Register(world => new EntitySheep(world), "Sheep", 91);
+    public static readonly EntityType Cow = Register(world => new EntityCow(world), "Cow", 92);
+    public static readonly EntityType Chicken = Register(world => new EntityChicken(world), "Chicken", 93);
+    public static readonly EntityType Squid = Register(world => new EntitySquid(world), "Squid", 94);
+    public static readonly EntityType Wolf = Register(world => new EntityWolf(world), "Wolf", 95);
+    public static readonly EntityType PrimedTnt = Register(world => new EntityTNTPrimed(world), "PrimedTnt", 20);
+    public static readonly EntityType FallingSand = Register(world => new EntityFallingSand(world), "FallingSand", 21);
+    public static readonly EntityType Minecart = Register(world => new EntityMinecart(world), "Minecart", 40);
+    public static readonly EntityType Boat = Register(world => new EntityBoat(world), "Boat", 41);
 
-    private static void Register<T>(Func<World, T> factory, string id, int rawId) where T : Entity
+    public static readonly EntityType Egg = Register(world => new EntityEgg(world), "Egg", 62);
+    public static readonly EntityType Fireball = Register(world => new EntityFireball(world), "Fireball", 63);
+    public static readonly EntityType FishHook = Register(world => new EntityFish(world), "FishHook", 64);
+    public static readonly EntityType LightningBolt = Register(world => new EntityLightningBolt(world), "LightningBolt", 65);
+    public static readonly EntityType Player = Register<ServerPlayerEntity>(_ => throw new NotSupportedException("Players must be created via ServerPlayerEntity constructor"), "Player", 100);
+
+    private static EntityType Register<T>(Func<World, T> factory, string id, int rawId) where T : Entity
     {
-        idToFactory.Add(id, factory);
-        typeToId.Add(typeof(T), id);
-        rawIdToFactory.Add(rawId, factory);
-        typeToRawId.Add(typeof(T), rawId);
-        namesToId.TryAdd(id.ToLower(), rawId);
+        var type = new EntityType(w => factory(w), typeof(T));
+        s_registry.Register(rawId, new ResourceLocation("betasharp", id.ToLower()), type);
+        return type;
     }
 
     public static Entity? Create(string id, World world)
     {
-	    TryCreate(id, world, out Entity? entity);
-	    return entity;
+        return TryCreate(id, world, out Entity? entity) ? entity : null;
     }
 
-    private static bool TryCreate(string id, World world, [MaybeNullWhen(false)] out Entity entity)
+    public static bool TryCreate(string id, World world, [MaybeNullWhen(false)] out Entity entity)
     {
-	    if (idToFactory.TryGetValue(id, out var factory))
-	    {
-		    entity = factory.Invoke(world);
-		    return true;
-	    }
+        EntityType? type = s_registry.Get(new ResourceLocation("betasharp", id.ToLower()));
+        if (type != null)
+        {
+            entity = type.Create(world);
+            return true;
+        }
 
         s_logger.LogInformation($"Unable to find entity with id {id}");
-	    entity = null;
-	    return false;
-    }
-
-    /// <summary>
-    /// Performed by first getting the id from a name, then getting by value in the typeToRawId dir.
-    /// If no name is found, try to find by type name.
-    /// As this is only used for the get command, the performance is not important enough to warrant a new registry.
-    /// </summary>
-    /// <param name="name">Entity or type name</param>
-    /// <param name="type">Type of the found Entity</param>
-    internal static bool TryGetTypeFromName(string name, [NotNullWhen(true)] out Type? type)
-    {
-        name = name.ToLower();
-        if (!namesToId.TryGetValue(name, out int v)) return TryGetTypeFromTypeName(name, out type);
-
-        foreach (KeyValuePair<Type, int> i in typeToRawId)
-        {
-            if (i.Value == v)
-            {
-                type = i.Key;
-                return true;
-            }
-        }
-
-        return TryGetTypeFromTypeName(name, out type);
-    }
-
-    private static bool TryGetTypeFromTypeName(string name, [NotNullWhen(true)] out Type? type)
-    {
-        type = null;
-
-        foreach (KeyValuePair<Type, int> i in typeToRawId)
-        {
-            if (i.Key.ToString().ToLower() == name)
-            {
-                type = i.Key;
-                return true;
-            }
-        }
-
+        entity = null;
         return false;
     }
 
-    public static Entity? getEntityFromNbt(NBTTagCompound nbt, World world)
+    public static Entity? Create(int rawId, World world)
     {
-	    string id = nbt.GetString("id");
+        return TryCreate(rawId, world, out Entity? entity) ? entity : null;
+    }
+
+    public static bool TryCreate(int rawId, World world, [MaybeNullWhen(false)] out Entity entity)
+    {
+        EntityType? type = s_registry.Get(rawId);
+        if (type != null)
+        {
+            entity = type.Create(world);
+            return true;
+        }
+
+        s_logger.LogInformation($"Unable to find entity with raw id {rawId}");
+        entity = null;
+        return false;
+    }
+
+    public static int GetRawId(Entity entity) => entity.Type != null ? s_registry.GetId(entity.Type) : -1;
+
+    public static string? GetId(Entity entity) => entity.Type != null ? s_registry.GetKey(entity.Type)?.Path : null;
+
+    public static bool TryGetTypeFromName(string name, [MaybeNullWhen(false)] out Type type)
+    {
+        EntityType? entityType = s_registry.Get(new ResourceLocation("betasharp", name.ToLower()));
+        if (entityType != null)
+        {
+            type = entityType.BaseType;
+            return true;
+        }
+
+        type = null;
+        return false;
+    }
+
+    public static Entity? GetEntityFromNbt(NBTTagCompound nbt, World world)
+    {
+        string id = nbt.GetString("id");
         if (TryCreate(id, world, out Entity? entity))
         {
-	        entity!.read(nbt);
+            entity!.read(nbt);
         }
 
         return entity;
     }
 
-    public static Entity? createEntityAt(string name, World world, float x, float y, float z)
+    public static Entity? CreateEntityAt(string name, World world, float x, float y, float z)
     {
         name = name.ToLower();
-        try
+        if (TryCreate(name, world, out Entity? entity))
         {
-            if (namesToId.TryGetValue(name, out int id))
+            entity.setPosition(x, y, z);
+            entity.setPositionAndAngles(x, y, z, 0, 0);
+            if (!world.SpawnEntity(entity))
             {
-				if(TryCreate(id, world, out Entity? entity))
-                {
-                    entity.setPosition(x, y, z);
-                    entity.setPositionAndAngles(x, y, z, 0, 0);
-                    if (!world.SpawnEntity(entity))
-                    {
-                        s_logger.LogError($"Entity `{name}` with ID:`{id}` failed to join world.");
-                    }
+                s_logger.LogError($"Entity `{name}` failed to join world.");
+            }
 
-                    return entity;
-                }
-                else
-                {
-                    s_logger.LogError($"Failed to convert entity of name `{name}` and id `{id}` to a class.");
-                }
-            }
-            else
-            {
-                s_logger.LogError($"Unable to find entity of name `{name}`.");
-            }
-        }
-        catch (Exception ex)
-        {
-            s_logger.LogError(ex, "Failure while creating an entity");
+            return entity;
         }
 
+        s_logger.LogError($"Failed to find entity type associated with name `{name}`");
         return null;
-    }
-
-    public static Entity? Create(int rawId, World world)
-    {
-	    TryCreate(rawId, world, out Entity? entity);
-	    return entity;
-    }
-
-    private static bool TryCreate(int rawId, World world, [MaybeNullWhen(false)] out Entity entity)
-    {
-	    if (rawIdToFactory.TryGetValue(rawId, out var factory))
-	    {
-		    entity = factory.Invoke(world);
-		    return true;
-	    }
-
-        s_logger.LogInformation($"Unable to find entity with raw id {rawId}");
-	    entity = null;
-	    return false;
-    }
-
-    public static int GetRawId(Entity entity)
-    {
-        return typeToRawId[entity.GetType()];
-    }
-
-    public static string? GetId(Entity entity)
-    {
-        typeToId.TryGetValue(entity.GetType(), out string? id);
-        return id;
     }
 
     static EntityRegistry()
     {
-        Register(world => new EntityArrow(world), "Arrow", 10);
-        Register(world => new EntitySnowball(world), "Snowball", 11);
-        Register(world => new EntityItem(world), "Item", 1);
-        Register(world => new EntityPainting(world), "Painting", 9);
-        Register(world => new EntityLiving(world), "Mob", 48);
-        Register(world => new EntityMonster(world), "Monster", 49);
-        Register(world => new EntityCreeper(world), "Creeper", 50);
-        Register(world => new EntitySkeleton(world), "Skeleton", 51);
-        Register(world => new EntitySpider(world), "Spider", 52);
-        Register(world => new EntityGiantZombie(world), "Giant", 53);
-        Register(world => new EntityZombie(world), "Zombie", 54);
-        Register(world => new EntitySlime(world), "Slime", 55);
-        Register(world => new EntityGhast(world), "Ghast", 56);
-        Register(world => new EntityPigZombie(world), "PigZombie", 57);
-        Register(world => new EntityPig(world), "Pig", 90);
-        Register(world => new EntitySheep(world), "Sheep", 91);
-        Register(world => new EntityCow(world), "Cow", 92);
-        Register(world => new EntityChicken(world), "Chicken", 93);
-        Register(world => new EntitySquid(world), "Squid", 94);
-        Register(world => new EntityWolf(world), "Wolf", 95);
-        Register(world => new EntityTNTPrimed(world), "PrimedTnt", 20);
-        Register(world => new EntityFallingSand(world), "FallingSand", 21);
-        Register(world => new EntityMinecart(world), "Minecart", 40);
-        Register(world => new EntityBoat(world), "Boat", 41);
+        BuiltInRegistries.FreezeAll();
     }
 }

@@ -9,6 +9,7 @@ namespace BetaSharp.Entities;
 
 public class EntityFish : Entity
 {
+    public override EntityType Type => EntityRegistry.FishHook;
     private int xTile;
     private int yTile;
     private int zTile;
