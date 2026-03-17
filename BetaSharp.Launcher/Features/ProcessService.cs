@@ -11,7 +11,7 @@ internal sealed class ProcessService
         var info = new ProcessStartInfo
         {
             Arguments = string.Join(" ", args),
-            CreateNoWindow = false,
+            CreateNoWindow = true,
             FileName = Path.Combine(directory, $"{nameof(BetaSharp)}.{file}"),
             WorkingDirectory = directory
         };
