@@ -74,7 +74,7 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
         return base.Init();
     }
 
-    public static async Task Main()
+    public static async Task Main(string[] args)
     {
         Log.Instance.Initialize(Directory.GetCurrentDirectory());
         Bootstrap.Initialize();
