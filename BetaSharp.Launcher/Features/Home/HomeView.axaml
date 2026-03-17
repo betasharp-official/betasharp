@@ -41,7 +41,11 @@
             <Button Content="Sign out" Command="{CompiledBinding SignOutCommand}" VerticalAlignment="Center" Grid.Column="1" />
         </Grid>
 
-        <!-- ReSharper disable once Xaml.StyleClassNotFound -->
-        <Button Content="Play" Classes="accent" Command="{CompiledBinding PlayCommand}" VerticalAlignment="Bottom" Grid.Row="1" />
+        <Grid ColumnDefinitions="* Auto" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
+            <!-- ReSharper disable once Xaml.StyleClassNotFound -->
+            <Button Content="Play" Classes="accent" Command="{CompiledBinding PlayCommand}" Grid.Column="0" />
+
+            <Button Content="Host" Command="{CompiledBinding HostCommand}" Grid.Column="1" />
+        </Grid>
     </Grid>
 </UserControl>

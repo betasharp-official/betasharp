@@ -1,0 +1,15 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:BetaSharp.Launcher.Features.Hosting"
+
+             x:Class="BetaSharp.Launcher.Features.Hosting.HostingView" x:DataType="local:HostingViewModel">
+
+    <Grid RowDefinitions="Auto *">
+        <Grid ColumnDefinitions="* Auto" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
+            <!-- ReSharper disable once Xaml.StyleClassNotFound -->
+            <Button Content="{CompiledBinding Message}" Classes="accent" Command="{CompiledBinding RunCommand}" Grid.Column="0" />
+
+            <Button Content="Back" Command="{CompiledBinding BackCommand}" Grid.Column="1" />
+        </Grid>
+    </Grid>
+</UserControl>

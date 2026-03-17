@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Authentication;
+using BetaSharp.Launcher.Features.Hosting;
 using BetaSharp.Launcher.Features.Sessions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -28,6 +29,13 @@ internal sealed partial class HomeViewModel : ObservableObject
         WeakReferenceMessenger.Default.Register<HomeViewModel, SessionMessage>(
             this,
             static (viewModel, message) => viewModel.Session = message.Session);
+    }
+
+    [RelayCommand]
+    private void SignOut()
+    {
+        _navigationService.Navigate<AuthenticationViewModel>();
+        _storageService.Delete(nameof(Session));
     }
 
     [RelayCommand]
@@ -60,9 +68,8 @@ internal sealed partial class HomeViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void SignOut()
+    private void Host()
     {
-        _navigationService.Navigate<AuthenticationViewModel>();
-        _storageService.Delete(nameof(Session));
+        _navigationService.Navigate<HostingViewModel>();
     }
 }

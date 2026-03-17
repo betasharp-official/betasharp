@@ -4,6 +4,7 @@ using BetaSharp.Launcher.Features;
 using BetaSharp.Launcher.Features.Alert;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Home;
+using BetaSharp.Launcher.Features.Hosting;
 using BetaSharp.Launcher.Features.Mojang;
 using BetaSharp.Launcher.Features.Sessions;
 using BetaSharp.Launcher.Features.Shell;
@@ -53,15 +54,19 @@ internal static partial class Bootstrapper
     [Transient(typeof(StorageService))]
     [Transient(typeof(ClientService))]
 
-    // V & VMs
+    // VMs
     [Singleton(typeof(ShellViewModel))]
-    [Transient(typeof(ShellView))]
-    [Transient(typeof(AuthenticationView))]
+    [Singleton(typeof(HostingViewModel))]
+    [Singleton(typeof(HomeViewModel))]
     [Transient(typeof(AuthenticationViewModel))]
-    [Transient(typeof(HomeViewModel))]
-    [Transient(typeof(HomeView))]
-    [Transient(typeof(SplashView))]
     [Transient(typeof(SplashViewModel))]
+
+    // Views
+    [Transient(typeof(ShellView))]
+    [Transient(typeof(HostingView))]
+    [Transient(typeof(HomeView))]
+    [Transient(typeof(AuthenticationView))]
+    [Transient(typeof(SplashView))]
 
     // ...
     [Singleton(typeof(ViewLocator))]
