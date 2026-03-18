@@ -191,6 +191,7 @@ public class ServerChunkCache : IChunkSource
             {
                 _generator.DecorateTerrain(source, x, z);
                 var4.MarkDirty();
+                _world.ChunkMap.OnChunkDecorated(x, z);
             }
         }
     }

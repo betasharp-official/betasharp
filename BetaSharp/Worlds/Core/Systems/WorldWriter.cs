@@ -108,7 +108,21 @@ public sealed class WorldWriter : IBlockWrite
             return false;
         }
 
-        return _host.GetChunk(x >> 4, z >> 4).SetBlock(x & 15, y, z & 15, blockId, meta, notifyBlockPlaced);
+        int chunkX = x >> 4;
+        int chunkZ = z >> 4;
+
+        var chunk = _host.GetChunk(chunkX, chunkZ);
+        bool changed = chunk.SetBlock(x & 15, y, z & 15, blockId, meta, notifyBlockPlaced);
+
+        if (changed && chunk.World is BetaSharp.Worlds.Core.ServerWorld serverWorld && !serverWorld.IsRemote)
+        {
+            if (serverWorld.ChunkMap.IsChunkTrackedAndSent(chunkX, chunkZ))
+            {
+                serverWorld.Broadcaster.BlockUpdateEvent(x, y, z);
+            }
+        }
+
+        return changed;
     }
 
     public bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId) => SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, true);
@@ -117,7 +131,21 @@ public sealed class WorldWriter : IBlockWrite
     {
         if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000 && y is >= 0 and < 128)
         {
-            return _host.GetChunk(x >> 4, z >> 4).SetBlock(x & 15, y, z & 15, blockId, notifyBlockPlaced);
+            int chunkX = x >> 4;
+            int chunkZ = z >> 4;
+
+            var chunk = _host.GetChunk(chunkX, chunkZ);
+            bool changed = chunk.SetBlock(x & 15, y, z & 15, blockId, notifyBlockPlaced);
+
+            if (changed && chunk.World is BetaSharp.Worlds.Core.ServerWorld serverWorld && !serverWorld.IsRemote)
+            {
+                if (serverWorld.ChunkMap.IsChunkTrackedAndSent(chunkX, chunkZ))
+                {
+                    serverWorld.Broadcaster.BlockUpdateEvent(x, y, z);
+                }
+            }
+
+            return changed;
         }
 
         return false;

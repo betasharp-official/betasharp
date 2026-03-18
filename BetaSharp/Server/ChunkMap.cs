@@ -1,10 +1,11 @@
-﻿using BetaSharp.Blocks;
+using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core;
 using Microsoft.Extensions.Logging;
 
@@ -144,6 +145,21 @@ internal class ChunkMap
         if (var6 != null)
         {
             var6.updatePlayerChunks(x & 15, y, z & 15);
+        }
+    }
+
+    internal bool IsChunkTrackedAndSent(int chunkX, int chunkZ)
+    {
+        long key = GetChunkHash(chunkX, chunkZ);
+        return chunkMapping.TryGetValue(key, out TrackedChunk? trackedChunk) && trackedChunk != null && trackedChunk.HasPlayersAndHasBeenSent();
+    }
+
+    public void OnChunkDecorated(int chunkX, int chunkZ)
+    {
+        long key = GetChunkHash(chunkX, chunkZ);
+        if (chunkMapping.TryGetValue(key, out TrackedChunk? trackedChunk) && trackedChunk != null)
+        {
+            trackedChunk.EnqueueForTrackingPlayers();
         }
     }
 
@@ -287,6 +303,7 @@ internal class ChunkMap
         private int maxX;
         private int maxY;
         private int maxZ;
+        private bool _hasBeenSent;
 
         public TrackedChunk(ChunkMap chunkMap, int chunkX, int chunkZ)
         {
@@ -314,8 +331,30 @@ internal class ChunkMap
                 player.networkHandler.sendPacket(ChunkStatusUpdateS2CPacket.Get(chunkPos.X, chunkPos.Z, true));
             }
 
-            player.PendingChunkUpdates.Enqueue(chunkPos);
+            Chunk chunk = chunkMap.getWorld().ChunkCache.GetChunk(chunkX, chunkZ);
+            if (chunk != null && chunk.TerrainPopulated == true)
+            {
+                _hasBeenSent = true;
+                player.PendingChunkUpdates.Enqueue(chunkPos);
+            }
         }
+
+        public void EnqueueForTrackingPlayers()
+        {
+            if (_hasBeenSent)
+            {
+                return;
+            }
+
+            _hasBeenSent = true;
+
+            foreach (var player in players)
+            {
+                player.PendingChunkUpdates.Enqueue(chunkPos);
+            }
+        }
+
+        internal bool HasPlayersAndHasBeenSent() => _hasBeenSent && players.Count > 0;
 
         public void removePlayer(ServerPlayerEntity player)
         {

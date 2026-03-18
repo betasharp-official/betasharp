@@ -40,6 +40,14 @@ public class PlayerManager
     public void saveAllPlayers(ServerWorld[] world)
     {
         _saveHandler = world[0].GetWorldStorage().GetPlayerStorage();
+        if (world.Length > 0 && world[0] != null)
+        {
+            world[0].ChunkMap = _chunkMaps[0];
+        }
+        if (world.Length > 1 && world[1] != null)
+        {
+            world[1].ChunkMap = _chunkMaps[1];
+        }
     }
 
     public void updatePlayerAfterDimensionChange(ServerPlayerEntity player)

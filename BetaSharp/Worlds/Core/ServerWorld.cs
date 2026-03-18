@@ -19,6 +19,7 @@ public class ServerWorld : World
     private readonly BetaSharpServer server;
     public bool bypassSpawnProtection = false;
     public ServerChunkCache ChunkCache;
+    internal ChunkMap ChunkMap;
     public bool savingDisabled;
 
     public ServerWorld(BetaSharpServer server, IWorldStorage storage, string saveName, int dimension, WorldSettings settings, ServerWorld del) : base(storage, saveName, settings, Dimension.FromId(dimension))
