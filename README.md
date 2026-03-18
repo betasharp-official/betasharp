@@ -42,3 +42,22 @@ dotnet build
 Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests.
 
 This is a personal project with no guarantees on review or merge timelines. Feel free to submit contributions, though they may or may not be reviewed or merged depending on the maintainer's availability and discretion.
+
+# Verification Walkthrough: Linux Renderer Bug Fix (Issue #141)
+
+## What was Changed
+The rendering offset bug on Linux window managers (such as Wayland or Niri) was fixed by differentiating between the **logical window size** and the **physical framebuffer size**.
+
+- **Added Framebuffer awareness:** Expanded `Display.cs` with `getFramebufferWidth()` and `getFramebufferHeight()` which fetch the pixel resolution directly from Silk.NET's `IWindow.FramebufferSize`.
+- **Viewport Fix:** Upgraded `GLManager.GL.Viewport()` calls in `BetaSharp.cs` and `GameRenderer.cs` to utilize the Framebuffer dimensions instead of the logical window boundaries.
+- **FBO Sizing Fix:** Updated `PostProcessManager` initialization and resizing to create Framebuffer Objects (FBOs) matching the physical Framebuffer size. This fixes an issue where drawing a full-resolution Native Viewport inside a smaller Logical-Size FBO caused the image to appear cropped.
+- **Screenshot Fix:** Updated screenshot functionality (`ReadPixels`) to read exact pixel quantities scaled to the Framebuffer, ensuring captured screenshots mirror exactly what is rendered without boundary cutoff.
+
+## Validation Status
+- **Compilation Check (`dotnet build`)**: Passed successfully with 0 errors.
+
+## Next Steps for User
+Since this issue is specific to the Linux testing environment, please run the game and verify the following:
+1. Start the game in windowed mode. Ensure the black top bar has disappeared.
+2. The UI scaling behaves correctly alongside the rendered environment.
+3. Try taking an in-game screenshot (`F2`) to confirm images are captured correctly and match your screen dimensions.
