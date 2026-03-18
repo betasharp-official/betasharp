@@ -1,17 +1,20 @@
 using System.Net;
 using System.Xml;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Resource;
 
 public class BetaResourceDownloader : IResourceLoader, IDisposable
 {
-    private const string RESOURCE_URL = "http://s3.amazonaws.com/MinecraftResources/";
+    // Mojang's old Beta/Classic resource bucket. HTTPS works more reliably on modern networks.
+    private const string RESOURCE_URL = "https://s3.amazonaws.com/MinecraftResources/";
     private const string BETACRAFT_PROXY_HOST = "betacraft.uk";
     private const int BETACRAFT_PROXY_PORT = 11705;
 
     private readonly ILogger<BetaResourceDownloader> _logger = Log.Instance.For<BetaResourceDownloader>();
-    private readonly HttpClient _httpClient;
+    private readonly HttpClient _directHttpClient;
+    private readonly HttpClient _proxyHttpClient;
     private readonly string _resourcesDirectory;
     private readonly BetaSharp _game;
     private bool _cancelled;
@@ -22,16 +25,20 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
         _resourcesDirectory = System.IO.Path.Combine(baseDirectory, "resources");
         Directory.CreateDirectory(_resourcesDirectory);
 
-        var handler = new HttpClientHandler
+        _directHttpClient = new HttpClient(new HttpClientHandler
+        {
+            UseProxy = false,
+            AutomaticDecompression = DecompressionMethods.All
+        })
+        { Timeout = TimeSpan.FromMinutes(10) };
+
+        _proxyHttpClient = new HttpClient(new HttpClientHandler
         {
             Proxy = new WebProxy(BETACRAFT_PROXY_HOST, BETACRAFT_PROXY_PORT),
-            UseProxy = true
-        };
-
-        _httpClient = new HttpClient(handler)
-        {
-            Timeout = TimeSpan.FromMinutes(10)
-        };
+            UseProxy = true,
+            AutomaticDecompression = DecompressionMethods.All
+        })
+        { Timeout = TimeSpan.FromMinutes(10) };
     }
 
     private bool DoManifestStuff(string manifestFilePath)
@@ -78,10 +85,7 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
         {
             _logger.LogInformation("Fetching resource list...");
 
-            HttpResponseMessage response = await _httpClient.GetAsync(RESOURCE_URL);
-            response.EnsureSuccessStatusCode();
-
-            string xmlContent = await response.Content.ReadAsStringAsync();
+            string xmlContent = await GetStringWithFallbackAsync(RESOURCE_URL);
 
             List<ResourceEntry> resources = ParseResourceXml(xmlContent);
 
@@ -151,7 +155,7 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
 
             string category = path.Substring(0, slashIndex);
 
-            bool isSoundFile = category == "sound" || category == "newsound";
+            bool isSoundFile = category.StartsWith("sound", StringComparison.OrdinalIgnoreCase);
 
             if (isSoundFile && pass != 0) return;
             if (!isSoundFile && pass != 1) return;
@@ -166,8 +170,8 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
 
             localFile.Directory?.Create();
 
-            string urlPath = path.Replace(" ", "%20");
-            string fullUrl = RESOURCE_URL + urlPath;
+            // Escape each segment to avoid breaking URLs that contain spaces or special chars.
+            string fullUrl = CombineUrl(RESOURCE_URL, path);
 
             await DownloadFile(fullUrl, localFile.FullName);
 
@@ -184,8 +188,7 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
 
     private async Task DownloadFile(string url, string destinationPath)
     {
-        HttpResponseMessage response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-        response.EnsureSuccessStatusCode();
+        using HttpResponseMessage response = await GetResponseWithFallbackAsync(url, HttpCompletionOption.ResponseHeadersRead);
 
         using Stream stream = await response.Content.ReadAsStreamAsync();
         using var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None);
@@ -208,7 +211,42 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        _httpClient?.Dispose();
+        _directHttpClient?.Dispose();
+        _proxyHttpClient?.Dispose();
+    }
+
+    private async Task<string> GetStringWithFallbackAsync(string url)
+    {
+        using HttpResponseMessage response = await GetResponseWithFallbackAsync(url, HttpCompletionOption.ResponseContentRead);
+        return await response.Content.ReadAsStringAsync();
+    }
+
+    private async Task<HttpResponseMessage> GetResponseWithFallbackAsync(string url, HttpCompletionOption option)
+    {
+        // Prefer betacraft proxy by default (most reliable for legacy resources).
+        try
+        {
+            HttpResponseMessage proxied = await _proxyHttpClient.GetAsync(url, option);
+            proxied.EnsureSuccessStatusCode();
+            return proxied;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning($"Proxy fetch failed, trying direct: {ex.Message}");
+        }
+
+        HttpResponseMessage direct = await _directHttpClient.GetAsync(url, option);
+        direct.EnsureSuccessStatusCode();
+        return direct;
+    }
+
+    private static string CombineUrl(string baseUrl, string relativePath)
+    {
+        // baseUrl is expected to end with '/'
+        string trimmed = relativePath.TrimStart('/');
+        string[] parts = trimmed.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        string escaped = string.Join("/", parts.Select(Uri.EscapeDataString));
+        return baseUrl + escaped;
     }
 
     private class ResourceEntry

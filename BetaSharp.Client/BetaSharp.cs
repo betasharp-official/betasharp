@@ -1742,32 +1742,25 @@ public partial class BetaSharp
 
     public void installResource(string resourcePath, FileInfo resourceFile)
     {
-        if (!resourceFile.FullName.EndsWith("ogg"))
+        string extension = resourceFile.Extension.ToLowerInvariant();
+        if (extension != ".ogg" && extension != ".wav")
         {
-            //TODO: ADD SUPPORT FOR MUS SFX?
+            // Ignore non-audio files (like .mus or .txt)
             return;
         }
 
         int slashIndex = resourcePath.IndexOf("/");
         string category = resourcePath.Substring(0, slashIndex);
         resourcePath = resourcePath.Substring(slashIndex + 1);
-        if (category.Equals("sound", StringComparison.OrdinalIgnoreCase))
+        if (category.StartsWith("sound", StringComparison.OrdinalIgnoreCase))
         {
             sndManager.AddSound(resourcePath, resourceFile);
         }
-        else if (category.Equals("newsound", StringComparison.OrdinalIgnoreCase))
-        {
-            sndManager.AddSound(resourcePath, resourceFile);
-        }
-        else if (category.Equals("streaming", StringComparison.OrdinalIgnoreCase))
+        else if (category.StartsWith("streaming", StringComparison.OrdinalIgnoreCase))
         {
             sndManager.AddStreaming(resourcePath, resourceFile);
         }
-        else if (category.Equals("music", StringComparison.OrdinalIgnoreCase))
-        {
-            sndManager.AddMusic(DefaultMusicCategories.Game, resourcePath, resourceFile);
-        }
-        else if (category.Equals("newmusic", StringComparison.OrdinalIgnoreCase))
+        else if (category.StartsWith("music", StringComparison.OrdinalIgnoreCase))
         {
             sndManager.AddMusic(DefaultMusicCategories.Game, resourcePath, resourceFile);
         }
