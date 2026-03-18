@@ -4,7 +4,79 @@
 
              x:Class="BetaSharp.Launcher.Features.Properties.PropertiesView" x:DataType="properties:PropertiesViewModel">
 
-    <Grid RowDefinitions="* Auto">
+    <Grid RowDefinitions="* Auto" RowSpacing="10">
+        <ScrollViewer Grid.Row="0">
+            <StackPanel Spacing="5">
+                <StackPanel>
+                    <TextBlock Text="Server IP" />
+                    <TextBox Text="{Binding ServerIp}" />
+                </StackPanel>
+
+                <CheckBox Content="Dual stack" IsChecked="{Binding DualStack}" />
+
+                <StackPanel>
+                    <TextBlock Text="Server port" />
+                    <NumericUpDown Value="{Binding ServerPort}" Minimum="0" Maximum="65535" />
+                </StackPanel>
+
+                <CheckBox Content="Online mode" IsChecked="{Binding OnlineMode}" />
+
+                <CheckBox Content="Spawn animals" IsChecked="{Binding SpawnAnimals}" />
+
+                <CheckBox Content="PVP" IsChecked="{Binding Pvp}" />
+
+                <CheckBox Content="Allow flight" IsChecked="{Binding AllowFlight}" />
+
+                <StackPanel>
+                    <TextBlock Text="View distance" />
+                    <NumericUpDown Value="{Binding ViewDistance}" Minimum="2" Maximum="32" />
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Max players" />
+                    <NumericUpDown Value="{Binding MaxPlayers}" Minimum="1" Maximum="500" />
+                </StackPanel>
+
+                <CheckBox Content="White list" IsChecked="{Binding WhiteList}" />
+
+                <StackPanel>
+                    <TextBlock Text="Level name" />
+                    <TextBox Text="{Binding LevelName}" />
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Level seed" />
+                    <TextBox Text="{Binding LevelSeed}" />
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Level type" />
+
+                    <ComboBox SelectedIndex="{Binding LevelType}" HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Default" />
+                        <ComboBoxItem Content="Flat" />
+                        <ComboBoxItem Content="Large biomes" />
+                        <ComboBoxItem Content="Amplified" />
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Generator settings" />
+                    <TextBox Text="{Binding GeneratorSettings}" />
+                </StackPanel>
+
+                <CheckBox Content="Spawn monsters" IsChecked="{Binding SpawnMonsters}" />
+
+                <StackPanel>
+                    <TextBlock Text="Spawn region size" />
+                    <NumericUpDown Value="{Binding SpawnRegionSize}" Minimum="0" Maximum="9999" />
+                </StackPanel>
+
+                <CheckBox Content="Allow nether" IsChecked="{Binding AllowNether}" />
+            </StackPanel>
+        </ScrollViewer>
+
+
         <Grid ColumnDefinitions="* Auto" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
             <!-- ReSharper disable once Xaml.StyleClassNotFound -->
             <Button Content="Save" Classes="accent" Command="{CompiledBinding SaveCommand}" Grid.Column="0" />
