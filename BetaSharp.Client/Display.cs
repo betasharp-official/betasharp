@@ -368,6 +368,26 @@ public static unsafe class Display
     }
 
     /// <summary>
+    /// Return the width of the Display window's framebuffer in pixels.
+    /// </summary>
+    public static int getFramebufferWidth()
+    {
+        if (isFullscreen())
+            return _currentMode.getWidth();
+        return _window?.FramebufferSize.X ?? _currentMode.getWidth();
+    }
+
+    /// <summary>
+    /// Return the height of the Display window's framebuffer in pixels.
+    /// </summary>
+    public static int getFramebufferHeight()
+    {
+        if (isFullscreen())
+            return _currentMode.getHeight();
+        return _window?.FramebufferSize.Y ?? _currentMode.getHeight();
+    }
+
+    /// <summary>
     /// Return true if the Display window is resizable.
     /// </summary>
     public static bool isResizable()
