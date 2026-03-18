@@ -53,15 +53,19 @@ The rendering offset bug on Linux window managers (such as Wayland or Niri) was 
 - **FBO Sizing Fix:** Updated `PostProcessManager` initialization and resizing to create Framebuffer Objects (FBOs) matching the physical Framebuffer size. This fixes an issue where drawing a full-resolution Native Viewport inside a smaller Logical-Size FBO caused the image to appear cropped.
 - **Screenshot Fix:** Updated screenshot functionality (`ReadPixels`) to read exact pixel quantities scaled to the Framebuffer, ensuring captured screenshots mirror exactly what is rendered without boundary cutoff.
 
+## 1.1 Supplemental Fixes (Fullscreen & macOS)
+- **Fullscreen Cursor / Stretch Alignment Fix:** An issue where pressing `F11` would cause the window projection to assume the fullscreen desktop unscaled resolution (stretching the picture and throwing off the GUI cursor scaling coordinates) was caught. Fix was applied in `Display.cs` and `toggleFullscreen` inside `BetaSharp.cs` to correctly retain the window's true logical bounds during viewport resizing.
+- **macOS (M4) Performance Regression Fix:** Previously, updating the Framebuffer and Window Size inside `BetaSharp` forced an internal call to the OS window manager. On macOS/Apple Silicon, this synchronously halted the game's thread on Cocoa's UI thread, destroying performance. Refactored `Display.cs` to cache Window and Framebuffer sizes on `Resize` events, bypassing the per-frame window manager polling entirely.
+- **macOS Sound Effects Mute Fix V1 (Spatialization):** macOS OpenAL instances are known to entirely drop Stereo audio buffers if `RelativeToListener = false` and `Position` properties (spatialization functions) are called on them. Updated `SoundManager.cs` to detect multi-channel sound effect loading, and bypass 3D spatialization for them forcing `RelativeToListener = true`, allowing macOS to successfully play SFML.Audio Sound FX.
+- **macOS Sound Effects Mute Fix V2 (Channel Limit Exhaustion):** macOS native CoreAudio/OpenAL implementation limits globally available active hardware sound sources to 16. `BetaSharp` was attempting to instantiate `MaxChannels = 32`, exhausting OpenAL's capacity and causing all successive UI sound clicks and block placements to silently drop. Imposed a restrictive cap of `MaxChannels = 14` leaving enough global headroom for background streaming `.ogg` tracks.
+
 ## Validation Status
 - **Compilation Check (`dotnet build`)**: Passed successfully with 0 errors.
 
 ## Next Steps for User
-Since this issue is specific to the Linux testing environment, please run the game and verify the following:
+Since these issues are specific to OS and Window Configurations, please run the game and verify the following:
 1. Start the game in windowed mode. Ensure the black top bar has disappeared.
-2. The UI scaling behaves correctly alongside the rendered environment.
+2. Press `F11` to enter Fullscreen Mode. Verify that the image stretches properly, and the Mouse pointer coordinates correctly correspond to the interface buttons.
 3. Try taking an in-game screenshot (`F2`) to confirm images are captured correctly and match your screen dimensions.
-
-## 1.1 Supplemental Fixes (Fullscreen & macOS Sound)
-- **Fullscreen Cursor / Stretch Alignment Fix:** An issue where pressing `F11` would cause the window projection to assume the fullscreen desktop unscaled resolution (stretching the picture and throwing off the GUI cursor scaling coordinates) was caught. Fix was applied in `Display.cs` and `toggleFullscreen` inside `BetaSharp.cs` to correctly retain the window's true logical bounds during viewport resizing.
-- **macOS Sound Effects Mute Fix:** macOS OpenAL instances are known to entirely drop Stereo audio buffers if `RelativeToListener = false` and `Position` properties (spatialization functions) are called on them. Updated `SoundManager.cs` to detect multi-channel sound effect loading, and bypass 3D spatialization for them forcing `RelativeToListener = true`, allowing macOS to successfully play SFML.Audio Sound FX.
+4. **macOS / M4 Players:** Verify that your framerate and extreme lag spikes are completely gone.
+5. **macOS Players:** Verify that Sound Effects (UI Clicks, block destroying sounds) now play properly alongside the music track.

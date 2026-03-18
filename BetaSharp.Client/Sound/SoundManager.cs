@@ -15,7 +15,7 @@ public class SoundManager
 
     private readonly Dictionary<string, List<SoundBuffer>> _soundBuffers = [];
 
-    private const int MaxChannels = 32;
+    private const int MaxChannels = 14;
     private readonly SFML.Audio.Sound[] soundChannels = new SFML.Audio.Sound[MaxChannels];
 
     private int _soundSourceSuffix = 0;

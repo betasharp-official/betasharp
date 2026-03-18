@@ -32,6 +32,12 @@ public static unsafe class Display
     private static int _x = -1;
     private static int _y = -1;
 
+    // Cached dimensions
+    private static int _cachedWidth;
+    private static int _cachedHeight;
+    private static int _cachedFramebufferWidth;
+    private static int _cachedFramebufferHeight;
+
     // Background color
     private static float _r, _g, _b;
 
@@ -352,7 +358,7 @@ public static unsafe class Display
     /// </summary>
     public static int getWidth()
     {
-        return _window?.Size.X ?? _currentMode.getWidth();
+        return _window != null ? _cachedWidth : _currentMode.getWidth();
     }
 
     /// <summary>
@@ -360,7 +366,7 @@ public static unsafe class Display
     /// </summary>
     public static int getHeight()
     {
-        return _window?.Size.Y ?? _currentMode.getHeight();
+        return _window != null ? _cachedHeight : _currentMode.getHeight();
     }
 
     /// <summary>
@@ -370,7 +376,7 @@ public static unsafe class Display
     {
         if (isFullscreen())
             return _currentMode.getWidth();
-        return _window?.FramebufferSize.X ?? _currentMode.getWidth();
+        return _window != null ? _cachedFramebufferWidth : _currentMode.getWidth();
     }
 
     /// <summary>
@@ -380,7 +386,7 @@ public static unsafe class Display
     {
         if (isFullscreen())
             return _currentMode.getHeight();
-        return _window?.FramebufferSize.Y ?? _currentMode.getHeight();
+        return _window != null ? _cachedFramebufferHeight : _currentMode.getHeight();
     }
 
     /// <summary>
@@ -464,6 +470,7 @@ public static unsafe class Display
 
             _window.Load += onLoad;
             _window.Resize += onResize;
+            _window.FramebufferResize += onFramebufferResize;
             _window.Closing += onClosing;
 
             if (isFullscreen())
@@ -480,11 +487,23 @@ public static unsafe class Display
         _gl = GL.GetApi(_window);
         _gl.ClearColor(_r, _g, _b, 1.0f);
         _gl.Enable(EnableCap.Multisample);
+        _cachedWidth = _window!.Size.X;
+        _cachedHeight = _window.Size.Y;
+        _cachedFramebufferWidth = _window.FramebufferSize.X;
+        _cachedFramebufferHeight = _window.FramebufferSize.Y;
     }
 
     private static void onResize(Vector2D<int> size)
     {
         _wasResized = true;
+        _cachedWidth = size.X;
+        _cachedHeight = size.Y;
+    }
+
+    private static void onFramebufferResize(Vector2D<int> size)
+    {
+        _cachedFramebufferWidth = size.X;
+        _cachedFramebufferHeight = size.Y;
     }
 
     private static void onClosing()
