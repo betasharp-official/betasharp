@@ -1,0 +1,84 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:properties="clr-namespace:BetaSharp.Launcher.Features.Properties"
+
+             x:Class="BetaSharp.Launcher.Features.Properties.PropertiesView" x:DataType="properties:PropertiesViewModel">
+
+    <Grid RowDefinitions="* Auto" RowSpacing="10">
+        <ScrollViewer Padding="0 0 10 0" AllowAutoHide="False" IsEnabled="{CompiledBinding IsReady}" Grid.Row="0">
+            <StackPanel Spacing="10" ToolTip.Tip="Sets the server IP address. Defaults to 0.0.0.0">
+                <StackPanel Spacing="5">
+                    <TextBlock Text="Server IP" />
+                    <TextBox Text="{Binding ServerIp}" />
+                </StackPanel>
+
+                <StackPanel Spacing="5" ToolTip.Tip="Sets the level's name. Defaults to world">
+                    <TextBlock Text="Level name" />
+                    <TextBox Text="{Binding LevelName}" />
+                </StackPanel>
+
+                <StackPanel Spacing="5" ToolTip.Tip="Sets the level's name. Random value is assigned if empty">
+                    <TextBlock Text="Level seed" />
+                    <TextBox Text="{Binding LevelSeed}" />
+                </StackPanel>
+
+                <StackPanel Spacing="5" ToolTip.Tip="Sets the level generators's settings. None if empty">
+                    <TextBlock Text="Generator settings" />
+                    <TextBox Text="{Binding GeneratorSettings}" />
+                </StackPanel>
+
+                <Grid ColumnDefinitions="* *">
+                    <StackPanel Grid.Column="0">
+                        <CheckBox Content="Dual stack" IsChecked="{Binding DualStack}" ToolTip.Tip="Whether to accept IP version 4 and 6 addresses" />
+                        <CheckBox Content="Online mode" IsChecked="{Binding OnlineMode}" ToolTip.Tip="Whether to accept authenticated sessions" />
+                        <CheckBox Content="Spawn animals" IsChecked="{Binding SpawnAnimals}" ToolTip.Tip="Whether to let animals spawn" />
+                        <CheckBox Content="PVP" IsChecked="{Binding Pvp}" ToolTip.Tip="Whether to allow players take damage from other players" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1">
+                        <CheckBox Content="Allow flight" IsChecked="{Binding AllowFlight}" ToolTip.Tip="Whether to allow player flying" />
+                        <CheckBox Content="White list" IsChecked="{Binding WhiteList}" ToolTip.Tip="Whether to enable the white-list" />
+                        <CheckBox Content="Spawn monsters" IsChecked="{Binding SpawnMonsters}" ToolTip.Tip="Whether to let monsters spawn" />
+                        <CheckBox Content="Allow nether" IsChecked="{Binding AllowNether}" ToolTip.Tip="Whether to allow and generate the nether dimension" />
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel Spacing="5" ToolTip.Tip="Sets the level type">
+                    <TextBlock Text="Level type" />
+
+                    <ComboBox SelectedIndex="{Binding LevelType}" HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Default" />
+                        <ComboBoxItem Content="Flat" />
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Spacing="5" ToolTip.Tip="Sets the server port. Recommended range is 49000 to 65535">
+                    <TextBlock Text="Server port" />
+                    <NumericUpDown Value="{Binding ServerPort}" Increment="1" Minimum="1" Maximum="65535" />
+                </StackPanel>
+
+                <StackPanel Spacing="5" ToolTip.Tip="Sets the view distance. Higher values require more RAM">
+                    <TextBlock Text="View distance" />
+                    <NumericUpDown Value="{Binding ViewDistance}" Increment="1" Minimum="4" Maximum="32" />
+                </StackPanel>
+
+                <StackPanel Spacing="5" ToolTip.Tip="Sets the max player count. Higher values require more RAM">
+                    <TextBlock Text="Max players" />
+                    <NumericUpDown Value="{Binding MaxPlayers}" Increment="1" Minimum="1" Maximum="500" />
+                </StackPanel>
+
+                <StackPanel Spacing="5" ToolTip.Tip="Sets the spawn generation region size. Higher values take more time for generation">
+                    <TextBlock Text="Spawn region size" />
+                    <NumericUpDown Value="{Binding SpawnRegionSize}" Increment="1" Minimum="0" Maximum="512" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid ColumnDefinitions="* Auto" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
+            <!-- ReSharper disable once Xaml.StyleClassNotFound -->
+            <Button Content="Save" Classes="accent" Command="{CompiledBinding SaveCommand}" Grid.Column="0" />
+
+            <Button Content="Back" Command="{CompiledBinding BackCommand}" Grid.Column="1" />
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,59 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:BetaSharp.Launcher.Features.Hosting"
+
+             x:Class="BetaSharp.Launcher.Features.Hosting.HostingView" x:DataType="local:HostingViewModel">
+
+    <Grid RowDefinitions="* Auto" RowSpacing="10">
+        <Grid RowDefinitions="* Auto" RowSpacing="10" Grid.Row="0">
+            <Grid.Styles>
+                <Style Selector="Grid">
+                    <Setter Property="Transitions">
+                        <Transitions>
+                            <DoubleTransition Property="Opacity" Duration="0:0:0.5" />
+                        </Transitions>
+                    </Setter>
+                </Style>
+
+                <Style Selector="Grid.hidden">
+                    <Setter Property="Opacity" Value="0" />
+                    <Setter Property="IsHitTestVisible" Value="False" />
+                </Style>
+
+                <Style Selector="Grid.shown">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="IsHitTestVisible" Value="True" />
+                </Style>
+            </Grid.Styles>
+
+            <ListBox Background="Transparent" ItemsSource="{CompiledBinding Logs}" SelectedIndex="{CompiledBinding Last}"
+                     CornerRadius="{StaticResource ControlCornerRadius}" Grid.Row="0">
+
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+                    </Style>
+                </ListBox.Styles>
+            </ListBox>
+
+            <Grid Classes="hidden" Classes.shown="{CompiledBinding IsRunning}" Grid.Row="1">
+                <TextBox Text="{CompiledBinding Input}">
+                    <TextBox.KeyBindings>
+                        <KeyBinding Command="{Binding WriteCommand}" Gesture="Enter" />
+                    </TextBox.KeyBindings>
+                </TextBox>
+            </Grid>
+
+            <Grid Classes.hidden="{CompiledBinding IsRunning}" Grid.Row="1">
+                <Button Content="Properties" Command="{CompiledBinding PropertiesCommand}" />
+            </Grid>
+        </Grid>
+
+        <Grid ColumnDefinitions="* Auto" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
+            <!-- ReSharper disable once Xaml.StyleClassNotFound -->
+            <Button Content="{CompiledBinding Message}" Classes="accent" Command="{CompiledBinding RunCommand}" Grid.Column="0" />
+
+            <Button Content="Back" Command="{CompiledBinding BackCommand}" Grid.Column="1" />
+        </Grid>
+    </Grid>
+</UserControl>

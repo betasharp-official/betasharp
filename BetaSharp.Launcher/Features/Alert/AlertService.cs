@@ -7,6 +7,8 @@ namespace BetaSharp.Launcher.Features.Alert;
 
 internal sealed class AlertService
 {
+    private bool _isOpen;
+
     public async Task ShowAsync(string title, string message)
     {
         if (Application.Current?.ApplicationLifetime is not ClassicDesktopStyleApplicationLifetime lifetime)
@@ -14,12 +16,30 @@ internal sealed class AlertService
             return;
         }
 
+        if (_isOpen)
+        {
+            throw new InvalidOperationException("Alert window already open.");
+        }
+
+        _isOpen = true;
+
         var window = lifetime.MainWindow;
 
         ArgumentNullException.ThrowIfNull(window);
 
-        var view = new AlertView { Title = title, AlertBlock = { Text = message } };
+        var view = new AlertView
+        {
+            Title = title,
+            AlertBlock = { Text = message }
+        };
 
-        await view.ShowDialog(window);
+        try
+        {
+            await view.ShowDialog(window);
+        }
+        catch
+        {
+            _isOpen = false;
+        }
     }
 }

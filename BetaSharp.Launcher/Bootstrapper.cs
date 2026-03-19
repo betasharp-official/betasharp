@@ -1,9 +1,12 @@
 ﻿using System;
 using System.IO;
+using BetaSharp.Launcher.Features;
 using BetaSharp.Launcher.Features.Alert;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Home;
+using BetaSharp.Launcher.Features.Hosting;
 using BetaSharp.Launcher.Features.Mojang;
+using BetaSharp.Launcher.Features.Properties;
 using BetaSharp.Launcher.Features.Sessions;
 using BetaSharp.Launcher.Features.Shell;
 using BetaSharp.Launcher.Features.Splash;
@@ -44,22 +47,34 @@ internal static partial class Bootstrapper
         return services.BuildServiceProvider();
     }
 
-    [Singleton(typeof(ViewLocator))]
+    // Services
     [Singleton(typeof(AuthenticationService))]
     [Singleton(typeof(NavigationService))]
     [Singleton(typeof(AlertService))]
-    [Singleton(typeof(ShellViewModel))]
     [Transient(typeof(SessionService))]
     [Transient(typeof(StorageService))]
-    [Transient(typeof(ClientService))]
+    [Transient(typeof(MinecraftService))]
+    [Transient(typeof(ProcessService))]
+
+    // VMs
+    [Singleton(typeof(ShellViewModel))]
+    [Singleton(typeof(HostingViewModel))]
+    [Singleton(typeof(HomeViewModel))]
+    [Singleton(typeof(PropertiesViewModel))]
+    [Transient(typeof(AuthenticationViewModel))]
+    [Transient(typeof(SplashViewModel))]
+
+    // Views
+    [Singleton(typeof(HomeView))]
+    [Transient(typeof(PropertiesView))]
+    [Transient(typeof(ShellView))]
+    [Transient(typeof(HostingView))]
+    [Transient(typeof(AuthenticationView))]
+    [Transient(typeof(SplashView))]
+
+    // ...
+    [Singleton(typeof(ViewLocator))]
     [Transient(typeof(MojangClient))]
     [Transient(typeof(XboxClient))]
-    [Transient(typeof(AuthenticationView))]
-    [Transient(typeof(AuthenticationViewModel))]
-    [Transient(typeof(HomeView))]
-    [Transient(typeof(HomeViewModel))]
-    [Transient(typeof(ShellView))]
-    [Transient(typeof(SplashView))]
-    [Transient(typeof(SplashViewModel))]
     private static partial void ConfigureServices(IServiceCollection services);
 }

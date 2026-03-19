@@ -72,8 +72,8 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
     public static void Main()
     {
         Log.Instance.Initialize(Directory.GetCurrentDirectory());
-        Bootstrap.Initialize();
         AssetManager.Initialize(AssetManager.AssetProfile.Headless);
+        Bootstrap.Initialize();
 
         try
         {

@@ -63,17 +63,7 @@ public class AssetManager
     private static AssetManager? s_instance;
     private static AssetProfile? s_configuredProfile;
 
-    public static AssetManager Instance
-    {
-        get
-        {
-            lock (s_instanceLock)
-            {
-                s_instance ??= new AssetManager(s_configuredProfile ?? AssetProfile.Full);
-                return s_instance;
-            }
-        }
-    }
+    public static AssetManager Instance => s_instance ?? throw new InvalidOperationException("AssetManager was not initialized.");
 
     public static void Initialize(AssetProfile profile)
     {
