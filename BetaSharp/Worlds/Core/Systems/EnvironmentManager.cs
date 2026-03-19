@@ -1,6 +1,5 @@
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Dimensions;
 using BetaSharp.Worlds.Generation.Biomes;
 using Silk.NET.Maths;
 
@@ -8,18 +7,12 @@ namespace BetaSharp.Worlds.Core.Systems;
 
 public class EnvironmentManager
 {
-    private readonly Dimension _dimension;
-    private readonly WorldProperties _props;
-    private readonly JavaRandom _random;
-    private readonly WorldReader _view;
+    private readonly IWorldContext _world;
     private readonly long _worldTimeMask = 0xFFFFFFL;
 
-    public EnvironmentManager(WorldProperties props, Dimension dimension, WorldReader view, JavaRandom random)
+    public EnvironmentManager(IWorldContext world)
     {
-        _props = props;
-        _dimension = dimension;
-        _random = random;
-        _view = view;
+        _world = world;
     }
 
     public float PrevRainingStrength { get; private set; }
@@ -36,10 +29,10 @@ public class EnvironmentManager
 
     public void PrepareWeather()
     {
-        if (!_props.IsRaining) return;
+        if (!_world.Properties.IsRaining) return;
 
         RainingStrength = 1.0F;
-        if (_props.IsThundering)
+        if (_world.Properties.IsThundering)
         {
             ThunderingStrength = 1.0F;
         }
@@ -47,7 +40,7 @@ public class EnvironmentManager
 
     public void UpdateWeatherCycles()
     {
-        if (_dimension.HasCeiling)
+        if (_world.Dimension.HasCeiling)
         {
             return;
         }
@@ -62,42 +55,42 @@ public class EnvironmentManager
             --TicksSinceLightning;
         }
 
-        int thunderTime = _props.ThunderTime;
+        int thunderTime = _world.Properties.ThunderTime;
         if (thunderTime <= 0)
         {
-            _props.ThunderTime = _props.IsThundering ? _random.NextInt(12000) + 3600 : _random.NextInt(168000) + 12000;
+            _world.Properties.ThunderTime = _world.Properties.IsThundering ? _world.Random.NextInt(12000) + 3600 : _world.Random.NextInt(168000) + 12000;
         }
         else
         {
             --thunderTime;
-            _props.ThunderTime = thunderTime;
+            _world.Properties.ThunderTime = thunderTime;
             if (thunderTime <= 0)
             {
-                _props.IsThundering = !_props.IsThundering;
+                _world.Properties.IsThundering = !_world.Properties.IsThundering;
             }
         }
 
-        int rainTime = _props.RainTime;
+        int rainTime = _world.Properties.RainTime;
         if (rainTime <= 0)
         {
-            _props.RainTime = _props.IsRaining ? _random.NextInt(12000) + 12000 : _random.NextInt(168000) + 12000;
+            _world.Properties.RainTime = _world.Properties.IsRaining ? _world.Random.NextInt(12000) + 12000 : _world.Random.NextInt(168000) + 12000;
         }
         else
         {
             --rainTime;
-            _props.RainTime = rainTime;
+            _world.Properties.RainTime = rainTime;
             if (rainTime <= 0)
             {
-                _props.IsRaining = !_props.IsRaining;
+                _world.Properties.IsRaining = !_world.Properties.IsRaining;
             }
         }
 
         PrevRainingStrength = RainingStrength;
-        RainingStrength += _props.IsRaining ? 0.01F : -0.01F;
+        RainingStrength += _world.Properties.IsRaining ? 0.01F : -0.01F;
         RainingStrength = Math.Clamp(RainingStrength, 0.0F, 1.0F);
 
         PrevThunderingStrength = ThunderingStrength;
-        ThunderingStrength += _props.IsThundering ? 0.01F : -0.01F;
+        ThunderingStrength += _world.Properties.IsThundering ? 0.01F : -0.01F;
         ThunderingStrength = Math.Clamp(ThunderingStrength, 0.0F, 1.0F);
 
         if (wasRaining != IsRaining)
@@ -108,14 +101,13 @@ public class EnvironmentManager
 
     public void ClearWeather()
     {
-        WorldProperties props = _props;
-        props.RainTime = 0;
-        props.IsRaining = false;
-        props.ThunderTime = 0;
-        props.IsThundering = false;
+        _world.Properties.RainTime = 0;
+        _world.Properties.IsRaining = false;
+        _world.Properties.ThunderTime = 0;
+        _world.Properties.IsThundering = false;
     }
 
-    public float GetTime(float delta) => _dimension.GetTimeOfDay(_props.WorldTime, delta);
+    public float GetTime(float delta) => _world.Dimension.GetTimeOfDay(_world.Properties.WorldTime, delta);
 
     public int GetAmbientDarkness(float delta)
     {
@@ -148,25 +140,25 @@ public class EnvironmentManager
 
     public bool IsRainingAt(int x, int y, int z)
     {
-        if (!IsRaining || y < _view.GetTopSolidBlockY(x, z))
+        if (!IsRaining || y < _world.Reader.GetTopSolidBlockY(x, z))
         {
             return false;
         }
 
-        Biome biome = _dimension.BiomeSource.GetBiome(x, z);
+        Biome biome = _world.Dimension.BiomeSource.GetBiome(x, z);
         return !biome.GetEnableSnow() && biome.CanSpawnLightningBolt();
     }
 
     public void SkipNightAndClearWeather()
     {
-        long nextWorldTime = _props.WorldTime + 24000L;
-        _props.WorldTime = nextWorldTime - nextWorldTime % 24000L;
+        long nextWorldTime = _world.Properties.WorldTime + 24000L;
+        _world.Properties.WorldTime = nextWorldTime - nextWorldTime % 24000L;
         ClearWeather();
     }
 
     public Vector3D<double> GetCloudColor(float partialTicks)
     {
-        float timeOfDay = _dimension.GetTimeOfDay(_props.WorldTime, partialTicks);
+        float timeOfDay = _world.Dimension.GetTimeOfDay(_world.Properties.WorldTime, partialTicks);
 
         float sunIntensity = MathHelper.Cos(timeOfDay * (float)Math.PI * 2.0F) * 2.0F + 0.5F;
         sunIntensity = Math.Clamp(sunIntensity, 0.0F, 1.0F);
@@ -206,15 +198,15 @@ public class EnvironmentManager
 
     public Vector3D<double> GetSkyColor(Entity entity, float partialTicks)
     {
-        float timeOfDay = _dimension.GetTimeOfDay(_props.WorldTime, partialTicks);
+        float timeOfDay = _world.Dimension.GetTimeOfDay(_world.Properties.WorldTime, partialTicks);
 
         float sunIntensity = MathHelper.Cos(timeOfDay * (float)Math.PI * 2.0F) * 2.0F + 0.5F;
         sunIntensity = Math.Clamp(sunIntensity, 0.0F, 1.0F);
 
         int blockX = MathHelper.Floor(entity.x);
         int blockZ = MathHelper.Floor(entity.z);
-        float temperature = (float)_dimension.BiomeSource.GetTemperature(blockX, blockZ);
-        int biomeSkyColorInt = _dimension.BiomeSource.GetBiome(blockX, blockZ).GetSkyColorByTemp(temperature);
+        float temperature = (float)_world.Dimension.BiomeSource.GetTemperature(blockX, blockZ);
+        int biomeSkyColorInt = _world.Dimension.BiomeSource.GetBiome(blockX, blockZ).GetSkyColorByTemp(temperature);
 
         float red = ((biomeSkyColorInt >> 16) & 255) / 255.0F;
         float green = ((biomeSkyColorInt >> 8) & 255) / 255.0F;

@@ -36,7 +36,7 @@ public abstract class World : IWorldContext
     public bool EventProcessingEnabled;
     public bool IsNewWorld;
 
-    protected World(IWorldStorage worldStorage, string levelName, WorldSettings settings, Dimension? dim)
+    protected World(IWorldStorage worldStorage, string levelName, WorldSettings settings, Dimension? dim = null)
     {
         Pathing = new PathFinder(this);
         Storage = worldStorage;
@@ -45,8 +45,36 @@ public abstract class World : IWorldContext
         WorldProperties? loadedProperties = worldStorage.LoadProperties();
         Properties = loadedProperties ?? new WorldProperties(settings, levelName);
 
-        Dimension = dim;
-        dim.SetWorld(this);
+        if (dim != null)
+        {
+            Dimension = dim;
+        }
+        else if (Properties != null && Properties.Dimension == -1)
+        {
+            Dimension = Dimension.FromId(-1);
+        }
+        else
+        {
+            Dimension = Dimension.FromId(0);
+        }
+
+        bool shouldInitializeSpawn = false;
+        if (Properties == null)
+        {
+            Properties = new WorldProperties(settings, levelName);
+            shouldInitializeSpawn = true;
+        }
+        else
+        {
+            Properties.LevelName = levelName;
+        }
+
+        if (Dimension is OverworldDimension && Properties.TerrainType == WorldType.Sky)
+        {
+            Dimension = new SkyDimension();
+        }
+
+        Dimension.SetWorld(this);
 
         IChunkSource chunkSource = CreateChunkCache();
 
@@ -56,7 +84,7 @@ public abstract class World : IWorldContext
             : new RuleSet(RuleRegistry.Instance);
 
         BlockHost = new ChunkHost(chunkSource);
-        Reader = new WorldReader(this, dim);
+        Reader = new WorldReader(this, Dimension);
         Writer = new WorldWriter(BlockHost, Reader);
         Writer.OnBlockChanged += BlockUpdate;
 
@@ -65,12 +93,10 @@ public abstract class World : IWorldContext
         Writer.OnNeighborsShouldUpdate += (x, y, z, id) => Broadcaster.NotifyNeighbors(x, y, z, id);
 
         Redstone = new RedstoneEngine(Reader);
-        Lighting = new LightingEngine(Reader, dim, BlockHost);
+        Lighting = new LightingEngine(this);
         Lighting.OnLightUpdated += (x, y, z) => Broadcaster.BlockUpdateEvent(x, y, z);
-
         TickScheduler = new WorldTickScheduler(this);
-
-        Environment = new EnvironmentManager(Properties, dim, Reader, Random);
+        Environment = new EnvironmentManager(this);
         Entities = new EntityManager(this);
 
         Entities.OnBlockUpdateRequired += (x, y, z) => Broadcaster.BlockUpdateEvent(x, y, z);
