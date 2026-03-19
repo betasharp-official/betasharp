@@ -24,10 +24,8 @@ public abstract class World : IWorldContext
 
     private readonly HashSet<ChunkPos> _activeChunks = new();
     private readonly ILogger<World> _logger = Log.Instance.For<World>();
-    private readonly PriorityQueue<BlockUpdate, (long, long)> _scheduledUpdates = new();
 
-    private readonly long _worldTimeMask = 0xFFFFFFL;
-    public readonly Dimension dimension;
+    public readonly Dimension Dimension;
 
     private int _lcgBlockSeed = System.Random.Shared.Next();
     private int _soundCounter = System.Random.Shared.Next(12000);
@@ -38,7 +36,7 @@ public abstract class World : IWorldContext
     public bool EventProcessingEnabled;
     public bool IsNewWorld;
 
-    protected World(IWorldStorage worldStorage, string levelName, WorldSettings settings, Dimension dim)
+    protected World(IWorldStorage worldStorage, string levelName, WorldSettings settings, Dimension? dim)
     {
         Pathing = new PathFinder(this);
         Storage = worldStorage;
@@ -47,11 +45,12 @@ public abstract class World : IWorldContext
         WorldProperties? loadedProperties = worldStorage.LoadProperties();
         Properties = loadedProperties ?? new WorldProperties(settings, levelName);
 
-        dimension = dim;
+        Dimension = dim;
         dim.SetWorld(this);
 
         IChunkSource chunkSource = CreateChunkCache();
 
+        Random = new JavaRandom();
         Rules = Properties.RulesTag != null
             ? RuleSet.FromNBT(RuleRegistry.Instance, Properties.RulesTag)
             : new RuleSet(RuleRegistry.Instance);
@@ -106,18 +105,18 @@ public abstract class World : IWorldContext
     public List<IWorldEventListener> EventListeners { get; } = [];
     public LightingEngine Lighting { get; }
 
-    internal PathFinder Pathing { get; }
-    public RedstoneEngine Redstone { get; }
-    public IWorldStorage Storage { get; }
+    private PathFinder Pathing { get; }
+    private RedstoneEngine Redstone { get; }
+    protected IWorldStorage Storage { get; }
     public long Seed => Properties.RandomSeed;
     public WorldTickScheduler TickScheduler { get; }
-    public int Difficulty { get; protected set; }
+    public int Difficulty { get; private set; }
 
-    public PersistentStateManager StateManager { get; protected set; }
+    public PersistentStateManager StateManager { get; protected init; }
 
-    public WorldProperties Properties { get; protected set; }
-    public bool IsRemote { set; get; } = false;
-    public JavaRandom Random { get; } = new();
+    public WorldProperties Properties { get; protected init; }
+    public bool IsRemote { init; get; }
+    public JavaRandom Random { get; }
 
     ChunkHost IWorldContext.ChunkHost => BlockHost;
     WorldReader IWorldContext.Reader => Reader;
@@ -127,7 +126,7 @@ public abstract class World : IWorldContext
     EntityManager IWorldContext.Entities => Entities;
     LightingEngine IWorldContext.Lighting => Lighting;
     EnvironmentManager IWorldContext.Environment => Environment;
-    Dimension IWorldContext.Dimension => dimension;
+    Dimension IWorldContext.Dimension => Dimension;
     long IWorldContext.Seed => Properties.RandomSeed;
     PathFinder IWorldContext.Pathing => Pathing;
 
@@ -163,7 +162,7 @@ public abstract class World : IWorldContext
 
     public virtual bool CanInteract(EntityPlayer player, int x, int y, int z) => true;
 
-    public BiomeSource GetBiomeSource() => dimension.BiomeSource;
+    public BiomeSource GetBiomeSource() => Dimension.BiomeSource;
 
     public float GetLuminance(int x, int y, int z) => Lighting.GetLuminance(x, y, z);
 
@@ -180,7 +179,7 @@ public abstract class World : IWorldContext
         int z;
         for (
             z = 0;
-            !dimension.IsValidSpawnPoint(x, z);
+            !Dimension.IsValidSpawnPoint(x, z);
             z += Random.NextInt(64) - Random.NextInt(64))
         {
             x += Random.NextInt(64) - Random.NextInt(64);
@@ -253,25 +252,24 @@ public abstract class World : IWorldContext
 
     public void SaveWithLoadingDisplay(bool saveEntities, LoadingDisplay? loadingDisplay)
     {
-        if (BlockHost.ChunkSource.CanSave())
+        if (!BlockHost.ChunkSource.CanSave()) return;
+
+        if (loadingDisplay != null)
         {
-            if (loadingDisplay != null)
-            {
-                loadingDisplay.progressStartNoAbort("Saving level");
-            }
-
-            Profiler.PushGroup("saveLevel");
-            Save();
-            Profiler.PopGroup();
-            if (loadingDisplay != null)
-            {
-                loadingDisplay.progressStage("Saving chunks");
-            }
-
-            Profiler.Start("saveChunks");
-            BlockHost.ChunkSource.Save(saveEntities, loadingDisplay);
-            Profiler.Stop("saveChunks");
+            loadingDisplay.progressStartNoAbort("Saving level");
         }
+
+        Profiler.PushGroup("saveLevel");
+        Save();
+        Profiler.PopGroup();
+        if (loadingDisplay != null)
+        {
+            loadingDisplay.progressStage("Saving chunks");
+        }
+
+        Profiler.Start("saveChunks");
+        BlockHost.ChunkSource.Save(saveEntities, loadingDisplay);
+        Profiler.Stop("saveChunks");
     }
 
     private void Save()
@@ -306,7 +304,7 @@ public abstract class World : IWorldContext
         return BlockHost.ChunkSource.Save(false, null);
     }
 
-    public float GetTime(float partialTicks) => dimension.GetTimeOfDay(Properties.WorldTime, partialTicks);
+    public float GetTime(float partialTicks) => Dimension.GetTimeOfDay(Properties.WorldTime, partialTicks);
 
     protected void BlockUpdate(int x, int y, int z, int blockId)
     {
@@ -317,7 +315,7 @@ public abstract class World : IWorldContext
     public Vector3D<double> GetFogColor(float partialTicks)
     {
         float timeOfDay = GetTime(partialTicks);
-        return dimension.GetFogColor(timeOfDay, partialTicks);
+        return Dimension.GetFogColor(timeOfDay, partialTicks);
     }
 
     public float CalculateSkyLightIntensity(float partialTicks)
@@ -343,24 +341,20 @@ public abstract class World : IWorldContext
             ++y;
         }
 
-        if (direction == 2)
+        switch (direction)
         {
-            --z;
-        }
-
-        if (direction == 3)
-        {
-            ++z;
-        }
-
-        if (direction == 4)
-        {
-            --x;
-        }
-
-        if (direction == 5)
-        {
-            ++x;
+            case 2:
+                --z;
+                break;
+            case 3:
+                ++z;
+                break;
+            case 4:
+                --x;
+                break;
+            case 5:
+                ++x;
+                break;
         }
 
         if (Reader.GetBlockId(x, y, z) == Block.Fire.id)

@@ -233,7 +233,7 @@ internal class EntityTrackerEntry
                 if (!listeners.Contains(player))
                 {
                     if (currentTrackedEntity.world is ServerWorld sw
-                        && player.dimensionId == sw.dimension.Id
+                        && player.dimensionId == sw.Dimension.Id
                         && sw.ChunkMap != null)
                     {
                         int entityChunkX = MathHelper.Floor(currentTrackedEntity.x / 16.0);

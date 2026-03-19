@@ -134,7 +134,7 @@ public class BlockBed : Block
         return false;
     }
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, EntityManager? entities, int x, int y, int z)
+    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
         setDefaultShape();
     }
@@ -200,7 +200,6 @@ public class BlockBed : Block
         worldWrite.SetBlockMeta(x, y, z, meta);
     }
 
-    // Updated 'World' to 'IBlockReader'
     public static Vec3i? findWakeUpPosition(IBlockReader reader, int x, int y, int z, int skip)
     {
         int blockMeta = reader.GetBlockMeta(x, y, z);

@@ -39,7 +39,7 @@ internal class BlockTrapDoor : Block
         return base.getCollisionShape(world, entities, x, y, z);
     }
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, EntityManager? entities, int x, int y, int z) => updateBoundingBox(iBlockReader.GetBlockMeta(x, y, z));
+    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => updateBoundingBox(blockReader.GetBlockMeta(x, y, z));
 
     public override void setupRenderBoundingBox()
     {

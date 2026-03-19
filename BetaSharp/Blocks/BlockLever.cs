@@ -138,9 +138,9 @@ internal class BlockLever : Block
         return true;
     }
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, EntityManager? entities, int x, int y, int z)
+    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
-        int meta = iBlockReader.GetBlockMeta(x, y, z) & 7;
+        int meta = blockReader.GetBlockMeta(x, y, z) & 7;
         float width = 3.0F / 16.0F;
 
         if (meta == 1)

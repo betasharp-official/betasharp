@@ -16,8 +16,8 @@ public abstract class Entity
     public int id = nextEntityID++;
     public double renderDistanceWeight = 1.0D;
     public bool preventEntitySpawning = false;
-    public Entity passenger;
-    public Entity vehicle;
+    public Entity? passenger;
+    public Entity? vehicle;
     public IWorldContext world;
     public double prevX;
     public double prevY;

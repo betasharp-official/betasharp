@@ -87,7 +87,7 @@ public class BlockPistonMoving : BlockWithEntity
         return getPushedBlockCollisionShape(iBlockReader, entities, x, y, z, var5.getPushedBlockId(), var6, var5.getFacing());
     }
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, EntityManager? entities, int x, int y, int z)
+    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
         if (entities is null)
         {
@@ -103,7 +103,7 @@ public class BlockPistonMoving : BlockWithEntity
                 return;
             }
 
-            var6.updateBoundingBox(iBlockReader, entities, x, y, z);
+            var6.updateBoundingBox(blockReader, entities, x, y, z);
             float var7 = var5.getProgress(0.0F);
             if (var5.isExtending())
             {

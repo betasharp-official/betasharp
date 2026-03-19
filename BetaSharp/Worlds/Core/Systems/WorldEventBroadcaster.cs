@@ -85,20 +85,16 @@ public class WorldEventBroadcaster
 
     private void NotifyUpdate(int x, int y, int z, int blockId)
     {
-        if (!isRemote)
-        {
-            int targetBlockId = _reader.GetBlockId(x, y, z);
-            Block? block = Block.Blocks[targetBlockId];
+        if (isRemote) return;
 
-            if (block != null)
-            {
-                int meta = _reader.GetBlockMeta(x, y, z);
+        int targetBlockId = _reader.GetBlockId(x, y, z);
+        Block? block = Block.Blocks[targetBlockId];
 
-                OnTickEvent tickEvent = new(_worldContext, x, y, z, meta, blockId);
+        if (block == null) return;
 
-                block.neighborUpdate(tickEvent);
-            }
-        }
+        int meta = _reader.GetBlockMeta(x, y, z);
+        OnTickEvent tickEvent = new(_worldContext, x, y, z, meta, blockId);
+        block.neighborUpdate(tickEvent);
     }
 
     public void AddWorldAccess(IWorldEventListener worldAccess) => _eventListeners.Add(worldAccess);

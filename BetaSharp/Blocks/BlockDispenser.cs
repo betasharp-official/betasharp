@@ -32,11 +32,14 @@ internal class BlockDispenser : BlockWithEntity
         if (@event.Placer != null)
         {
             int direction = MathHelper.Floor(@event.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
-            int meta = 2;
-            if (direction == 0) meta = 2;
-            else if (direction == 1) meta = 5;
-            else if (direction == 2) meta = 3;
-            else if (direction == 3) meta = 4;
+            int meta = direction switch
+            {
+                0 => 2,
+                1 => 5,
+                2 => 3,
+                3 => 4,
+                _ => 2
+            };
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
             if (!@event.World.IsRemote)
             {
@@ -55,7 +58,7 @@ internal class BlockDispenser : BlockWithEntity
 
         var reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
-        
+
         bool isNorthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z - 1)];
         bool isSouthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z + 1)];
         bool isWestOpaque = BlocksOpaque[reader.GetBlockId(x - 1, y, z)];
@@ -180,7 +183,6 @@ internal class BlockDispenser : BlockWithEntity
                 item.velocityY = 0.2F;
                 item.velocityZ = dirZ * randomVelocity;
 
-                // EntityItem velocity usually takes doubles in newer Beta engines
                 item.velocityX += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
                 item.velocityY += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
                 item.velocityZ += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
@@ -226,30 +228,29 @@ internal class BlockDispenser : BlockWithEntity
             for (int slotIndex = 0; slotIndex < dispenser.size(); ++slotIndex)
             {
                 ItemStack stack = dispenser.getStack(slotIndex);
-                if (stack != null)
+                if (stack == null) continue;
+
+                float offsetX = random.NextFloat() * 0.8F + 0.1F;
+                float offsetY = random.NextFloat() * 0.8F + 0.1F;
+                float offsetZ = random.NextFloat() * 0.8F + 0.1F;
+
+                while (stack.count > 0)
                 {
-                    float offsetX = random.NextFloat() * 0.8F + 0.1F;
-                    float offsetY = random.NextFloat() * 0.8F + 0.1F;
-                    float offsetZ = random.NextFloat() * 0.8F + 0.1F;
-
-                    while (stack.count > 0)
+                    int amount = random.NextInt(21) + 10;
+                    if (amount > stack.count)
                     {
-                        int amount = random.NextInt(21) + 10;
-                        if (amount > stack.count)
-                        {
-                            amount = stack.count;
-                        }
-
-                        stack.count -= amount;
-                        EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, amount, stack.getDamage()));
-                        float floatVar = 0.05F;
-
-                        entityItem.velocityX = (float)random.NextGaussian() * floatVar;
-                        entityItem.velocityY = (float)random.NextGaussian() * floatVar + 0.2F;
-                        entityItem.velocityZ = (float)random.NextGaussian() * floatVar;
-
-                        @event.World.Entities.SpawnEntity(entityItem);
+                        amount = stack.count;
                     }
+
+                    stack.count -= amount;
+                    EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, amount, stack.getDamage()));
+                    float floatVar = 0.05F;
+
+                    entityItem.velocityX = (float)random.NextGaussian() * floatVar;
+                    entityItem.velocityY = (float)random.NextGaussian() * floatVar + 0.2F;
+                    entityItem.velocityZ = (float)random.NextGaussian() * floatVar;
+
+                    @event.World.Entities.SpawnEntity(entityItem);
                 }
             }
         }

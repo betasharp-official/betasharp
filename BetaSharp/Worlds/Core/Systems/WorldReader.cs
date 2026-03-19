@@ -88,47 +88,40 @@ public class WorldReader : IBlockReader
 
     public bool IsTopY(int x, int y, int z)
     {
-        if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000)
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000)            return false;
+
+        switch (y)
         {
-            if (y < 0)
-            {
+            case < 0:
                 return false;
-            }
-
-            if (y >= 128)
-            {
+            case >= 128:
                 return true;
-            }
-
-            if (!_context.ChunkHost.HasChunk(x >> 4, z >> 4))
-            {
-                return false;
-            }
-
-            Chunk chunk = _context.ChunkHost.GetChunk(x >> 4, z >> 4);
-            return chunk.IsAboveMaxHeight(x & 15, y, z & 15);
         }
 
-        return false;
+        if (!_context.ChunkHost.HasChunk(x >> 4, z >> 4))
+        {
+            return false;
+        }
+
+        Chunk chunk = _context.ChunkHost.GetChunk(x >> 4, z >> 4);
+        return chunk.IsAboveMaxHeight(x & 15, y, z & 15);
     }
 
     public int GetTopY(int x, int z)
     {
-        if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000)
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000) return 0;
+
+        int chunkX = x >> 4;
+        int chunkZ = z >> 4;
+
+        if (!_context.ChunkHost.HasChunk(chunkX, chunkZ))
         {
-            int chunkX = x >> 4;
-            int chunkZ = z >> 4;
-
-            if (!_context.ChunkHost.HasChunk(chunkX, chunkZ))
-            {
-                return 0;
-            }
-
-            Chunk chunk = _context.ChunkHost.GetChunk(chunkX, chunkZ);
-            return chunk.GetHeight(x & 15, z & 15);
+            return 0;
         }
 
-        return 0;
+        Chunk chunk = _context.ChunkHost.GetChunk(chunkX, chunkZ);
+        return chunk.GetHeight(x & 15, z & 15);
+
     }
 
     public int GetTopSolidBlockY(int x, int z)
@@ -204,12 +197,7 @@ public class WorldReader : IBlockReader
         int iterationsRemaining = 200;
         while (iterationsRemaining-- >= 0)
         {
-            if (double.IsNaN(start.x) || double.IsNaN(start.y) || double.IsNaN(start.z))
-            {
-                return new HitResult(HitResultType.MISS);
-            }
-
-            if (currentX == targetX && currentY == targetY && currentZ == targetZ)
+            if (double.IsNaN(start.x) || double.IsNaN(start.y) || double.IsNaN(start.z) || currentX == targetX && currentY == targetY && currentZ == targetZ)
             {
                 return new HitResult(HitResultType.MISS);
             }

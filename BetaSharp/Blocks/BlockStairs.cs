@@ -17,7 +17,7 @@ internal class BlockStairs : Block
         setOpacity(255);
     }
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, EntityManager? entities, int x, int y, int z) => setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
 
     public override bool isOpaque() => false;
 

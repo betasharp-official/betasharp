@@ -8,9 +8,6 @@ namespace BetaSharp.Worlds.Dimensions;
 
 public class SkyDimension : Dimension
 {
-    public SkyDimension()
-    {
-    }
 
     public override void InitBiomeSource()
     {

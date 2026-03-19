@@ -324,7 +324,7 @@ public class WorldRenderer : IWorldEventListener
 
     public void renderSky(float var1)
     {
-        if (!_game.world.dimension.IsNether)
+        if (!_game.world.Dimension.IsNether)
         {
             GLManager.GL.Disable(GLEnum.Texture2D);
             Vector3D<double> var2 = world.Environment.GetSkyColor(_game.camera, var1);
@@ -345,7 +345,7 @@ public class WorldRenderer : IWorldEventListener
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
             Lighting.turnOff();
-            float[] var18 = world.dimension.GetBackgroundColor(world.GetTime(var1), var1);
+            float[] var18 = world.Dimension.GetBackgroundColor(world.GetTime(var1), var1);
             float var9;
             float var10;
             float var11;
@@ -422,7 +422,7 @@ public class WorldRenderer : IWorldEventListener
             GLManager.GL.Enable(GLEnum.AlphaTest);
             GLManager.GL.Enable(GLEnum.Fog);
             GLManager.GL.PopMatrix();
-            if (world.dimension.HasGround)
+            if (world.Dimension.HasGround)
             {
                 GLManager.GL.Color3(var3 * 0.2F + 0.04F, var4 * 0.2F + 0.04F, var5 * 0.6F + 0.1F);
             }
@@ -441,7 +441,7 @@ public class WorldRenderer : IWorldEventListener
     public void renderClouds(float var1)
     {
         Profiler.Start("renderClouds");
-        if (!_game.world.dimension.IsNether)
+        if (!_game.world.Dimension.IsNether)
         {
             renderCloudsFancy(var1);
         }
@@ -556,7 +556,7 @@ public class WorldRenderer : IWorldEventListener
         float var5 = 4.0F;
         double var6 = (_game.camera.prevX + (_game.camera.x - _game.camera.prevX) * (double)var1 + (double)((cloudOffsetX + var1) * 0.03F)) / (double)var4;
         double var8 = (_game.camera.prevZ + (_game.camera.z - _game.camera.prevZ) * (double)var1) / (double)var4 + (double)0.33F;
-        float var10 = world.dimension.CloudHeight - var2 + 0.33F;
+        float var10 = world.Dimension.CloudHeight - var2 + 0.33F;
         int var11 = MathHelper.Floor(var6 / 2048.0D);
         int var12 = MathHelper.Floor(var8 / 2048.0D);
         var6 -= var11 * 2048;
@@ -755,7 +755,6 @@ public class WorldRenderer : IWorldEventListener
     {
         if (!world.BlockHost.IsRegionLoaded(var1, var2, var3, var4, var5, var6))
         {
-            chunkRenderer.RemoveChunksInRegion(var1, var2, var3, var4, var5, var6);
             return;
         }
 

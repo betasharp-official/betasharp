@@ -214,9 +214,9 @@ public class BlockPistonBase : Block
         deaf = false;
     }
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, EntityManager? entities, int x, int y, int z)
+    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
-        int meta = iBlockReader.GetBlockMeta(x, y, z);
+        int meta = blockReader.GetBlockMeta(x, y, z);
         if (isExtended(meta))
         {
             switch (getFacing(meta))

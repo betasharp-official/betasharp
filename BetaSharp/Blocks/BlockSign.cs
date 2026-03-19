@@ -30,11 +30,11 @@ internal class BlockSign : BlockWithEntity
         return base.getBoundingBox(world, entities, x, y, z);
     }
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, EntityManager? entities, int x, int y, int z)
+    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
         if (!_standing)
         {
-            int facing = iBlockReader.GetBlockMeta(x, y, z);
+            int facing = blockReader.GetBlockMeta(x, y, z);
             float topOffset = 9.0F / 32.0F;
             float bottomOffset = 25.0F / 32.0F;
             float minExtent = 0.0F;

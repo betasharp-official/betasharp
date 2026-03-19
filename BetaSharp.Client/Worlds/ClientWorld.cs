@@ -16,7 +16,7 @@ public class ClientWorld : World
 {
     private readonly List<BlockReset> _blockResets = [];
     private readonly ClientNetworkHandler _networkHandler;
-    private MultiplayerChunkCache _chunkCache; 
+    private MultiplayerChunkCache _chunkCache;
     private readonly HashSet<Entity> forcedEntities = [];
     private readonly HashSet<Entity> pendingEntities = [];
 
@@ -33,10 +33,8 @@ public class ClientWorld : World
 
     public override void Tick()
     {
-        // 1. Update Core Time (Moved to base, but we increment here for client-side sync)
         SetTime(GetTime() + 1L);
 
-        // 2. Weather & Environment
         Environment.UpdateWeatherCycles();
 
         int ambient = Environment.GetAmbientDarkness(1.0F);
@@ -46,7 +44,6 @@ public class ClientWorld : World
             Broadcaster.NotifyAmbientDarknessChanged();
         }
 
-        // 3. Entity Management
         for (int i = 0; i < 10 && pendingEntities.Count > 0; ++i)
         {
             Entity entity = pendingEntities.First();
@@ -56,10 +53,8 @@ public class ClientWorld : World
             }
         }
 
-        // 4. Network Processing
         _networkHandler.tick();
 
-        // 5. Block Prediction Resets
         for (int i = 0; i < _blockResets.Count; ++i)
         {
             BlockReset blockReset = _blockResets[i];

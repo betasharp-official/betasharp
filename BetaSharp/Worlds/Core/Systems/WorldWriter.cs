@@ -52,17 +52,16 @@ public sealed class WorldWriter : IBlockWrite
 
     public void SetBlockMeta(int x, int y, int z, int meta)
     {
-        if (SetBlockMetaWithoutNotifyingNeighbors(x, y, z, meta))
+        if (!SetBlockMetaWithoutNotifyingNeighbors(x, y, z, meta)) return;
+
+        int blockId = _reader.GetBlockId(x, y, z);
+        if (Block.BlocksIgnoreMetaUpdate[blockId & 255])
         {
-            int blockId = _reader.GetBlockId(x, y, z);
-            if (Block.BlocksIgnoreMetaUpdate[blockId & 255])
-            {
-                OnBlockChanged?.Invoke(x, y, z, blockId);
-            }
-            else
-            {
-                OnNeighborsShouldUpdate?.Invoke(x, y, z, blockId);
-            }
+            OnBlockChanged?.Invoke(x, y, z, blockId);
+        }
+        else
+        {
+            OnNeighborsShouldUpdate?.Invoke(x, y, z, blockId);
         }
     }
 
@@ -85,18 +84,16 @@ public sealed class WorldWriter : IBlockWrite
     {
         int prevId = _reader.GetBlockId(x, y, z);
         int prevMeta = _reader.GetBlockMeta(x, y, z);
-        if (SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta, doUpdate))
-        {
-            if (doUpdate)
-            {
-                OnBlockChanged?.Invoke(x, y, z, blockId);
-                OnBlockChangedWithPrev?.Invoke(x, y, z, prevId, prevMeta, blockId, meta);
-            }
+        if (!SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta, doUpdate)) return false;
 
-            return true;
+        if (doUpdate)
+        {
+            OnBlockChanged?.Invoke(x, y, z, blockId);
+            OnBlockChangedWithPrev?.Invoke(x, y, z, prevId, prevMeta, blockId, meta);
         }
 
-        return false;
+        return true;
+
     }
 
     public bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, int meta) => SetBlockWithoutNotifyingNeighbors(x, y, z, blockId, meta, true);
@@ -114,12 +111,11 @@ public sealed class WorldWriter : IBlockWrite
         var chunk = _host.GetChunk(chunkX, chunkZ);
         bool changed = chunk.SetBlock(x & 15, y, z & 15, blockId, meta, notifyBlockPlaced);
 
-        if (changed && chunk.World is BetaSharp.Worlds.Core.ServerWorld serverWorld && !serverWorld.IsRemote)
+        if (!changed || chunk.World is not BetaSharp.Worlds.Core.ServerWorld serverWorld || serverWorld.IsRemote) return changed;
+
+        if (serverWorld.ChunkMap.IsChunkTrackedAndSent(chunkX, chunkZ))
         {
-            if (serverWorld.ChunkMap.IsChunkTrackedAndSent(chunkX, chunkZ))
-            {
-                serverWorld.Broadcaster.BlockUpdateEvent(x, y, z);
-            }
+            serverWorld.Broadcaster.BlockUpdateEvent(x, y, z);
         }
 
         return changed;
@@ -129,36 +125,30 @@ public sealed class WorldWriter : IBlockWrite
 
     public bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, bool notifyBlockPlaced)
     {
-        if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000 && y is >= 0 and < 128)
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y is < 0 or >= 128) return false;
+
+        int chunkX = x >> 4;
+        int chunkZ = z >> 4;
+
+        var chunk = _host.GetChunk(chunkX, chunkZ);
+        bool changed = chunk.SetBlock(x & 15, y, z & 15, blockId, notifyBlockPlaced);
+
+        if (!changed || chunk.World is not BetaSharp.Worlds.Core.ServerWorld serverWorld || serverWorld.IsRemote) return changed;
+
+        if (serverWorld.ChunkMap.IsChunkTrackedAndSent(chunkX, chunkZ))
         {
-            int chunkX = x >> 4;
-            int chunkZ = z >> 4;
-
-            var chunk = _host.GetChunk(chunkX, chunkZ);
-            bool changed = chunk.SetBlock(x & 15, y, z & 15, blockId, notifyBlockPlaced);
-
-            if (changed && chunk.World is BetaSharp.Worlds.Core.ServerWorld serverWorld && !serverWorld.IsRemote)
-            {
-                if (serverWorld.ChunkMap.IsChunkTrackedAndSent(chunkX, chunkZ))
-                {
-                    serverWorld.Broadcaster.BlockUpdateEvent(x, y, z);
-                }
-            }
-
-            return changed;
+            serverWorld.Broadcaster.BlockUpdateEvent(x, y, z);
         }
 
-        return false;
+        return changed;
+
     }
 
     public bool SetBlockMetaWithoutNotifyingNeighbors(int x, int y, int z, int meta)
     {
-        if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000 && y is >= 0 and < 128)
-        {
-            _host.GetChunk(x >> 4, z >> 4).SetBlockMeta(x & 15, y, z & 15, meta);
-            return true;
-        }
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y is < 0 or >= 128) return false;
 
-        return false;
+        _host.GetChunk(x >> 4, z >> 4).SetBlockMeta(x & 15, y, z & 15, meta);
+        return true;
     }
 }

@@ -118,20 +118,19 @@ public class Explosion
 
         explosionSize = var1;
         List<BlockPos> var32 = new(destroyedBlockPositions);
-        if (isFlaming)
+        if (!isFlaming) return;
+
+        for (int var34 = var32.Count - 1; var34 >= 0; --var34)
         {
-            for (int var34 = var32.Count - 1; var34 >= 0; --var34)
+            BlockPos var35 = var32[var34];
+            int var36 = var35.x;
+            int var37 = var35.y;
+            int var16 = var35.z;
+            int var38 = _level.Reader.GetBlockId(var36, var37, var16);
+            int var18 = _level.Reader.GetBlockId(var36, var37 - 1, var16);
+            if (var38 == 0 && Block.BlocksOpaque[var18] && ExplosionRNG.NextInt(3) == 0)
             {
-                BlockPos var35 = var32[var34];
-                int var36 = var35.x;
-                int var37 = var35.y;
-                int var16 = var35.z;
-                int var38 = _level.Reader.GetBlockId(var36, var37, var16);
-                int var18 = _level.Reader.GetBlockId(var36, var37 - 1, var16);
-                if (var38 == 0 && Block.BlocksOpaque[var18] && ExplosionRNG.NextInt(3) == 0)
-                {
-                    _level.Writer.SetBlock(var36, var37, var16, Block.Fire.id);
-                }
+                _level.Writer.SetBlock(var36, var37, var16, Block.Fire.id);
             }
         }
     }

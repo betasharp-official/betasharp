@@ -91,24 +91,23 @@ public class EntityManager
                 entity.vehicle = null;
             }
 
-            if (entity.dead)
+            if (!entity.dead) continue;
+
+            int chunkX = entity.chunkX;
+            int chunkZ = entity.chunkZ;
+
+            if (entity.isPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
             {
-                int chunkX = entity.chunkX;
-                int chunkZ = entity.chunkZ;
-
-                if (entity.isPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
-                {
-                    _world.ChunkHost.GetChunk(chunkX, chunkZ).RemoveEntity(entity);
-                }
-
-                Entities.RemoveAt(i--);
-                if (_entitiesById.TryGetValue(entity.id, out Entity? current2) && ReferenceEquals(current2, entity))
-                {
-                    _entitiesById.Remove(entity.id);
-                }
-
-                NotifyEntityRemoved(entity);
+                _world.ChunkHost.GetChunk(chunkX, chunkZ).RemoveEntity(entity);
             }
+
+            Entities.RemoveAt(i--);
+            if (_entitiesById.TryGetValue(entity.id, out Entity? current2) && ReferenceEquals(current2, entity))
+            {
+                _entitiesById.Remove(entity.id);
+            }
+
+            NotifyEntityRemoved(entity);
         }
     }
 

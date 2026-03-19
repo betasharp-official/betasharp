@@ -106,7 +106,7 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
         {
             float worldTime = _game.world.GetTime(1.0F);
             targetAngle = -worldTime * (float)Math.PI * 2.0F;
-            if (_game.world.dimension.IsNether)
+            if (_game.world.Dimension.IsNether)
             {
                 targetAngle = Random.Shared.NextDouble() * (float)Math.PI * 2.0D;
             }

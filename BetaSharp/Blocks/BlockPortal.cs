@@ -13,11 +13,11 @@ public class BlockPortal : BlockBreakable
 
     public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, EntityManager? entities, int x, int y, int z)
+    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
         float thickness;
         float halfExtent;
-        if (iBlockReader.GetBlockId(x - 1, y, z) != id && iBlockReader.GetBlockId(x + 1, y, z) != id)
+        if (blockReader.GetBlockId(x - 1, y, z) != id && blockReader.GetBlockId(x + 1, y, z) != id)
         {
             thickness = 2.0F / 16.0F;
             halfExtent = 0.5F;

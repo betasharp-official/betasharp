@@ -25,23 +25,23 @@ public class WorldTickScheduler
     public virtual void ScheduleBlockUpdate(int x, int y, int z, int blockId, int tickRate, bool instantBlockUpdateEnabled = false)
     {
         const byte loadRadius = 8;
-        if (_context.ChunkHost.IsPosLoaded(x - loadRadius, y - loadRadius, z - loadRadius) && _context.ChunkHost.IsPosLoaded(x + loadRadius, y + loadRadius, z + loadRadius))
+        if (!_context.ChunkHost.IsPosLoaded(x - loadRadius, y - loadRadius, z - loadRadius) || !_context.ChunkHost.IsPosLoaded(x + loadRadius, y + loadRadius, z + loadRadius))
+            return;
+
+        if (instantBlockUpdateEnabled)
         {
-            if (instantBlockUpdateEnabled)
+            int currentBlockId = _context.Reader.GetBlockId(x, y, z);
+            if (currentBlockId == blockId && currentBlockId > 0)
             {
-                int currentBlockId = _context.Reader.GetBlockId(x, y, z);
-                if (currentBlockId == blockId && currentBlockId > 0)
-                {
-                    int meta = _context.Reader.GetBlockMeta(x, y, z);
-                    Block.Blocks[currentBlockId].onTick(new OnTickEvent(_context, x, y, z, meta, currentBlockId));
-                }
+                int meta = _context.Reader.GetBlockMeta(x, y, z);
+                Block.Blocks[currentBlockId].onTick(new OnTickEvent(_context, x, y, z, meta, currentBlockId));
             }
-            else
-            {
-                long executionTime = _context.GetTime() + tickRate;
-                BlockUpdate blockUpdate = new(x, y, z, blockId, executionTime);
-                _scheduledUpdates.Enqueue(blockUpdate, (blockUpdate.ScheduledTime, blockUpdate.ScheduledOrder));
-            }
+        }
+        else
+        {
+            long executionTime = _context.GetTime() + tickRate;
+            BlockUpdate blockUpdate = new(x, y, z, blockId, executionTime);
+            _scheduledUpdates.Enqueue(blockUpdate, (blockUpdate.ScheduledTime, blockUpdate.ScheduledOrder));
         }
     }
 

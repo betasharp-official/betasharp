@@ -131,9 +131,9 @@ internal class BlockPressurePlate : Block
         base.onBreak(@event);
     }
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, EntityManager? entities, int x, int y, int z)
+    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
-        bool isPressed = iBlockReader.GetBlockMeta(x, y, z) == 1;
+        bool isPressed = blockReader.GetBlockMeta(x, y, z) == 1;
         float edgeInset = 1.0F / 16.0F;
         if (isPressed)
         {

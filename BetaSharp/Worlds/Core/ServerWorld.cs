@@ -36,8 +36,8 @@ public class ServerWorld : World
 
     protected override IChunkSource CreateChunkCache()
     {
-        IChunkStorage? chunkStorage = Storage.GetChunkStorage(dimension);
-        ChunkCache = new ServerChunkCache(this, chunkStorage, dimension.CreateChunkGenerator());
+        IChunkStorage? chunkStorage = Storage.GetChunkStorage(Dimension);
+        ChunkCache = new ServerChunkCache(this, chunkStorage, Dimension.CreateChunkGenerator());
         return ChunkCache;
     }
 
@@ -45,7 +45,7 @@ public class ServerWorld : World
 
     private void HandleEntityRemoved(Entity entity) => entitiesById.Remove(entity.id);
 
-    private void HandleGlobalEntityAdded(Entity entity) => server.playerManager.sendToAround(entity.x, entity.y, entity.z, 512.0, dimension.Id, GlobalEntitySpawnS2CPacket.Get(entity));
+    private void HandleGlobalEntityAdded(Entity entity) => server.playerManager.sendToAround(entity.x, entity.y, entity.z, 512.0, Dimension.Id, GlobalEntitySpawnS2CPacket.Get(entity));
 
     private bool HandleEntityUpdating(Entity entity)
     {
@@ -89,7 +89,7 @@ public class ServerWorld : World
         };
         var10.doExplosionA();
         var10.doExplosionB(false);
-        server.playerManager.sendToAround(x, y, z, 64.0, dimension.Id, ExplosionS2CPacket.Get(x, y, z, power, var10.destroyedBlockPositions));
+        server.playerManager.sendToAround(x, y, z, 64.0, Dimension.Id, ExplosionS2CPacket.Get(x, y, z, power, var10.destroyedBlockPositions));
         return var10;
     }
 

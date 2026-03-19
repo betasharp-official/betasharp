@@ -18,17 +18,17 @@ internal class ServerWorldEventListener : IWorldEventListener
 
     public void notifyEntityAdded(Entity entity)
     {
-        server.getEntityTracker(world.dimension.Id).onEntityAdded(entity);
+        server.getEntityTracker(world.Dimension.Id).onEntityAdded(entity);
     }
 
     public void notifyEntityRemoved(Entity entity)
     {
-        server.getEntityTracker(world.dimension.Id).onEntityRemoved(entity);
+        server.getEntityTracker(world.Dimension.Id).onEntityRemoved(entity);
     }
 
     public void blockUpdate(int x, int y, int z)
     {
-        server.playerManager.markDirty(x, y, z, world.dimension.Id);
+        server.playerManager.markDirty(x, y, z, world.Dimension.Id);
     }
 
     public void updateBlockEntity(int x, int y, int z, BlockEntity blockEntity)
@@ -38,8 +38,8 @@ internal class ServerWorldEventListener : IWorldEventListener
 
     public void worldEvent(EntityPlayer? player, int @event, int x, int y, int z, int data)
     {
-        server.playerManager.sendToAround(player, x, y, z, 64.0, world.dimension.Id, WorldEventS2CPacket.Get(@event, x, y, z, data));
-        if (player is ServerPlayerEntity serverPlayer && serverPlayer.dimensionId == world.dimension.Id)
+        server.playerManager.sendToAround(player, x, y, z, 64.0, world.Dimension.Id, WorldEventS2CPacket.Get(@event, x, y, z, data));
+        if (player is ServerPlayerEntity serverPlayer && serverPlayer.dimensionId == world.Dimension.Id)
         {
             serverPlayer.networkHandler.sendPacket(WorldEventS2CPacket.Get(@event, x, y, z, data));
         }
@@ -48,12 +48,12 @@ internal class ServerWorldEventListener : IWorldEventListener
     public void broadcastEntityEvent(Entity entity, byte @event)
     {
         EntityStatusS2CPacket packet = EntityStatusS2CPacket.Get(entity.id, @event);
-        server.getEntityTracker(world.dimension.Id).sendToAround(entity, packet);
+        server.getEntityTracker(world.Dimension.Id).sendToAround(entity, packet);
     }
 
     public void playNote(int x, int y, int z, int soundType, int pitch)
     {
-        server.playerManager.sendToAround(x, y, z, 64.0, world.dimension.Id, PlayNoteSoundS2CPacket.Get(x, y, z, soundType, pitch));
+        server.playerManager.sendToAround(x, y, z, 64.0, world.Dimension.Id, PlayNoteSoundS2CPacket.Get(x, y, z, soundType, pitch));
     }
 
     public void spawnParticle(string particle, double x, double y, double z, double velocityX, double velocityY, double velocityZ) { }

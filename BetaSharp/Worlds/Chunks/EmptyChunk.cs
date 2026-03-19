@@ -17,7 +17,7 @@ public class EmptyChunk : Chunk
         Empty = true;
     }
 
-    public override bool ChunkPosEquals(int x, int z) => x == this.X && z == this.Z;
+    public override bool ChunkPosEquals(int x, int z) => x == X && z == Z;
 
     public override int GetHeight(int x, int z) => 0;
 

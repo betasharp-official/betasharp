@@ -25,9 +25,9 @@ internal class BlockSnow : Block
 
     public override bool isFullCube() => false;
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, EntityManager? entities, int x, int y, int z)
+    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
-        int meta = iBlockReader.GetBlockMeta(x, y, z) & 7;
+        int meta = blockReader.GetBlockMeta(x, y, z) & 7;
         float height = 2 * (1 + meta) / 16.0F;
         setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, height, 1.0F);
     }

@@ -36,14 +36,12 @@ public class EnvironmentManager
 
     public void PrepareWeather()
     {
-        WorldProperties props = _props;
-        if (props.IsRaining)
+        if (!_props.IsRaining) return;
+
+        RainingStrength = 1.0F;
+        if (_props.IsThundering)
         {
-            RainingStrength = 1.0F;
-            if (props.IsThundering)
-            {
-                ThunderingStrength = 1.0F;
-            }
+            ThunderingStrength = 1.0F;
         }
     }
 
@@ -248,20 +246,20 @@ public class EnvironmentManager
             blue = blue * thunderFactor + grayscaleLuminance * (1.0F - thunderFactor);
         }
 
-        if (LightningTicksLeft > 0)
+        if (LightningTicksLeft <= 0) return new Vector3D<double>(red, green, blue);
+
+
+        float lightningFactor = LightningTicksLeft - partialTicks;
+        if (lightningFactor > 1.0F)
         {
-            float lightningFactor = LightningTicksLeft - partialTicks;
-            if (lightningFactor > 1.0F)
-            {
-                lightningFactor = 1.0F;
-            }
-
-            lightningFactor *= 0.45F;
-
-            red = red * (1.0F - lightningFactor) + 0.8F * lightningFactor;
-            green = green * (1.0F - lightningFactor) + 0.8F * lightningFactor;
-            blue = blue * (1.0F - lightningFactor) + 1.0F * lightningFactor;
+            lightningFactor = 1.0F;
         }
+
+        lightningFactor *= 0.45F;
+
+        red = red * (1.0F - lightningFactor) + 0.8F * lightningFactor;
+        green = green * (1.0F - lightningFactor) + 0.8F * lightningFactor;
+        blue = blue * (1.0F - lightningFactor) + 1.0F * lightningFactor;
 
         return new Vector3D<double>(red, green, blue);
     }

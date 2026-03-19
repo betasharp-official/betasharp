@@ -36,9 +36,9 @@ public class BlockRail : Block
         return base.raycast(world, entities, x, y, z, startPos, endPos);
     }
 
-    public override void updateBoundingBox(IBlockReader iBlockReader, EntityManager? entities, int x, int y, int z)
+    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
-        int meta = iBlockReader.GetBlockMeta(x, y, z);
+        int meta = blockReader.GetBlockMeta(x, y, z);
         if (meta >= 2 && meta <= 5)
         {
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 10.0F / 16.0F, 1.0F);
