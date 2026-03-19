@@ -68,13 +68,15 @@ public abstract class World : IWorldContext
 
 
 
-        Properties.LevelName = levelName;
+        Properties!.LevelName = levelName;
 
 
         if (Dimension is OverworldDimension && Properties.TerrainType == WorldType.Sky)
         {
             Dimension = new SkyDimension();
         }
+
+        shouldInitializeSpawn = shouldInitializeSpawn && this is ServerWorld && Dimension.Id == 0;
 
         Dimension.SetWorld(this);
 
@@ -124,7 +126,6 @@ public abstract class World : IWorldContext
 
         if (shouldInitializeSpawn)
         {
-            _logger.LogInformation("Initializing spawn point for new world");
             InitializeSpawnPoint();
         }
     }
