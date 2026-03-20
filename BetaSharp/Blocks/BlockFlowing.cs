@@ -1,5 +1,4 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
@@ -289,6 +288,16 @@ internal class BlockFlowing : BlockFluid
 
     private bool isLiquidBreaking(IBlockReader reader, int x, int y, int z)
     {
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
+        {
+            return true;
+        }
+
+        if (!reader.IsPosLoaded(x, y, z))
+        {
+            return true;
+        }
+
         int blockId = reader.GetBlockId(x, y, z);
         if (blockId != Door.id && blockId != IronDoor.id && blockId != Sign.id && blockId != Ladder.id && blockId != SugarCane.id)
         {
@@ -327,6 +336,16 @@ internal class BlockFlowing : BlockFluid
 
     private bool canSpreadTo(IBlockReader reader, int x, int y, int z)
     {
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
+        {
+            return false;
+        }
+
+        if (!reader.IsPosLoaded(x, y, z))
+        {
+            return false;
+        }
+
         int blockId = reader.GetBlockId(x, y, z);
         if (blockId == 0)
         {
