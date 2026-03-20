@@ -25,7 +25,11 @@ public class WorldTickScheduler
     public virtual void ScheduleBlockUpdate(int x, int y, int z, int blockId, int tickRate, bool instantBlockUpdateEnabled = false)
     {
         const byte loadRadius = 8;
-        if (!_context.ChunkHost.IsPosLoaded(x - loadRadius, y - loadRadius, z - loadRadius) || !_context.ChunkHost.IsPosLoaded(x + loadRadius, y + loadRadius, z + loadRadius))
+        int minY = Math.Max(0, y - loadRadius);
+        int maxY = Math.Min(127, y + loadRadius);
+
+        if (!_context.ChunkHost.IsPosLoaded(x - loadRadius, minY, z - loadRadius) ||
+            !_context.ChunkHost.IsPosLoaded(x + loadRadius, maxY, z + loadRadius))
             return;
 
         if (instantBlockUpdateEnabled)
@@ -64,19 +68,18 @@ public class WorldTickScheduler
             BlockUpdate blockUpdate = _scheduledUpdates.Dequeue();
 
             const byte loadRadius = 8;
-            bool posLoaded = _context.Reader.IsPosLoaded(blockUpdate.X - loadRadius, blockUpdate.Y - loadRadius, blockUpdate.Z - loadRadius) &&
-                             _context.Reader.IsPosLoaded(blockUpdate.X + loadRadius, blockUpdate.Y + loadRadius, blockUpdate.Z + loadRadius);
-            if (!posLoaded)
-            {
-                continue;
-            }
+            
+            int minY = Math.Max(0, blockUpdate.Y - loadRadius);
+            int maxY = Math.Min(127, blockUpdate.Y + loadRadius);
 
+            bool posLoaded = _context.Reader.IsPosLoaded(blockUpdate.X - loadRadius, minY, blockUpdate.Z - loadRadius) &&
+                             _context.Reader.IsPosLoaded(blockUpdate.X + loadRadius, maxY, blockUpdate.Z + loadRadius);
+            if (!posLoaded) continue;
+        
             int currentBlockId = _context.Reader.GetBlockId(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
-            if (currentBlockId != blockUpdate.BlockId || currentBlockId <= 0)
-            {
-                continue;
-            }
 
+            if (currentBlockId != blockUpdate.BlockId || currentBlockId <= 0) continue;
+        
             Block.Blocks[currentBlockId].onTick(new OnTickEvent(_context, blockUpdate.X, blockUpdate.Y, blockUpdate.Z, _context.Reader.GetBlockMeta(blockUpdate.X, blockUpdate.Y, blockUpdate.Z), currentBlockId));
         }
     }

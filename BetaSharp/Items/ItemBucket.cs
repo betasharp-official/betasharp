@@ -118,7 +118,6 @@ internal class ItemBucket : Item
                         }
                         else
                         {
-                            BetaSharp.Log.Instance.For<ItemBucket>().LogInformation($"[Fluid DEBUG] ItemBucket placing block id={isFull} at ({hitX},{hitY},{hitZ}) (Flowing Water=8, Flowing Lava=10, Stationary Water=9, Stationary Lava=11)");
                             world.Writer.SetBlock(hitX, hitY, hitZ, isFull, 0);
                         }
 
