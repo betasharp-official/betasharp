@@ -23,6 +23,8 @@ internal sealed partial class AuthenticationViewModel(
     {
         try
         {
+            await authenticationService.InitializeAsync();
+
             string token = await authenticationService.AuthenticateAsync();
 
             var session = await sessionService.TryCreateAsync(token);
@@ -33,6 +35,8 @@ internal sealed partial class AuthenticationViewModel(
                     "License Required",
                     "The selected Microsoft account does not own a copy of Minecraft Java edition");
 
+                logger.LogWarning("Failed to verify ownership of a Minecraft Java edition copy");
+
                 return;
             }
 
@@ -40,6 +44,8 @@ internal sealed partial class AuthenticationViewModel(
             WeakReferenceMessenger.Default.Send(new SessionMessage(session));
 
             await storageService.SetAsync(session, SessionSerializerContext.Default.Session);
+
+            logger.LogWarning("Successfully finished Minecraft authentication");
         }
         catch (Exception exception)
         {
@@ -48,7 +54,7 @@ internal sealed partial class AuthenticationViewModel(
 
             await alertService.ShowAsync(
                 "Uh-oh!",
-                "Try again shortly. If the issue persists, create a GitHub issue."
+                "Try again shortly. If the issue persists, create a GitHub issue"
                 + Environment.NewLine
                 + "https://github.com/Fazin85/betasharp/issues");
         }

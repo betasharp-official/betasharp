@@ -1,13 +1,14 @@
 using System.Globalization;
 using BetaSharp.Entities;
 using BetaSharp.Items;
+using BetaSharp.Server.Command;
 using BetaSharp.Server.Internal;
 
 namespace BetaSharp.Server.Commands;
 
 internal static class PlayerCommands
 {
-    public static void Kill(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Kill(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         ServerPlayerEntity player = server.playerManager.getPlayer(senderName);
         if (player == null) { output.SendMessage("Could not find your player."); return; }
@@ -15,7 +16,7 @@ internal static class PlayerCommands
         player.damage(null, 1000);
     }
 
-    public static void Heal(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Heal(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         ServerPlayerEntity player = server.playerManager.getPlayer(senderName);
         if (player == null) { output.SendMessage("Could not find your player."); return; }
@@ -30,7 +31,7 @@ internal static class PlayerCommands
         output.SendMessage($"Healed for {amount} health.");
     }
 
-    public static void Clear(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Clear(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         ServerPlayerEntity player = server.playerManager.getPlayer(senderName);
         if (player == null) { output.SendMessage("Could not find your player."); return; }
@@ -44,7 +45,7 @@ internal static class PlayerCommands
         output.SendMessage("Inventory cleared.");
     }
 
-    public static void Teleport(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Teleport(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (args.Length == 3)
         {
@@ -93,7 +94,7 @@ internal static class PlayerCommands
         output.SendMessage("Usage: tp <x> <y> <z>  or  tp <player1> <player2>");
     }
 
-    public static void MoveToDimension(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void MoveToDimension(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (args.Length < 1)
         {

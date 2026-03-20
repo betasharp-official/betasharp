@@ -6,10 +6,11 @@ using BetaSharp.Launcher.Features.Home;
 using BetaSharp.Launcher.Features.Properties;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Launcher.Features.Hosting;
 
-internal sealed partial class HostingViewModel(ProcessService processService, NavigationService navigationService) : ObservableObject
+internal sealed partial class HostingViewModel(ILogger<HostingViewModel> logger, ProcessService processService, NavigationService navigationService) : ObservableObject
 {
     public ObservableCollection<string> Logs { get; } = [];
 
@@ -32,6 +33,8 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
     {
         if (IsRunning)
         {
+            logger.LogInformation("Writing stop to the server");
+
             ArgumentNullException.ThrowIfNull(_process);
 
             await WriteAsync("stop");
@@ -44,6 +47,8 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
 
             return;
         }
+
+        logger.LogInformation("Starting the server");
 
         Logs.Clear();
         Last = -1;
@@ -62,6 +67,8 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
         Message = "Stop";
 
         IsRunning = true;
+
+        logger.LogInformation("Started the server");
     }
 
     [RelayCommand]
@@ -85,12 +92,16 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
 
     private void Stop()
     {
+        logger.LogInformation("Stopping the server");
+
         Message = "Stopping";
 
         if (_process is not null)
         {
             try
             {
+                logger.LogInformation("Killing the server process");
+
                 _process.Exited -= OnExited;
                 _process.OutputDataReceived -= OnOutputDataReceived;
 
@@ -98,16 +109,24 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
 
                 _process.Kill();
             }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "An exception occurred while killing the server process");
+            }
             finally
             {
                 _process.Dispose();
                 _process = null;
+
+                logger.LogInformation("Killed the server process");
             }
         }
 
         Message = "Run";
 
         IsRunning = false;
+
+        logger.LogInformation("Stopped the server");
     }
 
     private async Task WriteAsync(string? input)

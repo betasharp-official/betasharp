@@ -1,6 +1,6 @@
-using BetaSharp.Entities;
+using BetaSharp.Server.Commands;
 
-namespace BetaSharp.Server.Commands;
+namespace BetaSharp.Server.Command;
 
 internal static class CommandCompletionProvider
 {

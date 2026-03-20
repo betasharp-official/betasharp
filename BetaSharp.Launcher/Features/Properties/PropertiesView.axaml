@@ -74,7 +74,7 @@
             </StackPanel>
         </ScrollViewer>
 
-        <Grid ColumnDefinitions="* Auto" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
+        <Grid ColumnDefinitions="* 0.35*" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
             <!-- ReSharper disable once Xaml.StyleClassNotFound -->
             <Button Content="Save" Classes="accent" Command="{CompiledBinding SaveCommand}" Grid.Column="0" />
 

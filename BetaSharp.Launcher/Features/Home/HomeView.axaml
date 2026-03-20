@@ -6,10 +6,12 @@
              x:Class="BetaSharp.Launcher.Features.Home.HomeView" x:DataType="local:HomeViewModel">
 
     <Grid RowDefinitions="Auto *" IsVisible="{CompiledBinding Session, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-        <Grid ColumnDefinitions="* Auto" Grid.Row="0">
+        <Grid ColumnDefinitions="* 0.35*" Grid.Row="0">
             <StackPanel Spacing="25" HorizontalAlignment="Stretch" Orientation="Horizontal" Grid.Row="0">
                 <Border Width="50" Height="50" ClipToBounds="True" CornerRadius="{StaticResource ControlCornerRadius}">
-                    <asyncImageLoader:AdvancedImage Source="{Binding Session.Face, FallbackValue='...'}" RenderOptions.BitmapInterpolationMode="None" Stretch="UniformToFill">
+                    <asyncImageLoader:AdvancedImage Source="{Binding Session.Face, FallbackValue='...'}" Stretch="UniformToFill"
+                                                    RenderOptions.BitmapInterpolationMode="None">
+
                         <asyncImageLoader:AdvancedImage.Styles>
                             <Style Selector="asyncImageLoader|AdvancedImage">
                                 <Setter Property="Transitions">
@@ -38,10 +40,10 @@
                 </StackPanel>
             </StackPanel>
 
-            <Button Content="Sign out" Command="{CompiledBinding SignOutCommand}" VerticalAlignment="Center" Grid.Column="1" />
+            <Button Content="Sign out" VerticalAlignment="Center" Command="{CompiledBinding SignOutCommand}" Grid.Column="1" />
         </Grid>
 
-        <Grid ColumnDefinitions="* Auto" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
+        <Grid ColumnDefinitions="* 0.35*" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
             <!-- ReSharper disable once Xaml.StyleClassNotFound -->
             <Button Content="Play" Classes="accent" Command="{CompiledBinding PlayCommand}" Grid.Column="0" />
 

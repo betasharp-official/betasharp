@@ -1,13 +1,21 @@
-namespace BetaSharp.Server.Commands;
+using BetaSharp.Server.Commands;
+using BetaSharp.Server.Internal;
+using Microsoft.Extensions.Logging;
+
+namespace BetaSharp.Server.Command;
 
 internal class ServerCommandHandler
 {
+    private static readonly ILogger<ServerCommandHandler> s_logger = Log.Instance.For<ServerCommandHandler>();
+
     private readonly BetaSharpServer server;
 
-    private delegate void CommandAction(BetaSharpServer server, string senderName, string[] args, CommandOutput output);
+    private delegate void CommandAction(BetaSharpServer server, string senderName, string[] args, ICommandOutput output);
 
-    private readonly Dictionary<string, CommandAction> commands = new();
-    private readonly List<(string usage, string description)> helpEntries = [];
+    [Obsolete]
+    private readonly Dictionary<string, CommandAction> _commandsAction = new();
+    private readonly Dictionary<string, ICommand> _commands = new();
+    private readonly HelpCommand _helpCommand = new();
 
     public ServerCommandHandler(BetaSharpServer server)
     {
@@ -16,10 +24,10 @@ internal class ServerCommandHandler
         RegisterAllCommands();
     }
 
-    public void ExecuteCommand(Command command)
+    public void ExecuteCommand(PendingCommand pendingCommand)
     {
-        string input = command.commandAndArgs;
-        CommandOutput output = command.output;
+        string input = pendingCommand.CommandAndArgs;
+        ICommandOutput output = pendingCommand.Output;
         string senderName = output.GetName();
 
         string[] parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -28,9 +36,29 @@ internal class ServerCommandHandler
         string commandName = parts[0].ToLower();
         string[] args = parts.Length > 1 ? parts[1..] : [];
 
-        if (commands.TryGetValue(commandName, out var action))
+        if (_commands.TryGetValue(commandName, out var command))
         {
-            action(server, senderName, args, output);
+            if (command.PermissionLevel == 0 || server is InternalServer || command.PermissionLevel <= pendingCommand.Output.GetPermissionLevel())
+            {
+                command.Execute(new ICommand.CommandContext(server, senderName, args, output));
+            }
+            else
+            {
+                s_logger.LogInformation($"{senderName} tried command: {input}");
+                output.SendMessage($"§cYou do not have permission to use this command.");
+            }
+        }
+        else if (_commandsAction.TryGetValue(commandName, out var action))
+        {
+            if (server is InternalServer || pendingCommand.Output.GetPermissionLevel() > 0)
+            {
+                action(server, senderName, args, output);
+            }
+            else
+            {
+                s_logger.LogInformation($"{senderName} tried command: {input}");
+                output.SendMessage("§cYou do not have permission to use this command.");
+            }
         }
         else
         {
@@ -40,12 +68,13 @@ internal class ServerCommandHandler
 
     private void RegisterAllCommands()
     {
+        Register(_helpCommand);
         Register(PlayerCommands.Kill, "kill", "kills yourself", "kill");
         Register(PlayerCommands.Heal, "heal [amount]", "heals yourself", "heal");
         Register(PlayerCommands.Clear, "clear", "clears your inventory", "clear");
         Register(PlayerCommands.Teleport, "tp <x> <y> <z> / <p1> <p2>", "teleport", "tp", "teleport");
         Register(PlayerCommands.MoveToDimension, "tpdim <id> [player]", "teleports to a dimension", "tpdim");
-        Register(DataCommands.Data, "data get ...", "gives yourself an item", "data");
+        Register(new DataCommands());
 
         Register(ItemCommands.Give, "give <item> [count]", "gives yourself an item", "give");
 
@@ -70,31 +99,28 @@ internal class ServerCommandHandler
         Register(AdminCommands.Kick, "kick <player>", "kicks a player", "kick");
         Register(AdminCommands.Whitelist, "whitelist <action> [player]", "manages the whitelist", "whitelist");
 
-        commands["save-off"] = (s, sender, a, o) => AdminCommands.SaveToggle(s, sender, disable: true);
-        commands["save-on"] = (s, sender, a, o) => AdminCommands.SaveToggle(s, sender, disable: false);
-        helpEntries.Add(("save-off / save-on", "toggles level saving"));
-
-        commands["help"] = (s, sender, a, o) => ShowHelp(o);
-        commands["?"] = (s, sender, a, o) => ShowHelp(o);
-        helpEntries.Insert(0, ("help / ?", "shows this message"));
+        _commandsAction["save-off"] = (s, sender, _, _) => AdminCommands.SaveToggle(s, sender, disable: true);
+        _commandsAction["save-on"] = (s, sender, _, _) => AdminCommands.SaveToggle(s, sender, disable: false);
+        _helpCommand.Add("save-off / save-on", "toggles level saving");
     }
 
+    [Obsolete]
     private void Register(CommandAction action, string usage, string description, params string[] names)
     {
         foreach (string name in names)
         {
-            commands[name] = action;
+            _commandsAction[name] = action;
         }
-        helpEntries.Add((usage, description));
+        _helpCommand.Add(usage, description);
     }
 
-    private void ShowHelp(CommandOutput output)
+    public void Register(ICommand command)
     {
-        output.SendMessage("Available commands:");
-        foreach (var (usage, description) in helpEntries)
+        foreach (string name in command.Names)
         {
-            output.SendMessage($"  {usage,-30} - {description}");
+            _commands[name] = command;
         }
+        _helpCommand.Add((command));
     }
 
     /// <summary>
@@ -102,6 +128,6 @@ internal class ServerCommandHandler
     /// </summary>
     public List<string> GetAvailableCommandNames()
     {
-        return commands.Keys.ToList();
+        return _commandsAction.Keys.ToList();
     }
 }

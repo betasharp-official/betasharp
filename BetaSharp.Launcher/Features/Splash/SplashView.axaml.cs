@@ -23,11 +23,12 @@ internal sealed partial class SplashView : UserControl
     {
         try
         {
+            base.OnAttachedToVisualTree(eventArgs);
             await _viewModel.InitializeCommand.ExecuteAsync(null);
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Unhandled exception occured while initializing");
+            _logger.LogError(exception, "An exception occurred in splash view on visual tree attach");
         }
     }
 }

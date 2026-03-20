@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Hosting;
 using BetaSharp.Launcher.Features.Sessions;

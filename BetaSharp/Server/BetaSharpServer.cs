@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using BetaSharp.Network.Packets.S2CPlay;
-using BetaSharp.Server.Commands;
+using BetaSharp.Server.Command;
 using BetaSharp.Server.Entities;
 using BetaSharp.Server.Internal;
 using BetaSharp.Server.Network;
@@ -16,7 +16,7 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Server;
 
-public abstract class BetaSharpServer : CommandOutput
+public abstract class BetaSharpServer : ICommandOutput
 {
     public Dictionary<string, int> GIVE_COMMANDS_COOLDOWNS = [];
     public ConnectionListener connections;
@@ -29,7 +29,7 @@ public abstract class BetaSharpServer : CommandOutput
     private int ticks;
     public string? progressMessage;
     public int progress;
-    private readonly Queue<Command> _pendingCommands = new();
+    private readonly Queue<PendingCommand> _pendingCommands = new();
     private readonly object _pendingCommandsLock = new();
     public EntityTracker[] entityTrackers = new EntityTracker[2];
     public bool onlineMode;
@@ -349,7 +349,7 @@ public abstract class BetaSharpServer : CommandOutput
             {
                 while (running)
                 {
-                    runPendingCommands();
+                    RunPendingCommands();
 
                     try
                     {
@@ -368,7 +368,7 @@ public abstract class BetaSharpServer : CommandOutput
 
             while (running)
             {
-                runPendingCommands();
+                RunPendingCommands();
 
                 try
                 {
@@ -454,7 +454,7 @@ public abstract class BetaSharpServer : CommandOutput
 
         try
         {
-            runPendingCommands();
+            RunPendingCommands();
         }
         catch (Exception e)
         {
@@ -462,19 +462,19 @@ public abstract class BetaSharpServer : CommandOutput
         }
     }
 
-    public void QueueCommands(string str, CommandOutput cmd)
+    public void QueueCommands(string str, ICommandOutput cmd)
     {
         lock (_pendingCommandsLock)
         {
-            _pendingCommands.Enqueue(new Command(str, cmd));
+            _pendingCommands.Enqueue(new PendingCommand(str, cmd));
         }
     }
 
-    private void runPendingCommands()
+    private void RunPendingCommands()
     {
         while (true)
         {
-            Command cmd;
+            PendingCommand cmd;
             lock (_pendingCommandsLock)
             {
                 if (_pendingCommands.Count == 0) break;
@@ -496,10 +496,8 @@ public abstract class BetaSharpServer : CommandOutput
         _logger.LogWarning(message);
     }
 
-    public string GetName()
-    {
-        return "CONSOLE";
-    }
+    public string GetName() => "CONSOLE";
+    public byte GetPermissionLevel() => 255;
 
     public ServerWorld getWorld(int dimensionId)
     {

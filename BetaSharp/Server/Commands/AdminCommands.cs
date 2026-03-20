@@ -1,4 +1,5 @@
 using BetaSharp.Entities;
+using BetaSharp.Server.Command;
 using BetaSharp.Server.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -8,12 +9,12 @@ internal class AdminCommands
 {
     private static readonly ILogger s_logger = Log.Instance.For(nameof(AdminCommands));
 
-    public static void List(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void List(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         output.SendMessage("Connected players: " + server.playerManager.getPlayerList());
     }
 
-    public static void Stop(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Stop(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
 
@@ -21,7 +22,7 @@ internal class AdminCommands
         server.Stop();
     }
 
-    public static void SaveAll(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void SaveAll(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         LogCommand(server, senderName, "Forcing save..");
         server.playerManager?.savePlayers();
@@ -45,7 +46,7 @@ internal class AdminCommands
         }
     }
 
-    public static void Op(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Op(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1) { output.SendMessage("Usage: op <player>"); return; }
@@ -56,7 +57,7 @@ internal class AdminCommands
         server.playerManager.messagePlayer(target, "§eYou are now op!");
     }
 
-    public static void Deop(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Deop(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1) { output.SendMessage("Usage: deop <player>"); return; }
@@ -67,7 +68,7 @@ internal class AdminCommands
         LogCommand(server, senderName, "De-opping " + target);
     }
 
-    public static void Ban(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Ban(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1) { output.SendMessage("Usage: ban <player>"); return; }
@@ -78,7 +79,7 @@ internal class AdminCommands
         server.playerManager.getPlayer(target)?.networkHandler.disconnect("Banned by admin");
     }
 
-    public static void Pardon(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Pardon(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1) { output.SendMessage("Usage: pardon <player>"); return; }
@@ -88,7 +89,7 @@ internal class AdminCommands
         LogCommand(server, senderName, "Pardoning " + target);
     }
 
-    public static void BanIp(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void BanIp(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1) { output.SendMessage("Usage: ban-ip <ip>"); return; }
@@ -98,7 +99,7 @@ internal class AdminCommands
         LogCommand(server, senderName, "Banning ip " + ip);
     }
 
-    public static void PardonIp(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void PardonIp(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1) { output.SendMessage("Usage: pardon-ip <ip>"); return; }
@@ -108,7 +109,7 @@ internal class AdminCommands
         LogCommand(server, senderName, "Pardoning ip " + ip);
     }
 
-    public static void Kick(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Kick(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1) { output.SendMessage("Usage: kick <player>"); return; }
@@ -127,7 +128,7 @@ internal class AdminCommands
         }
     }
 
-    public static void Whitelist(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Whitelist(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (IsInternalServer(server, output)) return;
         if (args.Length < 1)
@@ -173,7 +174,7 @@ internal class AdminCommands
         }
     }
 
-    private static bool IsInternalServer(BetaSharpServer server, CommandOutput output)
+    private static bool IsInternalServer(BetaSharpServer server, ICommandOutput output)
     {
         if (server is InternalServer)
         {
