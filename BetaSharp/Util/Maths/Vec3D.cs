@@ -55,51 +55,51 @@ public record struct Vec3D
         return new Vec3D(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
     }
 
-    public Vec3D? getIntermediateWithXValue(Vec3D var1, double var2)
+    public Vec3D? getIntermediateWithXValue(Vec3D endpoint, double targetX)
     {
-        double var4 = var1.x - x;
-        double var6 = var1.y - y;
-        double var8 = var1.z - z;
-        if (var4 * var4 < (double)1.0E-7F)
+        double dx = endpoint.x - x;
+        double dy = endpoint.y - y;
+        double dz = endpoint.z - z;
+        if (dx * dx < (double)1.0E-7F)
         {
             return null;
         }
         else
         {
-            double var10 = (var2 - x) / var4;
-            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3D(x + var4 * var10, y + var6 * var10, z + var8 * var10) : null;
+            double t = (targetX - x) / dx;
+            return t >= 0.0D && t <= 1.0D ? new Vec3D(x + dx * t, y + dy * t, z + dz * t) : null;
         }
     }
 
-    public Vec3D? getIntermediateWithYValue(Vec3D var1, double var2)
+    public Vec3D? getIntermediateWithYValue(Vec3D endpoint, double targetY)
     {
-        double var4 = var1.x - x;
-        double var6 = var1.y - y;
-        double var8 = var1.z - z;
-        if (var6 * var6 < (double)1.0E-7F)
+        double dx = endpoint.x - x;
+        double dy = endpoint.y - y;
+        double dz = endpoint.z - z;
+        if (dy * dy < (double)1.0E-7F)
         {
             return null;
         }
         else
         {
-            double var10 = (var2 - y) / var6;
-            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3D(x + var4 * var10, y + var6 * var10, z + var8 * var10) : null;
+            double t = (targetY - y) / dy;
+            return t >= 0.0D && t <= 1.0D ? new Vec3D(x + dx * t, y + dy * t, z + dz * t) : null;
         }
     }
 
-    public Vec3D? getIntermediateWithZValue(Vec3D var1, double var2)
+    public Vec3D? getIntermediateWithZValue(Vec3D endpoint, double targetZ)
     {
-        double var4 = var1.x - x;
-        double var6 = var1.y - y;
-        double var8 = var1.z - z;
-        if (var8 * var8 < (double)1.0E-7F)
+        double dx = endpoint.x - x;
+        double dy = endpoint.y - y;
+        double dz = endpoint.z - z;
+        if (dz * dz < (double)1.0E-7F)
         {
             return null;
         }
         else
         {
-            double var10 = (var2 - z) / var8;
-            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3D(x + var4 * var10, y + var6 * var10, z + var8 * var10) : null;
+            double t = (targetZ - z) / dz;
+            return t >= 0.0D && t <= 1.0D ? new Vec3D(x + dx * t, y + dy * t, z + dz * t) : null;
         }
     }
 

@@ -345,11 +345,11 @@ public partial class BetaSharp
 
     private void loadScreen()
     {
-        ScaledResolution var1 = new(options, displayWidth, displayHeight);
+        ScaledResolution scaledRes = new(options, displayWidth, displayHeight);
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
         GLManager.GL.MatrixMode(GLEnum.Projection);
         GLManager.GL.LoadIdentity();
-        GLManager.GL.Ortho(0.0D, var1.ScaledWidthDouble, var1.ScaledHeightDouble, 0.0D, 1000.0D, 3000.0D);
+        GLManager.GL.Ortho(0.0D, scaledRes.ScaledWidthDouble, scaledRes.ScaledHeightDouble, 0.0D, 1000.0D, 3000.0D);
         GLManager.GL.MatrixMode(GLEnum.Modelview);
         GLManager.GL.LoadIdentity();
         GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
@@ -368,11 +368,11 @@ public partial class BetaSharp
         tessellator.addVertexWithUV((double)displayWidth, 0.0D, 0.0D, 0.0D, 0.0D);
         tessellator.addVertexWithUV(0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         tessellator.draw();
-        short var3 = 256;
-        short var4 = 256;
+        short logoWidth = 256;
+        short logoHeight = 256;
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         tessellator.setColorOpaque_I(0xFFFFFF);
-        drawTextureRegion((var1.ScaledWidth - var3) / 2, (var1.ScaledHeight - var4) / 2, 0, 0, var3, var4);
+        drawTextureRegion((scaledRes.ScaledWidth - logoWidth) / 2, (scaledRes.ScaledHeight - logoHeight) / 2, 0, 0, logoWidth, logoHeight);
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.Fog);
         GLManager.GL.Enable(GLEnum.AlphaTest);

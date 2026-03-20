@@ -57,10 +57,10 @@ public class GuiLevelLoading(string worldDir, WorldSettings settings) : GuiScree
         }
     }
 
-    public override void Render(int var1, int var2, float var3)
+    public override void Render(int mouseX, int mouseY, float partialTicks)
     {
         DrawDefaultBackground();
-        TranslationStorage var4 = TranslationStorage.Instance;
+        TranslationStorage translationStorage = TranslationStorage.Instance;
 
         string title = "Loading level";
         string progressMsg = "";
@@ -75,6 +75,6 @@ public class GuiLevelLoading(string worldDir, WorldSettings settings) : GuiScree
         DrawCenteredString(FontRenderer, title, Width / 2, Height / 2 - 50, Color.White);
         DrawCenteredString(FontRenderer, progressMsg + " (" + progress + "%)", Width / 2, Height / 2 - 10, Color.White);
 
-        base.Render(var1, var2, var3);
+        base.Render(mouseX, mouseY, partialTicks);
     }
 }

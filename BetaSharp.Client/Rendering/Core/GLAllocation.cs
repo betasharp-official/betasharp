@@ -5,30 +5,30 @@ public class GLAllocation
     private static readonly List<int> displayLists = new();
     private static readonly List<int> textureNames = new();
     private static readonly object l = new();
-    public static int generateDisplayLists(int var0)
+    public static int generateDisplayLists(int count)
     {
         lock (l)
         {
-            int var1 = (int)GLManager.GL.GenLists((uint)var0);
-            displayLists.Add(var1);
-            displayLists.Add(var0);
-            return var1;
+            int displayListId = (int)GLManager.GL.GenLists((uint)count);
+            displayLists.Add(displayListId);
+            displayLists.Add(count);
+            return displayListId;
         }
     }
 
-    public static void generateTextureNames(Span<int> var0)
+    public static void generateTextureNames(Span<int> textureIds)
     {
         lock (l)
         {
-            uint[] textureIds = new uint[var0.Length];
-            GLManager.GL.GenTextures(textureIds);
+            uint[] textureUIds = new uint[textureIds.Length];
+            GLManager.GL.GenTextures(textureUIds);
 
-            int[] intIds = Array.ConvertAll(textureIds, id => (int)id);
-            var0.CopyTo(intIds);
+            int[] intIds = Array.ConvertAll(textureUIds, id => (int)id);
+            textureIds.CopyTo(intIds);
 
-            for (int var1 = 0; var1 < var0.Length; ++var1)
+            for (int i = 0; i < textureIds.Length; ++i)
             {
-                textureNames.Add(var0[var1]);
+                textureNames.Add(textureIds[i]);
             }
         }
     }
@@ -44,16 +44,16 @@ public class GLAllocation
         }
     }
 
-    public static void deleteBufferARB(int var0)
+    public static void deleteBufferARB(int displayListIdToDelete)
     {
         lock (l)
         {
-            int var1 = displayLists.IndexOf(var0);
-            int list = displayLists[var1];
-            int range = displayLists[var1 + 1];
+            int index = displayLists.IndexOf(displayListIdToDelete);
+            int list = displayLists[index];
+            int range = displayLists[index + 1];
             GLManager.GL.DeleteLists((uint)list, (uint)range);
-            displayLists.RemoveAt(var1);
-            displayLists.RemoveAt(var1);
+            displayLists.RemoveAt(index);
+            displayLists.RemoveAt(index);
         }
     }
 
@@ -61,10 +61,10 @@ public class GLAllocation
     {
         lock (l)
         {
-            for (int var0 = 0; var0 < displayLists.Count; var0 += 2)
+            for (int i = 0; i < displayLists.Count; i += 2)
             {
-                int list = displayLists[var0];
-                int range = displayLists[var0 + 1];
+                int list = displayLists[i];
+                int range = displayLists[i + 1];
                 GLManager.GL.DeleteLists((uint)list, (uint)range);
             }
 
@@ -87,8 +87,8 @@ public class GLAllocation
     {
         lock (l)
         {
-            Memory<byte> var1 = new byte[capacity];
-            return var1;
+            Memory<byte> buffer = new byte[capacity];
+            return buffer;
         }
     }
 

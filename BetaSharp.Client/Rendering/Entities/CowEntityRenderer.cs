@@ -10,14 +10,14 @@ public class CowEntityRenderer : LivingEntityRenderer
     {
     }
 
-    public void renderCow(EntityCow var1, double var2, double var4, double var6, float var8, float var9)
+    public void renderCow(EntityCow entity, double x, double y, double z, float yaw, float tickDelta)
     {
-        base.doRenderLiving(var1, var2, var4, var6, var8, var9);
+        base.doRenderLiving(entity, x, y, z, yaw, tickDelta);
     }
 
-    public override void doRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
+    public override void doRenderLiving(EntityLiving entity, double x, double y, double z, float yaw, float tickDelta)
     {
-        renderCow((EntityCow)var1, var2, var4, var6, var8, var9);
+        renderCow((EntityCow)entity, x, y, z, yaw, tickDelta);
     }
 
     public override void render(Entity target, double x, double y, double z, float yaw, float tickDelta)

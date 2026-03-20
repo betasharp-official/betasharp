@@ -5,23 +5,23 @@ namespace BetaSharp;
 
 public interface IWorldAccess
 {
-    void blockUpdate(int var1, int var2, int var3);
+    void blockUpdate(int x, int y, int z);
 
-    void setBlocksDirty(int var1, int var2, int var3, int var4, int var5, int var6);
+    void setBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ);
 
-    void playSound(string var1, double var2, double var4, double var6, float var8, float var9);
+    void playSound(string soundName, double x, double y, double z, float volume, float pitch);
 
-    void spawnParticle(string var1, double var2, double var4, double var6, double var8, double var10, double var12);
+    void spawnParticle(string particleName, double particleX, double particleY, double particleZ, double velocityX, double velocityY, double velocityZ);
 
-    void notifyEntityAdded(Entity var1);
+    void notifyEntityAdded(Entity entity);
 
-    void notifyEntityRemoved(Entity var1);
+    void notifyEntityRemoved(Entity entity);
 
     void notifyAmbientDarknessChanged();
 
-    void playStreaming(string var1, int var2, int var3, int var4);
+    void playStreaming(string soundName, int x, int y, int z);
 
-    void updateBlockEntity(int var1, int var2, int var3, BlockEntity var4);
+    void updateBlockEntity(int x, int y, int z, BlockEntity blockEntity);
 
-    void worldEvent(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6);
+    void worldEvent(EntityPlayer player, int eventType, int x, int y, int z, int data);
 }

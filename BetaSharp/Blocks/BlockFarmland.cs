@@ -73,11 +73,11 @@ internal class BlockFarmland : Block
     {
         sbyte cropRadius = 0;
 
-        for (int var6 = x - cropRadius; var6 <= x + cropRadius; ++var6)
+        for (int cx = x - cropRadius; cx <= x + cropRadius; ++cx)
         {
-            for (int var7 = z - cropRadius; var7 <= z + cropRadius; ++var7)
+            for (int cz = z - cropRadius; cz <= z + cropRadius; ++cz)
             {
-                if (world.getBlockId(var6, y + 1, var7) == Block.Wheat.id)
+                if (world.getBlockId(cx, y + 1, cz) == Block.Wheat.id)
                 {
                     return true;
                 }

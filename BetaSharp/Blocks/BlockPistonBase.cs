@@ -86,23 +86,23 @@ public class BlockPistonBase : Block
 
     private void checkExtended(World world, int x, int y, int z)
     {
-        int var5 = world.getBlockMeta(x, y, z);
-        int var6 = getFacing(var5);
-        bool var7 = shouldExtend(world, x, y, z, var6);
-        if (var5 != 7)
+        int blockMeta = world.getBlockMeta(x, y, z);
+        int facingDir = getFacing(blockMeta);
+        bool shouldBeExtended = this.shouldExtend(world, x, y, z, facingDir);
+        if (blockMeta != 7)
         {
-            if (var7 && !isExtended(var5))
+            if (shouldBeExtended && !isExtended(blockMeta))
             {
-                if (canExtend(world, x, y, z, var6))
+                if (canExtend(world, x, y, z, facingDir))
                 {
-                    world.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, var6 | 8);
-                    world.playNoteBlockActionAt(x, y, z, 0, var6);
+                    world.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, facingDir | 8);
+                    world.playNoteBlockActionAt(x, y, z, 0, facingDir);
                 }
             }
-            else if (!var7 && isExtended(var5))
+            else if (!shouldBeExtended && isExtended(blockMeta))
             {
-                world.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, var6);
-                world.playNoteBlockActionAt(x, y, z, 1, var6);
+                world.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, facingDir);
+                world.playNoteBlockActionAt(x, y, z, 1, facingDir);
             }
         }
     }
@@ -325,39 +325,39 @@ public class BlockPistonBase : Block
 
     private static bool canExtend(World world, int x, int y, int z, int dir)
     {
-        int var5 = x + PistonConstants.HEAD_OFFSET_X[dir];
-        int var6 = y + PistonConstants.HEAD_OFFSET_Y[dir];
-        int var7 = z + PistonConstants.HEAD_OFFSET_Z[dir];
-        int var8 = 0;
+        int checkX = x + PistonConstants.HEAD_OFFSET_X[dir];
+        int checkY = y + PistonConstants.HEAD_OFFSET_Y[dir];
+        int checkZ = z + PistonConstants.HEAD_OFFSET_Z[dir];
+        int blocksPushed = 0;
 
         while (true)
         {
-            if (var8 < 13)
+            if (blocksPushed < 13)
             {
-                if (var6 <= 0 || var6 >= 127)
+                if (checkY <= 0 || checkY >= 127)
                 {
                     return false;
                 }
 
-                int var9 = world.getBlockId(var5, var6, var7);
-                if (var9 != 0)
+                int blockId = world.getBlockId(checkX, checkY, checkZ);
+                if (blockId != 0)
                 {
-                    if (!canMoveBlock(var9, world, var5, var6, var7, true))
+                    if (!canMoveBlock(blockId, world, checkX, checkY, checkZ, true))
                     {
                         return false;
                     }
 
-                    if (Block.Blocks[var9].getPistonBehavior() != 1)
+                    if (Block.Blocks[blockId].getPistonBehavior() != 1)
                     {
-                        if (var8 == 12)
+                        if (blocksPushed == 12)
                         {
                             return false;
                         }
 
-                        var5 += PistonConstants.HEAD_OFFSET_X[dir];
-                        var6 += PistonConstants.HEAD_OFFSET_Y[dir];
-                        var7 += PistonConstants.HEAD_OFFSET_Z[dir];
-                        ++var8;
+                        checkX += PistonConstants.HEAD_OFFSET_X[dir];
+                        checkY += PistonConstants.HEAD_OFFSET_Y[dir];
+                        checkZ += PistonConstants.HEAD_OFFSET_Z[dir];
+                        ++blocksPushed;
                         continue;
                     }
                 }
@@ -369,69 +369,69 @@ public class BlockPistonBase : Block
 
     private bool push(World world, int x, int y, int z, int dir)
     {
-        int var6 = x + PistonConstants.HEAD_OFFSET_X[dir];
-        int var7 = y + PistonConstants.HEAD_OFFSET_Y[dir];
-        int var8 = z + PistonConstants.HEAD_OFFSET_Z[dir];
-        int var9 = 0;
+        int currentX = x + PistonConstants.HEAD_OFFSET_X[dir];
+        int currentY = y + PistonConstants.HEAD_OFFSET_Y[dir];
+        int currentZ = z + PistonConstants.HEAD_OFFSET_Z[dir];
+        int blocksInPath = 0;
 
         while (true)
         {
-            int var10;
-            if (var9 < 13)
+            int neighborBlockId;
+            if (blocksInPath < 13)
             {
-                if (var7 <= 0 || var7 >= 127)
+                if (currentY <= 0 || currentY >= 127)
                 {
                     return false;
                 }
 
-                var10 = world.getBlockId(var6, var7, var8);
-                if (var10 != 0)
+                neighborBlockId = world.getBlockId(currentX, currentY, currentZ);
+                if (neighborBlockId != 0)
                 {
-                    if (!canMoveBlock(var10, world, var6, var7, var8, true))
+                    if (!canMoveBlock(neighborBlockId, world, currentX, currentY, currentZ, true))
                     {
                         return false;
                     }
 
-                    if (Block.Blocks[var10].getPistonBehavior() != 1)
+                    if (Block.Blocks[neighborBlockId].getPistonBehavior() != 1)
                     {
-                        if (var9 == 12)
+                        if (blocksInPath == 12)
                         {
                             return false;
                         }
 
-                        var6 += PistonConstants.HEAD_OFFSET_X[dir];
-                        var7 += PistonConstants.HEAD_OFFSET_Y[dir];
-                        var8 += PistonConstants.HEAD_OFFSET_Z[dir];
-                        ++var9;
+                        currentX += PistonConstants.HEAD_OFFSET_X[dir];
+                        currentY += PistonConstants.HEAD_OFFSET_Y[dir];
+                        currentZ += PistonConstants.HEAD_OFFSET_Z[dir];
+                        ++blocksInPath;
                         continue;
                     }
 
-                    Block.Blocks[var10].dropStacks(world, var6, var7, var8, world.getBlockMeta(var6, var7, var8));
-                    world.setBlock(var6, var7, var8, 0);
+                    Block.Blocks[neighborBlockId].dropStacks(world, currentX, currentY, currentZ, world.getBlockMeta(currentX, currentY, currentZ));
+                    world.setBlock(currentX, currentY, currentZ, 0);
                 }
             }
 
-            while (var6 != x || var7 != y || var8 != z)
+            while (currentX != x || currentY != y || currentZ != z)
             {
-                var9 = var6 - PistonConstants.HEAD_OFFSET_X[dir];
-                var10 = var7 - PistonConstants.HEAD_OFFSET_Y[dir];
-                int var11 = var8 - PistonConstants.HEAD_OFFSET_Z[dir];
-                int var12 = world.getBlockId(var9, var10, var11);
-                int var13 = world.getBlockMeta(var9, var10, var11);
-                if (var12 == id && var9 == x && var10 == y && var11 == z)
+                int prevX = currentX - PistonConstants.HEAD_OFFSET_X[dir];
+                int prevY = currentY - PistonConstants.HEAD_OFFSET_Y[dir];
+                int prevZ = currentZ - PistonConstants.HEAD_OFFSET_Z[dir];
+                int prevBlockId = world.getBlockId(prevX, prevY, prevZ);
+                int prevBlockMeta = world.getBlockMeta(prevX, prevY, prevZ);
+                if (prevBlockId == id && prevX == x && prevY == y && prevZ == z)
                 {
-                    world.SetBlockWithoutNotifyingNeighbors(var6, var7, var8, MovingPiston.id, dir | (sticky ? 8 : 0));
-                    world.setBlockEntity(var6, var7, var8, BlockPistonMoving.createPistonBlockEntity(PistonHead.id, dir | (sticky ? 8 : 0), dir, true, false));
+                    world.SetBlockWithoutNotifyingNeighbors(currentX, currentY, currentZ, MovingPiston.id, dir | (sticky ? 8 : 0));
+                    world.setBlockEntity(currentX, currentY, currentZ, BlockPistonMoving.createPistonBlockEntity(PistonHead.id, dir | (sticky ? 8 : 0), dir, true, false));
                 }
                 else
                 {
-                    world.SetBlockWithoutNotifyingNeighbors(var6, var7, var8, MovingPiston.id, var13);
-                    world.setBlockEntity(var6, var7, var8, BlockPistonMoving.createPistonBlockEntity(var12, var13, dir, true, false));
+                    world.SetBlockWithoutNotifyingNeighbors(currentX, currentY, currentZ, MovingPiston.id, prevBlockMeta);
+                    world.setBlockEntity(currentX, currentY, currentZ, BlockPistonMoving.createPistonBlockEntity(prevBlockId, prevBlockMeta, dir, true, false));
                 }
 
-                var6 = var9;
-                var7 = var10;
-                var8 = var11;
+                currentX = prevX;
+                currentY = prevY;
+                currentZ = prevZ;
             }
 
             return true;

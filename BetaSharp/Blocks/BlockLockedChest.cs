@@ -24,32 +24,32 @@ internal class BlockLockedChest : Block
         }
         else
         {
-            int var6 = iBlockAccess.getBlockId(x, y, z - 1);
-            int var7 = iBlockAccess.getBlockId(x, y, z + 1);
-            int var8 = iBlockAccess.getBlockId(x - 1, y, z);
-            int var9 = iBlockAccess.getBlockId(x + 1, y, z);
-            sbyte var10 = 3;
-            if (Block.BlocksOpaque[var6] && !Block.BlocksOpaque[var7])
+            int blockIdNorth = iBlockAccess.getBlockId(x, y, z - 1);
+            int blockIdSouth = iBlockAccess.getBlockId(x, y, z + 1);
+            int blockIdWest = iBlockAccess.getBlockId(x - 1, y, z);
+            int blockIdEast = iBlockAccess.getBlockId(x + 1, y, z);
+            sbyte orientationMetadata = 3;
+            if (Block.BlocksOpaque[blockIdNorth] && !Block.BlocksOpaque[blockIdSouth])
             {
-                var10 = 3;
+                orientationMetadata = 3;
             }
 
-            if (Block.BlocksOpaque[var7] && !Block.BlocksOpaque[var6])
+            if (Block.BlocksOpaque[blockIdSouth] && !Block.BlocksOpaque[blockIdNorth])
             {
-                var10 = 2;
+                orientationMetadata = 2;
             }
 
-            if (Block.BlocksOpaque[var8] && !Block.BlocksOpaque[var9])
+            if (Block.BlocksOpaque[blockIdWest] && !Block.BlocksOpaque[blockIdEast])
             {
-                var10 = 5;
+                orientationMetadata = 5;
             }
 
-            if (Block.BlocksOpaque[var9] && !Block.BlocksOpaque[var8])
+            if (Block.BlocksOpaque[blockIdEast] && !Block.BlocksOpaque[blockIdWest])
             {
-                var10 = 4;
+                orientationMetadata = 4;
             }
 
-            return side == var10 ? textureId + 1 : textureId;
+            return side == orientationMetadata ? textureId + 1 : textureId;
         }
     }
 

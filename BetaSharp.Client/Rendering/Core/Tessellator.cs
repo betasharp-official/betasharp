@@ -148,10 +148,10 @@ public class Tessellator
     private int scratchBufferIndex;
     private TesselatorCaptureVertexFormat vertexFormat;
 
-    private unsafe Tessellator(int var1)
+    private unsafe Tessellator(int size)
     {
-        bufferSize = var1;
-        rawBuffer = new int[var1];
+        bufferSize = size;
+        rawBuffer = new int[size];
         _vboIds = new uint[vboCount];
         GLManager.GL.GenBuffers((uint)vboCount, _vboIds);
     }
@@ -318,7 +318,7 @@ public class Tessellator
         startDrawing(7);
     }
 
-    public void startDrawing(int var1)
+    public void startDrawing(int mode)
     {
         if (IsDrawing)
         {
@@ -328,7 +328,7 @@ public class Tessellator
         {
             IsDrawing = true;
             reset();
-            drawMode = var1;
+            drawMode = mode;
             hasNormals = false;
             hasColor = false;
             hasTexture = false;
@@ -517,23 +517,23 @@ public class Tessellator
             ++addedVertices;
             if (drawMode == 7 && convertQuadsToTriangles && addedVertices % 4 == 0)
             {
-                for (int var7 = 0; var7 < 2; ++var7)
+                for (int i = 0; i < 2; ++i)
                 {
-                    int var8 = 8 * (3 - var7);
+                    int vertexOffset = 8 * (3 - i);
                     if (hasTexture)
                     {
-                        rawBuffer[rawBufferIndex + 3] = rawBuffer[rawBufferIndex - var8 + 3];
-                        rawBuffer[rawBufferIndex + 4] = rawBuffer[rawBufferIndex - var8 + 4];
+                        rawBuffer[rawBufferIndex + 3] = rawBuffer[rawBufferIndex - vertexOffset + 3];
+                        rawBuffer[rawBufferIndex + 4] = rawBuffer[rawBufferIndex - vertexOffset + 4];
                     }
 
                     if (hasColor)
                     {
-                        rawBuffer[rawBufferIndex + 5] = rawBuffer[rawBufferIndex - var8 + 5];
+                        rawBuffer[rawBufferIndex + 5] = rawBuffer[rawBufferIndex - vertexOffset + 5];
                     }
 
-                    rawBuffer[rawBufferIndex + 0] = rawBuffer[rawBufferIndex - var8 + 0];
-                    rawBuffer[rawBufferIndex + 1] = rawBuffer[rawBufferIndex - var8 + 1];
-                    rawBuffer[rawBufferIndex + 2] = rawBuffer[rawBufferIndex - var8 + 2];
+                    rawBuffer[rawBufferIndex + 0] = rawBuffer[rawBufferIndex - vertexOffset + 0];
+                    rawBuffer[rawBufferIndex + 1] = rawBuffer[rawBufferIndex - vertexOffset + 1];
+                    rawBuffer[rawBufferIndex + 2] = rawBuffer[rawBufferIndex - vertexOffset + 2];
                     ++vertexCount;
                     rawBufferIndex += 8;
                 }
@@ -627,13 +627,13 @@ public class Tessellator
         isColorDisabled = true;
     }
 
-    public void setNormal(float var1, float var2, float var3)
+    public void setNormal(float nx, float ny, float nz)
     {
         hasNormals = true;
-        byte var4 = (byte)(int)(var1 * 128.0F);
-        byte var5 = (byte)(int)(var2 * 127.0F);
-        byte var6 = (byte)(int)(var3 * 127.0F);
-        normal = var4 | var5 << 8 | var6 << 16;
+        byte xByte = (byte)(int)(nx * 128.0F);
+        byte yByte = (byte)(int)(ny * 127.0F);
+        byte zByte = (byte)(int)(nz * 127.0F);
+        normal = xByte | yByte << 8 | zByte << 16;
     }
 
     public void setSkyLight(byte value)
@@ -655,17 +655,17 @@ public class Tessellator
         hasLight = true;
     }
 
-    public void setTranslationD(double var1, double var3, double var5)
+    public void setTranslationD(double x, double y, double z)
     {
-        xOffset = var1;
-        yOffset = var3;
-        zOffset = var5;
+        xOffset = x;
+        yOffset = y;
+        zOffset = z;
     }
 
-    public void setTranslationF(float var1, float var2, float var3)
+    public void setTranslationF(float x, float y, float z)
     {
-        xOffset += var1;
-        yOffset += var2;
-        zOffset += var3;
+        xOffset += x;
+        yOffset += y;
+        zOffset += z;
     }
 }

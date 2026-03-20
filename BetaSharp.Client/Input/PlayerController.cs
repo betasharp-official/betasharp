@@ -11,37 +11,37 @@ public class PlayerController
     protected readonly BetaSharp Game;
     public bool IsTestPlayer = false;
 
-    public PlayerController(BetaSharp var1)
+    public PlayerController(BetaSharp game)
     {
-        Game = var1;
+        Game = game;
     }
 
-    public virtual void func_717_a(World var1)
+    public virtual void func_717_a(World world)
     {
     }
 
-    public virtual void clickBlock(int var1, int var2, int var3, int var4)
+    public virtual void clickBlock(int x, int y, int z, int side)
     {
-        Game.world.extinguishFire(Game.player, var1, var2, var3, var4);
-        sendBlockRemoved(var1, var2, var3, var4);
+        Game.world.extinguishFire(Game.player, x, y, z, side);
+        sendBlockRemoved(x, y, z, side);
     }
 
-    public virtual bool sendBlockRemoved(int var1, int var2, int var3, int var4)
+    public virtual bool sendBlockRemoved(int x, int y, int z, int side)
     {
-        World var5 = Game.world;
-        Block var6 = Block.Blocks[var5.getBlockId(var1, var2, var3)];
-        var5.worldEvent(2001, var1, var2, var3, var6.id + var5.getBlockMeta(var1, var2, var3) * 256);
-        int var7 = var5.getBlockMeta(var1, var2, var3);
-        bool var8 = var5.setBlock(var1, var2, var3, 0);
-        if (var6 != null && var8)
+        World world = Game.world;
+        Block block = Block.Blocks[world.getBlockId(x, y, z)];
+        world.worldEvent(2001, x, y, z, block.id + world.getBlockMeta(x, y, z) * 256);
+        int blockMetadata = world.getBlockMeta(x, y, z);
+        bool blockRemovalSuccess = world.setBlock(x, y, z, 0);
+        if (block != null && blockRemovalSuccess)
         {
-            var6.onMetadataChange(var5, var1, var2, var3, var7);
+            block.onMetadataChange(world, x, y, z, blockMetadata);
         }
 
-        return var8;
+        return blockRemovalSuccess;
     }
 
-    public virtual void sendBlockRemoving(int var1, int var2, int var3, int var4)
+    public virtual void sendBlockRemoving(int x, int y, int z, int side)
     {
     }
 
@@ -49,7 +49,7 @@ public class PlayerController
     {
     }
 
-    public virtual void setPartialTime(float var1)
+    public virtual void setPartialTime(float partialTime)
     {
     }
 
@@ -58,16 +58,16 @@ public class PlayerController
         return 5.0F;
     }
 
-    public virtual bool sendUseItem(EntityPlayer var1, World var2, ItemStack var3)
+    public virtual bool sendUseItem(EntityPlayer player, World world, ItemStack itemStack)
     {
-        int var4 = var3.count;
-        ItemStack var5 = var3.use(var2, var1);
-        if (var5 != var3 || var5 != null && var5.count != var4)
+        int itemStackCount = itemStack.count;
+        ItemStack resultItemStack = itemStack.use(world, player);
+        if (resultItemStack != itemStack || resultItemStack != null && resultItemStack.count != itemStackCount)
         {
-            var1.inventory.main[var1.inventory.selectedSlot] = var5;
-            if (var5.count == 0)
+            player.inventory.main[player.inventory.selectedSlot] = resultItemStack;
+            if (resultItemStack.count == 0)
             {
-                var1.inventory.main[var1.inventory.selectedSlot] = null;
+                player.inventory.main[player.inventory.selectedSlot] = null;
             }
 
             return true;
@@ -78,7 +78,7 @@ public class PlayerController
         }
     }
 
-    public virtual void flipPlayer(EntityPlayer var1)
+    public virtual void flipPlayer(EntityPlayer player)
     {
     }
 
@@ -91,39 +91,39 @@ public class PlayerController
         return true;
     }
 
-    public virtual void fillHotbar(EntityPlayer var1)
+    public virtual void fillHotbar(EntityPlayer player)
     {
     }
 
-    public virtual bool sendPlaceBlock(EntityPlayer var1, World var2, ItemStack var3, int var4, int var5, int var6, int var7)
+    public virtual bool sendPlaceBlock(EntityPlayer player, World world, ItemStack itemStack, int x, int y, int z, int side)
     {
-        int var8 = var2.getBlockId(var4, var5, var6);
-        return var8 > 0 && Block.Blocks[var8].onUse(var2, var4, var5, var6, var1) ? true : (var3 == null ? false : var3.useOnBlock(var1, var2, var4, var5, var6, var7));
+        int blockId = world.getBlockId(x, y, z);
+        return blockId > 0 && Block.Blocks[blockId].onUse(world, x, y, z, player) ? true : (itemStack == null ? false : itemStack.useOnBlock(player, world, x, y, z, side));
     }
 
-    public virtual EntityPlayer createPlayer(World var1)
+    public virtual EntityPlayer createPlayer(World world)
     {
-        return new ClientPlayerEntity(Game, var1, Game.session, var1.dimension.Id);
+        return new ClientPlayerEntity(Game, world, Game.session, world.dimension.Id);
     }
 
-    public virtual void interactWithEntity(EntityPlayer var1, Entity var2)
+    public virtual void interactWithEntity(EntityPlayer player, Entity entity)
     {
-        var1.interact(var2);
+        player.interact(entity);
     }
 
-    public virtual void attackEntity(EntityPlayer var1, Entity var2)
+    public virtual void attackEntity(EntityPlayer player, Entity entity)
     {
-        var1.attack(var2);
+        player.attack(entity);
     }
 
-    public virtual ItemStack func_27174_a(int var1, int var2, int var3, bool var4, EntityPlayer var5)
+    public virtual ItemStack func_27174_a(int windowId, int slotId, int mouseButton, bool shiftClick, EntityPlayer player)
     {
-        return var5.currentScreenHandler.onSlotClick(var2, var3, var4, var5);
+        return player.currentScreenHandler.onSlotClick(slotId, mouseButton, shiftClick, player);
     }
 
-    public virtual void func_20086_a(int var1, EntityPlayer var2)
+    public virtual void func_20086_a(int windowId, EntityPlayer player)
     {
-        var2.currentScreenHandler.onClosed(var2);
-        var2.currentScreenHandler = var2.playerScreenHandler;
+        player.currentScreenHandler.onClosed(player);
+        player.currentScreenHandler = player.playerScreenHandler;
     }
 }

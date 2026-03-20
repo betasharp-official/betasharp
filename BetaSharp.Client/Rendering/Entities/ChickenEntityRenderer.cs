@@ -11,26 +11,26 @@ public class ChickenEntityRenderer : LivingEntityRenderer
     {
     }
 
-    public void renderChicken(EntityChicken var1, double var2, double var4, double var6, float var8, float var9)
+    public void renderChicken(EntityChicken entity, double x, double y, double z, float yaw, float tickDelta)
     {
-        base.doRenderLiving(var1, var2, var4, var6, var8, var9);
+        base.doRenderLiving(entity, x, y, z, yaw, tickDelta);
     }
 
-    protected float getWingRotation(EntityChicken var1, float var2)
+    protected float getWingRotation(EntityChicken entity, float partialTicks)
     {
-        float var3 = var1.field_756_e + (var1.field_752_b - var1.field_756_e) * var2;
-        float var4 = var1.field_757_d + (var1.destPos - var1.field_757_d) * var2;
-        return (MathHelper.Sin(var3) + 1.0F) * var4;
+        float wingPhase = entity.field_756_e + (entity.field_752_b - entity.field_756_e) * partialTicks;
+        float wingAmplitude = entity.field_757_d + (entity.destPos - entity.field_757_d) * partialTicks;
+        return (MathHelper.Sin(wingPhase) + 1.0F) * wingAmplitude;
     }
 
-    protected override float func_170_d(EntityLiving var1, float var2)
+    protected override float func_170_d(EntityLiving entity, float partialTicks)
     {
-        return getWingRotation((EntityChicken)var1, var2);
+        return getWingRotation((EntityChicken)entity, partialTicks);
     }
 
-    public override void doRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
+    public override void doRenderLiving(EntityLiving entity, double x, double y, double z, float yaw, float tickDelta)
     {
-        renderChicken((EntityChicken)var1, var2, var4, var6, var8, var9);
+        renderChicken((EntityChicken)entity, x, y, z, yaw, tickDelta);
     }
 
     public override void render(Entity target, double x, double y, double z, float yaw, float tickDelta)

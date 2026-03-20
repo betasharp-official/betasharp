@@ -113,7 +113,7 @@ public class GuiScreen : Gui
         }
     }
 
-    protected virtual void ActionPerformed(GuiButton var1) { }
+    protected virtual void ActionPerformed(GuiButton button) { }
 
     public void SetWorldAndResolution(BetaSharp game, int width, int height)
     {
@@ -265,7 +265,7 @@ public class GuiScreen : Gui
         DrawWorldBackground(0);
     }
 
-    public void DrawWorldBackground(int var1)
+    public void DrawWorldBackground(int yOffset)
     {
         if (Game.world != null)
         {
@@ -273,11 +273,11 @@ public class GuiScreen : Gui
         }
         else
         {
-            DrawBackground(var1);
+            DrawBackground(yOffset);
         }
     }
 
-    public void DrawBackground(int var1)
+    public void DrawBackground(int yOffset)
     {
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.Fog);
@@ -290,14 +290,14 @@ public class GuiScreen : Gui
         tess.startDrawingQuads();
         tess.setColorOpaque_I(0x404040);
 
-        tess.addVertexWithUV(0.0D, Height, 0.0D, 0.0D, (double)(Height / scale + var1));
-        tess.addVertexWithUV(Width, Height, 0.0D, (double)(Width / scale), (double)(Height / scale + var1));
-        tess.addVertexWithUV(Width, 0.0D, 0.0D, (double)(Width / scale), 0 + var1);
-        tess.addVertexWithUV(0.0D, 0.0D, 0.0D, 0.0D, 0 + var1);
+        tess.addVertexWithUV(0.0D, Height, 0.0D, 0.0D, (double)(Height / scale + yOffset));
+        tess.addVertexWithUV(Width, Height, 0.0D, (double)(Width / scale), (double)(Height / scale + yOffset));
+        tess.addVertexWithUV(Width, 0.0D, 0.0D, (double)(Width / scale), 0 + yOffset);
+        tess.addVertexWithUV(0.0D, 0.0D, 0.0D, 0.0D, 0 + yOffset);
         tess.draw();
     }
 
-    public virtual void DeleteWorld(bool var1, int var2) { }
+    public virtual void DeleteWorld(bool confirmed, int worldId) { }
 
     public virtual void SelectNextField() { }
 

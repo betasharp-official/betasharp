@@ -746,123 +746,123 @@ public class WorldRenderer : IWorldAccess
         }
     }
 
-    public void blockUpdate(int var1, int var2, int var3)
+    public void blockUpdate(int x, int y, int z)
     {
-        MarkBlocksDirty(var1 - 1, var2 - 1, var3 - 1, var1 + 1, var2 + 1, var3 + 1);
+        MarkBlocksDirty(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
     }
 
-    public void setBlocksDirty(int var1, int var2, int var3, int var4, int var5, int var6)
+    public void setBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
-        MarkBlocksDirty(var1 - 1, var2 - 1, var3 - 1, var4 + 1, var5 + 1, var6 + 1);
+        MarkBlocksDirty(minX - 1, minY - 1, minZ - 1, maxX + 1, maxY + 1, maxZ + 1);
     }
 
-    public void playStreaming(string var1, int var2, int var3, int var4)
+    public void playStreaming(string soundName, int x, int y, int z)
     {
-        if (var1 != null)
+        if (soundName != null)
         {
-            _game.ingameGUI.setRecordPlayingMessage("C418 - " + var1);
+            _game.ingameGUI.setRecordPlayingMessage("C418 - " + soundName);
         }
 
-        _game.sndManager.PlayStreaming(var1, var2, var3, var4, 1.0F, 1.0F);
+        _game.sndManager.PlayStreaming(soundName, x, y, z, 1.0F, 1.0F);
     }
 
-    public void playSound(string var1, double var2, double var4, double var6, float var8, float var9)
+    public void playSound(string soundName, double x, double y, double z, float volume, float pitch)
     {
-        float var10 = 16.0F;
-        if (var8 > 1.0F)
+        float maxDistance = 16.0F;
+        if (volume > 1.0F)
         {
-            var10 *= var8;
+            maxDistance *= volume;
         }
 
-        if (_game.camera.getSquaredDistance(var2, var4, var6) < (double)(var10 * var10))
+        if (_game.camera.getSquaredDistance(x, y, z) < (double)(maxDistance * maxDistance))
         {
-            _game.sndManager.PlaySound(var1, (float)var2, (float)var4, (float)var6, var8, var9);
+            _game.sndManager.PlaySound(soundName, (float)x, (float)y, (float)z, volume, pitch);
         }
 
     }
 
-    public void spawnParticle(string var1, double var2, double var4, double var6, double var8, double var10, double var12)
+    public void spawnParticle(string particleName, double particleX, double particleY, double particleZ, double velocityX, double velocityY, double velocityZ)
     {
         if (_game != null && _game.camera != null && _game.particleManager != null)
         {
-            double var14 = _game.camera.x - var2;
-            double var16 = _game.camera.y - var4;
-            double var18 = _game.camera.z - var6;
-            double var20 = 16.0D;
-            if (var14 * var14 + var16 * var16 + var18 * var18 <= var20 * var20)
+            double dx = _game.camera.x - particleX;
+            double dy = _game.camera.y - particleY;
+            double dz = _game.camera.z - particleZ;
+            double maxParticleDistance = 16.0D;
+            if (dx * dx + dy * dy + dz * dz <= maxParticleDistance * maxParticleDistance)
             {
-                if (var1.Equals("bubble"))
+                if (particleName.Equals("bubble"))
                 {
-                    _game.particleManager.addEffect(new EntityBubbleFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntityBubbleFX(world, particleX, particleY, particleZ, velocityX, velocityY, velocityZ));
                 }
-                else if (var1.Equals("smoke"))
+                else if (particleName.Equals("smoke"))
                 {
-                    _game.particleManager.addEffect(new EntitySmokeFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntitySmokeFX(world, particleX, particleY, particleZ, velocityX, velocityY, velocityZ));
                 }
-                else if (var1.Equals("note"))
+                else if (particleName.Equals("note"))
                 {
-                    _game.particleManager.addEffect(new EntityNoteFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntityNoteFX(world, particleX, particleY, particleZ, velocityX, velocityY, velocityZ));
                 }
-                else if (var1.Equals("portal"))
+                else if (particleName.Equals("portal"))
                 {
-                    _game.particleManager.addEffect(new EntityPortalFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntityPortalFX(world, particleX, particleY, particleZ, velocityX, velocityY, velocityZ));
                 }
-                else if (var1.Equals("explode"))
+                else if (particleName.Equals("explode"))
                 {
-                    _game.particleManager.addEffect(new EntityExplodeFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntityExplodeFX(world, particleX, particleY, particleZ, velocityX, velocityY, velocityZ));
                 }
-                else if (var1.Equals("flame"))
+                else if (particleName.Equals("flame"))
                 {
-                    _game.particleManager.addEffect(new EntityFlameFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntityFlameFX(world, particleX, particleY, particleZ, velocityX, velocityY, velocityZ));
                 }
-                else if (var1.Equals("lava"))
+                else if (particleName.Equals("lava"))
                 {
-                    _game.particleManager.addEffect(new EntityLavaFX(world, var2, var4, var6));
+                    _game.particleManager.addEffect(new EntityLavaFX(world, particleX, particleY, particleZ));
                 }
-                else if (var1.Equals("footstep"))
+                else if (particleName.Equals("footstep"))
                 {
-                    _game.particleManager.addEffect(new EntityFootStepFX(renderEngine, world, var2, var4, var6));
+                    _game.particleManager.addEffect(new EntityFootStepFX(renderEngine, world, particleX, particleY, particleZ));
                 }
-                else if (var1.Equals("splash"))
+                else if (particleName.Equals("splash"))
                 {
-                    _game.particleManager.addEffect(new EntitySplashFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntitySplashFX(world, particleX, particleY, particleZ, velocityX, velocityY, velocityZ));
                 }
-                else if (var1.Equals("largesmoke"))
+                else if (particleName.Equals("largesmoke"))
                 {
-                    _game.particleManager.addEffect(new EntitySmokeFX(world, var2, var4, var6, var8, var10, var12, 2.5F));
+                    _game.particleManager.addEffect(new EntitySmokeFX(world, particleX, particleY, particleZ, velocityX, velocityY, velocityZ, 2.5F));
                 }
-                else if (var1.Equals("reddust"))
+                else if (particleName.Equals("reddust"))
                 {
-                    _game.particleManager.addEffect(new EntityReddustFX(world, var2, var4, var6, (float)var8, (float)var10, (float)var12));
+                    _game.particleManager.addEffect(new EntityReddustFX(world, particleX, particleY, particleZ, (float)velocityX, (float)velocityY, (float)velocityZ));
                 }
-                else if (var1.Equals("snowballpoof"))
+                else if (particleName.Equals("snowballpoof"))
                 {
-                    _game.particleManager.addEffect(new EntitySlimeFX(world, var2, var4, var6, Item.Snowball));
+                    _game.particleManager.addEffect(new EntitySlimeFX(world, particleX, particleY, particleZ, Item.Snowball));
                 }
-                else if (var1.Equals("snowshovel"))
+                else if (particleName.Equals("snowshovel"))
                 {
-                    _game.particleManager.addEffect(new EntitySnowShovelFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntitySnowShovelFX(world, particleX, particleY, particleZ, velocityX, velocityY, velocityZ));
                 }
-                else if (var1.Equals("slime"))
+                else if (particleName.Equals("slime"))
                 {
-                    _game.particleManager.addEffect(new EntitySlimeFX(world, var2, var4, var6, Item.Slimeball));
+                    _game.particleManager.addEffect(new EntitySlimeFX(world, particleX, particleY, particleZ, Item.Slimeball));
                 }
-                else if (var1.Equals("heart"))
+                else if (particleName.Equals("heart"))
                 {
-                    _game.particleManager.addEffect(new EntityHeartFX(world, var2, var4, var6, var8, var10, var12));
+                    _game.particleManager.addEffect(new EntityHeartFX(world, particleX, particleY, particleZ, velocityX, velocityY, velocityZ));
                 }
 
             }
         }
     }
 
-    public void notifyEntityAdded(Entity var1)
+    public void notifyEntityAdded(Entity entity)
     {
-        var1.updateCloak();
-        EntityRenderDispatcher.instance.skinManager.RequestDownload((var1 as EntityPlayer)?.name);
+        entity.updateCloak();
+        EntityRenderDispatcher.instance.skinManager.RequestDownload((entity as EntityPlayer)?.name);
     }
 
-    public void notifyEntityRemoved(Entity var1)
+    public void notifyEntityRemoved(Entity entity)
     {
     }
 
@@ -871,77 +871,77 @@ public class WorldRenderer : IWorldAccess
         chunkRenderer.UpdateAllRenderers();
     }
 
-    public void updateBlockEntity(int var1, int var2, int var3, BlockEntity var4)
+    public void updateBlockEntity(int x, int y, int z, BlockEntity blockEntity)
     {
     }
 
-    public void worldEvent(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6)
+    public void worldEvent(EntityPlayer player, int eventType, int x, int y, int z, int data)
     {
-        JavaRandom var7 = world.random;
-        int var16;
-        switch (var2)
+        JavaRandom worldRandom = world.random;
+        int particleCount;
+        switch (eventType)
         {
             case 1000:
-                world.playSound(var3, var4, var5, "random.click", 1.0F, 1.0F);
+                world.playSound(x, y, z, "random.click", 1.0F, 1.0F);
                 break;
             case 1001:
-                world.playSound(var3, var4, var5, "random.click", 1.0F, 1.2F);
+                world.playSound(x, y, z, "random.click", 1.0F, 1.2F);
                 break;
             case 1002:
-                world.playSound(var3, var4, var5, "random.bow", 1.0F, 1.2F);
+                world.playSound(x, y, z, "random.bow", 1.0F, 1.2F);
                 break;
             case 1003:
                 if (Random.Shared.NextDouble() < 0.5D)
                 {
-                    world.playSound(var3 + 0.5D, var4 + 0.5D, var5 + 0.5D, "random.door_open", 1.0F, world.random.NextFloat() * 0.1F + 0.9F);
+                    world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "random.door_open", 1.0F, world.random.NextFloat() * 0.1F + 0.9F);
                 }
                 else
                 {
-                    world.playSound(var3 + 0.5D, var4 + 0.5D, var5 + 0.5D, "random.door_close", 1.0F, world.random.NextFloat() * 0.1F + 0.9F);
+                    world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "random.door_close", 1.0F, world.random.NextFloat() * 0.1F + 0.9F);
                 }
                 break;
             case 1004:
-                world.playSound((double)(var3 + 0.5F), (double)(var4 + 0.5F), (double)(var5 + 0.5F), "random.fizz", 0.5F, 2.6F + (var7.NextFloat() - var7.NextFloat()) * 0.8F);
+                world.playSound((double)(x + 0.5F), (double)(y + 0.5F), (double)(z + 0.5F), "random.fizz", 0.5F, 2.6F + (worldRandom.NextFloat() - worldRandom.NextFloat()) * 0.8F);
                 break;
             case 1005:
-                if (Item.ITEMS[var6] is ItemRecord)
+                if (Item.ITEMS[data] is ItemRecord)
                 {
-                    world.playStreaming(((ItemRecord)Item.ITEMS[var6]).recordName, var3, var4, var5);
+                    world.playStreaming(((ItemRecord)Item.ITEMS[data]).recordName, x, y, z);
                 }
                 else
                 {
-                    world.playStreaming(null, var3, var4, var5);
+                    world.playStreaming(null, x, y, z);
                 }
                 break;
             case 2000:
-                int var8 = var6 % 3 - 1;
-                int var9 = var6 / 3 % 3 - 1;
-                double var10 = var3 + var8 * 0.6D + 0.5D;
-                double var12 = var4 + 0.5D;
-                double var14 = var5 + var9 * 0.6D + 0.5D;
+                int dirX = data % 3 - 1;
+                int dirZ = data / 3 % 3 - 1;
+                double smokeX = x + dirX * 0.6D + 0.5D;
+                double smokeY = y + 0.5D;
+                double smokeZ = z + dirZ * 0.6D + 0.5D;
 
-                for (var16 = 0; var16 < 10; ++var16)
+                for (particleCount = 0; particleCount < 10; ++particleCount)
                 {
-                    double var31 = var7.NextDouble() * 0.2D + 0.01D;
-                    double var19 = var10 + var8 * 0.01D + (var7.NextDouble() - 0.5D) * var9 * 0.5D;
-                    double var21 = var12 + (var7.NextDouble() - 0.5D) * 0.5D;
-                    double var23 = var14 + var9 * 0.01D + (var7.NextDouble() - 0.5D) * var8 * 0.5D;
-                    double var25 = var8 * var31 + var7.NextGaussian() * 0.01D;
-                    double var27 = -0.03D + var7.NextGaussian() * 0.01D;
-                    double var29 = var9 * var31 + var7.NextGaussian() * 0.01D;
-                    spawnParticle("smoke", var19, var21, var23, var25, var27, var29);
+                    double speed = worldRandom.NextDouble() * 0.2D + 0.01D;
+                    double particleX = smokeX + dirX * 0.01D + (worldRandom.NextDouble() - 0.5D) * dirZ * 0.5D;
+                    double particleY = smokeY + (worldRandom.NextDouble() - 0.5D) * 0.5D;
+                    double particleZ = smokeZ + dirZ * 0.01D + (worldRandom.NextDouble() - 0.5D) * dirX * 0.5D;
+                    double particleVX = dirX * speed + worldRandom.NextGaussian() * 0.01D;
+                    double particleVY = -0.03D + worldRandom.NextGaussian() * 0.01D;
+                    double particleVZ = dirZ * speed + worldRandom.NextGaussian() * 0.01D;
+                    spawnParticle("smoke", particleX, particleY, particleZ, particleVX, particleVY, particleVZ);
                 }
 
                 return;
             case 2001: // This is for breaking a block
-                var16 = var6 & 255;
-                if (var16 > 0)
+                int blockId = data & 255;
+                if (blockId > 0)
                 {
-                    Block var17 = Block.Blocks[var16];
-                    _game.sndManager.PlaySound(var17.soundGroup.BreakSound, var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, (var17.soundGroup.Volume + 1.0F) / 2.0F, var17.soundGroup.Pitch * 0.8F);
+                    Block block = Block.Blocks[blockId];
+                    _game.sndManager.PlaySound(block.soundGroup.BreakSound, x + 0.5F, y + 0.5F, z + 0.5F, (block.soundGroup.Volume + 1.0F) / 2.0F, block.soundGroup.Pitch * 0.8F);
                 }
 
-                _game.particleManager.addBlockDestroyEffects(var3, var4, var5, var6 & 255, var6 >> 8 & 255);
+                _game.particleManager.addBlockDestroyEffects(x, y, z, data & 255, data >> 8 & 255);
                 break;
         }
 

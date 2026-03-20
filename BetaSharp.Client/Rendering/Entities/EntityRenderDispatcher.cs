@@ -98,12 +98,12 @@ public class EntityRenderDispatcher
         fontRenderer = textRenderer;
         if (camera.isSleeping())
         {
-            int var7 = world.getBlockId(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
-            if (var7 == Block.Bed.id)
+            int blockId = world.getBlockId(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
+            if (blockId == Block.Bed.id)
             {
-                int var8 = world.getBlockMeta(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
-                int var9 = var8 & 3;
-                playerViewY = var9 * 90 + 180;
+                int blockMeta = world.getBlockMeta(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
+                int direction = blockMeta & 3;
+                playerViewY = direction * 90 + 180;
                 playerViewX = 0.0F;
             }
         }

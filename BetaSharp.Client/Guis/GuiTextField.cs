@@ -149,11 +149,11 @@ public class GuiTextField : Gui
         // Backspace
         if (eventKey == Keyboard.KEY_BACK)
         {
-            string var3 = GuiScreen.GetClipboardString();
-            var3 ??= "";
+            string clipboardContent = GuiScreen.GetClipboardString();
+            clipboardContent ??= "";
 
-            int var4 = 32 - _text.Length;
-            if (var4 > var3.Length)
+            int availableSpace = 32 - _text.Length;
+            if (availableSpace > clipboardContent.Length)
             {
                 DeleteSelection();
             }
