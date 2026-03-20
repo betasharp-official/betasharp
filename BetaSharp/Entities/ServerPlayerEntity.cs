@@ -144,7 +144,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         return server.pvpEnabled;
     }
 
-    public void playerTick(bool shouldSendChunkUpdates)
+    public void PlayerTick(bool shouldSendChunkUpdates)
     {
         GenericTick();
 

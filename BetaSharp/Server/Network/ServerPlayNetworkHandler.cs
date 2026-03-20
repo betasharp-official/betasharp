@@ -49,6 +49,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     {
         moved = false;
         connection.tick();
+        player.PlayerTick(true);
+
         if (ticks++ - lastKeepAliveTime > 20)
         {
             sendPacket(KeepAlivePacket.Get());
@@ -111,7 +113,6 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 }
 
                 player.onGround = packet.onGround;
-                player.playerTick(true);
                 player.move(var31, 0.0, var34);
                 player.setPositionAndAngles(var28, var29, var30, var27, var4);
                 player.velocityX = var31;
@@ -136,7 +137,6 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
             if (player.isSleeping())
             {
-                player.playerTick(true);
                 player.setPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, player.yaw, player.pitch);
                 var2.updateEntity(player);
                 return;
@@ -182,7 +182,6 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 var12 = packet.pitch;
             }
 
-            player.playerTick(true);
             player.cameraOffset = 0.0F;
             player.setPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
             if (!teleported)

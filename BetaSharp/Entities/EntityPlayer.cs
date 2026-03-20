@@ -116,7 +116,7 @@ public abstract class EntityPlayer : EntityLiving
     /// Tick events that needs both server and client goes here.
     /// </summary>
     /// <remarks>
-    /// Called from both <see cref="tick"/> and <see cref="ServerPlayerEntity.playerTick"/>
+    /// Called from both <see cref="tick"/> and <see cref="ServerPlayerEntity.PlayerTick"/>
     /// </remarks>
     protected void GenericTick()
     {
