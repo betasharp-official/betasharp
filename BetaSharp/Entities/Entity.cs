@@ -525,7 +525,7 @@ public abstract class Entity
 
                     if (horizontalSpeed > (float)nextStepSoundDistance && var28 > 0)
                     {
-                        ++nextStepSoundDistance;
+                        nextStepSoundDistance = (int)horizontalSpeed + 1;
                         BlockSoundGroup soundGroup = Block.Blocks[var28].soundGroup;
                         if (world.getBlockId(var38, var26 + 1, var39) == Block.Snow.id)
                         {

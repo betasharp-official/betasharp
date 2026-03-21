@@ -8,6 +8,7 @@ using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Screens.Slots;
+using BetaSharp.Server.Command;
 using BetaSharp.Server.Commands;
 using BetaSharp.Server.Internal;
 using BetaSharp.Util;
@@ -17,7 +18,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Network;
 
-public class ServerPlayNetworkHandler : NetHandler, CommandOutput
+public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 {
     public Connection connection;
     public bool disconnected;
@@ -566,10 +567,8 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
         sendPacket(ChatMessagePacket.Get("§7" + message));
     }
 
-    public string GetName()
-    {
-        return player.name;
-    }
+    public string GetName() => player.name;
+    public byte GetPermissionLevel() => server.playerManager.isOperator(player.name) ? (byte)4 : (byte)0;
 
     public override void handleInteractEntity(PlayerInteractEntityC2SPacket packet)
     {

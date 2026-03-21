@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 
-namespace BetaSharp.Launcher;
+namespace BetaSharp.Launcher.Features;
 
 internal static class HttpClientExtensions
 {
@@ -24,10 +24,7 @@ internal static class HttpClientExtensions
             return instance;
         }
 
-        public async Task<TResponse> PostAsync<TResponse, TRequest>(string url,
-            TRequest request,
-            JsonTypeInfo<TRequest> requestInfo,
-            JsonTypeInfo<TResponse> responseInfo)
+        public async Task<TResponse> PostAsync<TResponse, TRequest>(string url, TRequest request, JsonTypeInfo<TRequest> requestInfo, JsonTypeInfo<TResponse> responseInfo)
         {
             var response = await client.PostAsync(url, JsonContent.Create(request, requestInfo));
 

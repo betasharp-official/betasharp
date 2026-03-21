@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using BetaSharp.Launcher.Features;
 using BetaSharp.Launcher.Features.Shell;
 using BetaSharp.Launcher.Features.Splash;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,7 @@ internal sealed class App : Application
 
     private readonly IServiceProvider _services = Bootstrapper.Build();
 
-    // Taken from BetaSharp.Client, should a .Shared project be created?
+    // Taken from BetaSharp.Client, should a shared project be created?
     static App()
     {
         string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);

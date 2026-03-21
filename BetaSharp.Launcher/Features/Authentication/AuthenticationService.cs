@@ -14,8 +14,6 @@ internal sealed class AuthenticationService
     private readonly SystemWebViewOptions _webViewOptions;
     private readonly IPublicClientApplication _application;
 
-    private bool _initialized;
-
     public AuthenticationService(ILogger<AuthenticationService> logger)
     {
         _logger = logger;
@@ -43,30 +41,30 @@ internal sealed class AuthenticationService
             .Build();
     }
 
+    public async Task InitializeAsync()
+    {
+        _logger.LogInformation("Initializing authentication service");
+
+        string path = Path.Combine(App.Folder, "betasharp.launcher.cache");
+
+        var properties = new StorageCreationPropertiesBuilder(Path.GetFileName(path), Path.GetDirectoryName(path))
+            .WithLinuxKeyring(
+                "betasharp.launcher",
+                MsalCacheHelper.LinuxKeyRingDefaultCollection,
+                "MSAL cache for BetaSharp's launcher",
+                new KeyValuePair<string, string>("Version", "1"),
+                new KeyValuePair<string, string>("Application", "BetaSharp.Launcher"))
+            .WithMacKeyChain("betasharp.launcher", "betasharp")
+            .Build();
+
+        var helper = await MsalCacheHelper.CreateAsync(properties);
+        helper.RegisterCache(_application.UserTokenCache);
+
+        _logger.LogInformation("Finished initializing authentication service");
+    }
+
     public async Task<string> AuthenticateAsync()
     {
-        if (!_initialized)
-        {
-            _logger.LogInformation("Initializing authentication service");
-
-            string path = Path.Combine(App.Folder, "betasharp.launcher.cache");
-
-            var properties = new StorageCreationPropertiesBuilder(Path.GetFileName(path), Path.GetDirectoryName(path))
-                .WithLinuxKeyring(
-                    "betasharp.launcher",
-                    MsalCacheHelper.LinuxKeyRingDefaultCollection,
-                    "MSAL cache for BetaSharp's launcher",
-                    new KeyValuePair<string, string>("Version", "1"),
-                    new KeyValuePair<string, string>("Application", "BetaSharp.Launcher"))
-                .WithMacKeyChain("betasharp.launcher", "betasharp")
-                .Build();
-
-            var helper = await MsalCacheHelper.CreateAsync(properties);
-            helper.RegisterCache(_application.UserTokenCache);
-
-            _initialized = true;
-        }
-
         try
         {
             var accounts = await _application.GetAccountsAsync();
@@ -81,14 +79,14 @@ internal sealed class AuthenticationService
         }
         catch (MsalUiRequiredException)
         {
-            _logger.LogInformation("Authenticated interactively for Microsoft account");
-
             // Find a way to use system brokers.
             var result = await _application
                 .AcquireTokenInteractive(["XboxLive.signin offline_access"])
                 .WithUseEmbeddedWebView(false)
                 .WithSystemWebViewOptions(_webViewOptions)
                 .ExecuteAsync();
+
+            _logger.LogInformation("Authenticated interactively for Microsoft account");
 
             return result.AccessToken;
         }

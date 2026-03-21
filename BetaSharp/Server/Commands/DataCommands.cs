@@ -1,109 +1,117 @@
 using BetaSharp.Entities;
+using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public static class DataCommands
+public class DataCommands : ICommand
 {
-    public static void Data(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public string Usage => "data get ...";
+    public string Description => "Get debug info from target(s)";
+    public string[] Names => ["data"];
+
+    public byte PermissionLevel => 2;
+
+
+    public void Execute(ICommand.CommandContext c)
     {
-        if (args.Length < 2)
+        if (c.Args.Length < 2)
         {
-            output.SendMessage("Usage: data [get] ...");
+            c.Output.SendMessage("Usage: data [get] ...");
             return;
         }
 
-        ServerPlayerEntity player = server.playerManager.getPlayer(senderName);
+        ServerPlayerEntity player = c.Server.playerManager.getPlayer(c.SenderName);
         if (player == null)
         {
-            output.SendMessage("Could not find your player.");
+            c.Output.SendMessage("Could not find your player.");
             return;
         }
 
 
-        if (args[0].ToLower() == "get")
+        if (c.Args[0].ToLower() == "get")
         {
-            if (args.Length < 2)
+            if (c.Args.Length < 2)
             {
-                output.SendMessage("Usage: data get [entity|player|global] <target?>");
+                c.Output.SendMessage("Usage: data get [entity|player|global] <target?>");
                 return;
             }
 
-            DataGet(server, player, args, output);
+            DataGet(c, player);
         }
         else
         {
             // TODO: Add a set here
-            output.SendMessage(args[0] + " is not supported.");
+            c.Output.SendMessage(c.Args[0] + " is not supported.");
         }
     }
 
-    private static void DataGet(BetaSharpServer server, ServerPlayerEntity player, string[] args, CommandOutput output)
+    private static void DataGet(ICommand.CommandContext c, ServerPlayerEntity player)
     {
         // convert short to the full string.
-        switch (args[1] = args[1].ToLower())
+        switch (c.Args[1] = c.Args[1].ToLower())
         {
             case "e":
-                args[1] = "entity";
+                c.Args[1] = "entity";
                 break;
             case "p":
-                args[1] = "player";
+                c.Args[1] = "player";
                 break;
             case "g":
-                args[1] = "global";
+                c.Args[1] = "global";
                 break;
         }
 
-        switch (args[1])
+        switch (c.Args[1])
         {
             case "entity":
-                LogEntity(server.getWorld(player.dimensionId).entities, player, args, output);
+                LogEntity(c.Server.getWorld(player.dimensionId).entities, player, c);
                 return;
             case "player":
-                LogEntity(server.getWorld(player.dimensionId).players, player, args, output);
+                LogEntity(c.Server.getWorld(player.dimensionId).players, player, c);
                 return;
             case "global":
-                LogEntity(server.getWorld(player.dimensionId).globalEntities, player, args, output);
+                LogEntity(c.Server.getWorld(player.dimensionId).globalEntities, player, c);
                 return;
             default:
-                output.SendMessage("Usage: data get [entity|player|global] <target?>");
+                c.Output.SendMessage("Usage: data get [entity|player|global] <target?>");
                 return;
         }
     }
 
-    private static void LogEntity<T>(List<T> items, ServerPlayerEntity player, string[] args, CommandOutput output) where T : Entity
+    private static void LogEntity<T>(List<T> items, ServerPlayerEntity player, ICommand.CommandContext c) where T : Entity
     {
-        var sel = GetSelector(args);
+        var sel = GetSelector(c.Args);
 
-        if (args.Length < 3)
+        if (c.Args.Length < 3)
         {
-            if (items.Count != 1) FormatPlural(ref args[1]);
-            output.SendMessage("Found " + items.Count + " " + args[1]);
+            if (items.Count != 1) FormatPlural(ref c.Args[1]);
+            c.Output.SendMessage("Found " + items.Count + " " + c.Args[1]);
             return;
         }
 
-        if (args.Length < 4 && sel != Selector.None)
+        if (c.Args.Length < 4 && sel != Selector.None)
         {
-            LogEntitySub(sel, items.ToArray(), player, args, output);
+            LogEntitySub(sel, items.ToArray(), player, c);
             return;
         }
 
-        if (!int.TryParse(args[2], out int id))
+        if (!int.TryParse(c.Args[2], out int id))
         {
             // Type comparision is faster than string comparison.
             // So if we can, compare using type.
             T[] filtered;
-            if (EntityRegistry.TryGetTypeFromName(args[2], out Type? type))
+            if (EntityRegistry.TryGetTypeFromName(c.Args[2], out Type? type))
             {
-                args[1] = '_' + type.Name;
+                c.Args[1] = '_' + type.Name;
                 filtered = items.Where(entity => entity.GetType() == type).ToArray();
             }
             else
             {
-                args[1] = '_' + args[2];
-                filtered = items.Where(entity => entity.GetType().Name == args[2]).ToArray();
+                c.Args[1] = '_' + c.Args[2];
+                filtered = items.Where(entity => entity.GetType().Name == c.Args[2]).ToArray();
             }
 
-            LogEntitySub(sel, filtered, player, args, output, true);
+            LogEntitySub(sel, filtered, player, c, true);
             return;
         }
 
@@ -111,11 +119,11 @@ public static class DataCommands
 
         if (e == null)
         {
-            output.SendMessage(id + " not found.");
+            c.Output.SendMessage(id + " not found.");
             return;
         }
 
-        LogEntity(e, output);
+        LogEntity(e, c.Output);
     }
 
     private static Selector GetSelector(string[] args, int start = 2)
@@ -141,19 +149,19 @@ public static class DataCommands
         Close = 2
     }
 
-    private static void LogEntitySub<T>(Selector sel, IEnumerable<T> items, ServerPlayerEntity player, string[] args, CommandOutput output, bool listHits = false) where T : Entity
+    private static void LogEntitySub<T>(Selector sel, IEnumerable<T> items, ServerPlayerEntity player, ICommand.CommandContext c, bool listHits = false) where T : Entity
     {
         if (sel == Selector.First)
         {
             T? item = items.FirstOrDefault();
             if (item == null)
             {
-                if (args[1][0] == '_') args[1] = args[1].Substring(1);
-                output.SendMessage("Found 0 instances of " + args[1]);
+                if (c.Args[1][0] == '_') c.Args[1] = c.Args[1].Substring(1);
+                c.Output.SendMessage("Found 0 instances of " + c.Args[1]);
                 return;
             }
 
-            LogEntity(item, output);
+            LogEntity(item, c.Output);
         }
         else if (sel == Selector.Close)
         {
@@ -181,19 +189,19 @@ public static class DataCommands
 
             if (item == null)
             {
-                output.SendMessage("0 matches");
+                c.Output.SendMessage("0 matches");
                 return;
             }
 
-            LogEntity(item, output);
+            LogEntity(item, c.Output);
         }
         else
         {
             var list = items.ToList();
-            int c = list.Count();
+            int co = list.Count();
 
             // output list of all items
-            if (listHits && c > 0)
+            if (listHits && co > 0)
             {
                 string listStr = "";
                 foreach (T item in list)
@@ -201,11 +209,11 @@ public static class DataCommands
                     listStr += item.id + ", ";
                 }
 
-                output.SendMessage(listStr.Substring(0, listStr.Length - 2));
+                c.Output.SendMessage(listStr.Substring(0, listStr.Length - 2));
             }
 
-            if (args[1][0] == '_') args[1] = args[1].Substring(1);
-            output.SendMessage("Found " + list.Count() + (c == 1 ? " instance of " : " instances of ") + args[1]);
+            if (c.Args[1][0] == '_') c.Args[1] = c.Args[1].Substring(1);
+            c.Output.SendMessage("Found " + list.Count() + (co == 1 ? " instance of " : " instances of ") + c.Args[1]);
         }
     }
 
@@ -215,7 +223,7 @@ public static class DataCommands
         else s += "s";
     }
 
-    private static void LogEntity(Entity e, CommandOutput output)
+    private static void LogEntity(Entity e, ICommandOutput output)
     {
         output.SendMessage("type: " + e.GetType().Name);
         output.SendMessage("id: " + e.id);

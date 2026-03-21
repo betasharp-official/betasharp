@@ -1,10 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
+using BetaSharp.Launcher.Features.Shell;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BetaSharp.Launcher.Features.Shell;
+namespace BetaSharp.Launcher.Features;
 
-internal sealed class NavigationService(IServiceProvider services, ShellViewModel shellViewModel)
+internal sealed class NavigationService(ShellViewModel shellViewModel, IServiceProvider services)
 {
     public void Navigate<T>() where T : INotifyPropertyChanged
     {
