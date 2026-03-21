@@ -92,6 +92,12 @@ internal static class WorldCommands
         output.SendMessage($"Weather set to {weather}.");
     }
 
+    public static void Seed(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
+    {
+        long seed = server.worlds[0].Seed;
+        output.SendMessage($"Seed: {seed}");
+    }
+
     public static void Summon(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (args.Length < 1)

@@ -83,6 +83,7 @@ internal class ServerCommandHandler
         Register(WorldCommands.Summon, "summon <entity>", "spawns an entity at your location", "summon", "spawn");
         Register(WorldCommands.KillAll, "killall [filter]", "kills entities by type", "killall");
         Register(WorldCommands.GameRule, "gamerule [rule name] [value]", "gets or sets a game rule", "gamerule");
+        Register(WorldCommands.Seed, "seed", "prints the world seed", "seed");
 
         Register(ChatCommands.Say, "say <message>", "broadcasts a message", "say");
         Register(ChatCommands.Tell, "tell <player> <message>", "whispers to a player", "tell");
