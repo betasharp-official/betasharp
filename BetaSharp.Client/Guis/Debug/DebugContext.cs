@@ -69,8 +69,7 @@ public class DebugContext
         // draw right screen
         void rightString()
         {
-            int width = Game.fontRenderer.GetStringWidth(str);
-            Game.fontRenderer.DrawStringWithShadow(str, _scaledWidth - PADDING - width, _rightY, (Color)color);
+            Game.fontRenderer.DrawStringWithShadow(str, _scaledWidth - PADDING, _rightY, (Color)color, SixLabors.Fonts.HorizontalAlignment.Right);
 
             _rightY += 10;
         }
