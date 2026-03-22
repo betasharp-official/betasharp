@@ -1,0 +1,94 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using BetaSharp.Client.Rendering;
+using BetaSharp.Util;
+
+namespace BetaSharp.Client.Guis.Debug;
+
+/// <summary>
+/// Context for the debug overlay each <see cref="DebugComponent"/> gets
+/// in the <see cref="DebugComponent.Draw"/> function, that allows writing
+/// left and right string to the screen.
+/// </summary>
+public class DebugContext
+{
+    private const int PADDING = 2; // padding on the outside of text
+
+    private int _leftY;
+    private int _rightY;
+    private int _scaledWidth;
+    private bool _right;
+    public readonly BetaSharp Game;
+
+
+    public readonly GCMonitor GCMonitor;
+
+    public DebugContext(BetaSharp game)
+    {
+        Game = game;
+
+        GCMonitor = new GCMonitor();
+    }
+
+    /// <summary>
+    /// Initialize the context for drawing components.
+    /// </summary>
+    public void Initialize()
+    {
+        // both y's should be at the top with a padding of 2, however
+        // x needs to deal with the unpaid text (by offsettinng that side
+        // by 32 pixels).
+
+        _leftY = BetaSharp.hasPaidCheckTime > 0L ? 32 + PADDING : PADDING;
+        _rightY = PADDING; // right side doesnt need it
+
+        // get screen width
+        ScaledResolution scaled = new(Game.options, Game.displayWidth, Game.displayHeight);
+        _scaledWidth = scaled.ScaledWidth;
+    }
+
+    /// <summary>
+    /// Draw a string line for your debug component.
+    /// </summary>
+    /// <param name="str">String to draw</param>
+    /// <param name="color">Color to draw it in, defaults to white</param>
+    public void String(string str, Color? color = null)
+    {
+        // default: white
+        if (color is null) color = Color.White;
+
+        // draw left string
+        void leftString()
+        {
+            Game.fontRenderer.DrawStringWithShadow(str, PADDING, _leftY, (Color) color);
+
+            _leftY += 10;
+        }
+
+        // draw right screen
+        void rightString()
+        {
+            int width = Game.fontRenderer.GetStringWidth(str);
+            Game.fontRenderer.DrawStringWithShadow(str, _scaledWidth - PADDING - width, _rightY, (Color)color);
+
+            _rightY += 10;
+        }
+
+        if (_right) rightString();
+        else leftString();
+    }
+
+    public void Seperator()
+    {
+        if (_right) _rightY += 10;
+        else _leftY += 10;
+    }
+
+    public void DrawComponent(DebugComponent comp)
+    {
+        _right = comp.Right;
+
+        comp.Draw(this);
+    }
+}

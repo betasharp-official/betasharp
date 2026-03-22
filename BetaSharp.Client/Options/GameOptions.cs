@@ -46,6 +46,7 @@ public class GameOptions
     public BoolOption MipmapsOption { get; private set; }
     public BoolOption DebugModeOption { get; private set; }
     public BoolOption RenderOccludedOption { get; private set; }
+    public BoolOption ShowDebugGraphOption { get; private set; }
     public BoolOption EnvironmentAnimationOption { get; private set; }
     public BoolOption ChunkFadeOption { get; private set; }
     public BoolOption MenuMusicOption { get; private set; }
@@ -67,7 +68,7 @@ public class GameOptions
         MipmapsOption, MsaaOption, EnvironmentAnimationOption, ChunkFadeOption, GammaOption
     ];
 
-    public GameOption[] DebugScreenOptions => [DebugModeOption, RenderOccludedOption];
+    public GameOption[] DebugScreenOptions => [DebugModeOption, RenderOccludedOption, ShowDebugGraphOption];
 
 
     public float MusicVolume
@@ -239,6 +240,7 @@ public class GameOptions
             OnChanged = v => Profiling.Profiler.Enabled = v
         };
         RenderOccludedOption = new BoolOption("Render Occluded", "renderOccluded");
+        ShowDebugGraphOption = new BoolOption("Show Debug Graph", "showDebugGraph");
         EnvironmentAnimationOption = new BoolOption("Environment Anim", "envAnimation", true);
         ChunkFadeOption = new BoolOption("Chunk Fade", "chunkFade", true);
         MenuMusicOption = new BoolOption("Menu Music", "menuMusic", true);

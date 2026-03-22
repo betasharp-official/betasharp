@@ -12,8 +12,8 @@ public class TranslationStorage
     private TranslationStorage()
     {
         LoadLanguageFile("lang/en_US.lang");
+        LoadLanguageFile("lang/extra_en_US.lang");
         LoadLanguageFile("lang/stats_US.lang");
-        AddTranslation("disconnect.genericReason", "%1$s");
     }
 
     public void AddTranslation(string key, string translation)
