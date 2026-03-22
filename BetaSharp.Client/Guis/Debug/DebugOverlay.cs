@@ -4,9 +4,6 @@ using System.Text;
 
 namespace BetaSharp.Client.Guis.Debug;
 
-/// <summary>
-/// Renderer for a List of <see cref="DebugComponent"></see>s
-/// </summary>
 public class DebugOverlay
 {
     private readonly BetaSharp _game;
@@ -18,9 +15,6 @@ public class DebugOverlay
         Context = new DebugContext(game);
     }
 
-    /// <summary>
-    /// List of components to render.
-    /// </summary>
     public List<DebugComponent> Components = new List<DebugComponent>();
 
     public void Draw()

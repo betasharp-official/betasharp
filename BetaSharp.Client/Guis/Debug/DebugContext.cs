@@ -6,11 +6,6 @@ using BetaSharp.Util;
 
 namespace BetaSharp.Client.Guis.Debug;
 
-/// <summary>
-/// Context for the debug overlay each <see cref="DebugComponent"/> gets
-/// in the <see cref="DebugComponent.Draw"/> function, that allows writing
-/// left and right string to the screen.
-/// </summary>
 public class DebugContext
 {
     private const int PADDING = 2; // padding on the outside of text
@@ -21,7 +16,6 @@ public class DebugContext
     private bool _right;
     public readonly BetaSharp Game;
 
-
     public readonly GCMonitor GCMonitor;
 
     public DebugContext(BetaSharp game)
@@ -31,9 +25,6 @@ public class DebugContext
         GCMonitor = new GCMonitor();
     }
 
-    /// <summary>
-    /// Initialize the context for drawing components.
-    /// </summary>
     public void Initialize()
     {
         // both y's should be at the top with a padding of 2, however
@@ -48,11 +39,6 @@ public class DebugContext
         _scaledWidth = scaled.ScaledWidth;
     }
 
-    /// <summary>
-    /// Draw a string line for your debug component.
-    /// </summary>
-    /// <param name="str">String to draw</param>
-    /// <param name="color">Color to draw it in, defaults to white</param>
     public void String(string str, Color? color = null)
     {
         // default: white

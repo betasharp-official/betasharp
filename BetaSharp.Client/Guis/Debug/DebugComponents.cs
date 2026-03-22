@@ -7,10 +7,6 @@ using BetaSharp.Client.Guis.Debug.Components;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Guis.Debug;
-
-/// <summary>
-/// List of <see cref="DebugComponent"/>s
-/// </summary>
 public static class DebugComponents
 {
     public static readonly List<Type> Components
@@ -23,10 +19,6 @@ public static class DebugComponents
             throw new InvalidOperationException("Type is not a DebugComponent!");
         }
     } 
-
-    /// <summary>
-    /// Add a type to the list.
-    /// </summary>
     public static void Register(Type t)
     {
         checkSubclass(t);
@@ -46,10 +38,6 @@ public static class DebugComponents
         Register(typeof(DebugFramework));
         Register(typeof(DebugSystem));
     }
-
-    /// <summary>
-    /// Get display name of a debug component type.
-    /// </summary>
     public static string GetName(Type t)
     {
         checkSubclass(t);
@@ -60,9 +48,6 @@ public static class DebugComponents
         return attr.DisplayName;
     }
 
-    /// <summary>
-    /// Get description of a debug component type.
-    /// </summary>
     public static string? GetDescription(Type t)
     {
         checkSubclass(t);

@@ -9,9 +9,6 @@ using BetaSharp.Client.Guis.Debug.Components;
 
 namespace BetaSharp.Client.Guis.Debug;
 
-/// <summary>
-/// Allows saving/loading of Debug components.
-/// </summary>
 public class DebugComponentsStorage
 {
     private readonly ILogger<DebugComponentsStorage> _logger = Log.Instance.For<DebugComponentsStorage>();
@@ -19,11 +16,6 @@ public class DebugComponentsStorage
     protected BetaSharp _game;
     private readonly string _componentsPath;
 
-    /// <summary>
-    /// The main debug overlay that gets used to add/remove components from
-    /// the global store. This is used instead of a list of components since
-    /// you'd need to put it in one to use the components anyways.
-    /// </summary>
     public readonly DebugOverlay Overlay;
 
     public DebugComponentsStorage(BetaSharp game, string gameDataDir)
