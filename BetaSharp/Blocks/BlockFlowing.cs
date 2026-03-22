@@ -110,44 +110,47 @@ internal class BlockFlowing : BlockFluid
             getLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z + 1, minDepth);
         }
 
-        bool canSpreadDown = canSpreadTo(ctx.World.Reader, ctx.X, ctx.Y - 1, ctx.Z);
-        if (canSpreadDown)
+        if (currentState >= 0)
         {
-            if (currentState >= 8)
+            bool canSpreadDown = canSpreadTo(ctx.World.Reader, ctx.X, ctx.Y - 1, ctx.Z);
+            if (canSpreadDown)
             {
-                ctx.World.Writer.SetBlock(ctx.X, ctx.Y - 1, ctx.Z, id, currentState);
+                if (currentState >= 8)
+                {
+                    ctx.World.Writer.SetBlock(ctx.X, ctx.Y - 1, ctx.Z, id, currentState);
+                }
+                else
+                {
+                    ctx.World.Writer.SetBlock(ctx.X, ctx.Y - 1, ctx.Z, id, currentState + 8);
+                }
             }
-            else
+            if (currentState == 0 || isLiquidBreaking(ctx.World.Reader, ctx.X, ctx.Y - 1, ctx.Z))
             {
-                ctx.World.Writer.SetBlock(ctx.X, ctx.Y - 1, ctx.Z, id, currentState + 8);
-            }
-        }
-        if (currentState >= 0 && (currentState == 0 || isLiquidBreaking(ctx.World.Reader, ctx.X, ctx.Y - 1, ctx.Z)))
-        {
-            newLevel = currentState + spreadRate;
-            if (currentState >= 8)
-            {
-                newLevel = 1;
+                newLevel = currentState + spreadRate;
+                if (currentState >= 8)
+                {
+                    newLevel = 1;
+                }
+
+                bool[] spreadArray = getSpread(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z);
+
+                if (newLevel < 8)
+                {
+                    if (spreadArray[0])
+                        spreadTo(ctx.World, ctx.X - 1, ctx.Y, ctx.Z, newLevel);
+                    if (spreadArray[1])
+                        spreadTo(ctx.World, ctx.X + 1, ctx.Y, ctx.Z, newLevel);
+                    if (spreadArray[2])
+                        spreadTo(ctx.World, ctx.X, ctx.Y, ctx.Z - 1, newLevel);
+                    if (spreadArray[3])
+                        spreadTo(ctx.World, ctx.X, ctx.Y, ctx.Z + 1, newLevel);
+                }
             }
 
-            bool[] spreadArray = getSpread(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z);
-
-            if (newLevel < 8)
+            if (currentState == 0 && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z) == id)
             {
-                if (spreadArray[0])
-                    spreadTo(ctx.World, ctx.X - 1, ctx.Y, ctx.Z, newLevel);
-                if (spreadArray[1])
-                    spreadTo(ctx.World, ctx.X + 1, ctx.Y, ctx.Z, newLevel);
-                if (spreadArray[2])
-                    spreadTo(ctx.World, ctx.X, ctx.Y, ctx.Z - 1, newLevel);
-                if (spreadArray[3])
-                    spreadTo(ctx.World, ctx.X, ctx.Y, ctx.Z + 1, newLevel);
+                this.convertToSource(ctx.World, ctx.X, ctx.Y, ctx.Z);
             }
-        }
-
-        if (currentState == 0 && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z) == id)
-        {
-            this.convertToSource(ctx.World, ctx.X, ctx.Y, ctx.Z);
         }
     }
 
