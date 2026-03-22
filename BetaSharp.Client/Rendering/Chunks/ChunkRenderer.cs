@@ -452,19 +452,29 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _lightMeshQueue.RemoveAll(c => c.Pos == pos);
     }
 
+    private bool IsSubChunkLoaded(Vector3D<int> chunkPos)
+    {
+        int size = SubChunkRenderer.Size;
+        return _world.BlockHost.IsRegionLoaded(
+            chunkPos.X, chunkPos.Y, chunkPos.Z,
+            chunkPos.X + size - 1, chunkPos.Y + size - 1, chunkPos.Z + size - 1);
+    }
+
     private void PruneMeshQueuesByDistance()
     {
-        _initialMeshQueue.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
+        bool Keep(ChunkToMeshInfo c) => IsSubChunkLoaded(c.Pos);
+
+        _initialMeshQueue.RemoveAll(c => !Keep(c));
         _initialMeshQueued.Clear();
         foreach (ChunkToMeshInfo c in _initialMeshQueue)
             _initialMeshQueued.Add(c.Pos);
 
-        _urgentMeshQueue.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
+        _urgentMeshQueue.RemoveAll(c => !Keep(c));
         _urgentMeshQueued.Clear();
         foreach (ChunkToMeshInfo c in _urgentMeshQueue)
             _urgentMeshQueued.Add(c.Pos);
 
-        _lightMeshQueue.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
+        _lightMeshQueue.RemoveAll(c => !Keep(c));
         _lightMeshQueued.Clear();
         foreach (ChunkToMeshInfo c in _lightMeshQueue)
             _lightMeshQueued.Add(c.Pos);
