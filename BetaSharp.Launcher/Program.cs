@@ -1,31 +1,31 @@
-﻿using Avalonia;
-using System;
-using BetaSharp.Launcher;
+﻿using System;
+using Avalonia;
 using Serilog;
 
-try
-{
-    Start(args);
-}
-catch (Exception exception)
-{
-    Log.Fatal(exception, "An unhandled exception occurred");
-    throw;
-}
-finally
-{
-    Log.CloseAndFlush();
-}
+namespace BetaSharp.Launcher;
 
-return;
-
-[STAThread]
-static void Start(string[] args)
+internal static class Program
 {
-    AppBuilder
-        .Configure<App>()
-        .UsePlatformDetect()
-        .WithInterFont()
-        .LogToTrace()
-        .StartWithClassicDesktopLifetime(args);
+    [STAThread]
+    public static void Main(string[] args)
+    {
+        try
+        {
+            AppBuilder
+                .Configure<App>()
+                .UsePlatformDetect()
+                .WithInterFont()
+                .LogToTrace()
+                .StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception exception)
+        {
+            Log.Fatal(exception, "An unhandled exception occurred");
+            throw;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
+    }
 }

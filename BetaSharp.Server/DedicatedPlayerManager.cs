@@ -47,9 +47,9 @@ internal class DedicatedPlayerManager : PlayerManager
     {
         try
         {
-            StreamWriter writer = new(file.Open(FileMode.Truncate));
+            StreamWriter writer = new(file.Open(FileMode.Create));
 
-            foreach (string whitelistedPlayer in whitelist)
+            foreach (string whitelistedPlayer in lines)
             {
                 writer.WriteLine(whitelistedPlayer);
             }
@@ -67,7 +67,7 @@ internal class DedicatedPlayerManager : PlayerManager
         try
         {
             fileContent.Clear();
-            StreamReader reader = new (file.OpenRead());
+            StreamReader reader = new (file.Open(FileMode.OpenOrCreate));
 
             while (reader.ReadLine() is { } entry)
             {

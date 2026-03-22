@@ -1,4 +1,5 @@
 using BetaSharp.Network.Packets.Play;
+using BetaSharp.Server.Command;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Commands;
@@ -7,7 +8,7 @@ internal static class ChatCommands
 {
     private static readonly ILogger s_logger = Log.Instance.For(nameof(ChatCommands));
 
-    public static void Say(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Say(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (args.Length == 0) return;
 
@@ -16,7 +17,7 @@ internal static class ChatCommands
         server.playerManager.sendToAll(ChatMessagePacket.Get("§d[Server] " + message));
     }
 
-    public static void Tell(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Tell(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (args.Length < 2)
         {

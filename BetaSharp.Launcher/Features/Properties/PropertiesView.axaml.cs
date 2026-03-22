@@ -3,14 +3,14 @@ using Avalonia;
 using Avalonia.Controls;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Launcher.Features.Splash;
+namespace BetaSharp.Launcher.Features.Properties;
 
-internal sealed partial class SplashView : UserControl
+internal sealed partial class PropertiesView : UserControl
 {
-    private readonly ILogger<SplashView> _logger;
-    private readonly SplashViewModel _viewModel;
+    private readonly ILogger<PropertiesView> _logger;
+    private readonly PropertiesViewModel _viewModel;
 
-    public SplashView(ILogger<SplashView> logger, SplashViewModel viewModel)
+    public PropertiesView(ILogger<PropertiesView> logger, PropertiesViewModel viewModel)
     {
         _logger = logger;
         _viewModel = viewModel;
@@ -28,7 +28,7 @@ internal sealed partial class SplashView : UserControl
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "An exception occurred in splash view on visual tree attach");
+            _logger.LogError(exception, "An exception occurred in properties view on visual tree attach");
         }
     }
 }

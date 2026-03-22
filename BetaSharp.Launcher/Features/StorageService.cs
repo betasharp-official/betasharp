@@ -4,7 +4,7 @@ using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Launcher.Features.Shell;
+namespace BetaSharp.Launcher.Features;
 
 internal sealed class StorageService(ILogger<StorageService> logger)
 {
