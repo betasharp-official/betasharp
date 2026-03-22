@@ -72,9 +72,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<Vector3D<int>> _chunkVersionsToRemove = [];
     private readonly List<ChunkToMeshInfo> _initialMeshQueue = [];
     private readonly HashSet<Vector3D<int>> _initialMeshQueued = [];
-    private readonly List<ChunkToMeshInfo> _updateMeshQueue = [];
-    private readonly HashSet<Vector3D<int>> _updateMeshQueued = [];
-    private readonly List<ChunkToMeshInfo> _lightingUpdates = [];
+    private readonly List<ChunkToMeshInfo> _urgentMeshQueue = [];
+    private readonly HashSet<Vector3D<int>> _urgentMeshQueued = [];
+    private readonly List<ChunkToMeshInfo> _lightMeshQueue = [];
+    private readonly HashSet<Vector3D<int>> _lightMeshQueued = [];
     private readonly Core.Shader _chunkShader;
     private int _lastRenderDistance;
     private Vector3D<double> _lastViewPos;
@@ -257,7 +258,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _renderersToRemove.Clear();
 
         ProcessMeshUpdates(renderParams.Camera);
-        ProcessOneLightingMeshUpdate();
         LoadNewMeshes(renderParams.ViewPos);
 
         GLManager.GL.UseProgram(0);
@@ -438,11 +438,18 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _initialMeshQueue.RemoveAll(c => c.Pos == pos);
     }
 
-    private void RemoveFromUpdateQueue(Vector3D<int> pos)
+    private void RemoveFromUrgentQueue(Vector3D<int> pos)
     {
-        if (!_updateMeshQueued.Remove(pos))
+        if (!_urgentMeshQueued.Remove(pos))
             return;
-        _updateMeshQueue.RemoveAll(c => c.Pos == pos);
+        _urgentMeshQueue.RemoveAll(c => c.Pos == pos);
+    }
+
+    private void RemoveFromLightQueue(Vector3D<int> pos)
+    {
+        if (!_lightMeshQueued.Remove(pos))
+            return;
+        _lightMeshQueue.RemoveAll(c => c.Pos == pos);
     }
 
     private void PruneMeshQueuesByDistance()
@@ -452,10 +459,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         foreach (ChunkToMeshInfo c in _initialMeshQueue)
             _initialMeshQueued.Add(c.Pos);
 
-        _updateMeshQueue.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
-        _updateMeshQueued.Clear();
-        foreach (ChunkToMeshInfo c in _updateMeshQueue)
-            _updateMeshQueued.Add(c.Pos);
+        _urgentMeshQueue.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
+        _urgentMeshQueued.Clear();
+        foreach (ChunkToMeshInfo c in _urgentMeshQueue)
+            _urgentMeshQueued.Add(c.Pos);
+
+        _lightMeshQueue.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
+        _lightMeshQueued.Clear();
+        foreach (ChunkToMeshInfo c in _lightMeshQueue)
+            _lightMeshQueued.Add(c.Pos);
     }
 
     private static int FindBestInFrustumIndex(List<ChunkToMeshInfo> list, Culler camera, Vector3D<double> viewPos)
@@ -488,22 +500,49 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (HasRenderableMesh(chunkPos))
         {
             RemoveFromInitialQueue(chunkPos);
-            int updateIdx = _updateMeshQueue.FindIndex(c => c.Pos == chunkPos);
-            if (updateIdx >= 0)
+            if (priority)
             {
-                ChunkToMeshInfo existing = _updateMeshQueue[updateIdx];
-                _updateMeshQueue[updateIdx] = new(chunkPos, version, priority || existing.priority);
-                _updateMeshQueued.Add(chunkPos);
+                int idx = _urgentMeshQueue.FindIndex(c => c.Pos == chunkPos);
+                if (idx >= 0)
+                {
+                    _urgentMeshQueue[idx] = new(chunkPos, version, true);
+                    _urgentMeshQueued.Add(chunkPos);
+                }
+                else
+                {
+                    RemoveFromLightQueue(chunkPos);
+                    _urgentMeshQueued.Add(chunkPos);
+                    _urgentMeshQueue.Add(new(chunkPos, version, true));
+                }
             }
             else
             {
-                _updateMeshQueued.Add(chunkPos);
-                _updateMeshQueue.Add(new(chunkPos, version, priority));
+                int urgentIdx = _urgentMeshQueue.FindIndex(c => c.Pos == chunkPos);
+                if (urgentIdx >= 0)
+                {
+                    _urgentMeshQueue[urgentIdx] = new(chunkPos, version, true);
+                    _urgentMeshQueued.Add(chunkPos);
+                }
+                else
+                {
+                    int lightIdx = _lightMeshQueue.FindIndex(c => c.Pos == chunkPos);
+                    if (lightIdx >= 0)
+                    {
+                        _lightMeshQueue[lightIdx] = new(chunkPos, version, false);
+                        _lightMeshQueued.Add(chunkPos);
+                    }
+                    else
+                    {
+                        _lightMeshQueued.Add(chunkPos);
+                        _lightMeshQueue.Add(new(chunkPos, version, false));
+                    }
+                }
             }
         }
         else
         {
-            RemoveFromUpdateQueue(chunkPos);
+            RemoveFromUrgentQueue(chunkPos);
+            RemoveFromLightQueue(chunkPos);
             int initialIdx = _initialMeshQueue.FindIndex(c => c.Pos == chunkPos);
             if (initialIdx >= 0)
             {
@@ -528,71 +567,37 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
             PruneMeshQueuesByDistance();
 
-            if (_initialMeshQueue.Count == 0 && _updateMeshQueue.Count == 0)
+            if (_initialMeshQueue.Count == 0 && _urgentMeshQueue.Count == 0 && _lightMeshQueue.Count == 0)
                 break;
 
-            int bestIndex = -1;
-            bool isInitial = false;
-
-            if (n == 0 && _updateMeshQueue.Count > 0)
+            (List<ChunkToMeshInfo> list, Action<Vector3D<int>> remove)[] order = n switch
             {
-                bestIndex = FindBestInFrustumIndex(_updateMeshQueue, camera, _lastViewPos);
-                if (bestIndex >= 0) isInitial = false;
+                0 => [(_urgentMeshQueue, RemoveFromUrgentQueue), (_lightMeshQueue, RemoveFromLightQueue), (_initialMeshQueue, RemoveFromInitialQueue)],
+                1 => [(_lightMeshQueue, RemoveFromLightQueue), (_urgentMeshQueue, RemoveFromUrgentQueue), (_initialMeshQueue, RemoveFromInitialQueue)],
+                2 => [(_urgentMeshQueue, RemoveFromUrgentQueue), (_lightMeshQueue, RemoveFromLightQueue), (_initialMeshQueue, RemoveFromInitialQueue)],
+                3 => [(_initialMeshQueue, RemoveFromInitialQueue), (_urgentMeshQueue, RemoveFromUrgentQueue), (_lightMeshQueue, RemoveFromLightQueue)],
+                _ => []
+            };
+
+            ChunkToMeshInfo? chosen = null;
+            Action<Vector3D<int>>? removeFunc = null;
+
+            foreach ((List<ChunkToMeshInfo> list, Action<Vector3D<int>> remove) in order)
+            {
+                int bestIndex = FindBestInFrustumIndex(list, camera, _lastViewPos);
+                if (bestIndex >= 0)
+                {
+                    chosen = list[bestIndex];
+                    removeFunc = remove;
+                    break;
+                }
             }
 
-            if (bestIndex < 0 && _initialMeshQueue.Count > 0)
-            {
-                bestIndex = FindBestInFrustumIndex(_initialMeshQueue, camera, _lastViewPos);
-                if (bestIndex >= 0) isInitial = true;
-            }
-
-            if (bestIndex < 0 && _updateMeshQueue.Count > 0)
-            {
-                bestIndex = FindBestInFrustumIndex(_updateMeshQueue, camera, _lastViewPos);
-                if (bestIndex >= 0) isInitial = false;
-            }
-
-            if (bestIndex < 0) 
+            if (chosen is not { } c || removeFunc is null)
                 break;
-                
-            if (isInitial)
-            {
-                var chosen = _initialMeshQueue[bestIndex];
-                _meshGenerator.MeshChunk(_world, chosen.Pos, chosen.Version);
-                RemoveFromInitialQueue(chosen.Pos);
-            }
-            else
-            {
-                var chosen = _updateMeshQueue[bestIndex];
-                _meshGenerator.MeshChunk(_world, chosen.Pos, chosen.Version);
-                RemoveFromUpdateQueue(chosen.Pos);
-            }
-        }
-    }
 
-    private void ProcessOneLightingMeshUpdate()
-    {
-        if (_meshGenerator.ActiveTasks >= MaxMeshJobsPerFrame)
-            return;
-
-        _lightingUpdates.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
-        int bestIndex = -1;
-        double bestDist = double.MaxValue;
-        for (int i = 0; i < _lightingUpdates.Count; i++)
-        {
-            double dist = Vector3D.DistanceSquared(ToDoubleVec(_lightingUpdates[i].Pos), _lastViewPos);
-            if (dist < bestDist)
-            {
-                bestDist = dist;
-                bestIndex = i;
-            }
-        }
-
-        if (bestIndex != -1)
-        {
-            var update = _lightingUpdates[bestIndex];
-            _meshGenerator.MeshChunk(_world, update.Pos, update.Version);
-            _lightingUpdates.RemoveAt(bestIndex);
+            _meshGenerator.MeshChunk(_world, c.Pos, c.Version);
+            removeFunc(c.Pos);
         }
     }
 
@@ -613,7 +618,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 long? snapshot = version.SnapshotIfNeeded();
                 if (snapshot.HasValue)
                 {
-                    _lightingUpdates.Add(new(state.Renderer.Position, snapshot.Value, false));
+                    EnqueueInitialOrUpdate(state.Renderer.Position, snapshot.Value, false);
                 }
             }
         }
@@ -808,8 +813,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _initialMeshQueue.Clear();
         _initialMeshQueued.Clear();
-        _updateMeshQueue.Clear();
-        _updateMeshQueued.Clear();
+        _urgentMeshQueue.Clear();
+        _urgentMeshQueued.Clear();
+        _lightMeshQueue.Clear();
+        _lightMeshQueued.Clear();
 
         foreach (ChunkMeshVersion version in _chunkVersions.Values)
         {
