@@ -5,7 +5,6 @@ using BetaSharp.Profiling;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 
@@ -63,6 +62,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     private static readonly Vector3D<int>[] s_spiralOffsets;
     private const int MaxRenderDistance = 32 + 1;
+    private const int MaxMeshJobsPerFrame = 4;
     private readonly Dictionary<Vector3D<int>, SubChunkState> _renderers = [];
     private readonly List<SubChunkRenderer> _translucentRenderers = [];
     private readonly List<SubChunkRenderer> _renderersToRemove = [];
@@ -70,7 +70,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly World _world;
     private readonly Dictionary<Vector3D<int>, ChunkMeshVersion> _chunkVersions = [];
     private readonly List<Vector3D<int>> _chunkVersionsToRemove = [];
-    private readonly List<ChunkToMeshInfo> _dirtyChunks = [];
+    private readonly List<ChunkToMeshInfo> _initialMeshQueue = [];
+    private readonly HashSet<Vector3D<int>> _initialMeshQueued = [];
+    private readonly List<ChunkToMeshInfo> _updateMeshQueue = [];
+    private readonly HashSet<Vector3D<int>> _updateMeshQueued = [];
     private readonly List<ChunkToMeshInfo> _lightingUpdates = [];
     private readonly Core.Shader _chunkShader;
     private int _lastRenderDistance;
@@ -253,7 +256,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _renderersToRemove.Clear();
 
-        ProcessOneMeshUpdate(renderParams.Camera);
+        ProcessMeshUpdates(renderParams.Camera);
         ProcessOneLightingMeshUpdate();
         LoadNewMeshes(renderParams.ViewPos);
 
@@ -313,7 +316,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         for (int i = 0; i < maxChunks; i++)
         {
-            if (_meshGenerator.Mesh is MeshBuildResult mesh)
+            if (_meshGenerator.GetBestMesh(viewPos) is MeshBuildResult mesh)
             {
                 if (IsChunkInRenderDistance(mesh.Pos, viewPos))
                 {
@@ -426,14 +429,42 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
     }
 
-    private void ProcessOneMeshUpdate(Culler camera)
+    private bool HasRenderableMesh(Vector3D<int> chunkPos) => _renderers.ContainsKey(chunkPos);
+
+    private void RemoveFromInitialQueue(Vector3D<int> pos)
     {
-        _dirtyChunks.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
+        if (!_initialMeshQueued.Remove(pos))
+            return;
+        _initialMeshQueue.RemoveAll(c => c.Pos == pos);
+    }
+
+    private void RemoveFromUpdateQueue(Vector3D<int> pos)
+    {
+        if (!_updateMeshQueued.Remove(pos))
+            return;
+        _updateMeshQueue.RemoveAll(c => c.Pos == pos);
+    }
+
+    private void PruneMeshQueuesByDistance()
+    {
+        _initialMeshQueue.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
+        _initialMeshQueued.Clear();
+        foreach (ChunkToMeshInfo c in _initialMeshQueue)
+            _initialMeshQueued.Add(c.Pos);
+
+        _updateMeshQueue.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
+        _updateMeshQueued.Clear();
+        foreach (ChunkToMeshInfo c in _updateMeshQueue)
+            _updateMeshQueued.Add(c.Pos);
+    }
+
+    private static int FindBestInFrustumIndex(List<ChunkToMeshInfo> list, Culler camera, Vector3D<double> viewPos)
+    {
         int bestIndex = -1;
         double bestDist = double.MaxValue;
-        for (int i = 0; i < _dirtyChunks.Count; i++)
+        for (int i = 0; i < list.Count; i++)
         {
-            var info = _dirtyChunks[i];
+            ChunkToMeshInfo info = list[i];
             var aabb = new Box(
                 info.Pos.X, info.Pos.Y, info.Pos.Z,
                 info.Pos.X + SubChunkRenderer.Size,
@@ -441,7 +472,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 info.Pos.Z + SubChunkRenderer.Size
             );
 
-            double dist = Vector3D.DistanceSquared(ToDoubleVec(info.Pos), _lastViewPos);
+            double dist = Vector3D.DistanceSquared(ToDoubleVec(info.Pos), viewPos);
             if (dist < bestDist && camera.isBoundingBoxInFrustum(aabb))
             {
                 bestDist = dist;
@@ -449,16 +480,101 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             }
         }
 
-        if (bestIndex != -1)
+        return bestIndex;
+    }
+
+    private void EnqueueInitialOrUpdate(Vector3D<int> chunkPos, long version, bool priority)
+    {
+        if (HasRenderableMesh(chunkPos))
         {
-            var closest = _dirtyChunks[bestIndex];
-            _meshGenerator.MeshChunk(_world, closest.Pos, closest.Version);
-            _dirtyChunks.RemoveAt(bestIndex);
+            RemoveFromInitialQueue(chunkPos);
+            int updateIdx = _updateMeshQueue.FindIndex(c => c.Pos == chunkPos);
+            if (updateIdx >= 0)
+            {
+                ChunkToMeshInfo existing = _updateMeshQueue[updateIdx];
+                _updateMeshQueue[updateIdx] = new(chunkPos, version, priority || existing.priority);
+                _updateMeshQueued.Add(chunkPos);
+            }
+            else
+            {
+                _updateMeshQueued.Add(chunkPos);
+                _updateMeshQueue.Add(new(chunkPos, version, priority));
+            }
+        }
+        else
+        {
+            RemoveFromUpdateQueue(chunkPos);
+            int initialIdx = _initialMeshQueue.FindIndex(c => c.Pos == chunkPos);
+            if (initialIdx >= 0)
+            {
+                ChunkToMeshInfo existing = _initialMeshQueue[initialIdx];
+                _initialMeshQueue[initialIdx] = new(chunkPos, version, priority || existing.priority);
+                _initialMeshQueued.Add(chunkPos);
+            }
+            else
+            {
+                _initialMeshQueued.Add(chunkPos);
+                _initialMeshQueue.Add(new(chunkPos, version, priority));
+            }
+        }
+    }
+
+    private void ProcessMeshUpdates(Culler camera)
+    {
+        for (int n = 0; n < MaxMeshJobsPerFrame; n++)
+        {
+            if (_meshGenerator.ActiveTasks >= MaxMeshJobsPerFrame)
+                break;
+
+            PruneMeshQueuesByDistance();
+
+            if (_initialMeshQueue.Count == 0 && _updateMeshQueue.Count == 0)
+                break;
+
+            int bestIndex = -1;
+            bool isInitial = false;
+
+            if (n == 0 && _updateMeshQueue.Count > 0)
+            {
+                bestIndex = FindBestInFrustumIndex(_updateMeshQueue, camera, _lastViewPos);
+                if (bestIndex >= 0) isInitial = false;
+            }
+
+            if (bestIndex < 0 && _initialMeshQueue.Count > 0)
+            {
+                bestIndex = FindBestInFrustumIndex(_initialMeshQueue, camera, _lastViewPos);
+                if (bestIndex >= 0) isInitial = true;
+            }
+
+            if (bestIndex < 0 && _updateMeshQueue.Count > 0)
+            {
+                bestIndex = FindBestInFrustumIndex(_updateMeshQueue, camera, _lastViewPos);
+                if (bestIndex >= 0) isInitial = false;
+            }
+
+            if (bestIndex < 0) 
+                break;
+                
+            if (isInitial)
+            {
+                var chosen = _initialMeshQueue[bestIndex];
+                _meshGenerator.MeshChunk(_world, chosen.Pos, chosen.Version);
+                RemoveFromInitialQueue(chosen.Pos);
+            }
+            else
+            {
+                var chosen = _updateMeshQueue[bestIndex];
+                _meshGenerator.MeshChunk(_world, chosen.Pos, chosen.Version);
+                RemoveFromUpdateQueue(chosen.Pos);
+            }
         }
     }
 
     private void ProcessOneLightingMeshUpdate()
     {
+        if (_meshGenerator.ActiveTasks >= MaxMeshJobsPerFrame)
+            return;
+
         _lightingUpdates.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
         int bestIndex = -1;
         double bestDist = double.MaxValue;
@@ -616,16 +732,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         long? snapshot = version.SnapshotIfNeeded();
         if (snapshot.HasValue)
         {
-            for (int i = 0; i < _dirtyChunks.Count; i++)
-            {
-                if (_dirtyChunks[i].Pos == chunkPos)
-                {
-                    _dirtyChunks[i] = new(chunkPos, snapshot.Value, priority || _dirtyChunks[i].priority);
-                    return true;
-                }
-            }
-
-            _dirtyChunks.Add(new(chunkPos, snapshot.Value, priority));
+            EnqueueInitialOrUpdate(chunkPos, snapshot.Value, priority);
             return true;
         }
 
@@ -698,6 +805,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _translucentRenderers.Clear();
         _renderersToRemove.Clear();
+
+        _initialMeshQueue.Clear();
+        _initialMeshQueued.Clear();
+        _updateMeshQueue.Clear();
+        _updateMeshQueued.Clear();
 
         foreach (ChunkMeshVersion version in _chunkVersions.Values)
         {
