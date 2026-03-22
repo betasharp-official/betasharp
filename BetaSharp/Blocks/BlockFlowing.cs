@@ -122,7 +122,7 @@ internal class BlockFlowing : BlockFluid
                 ctx.World.Writer.SetBlock(ctx.X, ctx.Y - 1, ctx.Z, id, currentState + 8);
             }
         }
-        else if (currentState >= 0 && (currentState == 0 || isLiquidBreaking(ctx.World.Reader, ctx.X, ctx.Y - 1, ctx.Z)))
+        if (currentState >= 0 && (currentState == 0 || isLiquidBreaking(ctx.World.Reader, ctx.X, ctx.Y - 1, ctx.Z)))
         {
             newLevel = currentState + spreadRate;
             if (currentState >= 8)
