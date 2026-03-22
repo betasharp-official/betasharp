@@ -1,6 +1,5 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.NBT;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks.Entities;

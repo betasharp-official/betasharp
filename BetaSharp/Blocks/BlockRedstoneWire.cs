@@ -1,7 +1,6 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
@@ -70,7 +69,6 @@ public class BlockRedstoneWire : Block
                     newMeta = getMaxCurrentStrength(level.Reader, nx, y, nz, newMeta);
                 }
 
-                // Check if power can travel up/down blocks (Redstone staircasing)
                 if (level.Reader.ShouldSuffocate(nx, y, nz) && !level.Reader.ShouldSuffocate(x, y + 1, z))
                 {
                     if (nx != srcX || y + 1 != srcY || nz != srcZ)
@@ -84,7 +82,6 @@ public class BlockRedstoneWire : Block
                 }
             }
 
-            // Decay the signal strength by 1
             if (newMeta > 0)
             {
                 --newMeta;
@@ -95,7 +92,6 @@ public class BlockRedstoneWire : Block
             }
         }
 
-        // Only update if the strength actually changed
         if (oldMeta != newMeta)
         {
             level.Writer.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, newMeta);
@@ -143,7 +139,6 @@ public class BlockRedstoneWire : Block
                 }
             }
 
-            // If the wire turned completely off or on, trigger deep neighbor updates
             if (oldMeta == 0 || newMeta == 0)
             {
                 neighbors.Add(new BlockPos(x, y, z));

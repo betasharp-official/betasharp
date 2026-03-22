@@ -18,7 +18,5 @@ public interface IChunkSource
 
     string GetDebugInfo();
 
-    // Creates a new generator instance that is safe to use on a separate thread.
-    // The default returns the same instance (not parallel-safe for stateful generators).
     IChunkSource CreateParallelInstance() => this;
 }

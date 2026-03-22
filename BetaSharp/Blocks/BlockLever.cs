@@ -1,6 +1,5 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
@@ -19,7 +18,6 @@ internal class BlockLever : Block
 
     public override BlockRendererType getRenderType() => BlockRendererType.Lever;
 
-    // Converted nested ternaries to clean boolean logic
     public bool canPlaceAt(IBlockReader world, int x, int y, int z, int side) =>
         (side == 1 && world.ShouldSuffocate(x, y - 1, z)) ||
         (side == 2 && world.ShouldSuffocate(x, y, z + 1)) ||

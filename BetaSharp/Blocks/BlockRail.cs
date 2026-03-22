@@ -1,7 +1,6 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
@@ -145,8 +144,6 @@ public class BlockRail : Block
 
                 if (stateChanged)
                 {
-                    // Notify all six neighbors of the rail so horizontally adjacent powered rails
-                    // receive neighborUpdate and can propagate power along the line.
                     @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, id);
                 }
             }

@@ -27,7 +27,6 @@ internal class BlockStairs : Block
 
     public override void addIntersectingBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z, Box box, List<Box> boxes)
     {
-        // Fixed capitalization on GetBlockMeta
         int meta = world.GetBlockMeta(x, y, z);
         if (meta == 0)
         {
@@ -61,10 +60,8 @@ internal class BlockStairs : Block
         setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    // Migrated to OnTickEvt
     public override void randomDisplayTick(OnTickEvent @event) => _baseBlock.randomDisplayTick(@event);
 
-    // Migrated to OnBlockBreakStartEvt
     public override void onBlockBreakStart(OnBlockBreakStartEvent @event) => _baseBlock.onBlockBreakStart(@event);
 
     public override void onMetadataChange(OnMetadataChangeEvent @event) => _baseBlock.onMetadataChange(@event);
@@ -102,7 +99,6 @@ internal class BlockStairs : Block
         int meta = 0;
         if (evt.Placer != null)
         {
-            // 1. Calculate facing based on placer entity yaw
             int facing = MathHelper.Floor(evt.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
 
             if (facing == 0)
@@ -131,7 +127,6 @@ internal class BlockStairs : Block
         _baseBlock.onPlaced(evt);
     }
 
-    // Migrated to OnBreakEvt
     public override void onBreak(OnBreakEvent ctx) => _baseBlock.onBreak(ctx);
 
     public override void dropStacks(OnDropEvent ctx) => _baseBlock.dropStacks(ctx);
@@ -140,7 +135,6 @@ internal class BlockStairs : Block
 
     public override void onTick(OnTickEvent ctx) => _baseBlock.onTick(ctx);
 
-    // Migrated to OnUseEvt
     public override bool onUse(OnUseEvent ctx) => _baseBlock.onUse(ctx);
 
     public override void onDestroyedByExplosion(OnDestroyedByExplosionEvent ctx) => _baseBlock.onDestroyedByExplosion(ctx);

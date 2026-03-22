@@ -60,7 +60,6 @@ internal class ItemBlock : Item
             return false;
         }
 
-        // Prevent overwriting existing non-replaceable blocks (fixes Lever/Button overlap)
         int existingBlockId = world.Reader.GetBlockId(x, y, z);
         if (existingBlockId != 0 && !Block.Blocks[existingBlockId].material.IsReplaceable)
         {

@@ -2,7 +2,6 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Items;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 

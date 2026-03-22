@@ -1,6 +1,5 @@
 using BetaSharp.Items;
 using BetaSharp.Worlds.ClientData.Colors;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;

@@ -25,7 +25,6 @@ internal class BlockSand : Block
 
     private void processFall(OnTickEvent @event)
     {
-        // Check the block BELOW the sand (evt has sand position; canFallThrough checks ctx coords)
         int x = @event.X;
         int y = @event.Y;
         int z = @event.Z;

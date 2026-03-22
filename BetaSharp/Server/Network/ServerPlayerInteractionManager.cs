@@ -84,7 +84,6 @@ public class ServerPlayerInteractionManager
             failedMiningX = x;
             failedMiningY = y;
             failedMiningZ = z;
-            // Previously this margin was in continueMining
             miningProgress = 0.3f;
         }
     }

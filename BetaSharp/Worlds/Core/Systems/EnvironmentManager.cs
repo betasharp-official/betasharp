@@ -47,9 +47,6 @@ public class EnvironmentManager
 
         bool wasRaining = IsRaining;
 
-        //WorldProperties props = _properties;
-        //JavaRandom random = _random;
-
         if (TicksSinceLightning > 0)
         {
             --TicksSinceLightning;

@@ -24,7 +24,7 @@ public class SkyDimension : Dimension
         return 0.0F;
     }
 
-    public override bool IsValidSpawnPoint(int x, int y) // Variable named y here but is actually z in Minecraft coords
+    public override bool IsValidSpawnPoint(int x, int y)
     {
         int topBlockId = World.GetSpawnBlockId(x, y);
         return topBlockId != 0 && Block.Blocks[topBlockId] != null && Block.Blocks[topBlockId].material.BlocksMovement;

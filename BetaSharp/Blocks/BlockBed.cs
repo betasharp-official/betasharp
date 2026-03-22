@@ -2,7 +2,6 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
@@ -23,7 +22,6 @@ public class BlockBed : Block
             return true;
         }
 
-        // Extract to local variables so we don't mutate the event struct
         int x = @event.X;
         int y = @event.Y;
         int z = @event.Z;

@@ -43,7 +43,6 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         {
             string lockFile = Path.Combine(_saveDirectory.FullName, "session.lock");
 
-            // Replaced DataOutputStream with native BinaryWriter
             using var stream = File.Create(lockFile);
             using var writer = new BinaryWriter(stream);
             writer.Write(_now);
@@ -205,7 +204,6 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
                 return NbtIo.ReadCompressed(stream);
             }
 
-            // Fallback: Migrate single-player data from level.dat
             string levelFile = Path.Combine(_saveDirectory.FullName, "level.dat");
             if (File.Exists(levelFile))
             {

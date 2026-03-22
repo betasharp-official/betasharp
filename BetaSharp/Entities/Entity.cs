@@ -283,9 +283,6 @@ public abstract class Entity
 
     public virtual void move(double x, double y, double z)
     {
-        // Client stability: mobs/items should not run local collision resolution
-        // against unloaded terrain (which can "deepen" them into blocks and then
-        // depenetrate upward). Only players are allowed to move normally.
         if (world.IsRemote && this is not EntityPlayer)
         {
             int minChunkX = MathHelper.Floor(boundingBox.MinX) >> 4;

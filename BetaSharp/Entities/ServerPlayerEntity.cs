@@ -51,7 +51,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         {
             if (world.Properties.TerrainType == WorldType.Sky)
             {
-                // Sky: no random offset so we stay on the island; use validity Y at spawn (x,z)
                 int validityY = world.Reader.GetSpawnPositionValidityY(x, y);
                 if (validityY > 0)
                     z = validityY;

@@ -20,13 +20,12 @@ internal class ItemDoor : Item
 
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int side)
     {
-        if (side != 1) return false; // Only allow placing on top of blocks
+        if (side != 1) return false;
         y++;
 
         int blockId = doorMaterial == Material.Wood ? Block.Door.id : Block.IronDoor.id;
         if (!Block.Blocks[blockId].canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z))) return false;
 
-        // 1. Calculate base facing from player yaw
         int facing = MathHelper.Floor((entityPlayer.yaw + 180.0f) * 4.0f / 360.0f - 0.5f) & 3;
         int offsetX = 0;
         int offsetZ = 0;
@@ -35,7 +34,6 @@ internal class ItemDoor : Item
         if (facing == 2) offsetZ = -1;
         if (facing == 3) offsetX = 1;
 
-        // 2. Check neighbors for mirroring (double doors)
         int leftSolid = (world.Reader.ShouldSuffocate(x - offsetX, y, z - offsetZ) ? 1 : 0) +
                         (world.Reader.ShouldSuffocate(x - offsetX, y + 1, z - offsetZ) ? 1 : 0);
         int rightSolid = (world.Reader.ShouldSuffocate(x + offsetX, y, z + offsetZ) ? 1 : 0) +
@@ -46,14 +44,12 @@ internal class ItemDoor : Item
                             world.Reader.GetBlockId(x + offsetX, y + 1, z + offsetZ) == blockId;
         bool mirror = (leftHasDoor && !rightHasDoor) || (rightSolid > leftSolid);
 
-        // 3. Apply the hinge flip bit (+4) if mirrored
         if (mirror)
         {
             facing = (facing - 1) & 3;
             facing += 4;
         }
 
-        // 4. Place BOTH halves of the door (bottom with facing+hinge, top with same + upper bit 8)
         world.Writer.SetBlock(x, y, z, blockId, facing);
         world.Writer.SetBlock(x, y + 1, z, blockId, facing + 8);
         world.Broadcaster.NotifyNeighbors(x, y, z, blockId);

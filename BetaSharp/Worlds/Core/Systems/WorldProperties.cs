@@ -123,7 +123,7 @@ public class WorldProperties
         if (players.Count > 0 && players[0] is EntityPlayer player)
         {
             playerNbt = new NBTTagCompound();
-            player.write(playerNbt); // Assuming write is the NBT save method
+            player.write(playerNbt);
         }
 
         UpdateTagCompound(nbt, playerNbt);

@@ -1,7 +1,6 @@
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Rules;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
