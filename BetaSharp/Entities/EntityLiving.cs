@@ -752,26 +752,31 @@ public abstract class EntityLiving : Entity
                 yawDelta -= 360.0D;
             }
 
-            yaw = (float)((double)yaw + yawDelta / (double)newPosRotationIncrements);
-            pitch = (float)((double)pitch + (newRotationPitch - (double)pitch) / (double)newPosRotationIncrements);
+            yaw = (float)(yaw + yawDelta / newPosRotationIncrements);
+            pitch = (float)(pitch + (newRotationPitch - pitch) / newPosRotationIncrements);
             --newPosRotationIncrements;
             setPosition(newX, newY, newZ);
             setRotation(yaw, pitch);
             var collisions = world.Entities.GetEntityCollisionsScratch(this, boundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
             if (collisions.Count > 0)
             {
-                double highestCollisionY = 0.0D;
+                double highestCollisionY = boundingBox.MinY;
+                bool applyStep = false;
 
-                for (int i = 0; i < collisions.Count; ++i)
+                foreach (var col in collisions)
                 {
-                    Box box = collisions[i];
-                    if (box.MaxY > highestCollisionY)
+                    if (col.MaxY > highestCollisionY && col.MaxY <= boundingBox.MinY + 1.0)
                     {
-                        highestCollisionY = box.MaxY;
+                        highestCollisionY = col.MaxY;
+                        applyStep = true;
                     }
                 }
 
-                newY += highestCollisionY - boundingBox.MinY;
+                if (applyStep)
+                {
+                    newY += highestCollisionY - boundingBox.MinY;
+                }
+                
                 setPosition(newX, newY, newZ);
             }
         }
