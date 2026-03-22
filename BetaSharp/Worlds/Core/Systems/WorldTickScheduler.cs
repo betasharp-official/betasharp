@@ -6,6 +6,9 @@ public class WorldTickScheduler
 {
     private readonly IWorldContext _context;
     private readonly PriorityQueue<BlockUpdate, (long, long)> _scheduledUpdates = new();
+    private readonly HashSet<ScheduledBlockTick> _pendingScheduledKeys = new();
+
+    private readonly record struct ScheduledBlockTick(int X, int Y, int Z, int BlockId);
 
     public WorldTickScheduler(IWorldContext context) => _context = context;
     public void Tick(bool forceFlush = false) => ProcessScheduledTicks(forceFlush);
@@ -17,6 +20,10 @@ public class WorldTickScheduler
     /// </summary>
     public void ScheduleBlockUpdateFromChunkLoad(int x, int y, int z, int blockId, int tickRate)
     {
+        var key = new ScheduledBlockTick(x, y, z, blockId);
+        if (!_pendingScheduledKeys.Add(key))
+            return;
+
         long scheduledTime = _context.GetTime() + tickRate;
         BlockUpdate blockUpdate = new(x, y, z, blockId, scheduledTime);
         _scheduledUpdates.Enqueue(blockUpdate, (blockUpdate.ScheduledTime, blockUpdate.ScheduledOrder));
@@ -43,6 +50,10 @@ public class WorldTickScheduler
         }
         else
         {
+            var key = new ScheduledBlockTick(x, y, z, blockId);
+            if (!_pendingScheduledKeys.Add(key))
+                return;
+
             long executionTime = _context.GetTime() + tickRate;
             BlockUpdate blockUpdate = new(x, y, z, blockId, executionTime);
             _scheduledUpdates.Enqueue(blockUpdate, (blockUpdate.ScheduledTime, blockUpdate.ScheduledOrder));
@@ -66,6 +77,7 @@ public class WorldTickScheduler
             if (!forceFlush && _scheduledUpdates.Peek().ScheduledTime > currentTime) break;
 
             BlockUpdate blockUpdate = _scheduledUpdates.Dequeue();
+            _pendingScheduledKeys.Remove(new ScheduledBlockTick(blockUpdate.X, blockUpdate.Y, blockUpdate.Z, blockUpdate.BlockId));
 
             const byte loadRadius = 8;
             
