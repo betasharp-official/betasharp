@@ -8,7 +8,7 @@ using BetaSharp.Client.Diagnostics;
 namespace BetaSharp.Client.Guis.Debug.Components;
 
 [DisplayName("System")]
-[Description("Shows info about your system..")]
+[Description("Shows info about your system.")]
 public class DebugSystem : DebugComponent
 {
     public DebugSystem() { }
