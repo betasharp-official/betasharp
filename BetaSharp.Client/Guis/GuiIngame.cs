@@ -271,58 +271,6 @@ public class GuiIngame : Gui
         {
             _game.componentsStorage.Overlay.Context.GCMonitor.AllowUpdating = true;
             _game.componentsStorage.Overlay.Draw();
-            //long maxMem = _gcMonitor.MaxMemoryBytes;
-            //long usedMem = _gcMonitor.UsedMemoryBytes;
-            //long heapMem = _gcMonitor.UsedHeapBytes;
-            //int facingIndex = MathHelper.Floor((double)(_game.player.yaw * 4.0F / 360.0F) + 0.5D) & 3;
-            //string cardinalDirection = GetCardinalDirection(facingIndex);
-            //string verticalLookDirection = GetVerticalLookDirection(_game.player.pitch);
-
-            //List<string> leftLines = new()
-            //{
-            //    "Minecraft Beta 1.7.3 (" + _game.debug + ")",
-            //    _game.getEntityDebugInfo()
-            //    _game.getParticleAndEntityCountDebugInfo(),
-            //    _game.getWorldDebugInfo(),
-            //    "x: " + _game.player.x,
-            //    "y: " + _game.player.y,
-            //    "z: " + _game.player.z,
-            //    $"f: {facingIndex} ({cardinalDirection}, {verticalLookDirection})",
-            //    $"Render distance: {_game.options.renderDistance} chunks",
-            //    GetTargetedBlockDebugLine()
-            //};
-
-            //if (_game.internalServer != null)
-            //{
-            //    leftLines.Add($"Server TPS: {_game.internalServer.Tps:F1}");
-            //}
-
-            //DebugSystemSnapshot systemSnapshot = _game.GetDebugSystemSnapshot();
-            //DebugFrameStatsSnapshot frameSnapshot = _game.GetDebugFrameStatsSnapshot();
-            //List<string> rightLines = new()
-            //{
-            //    $"Used memory: {FormatPercentage(usedMem, maxMem)} ({FormatMegabytes(usedMem)}) of {FormatMegabytes(maxMem)}",
-            //    $"GC heap: {FormatPercentage(heapMem, maxMem)} ({FormatMegabytes(heapMem)})",
-            //   $"CPU: {FormatCpuInfo(systemSnapshot)}",
-            //    $"GPU: {systemSnapshot.GpuName} (VRAM: {systemSnapshot.GpuVram})",
-            //    $"OpenGL: {systemSnapshot.OpenGlVersion}",
-            //    $"GLSL: {systemSnapshot.GlslVersion}",
-            //    $"Driver: {systemSnapshot.DriverVersion}",
-            //    $"OS: {systemSnapshot.OsDescription}",
-            //    $".NET: {systemSnapshot.DotNetRuntime}"
-            //};
-
-            //if (frameSnapshot.HasData)
-            //{
-            //    rightLines.Add($"Frame avg: {frameSnapshot.AverageFrameTimeMs:F2} ms");
-            //    rightLines.Add($"FPS min/max: {frameSnapshot.MinFps:F1}/{frameSnapshot.MaxFps:F1}");
-            //}
-            //else
-            //{
-            //    rightLines.Add("Frame stats: collecting...");
-            //}
-
-            //DrawDebugColumns(font, leftLines, rightLines, scaledWidth);
         } else { 
             _game.componentsStorage.Overlay.Context.GCMonitor.AllowUpdating = false;
         }
