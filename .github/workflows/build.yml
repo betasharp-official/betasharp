@@ -1,23 +1,27 @@
-﻿name: .NET
-
-on:
-    push:
-        branches: [ "main" ]
-    pull_request:
-        branches: [ "main" ]
+﻿name: Build BetaSharp
+on: [pull_request, push]
+permissions:
+  contents: read
 
 jobs:
-    build:
-
-        runs-on: ubuntu-latest
-
-        steps:
-            -   uses: actions/checkout@v4
-            -   name: Setup .NET
-                uses: actions/setup-dotnet@v4
-                with:
-                    dotnet-version: 10.0.x
-            -   name: Restore dependencies
-                run: dotnet restore
-            -   name: Build
-                run: dotnet build --no-restore
+  build:
+    strategy:
+      matrix:
+        on: [ubuntu-24.04, windows-2025, macos-26-intel]
+    runs-on: ${{ matrix.on }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
+        with:
+          persist-credentials: false
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # 5.1.0
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'ga'
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build with .NET
+        run: dotnet build --no-restore
+      - name: Test with .NET
+        run: dotnet test --no-build --verbosity normal

@@ -1,4 +1,4 @@
-name: Release
+name: Release BetaSharp
 on:
   workflow_dispatch:
     inputs:
@@ -6,58 +6,64 @@ on:
         description: 'Version name (e.g. 1.0, 1.2.4, snapshot-pre1.0_1)'
         required: true
         default: 'snapshot'
+
+permissions:
+  contents: write
+
 jobs:
   build:
-    name: Build (${{ matrix.os }})
+    name: Build BetaSharp
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
+          - os: windows-2025
             rid: win-x64
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             rid: linux-x64
-          - os: macos-latest
+          - os: macos-26-intel
             rid: osx-x64
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - name: Checkout Repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
+        with:
+          persist-credentials: false
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # 5.1.0
         with:
           dotnet-version: '10.0.x'
+          dotnet-quality: 'ga'
       - name: Restore dependencies
         run: dotnet restore
-      - name: Build
+      - name: Build with .NET
         run: dotnet build --configuration Release --no-restore
-      - name: Test
+      - name: Test with .NET
         run: dotnet test --configuration Release --no-build --verbosity normal
-      - name: Publish
+      - name: Publish BetaSharp
         run: >
           dotnet publish BetaSharp.Launcher/BetaSharp.Launcher.csproj
           --configuration Release
           --runtime ${{ matrix.rid }}
           --self-contained true
           --output ./publish/${{ matrix.rid }}
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload Artifacts to GitHub
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # 6.0.0
         with:
           name: ${{ matrix.rid }}
           path: ./publish/${{ matrix.rid }}/
+          if-no-files-found: error
+
   release:
-    name: Create Release
-    runs-on: ubuntu-latest
+    name: Create BetaSharp Release
+    runs-on: ubuntu-24.04
     needs: build
-    if: github.event_name == 'workflow_dispatch'
-    permissions:
-      contents: write
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
         with:
           path: ./artifacts
-      - name: Zip artifacts
+      - name: ZIP artifacts
         run: |
           for dir in ./artifacts/*/; do
             name=$(basename "$dir")
@@ -65,7 +71,7 @@ jobs:
             rm -rf "$dir"
           done
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # 2.6.1
         with:
           tag_name: ${{ github.event.inputs.version }}
           name: ${{ github.event.inputs.version }}
