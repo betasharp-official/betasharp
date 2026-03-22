@@ -43,7 +43,7 @@ public class GuiDebugOptions : GuiScreen
         x = Width / 2 - 155 + (optionIndex % 2) * 160;
         y = Height / 6 + 24 * (optionIndex / 2);
 
-        _controlList.Add(new GuiSmallButton(201, x, y, translations.TranslateKey("debug.editor")));
+        _controlList.Add(new GuiSmallButton(201, x, y, "Edit Debug Overlay"));
         _controlList.Add(new GuiButton(200, Width / 2 - 100, Height / 6 + 168, translations.TranslateKey("gui.done")));
     }
 

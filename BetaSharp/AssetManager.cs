@@ -114,7 +114,6 @@ public class AssetManager
     {
         defineAsset("font.txt", AssetType.Text);
         defineAsset("achievement/map.txt", AssetType.Text);
-        defineAsset("lang/extra_en_US.lang", AssetType.Text);
         defineAsset("lang/en_US.lang", AssetType.Text);
         defineAsset("lang/stats_US.lang", AssetType.Text);
     }

@@ -12,8 +12,6 @@ public class GuiDebugEditor : GuiScreen
     public List<DebugComponent> components;
     public DebugComponent? selectedComponent;
 
-    private string screenTitle;
-
     private const int BUTTON_CANCEL = 0;
     private const int BUTTON_CHANGE = 1;
     private const int BUTTON_DELETE = 2;
@@ -40,14 +38,13 @@ public class GuiDebugEditor : GuiScreen
         this._slot = new GuiDebugSlot(this);
 
         TranslationStorage translations = TranslationStorage.Instance;
-        screenTitle = translations.TranslateKey("debug.editor");
 
-        _controlList.Add(buttonChange = new GuiButton(BUTTON_CHANGE, Width / 2 - 74, Height - 28, 70, 20, translations.TranslateKey("debug.change")));
+        _controlList.Add(buttonChange = new GuiButton(BUTTON_CHANGE, Width / 2 - 74, Height - 28, 70, 20, "Change Side..."));
         _controlList.Add(buttonDelete = new GuiButton(BUTTON_DELETE, Width / 2 - 154, Height - 28, 70, 20, translations.TranslateKey("selectWorld.delete")));
-        _controlList.Add(new GuiButton(BUTTON_CREATE, Width / 2 - 154, Height - 52, 150, 20, translations.TranslateKey("debug.create")));
-        _controlList.Add(new GuiButton(BUTTON_SAVE, Width / 2 + 4, Height - 52, 150, 20, translations.TranslateKey("debug.save")));
+        _controlList.Add(new GuiButton(BUTTON_CREATE, Width / 2 - 154, Height - 52, 150, 20, "Add new..."));
+        _controlList.Add(new GuiButton(BUTTON_SAVE, Width / 2 + 4, Height - 52, 150, 20, "Save"));
         _controlList.Add(new GuiButton(BUTTON_CANCEL, Width / 2 + 4, Height - 28, 70, 20, translations.TranslateKey("gui.cancel")));
-        _controlList.Add(new GuiButton(BUTTON_RESET, Width / 2 + 84, Height - 28, 70, 20, translations.TranslateKey("debug.reset")));
+        _controlList.Add(new GuiButton(BUTTON_RESET, Width / 2 + 84, Height - 28, 70, 20, "Defaults"));
         buttonChange.Enabled = selectedComponent is not null;
         buttonDelete.Enabled = buttonChange.Enabled;
     }
@@ -55,7 +52,7 @@ public class GuiDebugEditor : GuiScreen
     public override void Render(int mouseX, int mouseY, float partialTicks)
     {
         _slot.DrawScreen(mouseX, mouseY, partialTicks);
-        DrawCenteredString(FontRenderer, screenTitle, Width / 2, 20, Color.White);
+        DrawCenteredString(FontRenderer, "Edit Debug Overlay", Width / 2, 20, Color.White);
         base.Render(mouseX, mouseY, partialTicks);
     }
 

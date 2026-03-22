@@ -12,8 +12,6 @@ public class GuiNewDebug : GuiScreen
     public Type? selectedType;
     public bool right;
 
-    private string screenTitle;
-
     private const int BUTTON_CANCEL = 0;
     private const int BUTTON_SIDE = 1;
     private const int BUTTON_ADD = 2;
@@ -30,7 +28,7 @@ public class GuiNewDebug : GuiScreen
     private void updateSide()
     {
         TranslationStorage translations = TranslationStorage.Instance;
-        buttonSide.DisplayString = translations.TranslateKeyFormat("debug.side", right ? "Right" : "Left");
+        buttonSide.DisplayString = "Side: " + (right ? "Right" : "Left");
     }
 
     public override void InitGui()
@@ -38,12 +36,11 @@ public class GuiNewDebug : GuiScreen
         this._slot = new GuiNewDebugSlot(this);
 
         TranslationStorage translations = TranslationStorage.Instance;
-        screenTitle = translations.TranslateKey("debug.newTitle");
 
         _controlList.Add(buttonSide = new GuiButton(BUTTON_SIDE, Width / 2 - 74, Height - 52, 70, 20, ""));
         updateSide();
 
-        _controlList.Add(buttonAdd = new GuiButton(BUTTON_ADD, Width / 2 + 4, Height - 52, 70, 20, translations.TranslateKey("debug.add")));
+        _controlList.Add(buttonAdd = new GuiButton(BUTTON_ADD, Width / 2 + 4, Height - 52, 70, 20, "Add"));
         _controlList.Add(new GuiButton(BUTTON_CANCEL, Width / 2 - 74, Height - 28, 148, 20, translations.TranslateKey("gui.cancel")));
         buttonAdd.Enabled = selectedType is not null;
     }
@@ -51,7 +48,7 @@ public class GuiNewDebug : GuiScreen
     public override void Render(int mouseX, int mouseY, float partialTicks)
     {
         _slot.DrawScreen(mouseX, mouseY, partialTicks);
-        DrawCenteredString(FontRenderer, screenTitle, Width / 2, 20, Color.White);
+        DrawCenteredString(FontRenderer, "Add New Component", Width / 2, 20, Color.White);
         base.Render(mouseX, mouseY, partialTicks);
     }
 
