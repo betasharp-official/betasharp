@@ -58,10 +58,14 @@ public class DebugContext
         // default: white
         if (color is null) color = Color.White;
 
+        int width = Game.fontRenderer.GetStringWidth(str);
+        Color bg = new Color(128, 128, 128, 96);
+
         // draw left string
         void leftString()
         {
-            Game.fontRenderer.DrawStringWithShadow(str, PADDING, _leftY, (Color) color);
+            Gui.DrawRect(0, _leftY, width + PADDING * 2, _leftY + 10, bg);
+            Game.fontRenderer.DrawStringWithShadow(str, PADDING, _leftY+1, (Color) color);
 
             _leftY += 10;
         }
@@ -69,7 +73,9 @@ public class DebugContext
         // draw right screen
         void rightString()
         {
-            Game.fontRenderer.DrawStringWithShadow(str, _scaledWidth - PADDING, _rightY, (Color)color, SixLabors.Fonts.HorizontalAlignment.Right);
+
+            Gui.DrawRect(_scaledWidth - PADDING*2 - width, _rightY, _scaledWidth, _rightY + 10, bg);
+            Game.fontRenderer.DrawStringWithShadow(str, _scaledWidth - PADDING, _rightY+1, (Color)color, SixLabors.Fonts.HorizontalAlignment.Right);
 
             _rightY += 10;
         }
