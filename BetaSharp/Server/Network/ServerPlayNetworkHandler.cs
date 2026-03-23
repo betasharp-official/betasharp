@@ -384,12 +384,12 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
         player.skipPacketSlotUpdates = true;
         player.inventory.main[player.inventory.selectedSlot] = ItemStack.clone(player.inventory.main[player.inventory.selectedSlot]);
-        Slot var13 = player.currentScreenHandler.GetSlot(player.inventory, player.inventory.selectedSlot);
+        Slot slot = player.currentScreenHandler.GetSlot(player.inventory, player.inventory.selectedSlot);
         player.currentScreenHandler.SendContentUpdates();
         player.skipPacketSlotUpdates = false;
         if (!ItemStack.areEqual(player.inventory.getSelectedItem(), packet.stack))
         {
-            sendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(player.currentScreenHandler.SyncId, var13.id, player.inventory.getSelectedItem()));
+            sendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(player.currentScreenHandler.SyncId, slot.id, player.inventory.getSelectedItem()));
         }
     }
 
