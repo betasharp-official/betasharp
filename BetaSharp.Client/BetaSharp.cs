@@ -1,4 +1,6 @@
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -8,6 +10,7 @@ using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.DynamicTexture;
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Guis.Debug.Components;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Options;
@@ -34,6 +37,7 @@ using BetaSharp.Worlds.Colors;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
+using BetaSharp.Client.Guis.Debug;
 using ImGuiNET;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Input;
@@ -79,6 +83,7 @@ public partial class BetaSharp
     public bool skipRenderWorld;
     public HitResult objectMouseOver = new HitResult(HitResultType.MISS);
     public GameOptions options;
+    public DebugComponentsStorage componentsStorage;
     public bool ShowChunkBorders = false;
     public SoundManager sndManager = new();
     public MouseHelper mouseHelper;
@@ -169,6 +174,7 @@ public partial class BetaSharp
     public unsafe void startGame()
     {
         Bootstrap.Initialize();
+        DebugComponents.RegisterComponents();
 
         InitializeTimer();
 
@@ -203,6 +209,7 @@ public partial class BetaSharp
         gameDataDir = getBetaSharpDir();
         saveLoader = new RegionWorldStorageSource(Path.Combine(gameDataDir, "saves"));
         options = new GameOptions(this, gameDataDir);
+        componentsStorage = new DebugComponentsStorage(this, gameDataDir);
         Profiler.Enabled = options.DebugMode;
         Profiler.EnableLagSpikeDetection = options.DebugMode;
         Profiler.LagSpikeDirectory = Path.Combine(gameDataDir, "logs", "lag_spikes");
@@ -434,7 +441,7 @@ public partial class BetaSharp
 
         if (newScreen is GuiMainMenu)
         {
-            ingameGUI.clearChatMessages();
+            ingameGUI.ClearChatMessages();
         }
 
         currentScreen = newScreen;
@@ -759,7 +766,7 @@ public partial class BetaSharp
                         Thread.Sleep(10);
                     }
 
-                    if (options.ShowDebugInfo)
+                    if (options.ShowDebugInfo && options.ShowDebugGraphOption.Value)
                     {
                         displayDebugInfo(tickElapsedTime);
                     }
@@ -892,8 +899,8 @@ public partial class BetaSharp
                         GLManager.GL.ReadPixels(0, 0, (uint)framebufferWidth, (uint)framebufferHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
                     }
                 }
-                string result = ScreenShotHelper.saveScreenshot(gameDataDir, framebufferWidth, framebufferHeight, pixels);
-                ingameGUI.addChatMessage(result);
+                string result = ScreenShotHelper.saveScreenshot(gameDataDir, displayWidth, displayHeight, pixels);
+                ingameGUI.AddChatMessage(result);
             }
         }
         else
@@ -1290,7 +1297,7 @@ public partial class BetaSharp
 
 
         Profiler.Start("ingameGUI.updateTick");
-        ingameGUI.updateTick();
+        ingameGUI.UpdateTick();
         Profiler.Stop("ingameGUI.updateTick");
         gameRenderer.UpdateTargetedEntity(1.0F);
 
@@ -1552,7 +1559,7 @@ public partial class BetaSharp
 
                         if (Keyboard.getEventKey() == Keyboard.KEY_D && Keyboard.isKeyDown(Keyboard.KEY_F3))
                         {
-                            ingameGUI.clearChatMessages();
+                            ingameGUI.ClearChatMessages();
                         }
 
                         if (Keyboard.getEventKey() == Keyboard.KEY_C && Keyboard.isKeyDown(Keyboard.KEY_F3))
@@ -1805,19 +1812,15 @@ public partial class BetaSharp
         }
     }
 
-    public string getEntityDebugInfo()
-    {
-        return terrainRenderer.getDebugInfoEntities();
-    }
 
     public string getWorldDebugInfo()
     {
         return world.GetDebugInfo();
     }
 
-    public string getParticleAndEntityCountDebugInfo()
+    public string getParticleDebugInfo()
     {
-        return $"P: {particleManager.getStatistics()}. T: {world.Entities.Entities.Count}";
+        return "Particles: " + particleManager.getStatistics();
     }
 
     internal DebugSystemSnapshot GetDebugSystemSnapshot()

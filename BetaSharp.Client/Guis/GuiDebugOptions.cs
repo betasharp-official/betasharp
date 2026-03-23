@@ -1,5 +1,6 @@
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Options;
+using BetaSharp.Client.Guis.Debug;
 
 namespace BetaSharp.Client.Guis;
 
@@ -20,11 +21,11 @@ public class GuiDebugOptions : GuiScreen
         TranslationStorage translations = TranslationStorage.Instance;
         _screenTitle = "Debug Options";
         int optionIndex = 0;
-
+        int x, y;
         foreach (GameOption option in _gameOptions.DebugScreenOptions)
         {
-            int x = Width / 2 - 155 + (optionIndex % 2) * 160;
-            int y = Height / 6 + 24 * (optionIndex / 2);
+            x = Width / 2 - 155 + (optionIndex % 2) * 160;
+            y = Height / 6 + 24 * (optionIndex / 2);
             int id = optionIndex;
 
             if (option is FloatOption floatOpt)
@@ -39,6 +40,10 @@ public class GuiDebugOptions : GuiScreen
             optionIndex++;
         }
 
+        x = Width / 2 - 155 + (optionIndex % 2) * 160;
+        y = Height / 6 + 24 * (optionIndex / 2);
+
+        _controlList.Add(new GuiSmallButton(201, x, y, "Edit Debug Overlay"));
         _controlList.Add(new GuiButton(200, Width / 2 - 100, Height / 6 + 168, translations.TranslateKey("gui.done")));
     }
 
@@ -56,6 +61,11 @@ public class GuiDebugOptions : GuiScreen
             {
                 Game.options.SaveOptions();
                 Game.displayGuiScreen(_parentScreen);
+            }
+
+            if (btn.Id == 201)
+            {
+                Game.displayGuiScreen(new GuiDebugEditor(Game, this));
             }
         }
     }

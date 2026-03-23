@@ -76,7 +76,7 @@ public class GuiChat : GuiScreen
             }
             else
             {
-                Game.ingameGUI.scrollChat(1);
+                Game.ingameGUI.ScrollChat(1);
             }
             return;
         }
@@ -98,7 +98,7 @@ public class GuiChat : GuiScreen
             }
             else
             {
-                Game.ingameGUI.scrollChat(-1);
+                Game.ingameGUI.ScrollChat(-1);
             }
             return;
         }
@@ -143,7 +143,7 @@ public class GuiChat : GuiScreen
         int wheel = Mouse.getEventDWheel();
         if (wheel != 0)
         {
-            Game.ingameGUI.scrollChat(wheel > 0 ? 1 : -1);
+            Game.ingameGUI.ScrollChat(wheel > 0 ? 1 : -1);
         }
     }
 
@@ -151,14 +151,14 @@ public class GuiChat : GuiScreen
     {
         if (button != 0) return;
 
-        if (Game.ingameGUI._hoveredItemName != null)
+        if (Game.ingameGUI.HoveredItemName != null)
         {
             if (_message.Length > 0 && !_message.EndsWith(" "))
             {
                 _message += " ";
             }
 
-            _message += Game.ingameGUI._hoveredItemName;
+            _message += Game.ingameGUI.HoveredItemName;
 
             const byte maxLen = 100;
             if (_message.Length > maxLen)

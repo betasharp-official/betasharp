@@ -47,6 +47,7 @@ public class GameOptions
     public BoolOption MipmapsOption { get; private set; }
     public BoolOption DebugModeOption { get; private set; }
     public BoolOption RenderOccludedOption { get; private set; }
+    public BoolOption ShowDebugGraphOption { get; private set; }
     public BoolOption EnvironmentAnimationOption { get; private set; }
     public BoolOption ChunkFadeOption { get; private set; }
     public BoolOption MenuMusicOption { get; private set; }
@@ -57,6 +58,7 @@ public class GameOptions
     public CycleOption GuiScaleOption { get; private set; }
     public CycleOption AnisotropicOption { get; private set; }
     public CycleOption MsaaOption { get; private set; }
+    public BoolOption ShowWTHITOption { get; private set; }
 
 
     public GameOption[] MainScreenOptions => [DifficultyOption, FovOption];
@@ -65,10 +67,11 @@ public class GameOptions
     [
         RenderDistanceOption, FramerateLimitOption, VSyncOption,
         ViewBobbingOption, GuiScaleOption, AnisotropicOption,
-        MipmapsOption, MsaaOption, EnvironmentAnimationOption, ChunkFadeOption, GammaOption
+        MipmapsOption, MsaaOption, EnvironmentAnimationOption, ChunkFadeOption,
+        ShowWTHITOption, GammaOption
     ];
 
-    public GameOption[] DebugScreenOptions => [DebugModeOption, RenderOccludedOption];
+    public GameOption[] DebugScreenOptions => [DebugModeOption, RenderOccludedOption, ShowDebugGraphOption];
 
 
     public float MusicVolume
@@ -101,6 +104,7 @@ public class GameOptions
     public int AnisotropicLevel => AnisotropicOption.Value;
     public int MSAALevel => MsaaOption.Value;
     public int INITIAL_MSAA;
+    public bool ShowWTHIT => ShowWTHITOption.Value;
     public bool UseMipmaps => MipmapsOption.Value;
     public bool DebugMode => DebugModeOption.Value;
     public bool RenderOccluded => RenderOccludedOption.Value;
@@ -242,6 +246,7 @@ public class GameOptions
             Steps = 90,
             Formatter = (v, _) => (30 + (int)(v * 90.0f)).ToString()
         };
+        ShowWTHITOption = new BoolOption("WIHIT Overlay", "wthit");
         GammaOption = new FloatOption("Gamma", "gamma", 0.5F)
         {
             LabelOverride = "Gamma",
@@ -275,6 +280,7 @@ public class GameOptions
             OnChanged = v => Profiling.Profiler.Enabled = v
         };
         RenderOccludedOption = new BoolOption("Render Occluded", "renderOccluded");
+        ShowDebugGraphOption = new BoolOption("Show Debug Graph", "showDebugGraph");
         EnvironmentAnimationOption = new BoolOption("Environment Anim", "envAnimation", true);
         ChunkFadeOption = new BoolOption("Chunk Fade", "chunkFade", true);
         MenuMusicOption = new BoolOption("Menu Music", "menuMusic", true);
@@ -349,6 +355,7 @@ public class GameOptions
         yield return GuiScaleOption;
         yield return AnisotropicOption;
         yield return MsaaOption;
+        yield return ShowWTHITOption;
     }
 
 

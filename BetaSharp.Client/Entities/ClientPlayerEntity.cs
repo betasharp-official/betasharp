@@ -169,7 +169,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public virtual void sendChatMessage(string message)
     {
-        Game.ingameGUI.addChatMessage($"<{name}> {message}");
+        Game.ingameGUI.AddChatMessage($"<{name}> {message}");
     }
 
     public override bool isSneaking()
@@ -208,7 +208,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void sendMessage(string message)
     {
-        Game.ingameGUI.addChatMessageTranslate(message);
+        Game.ingameGUI.AddChatMessageTranslate(message);
     }
 
     public override void increaseStat(StatBase stat, int value)

@@ -13,6 +13,7 @@ public class TranslationStorage
     {
         LoadLanguageFile("lang/en_US.lang");
         LoadLanguageFile("lang/stats_US.lang");
+
         AddTranslation("disconnect.genericReason", "%1$s");
         AddTranslation("key.zoom", "Zoom");
     }
