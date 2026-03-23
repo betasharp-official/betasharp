@@ -279,18 +279,18 @@ public class TextRenderer
         }
     }
 
-    public void DrawStringWithShadow(ReadOnlySpan<char> text, int x, int y, Guis.Color color)
+    public void DrawStringWithShadow(ReadOnlySpan<char> text, int x, int y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left)
     {
-        RenderString(text, x + 1, y + 1, color, true);
-        DrawString(text, x, y, color);
+        RenderString(text, x + 1, y + 1, color, true, align);
+        DrawString(text, x, y, color, align);
     }
 
-    public void DrawString(ReadOnlySpan<char> text, int x, int y, Guis.Color color)
+    public void DrawString(ReadOnlySpan<char> text, int x, int y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left)
     {
-        RenderString(text, x, y, color, false);
+        RenderString(text, x, y, color, false, align);
     }
 
-    public void RenderString(ReadOnlySpan<char> text, int x, int y, Guis.Color color, bool darken)
+    public void RenderString(ReadOnlySpan<char> text, int x, int y, Guis.Color color, bool darken, HorizontalAlignment align)
     {
         if (text.IsEmpty) return;
 
@@ -305,6 +305,10 @@ public class TextRenderer
 
         float currentX = x;
         float currentY = y;
+
+        int width = GetStringWidth(text);
+        if (align == HorizontalAlignment.Center) currentX -= width / 2;
+        else if (align == HorizontalAlignment.Right) currentX -= width;
 
         for (int i = 0; i < text.Length; ++i)
         {
@@ -386,14 +390,13 @@ public class TextRenderer
         return text.Length;
     }
 
-    private void ProcessWrappedText(ReadOnlySpan<char> text, int x, int y, int maxWidth, Guis.Color color, bool draw, ref int outHeight)
+    private void ProcessWrappedText(ReadOnlySpan<char> text, int x, int y, int maxWidth, Guis.Color color, bool draw, ref int outHeight, HorizontalAlignment align)
     {
         if (text.IsEmpty) return;
 
         int totalHeight = 0;
         int currentY = y;
         int lineHeight = (int)((AtlasFontSize + GlyphPadding) * DisplayScale);
-
         while (text.Length > 0)
         {
             int newlineIndex = text.IndexOf('\n');
@@ -420,7 +423,7 @@ public class TextRenderer
                 if (subline.Length > 0 || fitLength > 0)
                 {
                     if (draw && subline.Length > 0)
-                        DrawString(subline, x, currentY, color);
+                        DrawString(subline, x, currentY, color, align);
                     currentY += lineHeight;
                     totalHeight += lineHeight;
                 }
@@ -435,16 +438,16 @@ public class TextRenderer
         outHeight = totalHeight;
     }
 
-    public void DrawStringWrapped(ReadOnlySpan<char> text, int x, int y, int maxWidth, Guis.Color color)
+    public void DrawStringWrapped(ReadOnlySpan<char> text, int x, int y, int maxWidth, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left)
     {
         int dummyHeight = 0;
-        ProcessWrappedText(text, x, y, maxWidth, color, true, ref dummyHeight);
+        ProcessWrappedText(text, x, y, maxWidth, color, true, ref dummyHeight, align);
     }
 
     public int GetStringHeight(ReadOnlySpan<char> text, int maxWidth)
     {
         int height = 0;
-        ProcessWrappedText(text, 0, 0, maxWidth, Guis.Color.Black, false, ref height);
+        ProcessWrappedText(text, 0, 0, maxWidth, Guis.Color.Black, false, ref height, HorizontalAlignment.Left);
         return height;
     }
 }

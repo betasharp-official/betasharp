@@ -33,9 +33,9 @@ public class WorldRenderer : IWorldAccess
     private int glCloudsList = -1;
     private int renderDistance = -1;
     private int renderEntitiesStartupCounter = 2;
-    private int countEntitiesTotal;
-    private int countEntitiesRendered;
-    private int countEntitiesHidden;
+    public int countEntitiesTotal;
+    public int countEntitiesRendered;
+    public int countEntitiesHidden;
     public ChunkRenderer chunkRenderer;
     public float damagePartialTime;
 
@@ -276,7 +276,7 @@ public class WorldRenderer : IWorldAccess
 
     public string getDebugInfoEntities()
     {
-        return "E: " + countEntitiesRendered + "/" + countEntitiesTotal + ". B: " + countEntitiesHidden + ", I: " + (countEntitiesTotal - countEntitiesHidden - countEntitiesRendered);
+        return "Rendered: " + countEntitiesRendered + " out of " + countEntitiesTotal + ". \nHidden: " + countEntitiesHidden + ", Not in view: " + (countEntitiesTotal - countEntitiesHidden - countEntitiesRendered);
     }
 
     public int sortAndRender(EntityLiving var1, int pass, double var3, Culler cam)

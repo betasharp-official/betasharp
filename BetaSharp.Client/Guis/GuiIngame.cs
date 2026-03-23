@@ -1,6 +1,9 @@
+using System.Xml.Linq;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Client.Diagnostics;
+using BetaSharp.Client.Guis.Debug;
+using BetaSharp.Client.Guis.Debug.Components;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
@@ -12,13 +15,16 @@ using BetaSharp.Util;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Colors;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace BetaSharp.Client.Guis;
 
 public class GuiIngame : Gui
 {
     private readonly GCMonitor _gcMonitor;
-    private readonly List<ChatLine> _chatMessageList = [];
+    private readonly DebugOverlay _debug;
+    private static readonly ItemRenderer _itemRenderer = new();
+    private readonly List<ChatLine> _chatMessageList = new();
     private readonly JavaRandom _rand = new();
     private int _chatScrollPos = 0;
     private readonly BetaSharp _game;
@@ -37,6 +43,9 @@ public class GuiIngame : Gui
     {
         _game = gameInstance;
         _gcMonitor = new GCMonitor();
+
+        _debug = new DebugOverlay(gameInstance);
+        _debug.Components.Add(new DebugVersion());
     }
 
     private static int HSBtoRGB(float hue, float saturation, float brightness)
@@ -261,68 +270,10 @@ public class GuiIngame : Gui
         string debugStr;
         if (_game.options.ShowDebugInfo)
         {
-            _gcMonitor.AllowUpdating = true;
-            GLManager.GL.PushMatrix();
-            if (BetaSharp.hasPaidCheckTime > 0L)
-                GLManager.GL.Translate(0.0F, 32.0F, 0.0F);
-
-            long maxMem = _gcMonitor.MaxMemoryBytes;
-            long usedMem = _gcMonitor.UsedMemoryBytes;
-            long heapMem = _gcMonitor.UsedHeapBytes;
-            int facingIndex = MathHelper.Floor((double)(_game.player.yaw * 4.0F / 360.0F) + 0.5D) & 3;
-            string cardinalDirection = GetCardinalDirection(facingIndex);
-            string verticalLookDirection = GetVerticalLookDirection(_game.player.pitch);
-
-            List<string> leftLines = new()
-            {
-                "Minecraft Beta 1.7.3 (" + _game.debug + ")",
-                _game.getEntityDebugInfo(),
-                _game.getParticleAndEntityCountDebugInfo(),
-                _game.getWorldDebugInfo(),
-                "x: " + _game.player.x,
-                "y: " + _game.player.y,
-                "z: " + _game.player.z,
-                $"f: {facingIndex} ({cardinalDirection}, {verticalLookDirection})",
-                $"Render distance: {_game.options.renderDistance} chunks",
-                GetTargetedBlockDebugLine()
-            };
-
-            if (_game.internalServer != null)
-            {
-                leftLines.Add($"Server TPS: {_game.internalServer.Tps:F1}");
-            }
-
-            DebugSystemSnapshot systemSnapshot = _game.GetDebugSystemSnapshot();
-            DebugFrameStatsSnapshot frameSnapshot = _game.GetDebugFrameStatsSnapshot();
-            List<string> rightLines = new()
-            {
-                $"Used memory: {FormatPercentage(usedMem, maxMem)} ({FormatMegabytes(usedMem)}) of {FormatMegabytes(maxMem)}",
-                $"GC heap: {FormatPercentage(heapMem, maxMem)} ({FormatMegabytes(heapMem)})",
-                $"CPU: {FormatCpuInfo(systemSnapshot)}",
-                $"GPU: {systemSnapshot.GpuName} (VRAM: {systemSnapshot.GpuVram})",
-                $"OpenGL: {systemSnapshot.OpenGlVersion}",
-                $"GLSL: {systemSnapshot.GlslVersion}",
-                $"Driver: {systemSnapshot.DriverVersion}",
-                $"OS: {systemSnapshot.OsDescription}",
-                $".NET: {systemSnapshot.DotNetRuntime}"
-            };
-
-            if (frameSnapshot.HasData)
-            {
-                rightLines.Add($"Frame avg: {frameSnapshot.AverageFrameTimeMs:F2} ms");
-                rightLines.Add($"FPS min/max: {frameSnapshot.MinFps:F1}/{frameSnapshot.MaxFps:F1}");
-            }
-            else
-            {
-                rightLines.Add("Frame stats: collecting...");
-            }
-
-            DrawDebugColumns(font, leftLines, rightLines, scaledWidth);
-            GLManager.GL.PopMatrix();
-        }
-        else
-        {
-            _gcMonitor.AllowUpdating = false;
+            _game.componentsStorage.Overlay.Context.GCMonitor.AllowUpdating = true;
+            _game.componentsStorage.Overlay.Draw();
+        } else { 
+            _game.componentsStorage.Overlay.Context.GCMonitor.AllowUpdating = false;
         }
 
         if (_recordPlayingUpFor > 0)
@@ -749,109 +700,8 @@ public class GuiIngame : Gui
         if (_chatScrollPos > maxScroll) _chatScrollPos = maxScroll;
     }
 
-    private static string GetCardinalDirection(int facingIndex)
-    {
-        return facingIndex >= 0 && facingIndex < s_cardinalDirections.Length
-            ? s_cardinalDirections[facingIndex]
-            : "N/A";
-    }
+    
 
-    private static string GetVerticalLookDirection(float pitch)
-    {
-        if (pitch <= -45.0F)
-        {
-            return "Up";
-        }
-
-        if (pitch >= 45.0F)
-        {
-            return "Down";
-        }
-
-        return "Level";
-    }
-
-    private static string GetTargetedSideName(int side)
-    {
-        return side >= 0 && side < s_blockSides.Length
-            ? s_blockSides[side]
-            : side.ToString();
-    }
-
-    private string GetTargetedBlockDebugLine()
-    {
-        if (_game.objectMouseOver.Type != HitResultType.TILE || _game.world == null)
-        {
-            return "Targeted block: none";
-        }
-
-        int blockX = _game.objectMouseOver.BlockX;
-        int blockY = _game.objectMouseOver.BlockY;
-        int blockZ = _game.objectMouseOver.BlockZ;
-        int blockId = _game.world.getBlockId(blockX, blockY, blockZ);
-        int blockMeta = _game.world.getBlockMeta(blockX, blockY, blockZ);
-        string sideName = GetTargetedSideName(_game.objectMouseOver.Side);
-
-        string blockName = "Unknown";
-        if (blockId == 0)
-        {
-            blockName = "Air";
-        }
-        else if (blockId > 0 && blockId < Block.Blocks.Length && Block.Blocks[blockId] != null)
-        {
-            Block block = Block.Blocks[blockId];
-            string translatedName = block.translateBlockName();
-            if (!string.IsNullOrWhiteSpace(translatedName))
-            {
-                blockName = translatedName;
-            }
-            else if (!string.IsNullOrWhiteSpace(block.getBlockName()))
-            {
-                blockName = block.getBlockName();
-            }
-        }
-
-        return $"Targeted block: {blockName} ({blockId}:{blockMeta}) [{blockX}, {blockY}, {blockZ}] {sideName}";
-    }
-
-    private static string FormatMegabytes(long bytes)
-    {
-        return bytes <= 0L ? "N/A" : $"{bytes / 1024L / 1024L}MB";
-    }
-
-    private static string FormatPercentage(long value, long total)
-    {
-        return total > 0L ? $"{value * 100L / total}%" : "N/A";
-    }
-
-    private static string FormatCpuInfo(DebugSystemSnapshot systemSnapshot)
-    {
-        string coreLabel = systemSnapshot.CpuCoreCount == 1 ? "core" : "cores";
-        if (systemSnapshot.CpuName == DebugTelemetry.UnknownValue)
-        {
-            return $"{systemSnapshot.CpuCoreCount} {coreLabel}";
-        }
-
-        return $"{systemSnapshot.CpuName} ({systemSnapshot.CpuCoreCount} {coreLabel})";
-    }
-
-    private static void DrawDebugColumns(TextRenderer font, List<string> leftLines, List<string> rightLines, int scaledWidth)
-    {
-        const int startY = 2;
-        const int lineHeight = 10;
-
-        for (int i = 0; i < leftLines.Count; i++)
-        {
-            Color color = i < 4 ? Color.White : Color.GrayE0;
-            DrawString(font, leftLines[i], 2, startY + i * lineHeight, color);
-        }
-
-        for (int i = 0; i < rightLines.Count; i++)
-        {
-            string line = rightLines[i];
-            DrawString(font, line, scaledWidth - font.GetStringWidth(line) - 2, startY + i * lineHeight, Color.GrayE0);
-        }
-    }
-
+    
 
 }

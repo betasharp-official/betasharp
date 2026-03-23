@@ -64,6 +64,22 @@ public static class MathHelper
         return (long)Math.Round(value, MidpointRounding.ToPositiveInfinity);
     }
 
+    public static double GetDistSqr(double x1, double y1, double z1, double x2, double y2, double z2)
+    {
+        double dX = x1 - x2;
+        double dY = y1 - y2;
+        double dZ = z1 - z2;
+        return dX * dX + dY * dY + dZ * dZ;
+    }
+
+    public static double GetDistSqr(double x1, double y1, double z1, int x2, int y2, int z2)
+    {
+        double dX = x1 - (x2 + 0.5);
+        double dY = y1 - (y2 + 0.5);
+        double dZ = z1 - (z2 + 0.5);
+        return dX * dX + dY * dY + dZ * dZ;
+    }
+
     static MathHelper()
     {
         for (int i = 0; i < 65536; ++i)

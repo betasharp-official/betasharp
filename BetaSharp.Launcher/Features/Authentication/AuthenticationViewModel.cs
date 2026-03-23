@@ -18,15 +18,51 @@ internal sealed partial class AuthenticationViewModel(
     NavigationService navigationService,
     StorageService storageService) : ObservableObject
 {
+    [ObservableProperty]
+    public partial string? Link { get; set; }
+
+    [ObservableProperty]
+    public partial string? Message { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsReady { get; set; }
+
     [RelayCommand]
-    private async Task AuthenticateAsync()
+    private async Task InitializeAsync()
+    {
+        await authenticationService.InitializeAsync();
+    }
+
+    [RelayCommand]
+    private async Task UseWebAsync()
+    {
+        string token = await authenticationService.AuthenticateWebAsync();
+        await AuthenticateAsync(token);
+    }
+
+    [RelayCommand]
+    private async Task UseCodeAsync()
+    {
+        string token = await authenticationService.AuthenticateCodeAsync(callback =>
+        {
+            Link = callback.VerificationUrl;
+            Message = $"Use a Web browser to open {callback.VerificationUrl} and enter the code {callback.UserCode} to authenticate";
+
+            // Need a way to detect timeouts.
+            IsReady = true;
+
+            return Task.CompletedTask;
+        });
+
+        await AuthenticateAsync(token);
+
+        IsReady = false;
+    }
+
+    private async Task AuthenticateAsync(string token)
     {
         try
         {
-            await authenticationService.InitializeAsync();
-
-            string token = await authenticationService.AuthenticateAsync();
-
             var session = await sessionService.TryCreateAsync(token);
 
             if (string.IsNullOrWhiteSpace(session?.Token))
@@ -35,17 +71,14 @@ internal sealed partial class AuthenticationViewModel(
                     "License Required",
                     "The selected Microsoft account does not own a copy of Minecraft Java edition");
 
-                logger.LogWarning("Failed to verify ownership of a Minecraft Java edition copy");
-
                 return;
             }
 
             navigationService.Navigate<HomeViewModel>();
+
             WeakReferenceMessenger.Default.Send(new SessionMessage(session));
 
             await storageService.SetAsync(session, SessionSerializerContext.Default.Session);
-
-            logger.LogWarning("Successfully finished Minecraft authentication");
         }
         catch (Exception exception)
         {
@@ -54,7 +87,7 @@ internal sealed partial class AuthenticationViewModel(
 
             await alertService.ShowAsync(
                 "Uh-oh!",
-                "Try again shortly. If the issue persists, create a GitHub issue"
+                "Try again shortly. If the problem persists, create an issue on GitHub."
                 + Environment.NewLine
                 + "https://github.com/Fazin85/betasharp/issues");
         }

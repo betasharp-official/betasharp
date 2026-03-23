@@ -40,6 +40,7 @@ public class GameRenderer
     private float _fogColorRed;
     private float _fogColorGreen;
     private float _fogColorBlue;
+    private bool? _appliedVSyncState;
 
     private readonly Stopwatch _fpsTimer = Stopwatch.StartNew();
 
@@ -239,6 +240,16 @@ public class GameRenderer
             float var4 = _client.mouseHelper.DeltaX * var3;
             float var5 = _client.mouseHelper.DeltaY * var3;
 
+            bool zoomHeldForSensitivity = _client.currentScreen == null && _client.inGameHasFocus && Keyboard.isKeyDown(_client.options.KeyBindZoom.keyCode);
+            if (zoomHeldForSensitivity)
+            {
+                float zoomProgress = 1.0F / System.Math.Clamp(_client.options.ZoomScale, 1.25F, 20.0F);
+                float sensitivityFloor = 0.4F;
+                float zoomSensitivityMultiplier = sensitivityFloor + (1.0F - sensitivityFloor) * zoomProgress;
+                var4 *= zoomSensitivityMultiplier;
+                var5 *= zoomSensitivityMultiplier;
+            }
+
             ControllerManager.HandleLook(ref var4, ref var5, var3, _client.Timer.DeltaTime);
             int var6 = -1;
             if (_client.options.InvertMouse)
@@ -252,6 +263,9 @@ public class GameRenderer
             }
             _client.player.changeLookDirection(var4, var5 * var6);
         }
+
+        bool zoomHeld = (_client.currentScreen == null && _client.inGameHasFocus && Keyboard.isKeyDown(_client.options.KeyBindZoom.keyCode)) || ControllerManager.IsZoomHeld();
+        cameraController.SetZoomState(zoomHeld, _client.options.ZoomScale);
 
         if (!_client.skipRenderWorld)
         {
@@ -271,10 +285,12 @@ public class GameRenderer
                 scaledMouseY = scaledHeight - Mouse.getY() * scaledHeight / _client.displayHeight - 1;
             }
             int var7 = 30 + (int)(_client.options.LimitFramerate * 210.0f);
+            bool desiredVSync = _client.options.VSync && var7 >= 240;
 
-            if (var7 < 240)
+            if (_appliedVSyncState != desiredVSync)
             {
-                Display.setVSyncEnabled(false);
+                Display.setVSyncEnabled(desiredVSync);
+                _appliedVSyncState = desiredVSync;
             }
 
             _client.PostProcessManager.Begin();
@@ -293,7 +309,7 @@ public class GameRenderer
             }
             else
             {
-                GLManager.GL.Viewport(0, 0, (uint)_client.displayWidth, (uint)_client.displayHeight);
+                GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
                 GLManager.GL.MatrixMode(GLEnum.Projection);
                 GLManager.GL.LoadIdentity();
                 GLManager.GL.MatrixMode(GLEnum.Modelview);
@@ -328,14 +344,22 @@ public class GameRenderer
 
                 if (waitTime > 0)
                 {
-                    if (waitTime > 2.0)
+                    while (true)
                     {
-                        Thread.Sleep((int)(waitTime - 1.0));
-                    }
+                        double remainingMs = targetMs - _fpsTimer.Elapsed.TotalMilliseconds;
+                        if (remainingMs <= 0)
+                        {
+                            break;
+                        }
 
-                    while (_fpsTimer.Elapsed.TotalMilliseconds < targetMs)
-                    {
-                        Thread.SpinWait(10);
+                        if (remainingMs > 2.0)
+                        {
+                            Thread.Sleep(1);
+                        }
+                        else
+                        {
+                            Thread.Yield();
+                        }
                     }
                 }
 
@@ -363,7 +387,7 @@ public class GameRenderer
         ChunkSource var13 = _client.world.GetChunkSource();
 
         Profiler.Start("updateFog");
-        GLManager.GL.Viewport(0, 0, (uint)_client.displayWidth, (uint)_client.displayHeight);
+        GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
         updateSkyAndFogColors(tickDelta);
         Profiler.Stop("updateFog");
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
@@ -436,7 +460,7 @@ public class GameRenderer
         GLManager.GL.DepthMask(true);
         GLManager.GL.Enable(GLEnum.CullFace);
         GLManager.GL.Disable(GLEnum.Blend);
-        if (cameraController.CameraZoom == 1.0D && entity is EntityPlayer && _client.objectMouseOver.Type != HitResultType.MISS && !entity.isInFluid(Material.Water))
+        if (!cameraController.IsZoomActive && entity is EntityPlayer && _client.objectMouseOver.Type != HitResultType.MISS && !entity.isInFluid(Material.Water))
         {
             entityPlayer = (EntityPlayer)entity;
             GLManager.GL.Disable(GLEnum.AlphaTest);
@@ -463,7 +487,7 @@ public class GameRenderer
         GLManager.GL.Disable(GLEnum.Fog);
         applyFog(1);
 
-        if (cameraController.CameraZoom == 1.0D)
+        if (!cameraController.IsZoomActive)
         {
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
             renderFirstPersonHand(tickDelta);

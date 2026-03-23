@@ -78,7 +78,7 @@ public class PlayerController
         }
     }
 
-    public virtual void flipPlayer(EntityPlayer var1)
+    public virtual void flipPlayer(EntityPlayer playerEntity)
     {
     }
 

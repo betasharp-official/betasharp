@@ -502,8 +502,8 @@ public abstract class BetaSharpServer : ICommandOutput
         _logger.LogWarning(message);
     }
 
-    public string GetName() => "CONSOLE";
-    public byte GetPermissionLevel() => 255;
+    public string Name => "CONSOLE";
+    public byte PermissionLevel => 255;
 
     public ServerWorld getWorld(int dimensionId)
     {

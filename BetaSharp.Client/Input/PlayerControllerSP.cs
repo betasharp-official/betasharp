@@ -20,9 +20,10 @@ public class PlayerControllerSP : PlayerController
     {
     }
 
-    public override void flipPlayer(EntityPlayer var1)
+    public override void flipPlayer(EntityPlayer playerEntity)
     {
-        var1.yaw = -180.0F;
+        playerEntity.yaw = -180.0F;
+        playerEntity.prevYaw = -180.0F;
     }
 
     public override bool sendBlockRemoved(int x, int y, int z, int var4)

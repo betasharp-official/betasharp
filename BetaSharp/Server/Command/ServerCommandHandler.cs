@@ -8,18 +8,18 @@ internal class ServerCommandHandler
 {
     private static readonly ILogger<ServerCommandHandler> s_logger = Log.Instance.For<ServerCommandHandler>();
 
-    private readonly BetaSharpServer server;
+    private readonly BetaSharpServer _server;
 
     private delegate void CommandAction(BetaSharpServer server, string senderName, string[] args, ICommandOutput output);
 
-    [Obsolete]
+    [Obsolete("Use _commands instead")]
     private readonly Dictionary<string, CommandAction> _commandsAction = new();
     private readonly Dictionary<string, ICommand> _commands = new();
     private readonly HelpCommand _helpCommand = new();
 
     public ServerCommandHandler(BetaSharpServer server)
     {
-        this.server = server;
+        _server = server;
         ItemCommands.Initialize();
         RegisterAllCommands();
     }
@@ -28,7 +28,7 @@ internal class ServerCommandHandler
     {
         string input = pendingCommand.CommandAndArgs;
         ICommandOutput output = pendingCommand.Output;
-        string senderName = output.GetName();
+        string senderName = output.Name;
 
         string[] parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length == 0) return;
@@ -36,11 +36,17 @@ internal class ServerCommandHandler
         string commandName = parts[0].ToLower();
         string[] args = parts.Length > 1 ? parts[1..] : [];
 
+        bool isInternalServer = _server is InternalServer;
+
         if (_commands.TryGetValue(commandName, out var command))
         {
-            if (command.PermissionLevel == 0 || server is InternalServer || command.PermissionLevel <= pendingCommand.Output.GetPermissionLevel())
+            if (isInternalServer && command.DisallowInternalServer)
             {
-                command.Execute(new ICommand.CommandContext(server, senderName, args, output));
+                output.SendMessage("This command is not available in singleplayer.");
+            }
+            else if (command.PermissionLevel == 0 || isInternalServer || command.PermissionLevel <= pendingCommand.Output.PermissionLevel)
+            {
+                command.Execute(new ICommand.CommandContext(_server, senderName, args, output));
             }
             else
             {
@@ -50,9 +56,9 @@ internal class ServerCommandHandler
         }
         else if (_commandsAction.TryGetValue(commandName, out var action))
         {
-            if (server is InternalServer || pendingCommand.Output.GetPermissionLevel() > 0)
+            if (isInternalServer || pendingCommand.Output.PermissionLevel > 0)
             {
-                action(server, senderName, args, output);
+                action(_server, senderName, args, output);
             }
             else
             {
@@ -105,13 +111,14 @@ internal class ServerCommandHandler
         _helpCommand.Add("save-off / save-on", "toggles level saving");
     }
 
-    [Obsolete]
+    [Obsolete("Use Register(ICommand) instead")]
     private void Register(CommandAction action, string usage, string description, params string[] names)
     {
         foreach (string name in names)
         {
             _commandsAction[name] = action;
         }
+
         _helpCommand.Add(usage, description);
     }
 
@@ -121,6 +128,7 @@ internal class ServerCommandHandler
         {
             _commands[name] = command;
         }
+
         _helpCommand.Add(command);
     }
 

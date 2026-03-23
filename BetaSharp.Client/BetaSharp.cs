@@ -1,4 +1,6 @@
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -8,6 +10,7 @@ using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.DynamicTexture;
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Guis.Debug.Components;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Options;
@@ -32,6 +35,7 @@ using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Colors;
 using BetaSharp.Worlds.Storage;
+using BetaSharp.Client.Guis.Debug;
 using ImGuiNET;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Input;
@@ -77,6 +81,7 @@ public partial class BetaSharp
     public bool skipRenderWorld;
     public HitResult objectMouseOver = new HitResult(HitResultType.MISS);
     public GameOptions options;
+    public DebugComponentsStorage componentsStorage;
     public bool ShowChunkBorders = false;
     public SoundManager sndManager = new();
     public MouseHelper mouseHelper;
@@ -167,6 +172,7 @@ public partial class BetaSharp
     public unsafe void startGame()
     {
         Bootstrap.Initialize();
+        DebugComponents.RegisterComponents();
 
         InitializeTimer();
 
@@ -201,6 +207,7 @@ public partial class BetaSharp
         gameDataDir = getBetaSharpDir();
         saveLoader = new RegionWorldStorageSource(Path.Combine(gameDataDir, "saves"));
         options = new GameOptions(this, gameDataDir);
+        componentsStorage = new DebugComponentsStorage(this, gameDataDir);
         Profiler.Enabled = options.DebugMode;
         Profiler.EnableLagSpikeDetection = options.DebugMode;
         Profiler.LagSpikeDirectory = Path.Combine(gameDataDir, "logs", "lag_spikes");
@@ -313,7 +320,7 @@ public partial class BetaSharp
         textureManager.AddDynamicTexture(new FireSprite(0));
         textureManager.AddDynamicTexture(new FireSprite(1));
         terrainRenderer = new WorldRenderer(this, textureManager);
-        GLManager.GL.Viewport(0, 0, (uint)displayWidth, (uint)displayHeight);
+        GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
         particleManager = new ParticleManager(world, textureManager);
 
         string dataDirPath = gameDataDir;
@@ -330,7 +337,7 @@ public partial class BetaSharp
 
         checkGLError("Post startup");
         ingameGUI = new GuiIngame(this);
-        PostProcessManager = new PostProcessManager(displayWidth, displayHeight, options);
+        PostProcessManager = new PostProcessManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), options);
 
         statFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
         if (serverName != null)
@@ -353,7 +360,7 @@ public partial class BetaSharp
         GLManager.GL.MatrixMode(GLEnum.Modelview);
         GLManager.GL.LoadIdentity();
         GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
-        GLManager.GL.Viewport(0, 0, (uint)displayWidth, (uint)displayHeight);
+        GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
         GLManager.GL.ClearColor(0.0F, 0.0F, 0.0F, 0.0F);
         Tessellator tessellator = Tessellator.instance;
         GLManager.GL.Disable(GLEnum.Lighting);
@@ -757,7 +764,7 @@ public partial class BetaSharp
                         Thread.Sleep(10);
                     }
 
-                    if (options.ShowDebugInfo)
+                    if (options.ShowDebugInfo && options.ShowDebugGraphOption.Value)
                     {
                         displayDebugInfo(tickElapsedTime);
                     }
@@ -878,14 +885,16 @@ public partial class BetaSharp
             if (!isTakingScreenshot)
             {
                 isTakingScreenshot = true;
-                int size = displayWidth * displayHeight * 3;
+                int framebufferWidth = Display.getFramebufferWidth();
+                int framebufferHeight = Display.getFramebufferHeight();
+                int size = framebufferWidth * framebufferHeight * 3;
                 byte[] pixels = new byte[size];
                 GLManager.GL.PixelStore(PixelStoreParameter.PackAlignment, 1);
                 unsafe
                 {
                     fixed (byte* p = pixels)
                     {
-                        GLManager.GL.ReadPixels(0, 0, (uint)displayWidth, (uint)displayHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
+                        GLManager.GL.ReadPixels(0, 0, (uint)framebufferWidth, (uint)framebufferHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
                     }
                 }
                 string result = ScreenShotHelper.saveScreenshot(gameDataDir, displayWidth, displayHeight, pixels);
@@ -1236,7 +1245,7 @@ public partial class BetaSharp
             currentScreen.SetWorldAndResolution(this, scaledWidth, scaledHeight);
         }
 
-        PostProcessManager.Resize(displayWidth, displayHeight);
+        PostProcessManager.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
     }
 
     public void ClickMiddleMouseButton()
@@ -1444,20 +1453,39 @@ public partial class BetaSharp
                 {
                     isControllerMode = false;
                     Mouse.setCursorVisible(true);
-                    player.inventory.changeCurrentItem(mouseWheelDelta);
-                    if (options.InvertScrolling)
+
+                    bool zoomHeld = currentScreen == null && inGameHasFocus && Keyboard.isKeyDown(options.KeyBindZoom.keyCode);
+                    if (zoomHeld)
                     {
-                        if (mouseWheelDelta > 0)
+                        int mouseWheelDirection = mouseWheelDelta > 0 ? 1 : -1;
+                        if (mouseWheelDirection > 0)
                         {
-                            mouseWheelDelta = 1;
+                            options.ZoomScale *= 1.08F;
+                        }
+                        else
+                        {
+                            options.ZoomScale /= 1.08F;
                         }
 
-                        if (mouseWheelDelta < 0)
+                        options.ZoomScale = System.Math.Clamp(options.ZoomScale, 1.25F, 20.0F);
+                    }
+                    else
+                    {
+                        player.inventory.changeCurrentItem(mouseWheelDelta);
+                        if (options.InvertScrolling)
                         {
-                            mouseWheelDelta = -1;
-                        }
+                            if (mouseWheelDelta > 0)
+                            {
+                                mouseWheelDelta = 1;
+                            }
 
-                        options.AmountScrolled += (float)mouseWheelDelta * 0.25F;
+                            if (mouseWheelDelta < 0)
+                            {
+                                mouseWheelDelta = -1;
+                            }
+
+                            options.AmountScrolled += (float)mouseWheelDelta * 0.25F;
+                        }
                     }
                 }
 
@@ -1782,19 +1810,15 @@ public partial class BetaSharp
         }
     }
 
-    public string getEntityDebugInfo()
-    {
-        return terrainRenderer.getDebugInfoEntities();
-    }
 
     public string getWorldDebugInfo()
     {
         return world.getDebugInfo();
     }
 
-    public string getParticleAndEntityCountDebugInfo()
+    public string getParticleDebugInfo()
     {
-        return "P: " + particleManager.getStatistics() + ". T: " + world.getEntityCount();
+        return "Particles: " + particleManager.getStatistics();
     }
 
     internal DebugSystemSnapshot GetDebugSystemSnapshot()
