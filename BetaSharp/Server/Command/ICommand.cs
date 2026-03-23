@@ -1,5 +1,4 @@
-﻿using BetaSharp.Server.Internal;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Command;
 
