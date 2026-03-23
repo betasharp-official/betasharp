@@ -246,7 +246,7 @@ public class GameOptions
             Steps = 90,
             Formatter = (v, _) => (30 + (int)(v * 90.0f)).ToString()
         };
-        ShowWTHITOption = new BoolOption("WIHIT Overlay", "wthit", true);
+        ShowWTHITOption = new BoolOption("WIHIT Overlay", "wthit");
         GammaOption = new FloatOption("Gamma", "gamma", 0.5F)
         {
             LabelOverride = "Gamma",
@@ -355,6 +355,7 @@ public class GameOptions
         yield return GuiScaleOption;
         yield return AnisotropicOption;
         yield return MsaaOption;
+        yield return ShowWTHITOption;
     }
 
 

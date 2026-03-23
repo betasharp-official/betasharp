@@ -151,14 +151,14 @@ public class GuiChat : GuiScreen
     {
         if (button != 0) return;
 
-        if (Game.ingameGUI._hoveredItemName != null)
+        if (Game.ingameGUI.HoveredItemName != null)
         {
             if (_message.Length > 0 && !_message.EndsWith(" "))
             {
                 _message += " ";
             }
 
-            _message += Game.ingameGUI._hoveredItemName;
+            _message += Game.ingameGUI.HoveredItemName;
 
             const byte maxLen = 100;
             if (_message.Length > maxLen)

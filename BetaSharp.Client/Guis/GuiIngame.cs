@@ -1,7 +1,5 @@
-using System.Xml.Linq;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.Guis.Debug;
 using BetaSharp.Client.Guis.Debug.Components;
 using BetaSharp.Client.Options;
@@ -11,38 +9,31 @@ using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
-using BetaSharp.Util;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Colors;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace BetaSharp.Client.Guis;
 
 public class GuiIngame : Gui
 {
-    private readonly GCMonitor _gcMonitor;
     private readonly DebugOverlay _debug;
-    private static readonly ItemRenderer _itemRenderer = new();
-    private readonly List<ChatLine> _chatMessageList = new();
+    private static readonly ItemRenderer s_itemRenderer = new();
+    private readonly List<ChatLine> _chatMessageList = [];
     private readonly JavaRandom _rand = new();
     private int _chatScrollPos = 0;
     private readonly BetaSharp _game;
-    public string _hoveredItemName = null;
+    public string? HoveredItemName { get; } = null;
     private int _updateCounter = 0;
     private string _recordPlaying = "";
     private int _recordPlayingUpFor = 0;
     private bool _isRecordMessageRainbow = false;
     public float _damageGuiPartialTime;
     private float _prevVignetteBrightness = 1.0F;
-    private static readonly string[] s_cardinalDirections = ["South", "West", "North", "East"];
-    private static readonly string[] s_blockSides = ["Down", "Up", "North", "South", "West", "East"];
-    private static readonly ItemRenderer s_itemRenderer = new();
 
     public GuiIngame(BetaSharp gameInstance)
     {
         _game = gameInstance;
-        _gcMonitor = new GCMonitor();
 
         _debug = new DebugOverlay(gameInstance);
         _debug.Components.Add(new DebugVersion());
@@ -272,7 +263,9 @@ public class GuiIngame : Gui
         {
             _game.componentsStorage.Overlay.Context.GCMonitor.AllowUpdating = true;
             _game.componentsStorage.Overlay.Draw();
-        } else { 
+        }
+        else
+        {
             _game.componentsStorage.Overlay.Context.GCMonitor.AllowUpdating = false;
         }
 
@@ -700,8 +693,8 @@ public class GuiIngame : Gui
         if (_chatScrollPos > maxScroll) _chatScrollPos = maxScroll;
     }
 
-    
 
-    
+
+
 
 }
