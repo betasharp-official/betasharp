@@ -93,6 +93,7 @@ public class PostProcessManager
         Framebuffer.Unbind();
 
         IGL gl = GLManager.GL;
+        gl.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
 
         gl.Disable(GLEnum.DepthTest);
         gl.Clear(ClearBufferMask.ColorBufferBit);

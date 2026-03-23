@@ -293,7 +293,7 @@ public class GameRenderer
             }
             else
             {
-                GLManager.GL.Viewport(0, 0, (uint)_client.displayWidth, (uint)_client.displayHeight);
+                GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
                 GLManager.GL.MatrixMode(GLEnum.Projection);
                 GLManager.GL.LoadIdentity();
                 GLManager.GL.MatrixMode(GLEnum.Modelview);
@@ -363,7 +363,7 @@ public class GameRenderer
         ChunkSource var13 = _client.world.GetChunkSource();
 
         Profiler.Start("updateFog");
-        GLManager.GL.Viewport(0, 0, (uint)_client.displayWidth, (uint)_client.displayHeight);
+        GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
         updateSkyAndFogColors(tickDelta);
         Profiler.Stop("updateFog");
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);

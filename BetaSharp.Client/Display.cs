@@ -2,6 +2,7 @@ using Silk.NET.GLFW;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
+using System.Runtime.InteropServices;
 
 namespace BetaSharp.Client;
 
@@ -12,6 +13,7 @@ namespace BetaSharp.Client;
 public static unsafe class Display
 {
     private static readonly object _lock = new();
+    private static readonly bool _isMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
     private static IWindow? _window;
     private static GL? _gl;
     private static readonly Glfw? _glfw;
@@ -365,6 +367,42 @@ public static unsafe class Display
         if (isFullscreen())
             return _currentMode.getHeight();
         return _window?.Size.Y ?? _currentMode.getHeight();
+    }
+
+    /// <summary>
+    /// Return the framebuffer width in pixels.
+    /// </summary>
+    public static int getFramebufferWidth()
+    {
+        lock (_lock)
+        {
+            if (!isCreated())
+                return _currentMode.getWidth();
+
+            if (!_isMacOS)
+                return getWidth();
+
+            _glfw!.GetFramebufferSize((WindowHandle*)_window!.Handle, out int width, out _);
+            return Math.Max(1, width);
+        }
+    }
+
+    /// <summary>
+    /// Return the framebuffer height in pixels.
+    /// </summary>
+    public static int getFramebufferHeight()
+    {
+        lock (_lock)
+        {
+            if (!isCreated())
+                return _currentMode.getHeight();
+
+            if (!_isMacOS)
+                return getHeight();
+
+            _glfw!.GetFramebufferSize((WindowHandle*)_window!.Handle, out _, out int height);
+            return Math.Max(1, height);
+        }
     }
 
     /// <summary>

@@ -313,7 +313,7 @@ public partial class BetaSharp
         textureManager.AddDynamicTexture(new FireSprite(0));
         textureManager.AddDynamicTexture(new FireSprite(1));
         terrainRenderer = new WorldRenderer(this, textureManager);
-        GLManager.GL.Viewport(0, 0, (uint)displayWidth, (uint)displayHeight);
+        GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
         particleManager = new ParticleManager(world, textureManager);
 
         string dataDirPath = gameDataDir;
@@ -330,7 +330,7 @@ public partial class BetaSharp
 
         checkGLError("Post startup");
         ingameGUI = new GuiIngame(this);
-        PostProcessManager = new PostProcessManager(displayWidth, displayHeight, options);
+        PostProcessManager = new PostProcessManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), options);
 
         statFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
         if (serverName != null)
@@ -353,7 +353,7 @@ public partial class BetaSharp
         GLManager.GL.MatrixMode(GLEnum.Modelview);
         GLManager.GL.LoadIdentity();
         GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
-        GLManager.GL.Viewport(0, 0, (uint)displayWidth, (uint)displayHeight);
+        GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
         GLManager.GL.ClearColor(0.0F, 0.0F, 0.0F, 0.0F);
         Tessellator tessellator = Tessellator.instance;
         GLManager.GL.Disable(GLEnum.Lighting);
@@ -1236,7 +1236,7 @@ public partial class BetaSharp
             currentScreen.SetWorldAndResolution(this, scaledWidth, scaledHeight);
         }
 
-        PostProcessManager.Resize(displayWidth, displayHeight);
+        PostProcessManager.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
     }
 
     public void ClickMiddleMouseButton()
