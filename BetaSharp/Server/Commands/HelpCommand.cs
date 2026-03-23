@@ -17,7 +17,7 @@ public class HelpCommand : ICommand
 
     public void Execute(ICommand.CommandContext c)
     {
-        byte per = c.Server is InternalServer ? (byte)4 : c.Output.GetPermissionLevel();
+        byte per = c.Server is InternalServer ? (byte)4 : c.Output.PermissionLevel;
         if (c.Args.Length > 0)
         {
             string arg = c.Args[0];

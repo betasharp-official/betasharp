@@ -447,16 +447,19 @@ public class PlayerManager
         packet.Return();
     }
 
-    public void broadcast(string message)
+    /// <summary>
+    /// Send <see cref="ChatMessagePacket"/> to all operators.
+    /// </summary>
+    /// <param name="message">message to log</param>
+    public void BroadcastOp(string message)
     {
         var chatMessagePacket = ChatMessagePacket.Get(message);
 
-        for (int var3 = 0; var3 < players.Count; var3++)
+        foreach (var player in players)
         {
-            ServerPlayerEntity var4 = players[var3];
-            if (isOperator(var4.name))
+            if (isOperator(player.name))
             {
-                var4.networkHandler.sendPacket(chatMessagePacket);
+                player.networkHandler.sendPacket(chatMessagePacket);
             }
         }
 

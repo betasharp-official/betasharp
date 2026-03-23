@@ -567,8 +567,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         sendPacket(ChatMessagePacket.Get("§7" + message));
     }
 
-    public string GetName() => player.name;
-    public byte GetPermissionLevel() => server.playerManager.isOperator(player.name) ? (byte)4 : (byte)0;
+    public string Name => player.name;
+    public byte PermissionLevel => server.playerManager.isOperator(player.name) ? (byte)4 : (byte)0;
 
     public override void handleInteractEntity(PlayerInteractEntityC2SPacket packet)
     {
