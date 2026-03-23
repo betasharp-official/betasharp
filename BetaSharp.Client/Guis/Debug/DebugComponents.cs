@@ -37,6 +37,8 @@ public static class DebugComponents
         Register(typeof(DebugMemory));
         Register(typeof(DebugFramework));
         Register(typeof(DebugSystem));
+        Register(typeof(DebugTargetedBlock));
+        Register(typeof(DebugServer));
     }
     public static string GetName(Type t)
     {

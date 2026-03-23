@@ -43,11 +43,15 @@ public class DebugComponentsStorage
         list.Add(new DebugWorld());
         list.Add(new DebugSeparator());
         list.Add(new DebugLocation());
+        list.Add(new DebugSeparator());
+        list.Add(new DebugServer());
 
         right(new DebugFramework());
         right(new DebugMemory());
         right(new DebugSeparator());
         right(new DebugSystem());
+        right(new DebugSeparator());
+        right(new DebugTargetedBlock());
     }
 
     public void LoadComponents()

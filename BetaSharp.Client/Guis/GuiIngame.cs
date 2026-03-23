@@ -596,47 +596,8 @@ public class GuiIngame : Gui
         if (_chatScrollPos > maxScroll) _chatScrollPos = maxScroll;
     }
 
-    private static string GetTargetedSideName(int side)
-    {
-        return side >= 0 && side < s_blockSides.Length
-            ? s_blockSides[side]
-            : side.ToString();
-    }
+    
 
-    private string GetTargetedBlockDebugLine()
-    {
-        if (_game.objectMouseOver.Type != HitResultType.TILE || _game.world == null)
-        {
-            return "Targeted block: none";
-        }
-
-        int blockX = _game.objectMouseOver.BlockX;
-        int blockY = _game.objectMouseOver.BlockY;
-        int blockZ = _game.objectMouseOver.BlockZ;
-        int blockId = _game.world.getBlockId(blockX, blockY, blockZ);
-        int blockMeta = _game.world.getBlockMeta(blockX, blockY, blockZ);
-        string sideName = GetTargetedSideName(_game.objectMouseOver.Side);
-
-        string blockName = "Unknown";
-        if (blockId == 0)
-        {
-            blockName = "Air";
-        }
-        else if (blockId > 0 && blockId < Block.Blocks.Length && Block.Blocks[blockId] != null)
-        {
-            Block block = Block.Blocks[blockId];
-            string translatedName = block.translateBlockName();
-            if (!string.IsNullOrWhiteSpace(translatedName))
-            {
-                blockName = translatedName;
-            }
-            else if (!string.IsNullOrWhiteSpace(block.getBlockName()))
-            {
-                blockName = block.getBlockName();
-            }
-        }
-
-        return $"Targeted block: {blockName} ({blockId}:{blockMeta}) [{blockX}, {blockY}, {blockZ}] {sideName}";
-    }
+    
 
 }
