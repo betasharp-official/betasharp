@@ -17,14 +17,15 @@ public class ServerWorld : World
 {
     private readonly Dictionary<int, Entity> entitiesById = [];
     private readonly BetaSharpServer server;
-    public bool bypassSpawnProtection = false;
+   public bool BypassSpawnProtection { get; }
     public ServerChunkCache ChunkCache;
     internal ChunkMap ChunkMap;
     public bool savingDisabled;
 
-    public ServerWorld(BetaSharpServer server, IWorldStorage storage, string saveName, int dimension, WorldSettings settings, ServerWorld del) : base(storage, saveName, settings, Dimension.FromId(dimension))
+    public ServerWorld(BetaSharpServer server, IWorldStorage storage, string saveName, int dimensionId, WorldSettings settings, ServerWorld del) : base(storage, saveName, settings, Dimension.FromId(dimensionId))
     {
         this.server = server;
+        BypassSpawnProtection = dimensionId != 0;
 
         Environment.OnRainingStateChanged += HandleWeatherChanged;
 

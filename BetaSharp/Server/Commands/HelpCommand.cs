@@ -1,4 +1,5 @@
 ﻿using BetaSharp.Server.Command;
+using BetaSharp.Server.Internal;
 
 namespace BetaSharp.Server.Commands;
 
@@ -16,8 +17,25 @@ public class HelpCommand : ICommand
 
     public void Execute(ICommand.CommandContext c)
     {
+        byte per = c.Server is InternalServer ? (byte)4 : c.Output.PermissionLevel;
+        if (c.Args.Length > 0)
+        {
+            string arg = c.Args[0];
+
+            foreach (var cmd in _helpEntries)
+            {
+                if (per < cmd.PermissionLevel) continue;
+                if (cmd.Names.All(n => n != arg)) continue;
+
+                c.Output.SendMessage($"{cmd.Usage} - {cmd.Description}");
+                return;
+            }
+
+            c.Output.SendMessage($"Command \"{arg}\" not found, use /help to list all commands");
+            return;
+        }
+
         c.Output.SendMessage("Available commands:");
-        byte per = c.Output.GetPermissionLevel();
         foreach (var cmd in _helpEntries)
         {
             if (per >= cmd.PermissionLevel)

@@ -1,7 +1,11 @@
-﻿namespace BetaSharp.Server.Command;
+﻿using Microsoft.Extensions.Logging;
+
+namespace BetaSharp.Server.Command;
 
 public interface ICommand
 {
+    private static readonly ILogger s_logger = Log.Instance.For(nameof(ICommand));
+
     public string Usage { get; }
     public string Description { get; }
     public string[] Names { get; }
@@ -18,7 +22,12 @@ public interface ICommand
     /// 3 - Gamemaster<br/>
     /// 4 - Owner
     /// </remarks>
-    public byte PermissionLevel { get; }
+    public byte PermissionLevel => 2;
+
+    /// <summary>
+    /// When true, the command can only be executed on external servers (muliplayer).
+    /// </summary>
+    public bool DisallowInternalServer => false;
 
     /// <summary>
     /// Run command.
@@ -28,9 +37,19 @@ public interface ICommand
 
     public class CommandContext(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
-        public BetaSharpServer Server { get;} = server;
+        public BetaSharpServer Server { get; } = server;
         public string SenderName { get; } = senderName;
         public string[] Args { get; } = args;
         public ICommandOutput Output { get; } = output;
+
+        /// <summary>
+        /// Log to all operators and console.
+        /// </summary>
+        protected void LogOp(string message)
+        {
+            string logMessage = SenderName + ": " + message;
+            Server.playerManager.BroadcastOp("§7(" + logMessage + ")");
+            s_logger.LogInformation(logMessage);
+        }
     }
 }

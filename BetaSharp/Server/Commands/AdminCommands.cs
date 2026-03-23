@@ -187,7 +187,7 @@ internal class AdminCommands
     internal static void LogCommand(BetaSharpServer server, string senderName, string message)
     {
         string logMessage = senderName + ": " + message;
-        server.playerManager.broadcast("§7(" + logMessage + ")");
+        server.playerManager.BroadcastOp("§7(" + logMessage + ")");
         s_logger.LogInformation(logMessage);
     }
 }

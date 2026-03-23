@@ -6,26 +6,6 @@
 
     <Grid RowDefinitions="* Auto" RowSpacing="10">
         <Grid RowDefinitions="* Auto" RowSpacing="10" Grid.Row="0">
-            <Grid.Styles>
-                <Style Selector="Grid">
-                    <Setter Property="Transitions">
-                        <Transitions>
-                            <DoubleTransition Property="Opacity" Duration="0:0:0.5" />
-                        </Transitions>
-                    </Setter>
-                </Style>
-
-                <Style Selector="Grid.hidden">
-                    <Setter Property="Opacity" Value="0" />
-                    <Setter Property="IsHitTestVisible" Value="False" />
-                </Style>
-
-                <Style Selector="Grid.shown">
-                    <Setter Property="Opacity" Value="1" />
-                    <Setter Property="IsHitTestVisible" Value="True" />
-                </Style>
-            </Grid.Styles>
-
             <ListBox Background="Transparent" ItemsSource="{CompiledBinding Logs}" SelectedIndex="{CompiledBinding Last}"
                      CornerRadius="{StaticResource ControlCornerRadius}" Grid.Row="0">
 

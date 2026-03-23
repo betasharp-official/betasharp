@@ -2,6 +2,7 @@ using Silk.NET.GLFW;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
+using System.Runtime.InteropServices;
 
 namespace BetaSharp.Client;
 
@@ -12,6 +13,7 @@ namespace BetaSharp.Client;
 public static unsafe class Display
 {
     private static readonly object _lock = new();
+    private static readonly bool _isMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
     private static IWindow? _window;
     private static GL? _gl;
     private static readonly Glfw? _glfw;
@@ -25,6 +27,9 @@ public static unsafe class Display
     private static bool _resizable = true;
     private static bool _wasResized;
     private static bool _closeRequested;
+    private static int _framebufferWidth;
+    private static int _framebufferHeight;
+    private static GlfwCallbacks.FramebufferSizeCallback? _framebufferSizeCallback;
     public static int MSAA_Samples = 0;
     public static bool DebugMode = false;
 
@@ -368,6 +373,44 @@ public static unsafe class Display
     }
 
     /// <summary>
+    /// Return the framebuffer width in pixels.
+    /// </summary>
+    public static int getFramebufferWidth()
+    {
+        lock (_lock)
+        {
+            if (!isCreated())
+                return _currentMode.getWidth();
+
+            if (_framebufferWidth <= 0)
+            {
+                refreshFramebufferSize();
+            }
+
+            return Math.Max(1, _framebufferWidth);
+        }
+    }
+
+    /// <summary>
+    /// Return the framebuffer height in pixels.
+    /// </summary>
+    public static int getFramebufferHeight()
+    {
+        lock (_lock)
+        {
+            if (!isCreated())
+                return _currentMode.getHeight();
+
+            if (_framebufferHeight <= 0)
+            {
+                refreshFramebufferSize();
+            }
+
+            return Math.Max(1, _framebufferHeight);
+        }
+    }
+
+    /// <summary>
     /// Return true if the Display window is resizable.
     /// </summary>
     public static bool isResizable()
@@ -464,11 +507,40 @@ public static unsafe class Display
         _gl = GL.GetApi(_window);
         _gl.ClearColor(_r, _g, _b, 1.0f);
         _gl.Enable(EnableCap.Multisample);
+
+        refreshFramebufferSize();
+        if (_window != null && _glfw != null)
+        {
+            _framebufferSizeCallback = onFramebufferSizeChanged;
+            _glfw.SetFramebufferSizeCallback((WindowHandle*)_window.Handle, _framebufferSizeCallback);
+        }
     }
 
     private static void onResize(Vector2D<int> size)
     {
         _wasResized = true;
+        refreshFramebufferSize();
+    }
+
+    private static void onFramebufferSizeChanged(WindowHandle* window, int width, int height)
+    {
+        _framebufferWidth = Math.Max(1, width);
+        _framebufferHeight = Math.Max(1, height);
+        _wasResized = true;
+    }
+
+    private static void refreshFramebufferSize()
+    {
+        if (_window == null || _glfw == null)
+        {
+            _framebufferWidth = Math.Max(1, _currentMode.getWidth());
+            _framebufferHeight = Math.Max(1, _currentMode.getHeight());
+            return;
+        }
+
+        _glfw.GetFramebufferSize((WindowHandle*)_window.Handle, out int width, out int height);
+        _framebufferWidth = Math.Max(1, width);
+        _framebufferHeight = Math.Max(1, height);
     }
 
     private static void onClosing()
@@ -554,6 +626,9 @@ public static unsafe class Display
             _gl = null;
             _closeRequested = false;
             _wasResized = false;
+            _framebufferWidth = 0;
+            _framebufferHeight = 0;
+            _framebufferSizeCallback = null;
 
             resetDisplayMode();
         }

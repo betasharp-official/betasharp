@@ -9,8 +9,6 @@ public class DataCommands : ICommand
     public string Description => "Get debug info from target(s)";
     public string[] Names => ["data"];
 
-    public byte PermissionLevel => 2;
-
 
     public void Execute(ICommand.CommandContext c)
     {
