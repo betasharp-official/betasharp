@@ -450,7 +450,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onChatMessage(ChatMessagePacket packet)
     {
-        _game.ingameGUI.addChatMessage(packet.chatMessage);
+        _game.ingameGUI.AddChatMessage(packet.chatMessage);
     }
 
     public override void onEntityAnimation(EntityAnimationPacket packet)

@@ -287,7 +287,7 @@ public class GameRenderer
                 Profiler.Start("renderGameOverlay");
                 if (!_client.options.HideGUI || _client.currentScreen != null)
                 {
-                    _client.ingameGUI.renderGameOverlay(tickDelta, _client.currentScreen != null, scaledMouseX, scaledMouseY);
+                    _client.ingameGUI.RenderGameOverlay(tickDelta);
                 }
                 Profiler.Stop("renderGameOverlay");
             }

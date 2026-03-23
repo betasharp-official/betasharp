@@ -1,33 +1,26 @@
-using BetaSharp.Client.Options;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Client.Diagnostics;
+using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Items;
-using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
-using BetaSharp.Util.Hit;
 using BetaSharp.Util;
+using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
-using SFML.System;
-using SixLabors.ImageSharp.PixelFormats;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Worlds.Colors;
-using System.ComponentModel.Design;
 
 namespace BetaSharp.Client.Guis;
 
 public class GuiIngame : Gui
 {
     private readonly GCMonitor _gcMonitor;
-    private static readonly ItemRenderer _itemRenderer = new();
-    private readonly List<ChatLine> _chatMessageList = new();
+    private readonly List<ChatLine> _chatMessageList = [];
     private readonly JavaRandom _rand = new();
     private int _chatScrollPos = 0;
-    private bool _chatScrollbarDragging = false;
     private readonly BetaSharp _game;
     public string _hoveredItemName = null;
     private int _updateCounter = 0;
@@ -35,7 +28,7 @@ public class GuiIngame : Gui
     private int _recordPlayingUpFor = 0;
     private bool _isRecordMessageRainbow = false;
     public float _damageGuiPartialTime;
-    float PrevVignetteBrightness = 1.0F;
+    private float _prevVignetteBrightness = 1.0F;
     private static readonly string[] s_cardinalDirections = ["South", "West", "North", "East"];
     private static readonly string[] s_blockSides = ["Down", "Up", "North", "South", "West", "East"];
     private static readonly ItemRenderer s_itemRenderer = new();
@@ -97,7 +90,7 @@ public class GuiIngame : Gui
         return unchecked((int)(0xFF000000 | ((uint)r << 16) | ((uint)g << 8) | ((uint)b << 0)));
     }
 
-    public void renderGameOverlay(float partialTicks, bool unusedFlag, int unusedA, int unusedB)
+    public void RenderGameOverlay(float partialTicks)
     {
         ScaledResolution scaled = new(_game.options, _game.displayWidth, _game.displayHeight);
         int scaledWidth = scaled.ScaledWidth;
@@ -107,19 +100,19 @@ public class GuiIngame : Gui
         GLManager.GL.Enable(GLEnum.Blend);
         if (BetaSharp.isFancyGraphicsEnabled())
         {
-            renderVignette(_game.player.getBrightnessAtEyes(partialTicks), scaledWidth, scaledHeight);
+            RenderVignette(_game.player.getBrightnessAtEyes(partialTicks), scaledWidth, scaledHeight);
         }
 
         ItemStack helmet = _game.player.inventory.armorItemInSlot(3);
         if (_game.options.CameraMode == EnumCameraMode.FirstPerson && helmet != null && helmet.itemId == Block.Pumpkin.id)
         {
-            renderPumpkinBlur(scaledWidth, scaledHeight);
+            RenderPumpkinBlur(scaledWidth, scaledHeight);
         }
 
         float screenDistortion = _game.player.lastScreenDistortion + (_game.player.changeDimensionCooldown - _game.player.lastScreenDistortion) * partialTicks;
         if (screenDistortion > 0.0F)
         {
-            renderPortalOverlay(screenDistortion, scaledWidth, scaledHeight);
+            RenderPortalOverlay(screenDistortion, scaledWidth, scaledHeight);
         }
 
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
@@ -243,7 +236,7 @@ public class GuiIngame : Gui
         {
             i = scaledWidth / 2 - 90 + armorValue * 20 + 2;
             j = scaledHeight - 16 - 3 + yOffset;
-            renderInventorySlot(armorValue, i, j, partialTicks);
+            RenderInventorySlot(armorValue, i, j, partialTicks);
         }
 
         Lighting.turnOff();
@@ -414,13 +407,10 @@ public class GuiIngame : Gui
             }
         }
 
-        // Scrollbar rendering moved below (use absolute GUI coords)
-
         GLManager.GL.PopMatrix();
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.GL.Disable(GLEnum.Blend);
 
-        // Absolute GUI-coordinate scrollbar (matches mouse input coordinates)
         if (chatOpen)
         {
             int linesToShowAbs = 20;
@@ -428,7 +418,7 @@ public class GuiIngame : Gui
             int chatWidth = 320;
             int scrollbarX = left + chatWidth - 5;
             int scrollbarWidth = 6;
-            int bottom = scaledHeight - 48 + 6 + yOffset; // 2 pixels before message end
+            int bottom = scaledHeight - 48 + 6 + yOffset;
             int top = scaledHeight - 48 - (linesToShowAbs - 1) * 9 + yOffset;
             int trackHeight = bottom - top;
 
@@ -436,7 +426,6 @@ public class GuiIngame : Gui
             int maxScroll = totalLines - linesToShowAbs;
             if (maxScroll < 0) maxScroll = 0;
 
-            // Only draw scrollbar if there's something to scroll
             if (maxScroll > 0)
             {
                 int thumbHeight = 8;
@@ -446,13 +435,11 @@ public class GuiIngame : Gui
                     if (calc > thumbHeight) thumbHeight = calc;
                 }
 
-                int thumbY = top;
+                int thumbY;
                 int range = Math.Max(1, trackHeight - thumbHeight);
-                // Inverted: Bottom is newest (0), Top is oldest (maxScroll)
                 thumbY = top + (int)((long)(maxScroll - _chatScrollPos) * range / maxScroll);
 
-                Color thumbColor = _chatScrollbarDragging ? Color.GrayAA : Color.GrayCC;
-                DrawRect(scrollbarX + 1, thumbY, scrollbarX + scrollbarWidth - 1, thumbY + thumbHeight, thumbColor);
+                DrawRect(scrollbarX + 1, thumbY, scrollbarX + scrollbarWidth - 1, thumbY + thumbHeight, Color.GrayCC);
             }
         }
 
@@ -460,16 +447,16 @@ public class GuiIngame : Gui
         ControlTooltip.Render(_game, scaledWidth, scaledHeight, partialTicks);
 
         if (_game.options.ShowWTHIT)
-            renderWTHIT(scaledWidth);
+            RenderWTHIT(scaledWidth);
     }
 
-    private void renderWTHIT(int scaledWidth)
+    private void RenderWTHIT(int scaledWidth)
     {
         BetaSharp g = _game;
         HitResult hit = g.objectMouseOver;
         if (hit.Type != HitResultType.TILE || g.world == null) return;
 
-        int blockId = 0;
+        int blockId;
         Block? block = null;
         string blockName = "Unknown";
 
@@ -501,10 +488,12 @@ public class GuiIngame : Gui
             width = 30 + g.fontRenderer.GetStringWidth(blockName);
         }
 
+        if (block is null) return;
+
         int x = scaledWidth / 2 - width / 2;
         int y = 10;
 
-        Color bg = new Color(16, 16, 16);
+        Color bg = new(16, 16, 16);
         Color outline = Color.Gray40;
 
         DrawHorizontalLine(x + 1, x + width - 1, y, bg);
@@ -512,16 +501,16 @@ public class GuiIngame : Gui
         DrawVerticalLine(x, y, y + height - 1, bg);
         DrawVerticalLine(x + width, y, y + height - 1, bg);
 
-        DrawHorizontalLine(x + 1, x + width - 1, y+1, outline);
+        DrawHorizontalLine(x + 1, x + width - 1, y + 1, outline);
         DrawHorizontalLine(x + 1, x + width - 1, y + height - 2, outline);
-        DrawVerticalLine(x+1, y, y + height - 1, outline);
+        DrawVerticalLine(x + 1, y, y + height - 1, outline);
         DrawVerticalLine(x + width - 1, y, y + height - 1, outline);
 
         DrawRect(x + 2, y + 2, x + width - 1, y + height - 2, bg);
 
         if (hit.Type == HitResultType.TILE)
         {
-            if (block is BlockTallGrass tg)
+            if (block is BlockTallGrass)
             {
                 GLManager.GL.Disable(GLEnum.DepthTest);
                 GLManager.GL.DepthMask(false);
@@ -563,16 +552,16 @@ public class GuiIngame : Gui
             GLManager.GL.Disable(GLEnum.RescaleNormal);
 
 
-            DrawString(g.fontRenderer, blockName, x+25, y + (height / 2 - 4), Color.White);
+            DrawString(g.fontRenderer, blockName, x + 25, y + (height / 2 - 4), Color.White);
 
             if (g.terrainRenderer.damagePartialTime != 0)
-                DrawHorizontalLine(x+1, x+1+(int)Math.Ceiling((width-2) * g.terrainRenderer.damagePartialTime), y + height - 1, Color.White);
+                DrawHorizontalLine(x + 1, x + 1 + (int)Math.Ceiling((width - 2) * g.terrainRenderer.damagePartialTime), y + height - 1, Color.White);
         }
 
         // TODO: support entites
     }
 
-    private void renderPumpkinBlur(int screenWidth, int screenHeight)
+    private void RenderPumpkinBlur(int screenWidth, int screenHeight)
     {
         GLManager.GL.Disable(GLEnum.DepthTest);
         GLManager.GL.DepthMask(false);
@@ -593,7 +582,7 @@ public class GuiIngame : Gui
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    private void renderVignette(float darkness, int screenWidth, int screenHeight)
+    private void RenderVignette(float darkness, int screenWidth, int screenHeight)
     {
         darkness = 1.0F - darkness;
         if (darkness < 0.0F)
@@ -606,11 +595,11 @@ public class GuiIngame : Gui
             darkness = 1.0F;
         }
 
-        PrevVignetteBrightness = (float)(PrevVignetteBrightness + (double)(darkness - PrevVignetteBrightness) * 0.01D);
+        _prevVignetteBrightness = (float)(_prevVignetteBrightness + (double)(darkness - _prevVignetteBrightness) * 0.01D);
         GLManager.GL.Disable(GLEnum.DepthTest);
         GLManager.GL.DepthMask(false);
         GLManager.GL.BlendFunc(GLEnum.Zero, GLEnum.OneMinusSrcColor);
-        GLManager.GL.Color4(PrevVignetteBrightness, PrevVignetteBrightness, PrevVignetteBrightness, 1.0F);
+        GLManager.GL.Color4(_prevVignetteBrightness, _prevVignetteBrightness, _prevVignetteBrightness, 1.0F);
         _game.textureManager.BindTexture(_game.textureManager.GetTextureId("%blur%/misc/vignette.png"));
         Tessellator tess = Tessellator.instance;
         tess.startDrawingQuads();
@@ -625,7 +614,7 @@ public class GuiIngame : Gui
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
     }
 
-    private void renderPortalOverlay(float portalStrength, int screenWidth, int screenHeight)
+    private void RenderPortalOverlay(float portalStrength, int screenWidth, int screenHeight)
     {
         if (portalStrength < 1.0F)
         {
@@ -657,7 +646,7 @@ public class GuiIngame : Gui
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    private void renderInventorySlot(int slotIndex, int x, int y, float partialTicks)
+    private void RenderInventorySlot(int slotIndex, int x, int y, float partialTicks)
     {
         ItemStack stack = _game.player.inventory.main[slotIndex];
         if (stack != null)
@@ -672,17 +661,17 @@ public class GuiIngame : Gui
                 GLManager.GL.Translate(-(x + 8), -(y + 12), 0.0F);
             }
 
-            _itemRenderer.renderItemIntoGUI(_game.fontRenderer, _game.textureManager, stack, x, y);
+            s_itemRenderer.renderItemIntoGUI(_game.fontRenderer, _game.textureManager, stack, x, y);
             if (bob > 0.0F)
             {
                 GLManager.GL.PopMatrix();
             }
 
-            _itemRenderer.renderItemOverlayIntoGUI(_game.fontRenderer, _game.textureManager, stack, x, y);
+            s_itemRenderer.renderItemOverlayIntoGUI(_game.fontRenderer, _game.textureManager, stack, x, y);
         }
     }
 
-    public void updateTick()
+    public void UpdateTick()
     {
         if (_recordPlayingUpFor > 0)
         {
@@ -698,29 +687,25 @@ public class GuiIngame : Gui
 
     }
 
-    public void stopChatScrollbarDrag()
-    {
-        _chatScrollbarDragging = false;
-    }
-    public void clearChatMessages()
+    public void ClearChatMessages()
     {
         _chatMessageList.Clear();
     }
 
-    public void addChatMessage(string message)
+    public void AddChatMessage(string message)
     {
         foreach (string line in message.Split("\n"))
         {
-            addWrappedChatMessage(line);
+            AddWrappedChatMessage(line);
         }
     }
 
-    private void addWrappedChatMessage(string message)
+    private void AddWrappedChatMessage(string message)
     {
         while (_game.fontRenderer.GetStringWidth(message) > 320)
         {
             int i;
-            for (i = 1; i < message.Length && _game.fontRenderer.GetStringWidth(message.Substring(0, i + 1)) <= 320; ++i)
+            for (i = 1; i < message.Length && _game.fontRenderer.GetStringWidth(message.AsSpan(0, i + 1)) <= 320; ++i)
             {
             }
 
@@ -729,34 +714,33 @@ public class GuiIngame : Gui
         }
 
         _chatMessageList.Insert(0, new ChatLine(message));
-        // Reset scroll to show newest messages when new message arrives
+
         _chatScrollPos = 0;
 
-        // Keep recent history (increase to 64 messages)
         while (_chatMessageList.Count > 64)
         {
             _chatMessageList.RemoveAt(_chatMessageList.Count - 1);
         }
     }
 
-    public void setRecordPlayingMessage(string recordName)
+    public void SetRecordPlayingMessage(string recordName)
     {
         _recordPlaying = "Now playing: " + recordName;
         _recordPlayingUpFor = 60;
         _isRecordMessageRainbow = true;
     }
 
-    public void addChatMessageTranslate(string key)
+    public void AddChatMessageTranslate(string key)
     {
         TranslationStorage translations = TranslationStorage.Instance;
         string translated = translations.TranslateKey(key);
-        addChatMessage(translated);
+        AddChatMessage(translated);
     }
 
-    public void scrollChat(int amount)
+    public void ScrollChat(int amount)
     {
         if (amount == 0) return;
-        // When scrolling, assume chat open with up to 20 visible lines
+
         int linesToShow = 20;
         int maxScroll = _chatMessageList.Count - linesToShow;
         if (maxScroll < 0) maxScroll = 0;
@@ -851,7 +835,7 @@ public class GuiIngame : Gui
         return $"{systemSnapshot.CpuName} ({systemSnapshot.CpuCoreCount} {coreLabel})";
     }
 
-    private void DrawDebugColumns(TextRenderer font, List<string> leftLines, List<string> rightLines, int scaledWidth)
+    private static void DrawDebugColumns(TextRenderer font, List<string> leftLines, List<string> rightLines, int scaledWidth)
     {
         const int startY = 2;
         const int lineHeight = 10;

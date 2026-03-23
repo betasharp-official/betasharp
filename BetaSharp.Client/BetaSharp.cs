@@ -432,7 +432,7 @@ public partial class BetaSharp
 
         if (newScreen is GuiMainMenu)
         {
-            ingameGUI.clearChatMessages();
+            ingameGUI.ClearChatMessages();
         }
 
         currentScreen = newScreen;
@@ -889,7 +889,7 @@ public partial class BetaSharp
                     }
                 }
                 string result = ScreenShotHelper.saveScreenshot(gameDataDir, displayWidth, displayHeight, pixels);
-                ingameGUI.addChatMessage(result);
+                ingameGUI.AddChatMessage(result);
             }
         }
         else
@@ -1286,7 +1286,7 @@ public partial class BetaSharp
 
 
         Profiler.Start("ingameGUI.updateTick");
-        ingameGUI.updateTick();
+        ingameGUI.UpdateTick();
         Profiler.Stop("ingameGUI.updateTick");
         gameRenderer.UpdateTargetedEntity(1.0F);
 
@@ -1529,7 +1529,7 @@ public partial class BetaSharp
 
                         if (Keyboard.getEventKey() == Keyboard.KEY_D && Keyboard.isKeyDown(Keyboard.KEY_F3))
                         {
-                            ingameGUI.clearChatMessages();
+                            ingameGUI.ClearChatMessages();
                         }
 
                         if (Keyboard.getEventKey() == Keyboard.KEY_C && Keyboard.isKeyDown(Keyboard.KEY_F3))

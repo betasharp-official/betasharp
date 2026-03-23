@@ -76,7 +76,7 @@ public class GuiChat : GuiScreen
             }
             else
             {
-                Game.ingameGUI.scrollChat(1);
+                Game.ingameGUI.ScrollChat(1);
             }
             return;
         }
@@ -98,7 +98,7 @@ public class GuiChat : GuiScreen
             }
             else
             {
-                Game.ingameGUI.scrollChat(-1);
+                Game.ingameGUI.ScrollChat(-1);
             }
             return;
         }
@@ -143,7 +143,7 @@ public class GuiChat : GuiScreen
         int wheel = Mouse.getEventDWheel();
         if (wheel != 0)
         {
-            Game.ingameGUI.scrollChat(wheel > 0 ? 1 : -1);
+            Game.ingameGUI.ScrollChat(wheel > 0 ? 1 : -1);
         }
     }
 
