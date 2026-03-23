@@ -85,6 +85,7 @@ public class PostProcessManager
     public void Begin()
     {
         _mainFbo.Bind();
+        GLManager.GL.Viewport(0, 0, (uint)_mainFbo.Width, (uint)_mainFbo.Height);
         GLManager.GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
     }
 

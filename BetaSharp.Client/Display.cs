@@ -27,6 +27,9 @@ public static unsafe class Display
     private static bool _resizable = true;
     private static bool _wasResized;
     private static bool _closeRequested;
+    private static int _framebufferWidth;
+    private static int _framebufferHeight;
+    private static GlfwCallbacks.FramebufferSizeCallback? _framebufferSizeCallback;
     public static int MSAA_Samples = 0;
     public static bool DebugMode = false;
 
@@ -379,11 +382,12 @@ public static unsafe class Display
             if (!isCreated())
                 return _currentMode.getWidth();
 
-            if (!_isMacOS)
-                return getWidth();
+            if (_framebufferWidth <= 0)
+            {
+                refreshFramebufferSize();
+            }
 
-            _glfw!.GetFramebufferSize((WindowHandle*)_window!.Handle, out int width, out _);
-            return Math.Max(1, width);
+            return Math.Max(1, _framebufferWidth);
         }
     }
 
@@ -397,11 +401,12 @@ public static unsafe class Display
             if (!isCreated())
                 return _currentMode.getHeight();
 
-            if (!_isMacOS)
-                return getHeight();
+            if (_framebufferHeight <= 0)
+            {
+                refreshFramebufferSize();
+            }
 
-            _glfw!.GetFramebufferSize((WindowHandle*)_window!.Handle, out _, out int height);
-            return Math.Max(1, height);
+            return Math.Max(1, _framebufferHeight);
         }
     }
 
@@ -502,11 +507,40 @@ public static unsafe class Display
         _gl = GL.GetApi(_window);
         _gl.ClearColor(_r, _g, _b, 1.0f);
         _gl.Enable(EnableCap.Multisample);
+
+        refreshFramebufferSize();
+        if (_window != null && _glfw != null)
+        {
+            _framebufferSizeCallback = onFramebufferSizeChanged;
+            _glfw.SetFramebufferSizeCallback((WindowHandle*)_window.Handle, _framebufferSizeCallback);
+        }
     }
 
     private static void onResize(Vector2D<int> size)
     {
         _wasResized = true;
+        refreshFramebufferSize();
+    }
+
+    private static void onFramebufferSizeChanged(WindowHandle* window, int width, int height)
+    {
+        _framebufferWidth = Math.Max(1, width);
+        _framebufferHeight = Math.Max(1, height);
+        _wasResized = true;
+    }
+
+    private static void refreshFramebufferSize()
+    {
+        if (_window == null || _glfw == null)
+        {
+            _framebufferWidth = Math.Max(1, _currentMode.getWidth());
+            _framebufferHeight = Math.Max(1, _currentMode.getHeight());
+            return;
+        }
+
+        _glfw.GetFramebufferSize((WindowHandle*)_window.Handle, out int width, out int height);
+        _framebufferWidth = Math.Max(1, width);
+        _framebufferHeight = Math.Max(1, height);
     }
 
     private static void onClosing()
@@ -592,6 +626,9 @@ public static unsafe class Display
             _gl = null;
             _closeRequested = false;
             _wasResized = false;
+            _framebufferWidth = 0;
+            _framebufferHeight = 0;
+            _framebufferSizeCallback = null;
 
             resetDisplayMode();
         }

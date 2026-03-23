@@ -121,6 +121,7 @@ public class GameOptions
     public KeyBinding KeyBindCommand = new("key.command", Keyboard.KEY_SLASH);
     public KeyBinding KeyBindToggleFog = new("key.fog", 33);
     public KeyBinding KeyBindSneak = new("key.sneak", 42);
+    public KeyBinding KeyBindZoom = new("key.zoom", Keyboard.KEY_C);
     public KeyBinding[] KeyBindings;
     public ControllerBinding[] ControllerBindings;
 
@@ -135,6 +136,7 @@ public class GameOptions
     public bool DebugCamera = false;
     public float AmountScrolled = 1.0F;
     public float field_22271_G = 1.0F;
+    public float ZoomScale = 2.0F;
     private bool initialDebugMode;
     public float Brightness = 0.5F;
 
@@ -160,6 +162,7 @@ public class GameOptions
             KeyBindInventory,
             KeyBindChat,
             KeyBindToggleFog,
+            KeyBindZoom,
         ];
 
         ControllerBindings =

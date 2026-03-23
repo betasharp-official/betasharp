@@ -878,17 +878,19 @@ public partial class BetaSharp
             if (!isTakingScreenshot)
             {
                 isTakingScreenshot = true;
-                int size = displayWidth * displayHeight * 3;
+                int framebufferWidth = Display.getFramebufferWidth();
+                int framebufferHeight = Display.getFramebufferHeight();
+                int size = framebufferWidth * framebufferHeight * 3;
                 byte[] pixels = new byte[size];
                 GLManager.GL.PixelStore(PixelStoreParameter.PackAlignment, 1);
                 unsafe
                 {
                     fixed (byte* p = pixels)
                     {
-                        GLManager.GL.ReadPixels(0, 0, (uint)displayWidth, (uint)displayHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
+                        GLManager.GL.ReadPixels(0, 0, (uint)framebufferWidth, (uint)framebufferHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
                     }
                 }
-                string result = ScreenShotHelper.saveScreenshot(gameDataDir, displayWidth, displayHeight, pixels);
+                string result = ScreenShotHelper.saveScreenshot(gameDataDir, framebufferWidth, framebufferHeight, pixels);
                 ingameGUI.addChatMessage(result);
             }
         }
@@ -1444,20 +1446,39 @@ public partial class BetaSharp
                 {
                     isControllerMode = false;
                     Mouse.setCursorVisible(true);
-                    player.inventory.changeCurrentItem(mouseWheelDelta);
-                    if (options.InvertScrolling)
+
+                    bool zoomHeld = currentScreen == null && inGameHasFocus && Keyboard.isKeyDown(options.KeyBindZoom.keyCode);
+                    if (zoomHeld)
                     {
-                        if (mouseWheelDelta > 0)
+                        int mouseWheelDirection = mouseWheelDelta > 0 ? 1 : -1;
+                        if (mouseWheelDirection > 0)
                         {
-                            mouseWheelDelta = 1;
+                            options.ZoomScale *= 1.08F;
+                        }
+                        else
+                        {
+                            options.ZoomScale /= 1.08F;
                         }
 
-                        if (mouseWheelDelta < 0)
+                        options.ZoomScale = System.Math.Clamp(options.ZoomScale, 1.25F, 20.0F);
+                    }
+                    else
+                    {
+                        player.inventory.changeCurrentItem(mouseWheelDelta);
+                        if (options.InvertScrolling)
                         {
-                            mouseWheelDelta = -1;
-                        }
+                            if (mouseWheelDelta > 0)
+                            {
+                                mouseWheelDelta = 1;
+                            }
 
-                        options.AmountScrolled += (float)mouseWheelDelta * 0.25F;
+                            if (mouseWheelDelta < 0)
+                            {
+                                mouseWheelDelta = -1;
+                            }
+
+                            options.AmountScrolled += (float)mouseWheelDelta * 0.25F;
+                        }
                     }
                 }
 
