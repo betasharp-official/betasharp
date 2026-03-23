@@ -121,7 +121,7 @@ public class GameOptions
     public KeyBinding KeyBindCommand = new("key.command", Keyboard.KEY_SLASH);
     public KeyBinding KeyBindToggleFog = new("key.fog", 33);
     public KeyBinding KeyBindSneak = new("key.sneak", 42);
-    public KeyBinding KeyBindZoom = new("key.zoom", Keyboard.KEY_C);
+    public KeyBinding KeyBindZoom = new("key.zoom", Keyboard.KEY_NONE);
     public KeyBinding[] KeyBindings;
     public ControllerBinding[] ControllerBindings;
 
@@ -173,6 +173,7 @@ public class GameOptions
             new ControllerBinding("controller.hotbarLeft", "Hotbar Left",  GamepadButton.LeftBumper),
             new ControllerBinding("controller.hotbarRight","Hotbar Right", GamepadButton.RightBumper),
             new ControllerBinding("controller.sneak",      "Sneak",        GamepadButton.RightStick),
+            new ControllerBinding("controller.zoom",       "Zoom",         (GamepadButton)(-1)),
             new ControllerBinding("controller.pickBlock",  "Pick Block",   GamepadButton.DPadUp),
             new ControllerBinding("controller.camera",     "Camera Mode",  GamepadButton.LeftStick),
             new ControllerBinding("controller.pause",      "Pause",        GamepadButton.Start),

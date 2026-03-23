@@ -22,6 +22,7 @@ public class ControllerBinding
 
     public string GetButtonName() => Button switch
     {
+        _ when (int)Button < 0 => "Unbound",
         GamepadButton.A => "A",
         GamepadButton.B => "B",
         GamepadButton.X => "X",

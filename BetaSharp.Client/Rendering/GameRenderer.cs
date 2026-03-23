@@ -264,7 +264,7 @@ public class GameRenderer
             _client.player.changeLookDirection(var4, var5 * var6);
         }
 
-        bool zoomHeld = _client.currentScreen == null && _client.inGameHasFocus && Keyboard.isKeyDown(_client.options.KeyBindZoom.keyCode);
+        bool zoomHeld = (_client.currentScreen == null && _client.inGameHasFocus && Keyboard.isKeyDown(_client.options.KeyBindZoom.keyCode)) || ControllerManager.IsZoomHeld();
         cameraController.SetZoomState(zoomHeld, _client.options.ZoomScale);
 
         if (!_client.skipRenderWorld)

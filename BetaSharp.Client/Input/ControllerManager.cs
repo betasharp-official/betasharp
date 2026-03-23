@@ -21,6 +21,8 @@ public static class ControllerManager
     private static bool s_wasCraftingDown;
     private static bool s_wasSneakDown;
     private static bool s_wasJumpDown;
+    private static long s_nextZoomInAdjustAtMs;
+    private static long s_nextZoomOutAdjustAtMs;
 
     public static bool SneakToggle { get; set; }
     private static bool s_suppressInGameInput;
@@ -36,9 +38,19 @@ public static class ControllerManager
         foreach (ControllerBinding cb in s_game.options.ControllerBindings)
         {
             if (cb.ActionKey == actionKey)
+            {
+                if ((int)cb.Button < 0) return false;
                 return Controller.IsButtonDown(cb.Button);
+            }
         }
         return false;
+    }
+
+    public static bool IsZoomHeld()
+    {
+        if (s_game == null) return false;
+        if (s_game.currentScreen != null || !s_game.inGameHasFocus) return false;
+        return IsActionDown("controller.zoom");
     }
 
     private static void SyncWasStates()
@@ -80,12 +92,13 @@ public static class ControllerManager
         bool pickBlockHeld = IsActionDown("controller.pickBlock");
         bool sneakHeld = IsActionDown("controller.sneak");
         bool craftingHeld = IsActionDown("controller.crafting");
+        bool zoomHeld = IsActionDown("controller.zoom");
 
         if (s_suppressInGameInput)
         {
             if (!jumpHeld && !attackHeld && !interactHeld && !inventoryHeld && !dropHeld &&
                 !lbHeld && !rbHeld && !cameraHeld && !pauseHeld && !playerListHeld &&
-                !pickBlockHeld && !sneakHeld && !craftingHeld)
+                !pickBlockHeld && !sneakHeld && !craftingHeld && !zoomHeld)
             {
                 s_suppressInGameInput = false;
             }
@@ -141,9 +154,38 @@ public static class ControllerManager
             s_game.player.dropSelectedItem();
         }
 
-        // Hotbar
-        if (lbHeld && !s_wasHotbarLeftDown) s_game.player.inventory.changeCurrentItem(1);
-        if (rbHeld && !s_wasHotbarRightDown) s_game.player.inventory.changeCurrentItem(-1);
+        // Hotbar / Zoom adjust
+        if (zoomHeld)
+        {
+            long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+            if (lbHeld && (!s_wasHotbarLeftDown || nowMs >= s_nextZoomInAdjustAtMs))
+            {
+                s_game.options.ZoomScale = System.Math.Clamp(s_game.options.ZoomScale * 1.08F, 1.25F, 20.0F);
+                s_nextZoomInAdjustAtMs = nowMs + (s_wasHotbarLeftDown ? 70L : 220L);
+            }
+            else if (!lbHeld)
+            {
+                s_nextZoomInAdjustAtMs = 0L;
+            }
+
+            if (rbHeld && (!s_wasHotbarRightDown || nowMs >= s_nextZoomOutAdjustAtMs))
+            {
+                s_game.options.ZoomScale = System.Math.Clamp(s_game.options.ZoomScale / 1.08F, 1.25F, 20.0F);
+                s_nextZoomOutAdjustAtMs = nowMs + (s_wasHotbarRightDown ? 70L : 220L);
+            }
+            else if (!rbHeld)
+            {
+                s_nextZoomOutAdjustAtMs = 0L;
+            }
+        }
+        else
+        {
+            if (lbHeld && !s_wasHotbarLeftDown) s_game.player.inventory.changeCurrentItem(1);
+            if (rbHeld && !s_wasHotbarRightDown) s_game.player.inventory.changeCurrentItem(-1);
+            s_nextZoomInAdjustAtMs = 0L;
+            s_nextZoomOutAdjustAtMs = 0L;
+        }
 
         // Camera
         if (cameraHeld && !s_wasCameraDown)
@@ -175,7 +217,7 @@ public static class ControllerManager
         }
 
         if (jumpHeld || attackHeld || interactHeld || inventoryHeld || dropHeld || lbHeld || rbHeld ||
-            cameraHeld || pauseHeld || playerListHeld || pickBlockHeld || sneakHeld || craftingHeld)
+            cameraHeld || pauseHeld || playerListHeld || pickBlockHeld || sneakHeld || craftingHeld || zoomHeld)
         {
             s_game.isControllerMode = true;
         }
