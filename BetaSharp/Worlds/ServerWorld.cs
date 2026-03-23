@@ -15,13 +15,14 @@ namespace BetaSharp.Worlds;
 public class ServerWorld : World
 {
     public ServerChunkCache chunkCache;
-    public bool bypassSpawnProtection = false;
+    public bool BypassSpawnProtection { get; }
     public bool savingDisabled;
     private readonly BetaSharpServer server;
     private readonly Dictionary<int, Entity> entitiesById = [];
 
-    public ServerWorld(BetaSharpServer server, IWorldStorage storage, String name, int dimensionId, WorldSettings settings) : base(storage, name, settings, Dimension.FromId(dimensionId))
+    public ServerWorld(BetaSharpServer server, IWorldStorage storage, string name, int dimensionId, WorldSettings settings) : base(storage, name, settings, Dimension.FromId(dimensionId))
     {
+        BypassSpawnProtection = dimensionId != 0;
         this.server = server;
     }
 
