@@ -1,27 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace BetaSharp.Client.Guis.Debug;
 
-public class DebugOverlay
+public class DebugOverlay(BetaSharp game)
 {
-    private readonly BetaSharp _game;
-    public readonly DebugContext Context;
-
-    public DebugOverlay(BetaSharp game)
-    {
-        _game = game;
-        Context = new DebugContext(game);
-    }
-
-    public List<DebugComponent> Components = new List<DebugComponent>();
+    public readonly DebugContext Context = new(game);
+    public List<DebugComponent> Components = [];
 
     public void Draw()
     {
         Context.Initialize();
 
-        foreach (var component in Components)
+        foreach (DebugComponent component in Components)
         {
             Context.DrawComponent(component);
         }

@@ -1,27 +1,23 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using System.Text;
 using BetaSharp.Client.Guis.Debug.Components;
-using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Guis.Debug;
+
 public static class DebugComponents
 {
-    public static readonly List<Type> Components
-        = new List<Type>();
+    public static readonly List<Type> Components = [];
 
-    private static void checkSubclass(Type t)
+    private static void CheckSubclass(Type t)
     {
         if (!typeof(DebugComponent).IsAssignableFrom(t))
         {
             throw new InvalidOperationException("Type is not a DebugComponent!");
         }
-    } 
+    }
     public static void Register(Type t)
     {
-        checkSubclass(t);
+        CheckSubclass(t);
         Components.Add(t);
     }
 
@@ -42,17 +38,17 @@ public static class DebugComponents
     }
     public static string GetName(Type t)
     {
-        checkSubclass(t);
+        CheckSubclass(t);
 
         DisplayNameAttribute? attr = t.GetCustomAttribute<DisplayNameAttribute>();
-        if (attr is null) return t.Name; // just default to type name
+        if (attr is null) return t.Name; // default to type name
 
         return attr.DisplayName;
     }
 
     public static string? GetDescription(Type t)
     {
-        checkSubclass(t);
+        CheckSubclass(t);
 
         DescriptionAttribute? attr = t.GetCustomAttribute<DescriptionAttribute>();
         if (attr is null) return null;
@@ -66,7 +62,7 @@ public static class DebugComponents
         {
             if (t.Name == typeName)
             {
-                var instance = Activator.CreateInstance(t);
+                object? instance = Activator.CreateInstance(t);
                 if (instance is DebugComponent dc)
                     return dc;
             }

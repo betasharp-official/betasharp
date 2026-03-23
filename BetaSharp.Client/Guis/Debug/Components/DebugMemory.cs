@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
-using System.Text;
-using BetaSharp.Util;
 
 namespace BetaSharp.Client.Guis.Debug.Components;
 

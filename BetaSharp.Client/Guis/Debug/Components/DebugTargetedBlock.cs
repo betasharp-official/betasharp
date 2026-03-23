@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
-using System.Xml.Linq;
 using BetaSharp.Blocks;
-using BetaSharp.Client.Diagnostics;
 using BetaSharp.Util.Hit;
 
 namespace BetaSharp.Client.Guis.Debug.Components;
@@ -49,7 +44,7 @@ public class DebugTargetedBlock : DebugComponent
             }
         }
 
-        ctx.String( "Targeted block:");
+        ctx.String("Targeted block:");
         ctx.String($"{blockName} ({blockId}:{blockMeta})");
         ctx.String($"XYZ: {blockX} / {blockY} / {blockZ}");
         ctx.String($"Face: {sideName}");

@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace BetaSharp.Client.Guis.Debug;
 
 public class GuiDebugEditor : GuiScreen
 {
     protected GuiScreen parentScreen;
-    private GuiDebugSlot _slot;
+    private GuiDebugSlot? _slot;
 
     public List<DebugComponent> components;
     public DebugComponent? selectedComponent;
@@ -18,24 +14,24 @@ public class GuiDebugEditor : GuiScreen
     private const int BUTTON_CREATE = 3;
     private const int BUTTON_RESET = 4;
     private const int BUTTON_SAVE = 6;
-    public GuiButton buttonChange;
-    public GuiButton buttonDelete;
+    public GuiButton? buttonChange;
+    public GuiButton? buttonDelete;
 
     public GuiDebugEditor(BetaSharp game, GuiScreen parentScreen)
     {
         this.parentScreen = parentScreen;
-        this.components = new List<DebugComponent>();
-        this.selectedComponent = null;
+        components = [];
+        selectedComponent = null;
 
         foreach (DebugComponent component in game.componentsStorage.Overlay.Components)
         {
-            this.components.Add(component.Duplicate());
+            components.Add(component.Duplicate());
         }
     }
 
     public override void InitGui()
     {
-        this._slot = new GuiDebugSlot(this);
+        _slot = new GuiDebugSlot(this);
 
         TranslationStorage translations = TranslationStorage.Instance;
 
@@ -51,6 +47,11 @@ public class GuiDebugEditor : GuiScreen
 
     public override void Render(int mouseX, int mouseY, float partialTicks)
     {
+        if (_slot == null)
+        {
+            return;
+        }
+
         _slot.DrawScreen(mouseX, mouseY, partialTicks);
         DrawCenteredString(FontRenderer, "Edit Debug Overlay", Width / 2, 20, Color.White);
         base.Render(mouseX, mouseY, partialTicks);
@@ -63,10 +64,15 @@ public class GuiDebugEditor : GuiScreen
             switch (button.Id)
             {
                 case BUTTON_DELETE:
-                    components.Remove(selectedComponent);
-                    selectedComponent = null;
+                    if (selectedComponent != null)
+                    {
+                        components.Remove(selectedComponent);
+                        selectedComponent = null;
+                    }
+
                     break;
                 case BUTTON_CHANGE:
+                    if (selectedComponent == null) return;
                     selectedComponent.Right = !selectedComponent.Right;
                     break;
                 case BUTTON_CANCEL:
@@ -90,7 +96,7 @@ public class GuiDebugEditor : GuiScreen
                     Game.displayGuiScreen(new GuiNewDebug(this));
                     break;
                 default:
-                    _slot.ActionPerformed(button);
+                    _slot?.ActionPerformed(button);
                     break;
             }
         }

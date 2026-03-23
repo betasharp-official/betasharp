@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.Logging;
-using System.Text.Json;
-using System.Reflection;
-using System.ComponentModel;
 using BetaSharp.Client.Guis.Debug.Components;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Guis.Debug;
 
@@ -21,7 +15,7 @@ public class DebugComponentsStorage
     public DebugComponentsStorage(BetaSharp game, string gameDataDir)
     {
         _game = game;
-        _componentsPath = System.IO.Path.Combine(gameDataDir, "components.txt");
+        _componentsPath = Path.Combine(gameDataDir, "components.txt");
 
         Overlay = new DebugOverlay(game);
 
@@ -66,7 +60,7 @@ public class DebugComponentsStorage
                 return;
             }
 
-            using StreamReader reader = new StreamReader(_componentsPath);
+            using StreamReader reader = new(_componentsPath);
             string? line;
 
             while ((line = reader.ReadLine()) != null)
@@ -87,7 +81,7 @@ public class DebugComponentsStorage
                         continue;
                     }
 
-                    comp.Right = parts[1] == "right" ? true : false;
+                    comp.Right = parts[1] == "right";
 
                     Overlay.Components.Add(comp);
                 }
@@ -102,7 +96,7 @@ public class DebugComponentsStorage
             _logger.LogError($"Failed to load components: {exception.Message}");
         }
     }
-    
+
     public void SaveComponents()
     {
         try

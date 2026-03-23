@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
-using System.Xml.Linq;
 using BetaSharp.Client.Diagnostics;
 
 namespace BetaSharp.Client.Guis.Debug.Components;

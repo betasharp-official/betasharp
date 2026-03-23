@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using BetaSharp.Client.Rendering;
 using BetaSharp.Util;
 
 namespace BetaSharp.Client.Guis.Debug;
@@ -27,47 +23,39 @@ public class DebugContext
 
     public void Initialize()
     {
-        // both y's should be at the top with a padding of 2, however
-        // x needs to deal with the unpaid text (by offsettinng that side
-        // by 32 pixels).
-
         _leftY = BetaSharp.hasPaidCheckTime > 0L ? 32 + PADDING : PADDING;
         _rightY = PADDING; // right side doesnt need it
 
-        // get screen width
         ScaledResolution scaled = new(Game.options, Game.displayWidth, Game.displayHeight);
         _scaledWidth = scaled.ScaledWidth;
     }
 
     public void String(string str, Color? color = null)
     {
-        // default: white
-        if (color is null) color = Color.White;
+        color ??= Color.White;
 
         int width = Game.fontRenderer.GetStringWidth(str);
-        Color bg = new Color(128, 128, 128, 96);
+        Color bg = new(128, 128, 128, 96);
 
-        // draw left string
-        void leftString()
+        void LeftString()
         {
             Gui.DrawRect(0, _leftY, width + PADDING * 2, _leftY + 10, bg);
-            Game.fontRenderer.DrawStringWithShadow(str, PADDING, _leftY+1, (Color) color);
+            Game.fontRenderer.DrawStringWithShadow(str, PADDING, _leftY + 1, (Color)color);
 
             _leftY += 10;
         }
 
-        // draw right screen
-        void rightString()
+        void RightString()
         {
 
-            Gui.DrawRect(_scaledWidth - PADDING*2 - width, _rightY, _scaledWidth, _rightY + 10, bg);
-            Game.fontRenderer.DrawStringWithShadow(str, _scaledWidth - PADDING, _rightY+1, (Color)color, SixLabors.Fonts.HorizontalAlignment.Right);
+            Gui.DrawRect(_scaledWidth - PADDING * 2 - width, _rightY, _scaledWidth, _rightY + 10, bg);
+            Game.fontRenderer.DrawStringWithShadow(str, _scaledWidth - PADDING, _rightY + 1, (Color)color, SixLabors.Fonts.HorizontalAlignment.Right);
 
             _rightY += 10;
         }
 
-        if (_right) rightString();
-        else leftString();
+        if (_right) RightString();
+        else LeftString();
     }
 
     public void Seperator()

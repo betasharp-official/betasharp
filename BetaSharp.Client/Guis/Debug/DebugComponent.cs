@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace BetaSharp.Client.Guis.Debug;
 
 public abstract class DebugComponent

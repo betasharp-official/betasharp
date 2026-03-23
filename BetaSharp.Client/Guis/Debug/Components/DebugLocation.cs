@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
-using System.Xml.Linq;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Biomes;
 
@@ -22,7 +18,7 @@ public class DebugLocation : DebugComponent
         double x = Math.Floor(ctx.Game.player.x * 1000) / 1000;
         double y = Math.Floor(ctx.Game.player.y * 100000) / 100000;
         double z = Math.Floor(ctx.Game.player.z * 1000) / 1000;
-        
+
         int bx = (int)Math.Floor(ctx.Game.player.x);
         int by = (int)Math.Floor(ctx.Game.player.y);
         int bz = (int)Math.Floor(ctx.Game.player.z);

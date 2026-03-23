@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
-using System.Xml.Linq;
+using BetaSharp.Client.Rendering;
 
 namespace BetaSharp.Client.Guis.Debug.Components;
 
@@ -14,7 +11,7 @@ public class DebugEntities : DebugComponent
 
     public override void Draw(DebugContext ctx)
     {
-        var render = ctx.Game.terrainRenderer;
+        WorldRenderer render = ctx.Game.terrainRenderer;
         ctx.String("Rendered Entities: " + render.countEntitiesRendered + "/" + render.countEntitiesTotal);
         ctx.String("Hidden Entities: " + render.countEntitiesHidden + ", Not in view: " + (render.countEntitiesTotal - render.countEntitiesHidden - render.countEntitiesRendered));
     }
