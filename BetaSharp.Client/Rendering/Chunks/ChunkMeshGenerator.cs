@@ -4,6 +4,7 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
+using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering.Chunks;
@@ -26,53 +27,28 @@ internal struct MeshBuildResult
 
 internal class ChunkMeshGenerator : IDisposable
 {
-    private readonly object _meshResultsLock = new();
-    private readonly List<MeshBuildResult> _pendingResults = [];
+    private readonly PooledQueue<MeshBuildResult> results = new();
     private readonly ObjectPool<PooledList<ChunkVertex>> listPool =
         new(() => new PooledList<ChunkVertex>(), 64);
 
     private ushort maxConcurrentTasks;
     private SemaphoreSlim? concurrencySemaphore;
-    private int _activeTasks;
 
     public ChunkMeshGenerator(ushort maxConcurrentTasks = 0)
     {
         MaxConcurrentTasks = maxConcurrentTasks;
     }
 
-    public MeshBuildResult? GetBestMesh(Vector3D<double> cameraPos)
+    public MeshBuildResult? Mesh
     {
-        lock (_meshResultsLock)
+        get
         {
-            int n = _pendingResults.Count;
-            if (n == 0)
-                return null;
-
-            int bestIndex = 0;
-            double bestDist = DistanceSquaredChunkToCamera(_pendingResults[0].Pos, cameraPos);
-            for (int i = 1; i < n; i++)
+            lock (results)
             {
-                double d = DistanceSquaredChunkToCamera(_pendingResults[i].Pos, cameraPos);
-                if (d < bestDist)
-                {
-                    bestDist = d;
-                    bestIndex = i;
-                }
+                if (results.IsEmpty) return null;
+                return results.Dequeue();
             }
-
-            MeshBuildResult picked = _pendingResults[bestIndex];
-            _pendingResults.RemoveAt(bestIndex);
-            return picked;
         }
-    }
-
-    private static double DistanceSquaredChunkToCamera(Vector3D<int> chunkMin, Vector3D<double> cameraPos)
-    {
-        double h = SubChunkRenderer.Size * 0.5;
-        double dx = chunkMin.X + h - cameraPos.X;
-        double dy = chunkMin.Y + h - cameraPos.Y;
-        double dz = chunkMin.Z + h - cameraPos.Z;
-        return dx * dx + dy * dy + dz * dz;
     }
 
     public ushort MaxConcurrentTasks
@@ -89,8 +65,6 @@ internal class ChunkMeshGenerator : IDisposable
         }
     }
 
-    public int ActiveTasks => Volatile.Read(ref _activeTasks);
-
     public void MeshChunk(World world, Vector3D<int> pos, long version)
     {
         WorldRegionSnapshot cache = new(
@@ -101,30 +75,21 @@ internal class ChunkMeshGenerator : IDisposable
             pos.Z + SubChunkRenderer.Size + 1
         );
 
-        Interlocked.Increment(ref _activeTasks);
-
         Task.Run(async () =>
         {
+            if (concurrencySemaphore != null)
+                await concurrencySemaphore.WaitAsync();
+
             try
             {
-                if (concurrencySemaphore != null)
-                    await concurrencySemaphore.WaitAsync();
-
-                try
-                {
-                    MeshBuildResult mesh = GenerateMesh(pos, version, cache);
-                    lock (_meshResultsLock)
-                        _pendingResults.Add(mesh);
-                }
-                finally
-                {
-                    cache.Dispose();
-                    concurrencySemaphore?.Release();
-                }
+                MeshBuildResult mesh = GenerateMesh(pos, version, cache);
+                lock (results)
+                    results.Enqueue(mesh);
             }
             finally
             {
-                Interlocked.Decrement(ref _activeTasks);
+                cache.Dispose();
+                concurrencySemaphore?.Release();
             }
         });
     }
@@ -199,13 +164,7 @@ internal class ChunkMeshGenerator : IDisposable
 
     public void Dispose()
     {
-        lock (_meshResultsLock)
-        {
-            foreach (MeshBuildResult m in _pendingResults)
-                m.Dispose();
-            _pendingResults.Clear();
-        }
-
+        results.Dispose();
         listPool.Dispose();
     }
 }
