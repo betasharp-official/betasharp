@@ -316,18 +316,11 @@ public abstract class BetaSharpServer : ICommandOutput
                         continue;
                     }
 
-                    if (worlds[0].Entities.AreAllPlayersAsleep())
+                    while (accumulatedTime >= 50L && running)
                     {
-                        accumulatedTime = 0L;
-                    }
-                    else
-                    {
-                        while (accumulatedTime >= 50L && running)
-                        {
-                            accumulatedTime -= 50L;
-                            tick();
-                            _ticksThisSecond++;
-                        }
+                        accumulatedTime -= 50L;
+                        tick();
+                        _ticksThisSecond++;
                     }
 
                     long tpsNow = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();

@@ -8,7 +8,7 @@ namespace BetaSharp.Blocks;
 
 public class BlockBed : Block
 {
-    public static readonly int[][] BED_OFFSETS = [[0, 1], [-1, 0], [0, -1], [1, 0]];
+    private static readonly int[][] s_bedOffsets = [[0, 1], [-1, 0], [0, -1], [1, 0]];
 
     public BlockBed(int id) : base(id, 134, Material.Wool)
     {
@@ -30,8 +30,8 @@ public class BlockBed : Block
         if (!isHeadOfBed(meta))
         {
             int direction = getDirection(meta);
-            x += BED_OFFSETS[direction][0];
-            z += BED_OFFSETS[direction][1];
+            x += s_bedOffsets[direction][0];
+            z += s_bedOffsets[direction][1];
 
             if (@event.World.Reader.GetBlockId(x, y, z) != id)
             {
@@ -49,8 +49,8 @@ public class BlockBed : Block
             @event.World.Writer.SetBlock(x, y, z, 0);
 
             int direction = getDirection(meta);
-            x += BED_OFFSETS[direction][0];
-            z += BED_OFFSETS[direction][1];
+            x += s_bedOffsets[direction][0];
+            z += s_bedOffsets[direction][1];
 
             if (@event.World.Reader.GetBlockId(x, y, z) == id)
             {
@@ -69,13 +69,12 @@ public class BlockBed : Block
             EntityPlayer? occupant = null;
             foreach (EntityPlayer otherPlayer in @event.World.Entities.Players)
             {
-                if (otherPlayer.isSleeping())
+                if (!otherPlayer.isSleeping()) continue;
+
+                Vec3i sleepingPos = otherPlayer.sleepingPos;
+                if (sleepingPos.X == x && sleepingPos.Y == y && sleepingPos.Z == z)
                 {
-                    Vec3i sleepingPos = otherPlayer.sleepingPos;
-                    if (sleepingPos.X == x && sleepingPos.Y == y && sleepingPos.Z == z)
-                    {
-                        occupant = otherPlayer;
-                    }
+                    occupant = otherPlayer;
                 }
             }
 
@@ -89,15 +88,22 @@ public class BlockBed : Block
         }
 
         SleepAttemptResult result = @event.Player.trySleep(x, y, z);
-        if (result == SleepAttemptResult.OK)
+        switch (result)
         {
-            updateState(@event.World.Writer, x, y, z, meta, true);
-            return true;
-        }
-
-        if (result == SleepAttemptResult.NOT_POSSIBLE_NOW)
-        {
-            @event.Player.sendMessage("tile.bed.noSleep");
+            case SleepAttemptResult.OK:
+                updateState(@event.World.Writer, x, y, z, meta, true);
+                return true;
+            case SleepAttemptResult.NOT_POSSIBLE_NOW:
+                @event.Player.sendMessage("tile.bed.noSleep");
+                break;
+            case SleepAttemptResult.NOT_POSSIBLE_HERE:
+                break;
+            case SleepAttemptResult.TOO_FAR_AWAY:
+                break;
+            case SleepAttemptResult.OTHER_PROBLEM:
+                break;
+            default:
+                throw new ArgumentException($"Invalid sleep attempt result: {result}");
         }
 
         return true;
@@ -144,12 +150,12 @@ public class BlockBed : Block
 
         if (isHeadOfBed(blockMeta))
         {
-            if (ctx.World.Reader.GetBlockId(ctx.X - BED_OFFSETS[direction][0], ctx.Y, ctx.Z - BED_OFFSETS[direction][1]) != id)
+            if (ctx.World.Reader.GetBlockId(ctx.X - s_bedOffsets[direction][0], ctx.Y, ctx.Z - s_bedOffsets[direction][1]) != id)
             {
                 ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             }
         }
-        else if (ctx.World.Reader.GetBlockId(ctx.X + BED_OFFSETS[direction][0], ctx.Y, ctx.Z + BED_OFFSETS[direction][1]) != id)
+        else if (ctx.World.Reader.GetBlockId(ctx.X + s_bedOffsets[direction][0], ctx.Y, ctx.Z + s_bedOffsets[direction][1]) != id)
         {
             ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             if (!ctx.World.IsRemote)
@@ -203,18 +209,29 @@ public class BlockBed : Block
         int blockMeta = reader.GetBlockMeta(x, y, z);
         int direction = getDirection(blockMeta);
 
+        if (isHeadOfBed(blockMeta))
+        {
+            x -= s_bedOffsets[direction][0];
+            z -= s_bedOffsets[direction][1];
+        }
+
         for (int bedHalf = 0; bedHalf <= 1; ++bedHalf)
         {
-            int searchMinX = x - BED_OFFSETS[direction][0] * bedHalf - 1;
-            int searchMinZ = z - BED_OFFSETS[direction][1] * bedHalf - 1;
-            int searchMaxX = searchMinX + 2;
-            int searchMaxZ = searchMinZ + 2;
+            int centerX = x + s_bedOffsets[direction][0] * bedHalf;
+            int centerZ = z + s_bedOffsets[direction][1] * bedHalf;
+
+            int searchMinX = centerX - 1;
+            int searchMinZ = centerZ - 1;
+            int searchMaxX = centerX + 1;
+            int searchMaxZ = centerZ + 1;
 
             for (int checkX = searchMinX; checkX <= searchMaxX; ++checkX)
             {
                 for (int checkZ = searchMinZ; checkZ <= searchMaxZ; ++checkZ)
                 {
-                    if (reader.ShouldSuffocate(checkX, y - 1, checkZ) && reader.IsAir(checkX, y, checkZ) && reader.IsAir(checkX, y + 1, checkZ))
+                    if (reader.ShouldSuffocate(checkX, y - 1, checkZ) &&
+                        reader.IsAir(checkX, y, checkZ) &&
+                        reader.IsAir(checkX, y + 1, checkZ))
                     {
                         if (skip <= 0)
                         {
