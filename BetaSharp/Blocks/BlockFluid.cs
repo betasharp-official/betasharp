@@ -35,7 +35,7 @@ public abstract class BlockFluid : Block
 
     protected int getLiquidState(IBlockReader reader, int x, int y, int z) => reader.GetMaterial(x, y, z) != material ? -1 : reader.GetBlockMeta(x, y, z);
 
-    protected int getLiquidDepth(IBlockReader iBlockReader, int x, int y, int z)
+    private int getLiquidDepth(IBlockReader iBlockReader, int x, int y, int z)
     {
         if (iBlockReader.GetMaterial(x, y, z) != material)
         {
@@ -68,18 +68,14 @@ public abstract class BlockFluid : Block
 
     public override bool isSolidFace(IBlockReader iBlockReader, int x, int y, int z, int face)
     {
-        Material material = iBlockReader.GetMaterial(x, y, z);
-        return material == this.material ? false :
-            material == Material.Ice ? false :
-            face == 1 ? true : base.isSolidFace(iBlockReader, x, y, z, face);
+        Material mat = iBlockReader.GetMaterial(x, y, z);
+        return mat != material && (mat != Material.Ice && (face == 1 || base.isSolidFace(iBlockReader, x, y, z, face)));
     }
 
     public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side)
     {
-        Material material = iBlockReader.GetMaterial(x, y, z);
-        return material == this.material ? false :
-            material == Material.Ice ? false :
-            side == 1 ? true : base.isSideVisible(iBlockReader, x, y, z, side);
+        Material mat = iBlockReader.GetMaterial(x, y, z);
+        return mat != material && (mat != Material.Ice && (side == 1 || base.isSideVisible(iBlockReader, x, y, z, side)));
     }
 
     public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
@@ -111,24 +107,20 @@ public abstract class BlockFluid : Block
         {
             int neighborX = x;
             int neighborZ = z;
-            if (direction == 0)
+            switch (direction)
             {
-                neighborX = x - 1;
-            }
-
-            if (direction == 1)
-            {
-                neighborZ = z - 1;
-            }
-
-            if (direction == 2)
-            {
-                ++neighborX;
-            }
-
-            if (direction == 3)
-            {
-                ++neighborZ;
+                case 0:
+                    neighborX = x - 1;
+                    break;
+                case 1:
+                    neighborZ = z - 1;
+                    break;
+                case 2:
+                    ++neighborX;
+                    break;
+                case 3:
+                    ++neighborZ;
+                    break;
             }
 
             int neighborDepth = getLiquidDepth(iBlockReader, neighborX, y, neighborZ);
@@ -145,7 +137,7 @@ public abstract class BlockFluid : Block
                     }
                 }
             }
-            else if (neighborDepth >= 0)
+            else
             {
                 depthDiff = neighborDepth - depth;
                 flowVector += new Vector3D<double>((neighborX - x) * depthDiff, (y - y) * depthDiff, (neighborZ - z) * depthDiff);
@@ -238,13 +230,22 @@ public abstract class BlockFluid : Block
         if (material == Material.Water && Random.Shared.Next(64) == 0)
         {
             int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-            if (meta > 0 && meta < 8)
+            if (meta is > 0 and < 8)
             {
-                @event.World.Broadcaster.PlaySoundAtPos(@event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F, "liquid.water", Random.Shared.NextSingle() * 0.25F + 12.0F / 16.0F, Random.Shared.NextSingle() * 1.0F + 0.5F);
+                @event.World.Broadcaster.PlaySoundAtPos(
+                    @event.X + 0.5F,
+                    @event.Y + 0.5F,
+                    @event.Z + 0.5F,
+                    "liquid.water",
+                    Random.Shared.NextSingle() * 0.25F + 12.0F / 16.0F,
+                    Random.Shared.NextSingle() * 1.0F + 0.5F
+                );
             }
         }
 
-        if (material == Material.Lava && @event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z) == Material.Air && !@event.World.Reader.IsOpaque(@event.X, @event.Y + 1, @event.Z) && Random.Shared.Next(100) == 0)
+        if (material == Material.Lava &&
+            @event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z) == Material.Air &&
+            !@event.World.Reader.IsOpaque(@event.X, @event.Y + 1, @event.Z) && Random.Shared.Next(100) == 0)
         {
             double particleX = @event.X + Random.Shared.NextSingle();
             double particleY = @event.Y + BoundingBox.MaxY;
@@ -265,7 +266,7 @@ public abstract class BlockFluid : Block
             flowVec = ((BlockFluid)FlowingLava).getFlow(iBlockReader, x, y, z);
         }
 
-        return flowVec.X == 0.0D && flowVec.Z == 0.0D ? -1000.0D : Math.Atan2(flowVec.Z, flowVec.X) - Math.PI * 0.5D;
+        return flowVec is { X: 0.0D, Z: 0.0D } ? -1000.0D : Math.Atan2(flowVec.Z, flowVec.X) - Math.PI * 0.5D;
     }
 
     public override void onPlaced(OnPlacedEvent @event)
@@ -278,54 +279,57 @@ public abstract class BlockFluid : Block
         checkBlockCollisions(@event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
     }
 
-    private void checkBlockCollisions(IBlockReader WorldView, WorldWriter WorldWrite, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    private void checkBlockCollisions(IBlockReader reader, WorldWriter writer, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        if (WorldView.GetBlockId(x, y, z) == id)
+        if (reader.GetBlockId(x, y, z) != id) return;
+
+
+        if (material != Material.Lava) return;
+
+        bool hasWaterAdjacent = false;
+
+        if (hasWaterAdjacent || reader.GetMaterial(x, y, z - 1) == Material.Water)
         {
-            if (material == Material.Lava)
-            {
-                bool hasWaterAdjacent = false;
-                if (hasWaterAdjacent || WorldView.GetMaterial(x, y, z - 1) == Material.Water)
-                {
-                    hasWaterAdjacent = true;
-                }
-
-                if (hasWaterAdjacent || WorldView.GetMaterial(x, y, z + 1) == Material.Water)
-                {
-                    hasWaterAdjacent = true;
-                }
-
-                if (hasWaterAdjacent || WorldView.GetMaterial(x - 1, y, z) == Material.Water)
-                {
-                    hasWaterAdjacent = true;
-                }
-
-                if (hasWaterAdjacent || WorldView.GetMaterial(x + 1, y, z) == Material.Water)
-                {
-                    hasWaterAdjacent = true;
-                }
-
-                if (hasWaterAdjacent || WorldView.GetMaterial(x, y + 1, z) == Material.Water)
-                {
-                    hasWaterAdjacent = true;
-                }
-
-                if (hasWaterAdjacent)
-                {
-                    int var6 = WorldView.GetBlockMeta(x, y, z);
-                    if (var6 == 0)
-                    {
-                        WorldWrite.SetBlock(x, y, z, Obsidian.id);
-                    }
-                    else if (var6 <= 4)
-                    {
-                        WorldWrite.SetBlock(x, y, z, Cobblestone.id);
-                    }
-
-                    fizz(broadcaster, x, y, z);
-                }
-            }
+            hasWaterAdjacent = true;
         }
+
+        if (hasWaterAdjacent || reader.GetMaterial(x, y, z + 1) == Material.Water)
+        {
+            hasWaterAdjacent = true;
+        }
+
+        if (hasWaterAdjacent || reader.GetMaterial(x - 1, y, z) == Material.Water)
+        {
+            hasWaterAdjacent = true;
+        }
+
+        if (hasWaterAdjacent || reader.GetMaterial(x + 1, y, z) == Material.Water)
+        {
+            hasWaterAdjacent = true;
+        }
+
+        if (hasWaterAdjacent || reader.GetMaterial(x, y + 1, z) == Material.Water)
+        {
+            hasWaterAdjacent = true;
+        }
+
+        if (!hasWaterAdjacent)
+        {
+            return;
+        }
+
+        int meta = reader.GetBlockMeta(x, y, z);
+        switch (meta)
+        {
+            case 0:
+                writer.SetBlock(x, y, z, Obsidian.id);
+                break;
+            default:
+                writer.SetBlock(x, y, z, Cobblestone.id);
+                break;
+        }
+
+        fizz(broadcaster, x, y, z);
     }
 
     protected void fizz(WorldEventBroadcaster broadcaster, int x, int y, int z)
