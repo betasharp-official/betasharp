@@ -4,12 +4,15 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Items;
+using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
+using SFML.System;
 using SixLabors.ImageSharp.PixelFormats;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 
@@ -33,6 +36,7 @@ public class GuiIngame : Gui
     float PrevVignetteBrightness = 1.0F;
     private static readonly string[] s_cardinalDirections = ["South", "West", "North", "East"];
     private static readonly string[] s_blockSides = ["Down", "Up", "North", "South", "West", "East"];
+    private static readonly ItemRenderer s_itemRenderer = new();
 
     public GuiIngame(BetaSharp gameInstance)
     {
@@ -452,6 +456,87 @@ public class GuiIngame : Gui
 
         _game.guiAchievement.RenderAchievementOverlayIfAny(scaledWidth, scaledHeight);
         ControlTooltip.Render(_game, scaledWidth, scaledHeight, partialTicks);
+
+        renderWTHIT(scaledWidth);
+    }
+
+    private void renderWTHIT(int scaledWidth)
+    {
+        BetaSharp g = _game;
+        HitResult hit = g.objectMouseOver;
+        if (hit.Type != HitResultType.TILE || g.world == null) return;
+
+        int blockId = 0;
+        Block? block = null;
+        string blockName = "Unknown";
+
+        int width = 150;
+        int height = 25;
+
+        if (hit.Type == HitResultType.TILE)
+        {
+            blockId = g.world.getBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
+            block = Block.Blocks[blockId];
+
+            string translatedName = block.translateBlockName();
+            if (!string.IsNullOrWhiteSpace(translatedName))
+            {
+                blockName = translatedName;
+            }
+            else if (!string.IsNullOrWhiteSpace(block.getBlockName()))
+            {
+                blockName = block.getBlockName();
+            }
+
+            width = 30 + g.fontRenderer.GetStringWidth(blockName);
+        }
+
+        int x = scaledWidth / 2 - width / 2;
+        int y = 10;
+
+        Color bg = new Color(16, 16, 16);
+        Color outline = Color.Gray40;
+
+        DrawHorizontalLine(x + 1, x + width - 1, y, bg);
+        DrawHorizontalLine(x + 1, x + width - 1, y + height - 1, bg);
+        DrawVerticalLine(x, y, y + height - 1, bg);
+        DrawVerticalLine(x + width, y, y + height - 1, bg);
+
+        DrawHorizontalLine(x + 1, x + width - 1, y+1, outline);
+        DrawHorizontalLine(x + 1, x + width - 1, y + height - 2, outline);
+        DrawVerticalLine(x+1, y, y + height - 1, outline);
+        DrawVerticalLine(x + width - 1, y, y + height - 1, outline);
+
+        DrawRect(x + 2, y + 2, x + width - 1, y + height - 2, bg);
+
+        if (hit.Type == HitResultType.TILE)
+        {
+            GLManager.GL.Enable(GLEnum.RescaleNormal);
+            GLManager.GL.PushMatrix();
+            GLManager.GL.Rotate(120.0F, 1.0F, 0.0F, 0.0F);
+            GLManager.GL.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);
+            Lighting.turnOn();
+            GLManager.GL.PopMatrix();
+            GLManager.GL.Enable(GLEnum.Lighting);
+            GLManager.GL.Enable(GLEnum.DepthTest);
+
+            GLManager.GL.Translate(0.0F, 0.0F, 32.0F);
+            ItemStack stack = new(block);
+            s_itemRenderer.renderItemIntoGUI(g.fontRenderer, g.textureManager, stack, x + 4, y + 4);
+
+            Lighting.turnOff();
+            GLManager.GL.Disable(GLEnum.Lighting);
+            GLManager.GL.Disable(GLEnum.DepthTest);
+            GLManager.GL.Disable(GLEnum.RescaleNormal);
+
+
+            DrawString(g.fontRenderer, blockName, x+25, y + (height / 2 - 4), Color.White);
+
+            if (g.terrainRenderer.damagePartialTime != 0)
+                DrawHorizontalLine(x+1, x+1+(int)Math.Ceiling((width-2) * g.terrainRenderer.damagePartialTime), y + height - 1, Color.White);
+        }
+
+        // TODO: support entites
     }
 
     private void renderPumpkinBlur(int screenWidth, int screenHeight)
