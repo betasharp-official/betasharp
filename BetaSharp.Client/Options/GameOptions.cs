@@ -57,6 +57,7 @@ public class GameOptions
     public CycleOption GuiScaleOption { get; private set; }
     public CycleOption AnisotropicOption { get; private set; }
     public CycleOption MsaaOption { get; private set; }
+    public BoolOption ShowWTHITOption { get; private set; }
 
 
     public GameOption[] MainScreenOptions => [DifficultyOption, FovOption];
@@ -65,7 +66,8 @@ public class GameOptions
     [
         RenderDistanceOption, FramerateLimitOption, VSyncOption,
         ViewBobbingOption, GuiScaleOption, AnisotropicOption,
-        MipmapsOption, MsaaOption, EnvironmentAnimationOption, ChunkFadeOption, GammaOption
+        MipmapsOption, MsaaOption, EnvironmentAnimationOption, ChunkFadeOption,
+        ShowWTHITOption, GammaOption
     ];
 
     public GameOption[] DebugScreenOptions => [DebugModeOption, RenderOccludedOption];
@@ -101,6 +103,7 @@ public class GameOptions
     public int AnisotropicLevel => AnisotropicOption.Value;
     public int MSAALevel => MsaaOption.Value;
     public int INITIAL_MSAA;
+    public bool ShowWTHIT => ShowWTHITOption.Value;
     public bool UseMipmaps => MipmapsOption.Value;
     public bool DebugMode => DebugModeOption.Value;
     public bool RenderOccluded => RenderOccludedOption.Value;
@@ -238,6 +241,7 @@ public class GameOptions
             Steps = 90,
             Formatter = (v, _) => (30 + (int)(v * 90.0f)).ToString()
         };
+        ShowWTHITOption = new BoolOption("WIHIT Overlay", "wthit", true);
         GammaOption = new FloatOption("Gamma", "gamma", 0.5F)
         {
             LabelOverride = "Gamma",

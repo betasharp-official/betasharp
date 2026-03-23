@@ -457,7 +457,8 @@ public class GuiIngame : Gui
         _game.guiAchievement.RenderAchievementOverlayIfAny(scaledWidth, scaledHeight);
         ControlTooltip.Render(_game, scaledWidth, scaledHeight, partialTicks);
 
-        renderWTHIT(scaledWidth);
+        if (_game.options.ShowWTHIT)
+            renderWTHIT(scaledWidth);
     }
 
     private void renderWTHIT(int scaledWidth)
