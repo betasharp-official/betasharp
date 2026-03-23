@@ -15,6 +15,8 @@ using BetaSharp.Util.Maths;
 using SFML.System;
 using SixLabors.ImageSharp.PixelFormats;
 using BetaSharp.Client.Rendering.Core.OpenGL;
+using BetaSharp.Worlds.Colors;
+using System.ComponentModel.Design;
 
 namespace BetaSharp.Client.Guis;
 
@@ -479,14 +481,21 @@ public class GuiIngame : Gui
             blockId = g.world.getBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
             block = Block.Blocks[blockId];
 
-            string translatedName = block.translateBlockName();
-            if (!string.IsNullOrWhiteSpace(translatedName))
+            if (block is BlockTallGrass)
             {
-                blockName = translatedName;
+                blockName = "Tall Grass";
             }
-            else if (!string.IsNullOrWhiteSpace(block.getBlockName()))
+            else
             {
-                blockName = block.getBlockName();
+                string translatedName = block.translateBlockName();
+                if (!string.IsNullOrWhiteSpace(translatedName))
+                {
+                    blockName = translatedName;
+                }
+                else if (!string.IsNullOrWhiteSpace(block.getBlockName()))
+                {
+                    blockName = block.getBlockName();
+                }
             }
 
             width = 30 + g.fontRenderer.GetStringWidth(blockName);
@@ -512,6 +521,29 @@ public class GuiIngame : Gui
 
         if (hit.Type == HitResultType.TILE)
         {
+            if (block is BlockTallGrass tg)
+            {
+                GLManager.GL.Disable(GLEnum.DepthTest);
+                GLManager.GL.DepthMask(false);
+                GLManager.GL.Enable(GLEnum.Blend);
+                GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+
+                int c = GrassColors.getDefaultColor();
+                GLManager.GL.Color3(((c >> 16) & 0xFF) / 255f, ((c >> 8) & 0xFF) / 255f, (c & 0xFF) / 255f);
+
+                GLManager.GL.Disable(GLEnum.AlphaTest);
+                _game.textureManager.BindTexture(_game.textureManager.GetTextureId("/terrain.png"));
+                DrawTexturedModalRect(x + 4, y + 4, 112, 32, 16, 16);
+                GLManager.GL.DepthMask(true);
+                GLManager.GL.Enable(GLEnum.DepthTest);
+                GLManager.GL.Enable(GLEnum.AlphaTest);
+                GLManager.GL.Disable(GLEnum.Blend);
+                GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+
+                DrawString(g.fontRenderer, blockName, x + 25, y + (height / 2 - 4), Color.White);
+
+                return;
+            }
             GLManager.GL.Enable(GLEnum.RescaleNormal);
             GLManager.GL.PushMatrix();
             GLManager.GL.Rotate(120.0F, 1.0F, 0.0F, 0.0F);
