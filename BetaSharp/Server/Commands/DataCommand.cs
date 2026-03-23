@@ -3,7 +3,7 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class DataCommands : ICommand
+public class DataCommand : ICommand
 {
     public string Usage => "data get ...";
     public string Description => "Get debug info from target(s)";
