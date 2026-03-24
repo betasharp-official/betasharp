@@ -176,7 +176,7 @@ public static class ParticleUpdater
             });
         }
 
-        buf.VelY[i] -= 0.03;
+        buf.VelY[i] += ParticleTypeConfig.Configs[(int)ParticleType.Lava].GravityAccel;
         ParticlePhysics.MoveWithCollision(buf, i, world);
     }
 }
