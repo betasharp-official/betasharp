@@ -2,119 +2,125 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
 public class BlockBed : Block
 {
-    public static readonly int[][] BED_OFFSETS = [[0, 1], [-1, 0], [0, -1], [1, 0]];
+    private static readonly int[][] s_bedOffsets = [[0, 1], [-1, 0], [0, -1], [1, 0]];
 
     public BlockBed(int id) : base(id, 134, Material.Wool)
     {
         setDefaultShape();
     }
 
-    public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
+    public override bool onUse(OnUseEvent @event)
     {
-        if (world.isRemote)
+        if (@event.World.IsRemote)
         {
             return true;
         }
-        else
+
+        int x = @event.X;
+        int y = @event.Y;
+        int z = @event.Z;
+
+        int meta = @event.World.Reader.GetBlockMeta(x, y, z);
+        if (!isHeadOfBed(meta))
         {
-            int meta = world.getBlockMeta(x, y, z);
-            if (!isHeadOfBed(meta))
+            int direction = getDirection(meta);
+            x += s_bedOffsets[direction][0];
+            z += s_bedOffsets[direction][1];
+
+            if (@event.World.Reader.GetBlockId(x, y, z) != id)
             {
-                int direction = getDirection(meta);
-                x += BED_OFFSETS[direction][0];
-                z += BED_OFFSETS[direction][1];
-                if (world.getBlockId(x, y, z) != id)
-                {
-                    return true;
-                }
-
-                meta = world.getBlockMeta(x, y, z);
-            }
-
-            if (!world.dimension.HasWorldSpawn)
-            {
-                double posX = (double)x + 0.5D;
-                double posY = (double)y + 0.5D;
-                double posZ = (double)z + 0.5D;
-                world.setBlock(x, y, z, 0);
-                int direction = getDirection(meta);
-                x += BED_OFFSETS[direction][0];
-                z += BED_OFFSETS[direction][1];
-                if (world.getBlockId(x, y, z) == id)
-                {
-                    world.setBlock(x, y, z, 0);
-                    posX = (posX + (double)x + 0.5D) / 2.0D;
-                    posY = (posY + (double)y + 0.5D) / 2.0D;
-                    posZ = (posZ + (double)z + 0.5D) / 2.0D;
-                }
-
-                world.createExplosion((Entity)null, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), 5.0F, true);
                 return true;
             }
-            else
+
+            meta = @event.World.Reader.GetBlockMeta(x, y, z);
+        }
+
+        if (!@event.World.Dimension.HasWorldSpawn)
+        {
+            double posX = x + 0.5D;
+            double posY = y + 0.5D;
+            double posZ = z + 0.5D;
+            @event.World.Writer.SetBlock(x, y, z, 0);
+
+            int direction = getDirection(meta);
+            x += s_bedOffsets[direction][0];
+            z += s_bedOffsets[direction][1];
+
+            if (@event.World.Reader.GetBlockId(x, y, z) == id)
             {
-                if (isBedOccupied(meta))
+                @event.World.Writer.SetBlock(x, y, z, 0);
+                posX = (posX + x + 0.5D) / 2.0D;
+                posY = (posY + y + 0.5D) / 2.0D;
+                posZ = (posZ + z + 0.5D) / 2.0D;
+            }
+
+            @event.World.CreateExplosion(null, x + 0.5F, y + 0.5F, z + 0.5F, 5.0F, true);
+            return true;
+        }
+
+        if (isBedOccupied(meta))
+        {
+            EntityPlayer? occupant = null;
+            foreach (EntityPlayer otherPlayer in @event.World.Entities.Players)
+            {
+                if (!otherPlayer.isSleeping()) continue;
+
+                Vec3i sleepingPos = otherPlayer.sleepingPos;
+                if (sleepingPos.X == x && sleepingPos.Y == y && sleepingPos.Z == z)
                 {
-                    EntityPlayer occupant = null;
-                    foreach (var otherPlayer in world.players) {
-                        if (otherPlayer.isSleeping())
-                        {
-                            Vec3i sleepingPos = otherPlayer.sleepingPos;
-                            if (sleepingPos.X == x && sleepingPos.Y == y && sleepingPos.Z == z)
-                            {
-                                occupant = otherPlayer;
-                            }
-                        }
-                    }
-
-                    if (occupant != null)
-                    {
-                        player.sendMessage("tile.bed.occupied");
-                        return true;
-                    }
-
-                    updateState(world, x, y, z, false);
-                }
-
-                SleepAttemptResult result = player.trySleep(x, y, z);
-                if (result == SleepAttemptResult.OK)
-                {
-                    updateState(world, x, y, z, true);
-                    return true;
-                }
-                else
-                {
-                    if (result == SleepAttemptResult.NOT_POSSIBLE_NOW)
-                    {
-                        player.sendMessage("tile.bed.noSleep");
-                    }
-
-                    return true;
+                    occupant = otherPlayer;
                 }
             }
+
+            if (occupant != null)
+            {
+                @event.Player.sendMessage("tile.bed.occupied");
+                return true;
+            }
+
+            updateState(@event.World.Writer, x, y, z, meta, false);
         }
+
+        SleepAttemptResult result = @event.Player.trySleep(x, y, z);
+        switch (result)
+        {
+            case SleepAttemptResult.OK:
+                updateState(@event.World.Writer, x, y, z, meta, true);
+                return true;
+            case SleepAttemptResult.NOT_POSSIBLE_NOW:
+                @event.Player.sendMessage("tile.bed.noSleep");
+                break;
+            case SleepAttemptResult.NOT_POSSIBLE_HERE:
+                break;
+            case SleepAttemptResult.TOO_FAR_AWAY:
+                break;
+            case SleepAttemptResult.OTHER_PROBLEM:
+                break;
+            default:
+                throw new ArgumentException($"Invalid sleep attempt result: {result}");
+        }
+
+        return true;
     }
 
     public override int getTexture(int side, int meta)
     {
         if (side == 0)
         {
-            return Block.Planks.textureId;
+            return Planks.textureId;
         }
-        else
-        {
-            int direction = getDirection(meta);
-            int sideFacing = Facings.BED_FACINGS[direction][side];
-            return isHeadOfBed(meta) ?
-                (sideFacing == 2 ? textureId + 2 + 16 : (sideFacing != 5 && sideFacing != 4 ? textureId + 1 : textureId + 1 + 16)) :
-                (sideFacing == 3 ? textureId - 1 + 16 : (sideFacing != 5 && sideFacing != 4 ? textureId : textureId + 16));
-        }
+
+        int direction = getDirection(meta);
+        int sideFacing = Facings.BED_FACINGS[direction][side];
+        return isHeadOfBed(meta) ? sideFacing == 2 ? textureId + 2 + 16 : sideFacing != 5 && sideFacing != 4 ? textureId + 1 : textureId + 1 + 16 :
+            sideFacing == 3 ? textureId - 1 + 16 :
+            sideFacing != 5 && sideFacing != 4 ? textureId : textureId + 16;
     }
 
     public override BlockRendererType getRenderType()
@@ -132,34 +138,34 @@ public class BlockBed : Block
         return false;
     }
 
-    public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
+    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
         setDefaultShape();
     }
 
-    public override void neighborUpdate(World world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickEvent ctx)
     {
-        int blockMeta = world.getBlockMeta(x, y, z);
+        int blockMeta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         int direction = getDirection(blockMeta);
+
         if (isHeadOfBed(blockMeta))
         {
-            if (world.getBlockId(x - BED_OFFSETS[direction][0], y, z - BED_OFFSETS[direction][1]) != this.id)
+            if (ctx.World.Reader.GetBlockId(ctx.X - s_bedOffsets[direction][0], ctx.Y, ctx.Z - s_bedOffsets[direction][1]) != id)
             {
-                world.setBlock(x, y, z, 0);
+                ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             }
         }
-        else if (world.getBlockId(x + BED_OFFSETS[direction][0], y, z + BED_OFFSETS[direction][1]) != this.id)
+        else if (ctx.World.Reader.GetBlockId(ctx.X + s_bedOffsets[direction][0], ctx.Y, ctx.Z + s_bedOffsets[direction][1]) != id)
         {
-            world.setBlock(x, y, z, 0);
-            if (!world.isRemote)
+            ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+            if (!ctx.World.IsRemote)
             {
-                dropStacks(world, x, y, z, blockMeta);
+                dropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, blockMeta));
             }
         }
-
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
+    public override int getDroppedItemId(int blockMeta)
     {
         return isHeadOfBed(blockMeta) ? 0 : Item.Bed.id;
     }
@@ -184,38 +190,48 @@ public class BlockBed : Block
         return (meta & 4) != 0;
     }
 
-    public static void updateState(World world, int x, int y, int z, bool occupied)
+    public static void updateState(WorldWriter worldWrite, int x, int y, int z, int meta, bool occupied)
     {
-        int blockMeta = world.getBlockMeta(x, y, z);
         if (occupied)
         {
-            blockMeta |= 4;
+            meta |= 4;
         }
         else
         {
-            blockMeta &= -5;
+            meta &= ~4;
         }
 
-        world.setBlockMeta(x, y, z, blockMeta);
+        worldWrite.SetBlockMeta(x, y, z, meta);
     }
 
-    public static Vec3i? findWakeUpPosition(World world, int x, int y, int z, int skip)
+    public static Vec3i? findWakeUpPosition(IBlockReader reader, int x, int y, int z, int skip)
     {
-        int blockMeta = world.getBlockMeta(x, y, z);
+        int blockMeta = reader.GetBlockMeta(x, y, z);
         int direction = getDirection(blockMeta);
+
+        if (isHeadOfBed(blockMeta))
+        {
+            x -= s_bedOffsets[direction][0];
+            z -= s_bedOffsets[direction][1];
+        }
 
         for (int bedHalf = 0; bedHalf <= 1; ++bedHalf)
         {
-            int searchMinX = x - BED_OFFSETS[direction][0] * bedHalf - 1;
-            int searchMinZ = z - BED_OFFSETS[direction][1] * bedHalf - 1;
-            int searchMaxX = searchMinX + 2;
-            int searchMaxZ = searchMinZ + 2;
+            int centerX = x + s_bedOffsets[direction][0] * bedHalf;
+            int centerZ = z + s_bedOffsets[direction][1] * bedHalf;
+
+            int searchMinX = centerX - 1;
+            int searchMinZ = centerZ - 1;
+            int searchMaxX = centerX + 1;
+            int searchMaxZ = centerZ + 1;
 
             for (int checkX = searchMinX; checkX <= searchMaxX; ++checkX)
             {
                 for (int checkZ = searchMinZ; checkZ <= searchMaxZ; ++checkZ)
                 {
-                    if (world.shouldSuffocate(checkX, y - 1, checkZ) && world.isAir(checkX, y, checkZ) && world.isAir(checkX, y + 1, checkZ))
+                    if (reader.ShouldSuffocate(checkX, y - 1, checkZ) &&
+                        reader.IsAir(checkX, y, checkZ) &&
+                        reader.IsAir(checkX, y + 1, checkZ))
                     {
                         if (skip <= 0)
                         {
@@ -231,13 +247,12 @@ public class BlockBed : Block
         return null;
     }
 
-    public override void dropStacks(World world, int x, int y, int z, int meta, float luck)
+    public override void dropStacks(OnDropEvent @event)
     {
-        if (!isHeadOfBed(meta))
+        if (!isHeadOfBed(@event.Meta))
         {
-            base.dropStacks(world, x, y, z, meta, luck);
+            base.dropStacks(@event);
         }
-
     }
 
     public override int getPistonBehavior()

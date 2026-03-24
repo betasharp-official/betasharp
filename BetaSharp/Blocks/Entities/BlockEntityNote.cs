@@ -1,11 +1,12 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.NBT;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks.Entities;
 
 internal class BlockEntityNote : BlockEntity
 {
+    public override BlockEntityType Type => BlockEntity.Note;
     public sbyte note;
     public bool powered = false;
 
@@ -28,7 +29,6 @@ internal class BlockEntityNote : BlockEntity
         {
             note = 24;
         }
-
     }
 
     public void cycleNote()
@@ -37,11 +37,11 @@ internal class BlockEntityNote : BlockEntity
         markDirty();
     }
 
-    public void playNote(World world, int x, int y, int z)
+    public void playNote(IWorldContext level, int x, int y, int z)
     {
-        if (world.getMaterial(x, y + 1, z) == Material.Air)
+        if (level.Reader.GetMaterial(x, y + 1, z) == Material.Air)
         {
-            Material material = world.getMaterial(x, y - 1, z);
+            Material material = level.Reader.GetMaterial(x, y - 1, z);
             byte instrument = 0;
             if (material == Material.Stone)
             {
@@ -63,7 +63,7 @@ internal class BlockEntityNote : BlockEntity
                 instrument = 4;
             }
 
-            world.playNoteBlockActionAt(x, y, z, instrument, note);
+            level.Broadcaster.PlayNote(x, y, z, instrument, note);
         }
     }
 }

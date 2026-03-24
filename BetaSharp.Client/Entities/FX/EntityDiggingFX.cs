@@ -1,6 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
@@ -9,31 +9,33 @@ public class EntityDiggingFX : EntityFX
 
     private readonly Block targetedBlock;
     private readonly int hitFace;
+    private readonly int blockMeta;
 
-    public EntityDiggingFX(World world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, Block targetedBlock, int hitFace, int meta) : base(world, x, y, z, velocityX, velocityY, velocityZ)
+    public EntityDiggingFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, Block targetedBlock, int hitFace, int meta) : base(world, x, y, z, velocityX, velocityY, velocityZ)
     {
         this.targetedBlock = targetedBlock;
-        particleTextureIndex = targetedBlock.getTexture(0, meta);
+        particleTextureIndex = targetedBlock.getTexture(hitFace, meta);
         particleGravity = targetedBlock.particleFallSpeedModifier;
         particleRed = particleGreen = particleBlue = 0.6F;
         particleScale /= 2.0F;
-        this.hitFace = hitFace;
+        blockMeta = meta;
     }
 
-    public EntityDiggingFX func_4041_a(int x, int y, int z)
+    public EntityDiggingFX GetColorMultiplier(int x, int y, int z)
     {
-        if (targetedBlock == Block.GrassBlock)
+        // Grass top face is tinted green
+        if (targetedBlock == Block.GrassBlock && particleTextureIndex != 0)
         {
             return this;
         }
-        else
-        {
-            int color = targetedBlock.getColorMultiplier(world, x, y, z);
-            particleRed *= (float)(color >> 16 & 255) / 255.0F;
-            particleGreen *= (float)(color >> 8 & 255) / 255.0F;
-            particleBlue *= (float)(color & 255) / 255.0F;
-            return this;
-        }
+
+        int color = targetedBlock.getColorMultiplier(world.Reader, x, y, z, blockMeta);
+        
+        particleRed *= (color >> 16 & 255) / 255.0F;
+        particleGreen *= (color >> 8 & 255) / 255.0F;
+        particleBlue *= (color & 255) / 255.0F;
+        
+        return this;
     }
 
     public override int getFXLayer()

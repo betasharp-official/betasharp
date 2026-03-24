@@ -33,7 +33,7 @@ public class GuiEditSign : GuiScreen
     public override void OnGuiClosed()
     {
         Keyboard.enableRepeatEvents(false);
-        if (Game?.world?.isRemote ?? false)
+        if (Game?.world?.IsRemote ?? false)
         {
             Game.getSendQueue().addToSendQueue(UpdateSignPacket.Get(_entitySign.X, _entitySign.Y, _entitySign.Z, _entitySign.Texts));
         }

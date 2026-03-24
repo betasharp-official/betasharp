@@ -3,16 +3,18 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Blocks;
 
 internal class BlockFurnace : BlockWithEntity
 {
+    private static readonly ILogger<BlockFurnace> s_logger = BetaSharp.Log.Instance.For<BlockFurnace>();
+    private static readonly ThreadLocal<bool> s_ignoreBlockRemoval = new(() => false);
+    private readonly bool _lit;
 
     private readonly JavaRandom _random = new();
-    private readonly bool _lit;
-    private static readonly ThreadLocal<bool> s_ignoreBlockRemoval = new(() => false);
 
     public BlockFurnace(int id, bool lit) : base(id, Material.Stone)
     {
@@ -20,175 +22,179 @@ internal class BlockFurnace : BlockWithEntity
         textureId = 45;
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
+    public override int getDroppedItemId(int blockMeta)
     {
-        return Block.Furnace.id;
+        return Furnace.id;
     }
 
-    public override void onPlaced(World world, int x, int y, int z)
+    public override void onPlaced(OnPlacedEvent @event)
     {
-        base.onPlaced(world, x, y, z);
-        updateDirection(world, x, y, z);
-    }
+        base.onPlaced(@event);
 
-    private void updateDirection(World world, int x, int y, int z)
-    {
-        if (!world.isRemote)
+        if (@event.Placer != null)
         {
-            int blockNorth = world.getBlockId(x, y, z - 1);
-            int blockSouth = world.getBlockId(x, y, z + 1);
-            int westBlockId = world.getBlockId(x - 1, y, z);
-            int eastBlockId = world.getBlockId(x + 1, y, z);
-            sbyte direction = 3;
-            if (Block.BlocksOpaque[blockNorth] && !Block.BlocksOpaque[blockSouth])
-            {
-                direction = 3;
-            }
+            int direction = MathHelper.Floor(@event.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
+            int meta = 2;
+            
+            if (direction == 0) meta = 2;
+            else if (direction == 1) meta = 5;
+            else if (direction == 2) meta = 3;
+            else if (direction == 3) meta = 4;
 
-            if (Block.BlocksOpaque[blockSouth] && !Block.BlocksOpaque[blockNorth])
-            {
-                direction = 2;
-            }
+            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
 
-            if (Block.BlocksOpaque[westBlockId] && !Block.BlocksOpaque[eastBlockId])
+            if (!@event.World.IsRemote) 
             {
-                direction = 5;
+                @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
             }
-
-            if (Block.BlocksOpaque[eastBlockId] && !Block.BlocksOpaque[westBlockId])
-            {
-                direction = 4;
-            }
-
-            world.setBlockMeta(x, y, z, direction);
+        }
+        else
+        {
+            updateDirection(@event); 
         }
     }
 
-    public override int getTextureId(IBlockAccess iBlockAccess, int x, int y, int z, int side)
+    private void updateDirection(OnPlacedEvent @event)
+    {
+        if (@event.World.IsRemote) return;
+
+        var reader = @event.World.Reader;
+        int x = @event.X, y = @event.Y, z = @event.Z;
+        
+        bool isNorthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z - 1)];
+        bool isSouthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z + 1)];
+        bool isWestOpaque = BlocksOpaque[reader.GetBlockId(x - 1, y, z)];
+        bool isEastOpaque = BlocksOpaque[reader.GetBlockId(x + 1, y, z)];
+
+        byte direction = 3;
+        if (isNorthOpaque && !isSouthOpaque)
+        {
+            direction = 3;
+        }
+        else if (isSouthOpaque && !isNorthOpaque)
+        {
+            direction = 2;
+        }
+        if (isWestOpaque && !isEastOpaque)
+        {
+            direction = 5;
+        }
+        else if (isEastOpaque && !isWestOpaque)
+        {
+            direction = 4;
+        }
+        @event.World.Writer.SetBlockMeta(x, y, z, direction);
+    }
+
+    public override int getTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
     {
         if (side == 1)
         {
             return textureId + 17;
         }
-        else if (side == 0)
+
+        if (side == 0)
         {
             return textureId + 17;
         }
-        else
-        {
-            int meta = iBlockAccess.getBlockMeta(x, y, z);
-            return side != meta ? textureId : (_lit ? textureId + 16 : textureId - 1);
-        }
+
+        int meta = iBlockReader.GetBlockMeta(x, y, z);
+        return side != meta ? textureId : _lit ? textureId + 16 : textureId - 1;
     }
 
-    public override void randomDisplayTick(World world, int x, int y, int z, JavaRandom random)
+    public override void randomDisplayTick(OnTickEvent @event)
     {
-        if (_lit)
+        if (!_lit)
         {
-            int var6 = world.getBlockMeta(x, y, z);
-            float particleX = (float)x + 0.5F;
-            float particleY = (float)y + 0.0F + random.NextFloat() * 6.0F / 16.0F;
-            float particleZ = (float)z + 0.5F;
-            float flameOffset = 0.52F;
-            float randomOffset = random.NextFloat() * 0.6F - 0.3F;
-            if (var6 == 4)
-            {
-                world.addParticle("smoke", (double)(particleX - flameOffset), (double)particleY, (double)(particleZ + randomOffset), 0.0D, 0.0D, 0.0D);
-                world.addParticle("flame", (double)(particleX - flameOffset), (double)particleY, (double)(particleZ + randomOffset), 0.0D, 0.0D, 0.0D);
-            }
-            else if (var6 == 5)
-            {
-                world.addParticle("smoke", (double)(particleX + flameOffset), (double)particleY, (double)(particleZ + randomOffset), 0.0D, 0.0D, 0.0D);
-                world.addParticle("flame", (double)(particleX + flameOffset), (double)particleY, (double)(particleZ + randomOffset), 0.0D, 0.0D, 0.0D);
-            }
-            else if (var6 == 2)
-            {
-                world.addParticle("smoke", (double)(particleX + randomOffset), (double)particleY, (double)(particleZ - flameOffset), 0.0D, 0.0D, 0.0D);
-                world.addParticle("flame", (double)(particleX + randomOffset), (double)particleY, (double)(particleZ - flameOffset), 0.0D, 0.0D, 0.0D);
-            }
-            else if (var6 == 3)
-            {
-                world.addParticle("smoke", (double)(particleX + randomOffset), (double)particleY, (double)(particleZ + flameOffset), 0.0D, 0.0D, 0.0D);
-                world.addParticle("flame", (double)(particleX + randomOffset), (double)particleY, (double)(particleZ + flameOffset), 0.0D, 0.0D, 0.0D);
-            }
+            return;
+        }
 
+        int var6 = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        float particleX = @event.X + 0.5F;
+        float particleY = @event.Y + 0.0F + Random.Shared.NextSingle() * 6.0F / 16.0F;
+        float particleZ = @event.Z + 0.5F;
+        float flameOffset = 0.52F;
+        float randomOffset = Random.Shared.NextSingle() * 0.6F - 0.3F;
+        if (var6 == 4)
+        {
+            @event.World.Broadcaster.AddParticle("smoke", particleX - flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
+            @event.World.Broadcaster.AddParticle("flame", particleX - flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
+        }
+        else if (var6 == 5)
+        {
+            @event.World.Broadcaster.AddParticle("smoke", particleX + flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
+            @event.World.Broadcaster.AddParticle("flame", particleX + flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
+        }
+        else if (var6 == 2)
+        {
+            @event.World.Broadcaster.AddParticle("smoke", particleX + randomOffset, particleY, particleZ - flameOffset, 0.0D, 0.0D, 0.0D);
+            @event.World.Broadcaster.AddParticle("flame", particleX + randomOffset, particleY, particleZ - flameOffset, 0.0D, 0.0D, 0.0D);
+        }
+        else if (var6 == 3)
+        {
+            @event.World.Broadcaster.AddParticle("smoke", particleX + randomOffset, particleY, particleZ + flameOffset, 0.0D, 0.0D, 0.0D);
+            @event.World.Broadcaster.AddParticle("flame", particleX + randomOffset, particleY, particleZ + flameOffset, 0.0D, 0.0D, 0.0D);
         }
     }
 
     public override int getTexture(int side)
     {
-        return side == 1 ? textureId + 17 : (side == 0 ? textureId + 17 : (side == 3 ? textureId - 1 : textureId));
+        return side == 1 ? textureId + 17 : side == 0 ? textureId + 17 : side == 3 ? textureId - 1 : textureId;
     }
 
-    public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
+    public override bool onUse(OnUseEvent @event)
     {
-        if (world.isRemote)
+        if (@event.World.IsRemote)
         {
             return true;
         }
-        else
+
+        BlockEntityFurnace? furnace = @event.World.Entities.GetBlockEntity<BlockEntityFurnace>(@event.X, @event.Y, @event.Z);
+        if (furnace == null)
         {
-            BlockEntityFurnace furnace = (BlockEntityFurnace)world.getBlockEntity(x, y, z);
-            player.openFurnaceScreen(furnace);
-            return true;
+            return false;
         }
+
+        @event.Player.openFurnaceScreen(furnace);
+        return true;
     }
 
-    public static void updateLitState(bool lit, World world, int x, int y, int z)
+    public static void updateLitState(bool lit, IWorldContext world, int x, int y, int z)
     {
-        int meta = world.getBlockMeta(x, y, z);
-        BlockEntity furnace = world.getBlockEntity(x, y, z);
+        int meta = world.Reader.GetBlockMeta(x, y, z);
+        BlockEntity? furnace = world.Entities.GetBlockEntity<BlockEntity>(x, y, z);
         s_ignoreBlockRemoval.Value = true;
         if (lit)
         {
-            world.setBlock(x, y, z, Block.LitFurnace.id);
+            world.Writer.SetBlock(x, y, z, LitFurnace.id);
         }
         else
         {
-            world.setBlock(x, y, z, Block.Furnace.id);
+            world.Writer.SetBlock(x, y, z, Furnace.id);
         }
 
         s_ignoreBlockRemoval.Value = false;
-        world.setBlockMeta(x, y, z, meta);
-        furnace.cancelRemoval();
-        world.setBlockEntity(x, y, z, furnace);
+        world.Writer.SetBlockMeta(x, y, z, meta);
+        furnace?.cancelRemoval();
+        world.Entities.SetBlockEntity(x, y, z, furnace!);
     }
 
-    protected override BlockEntity getBlockEntity()
+    public override BlockEntity getBlockEntity()
     {
         return new BlockEntityFurnace();
     }
 
-    public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
-    {
-        int direction = MathHelper.Floor((double)(placer.yaw * 4.0F / 360.0F) + 0.5D) & 3;
-        if (direction == 0)
-        {
-            world.setBlockMeta(x, y, z, 2);
-        }
-
-        if (direction == 1)
-        {
-            world.setBlockMeta(x, y, z, 5);
-        }
-
-        if (direction == 2)
-        {
-            world.setBlockMeta(x, y, z, 3);
-        }
-
-        if (direction == 3)
-        {
-            world.setBlockMeta(x, y, z, 4);
-        }
-
-    }
-
-    public override void onBreak(World world, int x, int y, int z)
+    public override void onBreak(OnBreakEvent @event)
     {
         if (!s_ignoreBlockRemoval.Value)
         {
-            BlockEntityFurnace furnace = (BlockEntityFurnace)world.getBlockEntity(x, y, z);
+            BlockEntityFurnace? furnace = @event.World.Entities.GetBlockEntity<BlockEntityFurnace>(@event.X, @event.Y, @event.Z);
+
+            if (furnace == null)
+            {
+                s_logger.LogWarning("BlockEntityFurnace not found at {X}, {Y}, {Z}", @event.X, @event.Y, @event.Z);
+                return;
+            }
 
             for (int slotIndex = 0; slotIndex < furnace.size(); ++slotIndex)
             {
@@ -208,17 +214,17 @@ internal class BlockFurnace : BlockWithEntity
                         }
 
                         stack.count -= var11;
-                        EntityItem droppedItem = new EntityItem(world, (double)((float)x + offsetX), (double)((float)y + offsetY), (double)((float)z + offsetZ), new ItemStack(stack.itemId, var11, stack.getDamage()));
+                        EntityItem droppedItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, var11, stack.getDamage()));
                         float var13 = 0.05F;
-                        droppedItem.velocityX = (double)((float)_random.NextGaussian() * var13);
-                        droppedItem.velocityY = (double)((float)_random.NextGaussian() * var13 + 0.2F);
-                        droppedItem.velocityZ = (double)((float)_random.NextGaussian() * var13);
-                        world.SpawnEntity(droppedItem);
+                        droppedItem.velocityX = (float)_random.NextGaussian() * var13;
+                        droppedItem.velocityY = (float)_random.NextGaussian() * var13 + 0.2F;
+                        droppedItem.velocityZ = (float)_random.NextGaussian() * var13;
+                        @event.World.SpawnEntity(droppedItem);
                     }
                 }
             }
         }
 
-        base.onBreak(world, x, y, z);
+        base.onBreak(@event);
     }
 }

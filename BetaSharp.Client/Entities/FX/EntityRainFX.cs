@@ -2,14 +2,14 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
 public class EntityRainFX : EntityFX
 {
 
-    public EntityRainFX(World world, double x, double y, double z) : base(world, x, y, z, 0.0D, 0.0D, 0.0D)
+    public EntityRainFX(IWorldContext world, double x, double y, double z) : base(world, x, y, z, 0.0D, 0.0D, 0.0D)
     {
         velocityX *= (double)0.3F;
         velocityY = (double)((float)Random.Shared.NextDouble() * 0.2F + 0.1F);
@@ -54,10 +54,10 @@ public class EntityRainFX : EntityFX
             velocityZ *= (double)0.7F;
         }
 
-        Material material = world.getMaterial(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z));
+        Material material = world.Reader.GetMaterial(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z));
         if (material.IsFluid || material.IsSolid)
         {
-            double height = (double)((float)(MathHelper.Floor(y) + 1) - BlockFluid.getFluidHeightFromMeta(world.getBlockMeta(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z))));
+            double height = (double)((float)(MathHelper.Floor(y) + 1) - BlockFluid.getFluidHeightFromMeta(world.Reader.GetBlockMeta(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z))));
             if (y < height)
             {
                 markDead();

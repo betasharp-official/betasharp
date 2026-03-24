@@ -1,10 +1,11 @@
-﻿using BetaSharp.Blocks;
+using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Server.Entities;
 
@@ -28,6 +29,7 @@ internal class EntityTrackerEntry
     private bool isInitialized;
     private bool alwaysUpdateVelocity;
     private int ticksSinceLastDismount;
+    private int _ticksSinceLastAbsoluteSync = 0;
     public bool newPlayerDataUpdated;
     public HashSet<ServerPlayerEntity> listeners = [];
 
@@ -68,6 +70,38 @@ internal class EntityTrackerEntry
         }
 
         ticksSinceLastDismount++;
+        // Periodic absolute sync heuristic to correct client-side physics drift
+        // when the server otherwise decides deltas are too small.
+        if (++_ticksSinceLastAbsoluteSync >= 60)
+        {
+            _ticksSinceLastAbsoluteSync = 0;
+
+            int absX = MathHelper.Floor(currentTrackedEntity.x * 32.0);
+            int absY = MathHelper.Floor(currentTrackedEntity.y * 32.0);
+            int absZ = MathHelper.Floor(currentTrackedEntity.z * 32.0);
+            int absYaw = MathHelper.Floor(currentTrackedEntity.yaw * 256.0F / 360.0F);
+            int absPitch = MathHelper.Floor(currentTrackedEntity.pitch * 256.0F / 360.0F);
+
+            sendToListeners(
+                EntityPositionS2CPacket.Get(
+                    currentTrackedEntity.id,
+                    absX,
+                    absY,
+                    absZ,
+                    (byte)absYaw,
+                    (byte)absPitch
+                )
+            );
+
+            // Keep our last-encoded coordinates aligned with the packet we just sent,
+            // so the next update doesn't immediately try to catch up with a relative delta.
+            lastX = absX;
+            lastY = absY;
+            lastZ = absZ;
+            lastYaw = absYaw;
+            lastPitch = absPitch;
+        }
+
         if (++ticks % trackingFrequency == 0)
         {
             int var2 = MathHelper.Floor(currentTrackedEntity.x * 32.0);
@@ -198,6 +232,18 @@ internal class EntityTrackerEntry
             {
                 if (!listeners.Contains(player))
                 {
+                    if (currentTrackedEntity.world is ServerWorld sw
+                        && player.dimensionId == sw.Dimension.Id
+                        && sw.ChunkMap != null)
+                    {
+                        int entityChunkX = MathHelper.Floor(currentTrackedEntity.x / 16.0);
+                        int entityChunkZ = MathHelper.Floor(currentTrackedEntity.z / 16.0);
+                        if (!ChunkMap.HasPlayerReceivedChunkTerrain(player, entityChunkX, entityChunkZ))
+                        {
+                            return;
+                        }
+                    }
+
                     listeners.Add(player);
                     player.networkHandler.sendPacket(createAddEntityPacket());
                     if (alwaysUpdateVelocity)

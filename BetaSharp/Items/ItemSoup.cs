@@ -1,5 +1,6 @@
 using BetaSharp.Entities;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
@@ -10,7 +11,7 @@ internal class ItemSoup : ItemFood
     {
     }
 
-    public override ItemStack use(ItemStack itemStack, World world, EntityPlayer entityPlayer)
+    public override ItemStack use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
     {
         base.use(itemStack, world, entityPlayer);
         return new ItemStack(Item.Bowl);

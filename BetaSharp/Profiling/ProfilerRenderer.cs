@@ -1,4 +1,5 @@
-﻿using ImGuiNET;
+using ImGuiNET;
+using System.Linq;
 
 namespace BetaSharp.Profiling;
 
@@ -18,9 +19,25 @@ public static class ProfilerRenderer
         public ProfilerNode(string name) { Name = name; }
     }
 
+    private static int _sortColumn = 0; // 0=Section,1=Cur,2=Avg,3=Max
+    private static bool _sortDescending = true;
+
     public static void Draw()
     {
         ImGui.Begin("Profiler");
+        
+        ImGui.Text("Sort by:");
+        ImGui.SameLine();
+        if (ImGui.RadioButton("Section", _sortColumn == 0)) _sortColumn = 0;
+        ImGui.SameLine();
+        if (ImGui.RadioButton("Cur", _sortColumn == 1)) _sortColumn = 1;
+        ImGui.SameLine();
+        if (ImGui.RadioButton("Avg", _sortColumn == 2)) _sortColumn = 2;
+        ImGui.SameLine();
+        if (ImGui.RadioButton("Max", _sortColumn == 3)) _sortColumn = 3;
+        ImGui.SameLine();
+        if (ImGui.SmallButton(_sortDescending ? "Desc" : "Asc")) _sortDescending = !_sortDescending;
+
         if (ImGui.BeginTable("ProfilerStats", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.Resizable))
         {
             ImGui.TableSetupColumn("Section");
@@ -52,7 +69,11 @@ public static class ProfilerRenderer
             }
 
             CalculateGroupTotals(root);
-            RenderProfilerNode(root);
+
+            int sortColumn = _sortColumn;
+            ImGuiSortDirection sortDirection = _sortDescending ? ImGuiSortDirection.Descending : ImGuiSortDirection.Ascending;
+
+            RenderProfilerNode(root, sortColumn, sortDirection);
 
             ImGui.EndTable();
         }
@@ -115,9 +136,40 @@ public static class ProfilerRenderer
         }
     }
 
-    private static void RenderProfilerNode(ProfilerNode node)
+    private static int CompareNodes(ProfilerNode a, ProfilerNode b, int sortColumn, ImGuiSortDirection direction)
     {
-        foreach (var child in node.Children.Values)
+        int result;
+        switch (sortColumn)
+        {
+            case 1: // Cur (ms)
+                result = a.Last.CompareTo(b.Last);
+                break;
+            case 2: // Avg (ms)
+                result = a.Avg.CompareTo(b.Avg);
+                break;
+            case 3: // Max (ms)
+                result = a.Max.CompareTo(b.Max);
+                break;
+            case 0:
+            default: // Section
+                result = string.Compare(a.Name, b.Name, StringComparison.Ordinal);
+                break;
+        }
+
+        if (direction == ImGuiSortDirection.Descending)
+        {
+            result = -result;
+        }
+
+        return result;
+    }
+
+    private static void RenderProfilerNode(ProfilerNode node, int sortColumn, ImGuiSortDirection sortDirection)
+    {
+        var children = node.Children.Values.ToList();
+        children.Sort((a, b) => CompareNodes(a, b, sortColumn, sortDirection));
+
+        foreach (var child in children)
         {
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
@@ -152,7 +204,7 @@ public static class ProfilerRenderer
 
             if (!isLeaf && open)
             {
-                RenderProfilerNode(child);
+                RenderProfilerNode(child, sortColumn, sortDirection);
                 ImGui.TreePop();
             }
         }

@@ -2,14 +2,13 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Entities;
-using BetaSharp.Worlds;
-using java.lang;
+using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Client.Rendering.Blocks.Entities;
 
 public class BlockEntityRenderer
 {
-    private readonly Dictionary<Class, BlockEntitySpecialRenderer?> _specialRendererMap = [];
+    private readonly Dictionary<Type, BlockEntitySpecialRenderer?> _specialRendererMap = [];
     public static BlockEntityRenderer Instance { get; } = new();
     private TextRenderer _fontRenderer;
     public static double StaticPlayerX;
@@ -36,21 +35,21 @@ public class BlockEntityRenderer
         }
     }
 
-    public BlockEntitySpecialRenderer? GetSpecialRendererForClass(Type clazz)
+    public BlockEntitySpecialRenderer? GetSpecialRendererForClass(Type t)
     {
-        _specialRendererMap.TryGetValue(clazz, out BlockEntitySpecialRenderer? renderer);
-        if (renderer == null && clazz != typeof(BlockEntity))
+        _specialRendererMap.TryGetValue(t, out BlockEntitySpecialRenderer? renderer);
+        if (renderer == null && t != typeof(BlockEntity))
         {
-            renderer = GetSpecialRendererForClass(clazz.BaseType);
-            _specialRendererMap[clazz] = renderer;
+            renderer = GetSpecialRendererForClass(t.BaseType);
+            _specialRendererMap[t] = renderer;
         }
 
         return renderer;
     }
 
-    public BlockEntitySpecialRenderer? GetSpecialRendererForEntity(BlockEntity var1)
+    public BlockEntitySpecialRenderer? GetSpecialRendererForEntity(BlockEntity? be)
     {
-        return var1 == null ? null : GetSpecialRendererForClass(var1.GetType());
+        return be == null ? null : GetSpecialRendererForClass(be.GetType());
     }
 
     public void CacheActiveRenderInfo(World var1, TextureManager var2, TextRenderer var3, EntityLiving var4, float var5)
@@ -74,7 +73,7 @@ public class BlockEntityRenderer
     {
         if (var1.distanceFrom(PlayerX, PlayerY, PlayerZ) < 4096.0D)
         {
-            float var3 = World.getLuminance(var1.X, var1.Y, var1.Z);
+            float var3 = World.GetLuminance(var1.X, var1.Y, var1.Z);
             GLManager.GL.Color3(var3, var3, var3);
             RenderTileEntityAt(var1, var1.X - StaticPlayerX, var1.Y - StaticPlayerY, var1.Z - StaticPlayerZ, var2);
         }

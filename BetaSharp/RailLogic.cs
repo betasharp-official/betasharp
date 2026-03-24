@@ -1,25 +1,26 @@
 using BetaSharp.Blocks;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp;
 
 internal class RailLogic
 {
-    private World _worldObj;
+    private IWorldContext _level;
     private Vec3i _trackPos;
     private readonly bool _isPoweredRail;
     private readonly List<Vec3i> _connectedTracks = [];
     readonly BlockRail _rail;
 
-    public RailLogic(BlockRail railBlock, World world, Vec3i pos)
+    public RailLogic(BlockRail railBlock, IWorldContext level, Vec3i pos)
     {
         _rail = railBlock;
-        _worldObj = world;
+        _level = level;
         _trackPos = pos;
 
-        int blockId = world.getBlockId(pos.X, pos.Y, pos.Z);
-        int meta = world.getBlockMeta(pos.X, pos.Y, pos.Z);
+        int blockId = level.Reader.GetBlockId(pos.X, pos.Y, pos.Z);
+        int meta = level.Reader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
         if (Block.Blocks[blockId] is BlockRail rail && rail.isAlwaysStraight())
         {
@@ -79,14 +80,14 @@ internal class RailLogic
 
         if (meta == 0)
         {
-            if (BlockRail.isRail(_worldObj, _trackPos.X, _trackPos.Y + 1, _trackPos.Z - 1)) meta = 4;
-            if (BlockRail.isRail(_worldObj, _trackPos.X, _trackPos.Y + 1, _trackPos.Z + 1)) meta = 5;
+            if (BlockRail.isRail(_level, _trackPos.X, _trackPos.Y + 1, _trackPos.Z - 1)) meta = 4;
+            if (BlockRail.isRail(_level, _trackPos.X, _trackPos.Y + 1, _trackPos.Z + 1)) meta = 5;
         }
 
         if (meta == 1)
         {
-            if (BlockRail.isRail(_worldObj, _trackPos.X + 1, _trackPos.Y + 1, _trackPos.Z)) meta = 2;
-            if (BlockRail.isRail(_worldObj, _trackPos.X - 1, _trackPos.Y + 1, _trackPos.Z)) meta = 3;
+            if (BlockRail.isRail(_level, _trackPos.X + 1, _trackPos.Y + 1, _trackPos.Z)) meta = 2;
+            if (BlockRail.isRail(_level, _trackPos.X - 1, _trackPos.Y + 1, _trackPos.Z)) meta = 3;
         }
 
         if (meta < 0) meta = 0;
@@ -96,12 +97,12 @@ internal class RailLogic
         int finalMeta = meta;
         if (_isPoweredRail)
         {
-            finalMeta = _worldObj.getBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
+            finalMeta = _level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
         }
 
-        if (forceUpdate || _worldObj.getBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) != finalMeta)
+        if (forceUpdate || _level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) != finalMeta)
         {
-            _worldObj.setBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
+            _level.Writer.SetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
 
             foreach (Vec3i pos in _connectedTracks)
             {
@@ -164,21 +165,21 @@ internal class RailLogic
 
     private bool IsMinecartTrack(Vec3i pos)
     {
-        return BlockRail.isRail(_worldObj, pos.X, pos.Y, pos.Z) ||
-               BlockRail.isRail(_worldObj, pos.X, pos.Y + 1, pos.Z) ||
-               BlockRail.isRail(_worldObj, pos.X, pos.Y - 1, pos.Z);
+        return BlockRail.isRail(_level, pos.X, pos.Y, pos.Z) ||
+               BlockRail.isRail(_level, pos.X, pos.Y + 1, pos.Z) ||
+               BlockRail.isRail(_level, pos.X, pos.Y - 1, pos.Z);
     }
 
     private RailLogic? GetMinecartTrackLogic(Vec3i pos)
     {
-        if (BlockRail.isRail(_worldObj, pos.X, pos.Y, pos.Z))
-            return new RailLogic(_rail, _worldObj, pos);
+        if (BlockRail.isRail(_level, pos.X, pos.Y, pos.Z))
+            return new RailLogic(_rail, _level, pos);
 
-        if (BlockRail.isRail(_worldObj, pos.X, pos.Y + 1, pos.Z))
-            return new RailLogic(_rail, _worldObj, new Vec3i(pos.X, pos.Y + 1, pos.Z));
+        if (BlockRail.isRail(_level, pos.X, pos.Y + 1, pos.Z))
+            return new RailLogic(_rail, _level, new Vec3i(pos.X, pos.Y + 1, pos.Z));
 
-        if (BlockRail.isRail(_worldObj, pos.X, pos.Y - 1, pos.Z))
-            return new RailLogic(_rail, _worldObj, new Vec3i(pos.X, pos.Y - 1, pos.Z));
+        if (BlockRail.isRail(_level, pos.X, pos.Y - 1, pos.Z))
+            return new RailLogic(_rail, _level, new Vec3i(pos.X, pos.Y - 1, pos.Z));
 
         return null;
     }
@@ -247,14 +248,14 @@ internal class RailLogic
 
         if (meta == 0)
         {
-            if (BlockRail.isRail(_worldObj, _trackPos.X, _trackPos.Y + 1, _trackPos.Z - 1)) meta = 4;
-            if (BlockRail.isRail(_worldObj, _trackPos.X, _trackPos.Y + 1, _trackPos.Z + 1)) meta = 5;
+            if (BlockRail.isRail(_level, _trackPos.X, _trackPos.Y + 1, _trackPos.Z - 1)) meta = 4;
+            if (BlockRail.isRail(_level, _trackPos.X, _trackPos.Y + 1, _trackPos.Z + 1)) meta = 5;
         }
 
         if (meta == 1)
         {
-            if (BlockRail.isRail(_worldObj, _trackPos.X + 1, _trackPos.Y + 1, _trackPos.Z)) meta = 2;
-            if (BlockRail.isRail(_worldObj, _trackPos.X - 1, _trackPos.Y + 1, _trackPos.Z)) meta = 3;
+            if (BlockRail.isRail(_level, _trackPos.X + 1, _trackPos.Y + 1, _trackPos.Z)) meta = 2;
+            if (BlockRail.isRail(_level, _trackPos.X - 1, _trackPos.Y + 1, _trackPos.Z)) meta = 3;
         }
 
         if (meta < 0) meta = 0;
@@ -262,10 +263,10 @@ internal class RailLogic
         int finalMeta = meta;
         if (_isPoweredRail)
         {
-            finalMeta = _worldObj.getBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
+            finalMeta = _level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
         }
 
-        _worldObj.setBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
+        _level.Writer.SetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
     }
 
     private bool AttemptConnectionAt(Vec3i pos)

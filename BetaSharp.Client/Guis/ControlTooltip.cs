@@ -23,7 +23,7 @@ public record ActionTip(ControlIcon Icon, string Action);
 
 public static class ControlTooltip
 {
-    public static string ControllerType = "x360";
+    public static ControllerType ControllerType = ControllerType.XboxOne;
 
     private static readonly List<ActionTip> s_tips = [];
     private static readonly Dictionary<int, bool> s_usabilityCache = [];
@@ -78,7 +78,7 @@ public static class ControlTooltip
             int blockX = hit.BlockX;
             int blockY = hit.BlockY;
             int blockZ = hit.BlockZ;
-            int blockId = game.world.getBlockId(blockX, blockY, blockZ);
+            int blockId = game.world.Reader.GetBlockId(blockX, blockY, blockZ);
 
             if (blockId == Block.Chest.id || blockId == Block.Furnace.id || blockId == Block.LitFurnace.id || blockId == Block.CraftingTable.id || blockId == Block.Dispenser.id)
                 useAction = "Interact";
@@ -233,6 +233,6 @@ public static class ControlTooltip
             _ => "unknown"
         };
 
-        return $"/gui/controls/{ControllerType}/{iconName}.png";
+        return $"/gui/controls/{ControllerType.Key}/{iconName}.png";
     }
 }

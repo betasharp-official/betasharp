@@ -7,8 +7,8 @@ public class ReedRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        float luminance = block.getLuminance(ctx.World, pos.x, pos.y, pos.z);
-        int colorMultiplier = block.getColorMultiplier(ctx.World, pos.x, pos.y, pos.z);
+        float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        int colorMultiplier = block.getColorMultiplier(ctx.BlockReader, pos.x, pos.y, pos.z);
         float r = (colorMultiplier >> 16 & 255) / 255.0F;
         float g = (colorMultiplier >> 8 & 255) / 255.0F;
         float b = (colorMultiplier & 255) / 255.0F;
@@ -30,7 +30,7 @@ public class ReedRenderer : IBlockRenderer
             renderZ += (((hash >> 24 & 15L) / 15.0F) - 0.5F) * 0.5F;
         }
 
-        RenderCrossedSquares(block, ctx.World.getBlockMeta(pos.x, pos.y, pos.z), renderX, renderY, renderZ, ref ctx);
+        RenderCrossedSquares(block, ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z), renderX, renderY, renderZ, ref ctx);
         return true;
     }
 

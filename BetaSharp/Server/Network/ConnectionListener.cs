@@ -10,7 +10,7 @@ public class ConnectionListener
 {
     public Socket Socket { get; }
 
-    private readonly java.lang.Thread _thread;
+    private readonly AcceptConnectionThread _thread;
     private readonly ILogger<ConnectionListener> _logger = Log.Instance.For<ConnectionListener>();
 
     public volatile bool open;
@@ -38,7 +38,7 @@ public class ConnectionListener
         this.port = port;
         open = true;
         _thread = new AcceptConnectionThread(this, "Listen Thread");
-        _thread.start();
+        _thread.Run();
     }
 
     public ConnectionListener(BetaSharpServer server)
@@ -99,19 +99,19 @@ public class ConnectionListener
                 ServerLoginNetworkHandler connection = _pendingConnections[i];
 
                 try
-            {
-                connection.tick();
-            }
-            catch (Exception ex)
-            {
-                connection.disconnect("Internal server error");
-                _logger.LogError($"Failed to handle packet: {ex}");
-            }
+                {
+                    connection.tick();
+                }
+                catch (Exception ex)
+                {
+                    connection.disconnect("Internal server error");
+                    _logger.LogError($"Failed to handle packet: {ex}");
+                }
 
-            if (connection.closed)
-            {
-                _pendingConnections.RemoveAt(i--);
-            }
+                if (connection.closed)
+                {
+                    _pendingConnections.RemoveAt(i--);
+                }
 
             }
         }
@@ -122,20 +122,20 @@ public class ConnectionListener
             {
                 ServerPlayNetworkHandler connection = _connections[i];
 
-            try
-            {
-                connection.tick();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Failed to handle packet: {ex}");
-                connection.disconnect("Internal server error");
-            }
+                try
+                {
+                    connection.tick();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Failed to handle packet: {ex}");
+                    connection.disconnect("Internal server error");
+                }
 
-            if (connection.disconnected)
-            {
-                _connections.RemoveAt(i--);
-            }
+                if (connection.disconnected)
+                {
+                    _connections.RemoveAt(i--);
+                }
 
             }
         }

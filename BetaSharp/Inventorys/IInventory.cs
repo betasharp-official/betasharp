@@ -9,7 +9,7 @@ public interface IInventory
 
     ItemStack getStack(int slotIndex);
 
-    ItemStack removeStack(int slotIndex, int amount);
+    ItemStack? removeStack(int slotIndex, int amount);
 
     void setStack(int slotIndex, ItemStack? itemStack);
 

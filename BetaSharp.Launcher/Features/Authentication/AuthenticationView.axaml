@@ -1,15 +1,42 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:BetaSharp.Launcher.Features.Authentication"
+             xmlns:qr="clr-namespace:Avalonia.Labs.Qr;assembly=Avalonia.Labs.Qr"
 
              x:Class="BetaSharp.Launcher.Features.Authentication.AuthenticationView" x:DataType="local:AuthenticationViewModel">
 
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
-        <!-- ReSharper disable once Xaml.StyleClassNotFound -->
-        <Button Content="Authenticate with Microsoft" Classes="accent" Command="{CompiledBinding AuthenticateCommand}"
-                ToolTip.Tip="A Web browser tab may open" />
+    <UserControl.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Styles>
 
-        <TextBlock Text="You must own a copy of Minecraft Java edition to use this launcher"
-                   Opacity="0.5" TextWrapping="Wrap" TextAlignment="Center" />
-    </StackPanel>
+    <Grid RowDefinitions="* Auto *" RowSpacing="10">
+        <StackPanel VerticalAlignment="Center" Grid.Row="0">
+            <!-- ReSharper disable once Xaml.StyleClassNotFound -->
+            <Button Content="Authenticate with Microsoft" Classes="accent" Command="{CompiledBinding UseWebCommand}" />
+
+            <TextBlock Text="A Web browser tab may open" Opacity="0.5" />
+        </StackPanel>
+
+        <Separator Grid.Row="1" />
+
+        <Grid VerticalAlignment="Center" Grid.Row="2">
+            <Grid Classes.hidden="{CompiledBinding IsReady}">
+                <StackPanel>
+                    <Button Content="Having issues?" Command="{CompiledBinding UseCodeCommand}" />
+                    <TextBlock Text="Use code flow authentication instead" Opacity="0.5" />
+                </StackPanel>
+            </Grid>
+
+            <Grid Classes="hidden" Classes.shown="{CompiledBinding IsReady}">
+                <StackPanel>
+                    <qr:QrCode IsQuietZoneEnabled="True" Height="150" Width="150" Data="{CompiledBinding Link}"
+                               Foreground="{StaticResource TextControlForeground}" CornerRadius="{StaticResource ControlCornerRadius}" />
+
+                    <SelectableTextBlock Text="{CompiledBinding Message}" TextAlignment="Center" TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
 </UserControl>

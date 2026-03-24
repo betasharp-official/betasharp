@@ -1,23 +1,26 @@
 namespace BetaSharp.Server.Threading;
 
-public class ConsoleInputThread : java.lang.Thread
+public class ConsoleInputThread(BetaSharpServer server)
 {
-    private readonly BetaSharpServer mcServer;
-
-    public ConsoleInputThread(BetaSharpServer server) : base("Server console handler")
+    public void Run()
     {
-        mcServer = server;
-    }
-
-    public override void run()
-    {
-        while (!mcServer.stopped && mcServer.running)
+        Thread t = new(() =>
         {
-            string? line = Console.ReadLine();
-            if (line != null)
+
+            while (!server.stopped && server.running)
             {
-                mcServer.queueCommands(line, mcServer);
+                string? line = Console.ReadLine();
+                if (line != null)
+                {
+                    server.QueueCommands(line, server);
+                }
             }
-        }
+        })
+        {
+            Name = "Server console handler",
+            IsBackground = true
+        };
+
+        t.Start();
     }
 }

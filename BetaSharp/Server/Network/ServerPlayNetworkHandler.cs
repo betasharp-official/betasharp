@@ -1,4 +1,5 @@
 using BetaSharp.Blocks.Entities;
+using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
@@ -8,16 +9,17 @@ using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Screens.Slots;
+using BetaSharp.Server.Command;
 using BetaSharp.Server.Commands;
 using BetaSharp.Server.Internal;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Network;
 
-public class ServerPlayNetworkHandler : NetHandler, CommandOutput
+public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 {
     public Connection connection;
     public bool disconnected;
@@ -117,7 +119,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
                 player.velocityZ = var34;
                 if (player.vehicle != null)
                 {
-                    var2.tickVehicle(player.vehicle, true);
+                    var2.Entities.TickVehicleBypassingFilter(player.vehicle, true);
                 }
 
                 if (player.vehicle != null)
@@ -129,7 +131,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
                 teleportTargetX = player.x;
                 teleportTargetY = player.y;
                 teleportTargetZ = player.z;
-                var2.updateEntity(player);
+                var2.Entities.UpdateEntity(player, true);
                 return;
             }
 
@@ -137,7 +139,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             {
                 player.playerTick(true);
                 player.setPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, player.yaw, player.pitch);
-                var2.updateEntity(player);
+                var2.Entities.UpdateEntity(player, true);
                 return;
             }
 
@@ -201,7 +203,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             }
 
             float var21 = (1 / 16f);
-            bool var22 = var2.GetEntityCollisions(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
+            bool var22 = var2.Entities.GetEntityCollisionsScratch(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
             player.move(var32, var15, var17);
             var32 = var5 - player.x;
             var15 = var7 - player.y;
@@ -222,7 +224,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             }
 
             player.setPositionAndAngles(var5, var7, var9, var11, var12);
-            bool var24 = var2.GetEntityCollisions(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
+            bool var24 = var2.Entities.GetEntityCollisionsScratch(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
             if (var22 && (var23 || !var24) && !player.isSleeping())
             {
                 teleport(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
@@ -230,7 +232,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             }
 
             Box var25 = player.boundingBox.Expand(var21, var21, var21).Stretch(0.0, -0.55, 0.0);
-            if (server.flightEnabled || var2.isAnyBlockInBox(var25))
+            if (server.flightEnabled || var2.Reader.IsMaterialInBox(var25, m => m != Material.Air))
             {
                 floatingTime = 0;
             }
@@ -264,167 +266,132 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 
     public override void handlePlayerAction(PlayerActionC2SPacket packet)
     {
-        ServerWorld var2 = server.getWorld(player.dimensionId);
+        ServerWorld world = server.getWorld(player.dimensionId);
         if (packet.action == 4)
         {
             player.dropSelectedItem();
         }
         else
         {
-            bool var3 = var2.bypassSpawnProtection = var2.dimension.Id != 0 || server.playerManager.isOperator(player.name) || server is InternalServer;
-            bool var4 = false;
-            if (packet.action == 0)
+            int x = packet.x;
+            int y = packet.y;
+            int z = packet.z;
+
+            if (packet.action == 3)
             {
-                var4 = true;
+                if (MathHelper.GetDistSqr(player.x, player.y, player.z, x, y, z) < 256.0)
+                {
+                    player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+                }
+
+                return;
             }
 
-            if (packet.action == 2)
+            if (packet.action == 0 || packet.action == 2)
             {
-                var4 = true;
-            }
-
-            int var5 = packet.x;
-            int var6 = packet.y;
-            int var7 = packet.z;
-            if (var4)
-            {
-                double var8 = player.x - (var5 + 0.5);
-                double var10 = player.y - (var6 + 0.5);
-                double var12 = player.z - (var7 + 0.5);
-                double var14 = var8 * var8 + var10 * var10 + var12 * var12;
-                if (var14 > 36.0)
+                if (MathHelper.GetDistSqr(player.x, player.y, player.z, x, y, z) > 36.0)
                 {
                     return;
                 }
             }
 
-            Vec3i var19 = var2.getSpawnPos();
-            int var9 = (int)MathHelper.Abs(var5 - var19.X);
-            int var20 = (int)MathHelper.Abs(var7 - var19.Z);
-            if (var9 > var20)
-            {
-                var20 = var9;
-            }
-
             if (packet.action == 0)
             {
-                if (var20 <= 16 && !var3)
+                if (!CanBypassSpawnProtection(x, z, world))
                 {
-                    player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(var5, var6, var7, var2));
+                    player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
                 }
                 else
                 {
-                    player.interactionManager.onBlockBreakingAction(var5, var6, var7, packet.direction);
+                    player.interactionManager.onBlockBreakingAction(x, y, z, packet.direction);
                 }
             }
             else if (packet.action == 2)
             {
-                player.interactionManager.continueMining(var5, var6, var7);
-                if (var2.getBlockId(var5, var6, var7) != 0)
+                player.interactionManager.continueMining(x, y, z);
+                if (world.Reader.GetBlockId(x, y, z) != 0)
                 {
-                    player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(var5, var6, var7, var2));
+                    player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
                 }
             }
-            else if (packet.action == 3)
-            {
-                double var11 = player.x - (var5 + 0.5);
-                double var13 = player.y - (var6 + 0.5);
-                double var15 = player.z - (var7 + 0.5);
-                double var17 = var11 * var11 + var13 * var13 + var15 * var15;
-                if (var17 < 256.0)
-                {
-                    player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(var5, var6, var7, var2));
-                }
-            }
-
-            var2.bypassSpawnProtection = false;
         }
+    }
+
+    private bool CanBypassSpawnProtection(int x, int z, ServerWorld world)
+    {
+        const int spawnProtection = 16;
+        Vec3i spawnPos = world.Properties.GetSpawnPos();
+        bool notBlockedFromSpawnProtection = Math.Abs(x - spawnPos.X) > spawnProtection || Math.Abs(z - spawnPos.Z) > spawnProtection;
+        notBlockedFromSpawnProtection = notBlockedFromSpawnProtection || world.BypassSpawnProtection || server is InternalServer || server.playerManager.isOperator(player.name);
+        return notBlockedFromSpawnProtection;
     }
 
     public override void onPlayerInteractBlock(PlayerInteractBlockC2SPacket packet)
     {
-        ServerWorld var2 = server.getWorld(player.dimensionId);
-        ItemStack var3 = player.inventory.getSelectedItem();
-        bool var4 = var2.bypassSpawnProtection = var2.dimension.Id != 0 || server.playerManager.isOperator(player.name) || server is InternalServer;
+        ServerWorld world = server.getWorld(player.dimensionId);
+        ItemStack stack = player.inventory.getSelectedItem();
         if (packet.side == 255)
         {
-            if (var3 == null)
+            if (stack == null)
             {
                 return;
             }
 
-            player.interactionManager.interactItem(player, var2, var3);
+            player.interactionManager.interactItem(player, world, stack);
         }
         else
         {
-            int var5 = packet.x;
-            int var6 = packet.y;
-            int var7 = packet.z;
-            int var8 = packet.side;
-            Vec3i var9 = var2.getSpawnPos();
-            int var10 = (int)MathHelper.Abs(var5 - var9.X);
-            int var11 = (int)MathHelper.Abs(var7 - var9.Z);
-            if (var10 > var11)
+            int x = packet.x;
+            int y = packet.y;
+            int z = packet.z;
+            int side = packet.side;
+
+            if (teleported && CanBypassSpawnProtection(x, z, world) && player.getSquaredDistance(x + 0.5, y + 0.5, z + 0.5) < 64.0)
             {
-                var11 = var10;
+                player.interactionManager.interactBlock(player, world, stack, x, y, z, side);
             }
 
-            if (teleported && player.getSquaredDistance(var5 + 0.5, var6 + 0.5, var7 + 0.5) < 64.0 && (var11 > 16 || var4))
+            player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+            switch (side)
             {
-                player.interactionManager.interactBlock(player, var2, var3, var5, var6, var7, var8);
+                case 0:
+                    y--;
+                    break;
+                case 1:
+                    y++;
+                    break;
+                case 2:
+                    z--;
+                    break;
+                case 3:
+                    z++;
+                    break;
+                case 4:
+                    x--;
+                    break;
+                case 5:
+                    x++;
+                    break;
             }
 
-            player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(var5, var6, var7, var2));
-            if (var8 == 0)
-            {
-                var6--;
-            }
-
-            if (var8 == 1)
-            {
-                var6++;
-            }
-
-            if (var8 == 2)
-            {
-                var7--;
-            }
-
-            if (var8 == 3)
-            {
-                var7++;
-            }
-
-            if (var8 == 4)
-            {
-                var5--;
-            }
-
-            if (var8 == 5)
-            {
-                var5++;
-            }
-
-            player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(var5, var6, var7, var2));
+            player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
         }
 
-        var3 = player.inventory.getSelectedItem();
-        if (var3 != null && var3.count == 0)
+        stack = player.inventory.getSelectedItem();
+        if (stack != null && stack.count == 0)
         {
             player.inventory.main[player.inventory.selectedSlot] = null;
         }
 
         player.skipPacketSlotUpdates = true;
         player.inventory.main[player.inventory.selectedSlot] = ItemStack.clone(player.inventory.main[player.inventory.selectedSlot]);
-        Slot var13 = player.currentScreenHandler.GetSlot(player.inventory, player.inventory.selectedSlot);
+        Slot slot = player.currentScreenHandler.GetSlot(player.inventory, player.inventory.selectedSlot);
         player.currentScreenHandler.SendContentUpdates();
         player.skipPacketSlotUpdates = false;
         if (!ItemStack.areEqual(player.inventory.getSelectedItem(), packet.stack))
         {
-            sendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(player.currentScreenHandler.SyncId, var13.id, player.inventory.getSelectedItem()));
+            sendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(player.currentScreenHandler.SyncId, slot.id, player.inventory.getSelectedItem()));
         }
-
-        var2.bypassSpawnProtection = false;
     }
 
     public override void onDisconnected(string reason, object[]? objects)
@@ -516,7 +483,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
         {
             string commandText = message[1..];
             _logger.LogInformation($"{player.name} issued server command: {commandText}");
-            server.queueCommands(commandText, this);
+            server.QueueCommands(commandText, this);
         }
         else
         {
@@ -566,10 +533,8 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
         sendPacket(ChatMessagePacket.Get("§7" + message));
     }
 
-    public string GetName()
-    {
-        return player.name;
-    }
+    public string Name => player.name;
+    public byte PermissionLevel => server.playerManager.isOperator(player.name) ? (byte)4 : (byte)0;
 
     public override void handleInteractEntity(PlayerInteractEntityC2SPacket packet)
     {
@@ -648,9 +613,9 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
     public override void handleUpdateSign(UpdateSignPacket packet)
     {
         ServerWorld var2 = server.getWorld(player.dimensionId);
-        if (var2.isPosLoaded(packet.x, packet.y, packet.z))
+        if (var2.Reader.IsPosLoaded(packet.x, packet.y, packet.z))
         {
-            BlockEntity var3 = var2.getBlockEntity(packet.x, packet.y, packet.z);
+            BlockEntity var3 = var2.Entities.GetBlockEntity<BlockEntitySign>(packet.x, packet.y, packet.z);
             if (var3 is BlockEntitySign var4)
             {
                 if (!var4.IsEditable())
@@ -697,7 +662,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
 
                 var7.SetEditable(false);
                 var7.markDirty();
-                var2.blockUpdateEvent(var10, var11, var12);
+                var2.Broadcaster.BlockUpdateEvent(var10, var11, var12);
             }
         }
     }

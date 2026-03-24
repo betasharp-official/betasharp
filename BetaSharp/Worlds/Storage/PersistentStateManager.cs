@@ -5,23 +5,20 @@ namespace BetaSharp.Worlds.Storage;
 
 public class PersistentStateManager
 {
-    private readonly IWorldStorage? _saveHandler;
-    private readonly Dictionary<string, PersistentState> _loadedDataMap = [];
-    private readonly List<PersistentState> _loadedDataList = [];
     private readonly Dictionary<string, short> _idCounts = [];
+    private readonly List<PersistentState> _loadedDataList = [];
+    private readonly Dictionary<string, PersistentState> _loadedDataMap = [];
 
     private readonly ILogger<PersistentStateManager> _logger = Log.Instance.For<PersistentStateManager>();
+    private readonly IWorldStorage? _saveHandler;
 
-     public PersistentStateManager(IWorldStorage? saveHandler)
+    public PersistentStateManager(IWorldStorage? saveHandler)
     {
         _saveHandler = saveHandler;
         LoadIdCounts();
     }
 
-    public T? LoadData<T>(string id) where T : PersistentState
-    {
-        return (T?)LoadData(typeof(T), id);
-    }
+    public T? LoadData<T>(string id) where T : PersistentState => (T?)LoadData(typeof(T), id);
 
     public PersistentState? LoadData(Type type, string id) // On server never returns null, on client always
     {
@@ -71,7 +68,7 @@ public class PersistentStateManager
 
     public void SetData(string id, PersistentState state)
     {
-        ArgumentNullException.ThrowIfNull(state, nameof(state));
+        ArgumentNullException.ThrowIfNull(state);
 
         if (_loadedDataMap.ContainsKey(id))
         {
@@ -86,17 +83,20 @@ public class PersistentStateManager
     {
         foreach (PersistentState state in _loadedDataList)
         {
-            if (state.Dirty)
+            if (state.IsDirty())
             {
                 SaveData(state);
-                state.Dirty = false;
+                state.SetDirty(false);
             }
         }
     }
 
     private void SaveData(PersistentState state)
     {
-        if (_saveHandler == null) return;
+        if (_saveHandler == null)
+        {
+            return;
+        }
 
         try
         {
@@ -124,7 +124,10 @@ public class PersistentStateManager
         try
         {
             _idCounts.Clear();
-            if (_saveHandler == null) return;
+            if (_saveHandler == null)
+            {
+                return;
+            }
 
             FileInfo? file = _saveHandler.GetWorldPropertiesFile("idcounts");
             if (file != null && file.Exists)
@@ -149,12 +152,15 @@ public class PersistentStateManager
 
     public int GetUniqueDataId(string key)
     {
-        short currentId = _idCounts.TryGetValue(key, out var count) ? count : (short)0;
+        short currentId = _idCounts.TryGetValue(key, out short count) ? count : (short)0;
         short nextId = (short)(currentId + 1);
 
         _idCounts[key] = nextId;
 
-        if (_saveHandler == null) return nextId;
+        if (_saveHandler == null)
+        {
+            return nextId;
+        }
 
         try
         {

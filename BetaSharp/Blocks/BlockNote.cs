@@ -1,7 +1,5 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
@@ -11,84 +9,82 @@ internal class BlockNote : BlockWithEntity
     {
     }
 
-    public override int getTexture(int side)
-    {
-        return textureId;
-    }
+    public override int getTexture(int side) => textureId;
 
-    public override void neighborUpdate(World world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        if (id > 0 && Block.Blocks[id].canEmitRedstonePower())
+        if (!(@event.BlockId > 0 && Blocks[@event.BlockId].canEmitRedstonePower()))
         {
-            bool isPowered = world.isStrongPowered(x, y, z);
-            BlockEntityNote blockEntity = (BlockEntityNote)world.getBlockEntity(x, y, z);
-            if (blockEntity.powered != isPowered)
+            return;
+        }
+
+        bool isPowered = @event.World.Redstone.IsStrongPowered(@event.X, @event.Y, @event.Z);
+        BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
+        if (blockEntity != null && blockEntity.powered != isPowered)
+        {
+            if (isPowered)
             {
-                if (isPowered)
-                {
-                    blockEntity.playNote(world, x, y, z);
-                }
-
-                blockEntity.powered = isPowered;
+                blockEntity.playNote(@event.World, @event.X, @event.Y, @event.Z);
             }
-        }
 
+            blockEntity.powered = isPowered;
+        }
     }
 
-    public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
+    public override bool onUse(OnUseEvent @event)
     {
-        if (world.isRemote)
+        if (@event.World.IsRemote)
         {
             return true;
         }
-        else
+
+        BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
+        if (blockEntity == null)
         {
-            BlockEntityNote blockEntity = (BlockEntityNote)world.getBlockEntity(x, y, z);
-            blockEntity.cycleNote();
-            blockEntity.playNote(world, x, y, z);
-            return true;
+            return false;
+        }
+
+        blockEntity.cycleNote();
+        blockEntity.playNote(@event.World, @event.X, @event.Y, @event.Z);
+        return true;
+    }
+
+    public override void onBlockBreakStart(OnBlockBreakStartEvent @event)
+    {
+        if (!@event.World.IsRemote)
+        {
+            BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
+            blockEntity?.playNote(@event.World, @event.X, @event.Y, @event.Z);
         }
     }
 
-    public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
-    {
-        if (!world.isRemote)
-        {
-            BlockEntityNote blockEntity = (BlockEntityNote)world.getBlockEntity(x, y, z);
-            blockEntity.playNote(world, x, y, z);
-        }
-    }
+    public override BlockEntity getBlockEntity() => new BlockEntityNote();
 
-    protected override BlockEntity getBlockEntity()
+    public override void onBlockAction(OnBlockActionEvent @event)
     {
-        return new BlockEntityNote();
-    }
-
-    public override void onBlockAction(World world, int x, int y, int z, int data1, int data2)
-    {
-        float pitch = (float)Math.Pow(2.0D, (double)(data2 - 12) / 12.0D);
+        float pitch = (float)Math.Pow(2.0D, (@event.Data2 - 12) / 12.0D);
         string instrumentName = "harp";
-        if (data1 == 1)
+        if (@event.Data1 == 1)
         {
             instrumentName = "bd";
         }
 
-        if (data1 == 2)
+        if (@event.Data1 == 2)
         {
             instrumentName = "snare";
         }
 
-        if (data1 == 3)
+        if (@event.Data1 == 3)
         {
             instrumentName = "hat";
         }
 
-        if (data1 == 4)
+        if (@event.Data1 == 4)
         {
             instrumentName = "bassattack";
         }
 
-        world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "note." + instrumentName, 3.0F, pitch);
-        world.addParticle("note", (double)x + 0.5D, (double)y + 1.2D, (double)z + 0.5D, (double)data2 / 24.0D, 0.0D, 0.0D);
+        @event.World.Broadcaster.PlaySoundAtPos(@event.X + 0.5D, @event.Y + 0.5D, @event.Z + 0.5D, "note." + instrumentName, 3.0F, pitch);
+        @event.World.Broadcaster.AddParticle("note", @event.X + 0.5D, @event.Y + 1.2D, @event.Z + 0.5D, @event.Data2 / 24.0D, 0.0D, 0.0D);
     }
 }

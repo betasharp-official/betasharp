@@ -2,6 +2,7 @@ using System.Reflection;
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Items;
+using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
@@ -15,7 +16,7 @@ internal static class ItemCommands
         BuildItemLookupTables();
     }
 
-    public static void Give(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Give(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (args.Length < 1) { output.SendMessage("Usage: give <item> [count]"); return; }
 

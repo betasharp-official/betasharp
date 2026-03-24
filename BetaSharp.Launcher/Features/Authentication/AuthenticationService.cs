@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,8 +14,7 @@ internal sealed class AuthenticationService
     private readonly ILogger<AuthenticationService> _logger;
     private readonly SystemWebViewOptions _webViewOptions;
     private readonly IPublicClientApplication _application;
-
-    private bool _initialized;
+    private readonly string[] _scopes = ["XboxLive.signin offline_access"];
 
     public AuthenticationService(ILogger<AuthenticationService> logger)
     {
@@ -43,54 +43,76 @@ internal sealed class AuthenticationService
             .Build();
     }
 
-    public async Task<string> AuthenticateAsync()
+    public async Task InitializeAsync()
     {
-        if (!_initialized)
-        {
-            _logger.LogInformation("Initializing authentication service");
+        _logger.LogInformation("Initializing authentication service");
 
-            string path = Path.Combine(App.Folder, "betasharp.launcher.cache");
+        string path = Path.Combine(App.Folder, "betasharp.launcher.cache");
 
-            var properties = new StorageCreationPropertiesBuilder(Path.GetFileName(path), Path.GetDirectoryName(path))
-                .WithLinuxKeyring(
-                    "betasharp.launcher",
-                    MsalCacheHelper.LinuxKeyRingDefaultCollection,
-                    "MSAL cache for BetaSharp's launcher",
-                    new KeyValuePair<string, string>("Version", "1"),
-                    new KeyValuePair<string, string>("Application", "BetaSharp.Launcher"))
-                .WithMacKeyChain("betasharp.launcher", "betasharp")
-                .Build();
+        var properties = new StorageCreationPropertiesBuilder(Path.GetFileName(path), Path.GetDirectoryName(path))
+            .WithLinuxKeyring(
+                "betasharp.launcher",
+                MsalCacheHelper.LinuxKeyRingDefaultCollection,
+                "MSAL cache for BetaSharp's launcher",
+                new KeyValuePair<string, string>("Version", "1"),
+                new KeyValuePair<string, string>("Application", "BetaSharp.Launcher"))
+            .WithMacKeyChain("betasharp.launcher", "betasharp")
+            .Build();
 
-            var helper = await MsalCacheHelper.CreateAsync(properties);
-            helper.RegisterCache(_application.UserTokenCache);
+        var helper = await MsalCacheHelper.CreateAsync(properties);
+        helper.RegisterCache(_application.UserTokenCache);
 
-            _initialized = true;
-        }
+        _logger.LogInformation("Finished initializing authentication service");
+    }
 
+    public async Task<string> AuthenticateWebAsync()
+    {
         try
         {
-            var accounts = await _application.GetAccountsAsync();
-
-            var result = await _application
-                .AcquireTokenSilent(["XboxLive.signin offline_access"], accounts.FirstOrDefault())
-                .ExecuteAsync();
-
-            _logger.LogInformation("Authenticated silently for Microsoft account");
-
-            return result.AccessToken;
+            return await AuthenticateSilentAsync();
         }
         catch (MsalUiRequiredException)
         {
-            _logger.LogInformation("Authenticated interactively for Microsoft account");
-
-            // Find a way to use system brokers.
             var result = await _application
-                .AcquireTokenInteractive(["XboxLive.signin offline_access"])
+                .AcquireTokenInteractive(_scopes)
                 .WithUseEmbeddedWebView(false)
                 .WithSystemWebViewOptions(_webViewOptions)
                 .ExecuteAsync();
 
+            _logger.LogInformation("Finished authentication via Web");
+
             return result.AccessToken;
         }
+    }
+
+    public async Task<string> AuthenticateCodeAsync(Func<DeviceCodeResult, Task> callback)
+    {
+        try
+        {
+            return await AuthenticateSilentAsync();
+        }
+        catch (MsalUiRequiredException)
+        {
+            var result = await _application
+                .AcquireTokenWithDeviceCode(_scopes, callback)
+                .ExecuteAsync();
+
+            _logger.LogInformation("Finished authentication via code flow");
+
+            return result.AccessToken;
+        }
+    }
+
+    private async Task<string> AuthenticateSilentAsync()
+    {
+        var accounts = await _application.GetAccountsAsync();
+
+        var result = await _application
+            .AcquireTokenSilent(_scopes, accounts.FirstOrDefault())
+            .ExecuteAsync();
+
+        _logger.LogInformation("Finished authentication silently");
+
+        return result.AccessToken;
     }
 }

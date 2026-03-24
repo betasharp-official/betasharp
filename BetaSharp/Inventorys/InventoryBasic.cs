@@ -1,6 +1,5 @@
 using BetaSharp.Entities;
 using BetaSharp.Items;
-using java.util;
 
 namespace BetaSharp.Inventorys;
 
@@ -10,7 +9,6 @@ public class InventoryBasic : IInventory
     private string inventoryTitle;
     private int slotsCount;
     private ItemStack[] inventoryContents;
-    private List field_20073_d;
 
     public InventoryBasic(string inventoryTitle, int slotsCount)
     {
@@ -24,7 +22,7 @@ public class InventoryBasic : IInventory
         return inventoryContents[slotIndex];
     }
 
-    public ItemStack removeStack(int slotIndex, int amount)
+    public ItemStack? removeStack(int slotIndex, int amount)
     {
         if (inventoryContents[slotIndex] != null)
         {
@@ -82,14 +80,6 @@ public class InventoryBasic : IInventory
 
     public void markDirty()
     {
-        if (field_20073_d != null)
-        {
-            for (int slotIndex = 0; slotIndex < field_20073_d.size(); ++slotIndex)
-            {
-                ((IInvBasic)field_20073_d.get(slotIndex)).func_20134_a(this);
-            }
-        }
-
     }
 
     public bool canPlayerUse(EntityPlayer entityPlayer)

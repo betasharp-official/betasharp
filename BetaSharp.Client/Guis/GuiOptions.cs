@@ -79,7 +79,7 @@ public class GuiOptions : GuiScreen
                 break;
             case ButtonControls:
                 Game.options.SaveOptions();
-                Game.displayGuiScreen(new GuiControls(this, _options));
+                Game.displayGuiScreen(new GuiAllControls(this, _options));
                 break;
             case ButtonDone:
                 Game.options.SaveOptions();

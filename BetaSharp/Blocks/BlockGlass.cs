@@ -1,5 +1,4 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Blocks;
 
@@ -9,13 +8,7 @@ internal class BlockGlass : BlockBreakable
     {
     }
 
-    public override int getDroppedItemCount(JavaRandom random)
-    {
-        return 0;
-    }
+    public override int getDroppedItemCount() => 0;
 
-    public override int getRenderLayer()
-    {
-        return 0;
-    }
+    public override int getRenderLayer() => 0;
 }

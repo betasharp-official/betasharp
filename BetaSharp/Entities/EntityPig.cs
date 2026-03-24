@@ -1,15 +1,16 @@
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
 public class EntityPig : EntityAnimal
 {
+    public override EntityType Type => EntityRegistry.Pig;
     public readonly SyncedProperty<bool> Saddled;
 
-    public EntityPig(World world) : base(world)
+    public EntityPig(IWorldContext world) : base(world)
     {
         texture = "/mob/pig.png";
         setBoundingBoxSpacing(0.9F, 0.9F);
@@ -45,7 +46,7 @@ public class EntityPig : EntityAnimal
 
     public override bool interact(EntityPlayer player)
     {
-        if (!Saddled.Value || world.isRemote || passenger != null && passenger != player)
+        if (!Saddled.Value || world.IsRemote || passenger != null && passenger != player)
         {
             return false;
         }
@@ -63,7 +64,7 @@ public class EntityPig : EntityAnimal
 
     public override void onStruckByLightning(EntityLightningBolt bolt)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             EntityPigZombie pigZombie = new EntityPigZombie(world);
             pigZombie.setPositionAndAnglesKeepPrevAngles(x, y, z, yaw, pitch);

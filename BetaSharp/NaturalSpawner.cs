@@ -1,10 +1,10 @@
-using System.Xml;
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.PathFinding;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
-using BetaSharp.Worlds.Biomes;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
+using BetaSharp.Worlds.Generation.Biomes;
 
 namespace BetaSharp;
 
@@ -16,30 +16,30 @@ internal static class NaturalSpawner
 
     private static readonly HashSet<ChunkPos> ChunksForSpawning = [];
 
-    private static readonly Func<World, EntityLiving>[] Monsters =
+    private static readonly Func<IWorldContext, EntityLiving>[] Monsters =
     [
         w => new EntitySpider(w),
         w => new EntityZombie(w),
         w => new EntitySkeleton(w),
     ];
 
-    private static BlockPos GetRandomSpawningPointInChunk(World world, PathFinder pathFinder, int centerX, int centerZ)
+    private static BlockPos GetRandomSpawningPointInChunk(IWorldContext world, PathFinder pathFinder, int centerX, int centerZ)
     {
-        pathFinder.SetWorld(world);
-        int x = centerX + world.random.NextInt(16);
-        int y = world.random.NextInt(128);
-        int z = centerZ + world.random.NextInt(16);
+        pathFinder.SetWorld(world.Reader);
+        int x = centerX + world.Random.NextInt(16);
+        int y = world.Random.NextInt(128);
+        int z = centerZ + world.Random.NextInt(16);
         return new BlockPos(x, y, z);
     }
 
-    internal static void DoSpawning(World world, PathFinder pathFinder, bool spawnHostile, bool spawnPeaceful)
+    internal static void DoSpawning(IWorldContext world, PathFinder pathFinder, bool spawnHostile, bool spawnPeaceful)
     {
-        pathFinder.SetWorld(world);
+        pathFinder.SetWorld(world.Reader);
         if (!spawnHostile && !spawnPeaceful) return;
 
         ChunksForSpawning.Clear();
 
-        foreach (var p in world.players)
+        foreach (var p in world.Entities.Players)
         {
             int chunkX = MathHelper.Floor(p.x / 16.0D);
             int chunkZ = MathHelper.Floor(p.z / 16.0D);
@@ -53,23 +53,23 @@ internal static class NaturalSpawner
             }
         }
 
-        Vec3i worldSpawn = world.getSpawnPos();
+        Vec3i worldSpawn = world.Properties.GetSpawnPos();
         foreach (var creatureKind in CreatureKind.Values)
         {
             if (((!creatureKind.Peaceful && spawnHostile) || (creatureKind.Peaceful && spawnPeaceful)) &&
-                world.CountEntitiesOfType(creatureKind.EntityType) <=
+                world.Entities.CountEntitiesOfType(creatureKind.EntityType) <=
                 creatureKind.MobCap * ChunksForSpawning.Count / 256)
             {
                 foreach (var chunk in ChunksForSpawning)
                 {
-                    Biome biome = world.getBiomeSource().GetBiome(chunk);
+                    Biome biome = world.Dimension.BiomeSource.GetBiome(chunk);
                     var spawnSelector = biome.GetSpawnableList(creatureKind);
                     if (spawnSelector.Empty) break;
-                    SpawnListEntry toSpawn = spawnSelector.GetNext(world.random);
+                    SpawnListEntry toSpawn = spawnSelector.GetNext(world.Random);
 
                     BlockPos spawnPos = GetRandomSpawningPointInChunk(world, pathFinder, chunk.X * 16, chunk.Z * 16);
-                    if (world.shouldSuffocate(spawnPos.x, spawnPos.y, spawnPos.z)) continue;
-                    if (world.getMaterial(spawnPos.x, spawnPos.y, spawnPos.z) != creatureKind.SpawnMaterial) continue;
+                    if (world.Reader.ShouldSuffocate(spawnPos.x, spawnPos.y, spawnPos.z)) continue;
+                    if (world.Reader.GetMaterial(spawnPos.x, spawnPos.y, spawnPos.z) != creatureKind.SpawnMaterial) continue;
 
                     int spawnedCount = 0;
                     bool breakToNextChunk = false;
@@ -82,24 +82,28 @@ internal static class NaturalSpawner
 
                         for (int j = 0; j < 4 && !breakToNextChunk; ++j)
                         {
-                            x += world.random.NextInt(SpawnCloseness) - world.random.NextInt(SpawnCloseness);
-                            y += world.random.NextInt(1) - world.random.NextInt(1);
-                            z += world.random.NextInt(SpawnCloseness) - world.random.NextInt(SpawnCloseness);
-                            if (creatureKind.CanSpawnAtLocation(world, x, y, z))
+                            x += world.Random.NextInt(SpawnCloseness) - world.Random.NextInt(SpawnCloseness);
+                            y += world.Random.NextInt(1) - world.Random.NextInt(1);
+                            z += world.Random.NextInt(SpawnCloseness) - world.Random.NextInt(SpawnCloseness);
+                            if (creatureKind.CanSpawnAtLocation(world.Reader, x, y, z))
                             {
                                 Vec3D entityPos = new Vec3D(x + 0.5D, y, z + 0.5D);
-                                if (world.getClosestPlayer(entityPos.x, entityPos.y, entityPos.z, SpawnMinRadius) !=
-                                    null) continue;
-                                if (entityPos.squareDistanceTo((Vec3D)worldSpawn) < SpawnMinRadius * SpawnMinRadius)
-                                    continue;
+
+                                if (world.Entities.GetClosestPlayer(entityPos.x, entityPos.y, entityPos.z, SpawnMinRadius) != null) continue;
+
+                                if (entityPos.squareDistanceTo((Vec3D)worldSpawn) < SpawnMinRadius * SpawnMinRadius) continue;
+
                                 EntityLiving entity = toSpawn.Factory(world);
 
                                 entity.setPositionAndAnglesKeepPrevAngles(entityPos.x, entityPos.y, entityPos.z,
-                                    world.random.NextFloat() * 360.0F, 0.0F);
+                                    world.Random.NextFloat() * 360.0F, 0.0F);
+
                                 if (entity.canSpawn())
                                 {
                                     spawnedCount++;
-                                    world.SpawnEntity(entity);
+
+                                    world.Entities.SpawnEntity(entity);
+
                                     entity.PostSpawn();
                                     if (spawnedCount >= entity.getMaxSpawnedInChunk())
                                     {
@@ -114,17 +118,17 @@ internal static class NaturalSpawner
         }
     }
 
-    internal static bool SpawnMonstersAndWakePlayers(World world, PathFinder pathFinder, List<EntityPlayer> players)
+    internal static bool SpawnMonstersAndWakePlayers(IWorldContext world, List<EntityPlayer> players)
     {
-        pathFinder.SetWorld(world);
+        world.Pathing.SetWorld(world.Reader);
         bool monstersSpawned = false;
         foreach (var player in players)
         {
             for (int i = 0; i < 20; ++i)
             {
-                int spawnX = MathHelper.Floor(player.x) + world.random.NextInt(32) - world.random.NextInt(32);
-                int spawnZ = MathHelper.Floor(player.z) + world.random.NextInt(32) - world.random.NextInt(32);
-                int spawnY = MathHelper.Floor(player.y) + world.random.NextInt(16) - world.random.NextInt(16);
+                int spawnX = MathHelper.Floor(player.x) + world.Random.NextInt(32) - world.Random.NextInt(32);
+                int spawnZ = MathHelper.Floor(player.z) + world.Random.NextInt(32) - world.Random.NextInt(32);
+                int spawnY = MathHelper.Floor(player.y) + world.Random.NextInt(16) - world.Random.NextInt(16);
                 if (spawnY < 1)
                 {
                     spawnY = 1;
@@ -134,15 +138,15 @@ internal static class NaturalSpawner
                     spawnY = 128;
                 }
 
-                int r = world.random.NextInt(Monsters.Length);
+                int r = world.Random.NextInt(Monsters.Length);
 
                 int newSpawnY;
                 for (newSpawnY = spawnY; newSpawnY > 2; --newSpawnY)
                 {
-                    if (world.shouldSuffocate(spawnX, newSpawnY - 1, spawnZ)) break;
+                    if (world.Reader.ShouldSuffocate(spawnX, newSpawnY - 1, spawnZ)) break;
                 }
 
-                while (!CreatureKind.Monster.CanSpawnAtLocation(world, spawnX, newSpawnY, spawnZ) &&
+                while (!CreatureKind.Monster.CanSpawnAtLocation(world.Reader, spawnX, newSpawnY, spawnZ) &&
                        newSpawnY < spawnY + 16 && newSpawnY < 128)
                 {
                     ++newSpawnY;
@@ -152,25 +156,26 @@ internal static class NaturalSpawner
                 {
                     EntityLiving entity = Monsters[r](world);
 
-                    entity.setPositionAndAnglesKeepPrevAngles(spawnX + 0.5D, spawnY, spawnZ + 0.5D,
-                        world.random.NextFloat() * 360.0F, 0.0F);
+                    // Feet must be on the validated air column (newSpawnY), not random spawnY — spawnY
+                    // can be inside stone and collision resolution rockets mobs to the surface.
+                    entity.setPositionAndAnglesKeepPrevAngles(spawnX + 0.5D, newSpawnY, spawnZ + 0.5D,
+                        world.Random.NextFloat() * 360.0F, 0.0F);
                     if (entity.canSpawn())
                     {
-                        var pathEntity = pathFinder.CreateEntityPathTo(entity, player, 32.0F);
+                        var pathEntity = world.Pathing.findPath(entity, player, 32.0F);
                         if (pathEntity != null && pathEntity.PathLength > 1)
                         {
-                            PathPoint pathPoint = pathEntity.GetFinalPoint();
+                            PathPoint? pathPoint = pathEntity.GetFinalPoint();
                             if (Math.Abs(pathPoint.X - player.x) < 1.5D && Math.Abs(pathPoint.Z - player.z) < 1.5D &&
                                 Math.Abs(pathPoint.Y - player.y) < 1.5D)
                             {
                                 Vec3i wakeUpPos =
-                                    BlockBed.findWakeUpPosition(world, MathHelper.Floor(player.x),
+                                    BlockBed.findWakeUpPosition(world.Reader, MathHelper.Floor(player.x),
                                         MathHelper.Floor(player.y), MathHelper.Floor(player.z), 1) ??
                                     new Vec3i(spawnX, newSpawnY + 1, spawnZ);
 
-                                entity.setPositionAndAnglesKeepPrevAngles((double)((float)wakeUpPos.X + 0.5F),
-                                    (double)wakeUpPos.Y, (double)((float)wakeUpPos.Z + 0.5F), 0.0F, 0.0F);
-                                world.SpawnEntity(entity);
+                                entity.setPositionAndAnglesKeepPrevAngles(wakeUpPos.X + 0.5F,wakeUpPos.Y, wakeUpPos.Z + 0.5F, 0.0F, 0.0F);
+                                world.Entities.SpawnEntity(entity);
                                 entity.PostSpawn();
                                 player.wakeUp(true, false, false);
                                 entity.playLivingSound();

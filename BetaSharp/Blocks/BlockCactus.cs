@@ -1,59 +1,53 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
 internal class BlockCactus : Block
 {
+    public BlockCactus(int id, int textureId) : base(id, textureId, Material.Cactus) => setTickRandomly(true);
 
-    public BlockCactus(int id, int textureId) : base(id, textureId, Material.Cactus)
+    public override void onTick(OnTickEvent @event)
     {
-        setTickRandomly(true);
-    }
-
-    public override void onTick(World world, int x, int y, int z, JavaRandom random)
-    {
-        if (world.isAir(x, y + 1, z))
+        if (@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z))
         {
             int heightBelow;
-            for (heightBelow = 1; world.getBlockId(x, y - heightBelow, z) == id; ++heightBelow)
+            for (heightBelow = 1; @event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == id; ++heightBelow)
             {
             }
 
             if (heightBelow < 3)
             {
-                int growthStage = world.getBlockMeta(x, y, z);
+                int growthStage = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
                 if (growthStage == 15)
                 {
-                    world.setBlock(x, y + 1, z, id);
-                    world.setBlockMeta(x, y, z, 0);
+                    @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, id);
+                    @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 0);
                 }
                 else
                 {
-                    world.setBlockMeta(x, y, z, growthStage + 1);
+                    @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, growthStage + 1);
                 }
             }
         }
-
     }
 
-    public override Box? getCollisionShape(World world, int x, int y, int z)
+    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
         float edgeInset = 1.0F / 16.0F;
-        return new Box((double)((float)x + edgeInset), (double)y, (double)((float)z + edgeInset), (double)((float)(x + 1) - edgeInset), (double)((float)(y + 1) - edgeInset), (double)((float)(z + 1) - edgeInset));
+        return new Box(x + edgeInset, y, z + edgeInset, x + 1 - edgeInset, y + 1 - edgeInset, z + 1 - edgeInset);
     }
 
-    public override Box getBoundingBox(World world, int x, int y, int z)
+    public override Box getBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
         float edgeInset = 1.0F / 16.0F;
-        return new Box((double)((float)x + edgeInset), (double)y, (double)((float)z + edgeInset), (double)((float)(x + 1) - edgeInset), (double)(y + 1), (double)((float)(z + 1) - edgeInset));
+        return new Box(x + edgeInset, y, z + edgeInset, x + 1 - edgeInset, y + 1, z + 1 - edgeInset);
     }
 
     public override int getTexture(int side)
     {
-        return side == 1 ? textureId - 1 : (side == 0 ? textureId + 1 : textureId);
+        return side == 1 ? textureId - 1 : side == 0 ? textureId + 1 : textureId;
     }
 
     public override bool isFullCube()
@@ -71,48 +65,54 @@ internal class BlockCactus : Block
         return BlockRendererType.Cactus;
     }
 
-    public override bool canPlaceAt(World world, int x, int y, int z)
+    public override bool canPlaceAt(CanPlaceAtContext evt)
     {
-        return !base.canPlaceAt(world, x, y, z) ? false : canGrow(world, x, y, z);
+        return !base.canPlaceAt(evt) ? false : canGrow(evt.World.Reader, evt.X, evt.Y, evt.Z);
     }
 
-    public override void neighborUpdate(World world, int x, int y, int z, int id)
-    {
-        if (!canGrow(world, x, y, z))
-        {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
-        }
 
-    }
-
-    public override bool canGrow(World world, int x, int y, int z)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        if (world.getMaterial(x - 1, y, z).IsSolid)
+        if (!canGrow(@event))
         {
-            return false;
-        }
-        else if (world.getMaterial(x + 1, y, z).IsSolid)
-        {
-            return false;
-        }
-        else if (world.getMaterial(x, y, z - 1).IsSolid)
-        {
-            return false;
-        }
-        else if (world.getMaterial(x, y, z + 1).IsSolid)
-        {
-            return false;
-        }
-        else
-        {
-            int blockBelowId = world.getBlockId(x, y - 1, z);
-            return blockBelowId == Block.Cactus.id || blockBelowId == Block.Sand.id;
+            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
     }
 
-    public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
+    public override bool canGrow(OnTickEvent @event)
     {
-        entity.damage((Entity)null, 1);
+        return canGrow(@event.World.Reader, @event.X, @event.Y, @event.Z);
+    }
+
+    private static bool canGrow(WorldReader world, int x, int y, int z)
+    {
+        if (world.GetMaterial(x - 1, y, z).IsSolid)
+        {
+            return false;
+        }
+
+        if (world.GetMaterial(x + 1, y, z).IsSolid)
+        {
+            return false;
+        }
+
+        if (world.GetMaterial(x, y, z - 1).IsSolid)
+        {
+            return false;
+        }
+
+        if (world.GetMaterial(x, y, z + 1).IsSolid)
+        {
+            return false;
+        }
+
+        int blockBelowId = world.GetBlockId(x, y - 1, z);
+        return blockBelowId == Cactus.id || blockBelowId == Sand.id;
+    }
+
+    public override void onEntityCollision(OnEntityCollisionEvent ctx)
+    {
+        ctx.Entity.damage(null, 1);
     }
 }

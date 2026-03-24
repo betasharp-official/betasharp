@@ -1,15 +1,12 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
 using BetaSharp.Items;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
 internal class BlockRedstoneOre : Block
 {
-
-    private bool lit;
+    private readonly bool lit;
 
     public BlockRedstoneOre(int id, int textureId, bool lit) : base(id, textureId, Material.Stone)
     {
@@ -21,112 +18,97 @@ internal class BlockRedstoneOre : Block
         this.lit = lit;
     }
 
-    public override int getTickRate()
+    public override int getTickRate() => 30;
+
+    public override void onBlockBreakStart(OnBlockBreakStartEvent @event)
     {
-        return 30;
+        light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        base.onBlockBreakStart(@event);
     }
 
-    public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
+    public override void onSteppedOn(OnEntityStepEvent @event)
     {
-        light(world, x, y, z);
-        base.onBlockBreakStart(world, x, y, z, player);
+        light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        base.onSteppedOn(@event);
     }
 
-    public override void onSteppedOn(World world, int x, int y, int z, Entity entity)
+    public override bool onUse(OnUseEvent @event)
     {
-        light(world, x, y, z);
-        base.onSteppedOn(world, x, y, z, entity);
+        light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        return base.onUse(@event);
     }
 
-    public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
+    private void light(IBlockWrite worldWrite, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        light(world, x, y, z);
-        return base.onUse(world, x, y, z, player);
-    }
-
-    private void light(World world, int x, int y, int z)
-    {
-        spawnParticles(world, x, y, z);
-        if (id == Block.RedstoneOre.id)
+        spawnParticles(worldRead, broadcaster, x, y, z);
+        if (worldRead.GetBlockId(x, y, z) == RedstoneOre.id)
         {
-            world.setBlock(x, y, z, Block.LitRedstoneOre.id);
+            worldWrite.SetBlock(x, y, z, LitRedstoneOre.id);
         }
-
     }
 
-    public override void onTick(World world, int x, int y, int z, JavaRandom random)
+    public override void onTick(OnTickEvent @event)
     {
-        if (id == Block.LitRedstoneOre.id)
+        if (id == LitRedstoneOre.id)
         {
-            world.setBlock(x, y, z, Block.RedstoneOre.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, RedstoneOre.id);
         }
-
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return Item.Redstone.id;
-    }
+    public override int getDroppedItemId(int blockMeta) => Item.Redstone.id;
 
-    public override int getDroppedItemCount(JavaRandom random)
-    {
-        return 4 + random.NextInt(2);
-    }
+    public override int getDroppedItemCount() => 4 + Random.Shared.Next(2);
 
-    public override void randomDisplayTick(World world, int x, int y, int z, JavaRandom random)
+    public override void randomDisplayTick(OnTickEvent ctx)
     {
         if (lit)
         {
-            spawnParticles(world, x, y, z);
+            spawnParticles(ctx.World.Reader, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
         }
-
     }
 
-    private void spawnParticles(World world, int x, int y, int z)
+    private void spawnParticles(IBlockReader reader, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        JavaRandom random = world.random;
         double faceOffset = 1.0D / 16.0D;
-
         for (int direction = 0; direction < 6; ++direction)
         {
-            double particleX = (double)((float)x + random.NextFloat());
-            double particleY = (double)((float)y + random.NextFloat());
-            double particleZ = (double)((float)z + random.NextFloat());
-            if (direction == 0 && !world.isOpaque(x, y + 1, z))
+            double particleX = x + Random.Shared.NextSingle();
+            double particleY = y + Random.Shared.NextSingle();
+            double particleZ = z + Random.Shared.NextSingle();
+            if (direction == 0 && !reader.IsOpaque(x, y + 1, z))
             {
-                particleY = (double)(y + 1) + faceOffset;
+                particleY = y + 1 + faceOffset;
             }
 
-            if (direction == 1 && !world.isOpaque(x, y - 1, z))
+            if (direction == 1 && !reader.IsOpaque(x, y - 1, z))
             {
-                particleY = (double)(y + 0) - faceOffset;
+                particleY = y + 0 - faceOffset;
             }
 
-            if (direction == 2 && !world.isOpaque(x, y, z + 1))
+            if (direction == 2 && !reader.IsOpaque(x, y, z + 1))
             {
-                particleZ = (double)(z + 1) + faceOffset;
+                particleZ = z + 1 + faceOffset;
             }
 
-            if (direction == 3 && !world.isOpaque(x, y, z - 1))
+            if (direction == 3 && !reader.IsOpaque(x, y, z - 1))
             {
-                particleZ = (double)(z + 0) - faceOffset;
+                particleZ = z + 0 - faceOffset;
             }
 
-            if (direction == 4 && !world.isOpaque(x + 1, y, z))
+            if (direction == 4 && !reader.IsOpaque(x + 1, y, z))
             {
-                particleX = (double)(x + 1) + faceOffset;
+                particleX = x + 1 + faceOffset;
             }
 
-            if (direction == 5 && !world.isOpaque(x - 1, y, z))
+            if (direction == 5 && !reader.IsOpaque(x - 1, y, z))
             {
-                particleX = (double)(x + 0) - faceOffset;
+                particleX = x + 0 - faceOffset;
             }
 
-            if (particleX < (double)x || particleX > (double)(x + 1) || particleY < 0.0D || particleY > (double)(y + 1) || particleZ < (double)z || particleZ > (double)(z + 1))
+            if (particleX < x || particleX > x + 1 || particleY < 0.0D || particleY > y + 1 || particleZ < z || particleZ > z + 1)
             {
-                world.addParticle("reddust", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+                broadcaster.AddParticle("reddust", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
             }
         }
-
     }
 }

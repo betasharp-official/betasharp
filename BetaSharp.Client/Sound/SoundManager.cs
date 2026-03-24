@@ -293,7 +293,7 @@ public class SoundManager
         Listener.UpVector = new Vector3f(0.0F, 1.0F, 0.0F);
     }
 
-    public void PlayStreaming(string name, float x, float y, float z, float volume, float pitch)
+    public void PlayStreaming(string? name, float x, float y, float z, float volume, float pitch)
     {
         if (!(_started && _options.SoundVolume != 0.0F)) return;
 

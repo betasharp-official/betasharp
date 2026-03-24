@@ -8,14 +8,14 @@ namespace BetaSharp.Launcher.Features.Mojang;
 
 internal sealed class MojangClient(IHttpClientFactory clientFactory)
 {
-    private const string Base = "https://api.minecraftservices.com";
+    private const string Url = "https://api.minecraftservices.com";
 
     public async Task<TokenResponse> GetTokenAsync(string token, string hash)
     {
         var client = clientFactory.CreateClient(nameof(MojangClient));
 
         return await client.PostAsync(
-            $"{Base}/authentication/login_with_xbox",
+            $"{Url}/authentication/login_with_xbox",
             new TokenRequest { Value = $"XBL3.0 x={hash};{token}" },
             MojangSerializerContext.Default.TokenRequest,
             MojangSerializerContext.Default.TokenResponse);
@@ -27,7 +27,7 @@ internal sealed class MojangClient(IHttpClientFactory clientFactory)
 
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-        return await client.GetAsync($"{Base}/entitlements", MojangSerializerContext.Default.EntitlementsResponse);
+        return await client.GetAsync($"{Url}/entitlements", MojangSerializerContext.Default.EntitlementsResponse);
     }
 
     public async Task<ProfileResponse> GetProfileAsync(string token)
@@ -36,6 +36,6 @@ internal sealed class MojangClient(IHttpClientFactory clientFactory)
 
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-        return await client.GetAsync($"{Base}/minecraft/profile", MojangSerializerContext.Default.ProfileResponse);
+        return await client.GetAsync($"{Url}/minecraft/profile", MojangSerializerContext.Default.ProfileResponse);
     }
 }

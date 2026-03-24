@@ -2,8 +2,9 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Stats;
-using BetaSharp.Worlds;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Items;
@@ -173,7 +174,7 @@ public class Item
         return getTextureId(stack.getDamage());
     }
 
-    public virtual bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
+    public virtual bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
         return false;
     }
@@ -183,7 +184,7 @@ public class Item
         return 1.0F;
     }
 
-    public virtual ItemStack use(ItemStack itemStack, World world, EntityPlayer entityPlayer)
+    public virtual ItemStack use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
     {
         return itemStack;
     }
@@ -314,11 +315,11 @@ public class Item
         return 0xFFFFFF;
     }
 
-    public virtual void inventoryTick(ItemStack itemStack, World world, Entity entity, int slotIndex, bool shouldUpdate)
+    public virtual void inventoryTick(ItemStack itemStack, IWorldContext world, Entity entity, int slotIndex, bool shouldUpdate)
     {
     }
 
-    public virtual void onCraft(ItemStack itemStack, World world, EntityPlayer entityPlayer)
+    public virtual void onCraft(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
     {
     }
 

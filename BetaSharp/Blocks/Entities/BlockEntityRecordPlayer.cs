@@ -4,6 +4,7 @@ namespace BetaSharp.Blocks.Entities;
 
 internal class BlockEntityRecordPlayer : BlockEntity
 {
+    public override BlockEntityType Type => BlockEntity.RecordPlayer;
     public int recordId;
 
     public override void readNbt(NBTTagCompound nbt)

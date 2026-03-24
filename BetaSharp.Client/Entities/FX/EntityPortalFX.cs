@@ -1,6 +1,5 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
@@ -12,7 +11,7 @@ public class EntityPortalFX : EntityFX
     private readonly double spawnY;
     private readonly double spawnZ;
 
-    public EntityPortalFX(World world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : base(world, x, y, z, velocityX, velocityY, velocityZ)
+    public EntityPortalFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : base(world, x, y, z, velocityX, velocityY, velocityZ)
     {
         base.velocityX = velocityX;
         base.velocityY = velocityY;

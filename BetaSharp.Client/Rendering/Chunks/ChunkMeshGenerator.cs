@@ -4,7 +4,8 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering.Chunks;
@@ -125,7 +126,7 @@ internal class ChunkMeshGenerator : IDisposable
                 {
                     for (int x = minX; x < maxX; x++)
                     {
-                        int id = cache.getBlockId(x, y, z);
+                        int id = cache.GetBlockId(x, y, z);
                         if (id <= 0) continue;
 
                         Block b = Block.Blocks[id];
@@ -134,7 +135,7 @@ internal class ChunkMeshGenerator : IDisposable
                         if (blockPass != pass)
                             hasNextPass = true;
                         else
-                            BlockRenderer.RenderBlockByRenderType(cache, b, new BlockPos(x, y, z), tess,renderEngine);
+                            BlockRenderer.RenderBlockByRenderType(cache, cache, b, new BlockPos(x, y, z), renderEngine, tess);
                     }
                 }
             }

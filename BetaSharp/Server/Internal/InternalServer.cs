@@ -1,5 +1,5 @@
 using BetaSharp.Server.Network;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Internal;
@@ -44,7 +44,7 @@ public class InternalServer : BetaSharpServer
             {
                 if (worlds[i] != null)
                 {
-                    worlds[i].difficulty = _initialDifficulty;
+                    worlds[i].SetDifficulty(_initialDifficulty);
                     worlds[i].allowSpawning(_initialDifficulty > 0, true);
                 }
             }
@@ -54,9 +54,9 @@ public class InternalServer : BetaSharpServer
         return result;
     }
 
-    public override java.io.File getFile(string path)
+    public override FileInfo GetFile(string path)
     {
-        return new(System.IO.Path.Combine(_worldPath, path));
+        return new(Path.Combine(_worldPath, path));
     }
 
     public void SetDifficulty(int difficulty)
@@ -70,7 +70,7 @@ public class InternalServer : BetaSharpServer
                 {
                     if (worlds[i] != null)
                     {
-                        worlds[i].difficulty = difficulty;
+                        worlds[i].SetDifficulty(difficulty);
                         worlds[i].allowSpawning(difficulty > 0, true);
                     }
                 }

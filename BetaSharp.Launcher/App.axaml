@@ -8,9 +8,33 @@
     <Application.Styles>
         <FluentTheme />
 
+        <Style Selector="StackPanel">
+            <Setter Property="Spacing" Value="5" />
+        </Style>
+
         <Style Selector="Button">
             <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
             <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+        </Style>
+
+        <Style Selector="Grid">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.5" />
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="Grid.hidden">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="IsVisible" Value="False" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+        </Style>
+
+        <Style Selector="Grid.shown">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="IsVisible" Value="True" />
+            <Setter Property="IsHitTestVisible" Value="True" />
         </Style>
     </Application.Styles>
 </Application>

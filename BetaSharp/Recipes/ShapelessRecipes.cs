@@ -1,7 +1,5 @@
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
-using java.util;
-
 namespace BetaSharp.Recipes;
 
 internal class ShapelessRecipes : IRecipe
@@ -23,7 +21,7 @@ internal class ShapelessRecipes : IRecipe
 
     public bool Matches(InventoryCrafting craftingInventory)
     {
-        List<ItemStack> remainingIngredients = new List<ItemStack>(_recipeItems);
+        List<ItemStack> remainingIngredients = [.. _recipeItems];
 
         for (int row = 0; row < 3; ++row)
         {

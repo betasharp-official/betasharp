@@ -3,6 +3,7 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Profiling;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Worlds.Chunks;
@@ -18,7 +19,7 @@ public class Chunk
     public byte[] HeightMap;
 
     public bool Loaded;
-    public World World;
+    public IWorldContext World;
     public int MinHeightMapValue;
     public readonly int X;
     public readonly int Z;
@@ -32,7 +33,7 @@ public class Chunk
 
     private static readonly ILogger<Chunk> s_logger = Log.Instance.For<Chunk>();
 
-    public Chunk(World world, int x, int z)
+    public Chunk(IWorldContext world, int x, int z)
     {
         BlockEntities = [];
         Entities = new List<Entity>[8];
@@ -51,7 +52,7 @@ public class Chunk
         }
     }
 
-    public Chunk(World world, byte[] blocks, int x, int z) : this(world, x, z)
+    public Chunk(IWorldContext world, byte[] blocks, int x, int z) : this(world, x, z)
     {
         Blocks = blocks;
         Meta = new ChunkNibbleArray(blocks.Length);
@@ -66,7 +67,9 @@ public class Chunk
         return HeightMap[localZ << 4 | localX];
     }
 
-    public virtual void PopulateLight() { }
+    public virtual void PopulateLight()
+    {
+    }
 
     public virtual void PopulateHeightMapOnly()
     {
@@ -112,7 +115,7 @@ public class Chunk
                 HeightMap[localZ << 4 | localX] = (byte)y;
                 if (y < minHeight) minHeight = y;
 
-                if (!World.dimension.HasCeiling)
+                if (!World.Dimension.HasCeiling)
                 {
                     int lightLevel = 15;
                     int currentY = 127;
@@ -124,6 +127,7 @@ public class Chunk
                         {
                             SkyLight.SetNibble(localX, currentY, localZ, lightLevel);
                         }
+
                         --currentY;
                     } while (currentY > 0 && lightLevel > 0);
                 }
@@ -143,7 +147,9 @@ public class Chunk
         Dirty = true;
     }
 
-    public virtual void PopulateBlockLight() { }
+    public virtual void PopulateBlockLight()
+    {
+    }
 
     private void LightGaps(int localX, int localZ)
     {
@@ -159,15 +165,15 @@ public class Chunk
 
     private void LightGap(int worldX, int worldZ, int height)
     {
-        int topY = World.getTopY(worldX, worldZ);
+        int topY = World.Reader.GetTopY(worldX, worldZ);
         if (topY > height)
         {
-            World.queueLightUpdate(LightType.Sky, worldX, height, worldZ, worldX, topY, worldZ);
+            World.Lighting.QueueLightUpdate(LightType.Sky, worldX, height, worldZ, worldX, topY, worldZ);
             Dirty = true;
         }
         else if (topY < height)
         {
-            World.queueLightUpdate(LightType.Sky, worldX, topY, worldZ, worldX, height, worldZ);
+            World.Lighting.QueueLightUpdate(LightType.Sky, worldX, topY, worldZ, worldX, height, worldZ);
             Dirty = true;
         }
     }
@@ -187,7 +193,7 @@ public class Chunk
 
         if (newHeight == oldHeight) return;
 
-        World.setBlocksDirty(localX, localZ, newHeight, oldHeight);
+        World.Broadcaster.SetBlocksDirty(localX, localZ, newHeight, oldHeight);
         HeightMap[localZ << 4 | localX] = (byte)newHeight;
 
         if (newHeight < MinHeightMapValue)
@@ -207,6 +213,7 @@ public class Chunk
                     }
                 }
             }
+
             MinHeightMapValue = min;
         }
 
@@ -222,7 +229,7 @@ public class Chunk
         }
         else
         {
-            World.queueLightUpdate(LightType.Sky, worldX, oldHeight, worldZ, worldX, newHeight, worldZ);
+            World.Lighting.QueueLightUpdate(LightType.Sky, worldX, oldHeight, worldZ, worldX, newHeight, worldZ);
             for (int currY = oldHeight; currY < newHeight; ++currY)
             {
                 SkyLight.SetNibble(localX, currY, localZ, 0);
@@ -251,7 +258,7 @@ public class Chunk
 
         if (newHeight != updateY)
         {
-            World.queueLightUpdate(LightType.Sky, worldX - 1, newHeight, worldZ - 1, worldX + 1, updateY, worldZ + 1);
+            World.Lighting.QueueLightUpdate(LightType.Sky, worldX - 1, newHeight, worldZ - 1, worldX + 1, updateY, worldZ + 1);
         }
 
         Dirty = true;
@@ -262,7 +269,7 @@ public class Chunk
         return Blocks[x << 11 | z << 7 | y] & 255;
     }
 
-    public virtual bool SetBlock(int localX, int y, int localZ, int rawId, int meta)
+    public virtual bool SetBlock(int localX, int y, int localZ, int rawId, int meta, bool notifyBlockPlaced = true)
     {
         byte newId = (byte)rawId;
         int height = HeightMap[localZ << 4 | localX];
@@ -274,14 +281,14 @@ public class Chunk
         int worldZ = Z * 16 + localZ;
         Blocks[localX << 11 | localZ << 7 | y] = newId;
 
-        if (oldId != 0 && !World.isRemote)
+        if (notifyBlockPlaced && oldId != 0 && !World.IsRemote)
         {
-            Block.Blocks[oldId].onBreak(World, worldX, y, worldZ);
+            Block.Blocks[oldId].onBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
         }
 
         Meta.SetNibble(localX, y, localZ, meta);
 
-        if (!World.dimension.HasCeiling)
+        if (!World.Dimension.HasCeiling)
         {
             if (Block.BlockLightOpacity[newId] != 0)
             {
@@ -292,23 +299,23 @@ public class Chunk
                 UpdateHeightMap(localX, y, localZ);
             }
 
-            World.queueLightUpdate(LightType.Sky, worldX, y, worldZ, worldX, y, worldZ);
+            World.Lighting.QueueLightUpdate(LightType.Sky, worldX, y, worldZ, worldX, y, worldZ);
         }
 
-        World.queueLightUpdate(LightType.Block, worldX, y, worldZ, worldX, y, worldZ);
+        World.Lighting.QueueLightUpdate(LightType.Block, worldX, y, worldZ, worldX, y, worldZ);
         LightGaps(localX, localZ);
         Meta.SetNibble(localX, y, localZ, meta);
 
-        if (rawId != 0)
+        if (notifyBlockPlaced && rawId != 0 && !World.IsRemote)
         {
-            Block.Blocks[rawId].onPlaced(World, worldX, y, worldZ);
+            Block.Blocks[rawId].onPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
         }
 
         Dirty = true;
         return true;
     }
 
-    public virtual bool SetBlock(int localX, int y, int localZ, int rawId)
+    public virtual bool SetBlock(int localX, int y, int localZ, int rawId, bool notifyBlockPlaced = true)
     {
         byte newId = (byte)rawId;
         int height = HeightMap[localZ << 4 | localX];
@@ -322,7 +329,7 @@ public class Chunk
 
         if (oldId != 0)
         {
-            Block.Blocks[oldId].onBreak(World, worldX, y, worldZ);
+            Block.Blocks[oldId].onBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
         }
 
         Meta.SetNibble(localX, y, localZ, 0);
@@ -336,13 +343,13 @@ public class Chunk
             UpdateHeightMap(localX, y, localZ);
         }
 
-        World.queueLightUpdate(LightType.Sky, worldX, y, worldZ, worldX, y, worldZ);
-        World.queueLightUpdate(LightType.Block, worldX, y, worldZ, worldX, y, worldZ);
+        World.Lighting.QueueLightUpdate(LightType.Sky, worldX, y, worldZ, worldX, y, worldZ);
+        World.Lighting.QueueLightUpdate(LightType.Block, worldX, y, worldZ, worldX, y, worldZ);
         LightGaps(localX, localZ);
 
-        if (rawId != 0 && !World.isRemote)
+        if (notifyBlockPlaced && rawId != 0 && !World.IsRemote)
         {
-            Block.Blocks[rawId].onPlaced(World, worldX, y, worldZ);
+            Block.Blocks[rawId].onPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
         }
 
         Dirty = true;
@@ -422,20 +429,22 @@ public class Chunk
     {
         BlockPos pos = new(localX, y, localZ);
 
-        if (!BlockEntities.TryGetValue(pos, out BlockEntity? entity))
+        if (BlockEntities.TryGetValue(pos, out BlockEntity? entity))
         {
-            int id = GetBlockId(localX, y, localZ);
-            if (id == 0 || !Block.BlocksWithEntity[id]) return null;
-
-            BlockWithEntity blockWithEntity = (BlockWithEntity)Block.Blocks[id];
-            blockWithEntity.onPlaced(World, X * 16 + localX, y, Z * 16 + localZ);
-            BlockEntities.TryGetValue(pos, out entity);
+            if (entity != null && !entity.isRemoved())
+            {
+                return entity;
+            }
         }
 
-        if (entity != null && entity.isRemoved())
+        int worldX = X * 16 + localX;
+        int worldZ = Z * 16 + localZ;
+
+        entity = World.Entities.GetOrCreateBlockEntity<BlockEntity>(worldX, y, worldZ);
+
+        if (entity != null)
         {
-            BlockEntities.Remove(pos);
-            return null;
+            BlockEntities[pos] = entity;
         }
 
         return entity;
@@ -447,7 +456,7 @@ public class Chunk
         int localZ = blockEntity.Z - Z * 16;
         SetBlockEntity(localX, blockEntity.Y, localZ, blockEntity);
 
-        if (Loaded) World.blockEntities.Add(blockEntity);
+        if (Loaded) World.Entities.BlockEntities.Add(blockEntity);
     }
 
     public virtual void SetBlockEntity(int localX, int y, int localZ, BlockEntity blockEntity)
@@ -482,11 +491,11 @@ public class Chunk
     public virtual void Load()
     {
         Loaded = true;
-        World.processBlockUpdates(BlockEntities.Values);
+        World.Entities.ProcessBlockUpdates(BlockEntities.Values);
 
         foreach (List<Entity> list in Entities)
         {
-            World.addEntities(list);
+            World.Entities.AddEntities(list);
         }
     }
 
@@ -501,9 +510,8 @@ public class Chunk
 
         for (int var3 = 0; var3 < Entities.Length; ++var3)
         {
-            World.unloadEntities(Entities[var3]);
+            World.Entities.UnloadEntities(Entities[var3]);
         }
-
     }
 
     public virtual void MarkDirty() => Dirty = true;
@@ -554,9 +562,9 @@ public class Chunk
 
         if (saveEntities)
         {
-            if (LastSaveHadEntities && World.getTime() != LastSaveTime) return true;
+            if (LastSaveHadEntities && World.GetTime() != LastSaveTime) return true;
         }
-        else if (LastSaveHadEntities && World.getTime() >= LastSaveTime + 600L)
+        else if (LastSaveHadEntities && World.GetTime() >= LastSaveTime + 600L)
         {
             return true;
         }
@@ -633,6 +641,7 @@ public class Chunk
         }
 
         Profiler.Stop(isFullChunk ? "loadFromPacketFull" : "loadFromPacketSmall");
+        Loaded = true;
         return offset;
     }
 
@@ -703,7 +712,7 @@ public class Chunk
 
     public virtual JavaRandom GetSlimeRandom(long scrambler)
     {
-        return new JavaRandom(World.getSeed() + X * X * 4987142 + X * 5947611 + Z * Z * 4392871L + Z * 389711 ^ scrambler);
+        return new JavaRandom(World.Seed + X * X * 4987142 + X * 5947611 + Z * Z * 4392871L + Z * 389711 ^ scrambler);
     }
 
     public virtual bool IsEmpty() => false;

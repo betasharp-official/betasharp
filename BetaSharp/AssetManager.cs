@@ -63,17 +63,7 @@ public class AssetManager
     private static AssetManager? s_instance;
     private static AssetProfile? s_configuredProfile;
 
-    public static AssetManager Instance
-    {
-        get
-        {
-            lock (s_instanceLock)
-            {
-                s_instance ??= new AssetManager(s_configuredProfile ?? AssetProfile.Full);
-                return s_instance;
-            }
-        }
-    }
+    public static AssetManager Instance => s_instance ?? throw new InvalidOperationException("AssetManager was not initialized.");
 
     public static void Initialize(AssetProfile profile)
     {
@@ -172,7 +162,6 @@ public class AssetManager
         defineAsset("gui/unknown_pack.png", AssetType.Binary);
         defineAsset("gui/Pointer.png", AssetType.Binary);
 
-        string[] controllerPlatforms = ["ps3", "ps4", "ps5", "xone"];
         string[] controllerIcons = [
             "back_button", "back_button_pressed", "down_button", "down_button_pressed",
             "dpad_down", "dpad_down_pressed", "dpad_left", "dpad_left_pressed",
@@ -189,7 +178,7 @@ public class AssetManager
             "up_button_pressed"
         ];
 
-        foreach (string platform in controllerPlatforms)
+        foreach (string platform in ControllerType.ControllerTypes.Select(x => x.Key))
         {
             foreach (string icon in controllerIcons)
             {

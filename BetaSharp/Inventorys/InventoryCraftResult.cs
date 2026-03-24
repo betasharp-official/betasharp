@@ -23,7 +23,7 @@ internal class InventoryCraftResult : IInventory
         return "Result";
     }
 
-    public ItemStack removeStack(int slotIndex, int amount)
+    public ItemStack? removeStack(int slotIndex, int amount)
     {
         if (stackResult[slotIndex] != null)
         {

@@ -160,7 +160,7 @@ public class Connection
         return delayedSendQueue.Count;
     }
 
-    private void Reading()
+    private async void Reading()
     {
         while (open && !closed)
         {
@@ -181,7 +181,7 @@ public class Connection
                     break;
                 }
 
-                Task.Delay(10);
+                await Task.Delay(10);
             }
             catch (Exception exception)
             {
@@ -191,7 +191,7 @@ public class Connection
         }
     }
 
-    private void Writing()
+    private async void Writing()
     {
         while (open && !closed)
         {
@@ -231,7 +231,7 @@ public class Connection
 
                 _networkStream.Flush();
 
-                Task.Delay(10);
+                await Task.Delay(10);
             }
             catch (Exception exception)
             {

@@ -1,6 +1,5 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
@@ -9,11 +8,11 @@ public class EntitySnowShovelFX : EntityFX
     readonly float baseScale;
 
 
-    public EntitySnowShovelFX(World world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : this(world, x, y, z, velocityX, velocityY, velocityZ, 1.0F)
+    public EntitySnowShovelFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : this(world, x, y, z, velocityX, velocityY, velocityZ, 1.0F)
     {
     }
 
-    public EntitySnowShovelFX(World world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, float scaleMultiplier) : base(world, x, y, z, velocityX, velocityY, velocityZ)
+    public EntitySnowShovelFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, float scaleMultiplier) : base(world, x, y, z, velocityX, velocityY, velocityZ)
     {
         base.velocityX *= (double)0.1F;
         base.velocityY *= (double)0.1F;

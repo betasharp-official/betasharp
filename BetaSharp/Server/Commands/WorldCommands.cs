@@ -1,12 +1,13 @@
 using BetaSharp.Entities;
 using BetaSharp.Rules;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
 internal static class WorldCommands
 {
-    public static void Time(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Time(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (args.Length < 1)
         {
@@ -29,11 +30,11 @@ internal static class WorldCommands
                 ServerWorld world = server.worlds[i];
                 if (mode == "add")
                 {
-                    world.synchronizeTimeAndUpdates(world.getTime() + timeValue);
+                    world.SetTime(world.GetTime() + timeValue);
                 }
                 else
                 {
-                    world.synchronizeTimeAndUpdates(timeValue);
+                    world.SetTime(timeValue);
                 }
             }
 
@@ -47,7 +48,7 @@ internal static class WorldCommands
         {
             for (int i = 0; i < server.worlds.Length; i++)
             {
-                server.worlds[i].synchronizeTimeAndUpdates(namedTime);
+                server.worlds[i].SetTime(namedTime);
             }
 
             output.SendMessage($"Time set to {args[0]} ({namedTime})");
@@ -59,7 +60,7 @@ internal static class WorldCommands
         output.SendMessage("Named values: sunrise, morning, noon, sunset, night, midnight");
     }
 
-    public static void Weather(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Weather(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (args.Length < 1) { output.SendMessage("Usage: weather <clear|rain|storm>"); return; }
 
@@ -70,17 +71,17 @@ internal static class WorldCommands
             switch (weather)
             {
                 case "clear":
-                    world.globalEntities.Clear();
-                    world.getProperties().IsRaining = false;
-                    world.getProperties().IsThundering = false;
+                    world.Entities.GlobalEntities.Clear();
+                    world.Properties.IsRaining = false;
+                    world.Properties.IsThundering = false;
                     break;
                 case "rain":
-                    world.getProperties().IsRaining = true;
-                    world.getProperties().IsThundering = false;
+                    world.Properties.IsRaining = true;
+                    world.Properties.IsThundering = false;
                     break;
                 case "storm":
-                    world.getProperties().IsRaining = true;
-                    world.getProperties().IsThundering = true;
+                    world.Properties.IsRaining = true;
+                    world.Properties.IsThundering = true;
                     break;
                 default:
                     output.SendMessage("Unknown weather type. Use: clear, rain, or storm");
@@ -91,7 +92,13 @@ internal static class WorldCommands
         output.SendMessage($"Weather set to {weather}.");
     }
 
-    public static void Summon(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void Seed(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
+    {
+        long seed = server.worlds[0].Seed;
+        output.SendMessage($"Seed: {seed}");
+    }
+
+    public static void Summon(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         if (args.Length < 1)
         {
@@ -123,7 +130,7 @@ internal static class WorldCommands
 
         for (int i = 0; i < count; i++)
         {
-            Entity? entity = EntityRegistry.createEntityAt(entityName, world, (float)player.x, (float)player.y, (float)player.z);
+            Entity? entity = EntityRegistry.CreateEntityAt(entityName, world, (float)player.x, (float)player.y, (float)player.z);
             if (entity != null)
             {
                 summoned++;
@@ -140,7 +147,7 @@ internal static class WorldCommands
         }
     }
 
-    public static void KillAll(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void KillAll(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         string filter = args.Length > 0 ? args[0].ToLower() : "all";
         int count = 0;
@@ -148,7 +155,7 @@ internal static class WorldCommands
         for (int w = 0; w < server.worlds.Length; w++)
         {
             ServerWorld world = server.worlds[w];
-            var entities = new List<Entity>(world.entities);
+            var entities = new List<Entity>(world.Entities.Entities);
 
             foreach (Entity entity in entities)
             {
@@ -167,7 +174,7 @@ internal static class WorldCommands
 
                 if (shouldKill)
                 {
-                    world.Remove(entity);
+                    world.Entities.Remove(entity);
                     count++;
                 }
             }
@@ -200,7 +207,7 @@ internal static class WorldCommands
         return false;
     }
 
-    public static void GameRule(BetaSharpServer server, string senderName, string[] args, CommandOutput output)
+    public static void GameRule(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
     {
         ServerPlayerEntity player = server.playerManager.getPlayer(senderName);
         ServerWorld world = player != null ? server.getWorld(player.dimensionId) : server.worlds[0];

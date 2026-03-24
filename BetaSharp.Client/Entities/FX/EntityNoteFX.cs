@@ -1,6 +1,6 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
@@ -9,11 +9,11 @@ public class EntityNoteFX : EntityFX
     readonly float baseScale;
 
 
-    public EntityNoteFX(World world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : this(world, x, y, z, velocityX, velocityY, velocityZ, 2.0F)
+    public EntityNoteFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : this(world, x, y, z, velocityX, velocityY, velocityZ, 2.0F)
     {
     }
 
-    public EntityNoteFX(World world, double x, double y, double z, double notePitch, double _, double __, float scaleMultiplier) : base(world, x, y, z, 0.0D, 0.0D, 0.0D)
+    public EntityNoteFX(IWorldContext world, double x, double y, double z, double notePitch, double _, double __, float scaleMultiplier) : base(world, x, y, z, 0.0D, 0.0D, 0.0D)
     {
         velocityX *= (double)0.01F;
         velocityY *= (double)0.01F;

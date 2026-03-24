@@ -1,6 +1,3 @@
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
-
 namespace BetaSharp.Blocks;
 
 internal class BlockMushroom : BlockPlant
@@ -12,31 +9,24 @@ internal class BlockMushroom : BlockPlant
         setTickRandomly(true);
     }
 
-    public override void onTick(World world, int x, int y, int z, JavaRandom random)
+    public override void onTick(OnTickEvent @event)
     {
-        if (random.NextInt(100) == 0)
+        if (Random.Shared.Next(100) == 0)
         {
-            int tryX = x + random.NextInt(3) - 1;
-            int tryY = y + random.NextInt(2) - random.NextInt(2);
-            int tryZ = z + random.NextInt(3) - 1;
-            if (world.isAir(tryX, tryY, tryZ) && canGrow(world, tryX, tryY, tryZ))
+            int tryX = @event.X + Random.Shared.Next(3) - 1;
+            int tryY = @event.Y + Random.Shared.Next(2) - Random.Shared.Next(2);
+            int tryZ = @event.Z + Random.Shared.Next(3) - 1;
+            if (@event.World.Reader.IsAir(tryX, tryY, tryZ) && canGrow(new OnTickEvent(@event.World, tryX, tryY, tryZ, @event.World.Reader.GetBlockMeta(tryX, tryY, tryZ), @event.World.Reader.GetBlockId(tryX, tryY, tryZ))))
             {
-                if (world.isAir(tryX, tryY, tryZ) && canGrow(world, tryX, tryY, tryZ))
+                if (@event.World.Reader.IsAir(tryX, tryY, tryZ) && canGrow(new OnTickEvent(@event.World, tryX, tryY, tryZ, @event.World.Reader.GetBlockMeta(tryX, tryY, tryZ), @event.World.Reader.GetBlockId(tryX, tryY, tryZ))))
                 {
-                    world.setBlock(tryX, tryY, tryZ, id);
+                    @event.World.Writer.SetBlock(tryX, tryY, tryZ, id);
                 }
             }
         }
-
     }
 
-    protected override bool canPlantOnTop(int id)
-    {
-        return Block.BlocksOpaque[id];
-    }
+    protected override bool canPlantOnTop(int id) => id == GrassBlock.id || id == Dirt.id || id == Stone.id || id == Gravel.id || id == Cobblestone.id;
 
-    public override bool canGrow(World world, int x, int y, int z)
-    {
-        return y >= 0 && y < 128 ? world.getBrightness(x, y, z) < 13 && canPlantOnTop(world.getBlockId(x, y - 1, z)) : false;
-    }
+    public override bool canGrow(OnTickEvent ctx) => ctx.Y >= 0 && ctx.Y < 128 ? ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < 13 && canPlantOnTop(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z)) : false;
 }

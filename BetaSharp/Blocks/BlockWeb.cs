@@ -1,8 +1,7 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
@@ -12,33 +11,15 @@ internal class BlockWeb : Block
     {
     }
 
-    public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
-    {
-        entity.slowed = true;
-    }
+    public override void onEntityCollision(OnEntityCollisionEvent ctx) => ctx.Entity.slowed = true;
 
-    public override bool isOpaque()
-    {
-        return false;
-    }
+    public override bool isOpaque() => false;
 
-    public override Box? getCollisionShape(World world, int x, int y, int z)
-    {
-        return null;
-    }
+    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override BlockRendererType getRenderType()
-    {
-        return BlockRendererType.Reed;
-    }
+    public override BlockRendererType getRenderType() => BlockRendererType.Reed;
 
-    public override bool isFullCube()
-    {
-        return false;
-    }
+    public override bool isFullCube() => false;
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return Item.String.id;
-    }
+    public override int getDroppedItemId(int blockMeta) => Item.String.id;
 }

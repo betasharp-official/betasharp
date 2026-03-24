@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
-using System.IO;
 using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Authentication;
+using BetaSharp.Launcher.Features.Hosting;
 using BetaSharp.Launcher.Features.Sessions;
-using BetaSharp.Launcher.Features.Shell;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -18,17 +16,24 @@ internal sealed partial class HomeViewModel : ObservableObject
 
     private readonly NavigationService _navigationService;
     private readonly StorageService _storageService;
-    private readonly ClientService _clientService;
+    private readonly ProcessService _processService;
 
-    public HomeViewModel(NavigationService navigationService, StorageService storageService, ClientService clientService)
+    public HomeViewModel(NavigationService navigationService, StorageService storageService, ProcessService processService)
     {
         _navigationService = navigationService;
         _storageService = storageService;
-        _clientService = clientService;
+        _processService = processService;
 
         WeakReferenceMessenger.Default.Register<HomeViewModel, SessionMessage>(
             this,
             static (viewModel, message) => viewModel.Session = message.Session);
+    }
+
+    [RelayCommand]
+    private void SignOut()
+    {
+        _navigationService.Navigate<AuthenticationViewModel>();
+        _storageService.Delete(nameof(Session));
     }
 
     [RelayCommand]
@@ -40,30 +45,13 @@ internal sealed partial class HomeViewModel : ObservableObject
             return;
         }
 
-        string directory = Path.Combine(AppContext.BaseDirectory, "Client");
-
-        await _clientService.DownloadAsync(directory);
-
-        var info = new ProcessStartInfo
-        {
-            Arguments = $"{Session.Name} {Session.Token}",
-            CreateNoWindow = true,
-            FileName = Path.Combine(directory, "BetaSharp.Client"),
-            WorkingDirectory = directory
-        };
-
-        // Probably should move this into a service/view-model.
-        using var process = Process.Start(info);
-
-        ArgumentNullException.ThrowIfNull(process);
-
+        using var process = await _processService.StartAsync(Kind.Client, Session.Name, Session.Token);
         await process.WaitForExitAsync();
     }
 
     [RelayCommand]
-    private void SignOut()
+    private void Host()
     {
-        _navigationService.Navigate<AuthenticationViewModel>();
-        _storageService.Delete(nameof(Session));
+        _navigationService.Navigate<HostingViewModel>();
     }
 }

@@ -1,15 +1,16 @@
 using BetaSharp.NBT;
 using BetaSharp.Rules;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
 public class EntityTNTPrimed : Entity
 {
+    public override EntityType Type => EntityRegistry.PrimedTnt;
     public int fuse;
 
-    public EntityTNTPrimed(World world) : base(world)
+    public EntityTNTPrimed(IWorldContext world) : base(world)
     {
         fuse = 0;
         preventEntitySpawning = true;
@@ -17,7 +18,7 @@ public class EntityTNTPrimed : Entity
         standingEyeHeight = height / 2.0F;
     }
 
-    public EntityTNTPrimed(World world, double x, double y, double z) : base(world)
+    public EntityTNTPrimed(IWorldContext world, double x, double y, double z) : base(world)
     {
         setPosition(x, y, z);
         float randomAngle = (float)(Random.Shared.NextSingle() * (Math.PI) * 2.0D);
@@ -60,7 +61,7 @@ public class EntityTNTPrimed : Entity
 
         if (fuse-- <= 0)
         {
-            if (!world.isRemote)
+            if (!world.IsRemote)
             {
                 markDead();
                 explode();
@@ -72,7 +73,7 @@ public class EntityTNTPrimed : Entity
         }
         else
         {
-            world.addParticle("smoke", x, y + 0.5D, z, 0.0D, 0.0D, 0.0D);
+            world.Broadcaster.AddParticle("smoke", x, y + 0.5D, z, 0.0D, 0.0D, 0.0D);
         }
 
     }
@@ -85,7 +86,7 @@ public class EntityTNTPrimed : Entity
         }
 
         const float power = 4.0F;
-        world.createExplosion((Entity)null, x, y, z, power);
+        world.CreateExplosion((Entity)null, x, y, z, power);
     }
 
     public override void writeNbt(NBTTagCompound nbt)

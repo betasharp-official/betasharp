@@ -1,6 +1,6 @@
 using System.IO.Compression;
 using System.Net.Sockets;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
@@ -16,7 +16,7 @@ public class ChunkDataS2CPacket() : Packet(PacketId.ChunkDataS2C)
     private int chunkDataSize;
     public byte[] rawData;
 
-    public static ChunkDataS2CPacket Get(int x, int y, int z, int sizeX, int sizeY, int sizeZ, World world)
+    public static ChunkDataS2CPacket Get(int x, int y, int z, int sizeX, int sizeY, int sizeZ, IWorldContext world)
     {
         var p = Get<ChunkDataS2CPacket>(PacketId.ChunkDataS2C);
         p.x = x;
@@ -25,7 +25,7 @@ public class ChunkDataS2CPacket() : Packet(PacketId.ChunkDataS2C)
         p.sizeX = sizeX;
         p.sizeY = sizeY;
         p.sizeZ = sizeZ;
-        p.rawData = world.GetChunkData(x, y, z, sizeX, sizeY, sizeZ);
+        p.rawData = world.ChunkHost.GetChunkData(x, y, z, sizeX, sizeY, sizeZ);
 
         using var output = new MemoryStream(sizeX * sizeY * sizeZ * 5 / 2);
         using var stream = new ZLibStream(output, CompressionLevel.Optimal);

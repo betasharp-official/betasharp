@@ -42,7 +42,8 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             tess.setColorOpaque(1, 1, 1);
 
             var baseCtx = new BlockRenderContext(
-                world: piston.World,
+                blockReader: piston.World.Reader,
+                lighting: piston.World.Lighting,
                 tess: tess,
                 renderAllFaces: true,
                 textureManager:textureManager,
