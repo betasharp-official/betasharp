@@ -3,7 +3,7 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.PathFinding;
 
-internal class PathEntity
+public class PathEntity
 {
     private readonly PathPoint[] _points;
     public int PathLength { get; }

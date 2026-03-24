@@ -2,7 +2,7 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.PathFinding;
 
-internal class PathPoint
+public class PathPoint
 {
     private int _hash;
     public int X;

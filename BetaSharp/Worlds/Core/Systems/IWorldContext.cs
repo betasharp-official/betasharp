@@ -28,7 +28,7 @@ public interface IWorldContext
     public int Difficulty { get; }
     public WorldProperties Properties { get; }
     public JavaRandom Random { get; }
-    internal PathFinder Pathing { get; }
+    public PathFinder Pathing { get; }
     public void SetDifficulty(int difficulty);
     public long GetTime();
     public int GetSpawnBlockId(int x, int z);
