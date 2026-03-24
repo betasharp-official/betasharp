@@ -155,7 +155,10 @@ public class ParticleManager
         double velY = bvy * 0.1;
         double velZ = bvz * 0.1;
 
-        if (red == 0.0f) red = 1.0f;
+        if (red == 0.0f)
+        {
+            red = 1.0f;
+        }
         float colorVariation = (float)Random.Shared.NextDouble() * 0.4f + 0.6f;
         float r = ((float)(Random.Shared.NextDouble() * 0.2) + 0.8f) * red * colorVariation;
         float g = ((float)(Random.Shared.NextDouble() * 0.2) + 0.8f) * green * colorVariation;
