@@ -2,6 +2,7 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Rendering.Blocks;
+using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Client.Rendering.Blocks.Entities;
 using BetaSharp.Client.Rendering.Chunks;
 using BetaSharp.Client.Rendering.Core;
@@ -796,65 +797,24 @@ public class WorldRenderer : IWorldEventListener
             double var20 = 16.0D;
             if (var14 * var14 + var16 * var16 + var18 * var18 <= var20 * var20)
             {
-                if (var1.Equals("bubble"))
+                var pm = _game.particleManager;
+                switch (var1)
                 {
-                    _game.particleManager.addEffect(new EntityBubbleFX(world, var2, var4, var6, var8, var10, var12));
-                }
-                else if (var1.Equals("smoke"))
-                {
-                    _game.particleManager.addEffect(new EntitySmokeFX(world, var2, var4, var6, var8, var10, var12));
-                }
-                else if (var1.Equals("note"))
-                {
-                    _game.particleManager.addEffect(new EntityNoteFX(world, var2, var4, var6, var8, var10, var12));
-                }
-                else if (var1.Equals("portal"))
-                {
-                    _game.particleManager.addEffect(new EntityPortalFX(world, var2, var4, var6, var8, var10, var12));
-                }
-                else if (var1.Equals("explode"))
-                {
-                    _game.particleManager.addEffect(new EntityExplodeFX(world, var2, var4, var6, var8, var10, var12));
-                }
-                else if (var1.Equals("flame"))
-                {
-                    _game.particleManager.addEffect(new EntityFlameFX(world, var2, var4, var6, var8, var10, var12));
-                }
-                else if (var1.Equals("lava"))
-                {
-                    _game.particleManager.addEffect(new EntityLavaFX(world, var2, var4, var6));
-                }
-                else if (var1.Equals("footstep"))
-                {
-                    _game.particleManager.addEffect(new EntityFootStepFX(renderEngine, world, var2, var4, var6));
-                }
-                else if (var1.Equals("splash"))
-                {
-                    _game.particleManager.addEffect(new EntitySplashFX(world, var2, var4, var6, var8, var10, var12));
-                }
-                else if (var1.Equals("largesmoke"))
-                {
-                    _game.particleManager.addEffect(new EntitySmokeFX(world, var2, var4, var6, var8, var10, var12, 2.5F));
-                }
-                else if (var1.Equals("reddust"))
-                {
-                    _game.particleManager.addEffect(new EntityReddustFX(world, var2, var4, var6, (float)var8, (float)var10, (float)var12));
-                }
-                else if (var1.Equals("snowballpoof"))
-                {
-                    _game.particleManager.addEffect(new EntitySlimeFX(world, var2, var4, var6, Item.Snowball));
-                }
-                else if (var1.Equals("snowshovel"))
-                {
-                    _game.particleManager.addEffect(new EntitySnowShovelFX(world, var2, var4, var6, var8, var10, var12));
-                }
-                else if (var1.Equals("slime"))
-                {
-                    _game.particleManager.addEffect(new EntitySlimeFX(world, var2, var4, var6, Item.Slimeball));
-                }
-                else if (var1.Equals("heart"))
-                {
-                    _game.particleManager.addEffect(new EntityHeartFX(world, var2, var4, var6, var8, var10, var12));
+                    case "bubble": pm.AddBubble(var2, var4, var6, var8, var10, var12); break;
+                    case "smoke": pm.AddSmoke(var2, var4, var6, var8, var10, var12); break;
+                    case "note": pm.AddNote(var2, var4, var6, var8, var10, var12); break;
+                    case "portal": pm.AddPortal(var2, var4, var6, var8, var10, var12); break;
+                    case "explode": pm.AddExplode(var2, var4, var6, var8, var10, var12); break;
+                    case "flame": pm.AddFlame(var2, var4, var6, var8, var10, var12); break;
+                    case "lava": pm.AddLava(var2, var4, var6); break;
+                    case "footstep": pm.AddSpecialParticle(new LegacyParticleAdapter(new EntityFootStepFX(renderEngine, world, var2, var4, var6))); break;
+                    case "splash": pm.AddSplash(var2, var4, var6, var8, var10, var12); break;
+                    case "largesmoke": pm.AddSmoke(var2, var4, var6, var8, var10, var12, 2.5f); break;
+                    case "reddust": pm.AddReddust(var2, var4, var6, (float)var8, (float)var10, (float)var12); break;
+                    case "snowballpoof": pm.AddSlime(var2, var4, var6, Item.Snowball); break;
+                    case "snowshovel": pm.AddSnowShovel(var2, var4, var6, var8, var10, var12); break;
+                    case "slime": pm.AddSlime(var2, var4, var6, Item.Slimeball); break;
+                    case "heart": pm.AddHeart(var2, var4, var6, var8, var10, var12); break;
                 }
 
             }
