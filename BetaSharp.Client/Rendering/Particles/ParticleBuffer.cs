@@ -50,7 +50,7 @@ public sealed class ParticleBuffer
     {
         if (Count >= MaxParticles)
         {
-            SwapRemove(0); // evict oldest
+            SwapRemove(0); // evict to make room
         }
 
         int i = Count++;
