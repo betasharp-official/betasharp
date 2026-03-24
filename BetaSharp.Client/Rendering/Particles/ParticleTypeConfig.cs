@@ -35,33 +35,20 @@ public enum UVModel : byte
     Jittered4x4,   // quarter-tile with jitter offset (Digging, Slime)
 }
 
-public readonly struct ParticleTypeConfig
+public readonly struct ParticleTypeConfig(
+    PhysicsModel physics, ScaleModel scale, BrightnessModel brightness, UVModel uv,
+    float friction, float groundFriction, float gravityAccel,
+    bool stalledSpread, bool animatesTexture)
 {
-    public readonly PhysicsModel Physics;
-    public readonly ScaleModel Scale;
-    public readonly BrightnessModel Brightness;
-    public readonly UVModel UV;
-    public readonly float Friction;
-    public readonly float GroundFriction;
-    public readonly float GravityAccel;    // added to velocityY each tick
-    public readonly bool StalledSpread;    // velocityX/Z *= 1.1 when y==prevY
-    public readonly bool AnimatesTexture;  // textureIndex = 7 - age*8/maxAge
-
-    public ParticleTypeConfig(
-        PhysicsModel physics, ScaleModel scale, BrightnessModel brightness, UVModel uv,
-        float friction, float groundFriction, float gravityAccel,
-        bool stalledSpread, bool animatesTexture)
-    {
-        Physics = physics;
-        Scale = scale;
-        Brightness = brightness;
-        UV = uv;
-        Friction = friction;
-        GroundFriction = groundFriction;
-        GravityAccel = gravityAccel;
-        StalledSpread = stalledSpread;
-        AnimatesTexture = animatesTexture;
-    }
+    public readonly PhysicsModel Physics = physics;
+    public readonly ScaleModel Scale = scale;
+    public readonly BrightnessModel Brightness = brightness;
+    public readonly UVModel UV = uv;
+    public readonly float Friction = friction;
+    public readonly float GroundFriction = groundFriction;
+    public readonly float GravityAccel = gravityAccel;    // added to velocityY each tick
+    public readonly bool StalledSpread = stalledSpread;    // velocityX/Z *= 1.1 when y==prevY
+    public readonly bool AnimatesTexture = animatesTexture;  // textureIndex = 7 - age*8/maxAge
 
     public static readonly ParticleTypeConfig[] Configs;
 
