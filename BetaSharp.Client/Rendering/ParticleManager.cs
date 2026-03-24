@@ -15,7 +15,7 @@ public class ParticleManager
     protected World worldObj;
     private readonly ParticleBuffer[] _layers = new ParticleBuffer[3];
     private readonly List<ISpecialParticle> _specialParticles = new();
-    private readonly TextureManager _renderer;
+    private readonly TextureManager _textures;
     private readonly JavaRandom _rand = new();
     private readonly List<ParticleUpdater.DeferredSmoke> _deferredSmoke = new();
 
@@ -26,7 +26,7 @@ public class ParticleManager
             worldObj = var1;
         }
 
-        _renderer = var2;
+        _textures = var2;
 
         for (int i = 0; i < 3; i++)
         {
@@ -62,7 +62,7 @@ public class ParticleManager
 
     public void renderParticles(Entity var1, float var2)
     {
-        ParticleRenderer.Render(_layers, _specialParticles, var1, var2, _renderer, worldObj);
+        ParticleRenderer.Render(_layers, _specialParticles, var1, var2, _textures, worldObj);
     }
 
     public void func_1187_b(Entity var1, float var2)
