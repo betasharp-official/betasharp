@@ -190,7 +190,7 @@ public class BlockBed : Block
         return (meta & 4) != 0;
     }
 
-    public static void updateState(WorldWriter worldWrite, int x, int y, int z, int meta, bool occupied)
+    public static void updateState(IBlockWrite worldWrite, int x, int y, int z, int meta, bool occupied)
     {
         if (occupied)
         {

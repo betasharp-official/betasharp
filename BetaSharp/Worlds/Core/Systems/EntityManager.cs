@@ -808,7 +808,7 @@ public class EntityManager
         return entity as T;
     }
 
-    public void SetBlockEntity(int x, int y, int z, BlockEntity blockEntity)
+    public void SetBlockEntity(int x, int y, int z, BlockEntity? blockEntity)
     {
         if (!blockEntity.isRemoved())
         {

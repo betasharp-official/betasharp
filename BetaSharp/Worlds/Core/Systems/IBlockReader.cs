@@ -20,14 +20,10 @@ public interface IBlockReader
     public int GetTopY(int x, int z);
     public int GetTopSolidBlockY(int x, int z);
     public int GetSpawnPositionValidityY(int x, int z);
-
+    public void MarkChunkDirty(int x, int z);
     public float GetVisibilityRatio(Vec3D sourcePosition, Box targetBox);
-
     public HitResult Raycast(Vec3D start, Vec3D end, bool includeFluids = false, bool ignoreNonSolid = false);
-
     public bool IsPosLoaded(int x, int y, int z);
-
     public bool IsMaterialInBox(Box area, Func<Material, bool> predicate);
-
     public bool UpdateMovementInFluid(Box entityBox, Material fluidMaterial, Entity entity);
 }

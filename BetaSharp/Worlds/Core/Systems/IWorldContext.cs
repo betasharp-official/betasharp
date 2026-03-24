@@ -11,8 +11,8 @@ namespace BetaSharp.Worlds.Core.Systems;
 
 public interface IWorldContext
 {
-    public WorldReader Reader { get; }
-    public WorldWriter Writer { get; }
+    public IBlockReader Reader { get; }
+    public IBlockWrite Writer { get; }
     public ChunkHost ChunkHost { get; }
     public WorldEventBroadcaster Broadcaster { get; }
     public RedstoneEngine Redstone { get; }

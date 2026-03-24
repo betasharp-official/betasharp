@@ -46,6 +46,7 @@ public sealed class NullBlockReader : IBlockReader
     public int GetTopSolidBlockY(int x, int z) => 0;
 
     public int GetSpawnPositionValidityY(int x, int z) => 0;
+    public void MarkChunkDirty(int x, int z) => throw new NotImplementedException();
 
     public float GetVisibilityRatio(Vec3D sourcePosition, Box targetBox) => 1.0f;
 

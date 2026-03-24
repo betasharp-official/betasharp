@@ -264,4 +264,6 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
             }
         }
     }
+
+    public void MarkChunkDirty(int x, int z) => throw new NotImplementedException();
 }
