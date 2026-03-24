@@ -472,10 +472,10 @@ public class ParticleManager
         double inputVx = 0, double inputVy = 0, double inputVz = 0)
     {
         // Replicates EntityFX constructor: random velocity + normalize + scale
-        velX = inputVx + (Random.Shared.NextDouble() * 2.0 - 1.0) * 0.4;
-        velY = inputVy + (Random.Shared.NextDouble() * 2.0 - 1.0) * 0.4;
-        velZ = inputVz + (Random.Shared.NextDouble() * 2.0 - 1.0) * 0.4;
-        float scale = (float)(Random.Shared.NextDouble() + Random.Shared.NextDouble() + 1.0) * 0.15f;
+        velX = inputVx + (_rand.NextDouble() * 2.0 - 1.0) * 0.4;
+        velY = inputVy + (_rand.NextDouble() * 2.0 - 1.0) * 0.4;
+        velZ = inputVz + (_rand.NextDouble() * 2.0 - 1.0) * 0.4;
+        float scale = (float)(_rand.NextDouble() + _rand.NextDouble() + 1.0) * 0.15f;
         float speed = MathHelper.Sqrt(velX * velX + velY * velY + velZ * velZ);
         velX = velX / speed * scale * 0.4f;
         velY = velY / speed * scale * 0.4f + 0.1;
