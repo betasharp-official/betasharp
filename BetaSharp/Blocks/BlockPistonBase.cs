@@ -20,15 +20,15 @@ public class BlockPistonBase : Block
 
     public int getTopTexture() => _sticky ? 106 : 107;
 
-    public override int GetTexture(int side) =>
+    public override int GetTexture(Side side) =>
         side switch
         {
-            1 => getTopTexture(),
-            0 => 109,
+            Side.Up => getTopTexture(),
+            Side.Down => 109,
             _ => 108
         };
 
-    public override int GetTexture(int side, int meta)
+    public override int GetTexture(Side side, int meta)
     {
         int facing = getFacing(meta);
         if (facing > 5)
@@ -36,9 +36,9 @@ public class BlockPistonBase : Block
             return TextureId;
         }
 
-        if (side != facing)
+        if (side != facing.ToSide())
         {
-            return side == PistonConstants.field_31057_a[facing] ? 109 : 108;
+            return side == SideExtensions.OppositeFace(facing.ToSide()) ? 109 : 108;
         }
 
         if (isExtended(meta) ||
@@ -144,9 +144,9 @@ public class BlockPistonBase : Block
         }
         else if (actionId == 1) // Retracting
         {
-            int headX = @event.X + PistonConstants.HEAD_OFFSET_X[facing];
-            int headY = @event.Y + PistonConstants.HEAD_OFFSET_Y[facing];
-            int headZ = @event.Z + PistonConstants.HEAD_OFFSET_Z[facing];
+            int headX = @event.X + PistonConstants.HeadOffsetX(facing);
+            int headY = @event.Y + PistonConstants.HeadOffsetY(facing);
+            int headZ = @event.Z + PistonConstants.HeadOffsetZ(facing);
 
             BlockEntity? entityAtHead = @event.World.Entities.GetBlockEntity<BlockEntityPiston>(headX, headY, headZ);
             if (entityAtHead is BlockEntityPiston extendingPiston)
@@ -159,9 +159,9 @@ public class BlockPistonBase : Block
 
             if (_sticky)
             {
-                int targetX = @event.X + PistonConstants.HEAD_OFFSET_X[facing] * 2;
-                int targetY = @event.Y + PistonConstants.HEAD_OFFSET_Y[facing] * 2;
-                int targetZ = @event.Z + PistonConstants.HEAD_OFFSET_Z[facing] * 2;
+                int targetX = @event.X + PistonConstants.HeadOffsetX(facing) * 2;
+                int targetY = @event.Y + PistonConstants.HeadOffsetY(facing) * 2;
+                int targetZ = @event.Z + PistonConstants.HeadOffsetZ(facing) * 2;
 
                 int targetId = @event.World.Reader.GetBlockId(targetX, targetY, targetZ);
                 int targetMeta = @event.World.Reader.GetBlockMeta(targetX, targetY, targetZ);
@@ -201,9 +201,9 @@ public class BlockPistonBase : Block
                     int y = @event.Y;
                     int z = @event.Z;
 
-                    x += PistonConstants.HEAD_OFFSET_X[facing];
-                    y += PistonConstants.HEAD_OFFSET_Y[facing];
-                    z += PistonConstants.HEAD_OFFSET_Z[facing];
+                    x += PistonConstants.HeadOffsetX(facing);
+                    y += PistonConstants.HeadOffsetY(facing);
+                    z += PistonConstants.HeadOffsetZ(facing);
 
                     @event.World.Writer.SetBlockWithoutNotifyingNeighbors(x, y, z, MovingPiston.Id, targetMeta);
                     @event.World.Entities.SetBlockEntity(x, y, z, BlockPistonMoving.createPistonBlockEntity(targetId, targetMeta, facing, false, false));
@@ -229,12 +229,12 @@ public class BlockPistonBase : Block
         {
             switch (getFacing(meta))
             {
-                case 0: SetBoundingBox(0.0F, 0.25F, 0.0F, 1.0F, 1.0F, 1.0F); break;
-                case 1: SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 12.0F / 16.0F, 1.0F); break;
-                case 2: SetBoundingBox(0.0F, 0.0F, 0.25F, 1.0F, 1.0F, 1.0F); break;
-                case 3: SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 12.0F / 16.0F); break;
-                case 4: SetBoundingBox(0.25F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F); break;
-                case 5: SetBoundingBox(0.0F, 0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F); break;
+                case (int)Side.Down: SetBoundingBox(0.0F, 0.25F, 0.0F, 1.0F, 1.0F, 1.0F); break;
+                case (int)Side.Up: SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 12.0F / 16.0F, 1.0F); break;
+                case (int)Side.North: SetBoundingBox(0.0F, 0.0F, 0.25F, 1.0F, 1.0F, 1.0F); break;
+                case (int)Side.South: SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 12.0F / 16.0F); break;
+                case (int)Side.West: SetBoundingBox(0.25F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F); break;
+                case (int)Side.East: SetBoundingBox(0.0F, 0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F); break;
             }
         }
         else
@@ -264,23 +264,23 @@ public class BlockPistonBase : Block
             double diffY = player.y + 1.82D - player.standingEyeHeight;
             if (diffY - y > 2.0D)
             {
-                return 1;
+                return (int)Side.Up;
             }
 
             if (y - diffY > 0.0D)
             {
-                return 0;
+                return (int)Side.Down;
             }
         }
 
         int playerYaw = MathHelper.Floor(player.yaw * 4.0F / 360.0F + 0.5D) & 3;
         return playerYaw switch
         {
-            0 => 2,
-            1 => 5,
-            2 => 3,
-            3 => 4,
-            _ => 0
+            0 => (int)Side.North,
+            1 => (int)Side.East,
+            2 => (int)Side.South,
+            3 => (int)Side.West,
+            _ => (int)Side.Down
         };
     }
 
@@ -319,9 +319,9 @@ public class BlockPistonBase : Block
 
     private static bool canExtend(IWorldContext ctx, int x, int y, int z, int dir)
     {
-        int checkX = x + PistonConstants.HEAD_OFFSET_X[dir];
-        int checkY = y + PistonConstants.HEAD_OFFSET_Y[dir];
-        int checkZ = z + PistonConstants.HEAD_OFFSET_Z[dir];
+        int checkX = x + PistonConstants.HeadOffsetX(dir);
+        int checkY = y + PistonConstants.HeadOffsetY(dir);
+        int checkZ = z + PistonConstants.HeadOffsetZ(dir);
         int pushCount = 0;
 
         while (true)
@@ -357,18 +357,18 @@ public class BlockPistonBase : Block
                 return false;
             }
 
-            checkX += PistonConstants.HEAD_OFFSET_X[dir];
-            checkY += PistonConstants.HEAD_OFFSET_Y[dir];
-            checkZ += PistonConstants.HEAD_OFFSET_Z[dir];
+            checkX += PistonConstants.HeadOffsetX(dir);
+            checkY += PistonConstants.HeadOffsetY(dir);
+            checkZ += PistonConstants.HeadOffsetZ(dir);
             ++pushCount;
         }
     }
 
     private bool push(IWorldContext ctx, int x, int y, int z, int dir)
     {
-        int nextX = x + PistonConstants.HEAD_OFFSET_X[dir];
-        int nextY = y + PistonConstants.HEAD_OFFSET_Y[dir];
-        int nextZ = z + PistonConstants.HEAD_OFFSET_Z[dir];
+        int nextX = x + PistonConstants.HeadOffsetX(dir);
+        int nextY = y + PistonConstants.HeadOffsetY(dir);
+        int nextZ = z + PistonConstants.HeadOffsetZ(dir);
         int pushCount = 0;
 
         while (true)
@@ -395,9 +395,9 @@ public class BlockPistonBase : Block
                             return false;
                         }
 
-                        nextX += PistonConstants.HEAD_OFFSET_X[dir];
-                        nextY += PistonConstants.HEAD_OFFSET_Y[dir];
-                        nextZ += PistonConstants.HEAD_OFFSET_Z[dir];
+                        nextX += PistonConstants.HeadOffsetX(dir);
+                        nextY += PistonConstants.HeadOffsetY(dir);
+                        nextZ += PistonConstants.HeadOffsetZ(dir);
                         ++pushCount;
                         continue;
                     }
@@ -409,9 +409,9 @@ public class BlockPistonBase : Block
 
             while (nextX != x || nextY != y || nextZ != z)
             {
-                int prevX = nextX - PistonConstants.HEAD_OFFSET_X[dir];
-                int prevY = nextY - PistonConstants.HEAD_OFFSET_Y[dir];
-                int prevZ = nextZ - PistonConstants.HEAD_OFFSET_Z[dir];
+                int prevX = nextX - PistonConstants.HeadOffsetX(dir);
+                int prevY = nextY - PistonConstants.HeadOffsetY(dir);
+                int prevZ = nextZ - PistonConstants.HeadOffsetZ(dir);
 
                 int prevBlockId = ctx.Reader.GetBlockId(prevX, prevY, prevZ);
                 int prevMeta = ctx.Reader.GetBlockMeta(prevX, prevY, prevZ);

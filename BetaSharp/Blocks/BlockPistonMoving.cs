@@ -123,7 +123,7 @@ public class BlockPistonMoving : BlockWithEntity
         }
 
         int var8 = piston.getFacing();
-        BoundingBox = BoundingBox.Offset(-(double)(PistonConstants.HEAD_OFFSET_X[var8] * progress), -(double)(PistonConstants.HEAD_OFFSET_Y[var8] * progress), -(double)(PistonConstants.HEAD_OFFSET_Z[var8] * progress));
+        BoundingBox = BoundingBox.Offset(-(double)(PistonConstants.HeadOffsetX(var8) * progress), -(double)(PistonConstants.HeadOffsetY(var8) * progress), -(double)(PistonConstants.HeadOffsetZ(var8) * progress));
     }
 
     public Box? getPushedBlockCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z, int blockId, float sizeMultiplier, int facing)
@@ -140,12 +140,12 @@ public class BlockPistonMoving : BlockWithEntity
         }
 
         Box box = shape.Value;
-        box.MinX -= PistonConstants.HEAD_OFFSET_X[facing] * sizeMultiplier;
-        box.MaxX -= PistonConstants.HEAD_OFFSET_X[facing] * sizeMultiplier;
-        box.MinY -= PistonConstants.HEAD_OFFSET_Y[facing] * sizeMultiplier;
-        box.MaxY -= PistonConstants.HEAD_OFFSET_Y[facing] * sizeMultiplier;
-        box.MinZ -= PistonConstants.HEAD_OFFSET_Z[facing] * sizeMultiplier;
-        box.MaxZ -= PistonConstants.HEAD_OFFSET_Z[facing] * sizeMultiplier;
+        box.MinX -= PistonConstants.HeadOffsetX(facing) * sizeMultiplier;
+        box.MaxX -= PistonConstants.HeadOffsetX(facing) * sizeMultiplier;
+        box.MinY -= PistonConstants.HeadOffsetY(facing) * sizeMultiplier;
+        box.MaxY -= PistonConstants.HeadOffsetY(facing) * sizeMultiplier;
+        box.MinZ -= PistonConstants.HeadOffsetZ(facing) * sizeMultiplier;
+        box.MaxZ -= PistonConstants.HeadOffsetZ(facing) * sizeMultiplier;
         return box;
     }
 }

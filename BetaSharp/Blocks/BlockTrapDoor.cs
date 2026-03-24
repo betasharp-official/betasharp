@@ -153,10 +153,10 @@ internal class BlockTrapDoor : Block
     {
         sbyte meta = ctx.Direction switch
         {
-            2 => 0,
-            3 => 1,
-            4 => 2,
-            5 => 3,
+            Side.North => 0,
+            Side.South => 1,
+            Side.West => 2,
+            Side.East => 3,
             _ => 0
         };
 
@@ -171,19 +171,19 @@ internal class BlockTrapDoor : Block
 
         switch (context.Direction)
         {
-            case 0:
-            case 1:
+            case Side.Down:
+            case Side.Up:
                 return false;
-            case 2:
+            case Side.North:
                 ++z;
                 break;
-            case 3:
+            case Side.South:
                 --z;
                 break;
-            case 4:
+            case Side.West:
                 ++x;
                 break;
-            case 5:
+            case Side.East:
                 --x;
                 break;
         }

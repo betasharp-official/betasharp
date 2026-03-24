@@ -266,7 +266,10 @@ public class Block
         return baseLum > 0 ? baseLum / 15.0f : 1.0f;
     }
 
-    public virtual bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side)
+    [Obsolete("Use IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side) instead.")]
+    public virtual bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side) => IsSideVisible(iBlockReader, x, y, z, side.ToSide());
+
+    public virtual bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
         double minX = BoundingBox.MinX;
         double minY = BoundingBox.MinY;
@@ -274,22 +277,35 @@ public class Block
         double maxX = BoundingBox.MaxX;
         double maxY = BoundingBox.MaxY;
         double maxZ = BoundingBox.MaxZ;
-        return side == 0 && minY > 0.0D ||
-               side == 1 && maxY < 1.0D ||
-               side == 2 && minZ > 0.0D ||
-               side == 3 && maxZ < 1.0D ||
-               side == 4 && minX > 0.0D ||
-               side == 5 && maxX < 1.0D ||
-               !iBlockReader.IsOpaque(x, y, z);
+
+        if (!side.IsValidSide())
+        {
+            return !iBlockReader.IsOpaque(x, y, z);
+        }
+
+        return side switch
+        {
+            Side.Down => minY > 0.0D || !iBlockReader.IsOpaque(x, y, z),
+            Side.Up => maxY < 1.0D || !iBlockReader.IsOpaque(x, y, z),
+            Side.North => minZ > 0.0D || !iBlockReader.IsOpaque(x, y, z),
+            Side.South => maxZ < 1.0D || !iBlockReader.IsOpaque(x, y, z),
+            Side.West => minX > 0.0D || !iBlockReader.IsOpaque(x, y, z),
+            Side.East => maxX < 1.0D || !iBlockReader.IsOpaque(x, y, z),
+            _ => !iBlockReader.IsOpaque(x, y, z),
+        };
     }
 
     public virtual bool IsSolidFace(IBlockReader iBlockReader, int x, int y, int z, int face) => iBlockReader.GetMaterial(x, y, z).IsSolid;
 
-    public virtual int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, int side) => GetTexture(side, iBlockReader.GetBlockMeta(x, y, z));
+    public virtual int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, int side) => GetTextureId( iBlockReader, x, y, z, side.ToSide());
+    public virtual int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side) => GetTexture(side, iBlockReader.GetBlockMeta(x, y, z));
 
+    [Obsolete("Use GetTexture(Side side, int meta) or GetTexture(Side side)")]
     public virtual int GetTexture(int side, int meta) => GetTexture(side);
+    public virtual int GetTexture(Side side, int meta) => GetTexture(side);
 
-    public virtual int GetTexture(int side) => TextureId;
+    public virtual int GetTexture(int side) => GetTexture(side.ToSide());
+    public virtual int GetTexture(Side side) => TextureId;
 
     public virtual Box GetBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z) => BoundingBox.Offset(x, y, z);
 
@@ -404,7 +420,7 @@ public class Block
 
     public virtual int GetColor(int meta) => 0xFFFFFF;
 
-    public virtual int GetColorForFace(int meta, int face) => GetColor(meta);
+    public virtual int GetColorForFace(int meta, Side face) => GetColor(meta);
 
     public virtual int GetColorMultiplier(IBlockReader reader, int x, int y, int z) => 0xFFFFFF;
 

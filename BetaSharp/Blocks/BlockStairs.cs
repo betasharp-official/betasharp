@@ -75,11 +75,11 @@ internal class BlockStairs : Block
 
     public override int GetDroppedItemCount() => _baseBlock.GetDroppedItemCount();
 
-    public override int GetTexture(int side, int meta) => _baseBlock.GetTexture(side, meta);
+    public override int GetTexture(Side side, int meta) => _baseBlock.GetTexture(side, meta);
 
-    public override int GetTexture(int side) => _baseBlock.GetTexture(side);
+    public override int GetTexture(Side side) => _baseBlock.GetTexture(side);
 
-    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, int side) => _baseBlock.GetTextureId(iBlockReader, x, y, z, side);
+    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side) => _baseBlock.GetTextureId(iBlockReader, x, y, z, side);
 
     public override int GetTickRate() => _baseBlock.GetTickRate();
 

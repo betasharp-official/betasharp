@@ -6,5 +6,5 @@ internal class BlockOreStorage : Block
 {
     public BlockOreStorage(int id, int textureId) : base(id, Material.Metal) => this.TextureId = textureId;
 
-    public override int GetTexture(int side) => TextureId;
+    public override int GetTexture(Side side) => TextureId;
 }

@@ -14,10 +14,7 @@ internal class BlockDetectorRail : BlockRail
 
     public override void OnEntityCollision(OnEntityCollisionEvent @event)
     {
-        if (@event.World.IsRemote)
-        {
-            return;
-        }
+        if (@event.World.IsRemote) return;
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((meta & 8) == 0)
@@ -28,10 +25,7 @@ internal class BlockDetectorRail : BlockRail
 
     public override void OnTick(OnTickEvent @event)
     {
-        if (@event.World.IsRemote)
-        {
-            return;
-        }
+        if (@event.World.IsRemote) return;
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((meta & 8) != 0)
@@ -42,7 +36,7 @@ internal class BlockDetectorRail : BlockRail
 
     public override bool IsPoweringSide(IBlockReader reader, int x, int y, int z, int side) => (reader.GetBlockMeta(x, y, z) & 8) != 0;
 
-    public override bool IsStrongPoweringSide(IBlockReader reader, int x, int y, int z, int side) => (reader.GetBlockMeta(x, y, z) & 8) != 0 && side == 1;
+    public override bool IsStrongPoweringSide(IBlockReader reader, int x, int y, int z, int side) => (reader.GetBlockMeta(x, y, z) & 8) != 0 && side == (int)Side.Up;
 
     private void updatePoweredStatus(IWorldContext context, int x, int y, int z, int id, int meta)
     {

@@ -34,12 +34,12 @@ internal class BlockCake : Block
         return new Box(x + minX, y, z + EdgeInset, x + 1 - EdgeInset, y + Height, z + 1 - EdgeInset);
     }
 
-    public override int GetTexture(int side, int meta) => side == 1 ? TextureId : side == 0 ? TextureId + 3 : meta > 0 && side == 4 ? TextureId + 2 : TextureId + 1;
+    public override int GetTexture(Side side, int meta) => side == Side.Up ? TextureId : side == Side.Down ? TextureId + 3 : meta > 0 && side == Side.West ? TextureId + 2 : TextureId + 1;
 
-    public override int GetTexture(int side) => side switch
+    public override int GetTexture(Side side) => side switch
     {
-        1 => TextureId,
-        0 => TextureId + 3,
+        Side.Up => TextureId,
+        Side.Down => TextureId + 3,
         _ => TextureId + 1
     };
 
@@ -71,10 +71,7 @@ internal class BlockCake : Block
 
     public override void OnBlockBreakStart(OnBlockBreakStartEvent @event)
     {
-        if (@event.Player.health >= 20)
-        {
-            return;
-        }
+        if (@event.Player.health >= 20) return;
 
         @event.Player.heal(3);
         int slicesEaten = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) + 1;
@@ -93,10 +90,7 @@ internal class BlockCake : Block
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (canGrow(@event.World.Reader, @event.X, @event.Y, @event.Z))
-        {
-            return;
-        }
+        if (canGrow(@event.World.Reader, @event.X, @event.Y, @event.Z)) return;
 
         DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);

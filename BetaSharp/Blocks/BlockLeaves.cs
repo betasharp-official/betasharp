@@ -211,7 +211,7 @@ public class BlockLeaves : BlockLeavesBase
 
     public override bool IsOpaque() => !GraphicsLevel;
 
-    public override int GetTexture(int side, int meta) => (meta & 3) == 1 ? TextureId + 80 : TextureId;
+    public override int GetTexture(Side side, int meta) => (meta & 3) == 1 ? TextureId + 80 : TextureId;
 
     public void setGraphicsLevel(bool bl)
     {

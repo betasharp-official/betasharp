@@ -19,9 +19,16 @@ internal class BlockSlab : Block
         SetOpacity(255);
     }
 
-    public override int GetTexture(int side, int meta) => meta == 0 ? side <= 1 ? 6 : 5 : meta == 1 ? side == 0 ? 208 : side == 1 ? 176 : 192 : meta == 2 ? 4 : meta == 3 ? 16 : 6;
+    public override int GetTexture(Side side, int meta) => meta switch
+    {
+        0 => side <= Side.Up ? 6 : 5,
+        1 => side == Side.Down ? 208 : side == Side.Up ? 176 : 192,
+        2 => 4,
+        3 => 16,
+        _ => 6
+    };
 
-    public override int GetTexture(int side) => GetTexture(side, 0);
+    public override int GetTexture(Side side) => GetTexture(side, 0);
 
     public override bool IsOpaque() => _doubleSlab;
 
@@ -48,13 +55,10 @@ internal class BlockSlab : Block
 
     public override bool IsFullCube() => _doubleSlab;
 
-    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side)
+    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (this != Slab)
-        {
-            base.IsSideVisible(iBlockReader, x, y, z, side);
-        }
+        if (this != Slab) base.IsSideVisible(iBlockReader, x, y, z, side);
 
-        return side == 1 ? true : !base.IsSideVisible(iBlockReader, x, y, z, side) ? false : side == 0 ? true : iBlockReader.GetBlockId(x, y, z) != Id;
+        return side == Side.Up || base.IsSideVisible(iBlockReader, x, y, z, side) && (side == Side.Down || iBlockReader.GetBlockId(x, y, z) != Id);
     }
 }

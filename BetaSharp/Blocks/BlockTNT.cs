@@ -6,7 +6,12 @@ namespace BetaSharp.Blocks;
 
 internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.Tnt)
 {
-    public override int GetTexture(int side) => side == 0 ? TextureId + 2 : side == 1 ? TextureId + 1 : TextureId;
+    public override int GetTexture(Side side) => side switch
+    {
+        Side.Down => TextureId + 2,
+        Side.Up => TextureId + 1,
+        _ => TextureId
+    };
 
     public override void OnPlaced(OnPlacedEvent @event)
     {

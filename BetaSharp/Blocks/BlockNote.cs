@@ -5,7 +5,7 @@ namespace BetaSharp.Blocks;
 
 internal class BlockNote(int id) : BlockWithEntity(id, 74, Material.Wood)
 {
-    public override int GetTexture(int side) => TextureId;
+    public override int GetTexture(Side side) => TextureId;
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
@@ -49,10 +49,7 @@ internal class BlockNote(int id) : BlockWithEntity(id, 74, Material.Wood)
 
     public override void OnBlockBreakStart(OnBlockBreakStartEvent @event)
     {
-        if (@event.World.IsRemote)
-        {
-            return;
-        }
+        if (@event.World.IsRemote) return;
 
         BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
         blockEntity?.playNote(@event.World, @event.X, @event.Y, @event.Z);

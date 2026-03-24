@@ -29,21 +29,21 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
 
         switch (@event.Direction)
         {
-            case 1 when @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z):
+            case Side.Up when @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z):
                 meta = 5 + Random.Shared.Next(2);
                 break;
-            case 2 when @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1):
+            case Side.North when @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1):
                 meta = 4;
                 break;
-            case 3 when @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1):
+            case Side.South when @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1):
                 meta = 3;
                 break;
-            case 4 when @event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z):
+            case Side.West when @event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z):
                 meta = 2;
                 break;
             default:
                 {
-                    if ((@event.Direction == 5 && @event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z)) || @event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z))
+                    if ((@event.Direction == Side.East && @event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z)) || @event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z))
                     {
                         meta = 1;
                     }
@@ -106,9 +106,7 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
     private bool breakIfCannotPlaceAt(OnTickEvent ctx)
     {
         if (CanPlaceAt(new CanPlaceAtContext(ctx.World, 0, ctx.X, ctx.Y, ctx.Z)))
-        {
             return true;
-        }
 
         DropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z)));
         ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
@@ -146,9 +144,7 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
     public override bool OnUse(OnUseEvent ctx)
     {
         if (ctx.World.IsRemote)
-        {
             return true;
-        }
 
         toggleLever(ctx.World, ctx.X, ctx.Y, ctx.Z);
         return true;
@@ -229,12 +225,12 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
         }
 
         int direction = meta & 7;
-        return (direction == 6 && side == 1) ||
-               (direction == 5 && side == 1) ||
-               (direction == 4 && side == 2) ||
-               (direction == 3 && side == 3) ||
-               (direction == 2 && side == 4) ||
-               (direction == 1 && side == 5);
+        return (direction == 6 && side == (int)Side.Up) ||
+               (direction == 5 && side == (int)Side.Up) ||
+               (direction == 4 && side == (int)Side.North) ||
+               (direction == 3 && side == (int)Side.South) ||
+               (direction == 2 && side == (int)Side.West) ||
+               (direction == 1 && side == (int)Side.East);
     }
 
     public override bool CanEmitRedstonePower() => true;

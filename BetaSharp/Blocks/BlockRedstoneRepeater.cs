@@ -50,33 +50,30 @@ public class BlockRedstoneRepeater : Block
         }
     }
 
-    public override int GetTexture(int side, int meta) => side switch
+    public override int GetTexture(Side side, int meta) => side switch
     {
-        0 => _lit ? 99 : 115,
-        1 => _lit ? 147 : 131,
+        Side.Down => _lit ? 99 : 115,
+        Side.Up => _lit ? 147 : 131,
         _ => 5
     };
 
-    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side) => side != 0 && side != 1;
+    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side) => side != Side.Down && side != Side.Up;
 
     public override BlockRendererType GetRenderType() => BlockRendererType.Repeater;
 
-    public override int GetTexture(int side) => GetTexture(side, 0);
+    public override int GetTexture(Side side) => GetTexture(side, 0);
 
     public override bool IsStrongPoweringSide(IBlockReader reader, int x, int y, int z, int side) => IsPoweringSide(reader, x, y, z, side);
 
     public override bool IsPoweringSide(IBlockReader reader, int x, int y, int z, int side)
     {
-        if (!_lit)
-        {
-            return false;
-        }
+        if (!_lit) return false;
 
         int facing = reader.GetBlockMeta(x, y, z) & 3;
-        return (facing == 0 && side == 3) ||
-               (facing == 1 && side == 4) ||
-               (facing == 2 && side == 2) ||
-               (facing == 3 && side == 5);
+        return (facing == 0 && side == (int)Side.South) ||
+               (facing == 1 && side == (int)Side.West) ||
+               (facing == 2 && side == (int)Side.North) ||
+               (facing == 3 && side == (int)Side.East);
     }
 
     public override void NeighborUpdate(OnTickEvent @event)
@@ -100,13 +97,17 @@ public class BlockRedstoneRepeater : Block
 
     private bool isPowered(IBlockReader world, RedstoneEngine redstoneEngine, int x, int y, int z, int meta)
     {
-        int facing = meta & 3;
+        Side facing = (meta & 3).ToSide();
         return facing switch
         {
-            0 => redstoneEngine.IsPoweringSide(x, y, z + 1, 3) || (world.GetBlockId(x, y, z + 1) == RedstoneWire.Id && world.GetBlockMeta(x, y, z + 1) > 0),
-            1 => redstoneEngine.IsPoweringSide(x - 1, y, z, 4) || (world.GetBlockId(x - 1, y, z) == RedstoneWire.Id && world.GetBlockMeta(x - 1, y, z) > 0),
-            2 => redstoneEngine.IsPoweringSide(x, y, z - 1, 2) || (world.GetBlockId(x, y, z - 1) == RedstoneWire.Id && world.GetBlockMeta(x, y, z - 1) > 0),
-            3 => redstoneEngine.IsPoweringSide(x + 1, y, z, 5) || (world.GetBlockId(x + 1, y, z) == RedstoneWire.Id && world.GetBlockMeta(x + 1, y, z) > 0),
+            Side.Down => redstoneEngine.IsPoweringSide(x, y, z + 1, Side.South.ToInt()) ||
+                         (world.GetBlockId(x, y, z + 1) == RedstoneWire.Id && world.GetBlockMeta(x, y, z + 1) > 0),
+            Side.Up => redstoneEngine.IsPoweringSide(x - 1, y, z, Side.West.ToInt()) ||
+                       (world.GetBlockId(x - 1, y, z) == RedstoneWire.Id && world.GetBlockMeta(x - 1, y, z) > 0),
+            Side.North => redstoneEngine.IsPoweringSide(x, y, z - 1, Side.North.ToInt()) ||
+                          (world.GetBlockId(x, y, z - 1) == RedstoneWire.Id && world.GetBlockMeta(x, y, z - 1) > 0),
+            Side.South => redstoneEngine.IsPoweringSide(x + 1, y, z, Side.East.ToInt()) ||
+                          (world.GetBlockId(x + 1, y, z) == RedstoneWire.Id && world.GetBlockMeta(x + 1, y, z) > 0),
             _ => false
         };
     }

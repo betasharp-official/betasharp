@@ -79,6 +79,6 @@ internal class BlockSnow : Block
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 
-    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side) => side == 1 ||
-                                                                                                    base.IsSideVisible(iBlockReader, x, y, z, side);
+    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side) => side == Side.Up ||
+                                                                                                     base.IsSideVisible(iBlockReader, x, y, z, side);
 }

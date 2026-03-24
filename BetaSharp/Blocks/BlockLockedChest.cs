@@ -7,9 +7,9 @@ internal class BlockLockedChest : Block
 {
     public BlockLockedChest(int id) : base(id, Material.Wood) => TextureId = 26;
 
-    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
+    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (side is 1 or 0)
+        if (side is Side.Up or Side.Down)
         {
             return TextureId - 1;
         }
@@ -18,34 +18,34 @@ internal class BlockLockedChest : Block
         int var7 = iBlockReader.GetBlockId(x, y, z + 1);
         int var8 = iBlockReader.GetBlockId(x - 1, y, z);
         int var9 = iBlockReader.GetBlockId(x + 1, y, z);
-        sbyte var10 = 3;
+        Side var10 = Side.South;
         if (BlocksOpaque[var6] && !BlocksOpaque[var7])
         {
-            var10 = 3;
+            var10 = Side.South;
         }
 
         if (BlocksOpaque[var7] && !BlocksOpaque[var6])
         {
-            var10 = 2;
+            var10 = Side.North;
         }
 
         if (BlocksOpaque[var8] && !BlocksOpaque[var9])
         {
-            var10 = 5;
+            var10 = Side.East;
         }
 
         if (BlocksOpaque[var9] && !BlocksOpaque[var8])
         {
-            var10 = 4;
+            var10 = Side.West;
         }
 
         return side == var10 ? TextureId + 1 : TextureId;
     }
 
-    public override int GetTexture(int side) => side switch
+    public override int GetTexture(Side side) => side switch
     {
-        1 or 0 => TextureId - 1,
-        3 => TextureId + 1,
+        Side.Up or Side.Down => TextureId - 1,
+        Side.South => TextureId + 1,
         _ => TextureId
     };
 

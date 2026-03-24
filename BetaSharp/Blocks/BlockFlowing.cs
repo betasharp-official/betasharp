@@ -330,7 +330,7 @@ internal class BlockFlowing(int id, Material material) : BlockFluid(id, material
             return false;
         }
 
-        Material mat = Blocks[blockId].Material;
+        Material mat = Blocks[blockId]!.Material;
         return mat.BlocksMovement;
     }
 
@@ -355,20 +355,12 @@ internal class BlockFlowing(int id, Material material) : BlockFluid(id, material
     private bool canSpreadTo(IBlockReader reader, int x, int y, int z)
     {
         if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
-        {
             return false;
-        }
 
-        if (!reader.IsPosLoaded(x, y, z))
-        {
-            return false;
-        }
+        if (!reader.IsPosLoaded(x, y, z)) return false;
 
         int blockId = reader.GetBlockId(x, y, z);
-        if (blockId == 0)
-        {
-            return true;
-        }
+        if (blockId == 0) return true;
 
         Material mat = reader.GetMaterial(x, y, z);
         return mat != Material && mat != Material.Lava && !isLiquidBreaking(reader, x, y, z);

@@ -12,23 +12,23 @@ public class BlockGrass : Block
         SetTickRandomly(true);
     }
 
-    public override int GetTexture(int side) =>
+    public override int GetTexture(Side side) =>
         side switch
         {
-            1 => 0, // top: grass green
-            0 => 2, // bottom: dirt
+            Side.Up => 0, // top: grass green
+            Side.Down => 2, // bottom: dirt
             _ => 3 // sides: grass+dirt edge
         };
 
-    public override int GetColorForFace(int meta, int face) => face == 1 ? GrassColors.getDefaultColor() : 0xFFFFFF;
+    public override int GetColorForFace(int meta, Side face) => face == Side.Up ? GrassColors.getDefaultColor() : 0xFFFFFF;
 
-    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
+    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
         switch (side)
         {
-            case 1:
+            case Side.Up:
                 return 0;
-            case 0:
+            case Side.Down:
                 return 2;
             default:
                 {

@@ -98,15 +98,15 @@ public class BlockBed : Block
         return true;
     }
 
-    public override int GetTexture(int side, int meta)
+    public override int GetTexture(Side side, int meta)
     {
-        if (side == 0) return Planks.TextureId;
+        if (side == Side.Down) return Planks.TextureId;
 
         int direction = GetDirection(meta);
-        int sideFacing = Facings.BED_FACINGS[direction][side];
-        return IsHeadOfBed(meta) ? sideFacing == 2 ? TextureId + 2 + 16 : sideFacing != 5 && sideFacing != 4 ? TextureId + 1 : TextureId + 1 + 16 :
-            sideFacing == 3 ? TextureId - 1 + 16 :
-            sideFacing != 5 && sideFacing != 4 ? TextureId : TextureId + 16;
+        Side sideFacing = Facings.BedFacings[direction][side.ToInt()];
+        return IsHeadOfBed(meta) ? sideFacing == Side.North ? TextureId + 2 + 16 : sideFacing != Side.East && sideFacing != Side.West ? TextureId + 1 : TextureId + 1 + 16 :
+            sideFacing == Side.South ? TextureId - 1 + 16 :
+            sideFacing != Side.East && sideFacing != Side.West ? TextureId : TextureId + 16;
     }
 
     public override BlockRendererType GetRenderType() => BlockRendererType.Bed;

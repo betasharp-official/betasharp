@@ -12,7 +12,7 @@ public class BlockTallGrass : BlockPlant
         SetBoundingBox(0.5F - halfSize, 0.0F, 0.5F - halfSize, 0.5F + halfSize, 0.8F, 0.5F + halfSize);
     }
 
-    public override int GetTexture(int side, int meta) => meta == 1 ? TextureId : meta == 2 ? TextureId + 16 + 1 : meta == 0 ? TextureId + 16 : TextureId;
+    public override int GetTexture(Side side, int meta) => meta == 1 ? TextureId : meta == 2 ? TextureId + 16 + 1 : meta == 0 ? TextureId + 16 : TextureId;
 
     public override int GetColor(int meta) => meta == 0 ? 0xFFFFFF : GrassColors.getDefaultColor();
 

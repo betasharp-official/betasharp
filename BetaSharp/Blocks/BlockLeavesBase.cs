@@ -11,5 +11,5 @@ public class BlockLeavesBase : Block
 
     public override bool IsOpaque() => false;
 
-    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side) => (GraphicsLevel || iBlockReader.GetBlockId(x, y, z) != Id) && base.IsSideVisible(iBlockReader, x, y, z, side);
+    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side) => (GraphicsLevel || iBlockReader.GetBlockId(x, y, z) != Id) && base.IsSideVisible(iBlockReader, x, y, z, side);
 }

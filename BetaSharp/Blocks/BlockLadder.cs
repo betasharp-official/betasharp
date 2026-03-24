@@ -12,16 +12,16 @@ internal class BlockLadder(int id, int textureId) : Block(id, textureId, Materia
         int meta = world.GetBlockMeta(x, y, z);
         switch (meta)
         {
-            case 2:
+            case (int)Side.North:
                 SetBoundingBox(0.0F, 0.0F, 1.0F - thickness, 1.0F, 1.0F, 1.0F);
                 break;
-            case 3:
+            case (int)Side.South:
                 SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, thickness);
                 break;
-            case 4:
+            case (int)Side.West:
                 SetBoundingBox(1.0F - thickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 break;
-            case 5:
+            case (int)Side.East:
                 SetBoundingBox(0.0F, 0.0F, 0.0F, thickness, 1.0F, 1.0F);
                 break;
         }
@@ -35,16 +35,16 @@ internal class BlockLadder(int id, int textureId) : Block(id, textureId, Materia
         int meta = world.GetBlockMeta(x, y, z);
         switch (meta)
         {
-            case 2:
+            case (int)Side.North:
                 SetBoundingBox(0.0F, 0.0F, 1.0F - thickness, 1.0F, 1.0F, 1.0F);
                 break;
-            case 3:
+            case (int)Side.South:
                 SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, thickness);
                 break;
-            case 4:
+            case (int)Side.West:
                 SetBoundingBox(1.0F - thickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 break;
-            case 5:
+            case (int)Side.East:
                 SetBoundingBox(0.0F, 0.0F, 0.0F, thickness, 1.0F, 1.0F);
                 break;
         }
@@ -67,24 +67,24 @@ internal class BlockLadder(int id, int textureId) : Block(id, textureId, Materia
     public override void OnPlaced(OnPlacedEvent ctx)
     {
         int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
-        if ((meta == 0 || ctx.Direction == 2) && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1))
+        if ((meta == 0 || ctx.Direction == Side.North) && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1))
         {
-            meta = 2;
+            meta = Side.North.ToInt();
         }
 
-        if ((meta == 0 || ctx.Direction == 3) && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1))
+        if ((meta == 0 || ctx.Direction == Side.South) && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1))
         {
-            meta = 3;
+            meta = Side.South.ToInt();
         }
 
-        if ((meta == 0 || ctx.Direction == 4) && ctx.World.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z))
+        if ((meta == 0 || ctx.Direction == Side.West) && ctx.World.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z))
         {
-            meta = 4;
+            meta = Side.West.ToInt();
         }
 
-        if ((meta == 0 || ctx.Direction == 5) && ctx.World.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z))
+        if ((meta == 0 || ctx.Direction == Side.East) && ctx.World.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z))
         {
-            meta = 5;
+            meta = Side.East.ToInt();
         }
 
         ctx.World.Writer.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, meta);
@@ -93,10 +93,10 @@ internal class BlockLadder(int id, int textureId) : Block(id, textureId, Materia
     public override void NeighborUpdate(OnTickEvent ctx)
     {
         int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
-        bool hasSupport = (meta == 2 && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1)) ||
-                          (meta == 3 && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1)) ||
-                          (meta == 4 && ctx.World.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z)) ||
-                          (meta == 5 && ctx.World.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z));
+        bool hasSupport = (meta == (int)Side.North && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1)) ||
+                          (meta == (int)Side.South && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1)) ||
+                          (meta == (int)Side.West && ctx.World.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z)) ||
+                          (meta == (int)Side.East && ctx.World.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z));
 
         if (!hasSupport)
         {

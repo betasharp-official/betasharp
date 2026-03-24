@@ -48,7 +48,7 @@ public class BlockRail : Block
         }
     }
 
-    public override int GetTexture(int side, int meta)
+    public override int GetTexture(Side side, int meta)
     {
         if (_alwaysStraight)
         {

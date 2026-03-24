@@ -40,7 +40,7 @@ internal class BlockSapling : BlockPlant
         }
     }
 
-    public override int GetTexture(int side, int meta)
+    public override int GetTexture(Side side, int meta)
     {
         meta &= 3;
         return meta switch

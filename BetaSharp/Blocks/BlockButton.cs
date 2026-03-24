@@ -16,9 +16,9 @@ internal class BlockButton : Block
 
     public override bool IsFullCube() => false;
 
-    private bool IsValidPlacementSide(IBlockReader read, int x, int y, int z, int side = 0)
+    private bool IsValidPlacementSide(IBlockReader read, int x, int y, int z, Side side = Side.Down)
     {
-        if (side == 2)
+        if (side == Side.North)
         {
             return read.ShouldSuffocate(x, y, z + 1);
         }
@@ -37,10 +37,10 @@ internal class BlockButton : Block
         int pressedBit = facing & 8;
         facing = evt.Direction switch
         {
-            2 when evt.World.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z + 1) => 4,
-            3 when evt.World.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z - 1) => 3,
-            4 when evt.World.Reader.ShouldSuffocate(evt.X + 1, evt.Y, evt.Z) => 2,
-            5 when evt.World.Reader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z) => 1,
+            Side.North when evt.World.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z + 1) => 4,
+            Side.South when evt.World.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z - 1) => 3,
+            Side.West when evt.World.Reader.ShouldSuffocate(evt.X + 1, evt.Y, evt.Z) => 2,
+            Side.East when evt.World.Reader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z) => 1,
             _ => getPlacementSide(evt.World.Reader, evt.X, evt.Y, evt.Z)
         };
 
@@ -203,11 +203,11 @@ internal class BlockButton : Block
         }
 
         int facing = meta & 7;
-        return (facing == 5 && side == 1) ||
-               (facing == 4 && side == 2) ||
-               (facing == 3 && side == 3) ||
-               (facing == 2 && side == 4) ||
-               (facing == 1 && side == 5);
+        return (facing == 5 && side == (int)Side.Up) ||
+               (facing == 4 && side == (int)Side.North) ||
+               (facing == 3 && side == (int)Side.South) ||
+               (facing == 2 && side == (int)Side.West) ||
+               (facing == 1 && side == (int)Side.East);
     }
 
     public override bool CanEmitRedstonePower() => true;

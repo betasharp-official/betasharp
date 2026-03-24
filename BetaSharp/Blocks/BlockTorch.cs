@@ -29,27 +29,27 @@ internal class BlockTorch : Block
     public override void OnPlaced(OnPlacedEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        if (@event.Direction == 1 && canPlaceOn(@event.World.Reader, @event.X, @event.Y - 1, @event.Z))
+        if (@event.Direction == Side.Up && canPlaceOn(@event.World.Reader, @event.X, @event.Y - 1, @event.Z))
         {
             meta = 5;
         }
 
-        if (@event.Direction == 2 && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1))
+        if (@event.Direction == Side.North && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1))
         {
             meta = 4;
         }
 
-        if (@event.Direction == 3 && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1))
+        if (@event.Direction == Side.South && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1))
         {
             meta = 3;
         }
 
-        if (@event.Direction == 4 && @event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z))
+        if (@event.Direction == Side.West && @event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z))
         {
             meta = 2;
         }
 
-        if (@event.Direction == 5 && @event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z))
+        if (@event.Direction == Side.East && @event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z))
         {
             meta = 1;
         }

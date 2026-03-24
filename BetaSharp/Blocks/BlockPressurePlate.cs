@@ -141,7 +141,7 @@ internal class BlockPressurePlate : Block
 
     public override bool IsPoweringSide(IBlockReader reader, int x, int y, int z, int side) => reader.GetBlockMeta(x, y, z) > 0;
 
-    public override bool IsStrongPoweringSide(IBlockReader reader, int x, int y, int z, int side) => reader.GetBlockMeta(x, y, z) == 0 ? false : side == 1;
+    public override bool IsStrongPoweringSide(IBlockReader reader, int x, int y, int z, int side) => reader.GetBlockMeta(x, y, z) == 0 ? false : side == (int)Side.Up;
 
     public override bool CanEmitRedstonePower() => true;
 

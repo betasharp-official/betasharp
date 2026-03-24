@@ -324,7 +324,7 @@ public class HeldItemRenderer
             int var6 = _game.world.Reader.GetBlockId(var2, var3, var4);
             if (_game.world.Reader.ShouldSuffocate(var2, var3, var4))
             {
-                renderInsideOfBlock(var1, Block.Blocks[var6].GetTexture(2));
+                renderInsideOfBlock(var1, Block.Blocks[var6].GetTexture(2.ToSide()));
             }
             else
             {

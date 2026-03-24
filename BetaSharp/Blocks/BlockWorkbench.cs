@@ -6,7 +6,7 @@ internal class BlockWorkbench : Block
 {
     public BlockWorkbench(int id) : base(id, Material.Wood) => TextureId = 59;
 
-    public override int GetTexture(int side) => side == 1 ? TextureId - 16 : side == 0 ? Planks.GetTexture(0) : side != 2 && side != 4 ? TextureId : TextureId + 1;
+    public override int GetTexture(Side side) => side == Side.Up ? TextureId - 16 : side == Side.Down ? Planks.GetTexture(Side.Down) : side != Side.North && side != Side.West ? TextureId : TextureId + 1;
 
     public override bool OnUse(OnUseEvent ctx)
     {

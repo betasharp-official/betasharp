@@ -45,16 +45,16 @@ internal class BlockSign : BlockWithEntity
         SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         switch (facing)
         {
-            case 2:
+            case (int)Side.North:
                 SetBoundingBox(minExtent, topOffset, 1.0F - thickness, maxExtent, bottomOffset, 1.0F);
                 break;
-            case 3:
+            case (int)Side.South:
                 SetBoundingBox(minExtent, topOffset, 0.0F, maxExtent, bottomOffset, thickness);
                 break;
-            case 4:
+            case (int)Side.West:
                 SetBoundingBox(1.0F - thickness, topOffset, minExtent, 1.0F, bottomOffset, maxExtent);
                 break;
-            case 5:
+            case (int)Side.East:
                 SetBoundingBox(0.0F, topOffset, minExtent, thickness, bottomOffset, maxExtent);
                 break;
         }

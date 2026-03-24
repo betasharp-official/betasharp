@@ -20,7 +20,7 @@ internal class BlockFarmland : Block
 
     public override bool IsFullCube() => false;
 
-    public override int GetTexture(int side, int meta) => side == 1 && meta > 0 ? TextureId - 1 : side == 1 ? TextureId : 2;
+    public override int GetTexture(Side side, int meta) => side == Side.Up && meta > 0 ? TextureId - 1 : side == Side.Up ? TextureId : 2;
 
     public override void OnTick(OnTickEvent @event)
     {

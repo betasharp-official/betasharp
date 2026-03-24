@@ -28,7 +28,7 @@ public abstract class BlockFluid : Block
         return height;
     }
 
-    public override int GetTexture(int side) => side != 0 && side != 1 ? TextureId + 1 : TextureId;
+    public override int GetTexture(Side side) => side != Side.Down && side != Side.Up ? TextureId + 1 : TextureId;
 
     protected int getLiquidState(IBlockReader reader, int x, int y, int z) => reader.GetMaterial(x, y, z) != Material ? -1 : reader.GetBlockMeta(x, y, z);
 
@@ -57,13 +57,13 @@ public abstract class BlockFluid : Block
     public override bool IsSolidFace(IBlockReader iBlockReader, int x, int y, int z, int face)
     {
         Material mat = iBlockReader.GetMaterial(x, y, z);
-        return mat != Material && mat != Material.Ice && (face == 1 || base.IsSolidFace(iBlockReader, x, y, z, face));
+        return mat != Material && mat != Material.Ice && (face == (int)Side.Up || base.IsSolidFace(iBlockReader, x, y, z, face));
     }
 
-    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side)
+    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
         Material mat = iBlockReader.GetMaterial(x, y, z);
-        return mat != Material && mat != Material.Ice && (side == 1 || base.IsSideVisible(iBlockReader, x, y, z, side));
+        return mat != Material && mat != Material.Ice && (side == Side.Up || base.IsSideVisible(iBlockReader, x, y, z, side));
     }
 
     public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
@@ -127,42 +127,42 @@ public abstract class BlockFluid : Block
         if (iBlockReader.GetBlockMeta(x, y, z) >= 8)
         {
             bool hasAdjacentSolid = false;
-            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x, y, z - 1, 2))
+            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x, y, z - 1, (int)Side.North))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x, y, z + 1, 3))
+            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x, y, z + 1, (int)Side.South))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x - 1, y, z, 4))
+            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x - 1, y, z, (int)Side.West))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x + 1, y, z, 5))
+            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x + 1, y, z, (int)Side.East))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x, y + 1, z - 1, 2))
+            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x, y + 1, z - 1, (int)Side.North))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x, y + 1, z + 1, 3))
+            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x, y + 1, z + 1, (int)Side.South))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x - 1, y + 1, z, 4))
+            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x - 1, y + 1, z, (int)Side.West))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x + 1, y + 1, z, 5))
+            if (hasAdjacentSolid || IsSolidFace(iBlockReader, x + 1, y + 1, z, (int)Side.East))
             {
                 hasAdjacentSolid = true;
             }

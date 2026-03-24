@@ -101,7 +101,7 @@ public class BlockRenderer
 
             void SetFaceColor(int face)
             {
-                int c = block.GetColorForFace(metadata, face);
+                int c = block.GetColorForFace(metadata, (Side)face);
                 GLManager.GL.Color4(
                     (c >> 16 & 255) / 255.0F * brightness,
                     (c >> 8 & 255) / 255.0F * brightness,

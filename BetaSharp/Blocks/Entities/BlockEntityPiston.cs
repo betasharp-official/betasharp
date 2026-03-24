@@ -50,11 +50,11 @@ public class BlockEntityPiston : BlockEntity
         return _progress + (_lastProgess - _progress) * tickDelta;
     }
 
-    public float getRenderOffsetX(float tickDelta) => _extending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HEAD_OFFSET_X[_facing] : (1.0F - getProgress(tickDelta)) * PistonConstants.HEAD_OFFSET_X[_facing];
+    public float getRenderOffsetX(float tickDelta) => _extending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetX(_facing) : (1.0F - getProgress(tickDelta)) * PistonConstants.HeadOffsetX(_facing);
 
-    public float getRenderOffsetY(float tickDelta) => _extending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HEAD_OFFSET_Y[_facing] : (1.0F - getProgress(tickDelta)) * PistonConstants.HEAD_OFFSET_Y[_facing];
+    public float getRenderOffsetY(float tickDelta) => _extending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetY(_facing) : (1.0F - getProgress(tickDelta)) * PistonConstants.HeadOffsetY(_facing);
 
-    public float getRenderOffsetZ(float tickDelta) => _extending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HEAD_OFFSET_Z[_facing] : (1.0F - getProgress(tickDelta)) * PistonConstants.HEAD_OFFSET_Z[_facing];
+    public float getRenderOffsetZ(float tickDelta) => _extending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetZ(_facing) : (1.0F - getProgress(tickDelta)) * PistonConstants.HeadOffsetZ(_facing);
 
     private void pushEntities(EntityManager entities, float collisionShapeSizeMultiplier, float entityMoveMultiplier)
     {
@@ -78,9 +78,9 @@ public class BlockEntityPiston : BlockEntity
                 foreach (Entity entity in pushedEntities)
                 {
                     entity.move(
-                        entityMoveMultiplier * PistonConstants.HEAD_OFFSET_X[_facing],
-                        entityMoveMultiplier * PistonConstants.HEAD_OFFSET_Y[_facing],
-                        entityMoveMultiplier * PistonConstants.HEAD_OFFSET_Z[_facing]
+                        entityMoveMultiplier * PistonConstants.HeadOffsetX(_facing),
+                        entityMoveMultiplier * PistonConstants.HeadOffsetY(_facing),
+                        entityMoveMultiplier * PistonConstants.HeadOffsetZ(_facing)
                     );
                 }
 

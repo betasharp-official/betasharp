@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Util.Maths;
+using Facings = BetaSharp.Blocks.Facings;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
 
@@ -94,10 +95,10 @@ public class BedRenderer : IBlockRenderer
         ctx.Tess.addVertexWithUV(minX, bedTopY, maxZ, u4, v4);
 
         // SIDE FACES
-        int forwardDir = Facings.TO_DIR[direction];
+        int forwardDir = (int)Facings.ToDir[direction];
         if (isHead)
         {
-            forwardDir = Facings.TO_DIR[Facings.OPPOSITE[direction]];
+            forwardDir = (int)Facings.ToDir[Facings.OppositeHorizontalDir(direction)];
         }
 
         byte textureFlipDir = 4;

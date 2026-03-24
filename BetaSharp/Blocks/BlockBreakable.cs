@@ -11,7 +11,7 @@ public class BlockBreakable : Block
 
     public override bool IsOpaque() => false;
 
-    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side)
+    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
         int neighborBlockId = iBlockReader.GetBlockId(x, y, z);
         return (_hideAdjacentFaces || neighborBlockId != Id) && base.IsSideVisible(iBlockReader, x, y, z, side);

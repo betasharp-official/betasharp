@@ -579,7 +579,7 @@ public abstract class World : IWorldContext
                     int blockBelowId = currentChunk.GetBlockId(localX, worldY - 1, localZ);
                     int currentBlockId = currentChunk.GetBlockId(localX, worldY, localZ);
 
-                    if (Environment.IsRaining && currentBlockId == 0 && Block.Snow.CanPlaceAt(new CanPlaceAtContext(this, 1, worldX, worldY, worldZ)) &&
+                    if (Environment.IsRaining && currentBlockId == 0 && Block.Snow.CanPlaceAt(new CanPlaceAtContext(this, 1.ToSide(), worldX, worldY, worldZ)) &&
                         blockBelowId != 0 && blockBelowId != Block.Ice.Id &&
                         Block.Blocks[blockBelowId].Material.BlocksMovement)
                     {

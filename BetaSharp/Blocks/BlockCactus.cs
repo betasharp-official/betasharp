@@ -49,10 +49,10 @@ internal class BlockCactus : Block
         return new Box(x + edgeInset, y, z + edgeInset, x + 1 - edgeInset, y + 1, z + 1 - edgeInset);
     }
 
-    public override int GetTexture(int side) => side switch
+    public override int GetTexture(Side side) => side switch
     {
-        1 => TextureId - 1,
-        0 => TextureId + 1,
+        Side.Up => TextureId - 1,
+        Side.Down => TextureId + 1,
         _ => TextureId
     };
 

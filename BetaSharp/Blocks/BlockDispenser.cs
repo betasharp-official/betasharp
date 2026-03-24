@@ -25,11 +25,11 @@ internal class BlockDispenser : BlockWithEntity
             int direction = MathHelper.Floor(@event.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
             int meta = direction switch
             {
-                0 => 2,
-                1 => 5,
-                2 => 3,
-                3 => 4,
-                _ => 2
+                0 => (int)Side.North,
+                1 => (int)Side.East,
+                2 => (int)Side.South,
+                3 => (int)Side.West,
+                _ => (int)Side.North
             };
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
             if (!@event.World.IsRemote)
@@ -58,40 +58,45 @@ internal class BlockDispenser : BlockWithEntity
         bool isWestOpaque = BlocksOpaque[reader.GetBlockId(x - 1, y, z)];
         bool isEastOpaque = BlocksOpaque[reader.GetBlockId(x + 1, y, z)];
 
-        byte direction = 3;
+        Side direction = Side.South;
         if (isNorthOpaque && !isSouthOpaque)
         {
-            direction = 3;
+            direction = Side.South;
         }
         else if (isSouthOpaque && !isNorthOpaque)
         {
-            direction = 2;
+            direction = Side.North;
         }
 
         if (isWestOpaque && !isEastOpaque)
         {
-            direction = 5;
+            direction = Side.East;
         }
         else if (isEastOpaque && !isWestOpaque)
         {
-            direction = 4;
+            direction = Side.West;
         }
 
-        @event.World.Writer.SetBlockMeta(x, y, z, direction);
+        @event.World.Writer.SetBlockMeta(x, y, z, direction.ToInt());
     }
 
-    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
+    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (side is 1 or 0)
+        if (side is Side.Up or Side.Down)
         {
             return TextureId + 17;
         }
 
         int meta = iBlockReader.GetBlockMeta(x, y, z);
-        return side != meta ? TextureId : TextureId + 1;
+        return side.ToInt() != meta ? TextureId : TextureId + 1;
     }
 
-    public override int GetTexture(int side) => side == 1 ? TextureId + 17 : side == 0 ? TextureId + 17 : side == 3 ? TextureId + 1 : TextureId;
+    public override int GetTexture(Side side) => side switch
+    {
+        Side.Up or Side.Down => TextureId + 17,
+        Side.South => TextureId + 1,
+        _ => TextureId
+    };
 
     public override bool OnUse(OnUseEvent @event)
     {
@@ -115,15 +120,15 @@ internal class BlockDispenser : BlockWithEntity
         int dirX = 0;
         int dirZ = 0;
 
-        switch (meta)
+        switch (meta.ToSide())
         {
-            case 3:
+            case Side.South:
                 dirZ = 1;
                 break;
-            case 2:
+            case Side.North:
                 dirZ = -1;
                 break;
-            case 5:
+            case Side.East:
                 dirX = 1;
                 break;
             default:

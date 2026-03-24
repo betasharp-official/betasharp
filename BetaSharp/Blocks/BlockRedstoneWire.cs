@@ -11,7 +11,7 @@ public class BlockRedstoneWire : Block
 
     public BlockRedstoneWire(int id, int textureId) : base(id, textureId, Material.PistonBreakable) => SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F / 16.0F, 1.0F);
 
-    public override int GetTexture(int var1, int var2) => TextureId;
+    public override int GetTexture(Side var1, int var2) => TextureId;
 
     public override Box? GetCollisionShape(IBlockReader var1, EntityManager entities, int var2, int var3, int var4) => null;
 
@@ -459,6 +459,6 @@ public class BlockRedstoneWire : Block
         }
 
         int var6 = reader.GetBlockMeta(var1, var2, var3);
-        return var4 == Facings.OPPOSITE[var6 & 3];
+        return var4 == Facings.OppositeHorizontalDir(var6 & 3);
     }
 }

@@ -166,11 +166,12 @@ internal class BlockFire : Block
         }
     }
 
-    private bool areBlocksAroundFlammable(IBlockReader world, int x, int y, int z) => IsFlammable(world, x + 1, y, z) ? true :
-        IsFlammable(world, x - 1, y, z) ? true :
-        IsFlammable(world, x, y - 1, z) ? true :
-        IsFlammable(world, x, y + 1, z) ? true :
-        IsFlammable(world, x, y, z - 1) ? true : IsFlammable(world, x, y, z + 1);
+    private bool areBlocksAroundFlammable(IBlockReader world, int x, int y, int z) => IsFlammable(world, x + 1, y, z) ||
+                                                                                      IsFlammable(world, x - 1, y, z) ||
+                                                                                      IsFlammable(world, x, y - 1, z) ||
+                                                                                      IsFlammable(world, x, y + 1, z) ||
+                                                                                      IsFlammable(world, x, y, z - 1) ||
+                                                                                      IsFlammable(world, x, y, z + 1);
 
     private int getBurnChance(IBlockReader world, int x, int y, int z)
     {
@@ -204,18 +205,15 @@ internal class BlockFire : Block
     public override void NeighborUpdate(OnTickEvent ctx)
     {
         if (!ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) && !areBlocksAroundFlammable(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z))
-        {
             ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
-        }
     }
 
     public override void OnPlaced(OnPlacedEvent ctx)
     {
         if (ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == Obsidian.Id &&
             NetherPortal.create(ctx.World.Reader, ctx.World.Writer, ctx.X, ctx.Y, ctx.Z))
-        {
             return;
-        }
+
 
         if (!ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) && !areBlocksAroundFlammable(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z))
         {

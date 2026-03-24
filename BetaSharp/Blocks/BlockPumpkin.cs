@@ -14,9 +14,9 @@ internal class BlockPumpkin : Block
         _lit = lit;
     }
 
-    public override int GetTexture(int side, int meta)
+    public override int GetTexture(Side side, int meta)
     {
-        if (side is 1 or 0)
+        if (side is Side.Up or Side.Down)
         {
             return TextureId;
         }
@@ -27,17 +27,17 @@ internal class BlockPumpkin : Block
             ++faceTexture;
         }
 
-        return meta == 2 && side == 2 ? faceTexture :
-            meta == 3 && side == 5 ? faceTexture :
-            meta == 0 && side == 3 ? faceTexture :
-            meta == 1 && side == 4 ? faceTexture : TextureId + 16;
+        return meta == 2 && side == Side.North ? faceTexture :
+            meta == 3 && side == Side.East ? faceTexture :
+            meta == 0 && side == Side.South ? faceTexture :
+            meta == 1 && side == Side.West ? faceTexture : TextureId + 16;
     }
 
-    public override int GetTexture(int side) => side switch
+    public override int GetTexture(Side side) => side switch
     {
-        1 => TextureId,
-        0 => TextureId,
-        3 => TextureId + 1 + 16,
+        Side.Up => TextureId,
+        Side.Down => TextureId,
+        Side.South => TextureId + 1 + 16,
         _ => TextureId + 16
     };
 
@@ -49,10 +49,7 @@ internal class BlockPumpkin : Block
 
     public override void OnPlaced(OnPlacedEvent @event)
     {
-        if (@event.Placer == null)
-        {
-            return;
-        }
+        if (@event.Placer == null) return;
 
         int direction = MathHelper.Floor(@event.Placer.yaw * 4.0F / 360.0F + 2.5D) & 3;
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, direction);

@@ -4,7 +4,7 @@ namespace BetaSharp.Blocks;
 
 internal class BlockCloth() : Block(35, 64, Material.Wool)
 {
-    public override int GetTexture(int side, int meta)
+    public override int GetTexture(Side side, int meta)
     {
         if (meta == 0)
         {

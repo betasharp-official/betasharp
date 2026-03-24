@@ -13,7 +13,8 @@ internal class BlockIce : BlockBreakable
 
     public override int GetRenderLayer() => 1;
 
-    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side) => base.IsSideVisible(iBlockReader, x, y, z, 1 - side);
+    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side) =>
+        base.IsSideVisible(iBlockReader, x, y, z, SideExtensions.OppositeFace(side));
 
     public override void OnAfterBreak(OnAfterBreakEvent @event)
     {

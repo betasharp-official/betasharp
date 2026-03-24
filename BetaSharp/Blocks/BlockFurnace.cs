@@ -34,11 +34,11 @@ internal class BlockFurnace : BlockWithEntity
 
             int meta = direction switch
             {
-                0 => 2,
-                1 => 5,
-                2 => 3,
-                3 => 4,
-                _ => 2
+                0 => (int)Side.North,
+                1 => (int)Side.East,
+                2 => (int)Side.South,
+                3 => (int)Side.West,
+                _ => (int)Side.North
             };
 
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
@@ -69,45 +69,42 @@ internal class BlockFurnace : BlockWithEntity
         bool isWestOpaque = BlocksOpaque[reader.GetBlockId(x - 1, y, z)];
         bool isEastOpaque = BlocksOpaque[reader.GetBlockId(x + 1, y, z)];
 
-        byte direction = 3;
+        Side direction = Side.South;
         if (isNorthOpaque && !isSouthOpaque)
         {
-            direction = 3;
+            direction = Side.South;
         }
         else if (isSouthOpaque && !isNorthOpaque)
         {
-            direction = 2;
+            direction = Side.North;
         }
 
         if (isWestOpaque && !isEastOpaque)
         {
-            direction = 5;
+            direction = Side.East;
         }
         else if (isEastOpaque && !isWestOpaque)
         {
-            direction = 4;
+            direction = Side.West;
         }
 
-        @event.World.Writer.SetBlockMeta(x, y, z, direction);
+        @event.World.Writer.SetBlockMeta(x, y, z, direction.ToInt());
     }
 
-    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
+    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (side is 1 or 0)
+        if (side is Side.Up or Side.Down)
         {
             return TextureId + 17;
         }
 
         int meta = iBlockReader.GetBlockMeta(x, y, z);
-        return side != meta ? TextureId : _lit ? TextureId + 16 : TextureId - 1;
+        return side.ToInt() != meta ? TextureId : _lit ? TextureId + 16 : TextureId - 1;
     }
 
     public override void RandomDisplayTick(OnTickEvent @event)
     {
-        if (!_lit)
-        {
-            return;
-        }
+        if (!_lit) return;
 
         const float flameOffset = 0.52F;
 
@@ -119,26 +116,31 @@ internal class BlockFurnace : BlockWithEntity
 
         switch (var6)
         {
-            case 4:
+            case (int)Side.West:
                 @event.World.Broadcaster.AddParticle("smoke", particleX - flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
                 @event.World.Broadcaster.AddParticle("flame", particleX - flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
                 break;
-            case 5:
+            case (int)Side.East:
                 @event.World.Broadcaster.AddParticle("smoke", particleX + flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
                 @event.World.Broadcaster.AddParticle("flame", particleX + flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
                 break;
-            case 2:
+            case (int)Side.North:
                 @event.World.Broadcaster.AddParticle("smoke", particleX + randomOffset, particleY, particleZ - flameOffset, 0.0D, 0.0D, 0.0D);
                 @event.World.Broadcaster.AddParticle("flame", particleX + randomOffset, particleY, particleZ - flameOffset, 0.0D, 0.0D, 0.0D);
                 break;
-            case 3:
+            case (int)Side.South:
                 @event.World.Broadcaster.AddParticle("smoke", particleX + randomOffset, particleY, particleZ + flameOffset, 0.0D, 0.0D, 0.0D);
                 @event.World.Broadcaster.AddParticle("flame", particleX + randomOffset, particleY, particleZ + flameOffset, 0.0D, 0.0D, 0.0D);
                 break;
         }
     }
 
-    public override int GetTexture(int side) => side == 1 ? TextureId + 17 : side == 0 ? TextureId + 17 : side == 3 ? TextureId - 1 : TextureId;
+    public override int GetTexture(Side side) => side switch
+    {
+        Side.Up or Side.Down => TextureId + 17,
+        Side.South => TextureId - 1,
+        _ => TextureId
+    };
 
     public override bool OnUse(OnUseEvent @event)
     {
@@ -186,10 +188,7 @@ internal class BlockFurnace : BlockWithEntity
             for (int slotIndex = 0; slotIndex < furnace.size(); ++slotIndex)
             {
                 ItemStack? stack = furnace.getStack(slotIndex);
-                if (stack == null)
-                {
-                    continue;
-                }
+                if (stack == null) continue;
 
                 float offsetX = _random.NextFloat() * 0.8F + 0.1F;
                 float offsetY = _random.NextFloat() * 0.8F + 0.1F;
@@ -197,15 +196,15 @@ internal class BlockFurnace : BlockWithEntity
 
                 while (stack.count > 0)
                 {
-                    int var11 = _random.NextInt(21) + 10;
-                    if (var11 > stack.count)
+                    int count = _random.NextInt(21) + 10;
+                    if (count > stack.count)
                     {
-                        var11 = stack.count;
+                        count = stack.count;
                     }
 
-                    stack.count -= var11;
+                    stack.count -= count;
                     const float spread = 0.05F;
-                    EntityItem droppedItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, var11, stack.getDamage()))
+                    EntityItem droppedItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, count, stack.getDamage()))
                     {
                         velocityX = (float)_random.NextGaussian() * spread,
                         velocityY = (float)_random.NextGaussian() * spread + 0.2F,
