@@ -27,7 +27,6 @@ public static class ParticleUpdater
 
         for (int i = 0; i < count; i++)
         {
-            // Age
             buf.Age[i]++;
             if (buf.Age[i] >= buf.MaxAge[i])
             {
@@ -43,7 +42,6 @@ public static class ParticleUpdater
                 buf.TextureIndex[i] = 7 - buf.Age[i] * 8 / buf.MaxAge[i];
             }
 
-            // Physics per model
             switch (config.Physics)
             {
                 case PhysicsModel.Standard:
@@ -102,12 +100,10 @@ public static class ParticleUpdater
                 buf.VelZ[i] *= 1.1;
             }
 
-            // Friction
             buf.VelX[i] *= config.Friction;
             buf.VelY[i] *= config.Friction;
             buf.VelZ[i] *= config.Friction;
 
-            // Ground friction
             if (buf.OnGround[i])
             {
                 buf.VelX[i] *= config.GroundFriction;

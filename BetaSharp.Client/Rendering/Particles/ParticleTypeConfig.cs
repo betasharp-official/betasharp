@@ -3,13 +3,13 @@ namespace BetaSharp.Client.Rendering.Particles;
 public enum PhysicsModel : byte
 {
     Standard,   // gravity down via particleGravity, friction, ground friction
-    Buoyant,    // gravity up (velocityY += upwardForce), friction, stalled-spread
+    Buoyant,    // gravity up (velocityY += upwardForce), friction
     NoClip,     // no collision, just integrate velocity
     Parametric, // position from spawn + progress curve (Portal)
     BubbleRise, // upward drift, dies outside water
-    RainFall,   // gravity via particleGravity, dies on ground/fluid, age counts down
+    RainFall,   // gravity via particleGravity, dies on ground/fluid
     LavaDrop,   // gravity down -0.03, spawns smoke sub-particles
-    SnowDrift,  // gravity down -0.03, animated texture, friction 0.99
+    SnowDrift,  // gravity down -0.03, friction 0.99
 }
 
 public enum ScaleModel : byte
