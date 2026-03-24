@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
@@ -15,14 +16,14 @@ internal class ItemMinecart : Item
         this.minecartType = minecartType;
     }
 
-    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
+    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
-        int blockId = world.getBlockId(x, y, z);
+        int blockId = world.Reader.GetBlockId(x, y, z);
         if (BlockRail.isRail(blockId))
         {
-            if (!world.isRemote)
+            if (!world.IsRemote)
             {
-                world.SpawnEntity(new EntityMinecart(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), minecartType));
+                world.SpawnEntity(new EntityMinecart(world, x + 0.5F, y + 0.5F, z + 0.5F, minecartType));
             }
 
             --itemStack.count;

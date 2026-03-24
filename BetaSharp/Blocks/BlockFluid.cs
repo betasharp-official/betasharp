@@ -1,7 +1,6 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 using Silk.NET.Maths;
 
 namespace BetaSharp.Blocks;
@@ -16,7 +15,7 @@ public abstract class BlockFluid : Block
         setTickRandomly(true);
     }
 
-    public override int getColorMultiplier(IBlockAccess iBlockAccess, int x, int y, int z)
+    public override int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z)
     {
         return 0xFFFFFF;
     }
@@ -28,36 +27,28 @@ public abstract class BlockFluid : Block
             meta = 0;
         }
 
-        float height = (float)(meta + 1) / 9.0F;
+        float height = (meta + 1) / 9.0F;
         return height;
     }
 
-    public override int getTexture(int side)
-    {
-        return side != 0 && side != 1 ? textureId + 1 : textureId;
-    }
+    public override int getTexture(int side) => side != 0 && side != 1 ? textureId + 1 : textureId;
 
-    protected int getLiquidState(World world, int x, int y, int z)
-    {
-        return world.getMaterial(x, y, z) != material ? -1 : world.getBlockMeta(x, y, z);
-    }
+    protected int getLiquidState(IBlockReader reader, int x, int y, int z) => reader.GetMaterial(x, y, z) != material ? -1 : reader.GetBlockMeta(x, y, z);
 
-    protected int getLiquidDepth(IBlockAccess iBlockAccess, int x, int y, int z)
+    private int getLiquidDepth(IBlockReader iBlockReader, int x, int y, int z)
     {
-        if (iBlockAccess.getMaterial(x, y, z) != material)
+        if (iBlockReader.GetMaterial(x, y, z) != material)
         {
             return -1;
         }
-        else
-        {
-            int depth = iBlockAccess.getBlockMeta(x, y, z);
-            if (depth >= 8)
-            {
-                depth = 0;
-            }
 
-            return depth;
+        int depth = iBlockReader.GetBlockMeta(x, y, z);
+        if (depth >= 8)
+        {
+            depth = 0;
         }
+
+        return depth;
     }
 
     public override bool isFullCube()
@@ -75,23 +66,19 @@ public abstract class BlockFluid : Block
         return allowLiquids && meta == 0;
     }
 
-    public override bool isSolidFace(IBlockAccess iBlockAccess, int x, int y, int z, int face)
+    public override bool isSolidFace(IBlockReader iBlockReader, int x, int y, int z, int face)
     {
-        Material material = iBlockAccess.getMaterial(x, y, z);
-        return material == base.material ?
-            false :
-            (material == Material.Ice ? false : (face == 1 ? true : base.isSolidFace(iBlockAccess, x, y, z, face)));
+        Material mat = iBlockReader.GetMaterial(x, y, z);
+        return mat != material && (mat != Material.Ice && (face == 1 || base.isSolidFace(iBlockReader, x, y, z, face)));
     }
 
-    public override bool isSideVisible(IBlockAccess iBlockAccess, int x, int y, int z, int side)
+    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side)
     {
-        Material material = iBlockAccess.getMaterial(x, y, z);
-        return material == base.material ?
-            false :
-            (material == Material.Ice ? false : (side == 1 ? true : base.isSideVisible(iBlockAccess, x, y, z, side)));
+        Material mat = iBlockReader.GetMaterial(x, y, z);
+        return mat != material && (mat != Material.Ice && (side == 1 || base.isSideVisible(iBlockReader, x, y, z, side)));
     }
 
-    public override Box? getCollisionShape(World world, int x, int y, int z)
+    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
         return null;
     }
@@ -101,105 +88,101 @@ public abstract class BlockFluid : Block
         return BlockRendererType.Fluids;
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
+    public override int getDroppedItemId(int blockMeta)
     {
         return 0;
     }
 
-    public override int getDroppedItemCount(JavaRandom random)
+    public override int getDroppedItemCount()
     {
         return 0;
     }
 
-    private Vector3D<double> getFlow(IBlockAccess iBlockAccess, int x, int y, int z)
+    private Vector3D<double> getFlow(IBlockReader iBlockReader, int x, int y, int z)
     {
         Vector3D<double> flowVector = new(0.0);
-        int depth = getLiquidDepth(iBlockAccess, x, y, z);
+        int depth = getLiquidDepth(iBlockReader, x, y, z);
 
         for (int direction = 0; direction < 4; ++direction)
         {
             int neighborX = x;
             int neighborZ = z;
-            if (direction == 0)
+            switch (direction)
             {
-                neighborX = x - 1;
+                case 0:
+                    neighborX = x - 1;
+                    break;
+                case 1:
+                    neighborZ = z - 1;
+                    break;
+                case 2:
+                    ++neighborX;
+                    break;
+                case 3:
+                    ++neighborZ;
+                    break;
             }
 
-            if (direction == 1)
-            {
-                neighborZ = z - 1;
-            }
-
-            if (direction == 2)
-            {
-                ++neighborX;
-            }
-
-            if (direction == 3)
-            {
-                ++neighborZ;
-            }
-
-            int neighborDepth = getLiquidDepth(iBlockAccess, neighborX, y, neighborZ);
+            int neighborDepth = getLiquidDepth(iBlockReader, neighborX, y, neighborZ);
             int depthDiff;
             if (neighborDepth < 0)
             {
-                if (!iBlockAccess.getMaterial(neighborX, y, neighborZ).BlocksMovement)
+                if (!iBlockReader.GetMaterial(neighborX, y, neighborZ).BlocksMovement)
                 {
-                    neighborDepth = getLiquidDepth(iBlockAccess, neighborX, y - 1, neighborZ);
+                    neighborDepth = getLiquidDepth(iBlockReader, neighborX, y - 1, neighborZ);
                     if (neighborDepth >= 0)
                     {
                         depthDiff = neighborDepth - (depth - 8);
-                        flowVector += new Vector3D<double>((double)((neighborX - x) * depthDiff), (double)((y - y) * depthDiff), (double)((neighborZ - z) * depthDiff));
+                        flowVector += new Vector3D<double>((neighborX - x) * depthDiff, (y - y) * depthDiff, (neighborZ - z) * depthDiff);
                     }
                 }
             }
-            else if (neighborDepth >= 0)
+            else
             {
                 depthDiff = neighborDepth - depth;
-                flowVector += new Vector3D<double>((double)((neighborX - x) * depthDiff), (double)((y - y) * depthDiff), (double)((neighborZ - z) * depthDiff));
+                flowVector += new Vector3D<double>((neighborX - x) * depthDiff, (y - y) * depthDiff, (neighborZ - z) * depthDiff);
             }
         }
 
-        if (iBlockAccess.getBlockMeta(x, y, z) >= 8)
+        if (iBlockReader.GetBlockMeta(x, y, z) >= 8)
         {
             bool hasAdjacentSolid = false;
-            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x, y, z - 1, 2))
+            if (hasAdjacentSolid || isSolidFace(iBlockReader, x, y, z - 1, 2))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x, y, z + 1, 3))
+            if (hasAdjacentSolid || isSolidFace(iBlockReader, x, y, z + 1, 3))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x - 1, y, z, 4))
+            if (hasAdjacentSolid || isSolidFace(iBlockReader, x - 1, y, z, 4))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x + 1, y, z, 5))
+            if (hasAdjacentSolid || isSolidFace(iBlockReader, x + 1, y, z, 5))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x, y + 1, z - 1, 2))
+            if (hasAdjacentSolid || isSolidFace(iBlockReader, x, y + 1, z - 1, 2))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x, y + 1, z + 1, 3))
+            if (hasAdjacentSolid || isSolidFace(iBlockReader, x, y + 1, z + 1, 3))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x - 1, y + 1, z, 4))
+            if (hasAdjacentSolid || isSolidFace(iBlockReader, x - 1, y + 1, z, 4))
             {
                 hasAdjacentSolid = true;
             }
 
-            if (hasAdjacentSolid || isSolidFace(iBlockAccess, x + 1, y + 1, z, 5))
+            if (hasAdjacentSolid || isSolidFace(iBlockReader, x + 1, y + 1, z, 5))
             {
                 hasAdjacentSolid = true;
             }
@@ -214,29 +197,27 @@ public abstract class BlockFluid : Block
         return flowVector;
     }
 
-    public override void applyVelocity(World world, int x, int y, int z, Entity entity, Vec3D velocity)
+    public override Vec3D applyVelocity(OnApplyVelocityEvent @event)
     {
-        Vector3D<double> flowVec = getFlow(world, x, y, z);
-        velocity.x += flowVec.X;
-        velocity.y += flowVec.Y;
-        velocity.z += flowVec.Z;
+        Vector3D<double> flowVec = getFlow(@event.World.Reader, @event.X, @event.Y, @event.Z);
+        return new Vec3D(flowVec.X, flowVec.Y, flowVec.Z);
     }
 
     public override int getTickRate()
     {
-        return material == Material.Water ? 5 : (material == Material.Lava ? 30 : 0);
+        return material == Material.Water ? 5 : material == Material.Lava ? 30 : 0;
     }
 
-    public override float getLuminance(IBlockAccess iBlockAccess, int x, int y, int z)
+    public override float getLuminance(ILightProvider lighting, int x, int y, int z)
     {
-        float luminance = iBlockAccess.getLuminance(x, y, z);
-        float luminanceAbove = iBlockAccess.getLuminance(x, y + 1, z);
+        float luminance = lighting.GetLuminance(x, y, z);
+        float luminanceAbove = lighting.GetLuminance(x, y + 1, z);
         return luminance > luminanceAbove ? luminance : luminanceAbove;
     }
 
-    public override void onTick(World world, int x, int y, int z, JavaRandom random)
+    public override void onTick(OnTickEvent @event)
     {
-        base.onTick(world, x, y, z, random);
+        base.onTick(@event);
     }
 
     public override int getRenderLayer()
@@ -244,117 +225,126 @@ public abstract class BlockFluid : Block
         return material == Material.Water ? 1 : 0;
     }
 
-    public override void randomDisplayTick(World world, int x, int y, int z, JavaRandom random)
+    public override void randomDisplayTick(OnTickEvent @event)
     {
-        if (material == Material.Water && random.NextInt(64) == 0)
+        if (material == Material.Water && Random.Shared.Next(64) == 0)
         {
-            int meta = world.getBlockMeta(x, y, z);
-            if (meta > 0 && meta < 8)
+            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+            if (meta is > 0 and < 8)
             {
-                world.playSound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), "liquid.water", random.NextFloat() * 0.25F + 12.0F / 16.0F, random.NextFloat() * 1.0F + 0.5F);
+                @event.World.Broadcaster.PlaySoundAtPos(
+                    @event.X + 0.5F,
+                    @event.Y + 0.5F,
+                    @event.Z + 0.5F,
+                    "liquid.water",
+                    Random.Shared.NextSingle() * 0.25F + 12.0F / 16.0F,
+                    Random.Shared.NextSingle() * 1.0F + 0.5F
+                );
             }
         }
 
-        if (material == Material.Lava && world.getMaterial(x, y + 1, z) == Material.Air && !world.isOpaque(x, y + 1, z) && random.NextInt(100) == 0)
+        if (material == Material.Lava &&
+            @event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z) == Material.Air &&
+            !@event.World.Reader.IsOpaque(@event.X, @event.Y + 1, @event.Z) && Random.Shared.Next(100) == 0)
         {
-            double particleX = (double)(x + random.NextFloat());
-            double particleY = (double)y + BoundingBox.MaxY;
-            double particleZ = (double)(z + random.NextFloat());
-            world.addParticle("lava", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+            double particleX = @event.X + Random.Shared.NextSingle();
+            double particleY = @event.Y + BoundingBox.MaxY;
+            double particleZ = @event.Z + Random.Shared.NextSingle();
+            @event.World.Broadcaster.AddParticle("lava", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
         }
-
     }
 
-    public static double getFlowingAngle(IBlockAccess iBlockAccess, int x, int y, int z, Material material)
+    public static double getFlowingAngle(IBlockReader iBlockReader, int x, int y, int z, Material material)
     {
         Vector3D<double> flowVec = new(0.0);
         if (material == Material.Water)
         {
-            flowVec = ((BlockFluid)FlowingWater).getFlow(iBlockAccess, x, y, z);
+            flowVec = ((BlockFluid)FlowingWater).getFlow(iBlockReader, x, y, z);
         }
         else if (material == Material.Lava)
         {
-            flowVec = ((BlockFluid)FlowingLava).getFlow(iBlockAccess, x, y, z);
+            flowVec = ((BlockFluid)FlowingLava).getFlow(iBlockReader, x, y, z);
         }
 
-        return flowVec.X == 0.0D && flowVec.Z == 0.0D ? -1000.0D : Math.Atan2(flowVec.Z, flowVec.X) - Math.PI * 0.5D;
+        return flowVec is { X: 0.0D, Z: 0.0D } ? -1000.0D : Math.Atan2(flowVec.Z, flowVec.X) - Math.PI * 0.5D;
     }
 
-    public override void onPlaced(World world, int x, int y, int z)
+    public override void onPlaced(OnPlacedEvent @event)
     {
-        checkBlockCollisions(world, x, y, z);
+        checkBlockCollisions(@event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
     }
 
-    public override void neighborUpdate(World world, int x, int y, int z, int var5)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        checkBlockCollisions(world, x, y, z);
+        checkBlockCollisions(@event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
     }
 
-    private void checkBlockCollisions(World world, int x, int y, int z)
+    private void checkBlockCollisions(IBlockReader reader, WorldWriter writer, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        if (world.getBlockId(x, y, z) == id)
+        if (reader.GetBlockId(x, y, z) != id) return;
+
+
+        if (material != Material.Lava) return;
+
+        bool hasWaterAdjacent = false;
+
+        if (hasWaterAdjacent || reader.GetMaterial(x, y, z - 1) == Material.Water)
         {
-            if (material == Material.Lava)
-            {
-                bool hasWaterAdjacent = false;
-                if (hasWaterAdjacent || world.getMaterial(x, y, z - 1) == Material.Water)
-                {
-                    hasWaterAdjacent = true;
-                }
-
-                if (hasWaterAdjacent || world.getMaterial(x, y, z + 1) == Material.Water)
-                {
-                    hasWaterAdjacent = true;
-                }
-
-                if (hasWaterAdjacent || world.getMaterial(x - 1, y, z) == Material.Water)
-                {
-                    hasWaterAdjacent = true;
-                }
-
-                if (hasWaterAdjacent || world.getMaterial(x + 1, y, z) == Material.Water)
-                {
-                    hasWaterAdjacent = true;
-                }
-
-                if (hasWaterAdjacent || world.getMaterial(x, y + 1, z) == Material.Water)
-                {
-                    hasWaterAdjacent = true;
-                }
-
-                if (hasWaterAdjacent)
-                {
-                    int var6 = world.getBlockMeta(x, y, z);
-                    if (var6 == 0)
-                    {
-                        world.setBlock(x, y, z, Block.Obsidian.id);
-                    }
-                    else if (var6 <= 4)
-                    {
-                        world.setBlock(x, y, z, Block.Cobblestone.id);
-                    }
-
-                    fizz(world, x, y, z);
-                }
-            }
-
+            hasWaterAdjacent = true;
         }
+
+        if (hasWaterAdjacent || reader.GetMaterial(x, y, z + 1) == Material.Water)
+        {
+            hasWaterAdjacent = true;
+        }
+
+        if (hasWaterAdjacent || reader.GetMaterial(x - 1, y, z) == Material.Water)
+        {
+            hasWaterAdjacent = true;
+        }
+
+        if (hasWaterAdjacent || reader.GetMaterial(x + 1, y, z) == Material.Water)
+        {
+            hasWaterAdjacent = true;
+        }
+
+        if (hasWaterAdjacent || reader.GetMaterial(x, y + 1, z) == Material.Water)
+        {
+            hasWaterAdjacent = true;
+        }
+
+        if (!hasWaterAdjacent)
+        {
+            return;
+        }
+
+        int meta = reader.GetBlockMeta(x, y, z);
+        switch (meta)
+        {
+            case 0:
+                writer.SetBlock(x, y, z, Obsidian.id);
+                break;
+            default:
+                writer.SetBlock(x, y, z, Cobblestone.id);
+                break;
+        }
+
+        fizz(broadcaster, x, y, z);
     }
 
-    protected void fizz(World world, int x, int y, int z)
+    protected void fizz(WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        world.playSound(x + 0.5F, y + 0.5F, z + 0.5F, "random.fizz", 0.5F, 2.6F + (world.random.NextFloat() - world.random.NextFloat()) * 0.8F);
+        broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, "random.fizz", 0.5F, 2.6F + (Random.Shared.NextSingle() - Random.Shared.NextSingle()) * 0.8F);
 
         for (int particleIndex = 0; particleIndex < 8; ++particleIndex)
         {
-            world.addParticle("largesmoke", x + Random.Shared.NextDouble(), y + 1.2D, (double)z + Random.Shared.NextDouble(), 0.0D, 0.0D, 0.0D);
+            broadcaster.AddParticle("largesmoke", x + Random.Shared.NextDouble(), y + 1.2D, z + Random.Shared.NextDouble(), 0.0D, 0.0D, 0.0D);
         }
-
     }
 
     private static Vector3D<double> Normalize(Vector3D<double> vec)
     {
-        double length = (double)MathHelper.Sqrt(vec.X * vec.X + vec.Y * vec.Y + vec.Z * vec.Z);
-        return length < 1.0E-4D ? new(0.0) : new(vec.X / length, vec.Y / length, vec.Z / length);
+        double length = MathHelper.Sqrt(vec.X * vec.X + vec.Y * vec.Y + vec.Z * vec.Z);
+        return length < 1.0E-4D ? new Vector3D<double>(0.0) : new Vector3D<double>(vec.X / length, vec.Y / length, vec.Z / length);
     }
 }

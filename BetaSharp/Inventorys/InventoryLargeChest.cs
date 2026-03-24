@@ -32,7 +32,7 @@ internal class InventoryLargeChest : IInventory
         return slotIndex >= upperChest.size() ? lowerChest.getStack(slotIndex - upperChest.size()) : upperChest.getStack(slotIndex);
     }
 
-    public ItemStack removeStack(int slotIndex, int amount)
+    public ItemStack? removeStack(int slotIndex, int amount)
     {
         return slotIndex >= upperChest.size() ? lowerChest.removeStack(slotIndex - upperChest.size(), amount) : upperChest.removeStack(slotIndex, amount);
     }

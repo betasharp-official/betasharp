@@ -62,13 +62,13 @@ public class DataCommand : ICommand
         switch (c.Args[1])
         {
             case "entity":
-                LogEntity(c.Server.getWorld(player.dimensionId).entities, player, c);
+                LogEntity(c.Server.getWorld(player.dimensionId).Entities.Entities, player, c);
                 return;
             case "player":
-                LogEntity(c.Server.getWorld(player.dimensionId).players, player, c);
+                LogEntity(c.Server.getWorld(player.dimensionId).Entities.Players, player, c);
                 return;
             case "global":
-                LogEntity(c.Server.getWorld(player.dimensionId).globalEntities, player, c);
+                LogEntity(c.Server.getWorld(player.dimensionId).Entities.GlobalEntities, player, c);
                 return;
             default:
                 c.Output.SendMessage("Usage: data get [entity|player|global] <target?>");

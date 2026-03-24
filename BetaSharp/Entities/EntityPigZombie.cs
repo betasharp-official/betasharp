@@ -1,6 +1,6 @@
 using BetaSharp.Items;
 using BetaSharp.NBT;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
@@ -11,7 +11,7 @@ internal class EntityPigZombie : EntityZombie
     private int randomSoundDelay;
     private static readonly ItemStack defaultHeldItem = new ItemStack(Item.GoldenSword, 1);
 
-    public EntityPigZombie(World world) : base(world)
+    public EntityPigZombie(IWorldContext world) : base(world)
     {
         texture = "/mob/pigzombie.png";
         movementSpeed = 0.5F;
@@ -24,7 +24,7 @@ internal class EntityPigZombie : EntityZombie
         movementSpeed = playerToAttack != null ? 0.95F : 0.5F;
         if (randomSoundDelay > 0 && --randomSoundDelay == 0)
         {
-            world.playSound(this, "mob.zombiepig.zpigangry", getSoundVolume() * 2.0F, ((random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F) * 1.8F);
+            world.Broadcaster.PlaySoundAtEntity(this, "mob.zombiepig.zpigangry", getSoundVolume() * 2.0F, ((random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F) * 1.8F);
         }
 
         base.tick();
@@ -32,7 +32,7 @@ internal class EntityPigZombie : EntityZombie
 
     public override bool canSpawn()
     {
-        return world.difficulty > 0 && world.canSpawnEntity(boundingBox) && world.GetEntityCollisions(this, boundingBox).Count == 0 && !world.isBoxSubmergedInFluid(boundingBox);
+        return world.Difficulty > 0 && world.Entities.CanSpawnEntity(boundingBox) && world.Entities.GetEntityCollisionsScratch(this, boundingBox).Count == 0 && !world.Reader.IsMaterialInBox(boundingBox, m => m.IsFluid);
     }
 
     public override void writeNbt(NBTTagCompound nbt)
@@ -61,7 +61,7 @@ internal class EntityPigZombie : EntityZombie
     {
         if (entity is EntityPlayer)
         {
-            var entities = world.getEntities(this, boundingBox.Expand(32.0D, 32.0D, 32.0D));
+            var entities = world.Entities.GetEntities(this, boundingBox.Expand(32.0D, 32.0D, 32.0D));
 
             for (int i = 0; i < entities.Count; ++i)
             {

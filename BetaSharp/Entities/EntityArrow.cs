@@ -3,7 +3,7 @@ using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
@@ -22,19 +22,19 @@ public class EntityArrow : Entity
     private int ticksInGround;
     private int ticksInAir;
 
-    public EntityArrow(World world) : base(world)
+    public EntityArrow(IWorldContext world) : base(world)
     {
         setBoundingBoxSpacing(0.5F, 0.5F);
     }
 
-    public EntityArrow(World world, double x, double y, double z) : base(world)
+    public EntityArrow(IWorldContext world, double x, double y, double z) : base(world)
     {
         setBoundingBoxSpacing(0.5F, 0.5F);
         setPosition(x, y, z);
         standingEyeHeight = 0.0F;
     }
 
-    public EntityArrow(World world, EntityLiving owner) : base(world)
+    public EntityArrow(IWorldContext world, EntityLiving owner) : base(world)
     {
         this.owner = owner;
         doesArrowBelongToPlayer = owner is EntityPlayer;
@@ -100,11 +100,11 @@ public class EntityArrow : Entity
             prevPitch = pitch = (float)(System.Math.Atan2(velocityY, (double)length) * 180.0D / (double)((float)System.Math.PI));
         }
 
-        int blockId = world.getBlockId(xTile, yTile, zTile);
-        if (blockId > 0)
-        {
-            Block.Blocks[blockId].updateBoundingBox(world, xTile, yTile, zTile);
-            Box? box = Block.Blocks[blockId].getCollisionShape(world, xTile, yTile, zTile);
+        int blockId = world.Reader.GetBlockId(xTile, yTile, zTile);
+            if (blockId > 0)
+            {
+                Block.Blocks[blockId].updateBoundingBox(world.Reader, xTile, yTile, zTile);
+                Box? box = Block.Blocks[blockId].getCollisionShape(world.Reader, world.Entities, xTile, yTile, zTile);
             if (box != null && box.Value.Contains(new Vec3D(x, y, z)))
             {
                 inGround = true;
@@ -118,8 +118,8 @@ public class EntityArrow : Entity
 
         if (inGround)
         {
-            blockId = world.getBlockId(xTile, yTile, zTile);
-            int blockMeta = world.getBlockMeta(xTile, yTile, zTile);
+            blockId = world.Reader.GetBlockId(xTile, yTile, zTile);
+            int blockMeta = world.Reader.GetBlockMeta(xTile, yTile, zTile);
             if (blockId == inTile && blockMeta == inData)
             {
                 ++ticksInGround;
@@ -144,14 +144,14 @@ public class EntityArrow : Entity
             ++ticksInAir;
             Vec3D rayStart = new Vec3D(x, y, z);
             Vec3D rayEnd = new Vec3D(x + velocityX, y + velocityY, z + velocityZ);
-            HitResult hit = world.raycast(rayStart, rayEnd, false, true);
+            HitResult hit = world.Reader.Raycast(rayStart, rayEnd, false, true);
             if (hit.Type != HitResultType.MISS)
             {
                 rayEnd = new Vec3D(hit.Pos.x, hit.Pos.y, hit.Pos.z);
             }
 
             Entity hitEntity = null;
-            var candidates = world.getEntities(this, boundingBox.Stretch(velocityX, velocityY, velocityZ).Expand(1.0D, 1.0D, 1.0D));
+            List<Entity> candidates = world.Entities.GetEntities(this, boundingBox.Stretch(velocityX, velocityY, velocityZ).Expand(1.0D, 1.0D, 1.0D));
             double minHitDistance = 0.0D;
 
             float expandAmount;
@@ -187,7 +187,7 @@ public class EntityArrow : Entity
                 {
                     if (hit.Entity.damage(owner, 4))
                     {
-                        world.playSound(this, "random.drr", 1.0F, 1.2F / (random.NextFloat() * 0.2F + 0.9F));
+                        world.Broadcaster.PlaySoundAtEntity(this, "random.drr", 1.0F, 1.2F / (random.NextFloat() * 0.2F + 0.9F));
                         markDead();
                     }
                     else
@@ -205,8 +205,8 @@ public class EntityArrow : Entity
                     xTile = hit.BlockX;
                     yTile = hit.BlockY;
                     zTile = hit.BlockZ;
-                    inTile = world.getBlockId(xTile, yTile, zTile);
-                    inData = world.getBlockMeta(xTile, yTile, zTile);
+                    inTile = world.Reader.GetBlockId(xTile, yTile, zTile);
+                    inData = world.Reader.GetBlockMeta(xTile, yTile, zTile);
                     velocityX = (double)((float)(hit.Pos.x - x));
                     velocityY = (double)((float)(hit.Pos.y - y));
                     velocityZ = (double)((float)(hit.Pos.z - z));
@@ -214,7 +214,7 @@ public class EntityArrow : Entity
                     x -= velocityX / (double)horizontalSpeed * (double)0.05F;
                     y -= velocityY / (double)horizontalSpeed * (double)0.05F;
                     z -= velocityZ / (double)horizontalSpeed * (double)0.05F;
-                    world.playSound(this, "random.drr", 1.0F, 1.2F / (random.NextFloat() * 0.2F + 0.9F));
+                    world.Broadcaster.PlaySoundAtEntity(this, "random.drr", 1.0F, 1.2F / (random.NextFloat() * 0.2F + 0.9F));
                     inGround = true;
                     arrowShake = 7;
                 }
@@ -254,7 +254,7 @@ public class EntityArrow : Entity
                 for (int _ = 0; _ < 4; ++_)
                 {
                     float bubbleOffset = 0.25F;
-                    world.addParticle("bubble", x - velocityX * (double)bubbleOffset, y - velocityY * (double)bubbleOffset, z - velocityZ * (double)bubbleOffset, velocityX, velocityY, velocityZ);
+                    world.Broadcaster.AddParticle("bubble", x - velocityX * (double)bubbleOffset, y - velocityY * (double)bubbleOffset, z - velocityZ * (double)bubbleOffset, velocityX, velocityY, velocityZ);
                 }
 
                 drag = 0.8F;
@@ -294,11 +294,11 @@ public class EntityArrow : Entity
 
     public override void onPlayerInteraction(EntityPlayer player)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             if (inGround && doesArrowBelongToPlayer && arrowShake <= 0 && player.inventory.addItemStackToInventory(new ItemStack(Item.ARROW, 1)))
             {
-                world.playSound(this, "random.pop", 0.2F, ((random.NextFloat() - random.NextFloat()) * 0.7F + 1.0F) * 2.0F);
+                world.Broadcaster.PlaySoundAtEntity(this, "random.pop", 0.2F, ((random.NextFloat() - random.NextFloat()) * 0.7F + 1.0F) * 2.0F);
                 player.sendPickup(this, 1);
                 markDead();
             }

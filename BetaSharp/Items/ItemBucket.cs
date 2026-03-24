@@ -3,7 +3,9 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Items;
 
@@ -18,7 +20,7 @@ internal class ItemBucket : Item
         this.isFull = isFull;
     }
 
-    public override ItemStack use(ItemStack itemStack, World world, EntityPlayer entityPlayer)
+    public override ItemStack use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
     {
         float partialTick = 1.0F;
         float pitch = entityPlayer.prevPitch + (entityPlayer.pitch - entityPlayer.prevPitch) * partialTick;
@@ -35,7 +37,7 @@ internal class ItemBucket : Item
         float dirZ = cosYaw * cosPitch;
         double reachDistance = 5.0D;
         Vec3D rayEnd = rayStart + new Vec3D((double)dirX * reachDistance, (double)sinPitch * reachDistance, (double)dirZ * reachDistance);
-        HitResult hitResult = world.raycast(rayStart, rayEnd, isFull == 0);
+        HitResult hitResult = world.Reader.Raycast(rayStart, rayEnd, isFull == 0);
         if (hitResult.Type == HitResultType.MISS)
         {
             return itemStack;
@@ -47,22 +49,22 @@ internal class ItemBucket : Item
                 int hitX = hitResult.BlockX;
                 int hitY = hitResult.BlockY;
                 int hitZ = hitResult.BlockZ;
-                if (!world.canInteract(entityPlayer, hitX, hitY, hitZ))
+                if (!world.CanInteract(entityPlayer, hitX, hitY, hitZ))
                 {
                     return itemStack;
                 }
 
                 if (isFull == 0)
                 {
-                    if (world.getMaterial(hitX, hitY, hitZ) == Material.Water && world.getBlockMeta(hitX, hitY, hitZ) == 0)
+                    if (world.Reader.GetMaterial(hitX, hitY, hitZ) == Material.Water && world.Reader.GetBlockMeta(hitX, hitY, hitZ) == 0)
                     {
-                        world.setBlock(hitX, hitY, hitZ, 0);
+                        world.Writer.SetBlock(hitX, hitY, hitZ, 0);
                         return new ItemStack(Item.WaterBucket);
                     }
 
-                    if (world.getMaterial(hitX, hitY, hitZ) == Material.Lava && world.getBlockMeta(hitX, hitY, hitZ) == 0)
+                    if (world.Reader.GetMaterial(hitX, hitY, hitZ) == Material.Lava && world.Reader.GetBlockMeta(hitX, hitY, hitZ) == 0)
                     {
-                        world.setBlock(hitX, hitY, hitZ, 0);
+                        world.Writer.SetBlock(hitX, hitY, hitZ, 0);
                         return new ItemStack(Item.LavaBucket);
                     }
                 }
@@ -103,20 +105,20 @@ internal class ItemBucket : Item
                         ++hitX;
                     }
 
-                    if (world.isAir(hitX, hitY, hitZ) || !world.getMaterial(hitX, hitY, hitZ).IsSolid)
+                    if (world.Reader.IsAir(hitX, hitY, hitZ) || !world.Reader.GetMaterial(hitX, hitY, hitZ).IsSolid)
                     {
-                        if (world.dimension.EvaporatesWater && isFull == Block.FlowingWater.id)
+                        if (world.Dimension.EvaporatesWater && isFull == Block.FlowingWater.id)
                         {
-                            world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "random.fizz", 0.5F, 2.6F + (world.random.NextFloat() - world.random.NextFloat()) * 0.8F);
+                            world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.fizz", 0.5F, 2.6F + (world.Random.NextFloat() - world.Random.NextFloat()) * 0.8F);
 
                             for (int particleIndex = 0; particleIndex < 8; ++particleIndex)
                             {
-                                world.addParticle("largesmoke", hitX + Random.Shared.NextDouble(), hitY + Random.Shared.NextDouble(), hitZ + Random.Shared.NextDouble(), 0.0D, 0.0D, 0.0D);
+                                world.Broadcaster.AddParticle("largesmoke", hitX + Random.Shared.NextDouble(), hitY + Random.Shared.NextDouble(), hitZ + Random.Shared.NextDouble(), 0.0D, 0.0D, 0.0D);
                             }
                         }
                         else
                         {
-                            world.setBlock(hitX, hitY, hitZ, isFull, 0);
+                            world.Writer.SetBlock(hitX, hitY, hitZ, isFull, 0);
                         }
 
                         return new ItemStack(Item.Bucket);

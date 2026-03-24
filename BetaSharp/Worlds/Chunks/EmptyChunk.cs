@@ -1,23 +1,23 @@
-using System.Collections.Generic;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Chunks;
 
 public class EmptyChunk : Chunk
 {
-    public EmptyChunk(World world, int x, int z) : base(world, x, z)
+    public EmptyChunk(IWorldContext world, int x, int z) : base(world, x, z)
     {
         Empty = true;
     }
 
-    public EmptyChunk(World world, byte[] blocks, int x, int z) : base(world, blocks, x, z)
+    public EmptyChunk(IWorldContext world, byte[] blocks, int x, int z) : base(world, blocks, x, z)
     {
         Empty = true;
     }
 
-    public override bool ChunkPosEquals(int x, int z) => x == this.X && z == this.Z;
+    public override bool ChunkPosEquals(int x, int z) => x == X && z == Z;
 
     public override int GetHeight(int x, int z) => 0;
 
@@ -28,8 +28,8 @@ public class EmptyChunk : Chunk
 
     public override int GetBlockId(int x, int y, int z) => 0;
 
-    public override bool SetBlock(int x, int y, int z, int blockId, int meta) => true;
-    public override bool SetBlock(int x, int y, int z, int blockId) => true;
+    public override bool SetBlock(int x, int y, int z, int blockId, int meta, bool notifyBlockPlaced = true) => true;
+    public override bool SetBlock(int x, int y, int z, int blockId, bool notifyBlockPlaced = true) => true;
 
     public override int GetBlockMeta(int x, int y, int z) => 0;
     public override void SetBlockMeta(int x, int y, int z, int meta) { }
@@ -70,7 +70,7 @@ public class EmptyChunk : Chunk
 
     public override JavaRandom GetSlimeRandom(long seed)
     {
-        return new JavaRandom(World.getSeed() + X * X * 4987142L + X * 5947611L + Z * Z * 4392871L + Z * 389711L ^ seed);
+        return new JavaRandom(World.Seed + X * X * 4987142L + X * 5947611L + Z * Z * 4392871L + Z * 389711L ^ seed);
     }
 
     public override bool IsEmpty() => true;

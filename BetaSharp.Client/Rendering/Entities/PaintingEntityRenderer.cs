@@ -121,7 +121,7 @@ public class PaintingEntityRenderer : EntityRenderer
             case 3: checkZ = MathHelper.Floor(painting.z + (offsetX / 16.0F)); break;
         }
 
-        float light = Dispatcher.world.getLuminance(checkX, checkY, checkZ);
+        float light = Dispatcher.world.GetLuminance(checkX, checkY, checkZ);
         GLManager.GL.Color3(light, light, light);
     }
 

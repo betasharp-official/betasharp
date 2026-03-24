@@ -4,7 +4,8 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Rendering;
 
@@ -122,34 +123,45 @@ public class ParticleManager
 
     }
 
-    public void addBlockDestroyEffects(int var1, int var2, int var3, int var4, int var5)
+    public void addBlockDestroyEffects(int x, int y, int z, int blockId, int meta)
     {
-        if (var4 != 0)
-        {
-            Block var6 = Block.Blocks[var4];
-            byte var7 = 4;
+        if (blockId == 0) return;
 
-            for (int var8 = 0; var8 < var7; ++var8)
+        Block block = Block.Blocks[blockId];
+        byte particlesPerAxis = 4;
+
+        for (int gridX = 0; gridX < particlesPerAxis; ++gridX)
+        {
+            for (int gridY = 0; gridY < particlesPerAxis; ++gridY)
             {
-                for (int var9 = 0; var9 < var7; ++var9)
+                for (int gridZ = 0; gridZ < particlesPerAxis; ++gridZ)
                 {
-                    for (int var10 = 0; var10 < var7; ++var10)
-                    {
-                        double var11 = var1 + (var8 + 0.5D) / var7;
-                        double var13 = var2 + (var9 + 0.5D) / var7;
-                        double var15 = var3 + (var10 + 0.5D) / var7;
-                        int var17 = _rand.NextInt(6);
-                        addEffect((new EntityDiggingFX(worldObj, var11, var13, var15, var11 - (double)var1 - 0.5D, var13 - (double)var2 - 0.5D, var15 - (double)var3 - 0.5D, var6, var17, var5)).func_4041_a(var1, var2, var3));
-                    }
+                    double particleX = x + (gridX + 0.5D) / particlesPerAxis;
+                    double particleY = y + (gridY + 0.5D) / particlesPerAxis;
+                    double particleZ = z + (gridZ + 0.5D) / particlesPerAxis;
+
+                    int randomSide = _rand.NextInt(6);
+
+                    double motionX = particleX - x - 0.5D;
+                    double motionY = particleY - y - 0.5D;
+                    double motionZ = particleZ - z - 0.5D;
+
+                    EntityDiggingFX particle = new EntityDiggingFX(
+                        worldObj,
+                        particleX, particleY, particleZ,
+                        motionX, motionY, motionZ,
+                        block, randomSide, meta
+                    );
+
+                    addEffect(particle.GetColorMultiplier(x, y, z));
                 }
             }
-
         }
     }
 
     public void addBlockHitEffects(int var1, int var2, int var3, int var4)
     {
-        int var5 = worldObj.getBlockId(var1, var2, var3);
+        int var5 = worldObj.Reader.GetBlockId(var1, var2, var3);
         if (var5 != 0)
         {
             Block var6 = Block.Blocks[var5];
@@ -188,7 +200,7 @@ public class ParticleManager
                 var8 = var1 + blockBB.MaxX + var7;
             }
 
-            addEffect((new EntityDiggingFX(worldObj, var8, var10, var12, 0.0D, 0.0D, 0.0D, var6, var4, worldObj.getBlockMeta(var1, var2, var3))).func_4041_a(var1, var2, var3).scaleVelocity(0.2F).scaleSize(0.6F));
+            addEffect(new EntityDiggingFX(worldObj, var8, var10, var12, 0.0D, 0.0D, 0.0D, var6, var4, worldObj.Reader.GetBlockMeta(var1, var2, var3)).GetColorMultiplier(var1, var2, var3).scaleVelocity(0.2F).scaleSize(0.6F));
         }
     }
 

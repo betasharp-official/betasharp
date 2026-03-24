@@ -1,32 +1,33 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
 public class ItemRecord : Item
 {
 
-    public readonly String recordName;
+    public readonly string recordName;
 
-    public ItemRecord(int id, String recordName) : base(id)
+    public ItemRecord(int id, string recordName) : base(id)
     {
         this.recordName = recordName;
         maxCount = 1;
     }
 
-    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
+    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (world.getBlockId(x, y, z) == Block.Jukebox.id && world.getBlockMeta(x, y, z) == 0)
+        if (world.Reader.GetBlockId(x, y, z) == Block.Jukebox.id && world.Reader.GetBlockMeta(x, y, z) == 0)
         {
-            if (world.isRemote)
+            if (world.IsRemote)
             {
                 return true;
             }
             else
             {
                 ((BlockJukeBox)Block.Jukebox).insertRecord(world, x, y, z, id);
-                world.worldEvent((EntityPlayer)null, 1005, x, y, z, id);
+                world.Broadcaster.WorldEvent(1005, x, y, z, id);
                 --itemStack.count;
                 return true;
             }

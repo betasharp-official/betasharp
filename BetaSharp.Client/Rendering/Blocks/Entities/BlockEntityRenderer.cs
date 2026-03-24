@@ -2,7 +2,7 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Entities;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Client.Rendering.Blocks.Entities;
 
@@ -73,7 +73,7 @@ public class BlockEntityRenderer
     {
         if (var1.distanceFrom(PlayerX, PlayerY, PlayerZ) < 4096.0D)
         {
-            float var3 = World.getLuminance(var1.X, var1.Y, var1.Z);
+            float var3 = World.GetLuminance(var1.X, var1.Y, var1.Z);
             GLManager.GL.Color3(var3, var3, var3);
             RenderTileEntityAt(var1, var1.X - StaticPlayerX, var1.Y - StaticPlayerY, var1.Z - StaticPlayerZ, var2);
         }

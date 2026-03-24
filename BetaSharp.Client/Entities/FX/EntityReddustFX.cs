@@ -1,6 +1,5 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
@@ -9,11 +8,11 @@ public class EntityReddustFX : EntityFX
     readonly float baseScale;
 
 
-    public EntityReddustFX(World world, double x, double y, double z, float red, float green, float blue) : this(world, x, y, z, 1.0F, red, green, blue)
+    public EntityReddustFX(IWorldContext world, double x, double y, double z, float red, float green, float blue) : this(world, x, y, z, 1.0F, red, green, blue)
     {
     }
 
-    public EntityReddustFX(World world, double x, double y, double z, float particleScale, float red, float green, float blue) : base(world, x, y, z, 0.0D, 0.0D, 0.0D)
+    public EntityReddustFX(IWorldContext world, double x, double y, double z, float particleScale, float red, float green, float blue) : base(world, x, y, z, 0.0D, 0.0D, 0.0D)
     {
         velocityX *= (double)0.1F;
         velocityY *= (double)0.1F;

@@ -4,7 +4,7 @@ using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 using Math = System.Math;
 
 namespace BetaSharp.Entities;
@@ -16,9 +16,9 @@ public abstract class Entity
     public int id = nextEntityID++;
     public double renderDistanceWeight = 1.0D;
     public bool preventEntitySpawning = false;
-    public Entity passenger;
-    public Entity vehicle;
-    public World world;
+    public Entity? passenger;
+    public Entity? vehicle;
+    public IWorldContext world;
     public double prevX;
     public double prevY;
     public double prevZ;
@@ -80,7 +80,7 @@ public abstract class Entity
     public bool ignoreFrustumCheck;
     private readonly SyncedProperty<byte> Flags;
 
-    public Entity(World world)
+    public Entity(IWorldContext world)
     {
         this.world = world;
         setPosition(0.0D, 0.0D, 0.0D);
@@ -96,7 +96,7 @@ public abstract class Entity
             while (y > 0.0D)
             {
                 setPosition(x, y, z);
-                if (world.GetEntityCollisionsScratch(this, boundingBox).Count == 0)
+                if (world.Entities.GetEntityCollisionsScratch(this, boundingBox).Count == 0)
                 {
                     break;
                 }
@@ -185,7 +185,7 @@ public abstract class Entity
                     var1 = 1.0F;
                 }
 
-                world.playSound(this, "random.splash", var1, 1.0F + (random.NextFloat() - random.NextFloat()) * 0.4F);
+                world.Broadcaster.PlaySoundAtEntity(this, "random.splash", var1, 1.0F + (random.NextFloat() - random.NextFloat()) * 0.4F);
                 float var2 = (float)MathHelper.Floor(boundingBox.MinY);
 
                 int var3;
@@ -195,14 +195,14 @@ public abstract class Entity
                 {
                     var4 = (random.NextFloat() * 2.0F - 1.0F) * width;
                     var5 = (random.NextFloat() * 2.0F - 1.0F) * width;
-                    world.addParticle("bubble", x + (double)var4, (double)(var2 + 1.0F), z + (double)var5, velocityX, velocityY - (double)(random.NextFloat() * 0.2F), velocityZ);
+                    world.Broadcaster.AddParticle("bubble", x + (double)var4, (double)(var2 + 1.0F), z + (double)var5, velocityX, velocityY - (double)(random.NextFloat() * 0.2F), velocityZ);
                 }
 
                 for (var3 = 0; (float)var3 < 1.0F + width * 20.0F; ++var3)
                 {
                     var4 = (random.NextFloat() * 2.0F - 1.0F) * width;
                     var5 = (random.NextFloat() * 2.0F - 1.0F) * width;
-                    world.addParticle("splash", x + (double)var4, (double)(var2 + 1.0F), z + (double)var5, velocityX, velocityY, velocityZ);
+                    world.Broadcaster.AddParticle("splash", x + (double)var4, (double)(var2 + 1.0F), z + (double)var5, velocityX, velocityY, velocityZ);
                 }
             }
 
@@ -215,7 +215,7 @@ public abstract class Entity
             inWater = false;
         }
 
-        if (world.isRemote)
+        if (world.IsRemote)
         {
             fireTicks = 0;
         }
@@ -250,7 +250,7 @@ public abstract class Entity
             tickInVoid();
         }
 
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             SetFlag(0, fireTicks > 0);
             SetFlag(2, vehicle != null);
@@ -277,12 +277,33 @@ public abstract class Entity
     public bool getEntitiesInside(double x, double y, double z)
     {
         Box box = boundingBox.Offset(x, y, z);
-        var entitiesInbound = world.GetEntityCollisionsScratch(this, box);
-        return entitiesInbound.Count > 0 ? false : !world.isBoxSubmergedInFluid(box);
+        List<Box> entitiesInbound = world.Entities.GetEntityCollisionsScratch(this, box);
+        return entitiesInbound.Count > 0 ? false : !world.Reader.IsMaterialInBox(box, m => m.IsFluid);
     }
 
     public virtual void move(double x, double y, double z)
     {
+        if (world.IsRemote && this is not EntityPlayer)
+        {
+            int minChunkX = MathHelper.Floor(boundingBox.MinX) >> 4;
+            int maxChunkX = MathHelper.Floor(boundingBox.MaxX) >> 4;
+            int minChunkZ = MathHelper.Floor(boundingBox.MinZ) >> 4;
+            int maxChunkZ = MathHelper.Floor(boundingBox.MaxZ) >> 4;
+
+            for (int chunkX = minChunkX; chunkX <= maxChunkX; ++chunkX)
+            {
+                for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ)
+                {
+                    var chunk = world.ChunkHost.GetChunk(chunkX, chunkZ);
+                    if (!chunk.Loaded)
+                    {
+                        velocityX = velocityY = velocityZ = 0.0D;
+                        return;
+                    }
+                }
+            }
+        }
+
         if (noClip)
         {
             boundingBox.Translate(x, y, z);
@@ -314,7 +335,7 @@ public abstract class Entity
             if (var18)
             {
                 double var19;
-                for (var19 = 0.05D; x != 0.0D && world.GetEntityCollisionsScratch(this, boundingBox.Offset(x, -1.0D, 0.0D)).Count == 0; var11 = x)
+                for (var19 = 0.05D; x != 0.0D && world.Entities.GetEntityCollisionsScratch(this, boundingBox.Offset(x, -1.0D, 0.0D)).Count == 0; var11 = x)
                 {
                     if (x < var19 && x >= -var19)
                     {
@@ -330,7 +351,7 @@ public abstract class Entity
                     }
                 }
 
-                for (; z != 0.0D && world.GetEntityCollisionsScratch(this, boundingBox.Offset(0.0D, -1.0D, z)).Count == 0; var15 = z)
+                for (; z != 0.0D && world.Entities.GetEntityCollisionsScratch(this, boundingBox.Offset(0.0D, -1.0D, z)).Count == 0; var15 = z)
                 {
                     if (z < var19 && z >= -var19)
                     {
@@ -347,7 +368,7 @@ public abstract class Entity
                 }
             }
 
-            var entitiesInbound = world.GetEntityCollisionsScratch(this, boundingBox.Stretch(x, y, z));
+            List<Box> entitiesInbound = world.Entities.GetEntityCollisionsScratch(this, boundingBox.Stretch(x, y, z));
 
             for (int var20 = 0; var20 < entitiesInbound.Count; ++var20)
             {
@@ -404,7 +425,7 @@ public abstract class Entity
                 z = var15;
                 Box var27 = boundingBox;
                 boundingBox = var17;
-                entitiesInbound = world.GetEntityCollisionsScratch(this, boundingBox.Stretch(var11, y, var15));
+                entitiesInbound = world.Entities.GetEntityCollisionsScratch(this, boundingBox.Stretch(var11, y, var15));
 
                 for (var28 = 0; var28 < entitiesInbound.Count; ++var28)
                 {
@@ -517,27 +538,27 @@ public abstract class Entity
                     var38 = MathHelper.Floor(this.x);
                     var26 = MathHelper.Floor(this.y - (double)0.2F - (double)standingEyeHeight);
                     var39 = MathHelper.Floor(this.z);
-                    var28 = world.getBlockId(var38, var26, var39);
-                    if (world.getBlockId(var38, var26 - 1, var39) == Block.Fence.id)
+                    var28 = world.Reader.GetBlockId(var38, var26, var39);
+                    if (world.Reader.GetBlockId(var38, var26 - 1, var39) == Block.Fence.id)
                     {
-                        var28 = world.getBlockId(var38, var26 - 1, var39);
+                        var28 = world.Reader.GetBlockId(var38, var26 - 1, var39);
                     }
 
                     if (horizontalSpeed > (float)nextStepSoundDistance && var28 > 0)
                     {
                         nextStepSoundDistance = (int)horizontalSpeed + 1;
                         BlockSoundGroup soundGroup = Block.Blocks[var28].soundGroup;
-                        if (world.getBlockId(var38, var26 + 1, var39) == Block.Snow.id)
+                        if (world.Reader.GetBlockId(var38, var26 + 1, var39) == Block.Snow.id)
                         {
                             soundGroup = Block.Snow.soundGroup;
-                            world.playSound(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
+                            world.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
                         }
                         else if (!Block.Blocks[var28].material.IsFluid)
                         {
-                            world.playSound(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
+                            world.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
                         }
 
-                        Block.Blocks[var28].onSteppedOn(world, var38, var26, var39, this);
+                        Block.Blocks[var28].onSteppedOn(new OnEntityStepEvent(world, this, var38, var26, var39));
                     }
                 }
             }
@@ -548,7 +569,7 @@ public abstract class Entity
             var28 = MathHelper.Floor(boundingBox.MaxX - 0.001D);
             int var40 = MathHelper.Floor(boundingBox.MaxY - 0.001D);
             int var30 = MathHelper.Floor(boundingBox.MaxZ - 0.001D);
-            if (world.isRegionLoaded(var38, var26, var39, var28, var40, var30))
+            if (world.ChunkHost.IsRegionLoaded(var38, var26, var39, var28, var40, var30))
             {
                 for (int var31 = var38; var31 <= var28; ++var31)
                 {
@@ -556,10 +577,10 @@ public abstract class Entity
                     {
                         for (int var33 = var39; var33 <= var30; ++var33)
                         {
-                            int var34 = world.getBlockId(var31, var32, var33);
+                            int var34 = world.Reader.GetBlockId(var31, var32, var33);
                             if (var34 > 0)
                             {
-                                Block.Blocks[var34].onEntityCollision(world, var31, var32, var33, this);
+                                Block.Blocks[var34].onEntityCollision(new OnEntityCollisionEvent(world, this, var31, var32, var33));
                             }
                         }
                     }
@@ -567,7 +588,7 @@ public abstract class Entity
             }
 
             bool var42 = isWet();
-            if (world.isFireOrLavaInBox(boundingBox.Contract(0.001D, 0.001D, 0.001D)))
+            if (world.Reader.IsMaterialInBox(boundingBox.Contract(0.001D, 0.001D, 0.001D), m => m == Material.Fire || m == Material.Lava))
             {
                 damage(1);
                 if (!var42)
@@ -586,7 +607,7 @@ public abstract class Entity
 
             if (var42 && fireTicks > 0)
             {
-                world.playSound(this, "random.fizz", 0.7F, 1.6F + (random.NextFloat() - random.NextFloat()) * 0.4F);
+                world.Broadcaster.PlaySoundAtEntity(this, "random.fizz", 0.7F, 1.6F + (random.NextFloat() - random.NextFloat()) * 0.4F);
                 fireTicks = -fireImmunityTicks;
             }
 
@@ -640,7 +661,7 @@ public abstract class Entity
 
     public bool isWet()
     {
-        return inWater || world.isRaining(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z));
+        return inWater || world.Environment.IsRainingAt(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z));
     }
 
     public virtual bool isInWater()
@@ -650,7 +671,7 @@ public abstract class Entity
 
     public virtual bool checkWaterCollisions()
     {
-        return world.updateMovementInFluid(boundingBox.Expand(0.0D, (double)-0.4F, 0.0D).Contract(0.001D, 0.001D, 0.001D), Material.Water, this);
+        return world.Reader.UpdateMovementInFluid(boundingBox.Expand(0.0D, (double)-0.4F, 0.0D).Contract(0.001D, 0.001D, 0.001D), Material.Water, this);
     }
 
     public bool isInFluid(Material var1)
@@ -659,10 +680,10 @@ public abstract class Entity
         int var4 = MathHelper.Floor(x);
         int var5 = MathHelper.Floor((float)MathHelper.Floor(var2));
         int var6 = MathHelper.Floor(z);
-        int var7 = world.getBlockId(var4, var5, var6);
+        int var7 = world.Reader.GetBlockId(var4, var5, var6);
         if (var7 != 0 && Block.Blocks[var7].material == var1)
         {
-            float var8 = BlockFluid.getFluidHeightFromMeta(world.getBlockMeta(var4, var5, var6)) - 1.0F / 9.0F;
+            float var8 = BlockFluid.getFluidHeightFromMeta(world.Reader.GetBlockMeta(var4, var5, var6)) - 1.0F / 9.0F;
             float var9 = (float)(var5 + 1) - var8;
             return var2 < (double)var9;
         }
@@ -679,7 +700,7 @@ public abstract class Entity
 
     public bool isTouchingLava()
     {
-        return world.isMaterialInBox(boundingBox.Expand((double)-0.1F, (double)-0.4F, (double)-0.1F), Material.Lava);
+        return world.Reader.IsMaterialInBox(boundingBox.Expand(-0.1F, -0.4F, -0.1F), m => m == Material.Lava);
     }
 
     public void moveNonSolid(float strafe, float forward, float speed)
@@ -719,9 +740,9 @@ public abstract class Entity
         minY = Math.Min(127, Math.Max(0, minY));
         maxY = Math.Min(127, Math.Max(0, maxY));
 
-        if (world.isRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
+        if (world.ChunkHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
         {
-            float var7 = world.getLuminance(var2, var5, var6);
+            float var7 = world.Lighting.GetLuminance(var2, var5, var6);
             if (var7 < minBrightness)
             {
                 var7 = minBrightness;
@@ -735,7 +756,7 @@ public abstract class Entity
         }
     }
 
-    public virtual void setWorld(World world)
+    public virtual void setWorld(IWorldContext world)
     {
         this.world = world;
     }
@@ -833,8 +854,40 @@ public abstract class Entity
                 var4 *= (double)0.05F;
                 var2 *= (double)(1.0F - pushSpeedReduction);
                 var4 *= (double)(1.0F - pushSpeedReduction);
+                const double maxHorizontalImpulsePerCollision = 0.05D;
+                const double maxHorizontalSpeed = 0.05D;
+                if (var2 > maxHorizontalImpulsePerCollision) var2 = maxHorizontalImpulsePerCollision;
+                else if (var2 < -maxHorizontalImpulsePerCollision) var2 = -maxHorizontalImpulsePerCollision;
+
+                if (var4 > maxHorizontalImpulsePerCollision) var4 = maxHorizontalImpulsePerCollision;
+                else if (var4 < -maxHorizontalImpulsePerCollision) var4 = -maxHorizontalImpulsePerCollision;
+
+                double impulseMag = MathHelper.Sqrt(var2 * var2 + var4 * var4);
+                if (impulseMag > maxHorizontalImpulsePerCollision)
+                {
+                    double s = maxHorizontalImpulsePerCollision / impulseMag;
+                    var2 *= s;
+                    var4 *= s;
+                }
+
                 addVelocity(-var2, 0.0D, -var4);
                 entity.addVelocity(var2, 0.0D, var4);
+
+                double speedThis = MathHelper.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
+                if (speedThis > maxHorizontalSpeed)
+                {
+                    double s = maxHorizontalSpeed / speedThis;
+                    velocityX *= s;
+                    velocityZ *= s;
+                }
+
+                double speedOther = MathHelper.Sqrt(entity.velocityX * entity.velocityX + entity.velocityZ * entity.velocityZ);
+                if (speedOther > maxHorizontalSpeed)
+                {
+                    double s = maxHorizontalSpeed / speedOther;
+                    entity.velocityX *= s;
+                    entity.velocityZ *= s;
+                }
             }
 
         }
@@ -1034,7 +1087,7 @@ public abstract class Entity
             int var5 = MathHelper.Floor(x + (double)var2);
             int var6 = MathHelper.Floor(y + (double)getEyeHeight() + (double)var3);
             int var7 = MathHelper.Floor(z + (double)var4);
-            if (world.shouldSuffocate(var5, var6, var7))
+            if (world.Reader.ShouldSuffocate(var5, var6, var7))
             {
                 return true;
             }
@@ -1176,7 +1229,7 @@ public abstract class Entity
     {
         setPosition(x, y, z);
         setRotation(var7, var8);
-        var var10 = world.GetEntityCollisionsScratch(this, boundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
+        var var10 = world.Entities.GetEntityCollisionsScratch(this, boundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
         if (var10.Count > 0)
         {
             double var11 = 0.0D;
@@ -1296,20 +1349,26 @@ public abstract class Entity
 
     protected virtual bool pushOutOfBlocks(double x, double y, double z)
     {
+        // Only players should attempt "push out of blocks".
+        if (this is not EntityPlayer)
+        {
+            return false;
+        }
+
         int floorX = MathHelper.Floor(x);
         int floorY = MathHelper.Floor(y);
         int floorZ = MathHelper.Floor(z);
-        double fracX = x - (double)floorX;
-        double fracY = y - (double)floorY;
-        double fracZ = z - (double)floorZ;
-        if (world.shouldSuffocate(floorX, floorY, floorZ))
+        double fracX = x - floorX;
+        double fracY = y - floorY;
+        double fracZ = z - floorZ;
+        if (world.Reader.ShouldSuffocate(floorX, floorY, floorZ))
         {
-            bool canPushWest = !world.shouldSuffocate(floorX - 1, floorY, floorZ);
-            bool canPushEast = !world.shouldSuffocate(floorX + 1, floorY, floorZ);
-            bool canPushDown = !world.shouldSuffocate(floorX, floorY - 1, floorZ);
-            bool canPushUp = !world.shouldSuffocate(floorX, floorY + 1, floorZ);
-            bool canPushNorth = !world.shouldSuffocate(floorX, floorY, floorZ - 1);
-            bool canPushSouth = !world.shouldSuffocate(floorX, floorY, floorZ + 1);
+            bool canPushWest = !world.Reader.ShouldSuffocate(floorX - 1, floorY, floorZ);
+            bool canPushEast = !world.Reader.ShouldSuffocate(floorX + 1, floorY, floorZ);
+            bool canPushDown = !world.Reader.ShouldSuffocate(floorX, floorY - 1, floorZ);
+            bool canPushUp = !world.Reader.ShouldSuffocate(floorX, floorY + 1, floorZ);
+            bool canPushNorth = !world.Reader.ShouldSuffocate(floorX, floorY, floorZ - 1);
+            bool canPushSouth = !world.Reader.ShouldSuffocate(floorX, floorY, floorZ + 1);
             int pushDirection = -1;
             double closestEdgeDistance = 9999.0D;
             if (canPushWest && fracX < closestEdgeDistance)

@@ -13,7 +13,7 @@ public class LadderRenderer : IBlockRenderer
             textureId = ctx.OverrideTexture;
         }
 
-        float luminance = block.getLuminance(ctx.World, pos.x, pos.y, pos.z);
+        float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
         ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
 
         int texU = (textureId & 15) << 4;
@@ -23,7 +23,7 @@ public class LadderRenderer : IBlockRenderer
         float minV = texV / 256.0f;
         float maxV = (texV + 15.99f) / 256.0f;
 
-        int metadata = ctx.World.getBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
 
         // Push the ladder slightly off the wall
         float offset = 0.05f;

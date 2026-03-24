@@ -2,7 +2,8 @@ using BetaSharp.Blocks;
 using BetaSharp.Client.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Items;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Input;
 
@@ -22,20 +23,20 @@ public class PlayerController
 
     public virtual void clickBlock(int var1, int var2, int var3, int var4)
     {
-        Game.world.extinguishFire(Game.player, var1, var2, var3, var4);
+        Game.world.ExtinguishFire(Game.player, var1, var2, var3, var4);
         sendBlockRemoved(var1, var2, var3, var4);
     }
 
     public virtual bool sendBlockRemoved(int var1, int var2, int var3, int var4)
     {
         World var5 = Game.world;
-        Block var6 = Block.Blocks[var5.getBlockId(var1, var2, var3)];
-        var5.worldEvent(2001, var1, var2, var3, var6.id + var5.getBlockMeta(var1, var2, var3) * 256);
-        int var7 = var5.getBlockMeta(var1, var2, var3);
-        bool var8 = var5.setBlock(var1, var2, var3, 0);
+        Block var6 = Block.Blocks[var5.Reader.GetBlockId(var1, var2, var3)];
+        var5.Broadcaster.NotifyNeighbors(var1, var2, var3, var5.Reader.GetBlockId(var1, var2, var3));
+        int var7 = var5.Reader.GetBlockMeta(var1, var2, var3);
+        bool var8 = var5.Writer.SetBlock(var1, var2, var3, 0);
         if (var6 != null && var8)
         {
-            var6.onMetadataChange(var5, var1, var2, var3, var7);
+            var6.onMetadataChange(new OnMetadataChangeEvent(var5, var1, var2, var3, var7));
         }
 
         return var8;
@@ -97,13 +98,13 @@ public class PlayerController
 
     public virtual bool sendPlaceBlock(EntityPlayer var1, World var2, ItemStack var3, int var4, int var5, int var6, int var7)
     {
-        int var8 = var2.getBlockId(var4, var5, var6);
-        return var8 > 0 && Block.Blocks[var8].onUse(var2, var4, var5, var6, var1) ? true : (var3 == null ? false : var3.useOnBlock(var1, var2, var4, var5, var6, var7));
+        int var8 = var2.Reader.GetBlockId(var4, var5, var6);
+        return var8 > 0 && Block.Blocks[var8].onUse(new OnUseEvent(var2, var1, var4, var5, var6)) ? true : (var3 == null ? false : var3.useOnBlock(var1, var2, var4, var5, var6, var7));
     }
 
     public virtual EntityPlayer createPlayer(World var1)
     {
-        return new ClientPlayerEntity(Game, var1, Game.session, var1.dimension.Id);
+        return new ClientPlayerEntity(Game, var1, Game.session, var1.Dimension.Id);
     }
 
     public virtual void interactWithEntity(EntityPlayer var1, Entity var2)

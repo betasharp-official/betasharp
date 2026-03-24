@@ -6,11 +6,13 @@ using BetaSharp.Server.Internal;
 using BetaSharp.Server.Network;
 using BetaSharp.Server.Worlds;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Storage;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
+using BetaSharp.Worlds;
+using ServerWorld = BetaSharp.Worlds.Core.ServerWorld;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Server;
 
@@ -125,15 +127,15 @@ public abstract class BetaSharpServer : ICommandOutput
         {
             if (i == 0)
             {
-                worlds[i] = new ServerWorld(this, worldStorage, worldDir, 0, settings);
+                worlds[i] = new ServerWorld(this, worldStorage, worldDir, 0, settings, null);
             }
             else
             {
                 worlds[i] = new ReadOnlyServerWorld(this, worldStorage, worldDir, -1, settings, worlds[0]);
             }
 
-            worlds[i].addWorldAccess(new ServerWorldEventListener(this, worlds[i]));
-            worlds[i].difficulty = config.GetSpawnMonsters(true) ? 1 : 0;
+            worlds[i].EventListeners.Add(new ServerWorldEventListener(this, worlds[i]));
+            worlds[i].SetDifficulty(config.GetSpawnMonsters(true) ? 1 : 0);
             worlds[i].allowSpawning(config.GetSpawnMonsters(true), spawnAnimals);
             playerManager.saveAllPlayers(worlds);
         }
@@ -151,7 +153,7 @@ public abstract class BetaSharpServer : ICommandOutput
             if (i == 0)
             {
                 ServerWorld world = worlds[i];
-                Vec3i spawnPos = world.getSpawnPos();
+                Vec3i spawnPos = world.Properties.GetSpawnPos();
 
                 var chunkList = new List<Vector2D<int>>();
                 for (int x = -startRegionSize; x <= startRegionSize; x += 16)
@@ -167,10 +169,7 @@ public abstract class BetaSharpServer : ICommandOutput
 
                 // Phase 1: Parallel terrain generation
                 var sw1 = Stopwatch.StartNew();
-                var threadLocalGen = new ThreadLocal<ChunkSource>(
-                    world.chunkCache.CreateParallelGenerator,
-                    trackAllValues: false);
-
+                var threadLocalGen = new ThreadLocal<IChunkSource>(world.ChunkCache.CreateParallelGenerator, trackAllValues: false);
                 Parallel.For(0, totalChunks, idx =>
                 {
                     if (!running)
@@ -186,7 +185,7 @@ public abstract class BetaSharpServer : ICommandOutput
                 sw1.Stop();
                 _logger.LogInformation("  Level {Level} terrain: {ElapsedMs}ms", i, sw1.ElapsedMilliseconds);
 
-                // Phase 2: Sequential insert + decoration
+                // Phase 2a: Insert all chunks first (required so decoration can write to neighbors without hitting EmptyChunk)
                 var sw2 = Stopwatch.StartNew();
                 for (int idx = 0; idx < totalChunks && running; idx++)
                 {
@@ -198,8 +197,8 @@ public abstract class BetaSharpServer : ICommandOutput
                     }
 
                     Vector2D<int> chunkPos = chunkList[idx];
-                    world.chunkCache.InsertPreGeneratedChunk(chunkPos.X, chunkPos.Y, preGenerated[idx]);
-                    world.chunkCache.DecorateIfReady(chunkPos.X, chunkPos.Y);
+                    world.ChunkCache.InsertPreGeneratedChunk(chunkPos.X, chunkPos.Y, preGenerated[idx]);
+                    world.ChunkCache.DecorateIfReady(chunkPos.X, chunkPos.Y);
                 }
 
                 sw2.Stop();
@@ -208,10 +207,7 @@ public abstract class BetaSharpServer : ICommandOutput
                 // Phase 3: Batch lighting drain — all neighbors already loaded so sky-light
                 // propagates without border re-queuing.
                 var sw3 = Stopwatch.StartNew();
-                while (world.doLightingUpdates() && running)
-                {
-                }
-
+                while (world.Lighting.DoLightingUpdates() && running) { }
                 sw3.Stop();
                 _logger.LogInformation("  Level {Level} lighting: {ElapsedMs}ms", i, sw3.ElapsedMilliseconds);
             }
@@ -239,7 +235,7 @@ public abstract class BetaSharpServer : ICommandOutput
 
         foreach (ServerWorld world in worlds)
         {
-            world.saveWithLoadingDisplay(true, null);
+            world.SaveWithLoadingDisplay(true, null);
             world.forceSave();
         }
     }
@@ -272,7 +268,7 @@ public abstract class BetaSharpServer : ICommandOutput
 
     public void RunThreaded(string threadName)
     {
-        Thread thread = new (run)
+        Thread thread = new(run)
         {
             Name = threadName
         };
@@ -320,20 +316,11 @@ public abstract class BetaSharpServer : ICommandOutput
                         continue;
                     }
 
-                    if (worlds[0].canSkipNight())
+                    while (accumulatedTime >= 50L && running)
                     {
+                        accumulatedTime -= 50L;
                         tick();
                         _ticksThisSecond++;
-                        accumulatedTime = 0L;
-                    }
-                    else
-                    {
-                        while (accumulatedTime > 50L)
-                        {
-                            accumulatedTime -= 50L;
-                            tick();
-                            _ticksThisSecond++;
-                        }
                     }
 
                     long tpsNow = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -431,7 +418,7 @@ public abstract class BetaSharpServer : ICommandOutput
                 ServerWorld world = worlds[i];
                 if (ticks % 20 == 0)
                 {
-                    playerManager.sendToDimension(WorldTimeUpdateS2CPacket.Get(world.getTime()), world.dimension.Id);
+                    playerManager.sendToDimension(WorldTimeUpdateS2CPacket.Get(world.GetTime()), world.Dimension.Id);
                 }
 
                 world.Tick();
@@ -442,11 +429,11 @@ public abstract class BetaSharpServer : ICommandOutput
                 // >2-second stalls and "Can't keep up" spam. Any remaining work
                 // carries over and is processed across subsequent ticks.
                 var lightSw = Stopwatch.StartNew();
-                while (lightSw.ElapsedMilliseconds < 15L && world.doLightingUpdates())
+                while (lightSw.ElapsedMilliseconds < 15L && world.Lighting.DoLightingUpdates())
                 {
                 }
 
-                world.tickEntities();
+                world.Entities.TickEntities();
             }
         }
 

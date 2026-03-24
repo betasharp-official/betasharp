@@ -3,8 +3,9 @@ using BetaSharp.Entities;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Chunks;
+using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Maps;
 
 namespace BetaSharp.Items;
@@ -17,22 +18,41 @@ public class ItemMap : NetworkSyncedItem
         setMaxCount(1);
     }
 
-    public static MapState getMapState(int mapId, World world)
+    public static MapState getMapState(int mapId, IWorldContext world)
     {
         string mapName = "map_" + mapId;
-        MapState? mapState = world.persistentStateManager.LoadData<MapState>(mapName);
+        MapState? mapState = (MapState?)world.StateManager.LoadData(typeof(MapState), mapName);
         if (mapState == null)
         {
             mapState = new MapState(mapName);
-            world.persistentStateManager.SetData(mapName, mapState);
+            world.StateManager.SetData(mapName, mapState);
         }
 
         return mapState;
     }
 
-    public void update(World world, Entity entity, MapState map)
+    public MapState getSavedMapState(ItemStack stack, IWorldContext world)
     {
-        if (world.dimension.Id == map.Dimension)
+        string mapName = "map_" + stack.getDamage();
+        MapState? mapState = (MapState?)world.StateManager.LoadData(typeof(MapState), mapName);
+        if (mapState == null)
+        {
+            stack.setDamage(world.StateManager.GetUniqueDataId("map"));
+            mapState = new MapState(mapName);
+            mapState.CenterX = world.Properties.SpawnX;
+            mapState.CenterZ = world.Properties.SpawnZ;
+            mapState.Scale = 3;
+            mapState.Dimension = (sbyte)world.Dimension.Id;
+            mapState.MarkDirty();
+            world.StateManager.SetData(mapName, mapState);
+        }
+
+        return mapState;
+    }
+
+    public void update(IWorldContext world, Entity entity, MapState map)
+    {
+        if (world.Dimension.Id == map.Dimension)
         {
             short mapWidth = 128;
             short mapHeight = 128;
@@ -42,7 +62,7 @@ public class ItemMap : NetworkSyncedItem
             int entityPosX = MathHelper.Floor(entity.x - (double)centerX) / blocksPerPixel + mapWidth / 2;
             int entityPosZ = MathHelper.Floor(entity.z - (double)centerZ) / blocksPerPixel + mapHeight / 2;
             int scanRadius = 128 / blocksPerPixel;
-            if (world.dimension.HasCeiling)
+            if (world.Dimension.HasCeiling)
             {
                 scanRadius /= 2;
             }
@@ -70,7 +90,7 @@ public class ItemMap : NetworkSyncedItem
                             byte greenSum = 0;
                             byte blueSum = 0;
                             int[] blockHistogram = new int[256];
-                            Chunk chunk = world.GetChunkFromPos(worldX, worldZ);
+                            Chunk chunk = world.ChunkHost.GetChunkFromPos(worldX, worldZ);
                             int chunkOffsetX = worldX & 15;
                             int chunkOffsetZ = worldZ & 15;
                             int fluidDepth = 0;
@@ -79,7 +99,7 @@ public class ItemMap : NetworkSyncedItem
                             int sampleZ;
                             int currentY;
                             int colorIndex;
-                            if (world.dimension.HasCeiling)
+                            if (world.Dimension.HasCeiling)
                             {
                                 sampleX = worldX + worldZ * 231871;
                                 sampleX = sampleX * sampleX * 31287121 + sampleX * 11;
@@ -246,9 +266,9 @@ public class ItemMap : NetworkSyncedItem
         }
     }
 
-    public override void inventoryTick(ItemStack itemStack, World world, Entity entity, int slotIndex, bool shouldUpdate)
+    public override void inventoryTick(ItemStack itemStack, IWorldContext world, Entity entity, int slotIndex, bool shouldUpdate)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             MapState mapState = getMapState(itemStack.getDamage(), world);
             if (entity is EntityPlayer)
@@ -265,20 +285,20 @@ public class ItemMap : NetworkSyncedItem
         }
     }
 
-    public override void onCraft(ItemStack itemStack, World world, EntityPlayer entityPlayer)
+    public override void onCraft(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
     {
-        itemStack.setDamage(world.persistentStateManager.GetUniqueDataId("map"));
+        itemStack.setDamage(world.StateManager.GetUniqueDataId("map"));
         string mapName = "map_" + itemStack.getDamage();
         MapState mapState = new MapState(mapName);
-        world.persistentStateManager.SetData(mapName, mapState);
+        world.StateManager.SetData(mapName, mapState);
         mapState.CenterX = MathHelper.Floor(entityPlayer.x);
         mapState.CenterZ = MathHelper.Floor(entityPlayer.z);
         mapState.Scale = 3;
-        mapState.Dimension = (sbyte)world.dimension.Id;
-        mapState.Dirty = true;
+        mapState.Dimension = (sbyte)world.Dimension.Id;
+        mapState.MarkDirty();
     }
 
-    public override Packet getUpdatePacket(ItemStack stack, World world, EntityPlayer player)
+    public override Packet? getUpdatePacket(ItemStack stack, IWorldContext world, EntityPlayer player)
     {
         byte[] updateData = getMapState(stack.getDamage(), world).GetPlayerMarkerPacket(player);
         return updateData == null ? null : MapUpdateS2CPacket.Get((short)Item.Map.id, (short)stack.getDamage(), updateData);

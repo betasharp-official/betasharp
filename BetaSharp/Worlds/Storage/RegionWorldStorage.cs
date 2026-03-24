@@ -2,7 +2,9 @@ using BetaSharp.Entities;
 using BetaSharp.NBT;
 using BetaSharp.Server.Worlds;
 using BetaSharp.Worlds.Chunks.Storage;
+using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Dimensions;
+using BetaSharp.Worlds.Storage.RegionFormat;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Worlds.Storage;
@@ -19,12 +21,12 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
 
     public RegionWorldStorage(string baseDir, string worldName, bool createPlayersDir)
     {
-        _saveDirectory = new DirectoryInfo(System.IO.Path.Combine(baseDir, worldName));
+        _saveDirectory = new DirectoryInfo(Path.Combine(baseDir, worldName));
         if (!_saveDirectory.Exists) _saveDirectory.Create();
 
-        _playersDirectory = new DirectoryInfo(System.IO.Path.Combine(_saveDirectory.FullName, "players"));
+        _playersDirectory = new DirectoryInfo(Path.Combine(_saveDirectory.FullName, "players"));
 
-        _dataDir = new DirectoryInfo(System.IO.Path.Combine(_saveDirectory.FullName, "data"));
+        _dataDir = new DirectoryInfo(Path.Combine(_saveDirectory.FullName, "data"));
         if (!_dataDir.Exists) _dataDir.Create();
 
         if (createPlayersDir && !_playersDirectory.Exists)
@@ -39,9 +41,8 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
     {
         try
         {
-            string lockFile = System.IO.Path.Combine(_saveDirectory.FullName, "session.lock");
+            string lockFile = Path.Combine(_saveDirectory.FullName, "session.lock");
 
-            // Replaced DataOutputStream with native BinaryWriter
             using var stream = File.Create(lockFile);
             using var writer = new BinaryWriter(stream);
             writer.Write(_now);
@@ -57,7 +58,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
     {
         try
         {
-            string lockFile = System.IO.Path.Combine(_saveDirectory.FullName, "session.lock");
+            string lockFile = Path.Combine(_saveDirectory.FullName, "session.lock");
             using var stream = File.OpenRead(lockFile);
             using var reader = new BinaryReader(stream);
 
@@ -76,7 +77,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
     {
         if (dimension is NetherDimension)
         {
-            var netherDir = new DirectoryInfo(System.IO.Path.Combine(_saveDirectory.FullName, "DIM-1"));
+            var netherDir = new DirectoryInfo(Path.Combine(_saveDirectory.FullName, "DIM-1"));
             if (!netherDir.Exists) netherDir.Create();
 
             return new RegionChunkStorage(netherDir.FullName);
@@ -109,9 +110,9 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
     {
         try
         {
-            string levelDatNew = System.IO.Path.Combine(_saveDirectory.FullName, "level.dat_new");
-            string levelDatOld = System.IO.Path.Combine(_saveDirectory.FullName, "level.dat_old");
-            string levelDat = System.IO.Path.Combine(_saveDirectory.FullName, "level.dat");
+            string levelDatNew = Path.Combine(_saveDirectory.FullName, "level.dat_new");
+            string levelDatOld = Path.Combine(_saveDirectory.FullName, "level.dat_old");
+            string levelDat = Path.Combine(_saveDirectory.FullName, "level.dat");
 
             using (var stream = File.Create(levelDatNew))
             {
@@ -130,8 +131,8 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
 
     public WorldProperties? LoadProperties()
     {
-        string levelDat = System.IO.Path.Combine(_saveDirectory.FullName, "level.dat");
-        string levelDatOld = System.IO.Path.Combine(_saveDirectory.FullName, "level.dat_old");
+        string levelDat = Path.Combine(_saveDirectory.FullName, "level.dat");
+        string levelDatOld = Path.Combine(_saveDirectory.FullName, "level.dat_old");
 
         string[] filesToTry = { levelDat, levelDatOld };
 
@@ -157,7 +158,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
 
     public FileInfo GetWorldPropertiesFile(string name)
     {
-        return new FileInfo(System.IO.Path.Combine(_dataDir.FullName, $"{name}.dat"));
+        return new FileInfo(Path.Combine(_dataDir.FullName, $"{name}.dat"));
     }
 
     public void SavePlayerData(EntityPlayer player)
@@ -167,8 +168,8 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
             NBTTagCompound tag = new();
             player.write(tag);
 
-            string tempFile = System.IO.Path.Combine(_playersDirectory.FullName, "_tmp_.dat");
-            string finalFile = System.IO.Path.Combine(_playersDirectory.FullName, $"{player.name}.dat");
+            string tempFile = Path.Combine(_playersDirectory.FullName, "_tmp_.dat");
+            string finalFile = Path.Combine(_playersDirectory.FullName, $"{player.name}.dat");
 
             using (var stream = File.Create(tempFile))
             {
@@ -196,15 +197,14 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
     {
         try
         {
-            string playerFile = System.IO.Path.Combine(_playersDirectory.FullName, $"{playerName}.dat");
+            string playerFile = Path.Combine(_playersDirectory.FullName, $"{playerName}.dat");
             if (File.Exists(playerFile))
             {
                 using var stream = File.OpenRead(playerFile);
                 return NbtIo.ReadCompressed(stream);
             }
 
-            // Fallback: Migrate single-player data from level.dat
-            string levelFile = System.IO.Path.Combine(_saveDirectory.FullName, "level.dat");
+            string levelFile = Path.Combine(_saveDirectory.FullName, "level.dat");
             if (File.Exists(levelFile))
             {
                 try

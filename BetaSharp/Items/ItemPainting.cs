@@ -1,5 +1,6 @@
 using BetaSharp.Entities;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
@@ -10,7 +11,7 @@ internal class ItemPainting : Item
     {
     }
 
-    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
+    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
         if (meta == 0)
         {
@@ -41,7 +42,7 @@ internal class ItemPainting : Item
             EntityPainting painting = new EntityPainting(world, x, y, z, direction);
             if (painting.CanHangOnWall())
             {
-                if (!world.isRemote)
+                if (!world.IsRemote)
                 {
                     world.SpawnEntity(painting);
                 }

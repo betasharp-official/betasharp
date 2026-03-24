@@ -8,7 +8,7 @@ public class StairsRenderer : IBlockRenderer
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
         bool hasRendered = false;
-        int direction = ctx.World.getBlockMeta(pos.x, pos.y, pos.z);
+        int direction = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
 
 
         var upperCtx = ctx with { OverrideBounds = new Box(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F) };

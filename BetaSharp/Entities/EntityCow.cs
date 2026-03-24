@@ -1,12 +1,13 @@
 using BetaSharp.Items;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
 public class EntityCow : EntityAnimal
 {
     public override EntityType Type => EntityRegistry.Cow;
-    public EntityCow(World world) : base(world)
+    
+    public EntityCow(IWorldContext world) : base(world)
     {
         this.texture = "/mob/cow.png";
         this.setBoundingBoxSpacing(0.9F, 1.3F);

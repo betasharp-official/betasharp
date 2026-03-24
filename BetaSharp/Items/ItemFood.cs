@@ -1,5 +1,6 @@
 using BetaSharp.Entities;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
@@ -16,7 +17,7 @@ internal class ItemFood : Item
         maxCount = 1;
     }
 
-    public override ItemStack use(ItemStack itemStack, World world, EntityPlayer entityPlayer)
+    public override ItemStack use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
     {
         --itemStack.count;
         entityPlayer.heal(healAmount);

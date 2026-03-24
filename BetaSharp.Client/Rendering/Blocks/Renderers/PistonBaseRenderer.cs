@@ -7,7 +7,7 @@ public class PistonBaseRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.World.getBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
         bool isExpanded = ctx.CustomFlag || (metadata & 8) != 0;
         int facing = BlockPistonBase.getFacing(metadata);
 

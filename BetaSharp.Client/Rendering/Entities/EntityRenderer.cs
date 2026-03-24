@@ -4,7 +4,8 @@ using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Rendering.Entities;
 
@@ -153,8 +154,8 @@ public abstract class EntityRenderer
             {
                 for (int blockZ = minZ; blockZ <= maxZ; ++blockZ)
                 {
-                    int blockId = World.getBlockId(blockX, blockY - 1, blockZ);
-                    if (blockId > 0 && World.getLightLevel(blockX, blockY, blockZ) > 3)
+                    int blockId = World.Reader.GetBlockId(blockX, blockY - 1, blockZ);
+                    if (blockId > 0 && World.Lighting.GetLightLevel(blockX, blockY, blockZ) > 3)
                     {
                         renderShadowOnBlock(
                             Block.Blocks[blockId],
@@ -179,7 +180,7 @@ public abstract class EntityRenderer
     {
         if (!block.isFullCube()) return;
 
-        double shadowDarkness = (shadowiness - (pos.y - (blockY + offset.y)) / 2.0D) * 0.5D * World.getLuminance(blockX, blockY, blockZ);
+        double shadowDarkness = (shadowiness - (pos.y - (blockY + offset.y)) / 2.0D) * 0.5D * World.GetLuminance(blockX, blockY, blockZ);
 
         if (shadowDarkness < 0.0D) return;
 

@@ -1,7 +1,5 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
-using BetaSharp.Worlds;
-using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Blocks;
 
@@ -9,79 +7,68 @@ internal class BlockSand : Block
 {
     private static readonly ThreadLocal<bool> s_fallInstantly = new(() => false);
 
+    public BlockSand(int id, int textureId) : base(id, textureId, Material.Sand)
+    {
+    }
+
     public static bool fallInstantly
     {
         get => s_fallInstantly.Value;
         set => s_fallInstantly.Value = value;
     }
 
-    public BlockSand(int id, int textureId) : base(id, textureId, Material.Sand)
-    {
-    }
+    public override void onPlaced(OnPlacedEvent ctx) => ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
 
-    public override void onPlaced(World world, int x, int y, int z)
-    {
-        world.ScheduleBlockUpdate(x, y, z, id, getTickRate());
-    }
+    public override void neighborUpdate(OnTickEvent ctx) => ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
 
-    public override void neighborUpdate(World world, int x, int y, int z, int id)
-    {
-        world.ScheduleBlockUpdate(x, y, z, base.id, getTickRate());
-    }
+    public override void onTick(OnTickEvent @event) => processFall(@event);
 
-    public override void onTick(World world, int x, int y, int z, JavaRandom random)
+    private void processFall(OnTickEvent @event)
     {
-        processFall(world, x, y, z);
-    }
-
-    private void processFall(World world, int x, int y, int z)
-    {
-        if (canFallThrough(world, x, y - 1, z) && y >= 0)
+        int x = @event.X;
+        int y = @event.Y;
+        int z = @event.Z;
+        if (y > 0 && canFallThrough(new OnTickEvent(@event.World, x, y - 1, z, 0, @event.BlockId)))
         {
             sbyte checkRadius = 32;
-            if (!fallInstantly && world.isRegionLoaded(x - checkRadius, y - checkRadius, z - checkRadius, x + checkRadius, y + checkRadius, z + checkRadius))
+            if (!fallInstantly && @event.World.ChunkHost.IsRegionLoaded(x - checkRadius, y - checkRadius, z - checkRadius, x + checkRadius, y + checkRadius, z + checkRadius))
             {
-                EntityFallingSand fallingSand = new EntityFallingSand(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), id);
-                world.SpawnEntity(fallingSand);
+                EntityFallingSand fallingSand = new(@event.World, x + 0.5F, y + 0.5F, z + 0.5F, id);
+                @event.World.Entities.SpawnEntity(fallingSand);
             }
             else
             {
-                world.setBlock(x, y, z, 0);
+                @event.World.Writer.SetBlock(x, y, z, 0);
 
-                while (canFallThrough(world, x, y - 1, z) && y > 0)
+                while (canFallThrough(new OnTickEvent(@event.World, x, y - 1, z, 0, @event.BlockId)) && y > 0)
                 {
                     --y;
                 }
 
                 if (y > 0)
                 {
-                    world.setBlock(x, y, z, id);
+                    @event.World.Writer.SetBlock(x, y, z, id);
                 }
             }
         }
-
     }
 
-    public override int getTickRate()
-    {
-        return 3;
-    }
+    public override int getTickRate() => 3;
 
-    public static bool canFallThrough(World world, int x, int y, int z)
+    public static bool canFallThrough(OnTickEvent ctx)
     {
-        int blockId = world.getBlockId(x, y, z);
+        int blockId = ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z);
         if (blockId == 0)
         {
             return true;
         }
-        else if (blockId == Block.Fire.id)
+
+        if (blockId == Fire.id)
         {
             return true;
         }
-        else
-        {
-            Material material = Block.Blocks[blockId].material;
-            return material == Material.Water || material == Material.Lava;
-        }
+
+        Material material = Blocks[blockId].material;
+        return material == Material.Water || material == Material.Lava;
     }
 }

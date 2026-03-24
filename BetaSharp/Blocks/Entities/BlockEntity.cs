@@ -1,7 +1,7 @@
 using BetaSharp.NBT;
 using BetaSharp.Network.Packets;
+using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Registries;
-using BetaSharp.Worlds;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Blocks.Entities;
@@ -10,14 +10,13 @@ public abstract class BlockEntity
 {
     private static readonly IRegistry<BlockEntityType> s_registry = DefaultRegistries.BlockEntityTypes;
     private static readonly ILogger<BlockEntity> s_logger = Log.Instance.For<BlockEntity>();
-
+    public IWorldContext World;
+    protected bool Removed;
     public abstract BlockEntityType Type { get; }
 
-    public World World;
     public int X;
     public int Y;
     public int Z;
-    protected bool Removed;
 
     public static readonly BlockEntityType Furnace = Register(() => new BlockEntityFurnace(), "Furnace");
     public static readonly BlockEntityType Chest = Register(() => new BlockEntityChest(), "Chest");
@@ -51,7 +50,9 @@ public abstract class BlockEntity
         nbt.SetInteger("z", Z);
     }
 
-    public virtual void tick() { }
+    public virtual void tick(EntityManager entities)
+    {
+    }
 
     public static BlockEntity? CreateFromNbt(NBTTagCompound nbt)
     {
@@ -78,14 +79,16 @@ public abstract class BlockEntity
         }
     }
 
-    public virtual int getPushedBlockData()
-    {
-        return World.getBlockMeta(X, Y, Z);
-    }
+    public virtual int getPushedBlockData() => World.Reader.GetBlockMeta(X, Y, Z);
 
     public void markDirty()
     {
-        World?.updateBlockEntity(X, Y, Z, this);
+        if (World == null || World.IsRemote)
+        {
+            return;
+        }
+
+        World.Broadcaster.UpdateBlockEntity(X, Y, Z, this);
     }
 
     public double distanceFrom(double x, double y, double z)
@@ -96,38 +99,32 @@ public abstract class BlockEntity
         return dx * dx + dy * dy + dz * dz;
     }
 
-    public Block getBlock()
-    {
-        return Block.Blocks[World.getBlockId(X, Y, Z)];
-    }
+    public Block getBlock() => Block.Blocks[World.Reader.GetBlockId(X, Y, Z)];
 
-    public virtual Packet createUpdatePacket()
-    {
-        return null;
-    }
+    public virtual Packet createUpdatePacket() => null;
 
     public bool isRemoved()
     {
-        if (Removed) return true;
+        if (Removed)
+        {
+            return true;
+        }
 
         if (World != null)
         {
-            int id = World.getBlockId(X, Y, Z);
-            if (id == 0 || !Block.BlocksWithEntity[id]) return true;
+            int id = World.Reader.GetBlockId(X, Y, Z);
+            if (id == 0 || !Block.BlocksWithEntity[id])
+            {
+                return true;
+            }
         }
 
         return false;
     }
 
-    public void markRemoved()
-    {
-        Removed = true;
-    }
+    public void markRemoved() => Removed = true;
 
-    public void cancelRemoval()
-    {
-        Removed = false;
-    }
+    public void cancelRemoval() => Removed = false;
 
     static BlockEntity()
     {

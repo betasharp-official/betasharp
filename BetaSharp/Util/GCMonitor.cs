@@ -11,6 +11,7 @@ public sealed class GCMonitor : IDisposable
 
     private readonly Timer _timer;
     private readonly Process _process;
+    private bool _disposed;
 
     private const int UpdateIntervalMs = 250;
 
@@ -29,15 +30,19 @@ public sealed class GCMonitor : IDisposable
 
     private void Update()
     {
-        if (AllowUpdating)
-        {
-            UsedMemoryBytes = _process.WorkingSet64;
-            UsedHeapBytes = GC.GetTotalMemory(false);
-        }
+        if (!AllowUpdating || _disposed) return;
+
+        _process.Refresh();
+
+        UsedMemoryBytes = _process.WorkingSet64;
+        UsedHeapBytes = GC.GetTotalMemory(false);
     }
 
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
+
         _timer.Dispose();
         _process.Dispose();
     }

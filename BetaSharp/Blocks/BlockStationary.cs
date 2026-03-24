@@ -1,6 +1,5 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
@@ -13,60 +12,63 @@ internal class BlockStationary : BlockFluid
         {
             setTickRandomly(true);
         }
-
     }
 
-    public override void neighborUpdate(World world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickEvent @event)
     {
-        base.neighborUpdate(world, x, y, z, id);
-        if (world.getBlockId(x, y, z) == base.id)
+        base.neighborUpdate(@event);
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) == id)
         {
-            convertToFlowing(world, x, y, z);
+            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+            @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, id - 1, meta, notifyBlockPlaced: false);
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id - 1, getTickRate());
+        }
+    }
+
+    private void convertToFlowing(OnTickEvent @event)
+    {
+        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, id - 1, meta, notifyBlockPlaced: false);
+        @event.World.Broadcaster.SetBlocksDirty(@event.X, @event.Y, @event.Z, @event.X, @event.Y, @event.Z);
+        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id - 1, getTickRate());
+    }
+
+    public override void onTick(OnTickEvent @event)
+    {
+        int x = @event.X;
+        int y = @event.Y;
+        int z = @event.Z;
+        if (@event.World.Reader.GetBlockId(x, y, z) == id)
+        {
+            convertToFlowing(@event);
         }
 
-    }
-
-    private void convertToFlowing(World world, int x, int y, int z)
-    {
-        int meta = world.getBlockMeta(x, y, z);
-        world.pauseTicking = true;
-        world.SetBlockWithoutNotifyingNeighbors(x, y, z, id - 1, meta);
-        world.setBlocksDirty(x, y, z, x, y, z);
-        world.ScheduleBlockUpdate(x, y, z, id - 1, getTickRate());
-        world.pauseTicking = false;
-    }
-
-    public override void onTick(World world, int x, int y, int z, JavaRandom random)
-    {
         if (material == Material.Lava)
         {
-            int attempts = random.NextInt(3);
+            int attempts = @event.World.Random.NextInt(3);
 
             for (int attempt = 0; attempt < attempts; ++attempt)
             {
-                x += random.NextInt(3) - 1;
+                x += @event.World.Random.NextInt(3) - 1;
                 ++y;
-                z += random.NextInt(3) - 1;
-                int neighborBlockId = world.getBlockId(x, y, z);
+                z += @event.World.Random.NextInt(3) - 1;
+                int neighborBlockId = @event.World.Reader.GetBlockId(x, y, z);
                 if (neighborBlockId == 0)
                 {
-                    if (isFlammable(world, x - 1, y, z) || isFlammable(world, x + 1, y, z) || isFlammable(world, x, y, z - 1) || isFlammable(world, x, y, z + 1) || isFlammable(world, x, y - 1, z) || isFlammable(world, x, y + 1, z))
+                    if (isFlammable(@event.World.Reader, x - 1, y, z) || isFlammable(@event.World.Reader, x + 1, y, z) || isFlammable(@event.World.Reader, x, y, z - 1) ||
+                        isFlammable(@event.World.Reader, x, y, z + 1) || isFlammable(@event.World.Reader, x, y - 1, z) || isFlammable(@event.World.Reader, x, y + 1, z))
                     {
-                        world.setBlock(x, y, z, Block.Fire.id);
+                        @event.World.Writer.SetBlock(x, y, z, Fire.id);
                         return;
                     }
                 }
-                else if (Block.Blocks[neighborBlockId].material.BlocksMovement)
+                else if (Blocks[neighborBlockId].material.BlocksMovement)
                 {
                     return;
                 }
             }
         }
-
     }
 
-    private bool isFlammable(World world, int x, int y, int z)
-    {
-        return world.getMaterial(x, y, z).IsBurnable;
-    }
+    private bool isFlammable(IBlockReader world, int x, int y, int z) => world.GetMaterial(x, y, z).IsBurnable;
 }

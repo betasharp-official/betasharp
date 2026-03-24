@@ -1,28 +1,17 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
-using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Blocks;
 
 internal class BlockOre : Block
 {
-
     public BlockOre(int id, int textureId) : base(id, textureId, Material.Stone)
     {
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return id == Block.CoalOre.id ? Item.Coal.id : (id == Block.DiamondOre.id ? Item.Diamond.id : (id == Block.LapisOre.id ? Item.Dye.id : id));
-    }
+    public override int getDroppedItemId(int blockMeta) => id == CoalOre.id ? Item.Coal.id : id == DiamondOre.id ? Item.Diamond.id : id == LapisOre.id ? Item.Dye.id : id;
 
-    public override int getDroppedItemCount(JavaRandom random)
-    {
-        return id == Block.LapisOre.id ? 4 + random.NextInt(5) : 1;
-    }
+    public override int getDroppedItemCount() => id == LapisOre.id ? 4 + Random.Shared.Next(5) : 1;
 
-    protected override int getDroppedItemMeta(int blockMeta)
-    {
-        return id == Block.LapisOre.id ? 4 : 0;
-    }
+    protected override int getDroppedItemMeta(int blockMeta) => id == LapisOre.id ? 4 : 0;
 }

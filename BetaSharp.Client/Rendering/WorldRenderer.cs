@@ -12,15 +12,15 @@ using BetaSharp.Items;
 using BetaSharp.Profiling;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
 using Silk.NET.Maths;
 using BetaSharp.Util;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Core.OpenGL;
+using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Client.Rendering;
 
-public class WorldRenderer : IWorldAccess
+public class WorldRenderer : IWorldEventListener
 {
     private World world;
     private readonly TextureManager renderEngine;
@@ -33,9 +33,9 @@ public class WorldRenderer : IWorldAccess
     private int glCloudsList = -1;
     private int renderDistance = -1;
     private int renderEntitiesStartupCounter = 2;
-    private int countEntitiesTotal;
-    private int countEntitiesRendered;
-    private int countEntitiesHidden;
+    public int countEntitiesTotal;
+    public int countEntitiesRendered;
+    public int countEntitiesHidden;
     public ChunkRenderer chunkRenderer;
     public float damagePartialTime;
 
@@ -150,14 +150,14 @@ public class WorldRenderer : IWorldAccess
 
     public void changeWorld(World world)
     {
-        this.world?.removeWorldAccess(this);
+        this.world?.EventListeners.Remove(this);
 
         EntityRenderDispatcher.instance.SetWorld(world);
         this.world = world;
         globalRenderBlocks = new BlockRenderer();
         if (world != null)
         {
-            world.addWorldAccess(this);
+            world.EventListeners.Add(this);
             loadRenderers();
         }
 
@@ -208,14 +208,14 @@ public class WorldRenderer : IWorldAccess
             BlockEntityRenderer.StaticPlayerX = var4.lastTickX + (var4.x - var4.lastTickX) * (double)var3;
             BlockEntityRenderer.StaticPlayerY = var4.lastTickY + (var4.y - var4.lastTickY) * (double)var3;
             BlockEntityRenderer.StaticPlayerZ = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)var3;
-            List<Entity> var5 = world.getEntities();
+            List<Entity> var5 = world.Entities.Entities;
             countEntitiesTotal = var5.Count;
 
             int var6;
             Entity var7;
-            for (var6 = 0; var6 < world.globalEntities.Count; ++var6)
+            for (var6 = 0; var6 < world.Entities.GlobalEntities.Count; ++var6)
             {
-                var7 = world.globalEntities[var6];
+                var7 = world.Entities.GlobalEntities[var6];
                 ++countEntitiesRendered;
                 if (var7.shouldRender(var1))
                 {
@@ -255,7 +255,7 @@ public class WorldRenderer : IWorldAccess
                         var8 = 127;
                     }
 
-                    if (world.isPosLoaded(MathHelper.Floor(var7.x), var8, MathHelper.Floor(var7.z)))
+                    if (world.Reader.IsPosLoaded(MathHelper.Floor(var7.x), var8, MathHelper.Floor(var7.z)))
                     {
                         ++countEntitiesRendered;
                         EntityRenderDispatcher.instance.renderEntity(var7, var3);
@@ -263,9 +263,9 @@ public class WorldRenderer : IWorldAccess
                 }
             }
 
-            for (var6 = 0; var6 < world.blockEntities.Count; ++var6)
+            for (var6 = 0; var6 < world.Entities.BlockEntities.Count; ++var6)
             {
-                BlockEntity entity = world.blockEntities[var6];
+                BlockEntity entity = world.Entities.BlockEntities[var6];
                 if (!entity.isRemoved() && culler.isBoundingBoxInFrustum(new Box(entity.X, entity.Y, entity.Z, entity.X + 1, entity.Y + 1, entity.Z + 1)))
                 {
                     BlockEntityRenderer.Instance.RenderTileEntity(entity, var3);
@@ -276,7 +276,7 @@ public class WorldRenderer : IWorldAccess
 
     public string getDebugInfoEntities()
     {
-        return "E: " + countEntitiesRendered + "/" + countEntitiesTotal + ". B: " + countEntitiesHidden + ", I: " + (countEntitiesTotal - countEntitiesHidden - countEntitiesRendered);
+        return "Rendered: " + countEntitiesRendered + " out of " + countEntitiesTotal + ". \nHidden: " + countEntitiesHidden + ", Not in view: " + (countEntitiesTotal - countEntitiesHidden - countEntitiesRendered);
     }
 
     public int sortAndRender(EntityLiving var1, int pass, double var3, Culler cam)
@@ -297,7 +297,7 @@ public class WorldRenderer : IWorldAccess
             Camera = cam,
             ViewPos = new Vector3D<double>(var33, var7, var9),
             RenderDistance = renderDistance,
-            Ticks = world.getTime(),
+            Ticks = world.GetTime(),
             PartialTicks = (float)var3,
             DeltaTime = _game.Timer.DeltaTime,
             EnvironmentAnimation = _game.options.EnvironmentAnimation,
@@ -324,10 +324,10 @@ public class WorldRenderer : IWorldAccess
 
     public void renderSky(float var1)
     {
-        if (!_game.world.dimension.IsNether)
+        if (!_game.world.Dimension.IsNether)
         {
             GLManager.GL.Disable(GLEnum.Texture2D);
-            Vector3D<double> var2 = world.getSkyColor(_game.camera, var1);
+            Vector3D<double> var2 = world.Environment.GetSkyColor(_game.camera, var1);
             float var3 = (float)var2.X;
             float var4 = (float)var2.Y;
             float var5 = (float)var2.Z;
@@ -345,7 +345,7 @@ public class WorldRenderer : IWorldAccess
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
             Lighting.turnOff();
-            float[] var18 = world.dimension.GetBackgroundColor(world.getTime(var1), var1);
+            float[] var18 = world.Dimension.GetBackgroundColor(world.GetTime(var1), var1);
             float var9;
             float var10;
             float var11;
@@ -356,7 +356,7 @@ public class WorldRenderer : IWorldAccess
                 GLManager.GL.ShadeModel(GLEnum.Smooth);
                 GLManager.GL.PushMatrix();
                 GLManager.GL.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
-                var8 = world.getTime(var1);
+                var8 = world.GetTime(var1);
                 GLManager.GL.Rotate(var8 > 0.5F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
                 var9 = var18[0];
                 var10 = var18[1];
@@ -385,14 +385,14 @@ public class WorldRenderer : IWorldAccess
             GLManager.GL.Enable(GLEnum.Texture2D);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.One);
             GLManager.GL.PushMatrix();
-            var7 = 1.0F - world.getRainGradient(var1);
+            var7 = 1.0F - world.Environment.GetRainGradient(var1);
             var8 = 0.0F;
             var9 = 0.0F;
             var10 = 0.0F;
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, var7);
             GLManager.GL.Translate(var8, var9, var10);
             GLManager.GL.Rotate(0.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Rotate(world.getTime(var1) * 360.0F, 1.0F, 0.0F, 0.0F);
+            GLManager.GL.Rotate(world.GetTime(var1) * 360.0F, 1.0F, 0.0F, 0.0F);
             var11 = 30.0F;
             renderEngine.BindTexture(renderEngine.GetTextureId("/terrain/sun.png"));
             var17.startDrawingQuads();
@@ -410,7 +410,7 @@ public class WorldRenderer : IWorldAccess
             var17.addVertexWithUV((double)-var11, -100.0D, (double)-var11, 1.0D, 0.0D);
             var17.draw();
             GLManager.GL.Disable(GLEnum.Texture2D);
-            var12 = world.calcualteSkyLightIntensity(var1) * var7;
+            var12 = world.CalculateSkyLightIntensity(var1) * var7;
             if (var12 > 0.0F)
             {
                 GLManager.GL.Color4(var12, var12, var12, var12);
@@ -422,7 +422,7 @@ public class WorldRenderer : IWorldAccess
             GLManager.GL.Enable(GLEnum.AlphaTest);
             GLManager.GL.Enable(GLEnum.Fog);
             GLManager.GL.PopMatrix();
-            if (world.dimension.HasGround)
+            if (world.Dimension.HasGround)
             {
                 GLManager.GL.Color3(var3 * 0.2F + 0.04F, var4 * 0.2F + 0.04F, var5 * 0.6F + 0.1F);
             }
@@ -441,7 +441,7 @@ public class WorldRenderer : IWorldAccess
     public void renderClouds(float var1)
     {
         Profiler.Start("renderClouds");
-        if (!_game.world.dimension.IsNether)
+        if (!_game.world.Dimension.IsNether)
         {
             renderCloudsFancy(var1);
         }
@@ -556,7 +556,7 @@ public class WorldRenderer : IWorldAccess
         float var5 = 4.0F;
         double var6 = (_game.camera.prevX + (_game.camera.x - _game.camera.prevX) * (double)var1 + (double)((cloudOffsetX + var1) * 0.03F)) / (double)var4;
         double var8 = (_game.camera.prevZ + (_game.camera.z - _game.camera.prevZ) * (double)var1) / (double)var4 + (double)0.33F;
-        float var10 = world.dimension.CloudHeight - var2 + 0.33F;
+        float var10 = world.Dimension.CloudHeight - var2 + 0.33F;
         int var11 = MathHelper.Floor(var6 / 2048.0D);
         int var12 = MathHelper.Floor(var8 / 2048.0D);
         var6 -= var11 * 2048;
@@ -564,7 +564,7 @@ public class WorldRenderer : IWorldAccess
         renderEngine.BindTexture(renderEngine.GetTextureId("/environment/clouds.png"));
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-        Vector3D<double> var13 = world.getCloudColor(var1);
+        Vector3D<double> var13 = world.Environment.GetCloudColor(var1);
         float var14 = (float)var13.X;
         float var15 = (float)var13.Y;
         float var16 = (float)var13.Z;
@@ -643,7 +643,7 @@ public class WorldRenderer : IWorldAccess
 
         renderEngine.BindTexture(renderEngine.GetTextureId("/terrain.png"));
 
-        int targetBlockId = world.getBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
+        int targetBlockId = world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
         Block targetBlock = targetBlockId > 0 ? Block.Blocks[targetBlockId] : Block.Stone;
 
         double renderX = entityPlayer.lastTickX + (entityPlayer.x - entityPlayer.lastTickX) * (double)tickDelta;
@@ -654,7 +654,7 @@ public class WorldRenderer : IWorldAccess
         tessellator.setTranslationD(-renderX, -renderY, -renderZ);
         tessellator.disableColor();
 
-        BlockRenderer.RenderBlockByRenderType(world, targetBlock, new BlockPos(hit.BlockX, hit.BlockY, hit.BlockZ), tessellator, 240 + (int)(damagePartialTime * 10.0F), true);
+        BlockRenderer.RenderBlockByRenderType(world.Reader, world.Lighting, targetBlock, new BlockPos(hit.BlockX, hit.BlockY, hit.BlockZ), tessellator, 240 + (int)(damagePartialTime * 10.0F), true);
         tessellator.draw();
 
         tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
@@ -679,14 +679,14 @@ public class WorldRenderer : IWorldAccess
             GLManager.GL.Disable(GLEnum.Texture2D);
             GLManager.GL.DepthMask(false);
             float var6 = 0.002F;
-            int var7 = world.getBlockId(var2.BlockX, var2.BlockY, var2.BlockZ);
+            int var7 = world.Reader.GetBlockId(var2.BlockX, var2.BlockY, var2.BlockZ);
             if (var7 > 0)
             {
-                Block.Blocks[var7].updateBoundingBox(world, var2.BlockX, var2.BlockY, var2.BlockZ);
+                Block.Blocks[var7].updateBoundingBox(world.Reader, var2.BlockX, var2.BlockY, var2.BlockZ);
                 double var8 = var1.lastTickX + (var1.x - var1.lastTickX) * (double)var5;
                 double var10 = var1.lastTickY + (var1.y - var1.lastTickY) * (double)var5;
                 double var12 = var1.lastTickZ + (var1.z - var1.lastTickZ) * (double)var5;
-                drawOutlinedBoundingBox(Block.Blocks[var7].getBoundingBox(world, var2.BlockX, var2.BlockY, var2.BlockZ).Expand((double)var6, (double)var6, (double)var6).Offset(-var8, -var10, -var12));
+                drawOutlinedBoundingBox(Block.Blocks[var7].getBoundingBox(world.Reader, world.Entities, var2.BlockX, var2.BlockY, var2.BlockZ).Expand((double)var6, (double)var6, (double)var6).Offset(-var8, -var10, -var12));
             }
 
             GLManager.GL.DepthMask(true);
@@ -753,6 +753,11 @@ public class WorldRenderer : IWorldAccess
 
     public void setBlocksDirty(int var1, int var2, int var3, int var4, int var5, int var6)
     {
+        if (!world.BlockHost.IsRegionLoaded(var1, var2, var3, var4, var5, var6))
+        {
+            return;
+        }
+
         MarkBlocksDirty(var1 - 1, var2 - 1, var3 - 1, var4 + 1, var5 + 1, var6 + 1);
     }
 
@@ -760,7 +765,7 @@ public class WorldRenderer : IWorldAccess
     {
         if (var1 != null)
         {
-            _game.ingameGUI.setRecordPlayingMessage("C418 - " + var1);
+            _game.ingameGUI.SetRecordPlayingMessage("C418 - " + var1);
         }
 
         _game.sndManager.PlayStreaming(var1, var2, var3, var4, 1.0F, 1.0F);
@@ -877,40 +882,40 @@ public class WorldRenderer : IWorldAccess
 
     public void worldEvent(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6)
     {
-        JavaRandom var7 = world.random;
+        JavaRandom var7 = world.Random;
         int var16;
         switch (var2)
         {
             case 1000:
-                world.playSound(var3, var4, var5, "random.click", 1.0F, 1.0F);
+                _game.sndManager.PlaySound("random.click", var3, var4, var5, 1.0F, 1.0F);
                 break;
             case 1001:
-                world.playSound(var3, var4, var5, "random.click", 1.0F, 1.2F);
+                _game.sndManager.PlaySound("random.click", var3, var4, var5, 1.0F, 1.2F);
                 break;
             case 1002:
-                world.playSound(var3, var4, var5, "random.bow", 1.0F, 1.2F);
+                _game.sndManager.PlaySound("random.bow", var3, var4, var5, 1.0F, 1.2F);
                 break;
             case 1003:
                 if (Random.Shared.NextDouble() < 0.5D)
                 {
-                    world.playSound(var3 + 0.5D, var4 + 0.5D, var5 + 0.5D, "random.door_open", 1.0F, world.random.NextFloat() * 0.1F + 0.9F);
+                    _game.sndManager.PlaySound("random.door_open", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 1.0F, world.Random.NextFloat() * 0.1F + 0.9F);
                 }
                 else
                 {
-                    world.playSound(var3 + 0.5D, var4 + 0.5D, var5 + 0.5D, "random.door_close", 1.0F, world.random.NextFloat() * 0.1F + 0.9F);
+                    _game.sndManager.PlaySound("random.door_close", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 1.0F, world.Random.NextFloat() * 0.1F + 0.9F);
                 }
                 break;
             case 1004:
-                world.playSound((double)(var3 + 0.5F), (double)(var4 + 0.5F), (double)(var5 + 0.5F), "random.fizz", 0.5F, 2.6F + (var7.NextFloat() - var7.NextFloat()) * 0.8F);
+                _game.sndManager.PlaySound("random.fizz", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 0.5F, 2.6F + (var7.NextFloat() - var7.NextFloat()) * 0.8F);
                 break;
             case 1005:
                 if (Item.ITEMS[var6] is ItemRecord)
                 {
-                    world.playStreaming(((ItemRecord)Item.ITEMS[var6]).recordName, var3, var4, var5);
+                    _game.sndManager.PlayStreaming(((ItemRecord)Item.ITEMS[var6]).recordName, var3, var4, var5, 1.0F, 1.0F);
                 }
                 else
                 {
-                    world.playStreaming(null, var3, var4, var5);
+                    _game.sndManager.PlayStreaming(null, var3, var4, var5, 1.0F, 1.0F);
                 }
                 break;
             case 2000:
@@ -937,8 +942,8 @@ public class WorldRenderer : IWorldAccess
                 var16 = var6 & 255;
                 if (var16 > 0)
                 {
-                    Block var17 = Block.Blocks[var16];
-                    _game.sndManager.PlaySound(var17.soundGroup.BreakSound, var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, (var17.soundGroup.Volume + 1.0F) / 2.0F, var17.soundGroup.Pitch * 0.8F);
+                    Block blockId = Block.Blocks[var16];
+                    _game.sndManager.PlaySound(blockId.soundGroup.BreakSound, var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, (blockId.soundGroup.Volume + 1.0F) / 2.0F, blockId.soundGroup.Pitch * 0.8F);
                 }
 
                 _game.particleManager.addBlockDestroyEffects(var3, var4, var5, var6 & 255, var6 >> 8 & 255);
@@ -946,4 +951,7 @@ public class WorldRenderer : IWorldAccess
         }
 
     }
+
+    public void playNote(int x, int y, int z, int soundType, int pitch) { }
+    public void broadcastEntityEvent(Entity entity, byte @event) { }
 }
