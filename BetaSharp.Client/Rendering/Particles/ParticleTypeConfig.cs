@@ -41,28 +41,24 @@ public readonly struct ParticleTypeConfig
     public readonly ScaleModel Scale;
     public readonly BrightnessModel Brightness;
     public readonly UVModel UV;
-    public readonly byte FXLayer;
     public readonly float Friction;
     public readonly float GroundFriction;
     public readonly float GravityAccel;    // added to velocityY each tick
-    public readonly bool NoClip;
     public readonly bool StalledSpread;    // velocityX/Z *= 1.1 when y==prevY
     public readonly bool AnimatesTexture;  // textureIndex = 7 - age*8/maxAge
 
     public ParticleTypeConfig(
         PhysicsModel physics, ScaleModel scale, BrightnessModel brightness, UVModel uv,
-        byte fxLayer, float friction, float groundFriction, float gravityAccel,
-        bool noClip, bool stalledSpread, bool animatesTexture)
+        float friction, float groundFriction, float gravityAccel,
+        bool stalledSpread, bool animatesTexture)
     {
         Physics = physics;
         Scale = scale;
         Brightness = brightness;
         UV = uv;
-        FXLayer = fxLayer;
         Friction = friction;
         GroundFriction = groundFriction;
         GravityAccel = gravityAccel;
-        NoClip = noClip;
         StalledSpread = stalledSpread;
         AnimatesTexture = animatesTexture;
     }
@@ -76,79 +72,76 @@ public readonly struct ParticleTypeConfig
         // Smoke: buoyant +0.004, friction 0.96, animated tex, stalled-spread, GrowToFull scale
         Configs[(int)ParticleType.Smoke] = new(
             PhysicsModel.Buoyant, ScaleModel.GrowToFull, BrightnessModel.WorldBased, UVModel.Standard16x16,
-            0, 0.96f, 0.7f, 0.004f, false, true, true);
+            0.96f, 0.7f, 0.004f, true, true);
 
         // LargeSmoke: same as Smoke but spawned with scale multiplier 2.5
         Configs[(int)ParticleType.LargeSmoke] = new(
             PhysicsModel.Buoyant, ScaleModel.GrowToFull, BrightnessModel.WorldBased, UVModel.Standard16x16,
-            0, 0.96f, 0.7f, 0.004f, false, true, true);
+            0.96f, 0.7f, 0.004f, true, true);
 
-        // Flame: noClip, friction 0.96, ShrinkQuadratic scale, FadeToFull brightness
+        // Flame: noClip, friction 0.96, ShrinkQuadratic scale, FadeFromFull brightness
         Configs[(int)ParticleType.Flame] = new(
             PhysicsModel.NoClip, ScaleModel.ShrinkQuadratic, BrightnessModel.FadeFromFull, UVModel.Standard16x16,
-            0, 0.96f, 0.7f, 0f, true, false, false);
+            0.96f, 0.7f, 0f, false, false);
 
         // Explode: buoyant +0.004, friction 0.9, animated tex, Constant scale
         Configs[(int)ParticleType.Explode] = new(
             PhysicsModel.Buoyant, ScaleModel.Constant, BrightnessModel.WorldBased, UVModel.Standard16x16,
-            0, 0.9f, 0.7f, 0.004f, false, false, true);
+            0.9f, 0.7f, 0.004f, false, true);
 
-        // Reddust: like Smoke - buoyant (no explicit upward, just friction 0.96), animated, stalled-spread, GrowToFull
-        // Note: Reddust has no gravity (uses default EntityFX.tick pattern with no velocityY +=)
-        // Actually looking at code: it calls move() with standard EntityFX gravity via base tick... no, it overrides tick()
-        // Its tick: no gravity add, just move + friction 0.96 + stalled-spread + animated
+        // Reddust: standard physics, no gravity, friction 0.96, animated, stalled-spread, GrowToFull
         Configs[(int)ParticleType.Reddust] = new(
             PhysicsModel.Standard, ScaleModel.GrowToFull, BrightnessModel.WorldBased, UVModel.Standard16x16,
-            0, 0.96f, 0.7f, 0f, false, true, true);
+            0.96f, 0.7f, 0f, true, true);
 
         // SnowShovel: gravity -0.03, friction 0.99, animated tex, GrowToFull
         Configs[(int)ParticleType.SnowShovel] = new(
             PhysicsModel.SnowDrift, ScaleModel.GrowToFull, BrightnessModel.WorldBased, UVModel.Standard16x16,
-            0, 0.99f, 0.7f, -0.03f, false, false, true);
+            0.99f, 0.7f, -0.03f, false, true);
 
-        // Heart: no gravity in tick (just move + friction), stalled-spread, friction 0.86, GrowToFull
+        // Heart: no gravity, stalled-spread, friction 0.86, GrowToFull
         Configs[(int)ParticleType.Heart] = new(
             PhysicsModel.Standard, ScaleModel.GrowToFull, BrightnessModel.WorldBased, UVModel.Standard16x16,
-            0, 0.86f, 0.7f, 0f, false, true, false);
+            0.86f, 0.7f, 0f, true, false);
 
         // Note: no gravity, friction 0.66, stalled-spread, GrowToFull
         Configs[(int)ParticleType.Note] = new(
             PhysicsModel.Standard, ScaleModel.GrowToFull, BrightnessModel.WorldBased, UVModel.Standard16x16,
-            0, 0.66f, 0.7f, 0f, false, true, false);
+            0.66f, 0.7f, 0f, true, false);
 
-        // Portal: parametric position, PortalEase scale, EaseToFull brightness, noClip
+        // Portal: parametric position, PortalEase scale, EaseToFull brightness
         Configs[(int)ParticleType.Portal] = new(
             PhysicsModel.Parametric, ScaleModel.PortalEase, BrightnessModel.EaseToFull, UVModel.Standard16x16,
-            0, 0f, 0f, 0f, true, false, false);
+            0f, 0f, 0f, false, false);
 
         // Lava: gravity -0.03, friction 0.999, ShrinkLinear scale, AlwaysFull brightness, spawns smoke
         Configs[(int)ParticleType.Lava] = new(
             PhysicsModel.LavaDrop, ScaleModel.ShrinkLinear, BrightnessModel.AlwaysFull, UVModel.Standard16x16,
-            0, 0.999f, 0.7f, -0.03f, false, false, false);
+            0.999f, 0.7f, -0.03f, false, false);
 
-        // Rain: gravity via particleGravity (0.06), friction 0.98, Constant scale, dies on ground/fluid
+        // Rain: gravity -0.06, friction 0.98, Constant scale, dies on ground/fluid
         Configs[(int)ParticleType.Rain] = new(
             PhysicsModel.RainFall, ScaleModel.Constant, BrightnessModel.WorldBased, UVModel.Standard16x16,
-            0, 0.98f, 0.7f, -0.06f, false, false, false);
+            0.98f, 0.7f, -0.06f, false, false);
 
-        // Splash: like Rain but gravity 0.04
+        // Splash: like Rain but gravity -0.04
         Configs[(int)ParticleType.Splash] = new(
             PhysicsModel.RainFall, ScaleModel.Constant, BrightnessModel.WorldBased, UVModel.Standard16x16,
-            0, 0.98f, 0.7f, -0.04f, false, false, false);
+            0.98f, 0.7f, -0.04f, false, false);
 
         // Bubble: upward drift +0.002, friction 0.85, dies outside water
         Configs[(int)ParticleType.Bubble] = new(
             PhysicsModel.BubbleRise, ScaleModel.Constant, BrightnessModel.WorldBased, UVModel.Standard16x16,
-            0, 0.85f, 0.7f, 0.002f, false, false, false);
+            0.85f, 0.7f, 0.002f, false, false);
 
-        // Digging: standard physics with block gravity, Constant scale, Jittered UV, layer 1
+        // Digging: standard physics with block gravity, Constant scale, Jittered UV
         Configs[(int)ParticleType.Digging] = new(
             PhysicsModel.Standard, ScaleModel.Constant, BrightnessModel.WorldBased, UVModel.Jittered4x4,
-            1, 0.98f, 0.7f, 0f, false, false, false);
+            0.98f, 0.7f, 0f, false, false);
 
-        // Slime: standard physics with snow block gravity, Constant scale, Jittered UV, layer 2
+        // Slime: standard physics with snow block gravity, Constant scale, Jittered UV
         Configs[(int)ParticleType.Slime] = new(
             PhysicsModel.Standard, ScaleModel.Constant, BrightnessModel.WorldBased, UVModel.Jittered4x4,
-            2, 0.98f, 0.7f, 0f, false, false, false);
+            0.98f, 0.7f, 0f, false, false);
     }
 }
