@@ -96,10 +96,28 @@ public class PlayerController
     {
     }
 
-    public virtual bool sendPlaceBlock(EntityPlayer var1, World var2, ItemStack var3, int var4, int var5, int var6, int var7)
+    public virtual bool sendPlaceBlock(
+        ClientPlayerEntity player,
+        World world,
+        ItemStack selectedItem,
+        int blockX,
+        int blockY,
+        int blockZ,
+        int blockSide
+    )
     {
-        int var8 = var2.Reader.GetBlockId(var4, var5, var6);
-        return var8 > 0 && Block.Blocks[var8].onUse(new OnUseEvent(var2, var1, var4, var5, var6)) ? true : (var3 == null ? false : var3.useOnBlock(var1, var2, var4, var5, var6, var7));
+        int targetId = world.Reader.GetBlockId(blockX, blockY, blockZ);
+        if (targetId <= 0) return false;
+
+        if (!player.isSneaking()) {
+            bool used = Block.Blocks[targetId].onUse(new OnUseEvent(world, player, blockX, blockY, blockZ));
+            if (used) return true;
+        }
+
+        if (selectedItem == null) return false;
+
+        bool itemUsed = selectedItem.useOnBlock(player, world, blockX, blockY, blockZ, blockSide);
+        return itemUsed;
     }
 
     public virtual EntityPlayer createPlayer(World var1)

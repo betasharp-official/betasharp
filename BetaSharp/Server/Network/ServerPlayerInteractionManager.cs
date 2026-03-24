@@ -197,11 +197,13 @@ public class ServerPlayerInteractionManager
 
     public bool interactBlock(EntityPlayer player, World world, ItemStack? stack, int x, int y, int z, int side)
     {
-        int blockId = world.Reader.GetBlockId(x, y, z);
-        if (blockId > 0 && Block.Blocks[blockId].onUse(new OnUseEvent(world, player, x, y, z)))
-        {
-            miningProgress = -1;
-            return true;
+        if (!player.isSneaking()) {
+            int blockId = world.Reader.GetBlockId(x, y, z);
+            if (blockId > 0 && Block.Blocks[blockId].onUse(new OnUseEvent(world, player, x, y, z)))
+            {
+                miningProgress = -1;
+                return true;
+            }
         }
 
         if (stack == null) return false;
