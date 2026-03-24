@@ -63,6 +63,7 @@ public class GuiChat : GuiScreen
 
             Game.displayGuiScreen(null);
             _message = "";
+            _cursorPosition = 0;
             return;
         }
 
