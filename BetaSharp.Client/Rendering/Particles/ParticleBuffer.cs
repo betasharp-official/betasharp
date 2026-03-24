@@ -92,4 +92,9 @@ public sealed class ParticleBuffer
         }
         Count--;
     }
+
+    public void Clear()
+    {
+        Count = 0;
+    }
 }

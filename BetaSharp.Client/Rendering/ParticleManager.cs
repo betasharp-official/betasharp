@@ -75,7 +75,7 @@ public class ParticleManager
         worldObj = var1;
         for (int i = 0; i < 3; i++)
         {
-            _layers[i] = new ParticleBuffer();
+            _layers[i].Clear();
         }
 
         _specialParticles.Clear();
