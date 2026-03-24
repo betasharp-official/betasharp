@@ -154,7 +154,7 @@ public class GuiMainMenu : GuiScreen
         bool mouseOver = mouseX >= 2 && mouseY >= 2 && mouseX <= 2 + width && mouseY <= 9;
         if (mouseOver)
         {
-            var ps = new System.Diagnostics.ProcessStartInfo("https://github.com/Fazin85/betasharp")
+            var ps = new System.Diagnostics.ProcessStartInfo("https://github.com/betasharp-official/betasharp")
             {
                 UseShellExecute = true,
                 Verb = "open"
