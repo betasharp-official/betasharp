@@ -14,11 +14,11 @@ public enum PhysicsModel : byte
 
 public enum ScaleModel : byte
 {
-    Constant,        // no scale change
-    GrowToFull,      // min(1, (age+partial)/maxAge * 32) * baseScale
+    Constant,      // no scale change
+    GrowToFull,    // min(1, (age+partial)/maxAge * 32) * baseScale
     ShrinkHalf,    // baseScale * (1 - p^2 * 0.5), shrinks to ~50% (Flame)
     ShrinkSquared, // baseScale * (1 - p^2), shrinks to zero (Lava)
-    PortalEase,      // 1 - (1-progress)^2  (Portal)
+    PortalEase,    // 1 - (1-progress)^2  (Portal)
 }
 
 public enum BrightnessModel : byte
@@ -46,9 +46,9 @@ public readonly struct ParticleTypeConfig(
     public readonly UVModel UV = uv;
     public readonly float Friction = friction;
     public readonly float GroundFriction = groundFriction;
-    public readonly float GravityAccel = gravityAccel;    // added to velocityY each tick
-    public readonly bool StalledSpread = stalledSpread;    // velocityX/Z *= 1.1 when y==prevY
-    public readonly bool AnimatesTexture = animatesTexture;  // textureIndex = 7 - age*8/maxAge
+    public readonly float GravityAccel = gravityAccel; // added to velocityY each tick
+    public readonly bool StalledSpread = stalledSpread; // velocityX/Z *= 1.1 when y==prevY
+    public readonly bool AnimatesTexture = animatesTexture; // textureIndex = 7 - age*8/maxAge
 
     public static readonly ParticleTypeConfig[] Configs;
 
