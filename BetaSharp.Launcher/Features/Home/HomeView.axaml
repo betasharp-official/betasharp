@@ -41,23 +41,28 @@
             <Button Content="Sign out" VerticalAlignment="Center" Command="{CompiledBinding SignOutCommand}" Grid.Column="1" />
         </Grid>
 
-        <Grid RowDefinitions="Auto *" RowSpacing="5" VerticalAlignment="Center" Grid.Row="1">
-            <TextBlock Text="Releases" Grid.Row="0" />
+        <Grid VerticalAlignment="Center" Grid.Row="1">
+            <TextBlock Text="This looks rather empty..." Opacity="0.5" HorizontalAlignment="Center"
+                       Classes.hidden="{CompiledBinding Releases.Count}" />
 
-            <ListBox ItemsSource="{CompiledBinding Releases}" Grid.Row="1">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{CompiledBinding Name}" />
-                                <TextBlock Text="{CompiledBinding Date}" Opacity="0.5" />
+            <Grid RowDefinitions="Auto *" RowSpacing="5" Classes="hidden" Classes.shown="{CompiledBinding Releases.Count}">
+                <TextBlock Text="Releases" Grid.Row="0" />
+
+                <ListBox ItemsSource="{CompiledBinding Releases}" Grid.Row="1">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{CompiledBinding Name}" />
+                                    <TextBlock Text="{CompiledBinding Date}" Opacity="0.5" />
+                                </StackPanel>
+
+                                <SelectableTextBlock Text="{CompiledBinding Url}" Opacity="0.5" />
                             </StackPanel>
-
-                            <SelectableTextBlock Text="{CompiledBinding Url}" Opacity="0.5" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
         </Grid>
 
         <Grid ColumnDefinitions="* 0.35*" ColumnSpacing="10" Grid.Row="2">

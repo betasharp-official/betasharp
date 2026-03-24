@@ -51,26 +51,6 @@ internal sealed partial class HomeViewModel : ObservableObject
         Task.Run(GetReleasesAsync);
     }
 
-    private async Task GetReleasesAsync()
-    {
-        try
-        {
-            var releases = await _gitHubClient.Repository.Release.GetAll("betasharp-official", nameof(BetaSharp));
-
-            foreach (var release in releases)
-            {
-                Releases.Add(new BetaSharpRelease(
-                    release.TagName,
-                    (release.PublishedAt ?? release.CreatedAt).ToString("d"),
-                    release.HtmlUrl));
-            }
-        }
-        catch (Exception exception)
-        {
-            _logger.LogError(exception, "An exception occurred in home view-model on get releases");
-        }
-    }
-
     [RelayCommand]
     private void SignOut()
     {
@@ -95,5 +75,25 @@ internal sealed partial class HomeViewModel : ObservableObject
     private void Host()
     {
         _navigationService.Navigate<HostingViewModel>();
+    }
+
+    private async Task GetReleasesAsync()
+    {
+        try
+        {
+            var releases = await _gitHubClient.Repository.Release.GetAll("betasharp-official", nameof(BetaSharp));
+
+            foreach (var release in releases)
+            {
+                Releases.Add(new BetaSharpRelease(
+                    release.TagName,
+                    (release.PublishedAt ?? release.CreatedAt).ToString("d"),
+                    release.HtmlUrl));
+            }
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "An exception occurred in home view-model on get releases");
+        }
     }
 }

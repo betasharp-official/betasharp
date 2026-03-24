@@ -34,13 +34,13 @@
             </Setter>
         </Style>
 
-        <Style Selector="Grid.hidden">
+        <Style Selector=":is(Control).hidden">
             <Setter Property="Opacity" Value="0" />
             <Setter Property="IsVisible" Value="False" />
             <Setter Property="IsHitTestVisible" Value="False" />
         </Style>
 
-        <Style Selector="Grid.shown">
+        <Style Selector=":is(Control).shown">
             <Setter Property="Opacity" Value="1" />
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="IsHitTestVisible" Value="True" />
