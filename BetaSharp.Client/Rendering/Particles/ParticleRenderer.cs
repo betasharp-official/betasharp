@@ -1,6 +1,5 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -17,18 +16,21 @@ public static class ParticleRenderer
 
     public static void Render(
         ParticleBuffer[] layers, List<ISpecialParticle> specialParticles,
-        Entity camera, float partialTick,
+        float yaw, float pitch,
+        double x, double y, double z,
+        double lastTickX, double lastTickY, double lastTickZ,
+        float partialTick,
         TextureManager texMgr, IWorldContext world)
     {
-        float cosYaw = MathHelper.Cos(camera.yaw * (float)Math.PI / 180.0f);
-        float sinYaw = MathHelper.Sin(camera.yaw * (float)Math.PI / 180.0f);
-        float cosPitch = MathHelper.Cos(camera.pitch * (float)Math.PI / 180.0f);
-        float upX = -sinYaw * MathHelper.Sin(camera.pitch * (float)Math.PI / 180.0f);
-        float upZ = cosYaw * MathHelper.Sin(camera.pitch * (float)Math.PI / 180.0f);
+        float cosYaw = MathHelper.Cos(yaw * (float)Math.PI / 180.0f);
+        float sinYaw = MathHelper.Sin(yaw * (float)Math.PI / 180.0f);
+        float cosPitch = MathHelper.Cos(pitch * (float)Math.PI / 180.0f);
+        float upX = -sinYaw * MathHelper.Sin(pitch * (float)Math.PI / 180.0f);
+        float upZ = cosYaw * MathHelper.Sin(pitch * (float)Math.PI / 180.0f);
 
-        double interpX = camera.lastTickX + (camera.x - camera.lastTickX) * partialTick;
-        double interpY = camera.lastTickY + (camera.y - camera.lastTickY) * partialTick;
-        double interpZ = camera.lastTickZ + (camera.z - camera.lastTickZ) * partialTick;
+        double interpX = lastTickX + (x - lastTickX) * partialTick;
+        double interpY = lastTickY + (y - lastTickY) * partialTick;
+        double interpZ = lastTickZ + (z - lastTickZ) * partialTick;
 
         Tessellator t = Tessellator.instance;
 
@@ -71,16 +73,18 @@ public static class ParticleRenderer
     }
 
     public static void RenderSpecial(List<ISpecialParticle> specialParticles,
-        Entity camera, float partialTick)
+        double x, double y, double z,
+        double lastTickX, double lastTickY, double lastTickZ,
+        float partialTick)
     {
         if (specialParticles.Count == 0)
         {
             return;
         }
 
-        double interpX = camera.lastTickX + (camera.x - camera.lastTickX) * partialTick;
-        double interpY = camera.lastTickY + (camera.y - camera.lastTickY) * partialTick;
-        double interpZ = camera.lastTickZ + (camera.z - camera.lastTickZ) * partialTick;
+        double interpX = lastTickX + (x - lastTickX) * partialTick;
+        double interpY = lastTickY + (y - lastTickY) * partialTick;
+        double interpZ = lastTickZ + (z - lastTickZ) * partialTick;
 
         Tessellator t = Tessellator.instance;
         for (int i = 0; i < specialParticles.Count; i++)

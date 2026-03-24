@@ -60,14 +60,21 @@ public class ParticleManager
         }
     }
 
-    public void renderParticles(Entity var1, float var2)
+    public void renderParticles(Entity camera, float partialTick)
     {
-        ParticleRenderer.Render(_layers, _specialParticles, var1, var2, _textures, worldObj);
+        ParticleRenderer.Render(_layers, _specialParticles,
+            camera.yaw, camera.pitch,
+            camera.x, camera.y, camera.z,
+            camera.lastTickX, camera.lastTickY, camera.lastTickZ,
+            partialTick, _textures, worldObj);
     }
 
-    public void func_1187_b(Entity var1, float var2)
+    public void func_1187_b(Entity camera, float partialTick)
     {
-        ParticleRenderer.RenderSpecial(_specialParticles, var1, var2);
+        ParticleRenderer.RenderSpecial(_specialParticles,
+            camera.x, camera.y, camera.z,
+            camera.lastTickX, camera.lastTickY, camera.lastTickZ,
+            partialTick);
     }
 
     public void clearEffects(World var1)
