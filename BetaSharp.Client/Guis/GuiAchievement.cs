@@ -8,17 +8,17 @@ namespace BetaSharp.Client.Guis;
 
 public class GuiAchievement : Gui
 {
-    private static readonly long AchievementDisplayDuration = 3000L;
-    private static readonly string LicenseWarningText = "BetaSharp Unlicensed Copy :(";
-    private static readonly string AltLocationWarningText = "(Or logged in from another location)";
-    private static readonly string PurchasePromptText = "Purchase Minecraft at minecraft.net";
+    private const long AchievementDisplayDuration = 3000L;
+    private const string LicenseWarningText = "Unlicensed Copy :(";
+    private const string AltLocationWarningText = "(Or logged in from another location)";
+    private const string PurchasePromptText = "Purchase Minecraft at minecraft.net";
 
     private readonly BetaSharp _theGame;
     private int _achievementWindowWidth;
     private int _achievementWindowHeight;
-    private string _achievementTitle;
+    private string? _achievementTitle;
     private string? _achievementDescription;
-    private Achievement _theAchievement;
+    private Achievement? _theAchievement;
     private long _achievementDisplayStartTime;
     private readonly ItemRenderer _itemRender;
     private bool _isAchievementInformation;
@@ -29,25 +29,25 @@ public class GuiAchievement : Gui
         _itemRender = new ItemRenderer();
     }
 
-    public void queueTakenAchievement(Achievement achievement)
+    public void QueueTakenAchievement(Achievement achievement)
     {
         _achievementTitle = StatCollector.TranslateToLocal("achievement.get");
         _achievementDescription = achievement.StatName;
-        _achievementDisplayStartTime = GetCurrentTimeMillis();
+        _achievementDisplayStartTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         _theAchievement = achievement;
         _isAchievementInformation = false;
     }
 
-    public void queueAchievementInformation(Achievement achievement)
+    public void QueueAchievementInformation(Achievement achievement)
     {
         _achievementTitle = achievement.StatName;
         _achievementDescription = achievement.getTranslatedDescription();
-        _achievementDisplayStartTime = GetCurrentTimeMillis() - 2500L;
+        _achievementDisplayStartTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 2500L;
         _theAchievement = achievement;
         _isAchievementInformation = true;
     }
 
-    private void updateAchievementWindowScale()
+    private void UpdateAchievementWindowScale()
     {
         GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
         GLManager.GL.MatrixMode(GLEnum.Projection);
@@ -70,11 +70,11 @@ public class GuiAchievement : Gui
         GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
     }
 
-    public void updateAchievementWindow()
+    public void UpdateAchievementWindow()
     {
         if (BetaSharp.hasPaidCheckTime > 0L)
         {
-            displayLicenseWarning();
+            DisplayLicenseWarning();
         }
     }
 
@@ -90,11 +90,13 @@ public class GuiAchievement : Gui
             return;
         }
 
-        renderAchievementInCurrentState(scaledWidth, scaledHeight, elapsedTime);
+        RenderAchievementInCurrentState(scaledWidth, elapsedTime);
     }
 
-    private void renderAchievementInCurrentState(int scaledWidth, int scaledHeight, double elapsedTime)
+    private void RenderAchievementInCurrentState(int scaledWidth, double elapsedTime)
     {
+        if (_theAchievement == null) return;
+
         GLManager.GL.Disable(GLEnum.DepthTest);
         GLManager.GL.DepthMask(false);
         GLManager.GL.Enable(GLEnum.Texture2D);
@@ -102,14 +104,14 @@ public class GuiAchievement : Gui
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
 
-        double animationProgress = calculateAnimationProgress(elapsedTime);
+        double animationProgress = CalculateAnimationProgress(elapsedTime);
         int achievementX = scaledWidth - 160;
         int achievementY = 0 - (int)(animationProgress * 36.0D);
 
         _theGame.textureManager.BindTexture(_theGame.textureManager.GetTextureId("/achievement/bg.png"));
         _zLevel = -90.0F;
         DrawTexturedModalRect(achievementX, achievementY, 96, 202, 160, 32);
-        drawAchievementText(achievementX, achievementY);
+        DrawAchievementText(achievementX, achievementY);
 
         GLManager.GL.PushMatrix();
         GLManager.GL.Rotate(180.0F, 1.0F, 0.0F, 0.0F);
@@ -127,24 +129,24 @@ public class GuiAchievement : Gui
         GLManager.GL.Enable(GLEnum.DepthTest);
     }
 
-    private void displayLicenseWarning()
+    private void DisplayLicenseWarning()
     {
         GLManager.GL.Disable(GLEnum.DepthTest);
         GLManager.GL.DepthMask(false);
         Lighting.turnOff();
-        updateAchievementWindowScale();
+        UpdateAchievementWindowScale();
 
         int y = 2;
         if (_theGame.currentScreen is GuiMainMenu) y += 9;
         _theGame.fontRenderer.DrawStringWithShadow(LicenseWarningText, 2, y, Color.White);
-        _theGame.fontRenderer.DrawStringWithShadow(AltLocationWarningText, 2, y+9, Color.White);
-        _theGame.fontRenderer.DrawStringWithShadow(PurchasePromptText, 2, y+18, Color.White);
+        _theGame.fontRenderer.DrawStringWithShadow(AltLocationWarningText, 2, y + 9, Color.White);
+        _theGame.fontRenderer.DrawStringWithShadow(PurchasePromptText, 2, y + 18, Color.White);
 
         GLManager.GL.DepthMask(true);
         GLManager.GL.Enable(GLEnum.DepthTest);
     }
 
-    private double calculateAnimationProgress(double elapsedTime)
+    private static double CalculateAnimationProgress(double elapsedTime)
     {
         double progress = elapsedTime * 2.0D;
         if (progress > 1.0D)
@@ -164,7 +166,7 @@ public class GuiAchievement : Gui
         return progress;
     }
 
-    private void drawAchievementText(int achievementX, int achievementY)
+    private void DrawAchievementText(int achievementX, int achievementY)
     {
         if (_isAchievementInformation)
         {
@@ -176,6 +178,4 @@ public class GuiAchievement : Gui
             _theGame.fontRenderer.DrawString(_achievementDescription ?? "", achievementX + 30, achievementY + 18, Color.White);
         }
     }
-
-    private long GetCurrentTimeMillis() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 }

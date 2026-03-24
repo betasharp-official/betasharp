@@ -44,7 +44,7 @@ public class ClientPlayerEntity : EntityPlayer
     {
         if (!Game.statFileWriter.HasAchievementUnlocked(global::BetaSharp.Achievements.OpenInventory))
         {
-            Game.guiAchievement.queueAchievementInformation(global::BetaSharp.Achievements.OpenInventory);
+            Game.guiAchievement.QueueAchievementInformation(global::BetaSharp.Achievements.OpenInventory);
         }
 
         lastScreenDistortion = changeDimensionCooldown;
@@ -225,7 +225,7 @@ public class ClientPlayerEntity : EntityPlayer
                 {
                     if (!alreadyUnlocked)
                     {
-                        Game.guiAchievement.queueTakenAchievement(achievement);
+                        Game.guiAchievement.QueueTakenAchievement(achievement);
                     }
 
                     Game.statFileWriter.ReadStat(stat, value);

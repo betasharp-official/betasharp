@@ -1,6 +1,4 @@
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Reflection;
 using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -10,7 +8,7 @@ using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.DynamicTexture;
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
-using BetaSharp.Client.Guis.Debug.Components;
+using BetaSharp.Client.Guis.Debug;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Options;
@@ -37,7 +35,6 @@ using BetaSharp.Worlds.Colors;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
-using BetaSharp.Client.Guis.Debug;
 using ImGuiNET;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Input;
@@ -58,7 +55,8 @@ public partial class BetaSharp
     public int displayWidth;
     public int displayHeight;
 
-    public const string VERSION = "snapshot-pre1.0_1";
+    private const string UnknownVersion = "unknown version";
+    public static string Version { get; private set; } = UnknownVersion;
 
     public Timer Timer { get; } = new(20.0F);
     public World world;
@@ -115,12 +113,6 @@ public partial class BetaSharp
     private GLErrorHandler _glErrorHandler;
     private readonly DebugTelemetry _debugTelemetry = new();
 
-    private bool _wasLeftBumperDown;
-    private bool _wasRightBumperDown;
-    private bool _wasLeftTriggerDown;
-    private bool _wasRightTriggerDown;
-    private bool _wasStartButtonDown;
-    private bool _wasYButtonDown;
     private bool _wasDpadLeftDown;
     private bool _wasDpadRightDown;
     private bool _wasDpadUpDown;
@@ -173,8 +165,30 @@ public partial class BetaSharp
         _logger.LogError(crashInfo, "BetaSharp has crashed!");
     }
 
+    private void LoadVersion()
+    {
+        try
+        {
+            if (File.Exists("version.txt"))
+            {
+                Version = File.ReadAllText("version.txt").Trim().ToLower();
+            }
+            else
+            {
+                Version = "development build";
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("Failed to load version: {}", ex.Message);
+            Version = UnknownVersion;
+        }
+    }
+
     public unsafe void startGame()
     {
+        LoadVersion();
+
         Bootstrap.Initialize();
         DebugComponents.RegisterComponents();
 
@@ -206,7 +220,7 @@ public partial class BetaSharp
             Display.setLocation((maximumWidth - displayWidth) / 2, (maximumHeight - displayHeight) / 2);
         }
 
-        Display.setTitle("BetaSharp " + VERSION);
+        Display.setTitle("BetaSharp " + Version);
 
         gameDataDir = getBetaSharpDir();
         saveLoader = new RegionWorldStorageSource(Path.Combine(gameDataDir, "saves"));
@@ -777,7 +791,7 @@ public partial class BetaSharp
                         prevFrameTime = Stopwatch.GetTimestamp();
                     }
 
-                    guiAchievement.updateAchievementWindow();
+                    guiAchievement.UpdateAchievementWindow();
 
                     if (Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
