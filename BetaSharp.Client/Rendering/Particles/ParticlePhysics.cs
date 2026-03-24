@@ -30,13 +30,9 @@ public static class ParticlePhysics
         }
         else
         {
-            // Try each axis independently
-            int bxOnly = MathHelper.Floor(buf.X[i] + buf.VelX[i]);
-            int byOnly = MathHelper.Floor(buf.Y[i] + buf.VelY[i]);
-            int bzOnly = MathHelper.Floor(buf.Z[i] + buf.VelZ[i]);
-
+            // Try each axis independently using the already-computed target block coords
             // Y axis
-            int yBlockId = world.Reader.GetBlockId(MathHelper.Floor(buf.X[i]), byOnly, MathHelper.Floor(buf.Z[i]));
+            int yBlockId = world.Reader.GetBlockId(MathHelper.Floor(buf.X[i]), by, MathHelper.Floor(buf.Z[i]));
             bool ySolid = yBlockId > 0 && Block.Blocks[yBlockId] != null &&
                           Block.Blocks[yBlockId].material.BlocksMovement;
             if (!ySolid)
@@ -51,7 +47,7 @@ public static class ParticlePhysics
             }
 
             // X axis
-            int xBlockId = world.Reader.GetBlockId(bxOnly, MathHelper.Floor(buf.Y[i]), MathHelper.Floor(buf.Z[i]));
+            int xBlockId = world.Reader.GetBlockId(bx, MathHelper.Floor(buf.Y[i]), MathHelper.Floor(buf.Z[i]));
             bool xSolid = xBlockId > 0 && Block.Blocks[xBlockId] != null &&
                           Block.Blocks[xBlockId].material.BlocksMovement;
             if (!xSolid)
@@ -64,7 +60,7 @@ public static class ParticlePhysics
             }
 
             // Z axis
-            int zBlockId = world.Reader.GetBlockId(MathHelper.Floor(buf.X[i]), MathHelper.Floor(buf.Y[i]), bzOnly);
+            int zBlockId = world.Reader.GetBlockId(MathHelper.Floor(buf.X[i]), MathHelper.Floor(buf.Y[i]), bz);
             bool zSolid = zBlockId > 0 && Block.Blocks[zBlockId] != null &&
                           Block.Blocks[zBlockId].material.BlocksMovement;
             if (!zSolid)
