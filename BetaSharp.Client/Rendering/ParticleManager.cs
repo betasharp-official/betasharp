@@ -419,49 +419,49 @@ public class ParticleManager
         }
     }
 
-    public void addBlockHitEffects(int var1, int var2, int var3, int var4)
+    public void addBlockHitEffects(int blockX, int blockY, int blockZ, int face)
     {
-        int var5 = worldObj.Reader.GetBlockId(var1, var2, var3);
-        if (var5 != 0)
+        int blockId = worldObj.Reader.GetBlockId(blockX, blockY, blockZ);
+        if (blockId != 0)
         {
-            Block var6 = Block.Blocks[var5];
-            Box blockBB = var6.BoundingBox;
-            float var7 = 0.1F;
-            double var8 = var1 + _rand.NextDouble() * (blockBB.MaxX - blockBB.MinX - (var7 * 2.0F)) + var7 + blockBB.MinX;
-            double var10 = var2 + _rand.NextDouble() * (blockBB.MaxY - blockBB.MinY - (var7 * 2.0F)) + var7 + blockBB.MinY;
-            double var12 = var3 + _rand.NextDouble() * (blockBB.MaxZ - blockBB.MinZ - (var7 * 2.0F)) + var7 + blockBB.MinZ;
-            if (var4 == 0)
+            Block block = Block.Blocks[blockId];
+            Box bb = block.BoundingBox;
+            float margin = 0.1F;
+            double px = blockX + _rand.NextDouble() * (bb.MaxX - bb.MinX - (margin * 2.0F)) + margin + bb.MinX;
+            double py = blockY + _rand.NextDouble() * (bb.MaxY - bb.MinY - (margin * 2.0F)) + margin + bb.MinY;
+            double pz = blockZ + _rand.NextDouble() * (bb.MaxZ - bb.MinZ - (margin * 2.0F)) + margin + bb.MinZ;
+            if (face == 0)
             {
-                var10 = var2 + blockBB.MinY - var7;
+                py = blockY + bb.MinY - margin;
             }
 
-            if (var4 == 1)
+            if (face == 1)
             {
-                var10 = var2 + blockBB.MaxY + var7;
+                py = blockY + bb.MaxY + margin;
             }
 
-            if (var4 == 2)
+            if (face == 2)
             {
-                var12 = var3 + blockBB.MinZ - var7;
+                pz = blockZ + bb.MinZ - margin;
             }
 
-            if (var4 == 3)
+            if (face == 3)
             {
-                var12 = var3 + blockBB.MaxZ + var7;
+                pz = blockZ + bb.MaxZ + margin;
             }
 
-            if (var4 == 4)
+            if (face == 4)
             {
-                var8 = var1 + blockBB.MinX - var7;
+                px = blockX + bb.MinX - margin;
             }
 
-            if (var4 == 5)
+            if (face == 5)
             {
-                var8 = var1 + blockBB.MaxX + var7;
+                px = blockX + bb.MaxX + margin;
             }
 
-            int meta = worldObj.Reader.GetBlockMeta(var1, var2, var3);
-            AddDiggingScaled(var8, var10, var12, var6, var4, meta, var1, var2, var3, 0.2f, 0.6f);
+            int meta = worldObj.Reader.GetBlockMeta(blockX, blockY, blockZ);
+            AddDiggingScaled(px, py, pz, block, face, meta, blockX, blockY, blockZ, 0.2f, 0.6f);
         }
     }
 
