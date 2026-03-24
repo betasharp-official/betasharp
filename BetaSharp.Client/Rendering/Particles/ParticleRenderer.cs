@@ -132,24 +132,23 @@ public static class ParticleRenderer
             case BrightnessModel.AlwaysFull:
                 return 1.0f;
 
-            case BrightnessModel.FadeToFull:
+            case BrightnessModel.FadeFromFull:
                 {
                     float progress = ((float)buf.Age[i] + partialTick) / buf.MaxAge[i];
                     if (progress < 0f) progress = 0f;
                     if (progress > 1f) progress = 1f;
                     float worldBright = GetWorldBrightness(buf, i, world);
+                    return worldBright * progress + (1.0f - progress);
+                }
 
-                    if (buf.Type[i] == ParticleType.Flame)
-                    {
-                        // Flame: lerp from 1.0 toward world brightness
-                        return worldBright * progress + (1.0f - progress);
-                    }
-                    else
-                    {
-                        // Portal: progress^4 blend
-                        float p = progress * progress * progress * progress;
-                        return worldBright * (1.0f - p) + p;
-                    }
+            case BrightnessModel.EaseToFull:
+                {
+                    float progress = ((float)buf.Age[i] + partialTick) / buf.MaxAge[i];
+                    if (progress < 0f) progress = 0f;
+                    if (progress > 1f) progress = 1f;
+                    float worldBright = GetWorldBrightness(buf, i, world);
+                    float p = progress * progress * progress * progress;
+                    return worldBright * (1.0f - p) + p;
                 }
 
             default: // WorldBased

@@ -23,9 +23,10 @@ public enum ScaleModel : byte
 
 public enum BrightnessModel : byte
 {
-    WorldBased,  // getBrightnessAtEyes from world lighting
-    AlwaysFull,  // 1.0
-    FadeToFull,  // lerp world -> 1.0 over lifetime
+    WorldBased,   // getBrightnessAtEyes from world lighting
+    AlwaysFull,   // 1.0
+    FadeFromFull, // starts at 1.0, lerps toward world brightness (Flame)
+    EaseToFull,   // starts at world brightness, quartic ease toward 1.0 (Portal)
 }
 
 public enum UVModel : byte
@@ -84,7 +85,7 @@ public readonly struct ParticleTypeConfig
 
         // Flame: noClip, friction 0.96, ShrinkQuadratic scale, FadeToFull brightness
         Configs[(int)ParticleType.Flame] = new(
-            PhysicsModel.NoClip, ScaleModel.ShrinkQuadratic, BrightnessModel.FadeToFull, UVModel.Standard16x16,
+            PhysicsModel.NoClip, ScaleModel.ShrinkQuadratic, BrightnessModel.FadeFromFull, UVModel.Standard16x16,
             0, 0.96f, 0.7f, 0f, true, false, false);
 
         // Explode: buoyant +0.004, friction 0.9, animated tex, Constant scale
@@ -115,9 +116,9 @@ public readonly struct ParticleTypeConfig
             PhysicsModel.Standard, ScaleModel.GrowToFull, BrightnessModel.WorldBased, UVModel.Standard16x16,
             0, 0.66f, 0.7f, 0f, false, true, false);
 
-        // Portal: parametric position, PortalEase scale, FadeToFull brightness, noClip
+        // Portal: parametric position, PortalEase scale, EaseToFull brightness, noClip
         Configs[(int)ParticleType.Portal] = new(
-            PhysicsModel.Parametric, ScaleModel.PortalEase, BrightnessModel.FadeToFull, UVModel.Standard16x16,
+            PhysicsModel.Parametric, ScaleModel.PortalEase, BrightnessModel.EaseToFull, UVModel.Standard16x16,
             0, 0f, 0f, 0f, true, false, false);
 
         // Lava: gravity -0.03, friction 0.999, ShrinkLinear scale, AlwaysFull brightness, spawns smoke
