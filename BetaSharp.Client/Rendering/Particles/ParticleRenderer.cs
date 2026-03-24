@@ -99,12 +99,12 @@ public static class ParticleRenderer
                 return buf.BaseScale[i];
 
             case ScaleModel.GrowToFull:
-            {
-                float lifeProgress = progress * 32.0f;
-                if (lifeProgress < 0f) lifeProgress = 0f;
-                if (lifeProgress > 1f) lifeProgress = 1f;
-                return buf.BaseScale[i] * lifeProgress;
-            }
+                {
+                    float lifeProgress = progress * 32.0f;
+                    if (lifeProgress < 0f) lifeProgress = 0f;
+                    if (lifeProgress > 1f) lifeProgress = 1f;
+                    return buf.BaseScale[i] * lifeProgress;
+                }
 
             case ScaleModel.ShrinkQuadratic:
                 return buf.BaseScale[i] * (1.0f - progress * progress * 0.5f);
@@ -113,11 +113,11 @@ public static class ParticleRenderer
                 return buf.BaseScale[i] * (1.0f - progress * progress);
 
             case ScaleModel.PortalEase:
-            {
-                float inv = 1.0f - progress;
-                inv *= inv;
-                return buf.BaseScale[i] * (1.0f - inv);
-            }
+                {
+                    float inv = 1.0f - progress;
+                    inv *= inv;
+                    return buf.BaseScale[i] * (1.0f - inv);
+                }
 
             default:
                 return buf.BaseScale[i];
@@ -133,24 +133,24 @@ public static class ParticleRenderer
                 return 1.0f;
 
             case BrightnessModel.FadeToFull:
-            {
-                float progress = ((float)buf.Age[i] + partialTick) / buf.MaxAge[i];
-                if (progress < 0f) progress = 0f;
-                if (progress > 1f) progress = 1f;
-                float worldBright = GetWorldBrightness(buf, i, world);
+                {
+                    float progress = ((float)buf.Age[i] + partialTick) / buf.MaxAge[i];
+                    if (progress < 0f) progress = 0f;
+                    if (progress > 1f) progress = 1f;
+                    float worldBright = GetWorldBrightness(buf, i, world);
 
-                if (buf.Type[i] == ParticleType.Flame)
-                {
-                    // Flame: lerp from 1.0 toward world brightness
-                    return worldBright * progress + (1.0f - progress);
+                    if (buf.Type[i] == ParticleType.Flame)
+                    {
+                        // Flame: lerp from 1.0 toward world brightness
+                        return worldBright * progress + (1.0f - progress);
+                    }
+                    else
+                    {
+                        // Portal: progress^4 blend
+                        float p = progress * progress * progress * progress;
+                        return worldBright * (1.0f - p) + p;
+                    }
                 }
-                else
-                {
-                    // Portal: progress^4 blend
-                    float p = progress * progress * progress * progress;
-                    return worldBright * (1.0f - p) + p;
-                }
-            }
 
             default: // WorldBased
                 return GetWorldBrightness(buf, i, world);

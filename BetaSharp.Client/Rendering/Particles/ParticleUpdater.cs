@@ -167,8 +167,12 @@ public static class ParticleUpdater
         {
             deferred.Add(new DeferredSmoke
             {
-                X = buf.X[i], Y = buf.Y[i], Z = buf.Z[i],
-                VelX = buf.VelX[i], VelY = buf.VelY[i], VelZ = buf.VelZ[i]
+                X = buf.X[i],
+                Y = buf.Y[i],
+                Z = buf.Z[i],
+                VelX = buf.VelX[i],
+                VelY = buf.VelY[i],
+                VelZ = buf.VelZ[i]
             });
         }
 
