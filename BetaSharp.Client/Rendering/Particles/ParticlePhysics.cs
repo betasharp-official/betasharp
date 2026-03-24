@@ -19,7 +19,7 @@ public static class ParticlePhysics
 
         int blockId = world.Reader.GetBlockId(bx, by, bz);
         bool solid = blockId > 0 && Block.Blocks[blockId] != null &&
-                     Block.Blocks[blockId].Material.BlocksMovement;
+                     Block.Blocks[blockId].material.BlocksMovement;
 
         if (!solid)
         {
@@ -38,7 +38,7 @@ public static class ParticlePhysics
             // Y axis
             int yBlockId = world.Reader.GetBlockId(MathHelper.Floor(buf.X[i]), byOnly, MathHelper.Floor(buf.Z[i]));
             bool ySolid = yBlockId > 0 && Block.Blocks[yBlockId] != null &&
-                          Block.Blocks[yBlockId].Material.BlocksMovement;
+                          Block.Blocks[yBlockId].material.BlocksMovement;
             if (!ySolid)
             {
                 buf.Y[i] += buf.VelY[i];
@@ -53,7 +53,7 @@ public static class ParticlePhysics
             // X axis
             int xBlockId = world.Reader.GetBlockId(bxOnly, MathHelper.Floor(buf.Y[i]), MathHelper.Floor(buf.Z[i]));
             bool xSolid = xBlockId > 0 && Block.Blocks[xBlockId] != null &&
-                          Block.Blocks[xBlockId].Material.BlocksMovement;
+                          Block.Blocks[xBlockId].material.BlocksMovement;
             if (!xSolid)
                 buf.X[i] += buf.VelX[i];
             else
@@ -62,7 +62,7 @@ public static class ParticlePhysics
             // Z axis
             int zBlockId = world.Reader.GetBlockId(MathHelper.Floor(buf.X[i]), MathHelper.Floor(buf.Y[i]), bzOnly);
             bool zSolid = zBlockId > 0 && Block.Blocks[zBlockId] != null &&
-                          Block.Blocks[zBlockId].Material.BlocksMovement;
+                          Block.Blocks[zBlockId].material.BlocksMovement;
             if (!zSolid)
                 buf.Z[i] += buf.VelZ[i];
             else
