@@ -19,14 +19,14 @@ public class ParticleManager
     private readonly JavaRandom _rand = new();
     private readonly List<ParticleUpdater.DeferredSmoke> _deferredSmoke = new();
 
-    public ParticleManager(World var1, TextureManager var2)
+    public ParticleManager(World world, TextureManager textures)
     {
-        if (var1 != null)
+        if (world != null)
         {
-            worldObj = var1;
+            worldObj = world;
         }
 
-        _textures = var2;
+        _textures = textures;
 
         for (int i = 0; i < 3; i++)
         {
@@ -62,7 +62,7 @@ public class ParticleManager
 
     public void renderParticles(Entity camera, float partialTick)
     {
-        ParticleRenderer.Render(_layers, _specialParticles,
+        ParticleRenderer.Render(_layers,
             camera.yaw, camera.pitch,
             camera.x, camera.y, camera.z,
             camera.lastTickX, camera.lastTickY, camera.lastTickZ,
@@ -77,9 +77,9 @@ public class ParticleManager
             partialTick);
     }
 
-    public void clearEffects(World var1)
+    public void clearEffects(World world)
     {
-        worldObj = var1;
+        worldObj = world;
         for (int i = 0; i < 3; i++)
         {
             _layers[i].Clear();

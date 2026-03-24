@@ -15,7 +15,7 @@ public static class ParticleRenderer
     ];
 
     public static void Render(
-        ParticleBuffer[] layers, List<ISpecialParticle> specialParticles,
+        ParticleBuffer[] layers,
         float yaw, float pitch,
         double x, double y, double z,
         double lastTickX, double lastTickY, double lastTickZ,
