@@ -44,4 +44,3 @@ dotnet build
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the code of conduct and pull request process. \
 This is a personal project, so review and merge timelines aren't guaranteed, but submissions are appreciated.
-](url)
