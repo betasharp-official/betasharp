@@ -106,10 +106,10 @@ public static class ParticleRenderer
                     return buf.BaseScale[i] * lifeProgress;
                 }
 
-            case ScaleModel.ShrinkQuadratic:
+            case ScaleModel.ShrinkHalf:
                 return buf.BaseScale[i] * (1.0f - progress * progress * 0.5f);
 
-            case ScaleModel.ShrinkLinear:
+            case ScaleModel.ShrinkSquared:
                 return buf.BaseScale[i] * (1.0f - progress * progress);
 
             case ScaleModel.PortalEase:

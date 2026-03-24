@@ -16,8 +16,8 @@ public enum ScaleModel : byte
 {
     Constant,        // no scale change
     GrowToFull,      // min(1, (age+partial)/maxAge * 32) * baseScale
-    ShrinkQuadratic, // baseScale * (1 - progress^2 * 0.5)  (Flame)
-    ShrinkLinear,    // baseScale * (1 - progress^2)  (Lava)
+    ShrinkHalf,    // baseScale * (1 - p^2 * 0.5), shrinks to ~50% (Flame)
+    ShrinkSquared, // baseScale * (1 - p^2), shrinks to zero (Lava)
     PortalEase,      // 1 - (1-progress)^2  (Portal)
 }
 
@@ -79,9 +79,9 @@ public readonly struct ParticleTypeConfig
             PhysicsModel.Buoyant, ScaleModel.GrowToFull, BrightnessModel.WorldBased, UVModel.Standard16x16,
             0.96f, 0.7f, 0.004f, true, true);
 
-        // Flame: noClip, friction 0.96, ShrinkQuadratic scale, FadeFromFull brightness
+        // Flame: noClip, friction 0.96, ShrinkHalf scale, FadeFromFull brightness
         Configs[(int)ParticleType.Flame] = new(
-            PhysicsModel.NoClip, ScaleModel.ShrinkQuadratic, BrightnessModel.FadeFromFull, UVModel.Standard16x16,
+            PhysicsModel.NoClip, ScaleModel.ShrinkHalf, BrightnessModel.FadeFromFull, UVModel.Standard16x16,
             0.96f, 0.7f, 0f, false, false);
 
         // Explode: buoyant +0.004, friction 0.9, animated tex, Constant scale
@@ -114,9 +114,9 @@ public readonly struct ParticleTypeConfig
             PhysicsModel.Parametric, ScaleModel.PortalEase, BrightnessModel.EaseToFull, UVModel.Standard16x16,
             0f, 0f, 0f, false, false);
 
-        // Lava: gravity -0.03, friction 0.999, ShrinkLinear scale, AlwaysFull brightness, spawns smoke
+        // Lava: gravity -0.03, friction 0.999, ShrinkSquared scale, AlwaysFull brightness, spawns smoke
         Configs[(int)ParticleType.Lava] = new(
-            PhysicsModel.LavaDrop, ScaleModel.ShrinkLinear, BrightnessModel.AlwaysFull, UVModel.Standard16x16,
+            PhysicsModel.LavaDrop, ScaleModel.ShrinkSquared, BrightnessModel.AlwaysFull, UVModel.Standard16x16,
             0.999f, 0.7f, -0.03f, false, false);
 
         // Rain: gravity -0.06, friction 0.98, Constant scale, dies on ground/fluid
