@@ -74,7 +74,7 @@ internal class BlockTrapDoor : Block
         }
     }
 
-    private bool UpdateState(IBlockReader worldRead, IBlockWrite worldWrite, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    private bool UpdateState(IBlockReader worldRead, IBlockWriter worldWriter, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         if (material == Material.Metal)
         {
@@ -82,7 +82,7 @@ internal class BlockTrapDoor : Block
         }
 
         int meta = worldRead.GetBlockMeta(x, y, z);
-        worldWrite.SetBlockMeta(x, y, z, meta ^ 4);
+        worldWriter.SetBlockMeta(x, y, z, meta ^ 4);
         broadcaster.WorldEvent(1003, x, y, z, 0);
         return true;
     }

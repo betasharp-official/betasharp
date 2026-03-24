@@ -190,7 +190,7 @@ public class BlockBed : Block
         return (meta & 4) != 0;
     }
 
-    public static void updateState(IBlockWrite worldWrite, int x, int y, int z, int meta, bool occupied)
+    public static void updateState(IBlockWriter worldWriter, int x, int y, int z, int meta, bool occupied)
     {
         if (occupied)
         {
@@ -201,7 +201,7 @@ public class BlockBed : Block
             meta &= ~4;
         }
 
-        worldWrite.SetBlockMeta(x, y, z, meta);
+        worldWriter.SetBlockMeta(x, y, z, meta);
     }
 
     public static Vec3i? findWakeUpPosition(IBlockReader reader, int x, int y, int z, int skip)

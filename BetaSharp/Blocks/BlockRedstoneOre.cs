@@ -38,12 +38,12 @@ internal class BlockRedstoneOre : Block
         return base.onUse(@event);
     }
 
-    private void light(IBlockWrite worldWrite, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    private void light(IBlockWriter worldWriter, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         spawnParticles(worldRead, broadcaster, x, y, z);
         if (worldRead.GetBlockId(x, y, z) == RedstoneOre.id)
         {
-            worldWrite.SetBlock(x, y, z, LitRedstoneOre.id);
+            worldWriter.SetBlock(x, y, z, LitRedstoneOre.id);
         }
     }
 

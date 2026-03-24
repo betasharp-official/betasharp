@@ -34,7 +34,7 @@ public class BlockPortal : BlockBreakable
 
     public override bool isFullCube() => false;
 
-    public bool create(IBlockReader reader, IBlockWrite writer, int x, int y, int z)
+    public bool create(IBlockReader reader, IBlockWriter writer, int x, int y, int z)
     {
         sbyte extendsInZ = 0;
         sbyte extendsInX = 0;
