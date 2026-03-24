@@ -136,7 +136,7 @@ public class GuiMainMenu : GuiScreen
         GLManager.GL.Scale(splashScale, splashScale, splashScale);
         DrawCenteredString(FontRenderer, _splashText, 0, -8, Color.Yellow);
         GLManager.GL.PopMatrix();
-        DrawString(FontRenderer, "BetaSharp Beta 1.7.3", 2, 2, Color.Gray50);
+        DrawString(FontRenderer, "BetaSharp " + BetaSharp.VERSION, 2, 2, Color.Gray50);
         string copyrightText = "Copyright Mojang Studios. Not an official Minecraft product.";
         DrawString(FontRenderer, copyrightText, Width - FontRenderer.GetStringWidth(copyrightText) - 2, Height - 20, Color.White);
         string disclaimerText = "Not approved by or associated with Mojang Studios or Microsoft.";

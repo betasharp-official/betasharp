@@ -58,6 +58,8 @@ public partial class BetaSharp
     public int displayWidth;
     public int displayHeight;
 
+    public const string VERSION = "snapshot-pre1.0_1";
+
     public Timer Timer { get; } = new(20.0F);
     public World world;
     public WorldRenderer terrainRenderer;
@@ -204,7 +206,7 @@ public partial class BetaSharp
             Display.setLocation((maximumWidth - displayWidth) / 2, (maximumHeight - displayHeight) / 2);
         }
 
-        Display.setTitle("BetaSharp Beta 1.7.3");
+        Display.setTitle("BetaSharp " + VERSION);
 
         gameDataDir = getBetaSharpDir();
         saveLoader = new RegionWorldStorageSource(Path.Combine(gameDataDir, "saves"));

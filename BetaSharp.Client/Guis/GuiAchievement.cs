@@ -9,9 +9,9 @@ namespace BetaSharp.Client.Guis;
 public class GuiAchievement : Gui
 {
     private static readonly long AchievementDisplayDuration = 3000L;
-    private static readonly string LicenseWarningText = "Minecraft Beta 1.7.3   Unlicensed Copy :(";
+    private static readonly string LicenseWarningText = "BetaSharp Unlicensed Copy :(";
     private static readonly string AltLocationWarningText = "(Or logged in from another location)";
-    private static readonly string PurchasePromptText = "Purchase at minecraft.net";
+    private static readonly string PurchasePromptText = "Purchase Minecraft at minecraft.net";
 
     private readonly BetaSharp _theGame;
     private int _achievementWindowWidth;
@@ -134,9 +134,11 @@ public class GuiAchievement : Gui
         Lighting.turnOff();
         updateAchievementWindowScale();
 
-        _theGame.fontRenderer.DrawStringWithShadow(LicenseWarningText, 2, 2, Color.White);
-        _theGame.fontRenderer.DrawStringWithShadow(AltLocationWarningText, 2, 11, Color.White);
-        _theGame.fontRenderer.DrawStringWithShadow(PurchasePromptText, 2, 20, Color.White);
+        int y = 2;
+        if (_theGame.currentScreen is GuiMainMenu) y += 9;
+        _theGame.fontRenderer.DrawStringWithShadow(LicenseWarningText, 2, y, Color.White);
+        _theGame.fontRenderer.DrawStringWithShadow(AltLocationWarningText, 2, y+9, Color.White);
+        _theGame.fontRenderer.DrawStringWithShadow(PurchasePromptText, 2, y+18, Color.White);
 
         GLManager.GL.DepthMask(true);
         GLManager.GL.Enable(GLEnum.DepthTest);
