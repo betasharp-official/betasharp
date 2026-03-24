@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Client.Entities;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Sound;
 using BetaSharp.Entities;
@@ -179,12 +180,20 @@ public class PlayerControllerMP : PlayerController
 
     }
 
-    public override bool sendPlaceBlock(EntityPlayer var1, World var2, ItemStack var3, int var4, int var5, int var6, int var7)
+    public override bool sendPlaceBlock(
+        ClientPlayerEntity player,
+        World world,
+        ItemStack selectedItem,
+        int blockX,
+        int blockY,
+        int blockZ,
+        int blockSide
+    )
     {
         syncCurrentPlayItem();
-        netClientHandler.addToSendQueue(PlayerInteractBlockC2SPacket.Get(var4, var5, var6, var7, var1.inventory.getSelectedItem()));
-        bool var8 = base.sendPlaceBlock(var1, var2, var3, var4, var5, var6, var7);
-        return var8;
+        netClientHandler.addToSendQueue(PlayerInteractBlockC2SPacket.Get(blockX, blockY, blockZ, blockSide, player.inventory.getSelectedItem()));
+        bool placed = base.sendPlaceBlock(player, world, selectedItem, blockX, blockY, blockZ, blockSide);
+        return placed;
     }
 
     public override bool sendUseItem(EntityPlayer var1, World var2, ItemStack var3)
