@@ -84,6 +84,8 @@
 
     <PackageReference Include="CommunityToolkit.Labs.Extensions.DependencyInjection" Version="0.1.251217-build.2433"/>
 
+    <PackageReference Include="Octokit" Version="14.0.0"/>
+
     <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0"/>
 
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.1"/>

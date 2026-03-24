@@ -5,7 +5,7 @@
 
              x:Class="BetaSharp.Launcher.Features.Home.HomeView" x:DataType="local:HomeViewModel">
 
-    <Grid RowDefinitions="Auto *" IsVisible="{CompiledBinding Session, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+    <Grid RowDefinitions="Auto * Auto" RowSpacing="25" IsVisible="{CompiledBinding Session, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
         <Grid ColumnDefinitions="* 0.35*" Grid.Row="0">
             <StackPanel Spacing="25" HorizontalAlignment="Stretch" Orientation="Horizontal" Grid.Row="0">
                 <Border Width="50" Height="50" ClipToBounds="True" CornerRadius="{StaticResource ControlCornerRadius}">
@@ -32,18 +32,20 @@
                     </asyncImageLoader:AdvancedImage>
                 </Border>
 
-                <StackPanel VerticalAlignment="Center">
+                <StackPanel Spacing="0" VerticalAlignment="Center">
                     <TextBlock Text="Welcome" Opacity="0.5" />
-
-                    <TextBlock Text="{CompiledBinding Session.Name, FallbackValue='...'}"
-                               FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBlock Text="{CompiledBinding Session.Name, FallbackValue='...'}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </StackPanel>
             </StackPanel>
 
             <Button Content="Sign out" VerticalAlignment="Center" Command="{CompiledBinding SignOutCommand}" Grid.Column="1" />
         </Grid>
 
-        <Grid ColumnDefinitions="* 0.35*" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
+        <Grid Grid.Row="1">
+            <TextBlock Text="Releases" />
+        </Grid>
+
+        <Grid ColumnDefinitions="* 0.35*" ColumnSpacing="10" Grid.Row="2">
             <!-- ReSharper disable once Xaml.StyleClassNotFound -->
             <Button Content="Play" Classes="accent" Command="{CompiledBinding PlayCommand}" Grid.Column="0" />
 

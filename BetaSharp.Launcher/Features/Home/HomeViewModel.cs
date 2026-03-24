@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Hosting;
 using BetaSharp.Launcher.Features.Sessions;
@@ -24,9 +23,13 @@ internal sealed partial class HomeViewModel : ObservableObject
         _storageService = storageService;
         _processService = processService;
 
-        WeakReferenceMessenger.Default.Register<HomeViewModel, SessionMessage>(
-            this,
-            static (viewModel, message) => viewModel.Session = message.Session);
+        WeakReferenceMessenger.Default.Register<HomeViewModel, SessionMessage>(this, static (viewModel, message) => viewModel.Session = message.Session);
+    }
+
+    [RelayCommand]
+    private async Task InitializeAsync()
+    {
+        await Task.CompletedTask;
     }
 
     [RelayCommand]
