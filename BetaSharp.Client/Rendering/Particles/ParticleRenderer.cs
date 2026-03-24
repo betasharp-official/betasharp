@@ -8,7 +8,7 @@ namespace BetaSharp.Client.Rendering.Particles;
 
 public static class ParticleRenderer
 {
-    private static readonly string[] LayerTextures =
+    private static readonly string[] s_layerTextures =
     [
         "/particles.png",
         "/terrain.png",
@@ -35,14 +35,17 @@ public static class ParticleRenderer
         for (int layer = 0; layer < 3; layer++)
         {
             ParticleBuffer buf = layers[layer];
-            if (buf.Count == 0) continue;
+            if (buf.Count == 0)
+            {
+                continue;
+            }
 
-            texMgr.BindTexture(texMgr.GetTextureId(LayerTextures[layer]));
+            texMgr.BindTexture(texMgr.GetTextureId(s_layerTextures[layer]));
             t.startDrawingQuads();
 
             for (int i = 0; i < buf.Count; i++)
             {
-                ref readonly var config = ref ParticleTypeConfig.Configs[(int)buf.Type[i]];
+                ref readonly ParticleTypeConfig config = ref ParticleTypeConfig.Configs[(int)buf.Type[i]];
 
                 float rx = (float)(buf.PrevX[i] + (buf.X[i] - buf.PrevX[i]) * partialTick - interpX);
                 float ry = (float)(buf.PrevY[i] + (buf.Y[i] - buf.PrevY[i]) * partialTick - interpY);
@@ -70,7 +73,10 @@ public static class ParticleRenderer
     public static void RenderSpecial(List<ISpecialParticle> specialParticles,
         Entity camera, float partialTick)
     {
-        if (specialParticles.Count == 0) return;
+        if (specialParticles.Count == 0)
+        {
+            return;
+        }
 
         double interpX = camera.lastTickX + (camera.x - camera.lastTickX) * partialTick;
         double interpY = camera.lastTickY + (camera.y - camera.lastTickY) * partialTick;
@@ -78,7 +84,9 @@ public static class ParticleRenderer
 
         Tessellator t = Tessellator.instance;
         for (int i = 0; i < specialParticles.Count; i++)
+        {
             specialParticles[i].Render(t, partialTick, interpX, interpY, interpZ);
+        }
     }
 
     private static float ComputeScale(ScaleModel model, ParticleBuffer buf, int i, float partialTick)

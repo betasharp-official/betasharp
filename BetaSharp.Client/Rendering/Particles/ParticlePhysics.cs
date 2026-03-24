@@ -55,18 +55,26 @@ public static class ParticlePhysics
             bool xSolid = xBlockId > 0 && Block.Blocks[xBlockId] != null &&
                           Block.Blocks[xBlockId].material.BlocksMovement;
             if (!xSolid)
+            {
                 buf.X[i] += buf.VelX[i];
+            }
             else
+            {
                 buf.VelX[i] = 0;
+            }
 
             // Z axis
             int zBlockId = world.Reader.GetBlockId(MathHelper.Floor(buf.X[i]), MathHelper.Floor(buf.Y[i]), bzOnly);
             bool zSolid = zBlockId > 0 && Block.Blocks[zBlockId] != null &&
                           Block.Blocks[zBlockId].material.BlocksMovement;
             if (!zSolid)
+            {
                 buf.Z[i] += buf.VelZ[i];
+            }
             else
+            {
                 buf.VelZ[i] = 0;
+            }
         }
     }
 }

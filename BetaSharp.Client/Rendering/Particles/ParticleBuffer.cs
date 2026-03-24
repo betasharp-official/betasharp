@@ -49,7 +49,9 @@ public sealed class ParticleBuffer
         short maxAge)
     {
         if (Count >= MaxParticles)
+        {
             SwapRemove(0); // evict oldest
+        }
 
         int i = Count++;
         Type[i] = type;

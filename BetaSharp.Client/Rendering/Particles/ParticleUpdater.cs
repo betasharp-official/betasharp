@@ -15,7 +15,10 @@ public static class ParticleUpdater
     public static void Update(ParticleBuffer buf, IWorldContext world, List<DeferredSmoke> deferredSmoke)
     {
         int count = buf.Count;
-        if (count == 0) return;
+        if (count == 0)
+        {
+            return;
+        }
 
         // Save prev positions (memcpy)
         Array.Copy(buf.X, buf.PrevX, count);
@@ -32,11 +35,13 @@ public static class ParticleUpdater
                 continue;
             }
 
-            ref readonly var config = ref ParticleTypeConfig.Configs[(int)buf.Type[i]];
+            ref readonly ParticleTypeConfig config = ref ParticleTypeConfig.Configs[(int)buf.Type[i]];
 
             // Animated texture
             if (config.AnimatesTexture)
+            {
                 buf.TextureIndex[i] = 7 - buf.Age[i] * 8 / buf.MaxAge[i];
+            }
 
             // Physics per model
             switch (config.Physics)
@@ -69,7 +74,9 @@ public static class ParticleUpdater
                             MathHelper.Floor(buf.X[i]),
                             MathHelper.Floor(buf.Y[i]),
                             MathHelper.Floor(buf.Z[i])) != Material.Water)
+                    {
                         buf.Dead[i] = true;
+                    }
                     break;
 
                 case PhysicsModel.RainFall:
@@ -112,7 +119,9 @@ public static class ParticleUpdater
         for (int i = buf.Count - 1; i >= 0; i--)
         {
             if (buf.Dead[i])
+            {
                 buf.SwapRemove(i);
+            }
         }
     }
 
@@ -131,7 +140,9 @@ public static class ParticleUpdater
         if (buf.OnGround[i])
         {
             if (Random.Shared.NextDouble() < 0.5)
+            {
                 buf.Dead[i] = true;
+            }
         }
 
         int fx = MathHelper.Floor(buf.X[i]);
@@ -143,7 +154,9 @@ public static class ParticleUpdater
             double height = (float)(fy + 1) - BlockFluid.getFluidHeightFromMeta(
                 world.Reader.GetBlockMeta(fx, fy, fz));
             if (buf.Y[i] < height)
+            {
                 buf.Dead[i] = true;
+            }
         }
     }
 

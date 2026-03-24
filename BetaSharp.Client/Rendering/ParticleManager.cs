@@ -22,12 +22,16 @@ public class ParticleManager
     public ParticleManager(World var1, TextureManager var2)
     {
         if (var1 != null)
+        {
             worldObj = var1;
+        }
 
         _renderer = var2;
 
         for (int i = 0; i < 3; i++)
+        {
             _layers[i] = new ParticleBuffer();
+        }
     }
 
     public void updateEffects()
@@ -40,7 +44,7 @@ public class ParticleManager
             // Lava spawns smoke sub-particles
             for (int j = 0; j < _deferredSmoke.Count; j++)
             {
-                var s = _deferredSmoke[j];
+                ParticleUpdater.DeferredSmoke s = _deferredSmoke[j];
                 AddSmoke(s.X, s.Y, s.Z, s.VelX, s.VelY, s.VelZ);
             }
         }
@@ -50,7 +54,9 @@ public class ParticleManager
         {
             _specialParticles[i].Tick();
             if (_specialParticles[i].IsDead)
+            {
                 _specialParticles.RemoveAt(i);
+            }
         }
     }
 
@@ -68,7 +74,10 @@ public class ParticleManager
     {
         worldObj = var1;
         for (int i = 0; i < 3; i++)
+        {
             _layers[i] = new ParticleBuffer();
+        }
+
         _specialParticles.Clear();
     }
 
@@ -99,7 +108,7 @@ public class ParticleManager
         int maxAge = (int)(8.0 / (Random.Shared.NextDouble() * 0.8 + 0.2));
         maxAge = (int)(maxAge * scaleMultiplier);
 
-        var type = scaleMultiplier > 1.5f ? ParticleType.LargeSmoke : ParticleType.Smoke;
+        ParticleType type = scaleMultiplier > 1.5f ? ParticleType.LargeSmoke : ParticleType.Smoke;
         _layers[0].Add(type, x, y, z, velX, velY, velZ,
             color, color, color, baseScale, 0, 7,
             RandomJitterX(), RandomJitterY(), (short)maxAge);
@@ -375,7 +384,10 @@ public class ParticleManager
 
     public void addBlockDestroyEffects(int x, int y, int z, int blockId, int meta)
     {
-        if (blockId == 0) return;
+        if (blockId == 0)
+        {
+            return;
+        }
 
         Block block = Block.Blocks[blockId];
         byte particlesPerAxis = 4;
@@ -415,12 +427,35 @@ public class ParticleManager
             double var8 = var1 + _rand.NextDouble() * (blockBB.MaxX - blockBB.MinX - (var7 * 2.0F)) + var7 + blockBB.MinX;
             double var10 = var2 + _rand.NextDouble() * (blockBB.MaxY - blockBB.MinY - (var7 * 2.0F)) + var7 + blockBB.MinY;
             double var12 = var3 + _rand.NextDouble() * (blockBB.MaxZ - blockBB.MinZ - (var7 * 2.0F)) + var7 + blockBB.MinZ;
-            if (var4 == 0) var10 = var2 + blockBB.MinY - var7;
-            if (var4 == 1) var10 = var2 + blockBB.MaxY + var7;
-            if (var4 == 2) var12 = var3 + blockBB.MinZ - var7;
-            if (var4 == 3) var12 = var3 + blockBB.MaxZ + var7;
-            if (var4 == 4) var8 = var1 + blockBB.MinX - var7;
-            if (var4 == 5) var8 = var1 + blockBB.MaxX + var7;
+            if (var4 == 0)
+            {
+                var10 = var2 + blockBB.MinY - var7;
+            }
+
+            if (var4 == 1)
+            {
+                var10 = var2 + blockBB.MaxY + var7;
+            }
+
+            if (var4 == 2)
+            {
+                var12 = var3 + blockBB.MinZ - var7;
+            }
+
+            if (var4 == 3)
+            {
+                var12 = var3 + blockBB.MaxZ + var7;
+            }
+
+            if (var4 == 4)
+            {
+                var8 = var1 + blockBB.MinX - var7;
+            }
+
+            if (var4 == 5)
+            {
+                var8 = var1 + blockBB.MaxX + var7;
+            }
 
             int meta = worldObj.Reader.GetBlockMeta(var1, var2, var3);
             AddDiggingScaled(var8, var10, var12, var6, var4, meta, var1, var2, var3, 0.2f, 0.6f);
