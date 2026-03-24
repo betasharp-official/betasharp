@@ -1,5 +1,5 @@
 ﻿using BetaSharp.Server.Command;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Server.Commands;
 
@@ -24,17 +24,17 @@ public class WeatherCommand : ICommand
             switch (weather)
             {
                 case "clear":
-                    world.globalEntities.Clear();
-                    world.getProperties().IsRaining = false;
-                    world.getProperties().IsThundering = false;
+                    world.Entities.GlobalEntities.Clear();
+                    world.Properties.IsRaining = false;
+                    world.Properties.IsThundering = false;
                     break;
                 case "rain":
-                    world.getProperties().IsRaining = true;
-                    world.getProperties().IsThundering = false;
+                    world.Properties.IsRaining = true;
+                    world.Properties.IsThundering = false;
                     break;
                 case "storm":
-                    world.getProperties().IsRaining = true;
-                    world.getProperties().IsThundering = true;
+                    world.Properties.IsRaining = true;
+                    world.Properties.IsThundering = true;
                     break;
                 default:
                     c.Output.SendMessage("Unknown weather type. Use: clear, rain, or storm");

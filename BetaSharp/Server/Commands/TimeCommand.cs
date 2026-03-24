@@ -1,5 +1,5 @@
 ﻿using BetaSharp.Server.Command;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Server.Commands;
 
@@ -32,11 +32,11 @@ public class TimeCommand : ICommand
                 ServerWorld world = c.Server.worlds[i];
                 if (mode == "add")
                 {
-                    world.synchronizeTimeAndUpdates(world.getTime() + timeValue);
+                    world.SetTime(world.GetTime() + timeValue);
                 }
                 else
                 {
-                    world.synchronizeTimeAndUpdates(timeValue);
+                    world.SetTime(timeValue);
                 }
             }
 
@@ -50,7 +50,7 @@ public class TimeCommand : ICommand
         {
             for (int i = 0; i < c.Server.worlds.Length; i++)
             {
-                c.Server.worlds[i].synchronizeTimeAndUpdates(namedTime);
+                c.Server.worlds[i].SetTime(namedTime);
             }
 
             c.Output.SendMessage($"Time set to {c.Args[0]} ({namedTime})");

@@ -10,7 +10,7 @@ public class SeedCommand : ICommand
 
     public void Execute(ICommand.CommandContext c)
     {
-        long seed = c.Server.worlds[0].getSeed();
+        long seed = c.Server.worlds[0].Seed;
         c.Output.SendMessage($"Seed: {seed}");
     }
 }

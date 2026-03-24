@@ -1,6 +1,5 @@
 ﻿using BetaSharp.Entities;
 using BetaSharp.Server.Command;
-using BetaSharp.Worlds;
 
 namespace BetaSharp.Server.Commands;
 
@@ -37,7 +36,7 @@ public class SummonCommand : ICommand
             }
         }
 
-        ServerWorld world = c.Server.getWorld(player.dimensionId);
+        var world = c.Server.getWorld(player.dimensionId);
         int summoned = 0;
 
         for (int i = 0; i < count; i++)

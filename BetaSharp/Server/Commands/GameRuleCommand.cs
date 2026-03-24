@@ -1,7 +1,7 @@
 ﻿using BetaSharp.Entities;
 using BetaSharp.Rules;
 using BetaSharp.Server.Command;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Server.Commands;
 

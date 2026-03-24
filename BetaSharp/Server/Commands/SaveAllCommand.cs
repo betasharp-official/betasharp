@@ -16,7 +16,7 @@ public class SaveAllCommand : ICommand
 
         for (int i = 0; i < c.Server.worlds.Length; i++)
         {
-            c.Server.worlds[i].saveWithLoadingDisplay(true, null);
+            c.Server.worlds[i].SaveWithLoadingDisplay(true, null);
         }
 
         c.LogOp( "Save complete.");

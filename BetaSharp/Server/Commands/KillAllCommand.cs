@@ -1,6 +1,5 @@
 ﻿using BetaSharp.Entities;
 using BetaSharp.Server.Command;
-using BetaSharp.Worlds;
 
 namespace BetaSharp.Server.Commands;
 
@@ -17,8 +16,8 @@ public class KillAllCommand : ICommand
 
         for (int w = 0; w < c.Server.worlds.Length; w++)
         {
-            ServerWorld world = c.Server.worlds[w];
-            var entities = new List<Entity>(world.entities);
+            var world = c.Server.worlds[w];
+            var entities = new List<Entity>(world.Entities.Entities);
 
             foreach (Entity entity in entities)
             {
@@ -37,7 +36,7 @@ public class KillAllCommand : ICommand
 
                 if (shouldKill)
                 {
-                    world.Remove(entity);
+                    world.Entities.Remove(entity);
                     count++;
                 }
             }
