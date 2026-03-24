@@ -1,8 +1,9 @@
 using BetaSharp.Blocks;
-using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Entities;
+using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
@@ -12,116 +13,365 @@ namespace BetaSharp.Client.Rendering;
 public class ParticleManager
 {
     protected World worldObj;
-    private readonly List<EntityFX>[] _fxLayers = new List<EntityFX>[4];
+    private readonly ParticleBuffer[] _layers = new ParticleBuffer[3];
+    private readonly List<ISpecialParticle> _specialParticles = new();
     private readonly TextureManager _renderer;
     private readonly JavaRandom _rand = new();
+    private readonly List<ParticleUpdater.DeferredSmoke> _deferredSmoke = new();
 
     public ParticleManager(World var1, TextureManager var2)
     {
         if (var1 != null)
-        {
             worldObj = var1;
-        }
 
         _renderer = var2;
 
-        for (int i = 0; i < 4; i++)
-        {
-            _fxLayers[i] = new List<EntityFX>();
-        }
-
-    }
-
-    public void addEffect(EntityFX var1)
-    {
-        int var2 = var1.getFXLayer();
-        if (_fxLayers[var2].Count >= 4000)
-        {
-            _fxLayers[var2].RemoveAt(0);
-        }
-
-        _fxLayers[var2].Add(var1);
+        for (int i = 0; i < 3; i++)
+            _layers[i] = new ParticleBuffer();
     }
 
     public void updateEffects()
     {
-        for (int var1 = 0; var1 < 4; ++var1)
+        for (int i = 0; i < 3; i++)
         {
-            for (int var2 = 0; var2 < _fxLayers[var1].Count; ++var2)
+            _deferredSmoke.Clear();
+            ParticleUpdater.Update(_layers[i], worldObj, _deferredSmoke);
+
+            // Lava spawns smoke sub-particles
+            for (int j = 0; j < _deferredSmoke.Count; j++)
             {
-                EntityFX var3 = _fxLayers[var1][var2];
-                var3.tick();
-                if (var3.dead)
-                {
-                    _fxLayers[var1].RemoveAt(var2--);
-                }
+                var s = _deferredSmoke[j];
+                AddSmoke(s.X, s.Y, s.Z, s.VelX, s.VelY, s.VelZ);
             }
         }
 
+        // Tick special particles (layer 3)
+        for (int i = _specialParticles.Count - 1; i >= 0; i--)
+        {
+            _specialParticles[i].Tick();
+            if (_specialParticles[i].IsDead)
+                _specialParticles.RemoveAt(i);
+        }
     }
 
     public void renderParticles(Entity var1, float var2)
     {
-        float var3 = MathHelper.Cos(var1.yaw * (float)Math.PI / 180.0F);
-        float var4 = MathHelper.Sin(var1.yaw * (float)Math.PI / 180.0F);
-        float var5 = -var4 * MathHelper.Sin(var1.pitch * (float)Math.PI / 180.0F);
-        float var6 = var3 * MathHelper.Sin(var1.pitch * (float)Math.PI / 180.0F);
-        float var7 = MathHelper.Cos(var1.pitch * (float)Math.PI / 180.0F);
-        EntityFX.interpPosX = var1.lastTickX + (var1.x - var1.lastTickX) * (double)var2;
-        EntityFX.interpPosY = var1.lastTickY + (var1.y - var1.lastTickY) * (double)var2;
-        EntityFX.interpPosZ = var1.lastTickZ + (var1.z - var1.lastTickZ) * (double)var2;
-
-        for (int var8 = 0; var8 < 3; ++var8)
-        {
-            if (_fxLayers[var8].Count != 0)
-            {
-                TextureHandle texture = null;
-                if (var8 == 0) texture = _renderer.GetTextureId("/particles.png");
-                if (var8 == 1) texture = _renderer.GetTextureId("/terrain.png");
-                if (var8 == 2) texture = _renderer.GetTextureId("/gui/items.png");
-
-                _renderer.BindTexture(texture);
-                Tessellator var10 = Tessellator.instance;
-                var10.startDrawingQuads();
-
-                for (int var11 = 0; var11 < _fxLayers[var8].Count; ++var11)
-                {
-                    EntityFX var12 = _fxLayers[var8][var11];
-                    var12.renderParticle(var10, var2, var3, var7, var4, var5, var6);
-                }
-
-                var10.draw();
-            }
-        }
-
+        ParticleRenderer.Render(_layers, _specialParticles, var1, var2, _renderer, worldObj);
     }
 
     public void func_1187_b(Entity var1, float var2)
     {
-        byte var3 = 3;
-        if (_fxLayers[var3].Count != 0)
-        {
-            Tessellator var4 = Tessellator.instance;
-
-            for (int var5 = 0; var5 < _fxLayers[var3].Count; ++var5)
-            {
-                EntityFX var6 = _fxLayers[var3][var5];
-                var6.renderParticle(var4, var2, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
-            }
-
-        }
+        ParticleRenderer.RenderSpecial(_specialParticles, var1, var2);
     }
 
     public void clearEffects(World var1)
     {
         worldObj = var1;
+        for (int i = 0; i < 3; i++)
+            _layers[i] = new ParticleBuffer();
+        _specialParticles.Clear();
+    }
 
-        for (int var2 = 0; var2 < 4; ++var2)
+    public string getStatistics()
+    {
+        return "" + (_layers[0].Count + _layers[1].Count + _layers[2].Count);
+    }
+
+    // --- Special particle support ---
+
+    public void AddSpecialParticle(ISpecialParticle particle)
+    {
+        _specialParticles.Add(particle);
+    }
+
+    // --- Factory methods: each replicates the EntityFX subclass constructor logic ---
+
+    public void AddSmoke(double x, double y, double z, double vx, double vy, double vz, float scaleMultiplier = 1.0f)
+    {
+        // EntitySmokeFX: base ctor with (0,0,0) velocity, then scale base vel * 0.1 + add provided vel
+        ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz);
+        double velX = bvx * 0.1 + vx;
+        double velY = bvy * 0.1 + vy;
+        double velZ = bvz * 0.1 + vz;
+
+        float color = (float)(Random.Shared.NextDouble() * 0.3);
+        float baseScale = RandomBaseScale() * (12.0f / 16.0f) * scaleMultiplier;
+        int maxAge = (int)(8.0 / (Random.Shared.NextDouble() * 0.8 + 0.2));
+        maxAge = (int)(maxAge * scaleMultiplier);
+
+        var type = scaleMultiplier > 1.5f ? ParticleType.LargeSmoke : ParticleType.Smoke;
+        _layers[0].Add(type, x, y, z, velX, velY, velZ,
+            color, color, color, baseScale, 0, 7,
+            RandomJitterX(), RandomJitterY(), (short)maxAge);
+    }
+
+    public void AddFlame(double x, double y, double z, double vx, double vy, double vz)
+    {
+        // EntityFlameFX: base vel * 0.01 + provided vel
+        ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz);
+        double velX = bvx * 0.01 + vx;
+        double velY = bvy * 0.01 + vy;
+        double velZ = bvz * 0.01 + vz;
+
+        float baseScale = RandomBaseScale();
+        int maxAge = (int)(8.0 / (Random.Shared.NextDouble() * 0.8 + 0.2)) + 4;
+
+        _layers[0].Add(ParticleType.Flame, x, y, z, velX, velY, velZ,
+            1.0f, 1.0f, 1.0f, baseScale, 0, 48,
+            RandomJitterX(), RandomJitterY(), (short)maxAge);
+    }
+
+    public void AddExplode(double x, double y, double z, double vx, double vy, double vz)
+    {
+        // EntityExplodeFX: provided vel + random jitter
+        double velX = vx + (Random.Shared.NextDouble() * 2.0 - 1.0) * 0.05;
+        double velY = vy + (Random.Shared.NextDouble() * 2.0 - 1.0) * 0.05;
+        double velZ = vz + (Random.Shared.NextDouble() * 2.0 - 1.0) * 0.05;
+
+        float jrnd = RandomJavaFloat();
+        float color = jrnd * 0.3f + 0.7f;
+        float scale = jrnd * RandomJavaFloat() * 6.0f + 1.0f;
+        int maxAge = (int)(16.0 / (RandomJavaFloat() * 0.8 + 0.2)) + 2;
+
+        _layers[0].Add(ParticleType.Explode, x, y, z, velX, velY, velZ,
+            color, color, color, scale, 0, 7,
+            RandomJitterX(), RandomJitterY(), (short)maxAge);
+    }
+
+    public void AddReddust(double x, double y, double z, float red, float green, float blue)
+    {
+        // EntityReddustFX: base ctor with (0,0,0), vel *= 0.1, color with variation
+        ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz);
+        double velX = bvx * 0.1;
+        double velY = bvy * 0.1;
+        double velZ = bvz * 0.1;
+
+        if (red == 0.0f) red = 1.0f;
+        float colorVariation = (float)Random.Shared.NextDouble() * 0.4f + 0.6f;
+        float r = ((float)(Random.Shared.NextDouble() * 0.2) + 0.8f) * red * colorVariation;
+        float g = ((float)(Random.Shared.NextDouble() * 0.2) + 0.8f) * green * colorVariation;
+        float b = ((float)(Random.Shared.NextDouble() * 0.2) + 0.8f) * blue * colorVariation;
+
+        float baseScale = RandomBaseScale() * (12.0f / 16.0f);
+        int maxAge = (int)(8.0 / (Random.Shared.NextDouble() * 0.8 + 0.2));
+
+        _layers[0].Add(ParticleType.Reddust, x, y, z, velX, velY, velZ,
+            r, g, b, baseScale, 0, 7,
+            RandomJitterX(), RandomJitterY(), (short)maxAge);
+    }
+
+    public void AddSnowShovel(double x, double y, double z, double vx, double vy, double vz)
+    {
+        // EntitySnowShovelFX: base ctor with provided vel, then vel *= 0.1 + add provided again
+        ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz, vx, vy, vz);
+        double velX = bvx * 0.1 + vx;
+        double velY = bvy * 0.1 + vy;
+        double velZ = bvz * 0.1 + vz;
+
+        float color = 1.0f - (float)(Random.Shared.NextDouble() * 0.3);
+        float baseScale = RandomBaseScale() * (12.0f / 16.0f);
+        int maxAge = (int)(8.0 / (Random.Shared.NextDouble() * 0.8 + 0.2));
+
+        _layers[0].Add(ParticleType.SnowShovel, x, y, z, velX, velY, velZ,
+            color, color, color, baseScale, 0, 7,
+            RandomJitterX(), RandomJitterY(), (short)maxAge);
+    }
+
+    public void AddHeart(double x, double y, double z, double vx, double vy, double vz)
+    {
+        // EntityHeartFX: base ctor with (0,0,0), vel *= 0.01, velocityY += 0.1
+        ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz);
+        double velX = bvx * 0.01;
+        double velY = bvy * 0.01 + 0.1;
+        double velZ = bvz * 0.01;
+
+        float baseScale = RandomBaseScale() * (12.0f / 16.0f) * 2.0f;
+
+        _layers[0].Add(ParticleType.Heart, x, y, z, velX, velY, velZ,
+            1.0f, 1.0f, 1.0f, baseScale, 0, 80,
+            RandomJitterX(), RandomJitterY(), 16);
+    }
+
+    public void AddNote(double x, double y, double z, double notePitch, double _, double __)
+    {
+        // EntityNoteFX: base ctor with (0,0,0), vel *= 0.01, velocityY += 0.2, color from pitch
+        ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz);
+        double velX = bvx * 0.01;
+        double velY = bvy * 0.01 + 0.2;
+        double velZ = bvz * 0.01;
+
+        float r = MathHelper.Sin(((float)notePitch + 0.0f) * (float)Math.PI * 2.0f) * 0.65f + 0.35f;
+        float g = MathHelper.Sin(((float)notePitch + 1.0f / 3.0f) * (float)Math.PI * 2.0f) * 0.65f + 0.35f;
+        float b = MathHelper.Sin(((float)notePitch + 2.0f / 3.0f) * (float)Math.PI * 2.0f) * 0.65f + 0.35f;
+
+        float baseScale = RandomBaseScale() * (12.0f / 16.0f) * 2.0f;
+
+        _layers[0].Add(ParticleType.Note, x, y, z, velX, velY, velZ,
+            r, g, b, baseScale, 0, 64,
+            RandomJitterX(), RandomJitterY(), 6);
+    }
+
+    public void AddPortal(double x, double y, double z, double vx, double vy, double vz)
+    {
+        // EntityPortalFX: velocity set directly (no base randomization)
+        float brightnessVar = RandomJavaFloat() * 0.6f + 0.4f;
+        float baseScale = RandomJavaFloat() * 0.2f + 0.5f;
+        float r = 1.0f * brightnessVar * 0.9f;
+        float g = 1.0f * brightnessVar * 0.3f;
+        float b = 1.0f * brightnessVar;
+        int maxAge = (int)(Random.Shared.NextDouble() * 10.0) + 40;
+        int texIndex = (int)(Random.Shared.NextDouble() * 8.0);
+
+        int idx = _layers[0].Add(ParticleType.Portal, x, y, z, vx, vy, vz,
+            r, g, b, baseScale, 0, texIndex,
+            RandomJitterX(), RandomJitterY(), (short)maxAge);
+        _layers[0].SpawnX[idx] = x;
+        _layers[0].SpawnY[idx] = y;
+        _layers[0].SpawnZ[idx] = z;
+    }
+
+    public void AddLava(double x, double y, double z)
+    {
+        // EntityLavaFX: base ctor with (0,0,0), vel*=0.8, velY = random*0.4+0.05
+        ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz);
+        double velX = bvx * 0.8;
+        double velY = RandomJavaFloat() * 0.4f + 0.05f;
+        double velZ = bvz * 0.8;
+
+        float baseScale = RandomBaseScale() * (RandomJavaFloat() * 2.0f + 0.2f);
+        // Note: original also does particleScale *= random*2+0.2 but baseScale already has the random factor
+        int maxAge = (int)(16.0 / (Random.Shared.NextDouble() * 0.8 + 0.2));
+
+        _layers[0].Add(ParticleType.Lava, x, y, z, velX, velY, velZ,
+            1.0f, 1.0f, 1.0f, baseScale, 0, 49,
+            RandomJitterX(), RandomJitterY(), (short)maxAge);
+    }
+
+    public void AddRain(double x, double y, double z)
+    {
+        // EntityRainFX: base ctor with (0,0,0), vel*=0.3, velY = random*0.2+0.1
+        ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz);
+        double velX = bvx * 0.3;
+        double velY = (float)Random.Shared.NextDouble() * 0.2f + 0.1f;
+        double velZ = bvz * 0.3;
+
+        int texIndex = 19 + _rand.NextInt(4);
+        int maxAge = (int)(8.0 / (Random.Shared.NextDouble() * 0.8 + 0.2));
+
+        _layers[0].Add(ParticleType.Rain, x, y, z, velX, velY, velZ,
+            1.0f, 1.0f, 1.0f, RandomBaseScale(), 0.06f, texIndex,
+            RandomJitterX(), RandomJitterY(), (short)maxAge);
+    }
+
+    public void AddSplash(double x, double y, double z, double vx, double vy, double vz)
+    {
+        // EntitySplashFX extends EntityRainFX: same base, but gravity=0.04, texIndex+1
+        ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz);
+        double velX = bvx * 0.3;
+        double velY = (float)Random.Shared.NextDouble() * 0.2f + 0.1f;
+        double velZ = bvz * 0.3;
+
+        int texIndex = 19 + _rand.NextInt(4) + 1;
+        int maxAge = (int)(8.0 / (Random.Shared.NextDouble() * 0.8 + 0.2));
+
+        // Splash overrides: if vy==0 and (vx!=0 or vz!=0), use provided vel
+        if (vy == 0.0 && (vx != 0.0 || vz != 0.0))
         {
-            _fxLayers[var2].Clear();
+            velX = vx;
+            velY = vy + 0.1;
+            velZ = vz;
         }
 
+        _layers[0].Add(ParticleType.Splash, x, y, z, velX, velY, velZ,
+            1.0f, 1.0f, 1.0f, RandomBaseScale(), 0.04f, texIndex,
+            RandomJitterX(), RandomJitterY(), (short)maxAge);
     }
+
+    public void AddBubble(double x, double y, double z, double vx, double vy, double vz)
+    {
+        // EntityBubbleFX: vel = provided * 0.2 + random jitter
+        double velX = vx * 0.2 + (Random.Shared.NextDouble() * 2.0 - 1.0) * 0.02;
+        double velY = vy * 0.2 + (Random.Shared.NextDouble() * 2.0 - 1.0) * 0.02;
+        double velZ = vz * 0.2 + (Random.Shared.NextDouble() * 2.0 - 1.0) * 0.02;
+
+        float baseScale = RandomBaseScale() * (RandomJavaFloat() * 0.6f + 0.2f);
+        int maxAge = (int)(8.0 / (Random.Shared.NextDouble() * 0.8 + 0.2));
+
+        _layers[0].Add(ParticleType.Bubble, x, y, z, velX, velY, velZ,
+            1.0f, 1.0f, 1.0f, baseScale, 0, 32,
+            RandomJitterX(), RandomJitterY(), (short)maxAge);
+    }
+
+    public void AddDigging(double x, double y, double z, double vx, double vy, double vz,
+        Block block, int hitFace, int meta, int blockX, int blockY, int blockZ)
+    {
+        // EntityDiggingFX: standard base velocity randomization
+        ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz, vx, vy, vz);
+
+        int texIndex = block.getTexture(hitFace, meta);
+        float gravity = block.particleFallSpeedModifier;
+        float r = 0.6f, g = 0.6f, b = 0.6f;
+        float baseScale = RandomBaseScale() / 2.0f;
+
+        // Color multiplier (same as EntityDiggingFX.GetColorMultiplier)
+        if (!(block == Block.GrassBlock && texIndex != 0))
+        {
+            int color = block.getColorMultiplier(worldObj.Reader, blockX, blockY, blockZ, meta);
+            r *= (color >> 16 & 255) / 255.0f;
+            g *= (color >> 8 & 255) / 255.0f;
+            b *= (color & 255) / 255.0f;
+        }
+
+        _layers[1].Add(ParticleType.Digging, x, y, z, bvx, bvy, bvz,
+            r, g, b, baseScale, gravity, texIndex,
+            RandomJitterX(), RandomJitterY(), (short)RandomBaseMaxAge());
+    }
+
+    public void AddDiggingScaled(double x, double y, double z,
+        Block block, int hitFace, int meta, int blockX, int blockY, int blockZ,
+        float velScale, float sizeScale)
+    {
+        // Used by addBlockHitEffects: scaleVelocity(0.2) + scaleSize(0.6)
+        ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz);
+
+        // scaleVelocity: velX *= scale, velY = (velY - 0.1) * scale + 0.1, velZ *= scale
+        bvx *= velScale;
+        bvy = (bvy - 0.1) * velScale + 0.1;
+        bvz *= velScale;
+
+        int texIndex = block.getTexture(hitFace, meta);
+        float gravity = block.particleFallSpeedModifier;
+        float r = 0.6f, g = 0.6f, b = 0.6f;
+        float baseScale = RandomBaseScale() * sizeScale / 2.0f;
+
+        if (!(block == Block.GrassBlock && texIndex != 0))
+        {
+            int color = block.getColorMultiplier(worldObj.Reader, blockX, blockY, blockZ, meta);
+            r *= (color >> 16 & 255) / 255.0f;
+            g *= (color >> 8 & 255) / 255.0f;
+            b *= (color & 255) / 255.0f;
+        }
+
+        _layers[1].Add(ParticleType.Digging, x, y, z, bvx, bvy, bvz,
+            r, g, b, baseScale, gravity, texIndex,
+            RandomJitterX(), RandomJitterY(), (short)RandomBaseMaxAge());
+    }
+
+    public void AddSlime(double x, double y, double z, Item item)
+    {
+        // EntitySlimeFX: base ctor with (0,0,0)
+        ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz);
+
+        int texIndex = item.getTextureId(0);
+        float baseScale = RandomBaseScale() / 2.0f;
+        float gravity = Block.SnowBlock.particleFallSpeedModifier;
+
+        _layers[2].Add(ParticleType.Slime, x, y, z, bvx, bvy, bvz,
+            1.0f, 1.0f, 1.0f, baseScale, gravity, texIndex,
+            RandomJitterX(), RandomJitterY(), (short)RandomBaseMaxAge());
+    }
+
+    // --- Block destroy/hit effects (zero-alloc versions) ---
 
     public void addBlockDestroyEffects(int x, int y, int z, int blockId, int meta)
     {
@@ -136,24 +386,19 @@ public class ParticleManager
             {
                 for (int gridZ = 0; gridZ < particlesPerAxis; ++gridZ)
                 {
-                    double particleX = x + (gridX + 0.5D) / particlesPerAxis;
-                    double particleY = y + (gridY + 0.5D) / particlesPerAxis;
-                    double particleZ = z + (gridZ + 0.5D) / particlesPerAxis;
+                    double particleX = x + (gridX + 0.5) / particlesPerAxis;
+                    double particleY = y + (gridY + 0.5) / particlesPerAxis;
+                    double particleZ = z + (gridZ + 0.5) / particlesPerAxis;
 
                     int randomSide = _rand.NextInt(6);
 
-                    double motionX = particleX - x - 0.5D;
-                    double motionY = particleY - y - 0.5D;
-                    double motionZ = particleZ - z - 0.5D;
+                    double motionX = particleX - x - 0.5;
+                    double motionY = particleY - y - 0.5;
+                    double motionZ = particleZ - z - 0.5;
 
-                    EntityDiggingFX particle = new EntityDiggingFX(
-                        worldObj,
-                        particleX, particleY, particleZ,
+                    AddDigging(particleX, particleY, particleZ,
                         motionX, motionY, motionZ,
-                        block, randomSide, meta
-                    );
-
-                    addEffect(particle.GetColorMultiplier(x, y, z));
+                        block, randomSide, meta, x, y, z);
                 }
             }
         }
@@ -170,42 +415,48 @@ public class ParticleManager
             double var8 = var1 + _rand.NextDouble() * (blockBB.MaxX - blockBB.MinX - (var7 * 2.0F)) + var7 + blockBB.MinX;
             double var10 = var2 + _rand.NextDouble() * (blockBB.MaxY - blockBB.MinY - (var7 * 2.0F)) + var7 + blockBB.MinY;
             double var12 = var3 + _rand.NextDouble() * (blockBB.MaxZ - blockBB.MinZ - (var7 * 2.0F)) + var7 + blockBB.MinZ;
-            if (var4 == 0)
-            {
-                var10 = var2 + blockBB.MinY - var7;
-            }
+            if (var4 == 0) var10 = var2 + blockBB.MinY - var7;
+            if (var4 == 1) var10 = var2 + blockBB.MaxY + var7;
+            if (var4 == 2) var12 = var3 + blockBB.MinZ - var7;
+            if (var4 == 3) var12 = var3 + blockBB.MaxZ + var7;
+            if (var4 == 4) var8 = var1 + blockBB.MinX - var7;
+            if (var4 == 5) var8 = var1 + blockBB.MaxX + var7;
 
-            if (var4 == 1)
-            {
-                var10 = var2 + blockBB.MaxY + var7;
-            }
-
-            if (var4 == 2)
-            {
-                var12 = var3 + blockBB.MinZ - var7;
-            }
-
-            if (var4 == 3)
-            {
-                var12 = var3 + blockBB.MaxZ + var7;
-            }
-
-            if (var4 == 4)
-            {
-                var8 = var1 + blockBB.MinX - var7;
-            }
-
-            if (var4 == 5)
-            {
-                var8 = var1 + blockBB.MaxX + var7;
-            }
-
-            addEffect(new EntityDiggingFX(worldObj, var8, var10, var12, 0.0D, 0.0D, 0.0D, var6, var4, worldObj.Reader.GetBlockMeta(var1, var2, var3)).GetColorMultiplier(var1, var2, var3).scaleVelocity(0.2F).scaleSize(0.6F));
+            int meta = worldObj.Reader.GetBlockMeta(var1, var2, var3);
+            AddDiggingScaled(var8, var10, var12, var6, var4, meta, var1, var2, var3, 0.2f, 0.6f);
         }
     }
 
-    public string getStatistics()
+    // --- Helpers to replicate EntityFX base constructor randomization ---
+
+    private void ApplyBaseVelocity(double x, double y, double z,
+        out double velX, out double velY, out double velZ,
+        double inputVx = 0, double inputVy = 0, double inputVz = 0)
     {
-        return "" + (_fxLayers[0].Count + _fxLayers[1].Count + _fxLayers[2].Count);
+        // Replicates EntityFX constructor: random velocity + normalize + scale
+        velX = inputVx + (Random.Shared.NextDouble() * 2.0 - 1.0) * 0.4;
+        velY = inputVy + (Random.Shared.NextDouble() * 2.0 - 1.0) * 0.4;
+        velZ = inputVz + (Random.Shared.NextDouble() * 2.0 - 1.0) * 0.4;
+        float scale = (float)(Random.Shared.NextDouble() + Random.Shared.NextDouble() + 1.0) * 0.15f;
+        float speed = MathHelper.Sqrt(velX * velX + velY * velY + velZ * velZ);
+        velX = velX / speed * scale * 0.4f;
+        velY = velY / speed * scale * 0.4f + 0.1;
+        velZ = velZ / speed * scale * 0.4f;
     }
+
+    private float RandomBaseScale()
+    {
+        // EntityFX: particleScale = (random.NextFloat() * 0.5F + 0.5F) * 2.0F
+        return (RandomJavaFloat() * 0.5f + 0.5f) * 2.0f;
+    }
+
+    private int RandomBaseMaxAge()
+    {
+        // EntityFX: particleMaxAge = (int)(4.0F / (random.NextFloat() * 0.9F + 0.1F))
+        return (int)(4.0f / (RandomJavaFloat() * 0.9f + 0.1f));
+    }
+
+    private float RandomJitterX() => _rand.NextFloat() * 3.0f;
+    private float RandomJitterY() => _rand.NextFloat() * 3.0f;
+    private float RandomJavaFloat() => _rand.NextFloat();
 }
