@@ -155,7 +155,7 @@ public class BlockBed : Block
 
     private static bool IsBedOccupied(int meta) => (meta & 4) != 0;
 
-    public static void UpdateState(WorldWriter worldWrite, int x, int y, int z, int meta, bool occupied)
+    public static void UpdateState(IBlockWrite worldWrite, int x, int y, int z, int meta, bool occupied)
     {
         if (occupied)
         {

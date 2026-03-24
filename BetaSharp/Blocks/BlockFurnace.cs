@@ -61,7 +61,7 @@ internal class BlockFurnace : BlockWithEntity
             return;
         }
 
-        WorldReader reader = @event.World.Reader;
+        IBlockReader reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
 
         bool isNorthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z - 1)];

@@ -50,7 +50,7 @@ internal class BlockDispenser : BlockWithEntity
             return;
         }
 
-        WorldReader reader = @event.World.Reader;
+        var reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
 
         bool isNorthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z - 1)];

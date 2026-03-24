@@ -78,7 +78,7 @@ internal class BlockCactus : Block
 
     public override bool CanGrow(OnTickEvent @event) => canGrow(@event.World.Reader, @event.X, @event.Y, @event.Z);
 
-    private static bool canGrow(WorldReader world, int x, int y, int z)
+    private static bool canGrow(IBlockReader world, int x, int y, int z)
     {
         if (world.GetMaterial(x - 1, y, z).IsSolid)
         {

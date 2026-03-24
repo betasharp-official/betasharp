@@ -1,6 +1,6 @@
 namespace BetaSharp.Blocks;
 
-internal class BlockMushroom : BlockPlant
+public class BlockMushroom : BlockPlant
 {
     public BlockMushroom(int i, int j) : base(i, j)
     {

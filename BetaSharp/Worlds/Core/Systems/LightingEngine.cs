@@ -97,11 +97,11 @@ public class LightingEngine : ILightProvider
             case < 0:
                 return 0;
             case >= 128:
-                return !_world.Dimension.HasCeiling ? 15 - _world.Reader.AmbientDarkness : 0;
+                return !_world.Dimension.HasCeiling ? 15 - _world.Environment.AmbientDarkness : 0;
             default:
                 {
                     Chunk chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
-                    return chunk.GetLight(x & 15, y, z & 15, _world.Reader.AmbientDarkness);
+                    return chunk.GetLight(x & 15, y, z & 15, _world.Environment.AmbientDarkness);
                 }
         }
     }

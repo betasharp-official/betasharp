@@ -7,7 +7,7 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.PathFinding;
 
-internal class PathFinder
+public class PathFinder
 {
     private IBlockReader _worldMap;
     private readonly Path _path = new();

@@ -131,8 +131,8 @@ public abstract class World : IWorldContext
     }
 
     public ChunkHost BlockHost { get; }
-    public WorldReader Reader { get; }
-    public WorldWriter Writer { get; }
+    public IBlockReader Reader { get; }
+    public IBlockWrite Writer { get; }
     public WorldEventBroadcaster Broadcaster { get; }
 
     public EntityManager Entities { get; }
@@ -155,8 +155,6 @@ public abstract class World : IWorldContext
     public JavaRandom Random { get; }
 
     ChunkHost IWorldContext.ChunkHost => BlockHost;
-    WorldReader IWorldContext.Reader => Reader;
-    WorldWriter IWorldContext.Writer => Writer;
     WorldEventBroadcaster IWorldContext.Broadcaster => Broadcaster;
     RedstoneEngine IWorldContext.Redstone => Redstone;
     EntityManager IWorldContext.Entities => Entities;

@@ -247,7 +247,7 @@ public abstract class BlockFluid : Block
 
     public override void NeighborUpdate(OnTickEvent @event) => checkBlockCollisions(@event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
 
-    private void checkBlockCollisions(IBlockReader reader, WorldWriter writer, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    private void checkBlockCollisions(IBlockReader reader, IBlockWrite writer, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         if (reader.GetBlockId(x, y, z) != Id)
         {
