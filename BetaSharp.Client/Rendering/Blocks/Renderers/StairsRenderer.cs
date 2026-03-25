@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
 
@@ -9,6 +10,11 @@ public class StairsRenderer : IBlockRenderer
     {
         bool hasRendered = false;
         int direction = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
+
+        if (ctx.BlockReader is ItemRenderBlockAccess)
+        {
+            direction = 3;
+        }
 
         switch (direction)
         {
