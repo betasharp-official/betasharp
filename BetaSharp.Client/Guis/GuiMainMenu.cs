@@ -126,6 +126,8 @@ public class GuiMainMenu : GuiScreen
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         DrawTexturedModalRect(logoX + 0, logoY + 0, 0, 0, 155, 44);
         DrawTexturedModalRect(logoX + 155, logoY + 0, 0, 45, 155, 44);
+        Game.textureManager.BindTexture(Game.textureManager.GetTextureId("/gui/CSharpEdition.png"));
+        DrawTexturedModalRect(Width / 2 - 32, logoY + 46, 0, 0, 64, 8, 64, 64);
         tess.setColorOpaque_I(0xFFFFFF);
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate(Width / 2 + 90, 70.0F, 0.0F);

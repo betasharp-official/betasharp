@@ -161,6 +161,7 @@ public class AssetManager
         defineAsset("gui/trap.png", AssetType.Binary);
         defineAsset("gui/unknown_pack.png", AssetType.Binary);
         defineAsset("gui/Pointer.png", AssetType.Binary);
+        defineAsset("gui/CSharpEdition.png", AssetType.Binary);
 
         string[] controllerIcons = [
             "back_button", "back_button_pressed", "down_button", "down_button_pressed",
