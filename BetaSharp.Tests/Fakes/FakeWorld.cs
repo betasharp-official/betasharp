@@ -13,7 +13,7 @@ using BetaSharp.Worlds.Storage;
 
 namespace BetaSharp.Tests.Fakes;
 
-public class FakeWorld : IWorldContext, IBlockReader, IBlockWrite
+public class FakeWorld : IWorldContext, IBlockReader, IBlockWriter
 {
     private readonly Dictionary<(int x, int y, int z), int> _blocks = new();
     private readonly Dictionary<(int x, int y, int z), int> _light = new();
@@ -22,9 +22,13 @@ public class FakeWorld : IWorldContext, IBlockReader, IBlockWrite
     public int GetBlockMeta(int x, int y, int z) => _metadata.TryGetValue((x, y, z), out int meta) ? meta : 0;
     public int GetBrightness(int x, int y, int z) => _light.TryGetValue((x, y, z), out int light) ? light : 15;
     public bool IsAir(int x, int y, int z) => GetBlockId(x, y, z) == 0;
-    public Material GetMaterial(int x, int y, int z) => null!;
+    public Material GetMaterial(int x, int y, int z) => BetaSharp.Blocks.Block.Blocks[GetBlockId(x, y, z)]?.Material ?? BetaSharp.Blocks.Materials.Material.Air;
     public bool IsOpaque(int x, int y, int z) => false;
-    public bool ShouldSuffocate(int x, int y, int z) => false;
+    public bool ShouldSuffocate(int x, int y, int z) 
+    {
+        int id = GetBlockId(x, y, z);
+        return id != 0 && BetaSharp.Blocks.Block.Blocks[id]?.IsOpaque() == true && BetaSharp.Blocks.Block.Blocks[id]?.IsFullCube() == true;
+    }
     public BiomeSource GetBiomeSource() => null!;
     public bool IsTopY(int x, int y, int z) => false;
     public int GetTopY(int x, int z) => 0;
@@ -44,9 +48,11 @@ public class FakeWorld : IWorldContext, IBlockReader, IBlockWrite
     public bool IsPosLoaded(int x, int y, int z) => true;
     public bool IsMaterialInBox(Box area, Func<Material, bool> predicate) => false;
     public bool UpdateMovementInFluid(Box entityBox, Material fluidMaterial, Entity entity) => false;
+#pragma warning disable CS0067
     public event Action<int, int, int, int, int, int, int>? OnBlockChangedWithPrev;
     public event Action<int, int, int, int>? OnBlockChanged;
     public event Action<int, int, int, int>? OnNeighborsShouldUpdate;
+#pragma warning restore CS0067
 
     public bool SetBlock(int x, int y, int z, int id)
     {
@@ -89,17 +95,27 @@ public class FakeWorld : IWorldContext, IBlockReader, IBlockWrite
     }
 
     public bool SetBlockInternal(int x, int y, int z, int id, int meta = 0) => SetBlock(x, y, z, id, meta);
+    public void SetBlockMetaInternal(int x, int y, int z, int meta) => SetBlockMeta(x, y, z, meta);
     public IBlockReader Reader => this;
-    public IBlockWrite Writer => this;
-    public ChunkHost ChunkHost { get; } = null!;
-    public WorldEventBroadcaster Broadcaster { get; } = null!;
-    public RedstoneEngine Redstone { get; } = null!;
-    public EntityManager Entities { get; } = null!;
+    public IBlockWriter Writer => this;
+    public ChunkHost ChunkHost { get; }
+    public WorldEventBroadcaster Broadcaster { get; }
+    public RedstoneEngine Redstone { get; }
+    public EntityManager Entities { get; }
     public LightingEngine Lighting { get; } = null!;
     public EnvironmentManager Environment { get; } = null!;
     public Dimension Dimension { get; } = null!;
-    public WorldTickScheduler TickScheduler { get; } = null!;
+    public WorldTickScheduler TickScheduler { get; }
     public PersistentStateManager StateManager { get; } = null!;
+    
+    public FakeWorld()
+    {
+        Broadcaster = new WorldEventBroadcaster(new(), this, this);
+        TickScheduler = new FakeTickScheduler(this);
+        ChunkHost = new ChunkHost(new FakeChunkSource(this));
+        Entities = new EntityManager(this);
+        Redstone = new RedstoneEngine(this);
+    }
     public WorldProperties Properties { get; } = null!;
     private PathFinder? _pathFinder;
     public PathFinder Pathing => _pathFinder ??= new PathFinder(this);

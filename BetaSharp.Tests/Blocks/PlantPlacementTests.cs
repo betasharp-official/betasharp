@@ -23,7 +23,8 @@ public class PlantPlacementTests
 
         Block? plantBlock = Block.Blocks[plantId];
         OnTickEvent tickEvent = new(world, 0, 0, 0, 0, plantId);
-        bool canGrow = plantBlock.CanGrow(tickEvent);
+        bool canGrow = plantBlock!.CanGrow(tickEvent);
+
 
         Assert.Equal(expectedCanGrow, canGrow);
     }
@@ -57,7 +58,8 @@ public class PlantBehaviorTests
 
         Block? plantBlock = Block.Blocks[plantId];
         OnTickEvent tickEvent = new(world, 0, 0, 0, 0, plantId);
-        bool canGrow = plantBlock.CanGrow(tickEvent);
+        bool canGrow = plantBlock!.CanGrow(tickEvent);
+
 
         Assert.Equal(expectedCanGrow, canGrow);
     }
