@@ -7,14 +7,14 @@ Contributing implementations is greatly appreciated.
 
 For detailed instructions on how to build and run the project, please refer to the Building section in the README file.
 
-## Reporting issues
+## Reporting Issues
 
 We always welcome bug reports, feature requests and overall feedback. Here are a few tips on how you can make reporting your issue as effective as possible.
 
 * **Finding existing issues:** Please avoid creating duplicate issues; it makes it harder to keep track of issues.
 * **Choose the appropriate type:** Select the type of issue that fits the best, whether it is a bug report, feature request, or other.
 
-## Creating pull requests
+## Creating Pull Requests
 
 Follow the following tips to ensure creating an effective pull request.
 
@@ -31,7 +31,7 @@ Please do not:
 * **Do not** surprise us with big pull requests. Instead, file an issue so we can agree on a direction before you invest a large amount of time.
 * **Do not** add changes that conflict with existing vanilla behavior.
 
-AI Policy
+AI policy:
 
 - **Allowed**: AI tools (ChatGPT, Copilot, etc.) are allowed to assist with coding and refactoring.
 - **Quality Control**: Low-quality, "vibe-coded", or hallucinated code will be **rejected**.
