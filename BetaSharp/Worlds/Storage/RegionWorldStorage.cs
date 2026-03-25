@@ -97,6 +97,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         if (players.Count > 0)
         {
             dataTag = properties.getNBTTagCompoundWithPlayer(players);
+            AdjustPlayerYForSingleplayer(dataTag.GetCompoundTag("Player"));
         }
         else
         {
@@ -104,6 +105,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
             NBTTagCompound? mostRecentPlayer = GetMostRecentPlayerData();
             if (mostRecentPlayer != null)
             {
+                AdjustPlayerYForSingleplayer(mostRecentPlayer);
                 dataTag.SetCompoundTag("Player", mostRecentPlayer);
             }
             else if (properties.PlayerTag != null)
@@ -115,6 +117,26 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         rootTag.SetTag("Data", dataTag);
 
         WriteLevelDat(rootTag);
+    }
+
+    private void AdjustPlayerYForSingleplayer(NBTTagCompound? player)
+    {
+        if (player != null && player.HasKey("Pos"))
+        {
+            var posList = player.GetTagList("Pos");
+            if (posList.TagCount() >= 3)
+            {
+                double x = ((NBTTagDouble)posList.TagAt(0)).Value;
+                double y = ((NBTTagDouble)posList.TagAt(1)).Value;
+                double z = ((NBTTagDouble)posList.TagAt(2)).Value;
+                
+                NBTTagList newPos = new NBTTagList();
+                newPos.SetTag(new NBTTagDouble(x));
+                newPos.SetTag(new NBTTagDouble(y + 3.24D)); // Vanilla SP saves foot + yOffset (1.62) + ySize (1.62)
+                newPos.SetTag(new NBTTagDouble(z));
+                player.SetTag("Pos", newPos);
+            }
+        }
     }
 
     private NBTTagCompound? GetMostRecentPlayerData()
