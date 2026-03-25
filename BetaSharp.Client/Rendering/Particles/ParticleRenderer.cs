@@ -20,13 +20,20 @@ public static class ParticleRenderer
         double x, double y, double z,
         double lastTickX, double lastTickY, double lastTickZ,
         float partialTick,
-        TextureManager texMgr, IWorldContext world)
+        TextureManager textureManager,
+        IWorldContext world)
     {
-        float cosYaw = MathHelper.Cos(yaw * (float)Math.PI / 180.0f);
-        float sinYaw = MathHelper.Sin(yaw * (float)Math.PI / 180.0f);
-        float cosPitch = MathHelper.Cos(pitch * (float)Math.PI / 180.0f);
-        float upX = -sinYaw * MathHelper.Sin(pitch * (float)Math.PI / 180.0f);
-        float upZ = cosYaw * MathHelper.Sin(pitch * (float)Math.PI / 180.0f);
+        float radYaw = yaw * MathF.PI / 180.0f;
+        float radPitch = pitch * MathF.PI / 180.0f;
+
+        float cosYaw = MathHelper.Cos(radYaw);
+        float sinYaw = MathHelper.Sin(radYaw);
+        float cosPitch = MathHelper.Cos(radPitch);
+        float sinPitch = MathHelper.Sin(radPitch);
+
+        // Billboarding vecs (vertical orientation of the particle quad)
+        float upX = -sinYaw * sinPitch;
+        float upZ = cosYaw * sinPitch;
 
         double interpX = lastTickX + (x - lastTickX) * partialTick;
         double interpY = lastTickY + (y - lastTickY) * partialTick;
@@ -42,13 +49,15 @@ public static class ParticleRenderer
                 continue;
             }
 
-            texMgr.BindTexture(texMgr.GetTextureId(s_layerTextures[layer]));
+
+            textureManager.BindTexture(textureManager.GetTextureId(s_layerTextures[layer]));
             t.startDrawingQuads();
 
             for (int i = 0; i < buf.Count; i++)
             {
                 ref readonly ParticleTypeConfig config = ref ParticleTypeConfig.Configs[(int)buf.Type[i]];
 
+                // Calculate relative pos to camera
                 float rx = (float)(buf.PrevX[i] + (buf.X[i] - buf.PrevX[i]) * partialTick - interpX);
                 float ry = (float)(buf.PrevY[i] + (buf.Y[i] - buf.PrevY[i]) * partialTick - interpY);
                 float rz = (float)(buf.PrevZ[i] + (buf.Z[i] - buf.PrevZ[i]) * partialTick - interpZ);
@@ -97,35 +106,15 @@ public static class ParticleRenderer
     {
         float progress = ((float)buf.Age[i] + partialTick) / buf.MaxAge[i];
 
-        switch (model)
+        return model switch
         {
-            case ScaleModel.Constant:
-                return buf.BaseScale[i];
-
-            case ScaleModel.GrowToFull:
-                {
-                    float lifeProgress = progress * 32.0f;
-                    if (lifeProgress < 0f) lifeProgress = 0f;
-                    if (lifeProgress > 1f) lifeProgress = 1f;
-                    return buf.BaseScale[i] * lifeProgress;
-                }
-
-            case ScaleModel.ShrinkHalf:
-                return buf.BaseScale[i] * (1.0f - progress * progress * 0.5f);
-
-            case ScaleModel.ShrinkSquared:
-                return buf.BaseScale[i] * (1.0f - progress * progress);
-
-            case ScaleModel.PortalEase:
-                {
-                    float inv = 1.0f - progress;
-                    inv *= inv;
-                    return buf.BaseScale[i] * (1.0f - inv);
-                }
-
-            default:
-                return buf.BaseScale[i];
-        }
+            ScaleModel.Constant => buf.BaseScale[i],
+            ScaleModel.GrowToFull => buf.BaseScale[i] * Math.Clamp(progress * 32.0f, 0.0f, 1.0f),
+            ScaleModel.ShrinkHalf => buf.BaseScale[i] * (1.0f - progress * progress * 0.5f),
+            ScaleModel.ShrinkSquared => buf.BaseScale[i] * (1.0f - progress * progress),
+            ScaleModel.PortalEase => buf.BaseScale[i] * (1.0f - (1.0f - progress) * (1.0f - progress)),
+            _ => buf.BaseScale[i],
+        };
     }
 
     private static float ComputeBrightness(BrightnessModel model, ParticleBuffer buf, int i,
@@ -133,35 +122,27 @@ public static class ParticleRenderer
     {
         switch (model)
         {
-            case BrightnessModel.AlwaysFull:
-                return 1.0f;
-
+            case BrightnessModel.AlwaysFull: return 1.0f;
             case BrightnessModel.FadeFromFull:
                 {
-                    float progress = ((float)buf.Age[i] + partialTick) / buf.MaxAge[i];
-                    if (progress < 0f) progress = 0f;
-                    if (progress > 1f) progress = 1f;
+                    float p = Math.Clamp(((float)buf.Age[i] + partialTick) / buf.MaxAge[i], 0.0f, 1.0f);
                     float worldBright = GetWorldBrightness(buf, i, world);
-                    return worldBright * progress + (1.0f - progress);
+                    return worldBright * p + (1.0f - p);
                 }
-
             case BrightnessModel.EaseToFull:
                 {
-                    float progress = ((float)buf.Age[i] + partialTick) / buf.MaxAge[i];
-                    if (progress < 0f) progress = 0f;
-                    if (progress > 1f) progress = 1f;
+                    float p = Math.Clamp(((float)buf.Age[i] + partialTick) / buf.MaxAge[i], 0.0f, 1.0f);
                     float worldBright = GetWorldBrightness(buf, i, world);
-                    float p = progress * progress * progress * progress;
-                    return worldBright * (1.0f - p) + p;
+                    float ease = p * p * p * p; // Quartic ease-in
+                    return worldBright * (1.0f - ease) + ease;
                 }
-
-            default: // WorldBased
-                return GetWorldBrightness(buf, i, world);
+            default: return GetWorldBrightness(buf, i, world); // WorldBased
         }
     }
 
     private static float GetWorldBrightness(ParticleBuffer buf, int i, IWorldContext world)
     {
+        // World sampling uses the Floor of coordinates to find the specific block voxel
         int bx = MathHelper.Floor(buf.X[i]);
         int by = MathHelper.Floor(buf.Y[i]);
         int bz = MathHelper.Floor(buf.Z[i]);
@@ -171,19 +152,26 @@ public static class ParticleRenderer
     private static void ComputeUVs(UVModel model, int textureIndex, float jitterX, float jitterY,
         out float minU, out float maxU, out float minV, out float maxV)
     {
-        if (model == UVModel.Jittered4x4)
+        // 0.999f is used to clamp UVs slightly inside the tile boundary to prevent texture bleeding at quad edges
+        switch (model)
         {
-            minU = ((textureIndex % 16) + jitterX / 4.0f) / 16.0f;
-            maxU = minU + 0.999f / 64.0f;
-            minV = ((textureIndex / 16) + jitterY / 4.0f) / 16.0f;
-            maxV = minV + 0.999f / 64.0f;
-        }
-        else
-        {
-            minU = (textureIndex % 16) / 16.0f;
-            maxU = minU + 0.999f / 16.0f;
-            minV = (textureIndex / 16) / 16.0f;
-            maxV = minV + 0.999f / 16.0f;
+            case UVModel.Jittered4x4:
+                {
+                    minU = ((textureIndex % 16) + jitterX / 4.0f) / 16.0f;
+                    maxU = minU + 0.999f / 64.0f;
+                    minV = ((textureIndex / 16) + jitterY / 4.0f) / 16.0f;
+                    maxV = minV + 0.999f / 64.0f;
+                    break;
+                }
+            case UVModel.Standard16x16:
+            default:
+                {
+                    minU = (textureIndex % 16) / 16.0f;
+                    maxU = minU + 0.999f / 16.0f;
+                    minV = (textureIndex / 16) / 16.0f;
+                    maxV = minV + 0.999f / 16.0f;
+                    break;
+                }
         }
     }
 }

@@ -421,7 +421,7 @@ public class GameRenderer
         worldRenderer.renderEntities(entity.getPosition(tickDelta), frustrumCuller, tickDelta);
         Profiler.Stop("renderEntities");
 
-        particleManager.func_1187_b(entity, tickDelta);
+        particleManager.renderSpecialParticles(entity, tickDelta);
 
         Lighting.turnOff();
         applyFog(0);
@@ -620,7 +620,7 @@ public class GameRenderer
                     {
                         if (Block.Blocks[var19].material == Material.Lava)
                         {
-                            _client.particleManager.AddSmoke((double)(var16 + var20), (double)(var18 + 0.1F) - Block.Blocks[var19].BoundingBox.MinY, (double)(var17 + var21), 0.0D, 0.0D, 0.0D);
+                            _client.particleManager.AddSmoke(var16 + var20, var18 + 0.1F - Block.Blocks[var19].BoundingBox.MinY, var17 + var21, 0.0, 0.0, 0.0);
                         }
                         else
                         {
@@ -632,7 +632,7 @@ public class GameRenderer
                                 var12 = (double)(var17 + var21);
                             }
 
-                            _client.particleManager.AddRain((double)(var16 + var20), (double)(var18 + 0.1F) - Block.Blocks[var19].BoundingBox.MinY, (double)(var17 + var21));
+                            _client.particleManager.AddRain(var16 + var20, var18 + 0.1F - Block.Blocks[var19].BoundingBox.MinY, var17 + var21);
                         }
                     }
                 }
