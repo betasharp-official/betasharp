@@ -6,7 +6,7 @@ namespace BetaSharp.Worlds.Core.Systems;
 ///     Handles all block write operations (set, meta, dirty notifications).
 ///     Depends on <see cref="ChunkHost" /> for chunk access and block reading.
 /// </summary>
-public sealed class WorldWriter : IBlockWrite
+public sealed class WorldWriter : IBlockWriter
 {
     private readonly ChunkHost _host;
     private readonly IBlockReader _reader;

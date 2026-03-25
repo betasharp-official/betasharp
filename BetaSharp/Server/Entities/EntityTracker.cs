@@ -38,7 +38,9 @@ public class EntityTracker
         }
         else if (entity is EntityArrow)
         {
-            startTracking(entity, 64, 20, false);
+            // There's no client side physics simulation so we need to updat often
+            // modern versions actually update every tick.
+            startTracking(entity, 64, 2, true);
         }
         else if (entity is EntityFireball)
         {

@@ -19,7 +19,7 @@ internal sealed partial class AuthenticationViewModel(
     StorageService storageService) : ObservableObject
 {
     [ObservableProperty]
-    public partial string? Link { get; set; }
+    public partial string? Url { get; set; }
 
     [ObservableProperty]
     public partial string? Message { get; set; }
@@ -45,7 +45,7 @@ internal sealed partial class AuthenticationViewModel(
     {
         string token = await authenticationService.AuthenticateCodeAsync(callback =>
         {
-            Link = callback.VerificationUrl;
+            Url = callback.VerificationUrl;
             Message = $"Use a Web browser to open {callback.VerificationUrl} and enter the code {callback.UserCode} to authenticate";
 
             // Need a way to detect timeouts.

@@ -5,6 +5,7 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Worlds;
@@ -448,7 +449,7 @@ public class ClientNetworkHandler : NetHandler
         if (ent != null && collector != null)
         {
             worldClient.Broadcaster.PlaySoundAtEntity(ent, "random.pop", 0.2F, ((rand.NextFloat() - rand.NextFloat()) * 0.7F + 1.0F) * 2.0F);
-            _game.particleManager.addEffect(new EntityPickupFX(_game.world, ent, collector, -0.5F));
+            _game.particleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(_game.world, ent, collector, -0.5F)));
             worldClient.RemoveEntityFromWorld(packet.entityId);
         }
 

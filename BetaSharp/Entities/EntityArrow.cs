@@ -90,6 +90,13 @@ public class EntityArrow : Entity
 
     }
 
+    // Arrow inherits from base entity so it needs to set its position properly or it will default to the collide and move up on hit
+    public override void setPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch, int steps)
+    {
+        setPosition(x, y, z);
+        setRotation(yaw, pitch);
+    }
+
     public override void tick()
     {
         base.tick();

@@ -53,7 +53,6 @@ public class EntitySkeleton : EntityMonster
             if (attackTime == 0)
             {
                 EntityArrow arrow = new EntityArrow(world, this);
-                arrow.y += (double)1.4F;
                 double targetHeightOffset = entity.y + (double)entity.getEyeHeight() - (double)0.2F - arrow.y;
                 float distanceFactor = MathHelper.Sqrt(dx * dx + dy * dy) * 0.2F;
                 world.Broadcaster.PlaySoundAtEntity(this, "random.bow", 1.0F, 1.0F / (random.NextFloat() * 0.4F + 0.8F));

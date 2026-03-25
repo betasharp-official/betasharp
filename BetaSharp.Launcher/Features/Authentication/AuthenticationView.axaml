@@ -31,8 +31,8 @@
 
             <Grid Classes="hidden" Classes.shown="{CompiledBinding IsReady}">
                 <StackPanel>
-                    <qr:QrCode IsQuietZoneEnabled="True" Height="150" Width="150" Data="{CompiledBinding Link}"
-                               Foreground="{StaticResource TextControlForeground}" CornerRadius="{StaticResource ControlCornerRadius}" />
+                    <qr:QrCode IsQuietZoneEnabled="True" Height="150" Width="150" Data="{CompiledBinding Url}" Foreground="{StaticResource TextControlForeground}"
+                               CornerRadius="{StaticResource ControlCornerRadius}" />
 
                     <SelectableTextBlock Text="{CompiledBinding Message}" TextAlignment="Center" TextWrapping="Wrap" />
                 </StackPanel>

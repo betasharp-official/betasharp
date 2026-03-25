@@ -103,25 +103,21 @@ public abstract class BlockFluid : Block
             int depthDiff;
             if (neighborDepth < 0)
             {
-                if (iBlockReader.GetMaterial(neighborX, y, neighborZ).BlocksMovement)
+                if (!iBlockReader.GetMaterial(neighborX, y, neighborZ).BlocksMovement)
                 {
-                    continue;
+                    neighborDepth = getLiquidDepth(iBlockReader, neighborX, y - 1, neighborZ);
+                    if (neighborDepth >= 0)
+                    {
+                        depthDiff = neighborDepth - (depth - 8);
+                        flowVector += new Vector3D<double>((neighborX - x) * depthDiff, (y - y) * depthDiff, (neighborZ - z) * depthDiff);
+                    }
                 }
-
-                neighborDepth = getLiquidDepth(iBlockReader, neighborX, y - 1, neighborZ);
-                if (neighborDepth < 0)
-                {
-                    continue;
-                }
-
-                depthDiff = neighborDepth - (depth - 8);
             }
             else
             {
                 depthDiff = neighborDepth - depth;
+                flowVector += new Vector3D<double>((neighborX - x) * depthDiff, (y - y) * depthDiff, (neighborZ - z) * depthDiff);
             }
-
-            flowVector += new Vector3D<double>((neighborX - x) * depthDiff, (y - y) * depthDiff, (neighborZ - z) * depthDiff);
         }
 
         if (iBlockReader.GetBlockMeta(x, y, z) >= 8)
@@ -221,14 +217,13 @@ public abstract class BlockFluid : Block
             return;
         }
 
-
         double particleX = @event.X + Random.Shared.NextSingle();
         double particleY = @event.Y + BoundingBox.MaxY;
         double particleZ = @event.Z + Random.Shared.NextSingle();
         @event.World.Broadcaster.AddParticle("lava", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
     }
 
-    public static double getFlowingAngle(IBlockReader iBlockReader, int x, int y, int z, Material material)
+    public static double GetFlowingAngle(IBlockReader iBlockReader, int x, int y, int z, Material material)
     {
         Vector3D<double> flowVec = new(0.0);
         if (material == Material.Water)
@@ -243,21 +238,22 @@ public abstract class BlockFluid : Block
         return flowVec is { X: 0.0D, Z: 0.0D } ? -1000.0D : Math.Atan2(flowVec.Z, flowVec.X) - Math.PI * 0.5D;
     }
 
-    public override void OnPlaced(OnPlacedEvent @event) => checkBlockCollisions(@event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-
-    public override void NeighborUpdate(OnTickEvent @event) => checkBlockCollisions(@event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-
-    private void checkBlockCollisions(IBlockReader reader, IBlockWrite writer, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    public override void OnPlaced(OnPlacedEvent @event)
     {
-        if (reader.GetBlockId(x, y, z) != Id)
-        {
-            return;
-        }
+        CheckBlockCollisions(@event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+    }
 
-        if (Material != Material.Lava)
-        {
-            return;
-        }
+    public override void NeighborUpdate(OnTickEvent @event)
+    {
+        CheckBlockCollisions(@event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+    }
+
+    private void CheckBlockCollisions(IBlockReader reader, IBlockWriter writer, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    {
+        if (reader.GetBlockId(x, y, z) != Id) return;
+
+
+        if (Material != Material.Lava) return;
 
         bool hasWaterAdjacent = false;
 
@@ -302,10 +298,10 @@ public abstract class BlockFluid : Block
                 break;
         }
 
-        fizz(broadcaster, x, y, z);
+        Fizz(broadcaster, x, y, z);
     }
 
-    protected void fizz(WorldEventBroadcaster broadcaster, int x, int y, int z)
+    protected static void Fizz(WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, "random.fizz", 0.5F, 2.6F + (Random.Shared.NextSingle() - Random.Shared.NextSingle()) * 0.8F);
 

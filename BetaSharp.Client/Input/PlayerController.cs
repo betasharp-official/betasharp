@@ -107,7 +107,6 @@ public class PlayerController
     )
     {
         int targetId = world.Reader.GetBlockId(blockX, blockY, blockZ);
-        if (targetId <= 0) return false;
 
         if (!player.isSneaking()) {
             bool used = Block.Blocks[targetId].OnUse(new OnUseEvent(world, player, blockX, blockY, blockZ));
@@ -116,8 +115,7 @@ public class PlayerController
 
         if (selectedItem == null) return false;
 
-        bool itemUsed = selectedItem.useOnBlock(player, world, blockX, blockY, blockZ, blockSide);
-        return itemUsed;
+        return selectedItem.useOnBlock(player, world, blockX, blockY, blockZ, blockSide);
     }
 
     public virtual EntityPlayer createPlayer(World var1)

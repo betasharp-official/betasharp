@@ -5,7 +5,7 @@
 
              x:Class="BetaSharp.Launcher.Features.Home.HomeView" x:DataType="local:HomeViewModel">
 
-    <Grid RowDefinitions="Auto *" IsVisible="{CompiledBinding Session, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+    <Grid RowDefinitions="Auto * Auto" RowSpacing="50" IsVisible="{CompiledBinding Session, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
         <Grid ColumnDefinitions="* 0.35*" Grid.Row="0">
             <StackPanel Spacing="25" HorizontalAlignment="Stretch" Orientation="Horizontal" Grid.Row="0">
                 <Border Width="50" Height="50" ClipToBounds="True" CornerRadius="{StaticResource ControlCornerRadius}">
@@ -32,18 +32,40 @@
                     </asyncImageLoader:AdvancedImage>
                 </Border>
 
-                <StackPanel VerticalAlignment="Center">
+                <StackPanel Spacing="0" VerticalAlignment="Center">
                     <TextBlock Text="Welcome" Opacity="0.5" />
-
-                    <TextBlock Text="{CompiledBinding Session.Name, FallbackValue='...'}"
-                               FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBlock Text="{CompiledBinding Session.Name, FallbackValue='...'}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </StackPanel>
             </StackPanel>
 
             <Button Content="Sign out" VerticalAlignment="Center" Command="{CompiledBinding SignOutCommand}" Grid.Column="1" />
         </Grid>
 
-        <Grid ColumnDefinitions="* 0.35*" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
+        <Grid VerticalAlignment="Center" Grid.Row="1">
+            <TextBlock Text="This looks rather empty..." Opacity="0.5" HorizontalAlignment="Center"
+                       Classes.hidden="{CompiledBinding Releases.Count}" />
+
+            <Grid RowDefinitions="Auto *" RowSpacing="5" Classes="hidden" Classes.shown="{CompiledBinding Releases.Count}">
+                <TextBlock Text="Releases" Grid.Row="0" />
+
+                <ListBox ItemsSource="{CompiledBinding Releases}" Grid.Row="1">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{CompiledBinding Name}" />
+                                    <TextBlock Text="{CompiledBinding Date}" Opacity="0.5" />
+                                </StackPanel>
+
+                                <SelectableTextBlock Text="{CompiledBinding Url}" Opacity="0.5" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Grid>
+
+        <Grid ColumnDefinitions="* 0.35*" ColumnSpacing="10" Grid.Row="2">
             <!-- ReSharper disable once Xaml.StyleClassNotFound -->
             <Button Content="Play" Classes="accent" Command="{CompiledBinding PlayCommand}" Grid.Column="0" />
 

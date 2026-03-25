@@ -54,7 +54,7 @@ public class FluidsRenderer : IBlockRenderer
         {
             hasRendered = true;
             int textureId = block.GetTexture(1, meta);
-            float flowAngle = (float)BlockFluid.getFlowingAngle(ctx.BlockReader, pos.x, pos.y, pos.z, material);
+            float flowAngle = (float)BlockFluid.GetFlowingAngle(ctx.BlockReader, pos.x, pos.y, pos.z, material);
 
             // If flowing, switch to the flowing texture variant
             if (flowAngle > -999.0F)

@@ -174,7 +174,7 @@ internal class BlockFlowing(int id, Material material) : BlockFluid(id, material
         {
             if (Material == Material.Lava)
             {
-                fizz(world.Broadcaster, x, y, z);
+                Fizz(world.Broadcaster, x, y, z);
             }
             else
             {

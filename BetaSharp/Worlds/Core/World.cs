@@ -132,7 +132,7 @@ public abstract class World : IWorldContext
 
     public ChunkHost BlockHost { get; }
     public IBlockReader Reader { get; }
-    public IBlockWrite Writer { get; }
+    public IBlockWriter Writer { get; }
     public WorldEventBroadcaster Broadcaster { get; }
 
     public EntityManager Entities { get; }

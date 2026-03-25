@@ -810,7 +810,7 @@ public class EntityManager
 
     public void SetBlockEntity(int x, int y, int z, BlockEntity? blockEntity)
     {
-        if (!blockEntity.isRemoved())
+        if (blockEntity != null && !blockEntity.isRemoved())
         {
             if (_processingDeferred)
             {

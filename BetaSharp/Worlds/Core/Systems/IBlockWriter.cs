@@ -1,6 +1,6 @@
 namespace BetaSharp.Worlds.Core.Systems;
 
-public interface IBlockWrite
+public interface IBlockWriter
 {
     public event Action<int, int, int, int, int, int, int>? OnBlockChangedWithPrev;
     public event Action<int, int, int, int>? OnBlockChanged;

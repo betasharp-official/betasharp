@@ -30,7 +30,7 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
 
     public override bool IsFullCube() => false;
 
-    public bool create(IBlockReader reader, IBlockWrite writer, int x, int y, int z)
+    public bool create(IBlockReader reader, IBlockWriter writer, int x, int y, int z)
     {
         sbyte extendsInZ = 0;
         sbyte extendsInX = 0;

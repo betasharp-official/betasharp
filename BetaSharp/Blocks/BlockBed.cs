@@ -155,7 +155,7 @@ public class BlockBed : Block
 
     private static bool IsBedOccupied(int meta) => (meta & 4) != 0;
 
-    public static void UpdateState(IBlockWrite worldWrite, int x, int y, int z, int meta, bool occupied)
+    public static void UpdateState(IBlockWriter writer, int x, int y, int z, int meta, bool occupied)
     {
         if (occupied)
         {
@@ -166,7 +166,7 @@ public class BlockBed : Block
             meta &= ~4;
         }
 
-        worldWrite.SetBlockMeta(x, y, z, meta);
+        writer.SetBlockMeta(x, y, z, meta);
     }
 
     public static Vec3i? FindWakeUpPosition(IBlockReader reader, int x, int y, int z, int skip)

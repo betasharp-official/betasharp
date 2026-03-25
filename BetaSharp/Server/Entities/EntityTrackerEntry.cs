@@ -1,4 +1,4 @@
-using BetaSharp.Blocks;
+﻿using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Network.Packets;
@@ -70,95 +70,71 @@ internal class EntityTrackerEntry
         }
 
         ticksSinceLastDismount++;
-        // Periodic absolute sync heuristic to correct client-side physics drift
-        // when the server otherwise decides deltas are too small.
-        if (++_ticksSinceLastAbsoluteSync >= 60)
+
+        // Update velocity before checking for changes and sending packet updates
+        // this make it so velocity based updates happen within the same tick
+        // tracking window instead of waiting for the next and possibly drifting client side.
+        if (alwaysUpdateVelocity)
         {
-            _ticksSinceLastAbsoluteSync = 0;
-
-            int absX = MathHelper.Floor(currentTrackedEntity.x * 32.0);
-            int absY = MathHelper.Floor(currentTrackedEntity.y * 32.0);
-            int absZ = MathHelper.Floor(currentTrackedEntity.z * 32.0);
-            int absYaw = MathHelper.Floor(currentTrackedEntity.yaw * 256.0F / 360.0F);
-            int absPitch = MathHelper.Floor(currentTrackedEntity.pitch * 256.0F / 360.0F);
-
-            sendToListeners(
-                EntityPositionS2CPacket.Get(
-                    currentTrackedEntity.id,
-                    absX,
-                    absY,
-                    absZ,
-                    (byte)absYaw,
-                    (byte)absPitch
-                )
-            );
-
-            // Keep our last-encoded coordinates aligned with the packet we just sent,
-            // so the next update doesn't immediately try to catch up with a relative delta.
-            lastX = absX;
-            lastY = absY;
-            lastZ = absZ;
-            lastYaw = absYaw;
-            lastPitch = absPitch;
+            double velDeltaX = currentTrackedEntity.velocityX - velocityX;
+            double velDeltaY = currentTrackedEntity.velocityY - velocityY;
+            double velDeltaZ = currentTrackedEntity.velocityZ - velocityZ;
+            double velocityTolerance = 0.02;
+            double velDeltaSqr = velDeltaX * velDeltaX + velDeltaY * velDeltaY + velDeltaZ * velDeltaZ;
+            if (velDeltaSqr > velocityTolerance * velocityTolerance
+                || velDeltaSqr > 0.0
+                && currentTrackedEntity.velocityX == 0.0
+                && currentTrackedEntity.velocityY == 0.0
+                && currentTrackedEntity.velocityZ == 0.0)
+            {
+                velocityX = currentTrackedEntity.velocityX;
+                velocityY = currentTrackedEntity.velocityY;
+                velocityZ = currentTrackedEntity.velocityZ;
+                sendToListeners(EntityVelocityUpdateS2CPacket.Get(currentTrackedEntity.id, velocityX, velocityY, velocityZ));
+            }
         }
 
         if (++ticks % trackingFrequency == 0)
         {
-            int var2 = MathHelper.Floor(currentTrackedEntity.x * 32.0);
-            int var3 = MathHelper.Floor(currentTrackedEntity.y * 32.0);
-            int var4 = MathHelper.Floor(currentTrackedEntity.z * 32.0);
-            int var5 = MathHelper.Floor(currentTrackedEntity.yaw * 256.0F / 360.0F);
-            int var6 = MathHelper.Floor(currentTrackedEntity.pitch * 256.0F / 360.0F);
-            int var7 = var2 - lastX;
-            int var8 = var3 - lastY;
-            int var9 = var4 - lastZ;
-            object? var10 = null;
-            bool var11 = Math.Abs(var2) >= 8 || Math.Abs(var3) >= 8 || Math.Abs(var4) >= 8;
-            bool var12 = Math.Abs(var5 - lastYaw) >= 8 || Math.Abs(var6 - lastPitch) >= 8;
-            if (var7 < -128 || var7 >= 128 || var8 < -128 || var8 >= 128 || var9 < -128 || var9 >= 128 || ticksSinceLastDismount > 400)
+            int posX = MathHelper.Floor(currentTrackedEntity.x * 32.0);
+            int posY = MathHelper.Floor(currentTrackedEntity.y * 32.0);
+            int posZ = MathHelper.Floor(currentTrackedEntity.z * 32.0);
+            int rotYaw = MathHelper.Floor(currentTrackedEntity.yaw * 256.0F / 360.0F);
+            int rotPitch = MathHelper.Floor(currentTrackedEntity.pitch * 256.0F / 360.0F);
+            int deltaX = posX - lastX;
+            int deltaY = posY - lastY;
+            int deltaZ = posZ - lastZ;
+            bool hasMoved = Math.Abs(deltaX) >= 1 || Math.Abs(deltaY) >= 1 || Math.Abs(deltaZ) >= 1;
+            bool hasRotated = Math.Abs(rotYaw - lastYaw) >= 8 || Math.Abs(rotPitch - lastPitch) >= 8;
+            object? positionPacket = null;
+            if (deltaX < -128 || deltaX >= 128 || deltaY < -128 || deltaY >= 128 || deltaZ < -128 || deltaZ >= 128 || ticksSinceLastDismount > 400)
             {
                 ticksSinceLastDismount = 0;
-                currentTrackedEntity.x = var2 / 32.0;
-                currentTrackedEntity.y = var3 / 32.0;
-                currentTrackedEntity.z = var4 / 32.0;
-                var10 = EntityPositionS2CPacket.Get(currentTrackedEntity.id, var2, var3, var4, (byte)var5, (byte)var6);
+                currentTrackedEntity.x = posX / 32.0;
+                currentTrackedEntity.y = posY / 32.0;
+                currentTrackedEntity.z = posZ / 32.0;
+                positionPacket = EntityPositionS2CPacket.Get(currentTrackedEntity.id, posX, posY, posZ, (byte)rotYaw, (byte)rotPitch);
             }
-            else if (var11 && var12)
+            else if (currentTrackedEntity is EntityArrow && (hasMoved || hasRotated)) // Special case for arrows to handle water and bounce physics more accurately
             {
-                var10 = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.id, (byte)var7, (byte)var8, (byte)var9, (byte)var5, (byte)var6);
+                positionPacket = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.id, (byte)deltaX, (byte)deltaY, (byte)deltaZ, (byte)rotYaw, (byte)rotPitch);
             }
-            else if (var11)
+            else if (hasMoved && hasRotated)
             {
-                var10 = EntityMoveRelativeS2CPacket.Get(currentTrackedEntity.id, (byte)var7, (byte)var8, (byte)var9);
+                positionPacket = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.id, (byte)deltaX, (byte)deltaY, (byte)deltaZ, (byte)rotYaw, (byte)rotPitch);
             }
-            else if (var12)
+            else if (hasMoved)
             {
-                var10 = EntityRotateS2CPacket.Get(currentTrackedEntity.id, (byte)var5, (byte)var6);
+                positionPacket = EntityMoveRelativeS2CPacket.Get(currentTrackedEntity.id, (byte)deltaX, (byte)deltaY, (byte)deltaZ);
             }
-
-            if (alwaysUpdateVelocity)
+            else if (hasRotated)
             {
-                double var13 = currentTrackedEntity.velocityX - velocityX;
-                double var15 = currentTrackedEntity.velocityY - velocityY;
-                double var17 = currentTrackedEntity.velocityZ - velocityZ;
-                double var19 = 0.02;
-                double var21 = var13 * var13 + var15 * var15 + var17 * var17;
-                if (var21 > var19 * var19
-                    || var21 > 0.0
-                    && currentTrackedEntity.velocityX == 0.0
-                    && currentTrackedEntity.velocityY == 0.0
-                    && currentTrackedEntity.velocityZ == 0.0)
-                {
-                    velocityX = currentTrackedEntity.velocityX;
-                    velocityY = currentTrackedEntity.velocityY;
-                    velocityZ = currentTrackedEntity.velocityZ;
-                    sendToListeners(EntityVelocityUpdateS2CPacket.Get(currentTrackedEntity.id, velocityX, velocityY, velocityZ));
-                }
+                positionPacket = EntityRotateS2CPacket.Get(currentTrackedEntity.id, (byte)rotYaw, (byte)rotPitch);
             }
 
-            if (var10 != null)
+            if (positionPacket != null)
             {
-                sendToListeners((Packet)var10);
+                sendToListeners((Packet)positionPacket);
             }
 
             DataSynchronizer dataSync = currentTrackedEntity.DataSynchronizer;
@@ -169,17 +145,17 @@ internal class EntityTrackerEntry
                 sendToAround(EntityTrackerUpdateS2CPacket.Get(currentTrackedEntity.id, stream.ToArray()));
             }
 
-            if (var11)
+            if (hasMoved)
             {
-                lastX = var2;
-                lastY = var3;
-                lastZ = var4;
+                lastX = posX;
+                lastY = posY;
+                lastZ = posZ;
             }
 
-            if (var12)
+            if (hasRotated)
             {
-                lastYaw = var5;
-                lastPitch = var6;
+                lastYaw = rotYaw;
+                lastPitch = rotPitch;
             }
         }
 
@@ -226,9 +202,9 @@ internal class EntityTrackerEntry
     {
         if (player != currentTrackedEntity)
         {
-            double var2 = player.x - lastX / 32.0;
-            double var4 = player.z - lastZ / 32.0;
-            if (var2 >= -trackedDistance && var2 <= trackedDistance && var4 >= -trackedDistance && var4 <= trackedDistance)
+            double distX = player.x - lastX / 32.0;
+            double distZ = player.z - lastZ / 32.0;
+            if (distX >= -trackedDistance && distX <= trackedDistance && distZ >= -trackedDistance && distZ <= trackedDistance)
             {
                 if (!listeners.Contains(player))
                 {
@@ -259,18 +235,18 @@ internal class EntityTrackerEntry
                             );
                     }
 
-                    ItemStack[] var6 = currentTrackedEntity.getEquipment();
-                    if (var6 != null)
+                    ItemStack[] equipment = currentTrackedEntity.getEquipment();
+                    if (equipment != null)
                     {
-                        for (int var7 = 0; var7 < var6.Length; var7++)
+                        for (int slot = 0; slot < equipment.Length; slot++)
                         {
-                            player.networkHandler.sendPacket(EntityEquipmentUpdateS2CPacket.Get(currentTrackedEntity.id, var7, var6[var7]));
+                            player.networkHandler.sendPacket(EntityEquipmentUpdateS2CPacket.Get(currentTrackedEntity.id, slot, equipment[slot]));
                         }
                     }
 
-                    if (currentTrackedEntity is EntityPlayer var8)
+                    if (currentTrackedEntity is EntityPlayer trackedPlayer)
                     {
-                        if (var8.isSleeping())
+                        if (trackedPlayer.isSleeping())
                         {
                             player.networkHandler
                                 .sendPacket(
