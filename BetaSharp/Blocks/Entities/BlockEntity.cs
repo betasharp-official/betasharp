@@ -29,7 +29,7 @@ public abstract class BlockEntity
 
     private static BlockEntityType Register<T>(Func<T> factory, string id) where T : BlockEntity
     {
-        var type = new BlockEntityType(() => factory());
+        var type = new BlockEntityType(() => factory(), id);
         s_registry.Register(ResourceLocation.Parse(id.ToLower()), type);
         return type;
     }
@@ -43,8 +43,7 @@ public abstract class BlockEntity
 
     public virtual void writeNbt(NBTTagCompound nbt)
     {
-        ResourceLocation? key = s_registry.GetKey(Type) ?? throw new Exception(GetType() + " is missing a mapping! This is a bug!");
-        nbt.SetString("id", key.Path);
+        nbt.SetString("id", Type.Id);
         nbt.SetInteger("x", X);
         nbt.SetInteger("y", Y);
         nbt.SetInteger("z", Z);

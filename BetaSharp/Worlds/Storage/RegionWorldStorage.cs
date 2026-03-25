@@ -6,6 +6,7 @@ using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Dimensions;
 using BetaSharp.Worlds.Storage.RegionFormat;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace BetaSharp.Worlds.Storage;
 
@@ -90,11 +91,52 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
     {
         properties.SaveVersion = 19132;
 
-        NBTTagCompound playerData = properties.getNBTTagCompoundWithPlayer(players);
         NBTTagCompound rootTag = new();
-        rootTag.SetTag("Data", playerData);
+        NBTTagCompound dataTag;
+
+        if (players.Count > 0)
+        {
+            dataTag = properties.getNBTTagCompoundWithPlayer(players);
+        }
+        else
+        {
+            dataTag = properties.getNBTTagCompound();
+            NBTTagCompound? mostRecentPlayer = GetMostRecentPlayerData();
+            if (mostRecentPlayer != null)
+            {
+                dataTag.SetCompoundTag("Player", mostRecentPlayer);
+            }
+            else if (properties.PlayerTag != null)
+            {
+                dataTag.SetCompoundTag("Player", properties.PlayerTag);
+            }
+        }
+
+        rootTag.SetTag("Data", dataTag);
 
         WriteLevelDat(rootTag);
+    }
+
+    private NBTTagCompound? GetMostRecentPlayerData()
+    {
+        try
+        {
+            if (_playersDirectory.Exists)
+            {
+                var file = _playersDirectory.GetFiles("*.dat").OrderByDescending(f => f.LastWriteTimeUtc).FirstOrDefault();
+                if (file != null)
+                {
+                    using var stream = file.OpenRead();
+                    return NbtIo.ReadCompressed(stream);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to read fallback player data for level.dat");
+        }
+
+        return null;
     }
 
     public void Save(WorldProperties properties)
