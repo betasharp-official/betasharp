@@ -167,7 +167,6 @@ public abstract class EntityPlayer : EntityLiving
         {
             startMinecartRidingCoordinate = null;
         }
-
     }
 
     protected override bool isMovementBlocked()
@@ -274,7 +273,6 @@ public abstract class EntityPlayer : EntityLiving
                 }
             }
         }
-
     }
 
     private void collideWithEntity(Entity entity)
@@ -324,7 +322,6 @@ public abstract class EntityPlayer : EntityLiving
         {
             increaseStat(Stats.Stats.MobKillsStat, 1);
         }
-
     }
 
     public virtual void dropSelectedItem()
@@ -416,7 +413,6 @@ public abstract class EntityPlayer : EntityLiving
         {
             playerSpawnCoordinate = new Vec3i(nbt.GetInteger("SpawnX"), nbt.GetInteger("SpawnY"), nbt.GetInteger("SpawnZ"));
         }
-
     }
 
     public override void writeNbt(NBTTagCompound nbt)
@@ -432,7 +428,6 @@ public abstract class EntityPlayer : EntityLiving
             nbt.SetInteger("SpawnY", y);
             nbt.SetInteger("SpawnZ", z);
         }
-
     }
 
     public virtual void openChestScreen(IInventory inventory)
@@ -574,7 +569,6 @@ public abstract class EntityPlayer : EntityLiving
                     clearStackInHand();
                 }
             }
-
         }
     }
 
@@ -631,7 +625,6 @@ public abstract class EntityPlayer : EntityLiving
                 increaseStat(Stats.Stats.DamageDealtStat, var2);
             }
         }
-
     }
 
     public virtual void respawn()
@@ -652,7 +645,6 @@ public abstract class EntityPlayer : EntityLiving
         {
             currentScreenHandler.onClosed(this);
         }
-
     }
 
     public override bool isInsideWall()
@@ -748,7 +740,6 @@ public abstract class EntityPlayer : EntityLiving
                 sleepOffsetX = -1.8F;
                 break;
         }
-
     }
 
     public virtual void wakeUp(bool resetSleepTimer, bool updateSleepingPlayers, bool setSpawnPos)
@@ -788,7 +779,6 @@ public abstract class EntityPlayer : EntityLiving
         {
             this.setSpawnPos(sleepingPos);
         }
-
     }
 
     private bool isSleepingInBed()
@@ -874,7 +864,6 @@ public abstract class EntityPlayer : EntityLiving
         {
             playerSpawnCoordinate = null;
         }
-
     }
 
     public void incrementStat(StatBase stat)
@@ -945,7 +934,6 @@ public abstract class EntityPlayer : EntityLiving
                     increaseStat(Stats.Stats.DistanceFlownStat, var7);
                 }
             }
-
         }
     }
 
@@ -953,14 +941,14 @@ public abstract class EntityPlayer : EntityLiving
     {
         if (vehicle is null) return;
 
-        int distanceScaled = (int)System.Math.Round(System.Math.Sqrt(x * x + y * y + z * z) * 100.0);
+        int distanceScaled = (int)Math.Round(Math.Sqrt(x * x + y * y + z * z) * 100.0);
 
         if (distanceScaled <= 0) return;
 
         switch (vehicle)
         {
             case EntityMinecart:
-                increaseStat(Stats.Stats.DistanceFallenStat, distanceScaled);
+                increaseStat(Stats.Stats.DistanceByMinecartStat, distanceScaled);
 
                 int currentX = MathHelper.Floor(this.x);
                 int currentY = MathHelper.Floor(this.y);
@@ -977,11 +965,11 @@ public abstract class EntityPlayer : EntityLiving
                 break;
 
             case EntityBoat:
-                increaseStat(Stats.Stats.DistanceFallenStat, distanceScaled);
+                increaseStat(Stats.Stats.DistanceByBoatStat, distanceScaled);
                 break;
 
             case EntityPig:
-                increaseStat(Stats.Stats.DistanceFallenStat, distanceScaled);
+                increaseStat(Stats.Stats.DistanceByPigStat, distanceScaled);
                 break;
         }
     }
@@ -1002,7 +990,6 @@ public abstract class EntityPlayer : EntityLiving
         {
             incrementStat(Achievements.KillEnemy);
         }
-
     }
 
     public override int getItemStackTextureId(ItemStack stack)
