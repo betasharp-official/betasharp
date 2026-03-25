@@ -18,8 +18,8 @@ public class DeopCommand : ICommand
         }
 
         string target = c.Args[0];
-        c.Server.playerManager.removeFromOperators(target);
-        c.Server.playerManager.messagePlayer(target, "§eYou are no longer op!");
+        c.Server.playerManager.RemoveFromOperators(target);
+        c.Server.playerManager.MessagePlayer(target, "§eYou are no longer op!");
         c.LogOp("De-opping " + target);
     }
 }

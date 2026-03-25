@@ -18,7 +18,7 @@ public class PardonIpCommand : ICommand
         }
 
         string ip = c.Args[0];
-        c.Server.playerManager.unbanIp(ip);
+        c.Server.playerManager.UnbanIp(ip);
         c.LogOp("Pardoning ip " + ip);
     }
 }

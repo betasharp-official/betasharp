@@ -10,6 +10,6 @@ public class ListCommand : ICommand
 
     public void Execute(ICommand.CommandContext c)
     {
-        c.Output.SendMessage("Connected players: " + c.Server.playerManager.getPlayerList());
+        c.Output.SendMessage("Connected players: " + c.Server.playerManager.GetPlayerList());
     }
 }

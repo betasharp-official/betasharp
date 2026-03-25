@@ -18,8 +18,8 @@ public class OpCommand : ICommand
         }
 
         string target = c.Args[0];
-        c.Server.playerManager.addToOperators(target);
+        c.Server.playerManager.AddToOperators(target);
         c.LogOp("Opping " + target);
-        c.Server.playerManager.messagePlayer(target, "§eYou are now op!");
+        c.Server.playerManager.MessagePlayer(target, "§eYou are now op!");
     }
 }

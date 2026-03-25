@@ -37,7 +37,7 @@ public class PlayerManager
         _whitelistEnabled = server.config.GetWhiteList(false);
     }
 
-    public void saveAllPlayers(ServerWorld[] world)
+    public void SaveAllPlayers(ServerWorld[] world)
     {
         _saveHandler = world[0].GetWorldStorage().GetPlayerStorage();
         if (world.Length > 0 && world[0] != null)
@@ -50,8 +50,9 @@ public class PlayerManager
         }
     }
 
-    public void updatePlayerAfterDimensionChange(ServerPlayerEntity player)
+    public void UpdatePlayerAfterDimensionChange(ServerPlayerEntity player)
     {
+        player.ResetChunkStreamingState();
         player.activeChunks.Clear();
         player.ChunksTerrainSentToClient.Clear();
         GetChunkMap(player.dimensionId).addPlayer(player);
@@ -59,7 +60,7 @@ public class PlayerManager
         var2.ChunkCache.LoadChunk((int)player.x >> 4, (int)player.z >> 4);
     }
 
-    public int getBlockViewDistance()
+    public int GetBlockViewDistance()
     {
         return _chunkMaps[0].getBlockViewDistance();
     }
@@ -74,14 +75,15 @@ public class PlayerManager
         return dimensionId == -1 ? _chunkMaps[1] : _chunkMaps[0];
     }
 
-    public void loadPlayerData(ServerPlayerEntity player)
+    public void LoadPlayerData(ServerPlayerEntity player)
     {
         _saveHandler.LoadPlayerData(player);
     }
 
-    public void addPlayer(ServerPlayerEntity player)
+    public void AddPlayer(ServerPlayerEntity player)
     {
         players.Add(player);
+        player.ResetChunkStreamingState();
         ServerWorld var2 = _server.getWorld(player.dimensionId);
         var2.ChunkCache.LoadChunk((int)player.x >> 4, (int)player.z >> 4);
 
@@ -94,12 +96,12 @@ public class PlayerManager
         GetChunkMap(player.dimensionId).addPlayer(player);
     }
 
-    public void updatePlayerChunks(ServerPlayerEntity player)
+    public void UpdatePlayerChunks(ServerPlayerEntity player)
     {
         GetChunkMap(player.dimensionId).updatePlayerChunks(player);
     }
 
-    public void disconnect(ServerPlayerEntity player)
+    public void Disconnect(ServerPlayerEntity player)
     {
         _saveHandler.SavePlayerData(player);
         _server.getWorld(player.dimensionId).Entities.Remove(player);
@@ -114,7 +116,7 @@ public class PlayerManager
             loginNetworkHandler.disconnect("You are banned from this server!");
             return null;
         }
-        else if (!isWhitelisted(name))
+        else if (!IsWhitelisted(name))
         {
             loginNetworkHandler.disconnect("You are not white-listed on this server!");
             return null;
@@ -151,7 +153,7 @@ public class PlayerManager
         }
     }
 
-    public ServerPlayerEntity respawnPlayer(ServerPlayerEntity player, int dimensionId)
+    public ServerPlayerEntity RespawnPlayer(ServerPlayerEntity player, int dimensionId)
     {
         _server.getEntityTracker(player.dimensionId).removeListener(player);
         _server.getEntityTracker(player.dimensionId).onEntityRemoved(player);
@@ -192,7 +194,7 @@ public class PlayerManager
 
         serverPlayer.networkHandler.sendPacket(PlayerRespawnPacket.Get((sbyte)serverPlayer.dimensionId));
         serverPlayer.networkHandler.teleport(serverPlayer.x, serverPlayer.y, serverPlayer.z, serverPlayer.yaw, serverPlayer.pitch);
-        sendWorldInfo(serverPlayer, var5);
+        SendWorldInfo(serverPlayer, var5);
         GetChunkMap(serverPlayer.dimensionId).addPlayer(serverPlayer);
         var5.SpawnEntity(serverPlayer);
         players.Add(serverPlayer);
@@ -200,7 +202,7 @@ public class PlayerManager
         return serverPlayer;
     }
 
-    public void changePlayerDimension(ServerPlayerEntity player)
+    public void ChangePlayerDimension(ServerPlayerEntity player)
     {
         int targetDim = 0;
         if (player.dimensionId == -1)
@@ -212,10 +214,10 @@ public class PlayerManager
             targetDim = -1;
         }
 
-        sendPlayerToDimension(player, targetDim);
+        SendPlayerToDimension(player, targetDim);
     }
 
-    public void sendPlayerToDimension(ServerPlayerEntity player, int targetDim)
+    public void SendPlayerToDimension(ServerPlayerEntity player, int targetDim)
     {
         int sourceDim = player.dimensionId;
         ServerWorld currentWorld = _server.getWorld(sourceDim);
@@ -273,14 +275,14 @@ public class PlayerManager
             while (targetWorld.Lighting.DoLightingUpdates()) { }
         }
 
-        updatePlayerAfterDimensionChange(player);
+        UpdatePlayerAfterDimensionChange(player);
         player.networkHandler.teleport(player.x, player.y, player.z, player.yaw, player.pitch);
         player.setWorld(targetWorld);
-        sendWorldInfo(player, targetWorld);
-        sendPlayerStatus(player);
+        SendWorldInfo(player, targetWorld);
+        SendPlayerStatus(player);
     }
 
-    public void updateAllChunks()
+    public void UpdateAllChunks()
     {
         int viewDistanceUpdate = _pendingViewDistance;
         if (viewDistanceUpdate != -1)
@@ -296,12 +298,20 @@ public class PlayerManager
         }
     }
 
-    public void markDirty(int x, int y, int z, int dimensionId)
+    public void FlushPendingChunkUpdates()
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            players[i].FlushPendingChunkUpdates();
+        }
+    }
+
+    public void MarkDirty(int x, int y, int z, int dimensionId)
     {
         GetChunkMap(dimensionId).markBlockForUpdate(x, y, z);
     }
 
-    public void sendToAll(Packet packet)
+    public void SendToAll(Packet packet)
     {
         for (int var2 = 0; var2 < players.Count; var2++)
         {
@@ -311,7 +321,7 @@ public class PlayerManager
         packet.Return();
     }
 
-    public void sendToDimension(Packet packet, int dimensionId)
+    public void SendToDimension(Packet packet, int dimensionId)
     {
         for (int var3 = 0; var3 < players.Count; var3++)
         {
@@ -324,18 +334,18 @@ public class PlayerManager
         packet.Return();
     }
 
-    public string getPlayerList()
+    public string GetPlayerList()
     {
         return string.Join(", ", players.ConvertAll(p => p.name));
     }
 
-    public void banPlayer(string name)
+    public void BanPlayer(string name)
     {
         bannedPlayers.Add(name.ToLower());
         saveBannedPlayers();
     }
 
-    public void unbanPlayer(string name)
+    public void UnbanPlayer(string name)
     {
         bannedPlayers.Remove(name.ToLower());
         saveBannedPlayers();
@@ -349,13 +359,13 @@ public class PlayerManager
     {
     }
 
-    public void banIp(string ip)
+    public void BanIp(string ip)
     {
         bannedIps.Add(ip.ToLower());
         saveBannedIps();
     }
 
-    public void unbanIp(string ip)
+    public void UnbanIp(string ip)
     {
         bannedIps.Remove(ip.ToLower());
         saveBannedIps();
@@ -369,13 +379,13 @@ public class PlayerManager
     {
     }
 
-    public void addToOperators(string name)
+    public void AddToOperators(string name)
     {
         ops.Add(name.ToLower());
         saveOperators();
     }
 
-    public void removeFromOperators(string name)
+    public void RemoveFromOperators(string name)
     {
         ops.Remove(name.ToLower());
         saveOperators();
@@ -397,13 +407,13 @@ public class PlayerManager
     {
     }
 
-    public bool isWhitelisted(string name)
+    public bool IsWhitelisted(string name)
     {
         name = name.Trim().ToLower();
         return !_whitelistEnabled || ops.Contains(name) || whitelist.Contains(name);
     }
 
-    public bool isOperator(string name)
+    public bool IsOperator(string name)
     {
         return ops.Contains(name.Trim().ToLower());
     }
@@ -422,7 +432,7 @@ public class PlayerManager
         return null;
     }
 
-    public void messagePlayer(string name, string message)
+    public void MessagePlayer(string name, string message)
     {
         ServerPlayerEntity var3 = getPlayer(name);
         if (var3 != null)
@@ -431,7 +441,7 @@ public class PlayerManager
         }
     }
 
-    public void sendToAround(double x, double y, double z, double range, int dimensionId, Packet packet)
+    public void SendToAround(double x, double y, double z, double range, int dimensionId, Packet packet)
     {
         sendToAround(null, x, y, z, range, dimensionId, packet);
     }
@@ -465,7 +475,7 @@ public class PlayerManager
 
         foreach (var player in players)
         {
-            if (isOperator(player.name))
+            if (IsOperator(player.name))
             {
                 player.networkHandler.sendPacket(chatMessagePacket);
             }
@@ -474,7 +484,7 @@ public class PlayerManager
         chatMessagePacket.Return();
     }
 
-    public bool sendPacket(string player, Packet packet)
+    public bool SendPacket(string player, Packet packet)
     {
         ServerPlayerEntity var3 = getPlayer(player);
         if (var3 != null)
@@ -489,7 +499,7 @@ public class PlayerManager
         }
     }
 
-    public void savePlayers()
+    public void SavePlayers()
     {
         for (int var1 = 0; var1 < players.Count; var1++)
         {
@@ -497,33 +507,33 @@ public class PlayerManager
         }
     }
 
-    public void updateBlockEntity(int x, int y, int z, BlockEntity blockentity)
+    public void UpdateBlockEntity(int x, int y, int z, BlockEntity blockentity)
     {
     }
 
-    public void addToWhitelist(string name)
+    public void AddToWhitelist(string name)
     {
         whitelist.Add(name);
         saveWhitelist();
     }
 
-    public void removeFromWhitelist(string name)
+    public void RemoveFromWhitelist(string name)
     {
         whitelist.Remove(name);
         saveWhitelist();
     }
 
-    public HashSet<string> getWhitelist()
+    public HashSet<string> GetWhitelist()
     {
         return whitelist;
     }
 
-    public void reloadWhitelist()
+    public void ReloadWhitelist()
     {
         loadWhitelist();
     }
 
-    public void sendWorldInfo(ServerPlayerEntity player, ServerWorld world)
+    public void SendWorldInfo(ServerPlayerEntity player, ServerWorld world)
     {
         player.networkHandler.sendPacket(WorldTimeUpdateS2CPacket.Get(world.GetTime()));
         if (world.Properties.IsRaining)
@@ -532,7 +542,7 @@ public class PlayerManager
         }
     }
 
-    public void sendPlayerStatus(ServerPlayerEntity player)
+    public void SendPlayerStatus(ServerPlayerEntity player)
     {
         player.onContentsUpdate(player.playerScreenHandler);
         player.markHealthDirty();

@@ -38,6 +38,9 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     private int screenHandlerSyncId;
     public BetaSharpServer server;
     public bool skipPacketSlotUpdates;
+    private readonly PlayerChunkSendQueue _pendingChunkUpdates = new();
+    private double _chunkStreamingMotionX;
+    private double _chunkStreamingMotionZ;
 
     public ServerPlayerEntity(BetaSharpServer server, IWorldContext world, string name, ServerPlayerInteractionManager interactionManager) : base(world)
     {
@@ -176,18 +179,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
         if (shouldSendChunkUpdates)
         {
-            while (CanSendMoreChunkData() && PendingChunkUpdates.TryDequeue(out ChunkPos chunkPos))
-            {
-                ServerWorld world = server.getWorld(dimensionId);
-                if (!activeChunks.Contains(chunkPos))
-                {
-                    continue;
-                }
-
-                SendChunkData(world, chunkPos);
-                ChunksTerrainSentToClient[chunkPos] = Environment.TickCount64;
-                SendBlockEntityUpdates(world, chunkPos);
-            }
+            FlushPendingChunkUpdates();
         }
 
         if (inTeleportationState)
@@ -210,7 +202,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
                     {
                         changeDimensionCooldown = 1.0F;
                         portalCooldown = 10;
-                        server.playerManager.changePlayerDimension(this);
+                        server.playerManager.ChangePlayerDimension(this);
                     }
                 }
 
@@ -243,6 +235,68 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     }
 
     private bool CanSendMoreChunkData() => networkHandler.getBlockDataSendQueueSize() < MaxChunkPackets;
+
+    public void ResetChunkStreamingState()
+    {
+        _chunkStreamingMotionX = 0.0;
+        _chunkStreamingMotionZ = 0.0;
+        _pendingChunkUpdates.Clear();
+    }
+
+    public void UpdateChunkStreamingMotion(double motionX, double motionZ)
+    {
+        _chunkStreamingMotionX = motionX;
+        _chunkStreamingMotionZ = motionZ;
+        _pendingChunkUpdates.ReprioritizeAll(this);
+    }
+
+    public void ScheduleChunkSend(ChunkPos chunkPos)
+    {
+        _pendingChunkUpdates.EnqueueOrPromote(this, chunkPos);
+    }
+
+    public void CancelChunkSend(ChunkPos chunkPos)
+    {
+        _pendingChunkUpdates.Remove(chunkPos);
+    }
+
+    public void FlushPendingChunkUpdates()
+    {
+        if (_pendingChunkUpdates.Count == 0)
+        {
+            return;
+        }
+
+        ServerWorld world = server.getWorld(dimensionId);
+        while (CanSendMoreChunkData() && _pendingChunkUpdates.TryDequeue(out ChunkPos chunkPos))
+        {
+            if (!activeChunks.Contains(chunkPos))
+            {
+                continue;
+            }
+
+            SendChunkData(world, chunkPos);
+            SendBlockEntityUpdates(world, chunkPos);
+        }
+    }
+
+    internal ChunkPriority GetChunkPriority(ChunkPos chunkPos, long sequence)
+    {
+        int playerChunkX = (int)x >> 4;
+        int playerChunkZ = (int)z >> 4;
+        int deltaX = chunkPos.X - playerChunkX;
+        int deltaZ = chunkPos.Z - playerChunkZ;
+        int ring = Math.Max(Math.Abs(deltaX), Math.Abs(deltaZ));
+
+        double directionPenalty = 0.0;
+        double motionLength = Math.Sqrt(_chunkStreamingMotionX * _chunkStreamingMotionX + _chunkStreamingMotionZ * _chunkStreamingMotionZ);
+        if (motionLength > 0.0)
+        {
+            directionPenalty = -((deltaX * _chunkStreamingMotionX) + (deltaZ * _chunkStreamingMotionZ)) / motionLength;
+        }
+
+        return new ChunkPriority(ring, directionPenalty, sequence);
+    }
 
     private void SendChunkData(IWorldContext world, ChunkPos chunkPos)
     {

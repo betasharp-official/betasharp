@@ -29,7 +29,7 @@ public class WhitelistCommand : ICommand
                 c.Server.config.SetProperty("white-list", false);
                 break;
             case "list":
-                var whitelist = c.Server.playerManager.getWhitelist();
+                var whitelist = c.Server.playerManager.GetWhitelist();
                 string names = "";
                 foreach (string name in whitelist)
                 {
@@ -39,16 +39,16 @@ public class WhitelistCommand : ICommand
                 break;
             case "add" when c.Args.Length >= 2:
                 string addTarget = c.Args[1].ToLower();
-                c.Server.playerManager.addToWhitelist(addTarget);
+                c.Server.playerManager.AddToWhitelist(addTarget);
                 c.LogOp( "Added " + addTarget + " to white-list");
                 break;
             case "remove" when c.Args.Length >= 2:
                 string removeTarget = c.Args[1].ToLower();
-                c.Server.playerManager.removeFromWhitelist(removeTarget);
+                c.Server.playerManager.RemoveFromWhitelist(removeTarget);
                 c.LogOp( "Removed " + removeTarget + " from white-list");
                 break;
             case "reload":
-                c.Server.playerManager.reloadWhitelist();
+                c.Server.playerManager.ReloadWhitelist();
                 c.LogOp( "Reloaded white-list from file");
                 break;
         }

@@ -15,7 +15,7 @@ public class EntityTracker
     {
         world = server;
         this.dimensionId = dimensionId;
-        viewDistance = server.playerManager.getBlockViewDistance();
+        viewDistance = server.playerManager.GetBlockViewDistance();
     }
 
     public void onEntityAdded(Entity entity)

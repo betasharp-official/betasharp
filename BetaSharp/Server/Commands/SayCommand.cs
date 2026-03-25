@@ -18,6 +18,6 @@ public class SayCommand : ICommand
 
         string message = string.Join(" ", c.Args);
         s_logger.LogInformation("[" + c.SenderName + "] " + message);
-        c.Server.playerManager.sendToAll(ChatMessagePacket.Get("§d[Server] " + message));
+        c.Server.playerManager.SendToAll(ChatMessagePacket.Get("§d[Server] " + message));
     }
 }

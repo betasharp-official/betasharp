@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using BetaSharp.Network.Packets;
 using Microsoft.Extensions.Logging;
 
@@ -21,9 +22,9 @@ public class Connection
     protected string disconnectedReason = "";
     protected object[]? disconnectReasonArgs;
 
-    private int timeout;
-    private ConcurrentQueue<Packet> sendQueue = [];
-    private ConcurrentQueue<Packet> delayedSendQueue = [];
+    private int _timeout;
+    private ConcurrentQueue<Packet> _sendQueue = [];
+    private ConcurrentQueue<Packet> _delayedSendQueue = [];
     private int _delay;
     private Socket? _socket;
     private NetworkStream? _networkStream;
@@ -62,11 +63,11 @@ public class Connection
             Interlocked.Increment(ref packet.UseCount);
             if (Packet.Registry[packet.Id]!.WorldPacket)
             {
-                delayedSendQueue.Enqueue(packet);
+                _delayedSendQueue.Enqueue(packet);
             }
             else
             {
-                sendQueue.Enqueue(packet);
+                _sendQueue.Enqueue(packet);
             }
         }
     }
@@ -103,21 +104,21 @@ public class Connection
 
     public virtual void tick()
     {
-        if (sendQueue.Count > 1048576)
+        if (_sendQueue.Count > 1048576 || _delayedSendQueue.Count > 1048576)
         {
             disconnect("disconnect.overflow");
         }
 
         if (readQueue.IsEmpty)
         {
-            if (timeout++ == 1200)
+            if (_timeout++ == 1200)
             {
                 disconnect("disconnect.timeout");
             }
         }
         else
         {
-            timeout = 0;
+            _timeout = 0;
         }
 
         processPackets();
@@ -157,7 +158,12 @@ public class Connection
 
     public int getDelayedSendQueueSize()
     {
-        return delayedSendQueue.Count;
+        return _delayedSendQueue.Count;
+    }
+
+    public int getWorldPacketBacklog()
+    {
+        return _delayedSendQueue.Count;
     }
 
     private async void Reading()
@@ -200,10 +206,11 @@ public class Connection
                 ArgumentNullException.ThrowIfNull(_networkStream);
 
                 Packet? packet;
+                bool wrotePacket = false;
 
-                if (!sendQueue.IsEmpty)
+                if (!_sendQueue.IsEmpty)
                 {
-                    if (!sendQueue.TryDequeue(out packet))
+                    if (!_sendQueue.TryDequeue(out packet))
                     {
                         continue;
                     }
@@ -212,11 +219,12 @@ public class Connection
 
                     Packet.Write(packet, _networkStream);
                     packet.Return();
+                    wrotePacket = true;
                 }
 
-                if (!delayedSendQueue.IsEmpty && _delay-- <= 0)
+                if (!_delayedSendQueue.IsEmpty && _delay-- <= 0)
                 {
-                    if (!delayedSendQueue.TryDequeue(out packet))
+                    if (!_delayedSendQueue.TryDequeue(out packet))
                     {
                         continue;
                     }
@@ -227,11 +235,18 @@ public class Connection
 
                     Packet.Write(packet, _networkStream);
                     packet.Return();
+                    wrotePacket = true;
                 }
 
-                _networkStream.Flush();
-
-                await Task.Delay(10);
+                if (wrotePacket)
+                {
+                    _networkStream.Flush();
+                    await Task.Delay(0);
+                }
+                else
+                {
+                    await Task.Delay(1);
+                }
             }
             catch (Exception exception)
             {

@@ -18,7 +18,7 @@ public class BanIpCommand : ICommand
         }
 
         string ip = c.Args[0];
-        c.Server.playerManager.banIp(ip);
+        c.Server.playerManager.BanIp(ip);
         c.LogOp("Banning ip " + ip);
     }
 }

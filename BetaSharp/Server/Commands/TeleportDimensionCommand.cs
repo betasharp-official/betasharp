@@ -55,7 +55,7 @@ public class TeleportDimensionCommand : ICommand
             return;
         }
 
-        c.Server.playerManager.sendPlayerToDimension(targetPlayer, dim);
+        c.Server.playerManager.SendPlayerToDimension(targetPlayer, dim);
         c.Output.SendMessage("Teleported " + targetPlayer.name + " to dimension " + dim);
     }
 }

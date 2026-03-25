@@ -46,7 +46,7 @@ public class ServerWorld : World
 
     private void HandleEntityRemoved(Entity entity) => entitiesById.Remove(entity.id);
 
-    private void HandleGlobalEntityAdded(Entity entity) => server.playerManager.sendToAround(entity.x, entity.y, entity.z, 512.0, Dimension.Id, GlobalEntitySpawnS2CPacket.Get(entity));
+    private void HandleGlobalEntityAdded(Entity entity) => server.playerManager.SendToAround(entity.x, entity.y, entity.z, 512.0, Dimension.Id, GlobalEntitySpawnS2CPacket.Get(entity));
 
     private bool HandleEntityUpdating(Entity entity)
     {
@@ -79,7 +79,7 @@ public class ServerWorld : World
     {
         int absX = Math.Abs(x - Properties.SpawnX);
         int absZ = Math.Abs(z - Properties.SpawnZ);
-        return absX > 16 || absZ > 16 || server.playerManager.isOperator(player.name) || server is InternalServer;
+        return absX > 16 || absZ > 16 || server.playerManager.IsOperator(player.name) || server is InternalServer;
     }
 
     public override Explosion CreateExplosion(Entity? source, double x, double y, double z, float power, bool fire)
@@ -90,7 +90,7 @@ public class ServerWorld : World
         };
         var10.doExplosionA();
         var10.doExplosionB(false);
-        server.playerManager.sendToAround(x, y, z, 64.0, Dimension.Id, ExplosionS2CPacket.Get(x, y, z, power, var10.destroyedBlockPositions));
+        server.playerManager.SendToAround(x, y, z, 64.0, Dimension.Id, ExplosionS2CPacket.Get(x, y, z, power, var10.destroyedBlockPositions));
         return var10;
     }
 
@@ -98,11 +98,11 @@ public class ServerWorld : World
 
     private void HandleWeatherChanged(bool isRaining)
     {
-        server.playerManager.sendToAll(
+        server.playerManager.SendToAll(
             isRaining ? GameStateChangeS2CPacket.Get(1) : GameStateChangeS2CPacket.Get(2)
         );
 
         bool isThundering = Properties.IsThundering;
-        server.playerManager.sendToAll(GameStateChangeS2CPacket.Get(isThundering ? 7 : 8));
+        server.playerManager.SendToAll(GameStateChangeS2CPacket.Get(isThundering ? 7 : 8));
     }
 }
