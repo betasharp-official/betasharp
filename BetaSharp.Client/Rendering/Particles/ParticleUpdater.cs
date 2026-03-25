@@ -7,6 +7,7 @@ namespace BetaSharp.Client.Rendering.Particles;
 
 public static class ParticleUpdater
 {
+    // Queues new particles spawned during update to avoid mutating the active buffer while iterating
     public struct DeferredSmoke
     {
         public double X, Y, Z, VelX, VelY, VelZ;
@@ -20,15 +21,28 @@ public static class ParticleUpdater
             return;
         }
 
-        // Save prev positions (memcpy)
-        Array.Copy(buf.X, buf.PrevX, count);
-        Array.Copy(buf.Y, buf.PrevY, count);
-        Array.Copy(buf.Z, buf.PrevZ, count);
+        // Localize arrays
+        double[] x = buf.X;
+        double[] y = buf.Y;
+        double[] z = buf.Z;
+        double[] px = buf.PrevX;
+        double[] py = buf.PrevY;
+        double[] pz = buf.PrevZ;
+        double[] vx = buf.VelX;
+        double[] vy = buf.VelY;
+        double[] vz = buf.VelZ;
+        short[] age = buf.Age;
+        short[] maxAge = buf.MaxAge;
+
+        Array.Copy(x, px, count);
+        Array.Copy(y, py, count);
+        Array.Copy(z, pz, count);
+
+        Random rng = Random.Shared;
 
         for (int i = 0; i < count; i++)
         {
-            buf.Age[i]++;
-            if (buf.Age[i] >= buf.MaxAge[i])
+            if (++age[i] >= maxAge[i])
             {
                 buf.Dead[i] = true;
                 continue;
@@ -36,130 +50,115 @@ public static class ParticleUpdater
 
             ref readonly ParticleTypeConfig config = ref ParticleTypeConfig.Configs[(int)buf.Type[i]];
 
-            // Animated texture
             if (config.AnimatesTexture)
             {
-                buf.TextureIndex[i] = 7 - buf.Age[i] * 8 / buf.MaxAge[i];
+                buf.TextureIndex[i] = 7 - (age[i] * 8 / maxAge[i]);
             }
 
             switch (config.Physics)
             {
                 case PhysicsModel.Standard:
-                    // Gravity uses per-particle gravity for Digging (block-specific) and Slime
-                    buf.VelY[i] -= 0.04 * buf.Gravity[i];
+                    vy[i] -= 0.04 * buf.Gravity[i];
                     ParticlePhysics.MoveWithCollision(buf, i, world);
                     break;
 
                 case PhysicsModel.Buoyant:
-                    buf.VelY[i] += config.GravityAccel;
+                    vy[i] += config.GravityAccel;
                     ParticlePhysics.MoveWithCollision(buf, i, world);
                     break;
 
                 case PhysicsModel.NoClip:
-                    buf.X[i] += buf.VelX[i];
-                    buf.Y[i] += buf.VelY[i];
-                    buf.Z[i] += buf.VelZ[i];
+                    x[i] += vx[i];
+                    y[i] += vy[i];
+                    z[i] += vz[i];
                     break;
 
                 case PhysicsModel.Parametric:
                     TickPortal(buf, i);
-                    continue; // Portal handles its own position, skip friction
+                    continue;
 
                 case PhysicsModel.BubbleRise:
-                    buf.VelY[i] += config.GravityAccel;
+                    vy[i] += config.GravityAccel;
                     ParticlePhysics.MoveWithCollision(buf, i, world);
                     if (world.Reader.GetMaterial(
-                            MathHelper.Floor(buf.X[i]),
-                            MathHelper.Floor(buf.Y[i]),
-                            MathHelper.Floor(buf.Z[i])) != Material.Water)
-                    {
+                        MathHelper.Floor(x[i]),
+                        MathHelper.Floor(y[i]),
+                        MathHelper.Floor(z[i])) != Material.Water)
                         buf.Dead[i] = true;
-                    }
                     break;
 
                 case PhysicsModel.RainFall:
-                    buf.VelY[i] += config.GravityAccel;
+                    vy[i] += config.GravityAccel;
                     ParticlePhysics.MoveWithCollision(buf, i, world);
-                    TickRain(buf, i, world);
+                    TickRain(buf, i, world, rng);
                     break;
 
                 case PhysicsModel.LavaDrop:
-                    TickLava(buf, i, world, deferredSmoke);
+                    TickLava(buf, i, world, deferredSmoke, config, rng);
                     break;
 
                 case PhysicsModel.SnowDrift:
-                    buf.VelY[i] += config.GravityAccel;
+                    vy[i] += config.GravityAccel;
                     ParticlePhysics.MoveWithCollision(buf, i, world);
                     break;
             }
 
-            // Stalled spread (smoke, reddust, heart, note)
-            if (config.StalledSpread && buf.Y[i] == buf.PrevY[i])
+            if (config.StalledSpread && y[i] == py[i])
             {
-                buf.VelX[i] *= 1.1;
-                buf.VelZ[i] *= 1.1;
+                vx[i] *= 1.1;
+                vz[i] *= 1.1;
             }
 
-            buf.VelX[i] *= config.Friction;
-            buf.VelY[i] *= config.Friction;
-            buf.VelZ[i] *= config.Friction;
+            vx[i] *= config.Friction;
+            vy[i] *= config.Friction;
+            vz[i] *= config.Friction;
 
             if (buf.OnGround[i])
             {
-                buf.VelX[i] *= config.GroundFriction;
-                buf.VelZ[i] *= config.GroundFriction;
+                vx[i] *= config.GroundFriction;
+                vz[i] *= config.GroundFriction;
             }
         }
 
-        // Swap-and-pop dead particles (iterate backwards)
         for (int i = buf.Count - 1; i >= 0; i--)
         {
-            if (buf.Dead[i])
-            {
-                buf.SwapRemove(i);
-            }
+            if (buf.Dead[i]) buf.SwapRemove(i);
         }
     }
 
     private static void TickPortal(ParticleBuffer buf, int i)
     {
         float progress = (float)buf.Age[i] / buf.MaxAge[i];
-        float factor = -progress + progress * progress * 2.0f;
-        factor = 1.0f - factor;
+        float factor = 1.0f - (-progress + progress * progress * 2.0f);
+
         buf.X[i] = buf.SpawnX[i] + buf.VelX[i] * factor;
         buf.Y[i] = buf.SpawnY[i] + buf.VelY[i] * factor + (1.0f - progress);
         buf.Z[i] = buf.SpawnZ[i] + buf.VelZ[i] * factor;
     }
 
-    private static void TickRain(ParticleBuffer buf, int i, IWorldContext world)
+    private static void TickRain(ParticleBuffer buf, int i, IWorldContext world, Random rng)
     {
         if (buf.OnGround[i])
         {
-            if (Random.Shared.NextDouble() < 0.5)
-            {
-                buf.Dead[i] = true;
-            }
+            if (rng.NextDouble() < 0.5) buf.Dead[i] = true;
+            return; // No need to check fluid height if we are already on solid ground
         }
 
         int fx = MathHelper.Floor(buf.X[i]);
         int fy = MathHelper.Floor(buf.Y[i]);
         int fz = MathHelper.Floor(buf.Z[i]);
+
         Material mat = world.Reader.GetMaterial(fx, fy, fz);
         if (mat.IsFluid || mat.IsSolid)
         {
-            double height = (float)(fy + 1) - BlockFluid.getFluidHeightFromMeta(
-                world.Reader.GetBlockMeta(fx, fy, fz));
-            if (buf.Y[i] < height)
-            {
-                buf.Dead[i] = true;
-            }
+            double surfaceY = fy + 1 - BlockFluid.getFluidHeightFromMeta(world.Reader.GetBlockMeta(fx, fy, fz));
+            if (buf.Y[i] < surfaceY) buf.Dead[i] = true;
         }
     }
 
-    private static void TickLava(ParticleBuffer buf, int i, IWorldContext world, List<DeferredSmoke> deferred)
+    private static void TickLava(ParticleBuffer buf, int i, IWorldContext world, List<DeferredSmoke> deferred, in ParticleTypeConfig config, Random rng)
     {
-        float lifeProgress = (float)buf.Age[i] / buf.MaxAge[i];
-        if ((float)Random.Shared.NextDouble() > lifeProgress)
+        if (rng.NextDouble() > (float)buf.Age[i] / buf.MaxAge[i])
         {
             deferred.Add(new DeferredSmoke
             {
@@ -172,7 +171,7 @@ public static class ParticleUpdater
             });
         }
 
-        buf.VelY[i] += ParticleTypeConfig.Configs[(int)ParticleType.Lava].GravityAccel;
+        buf.VelY[i] += config.GravityAccel;
         ParticlePhysics.MoveWithCollision(buf, i, world);
     }
 }
