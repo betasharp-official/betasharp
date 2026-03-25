@@ -1010,9 +1010,9 @@ public abstract class Entity
         readNbt(nbt);
     }
 
-    protected string getRegistryEntry()
+    protected string? getRegistryEntry()
     {
-        return EntityRegistry.GetId(this);
+        return Type?.Id;
     }
 
     public abstract void readNbt(NBTTagCompound nbt);

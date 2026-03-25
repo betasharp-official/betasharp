@@ -6,6 +6,7 @@ using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Dimensions;
 using BetaSharp.Worlds.Storage.RegionFormat;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace BetaSharp.Worlds.Storage;
 
@@ -90,11 +91,74 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
     {
         properties.SaveVersion = 19132;
 
-        NBTTagCompound playerData = properties.getNBTTagCompoundWithPlayer(players);
         NBTTagCompound rootTag = new();
-        rootTag.SetTag("Data", playerData);
+        NBTTagCompound dataTag;
+
+        if (players.Count > 0)
+        {
+            dataTag = properties.getNBTTagCompoundWithPlayer(players);
+            AdjustPlayerYForSingleplayer(dataTag.GetCompoundTag("Player"));
+        }
+        else
+        {
+            dataTag = properties.getNBTTagCompound();
+            NBTTagCompound? mostRecentPlayer = GetMostRecentPlayerData();
+            if (mostRecentPlayer != null)
+            {
+                AdjustPlayerYForSingleplayer(mostRecentPlayer);
+                dataTag.SetCompoundTag("Player", mostRecentPlayer);
+            }
+            else if (properties.PlayerTag != null)
+            {
+                dataTag.SetCompoundTag("Player", properties.PlayerTag);
+            }
+        }
+
+        rootTag.SetTag("Data", dataTag);
 
         WriteLevelDat(rootTag);
+    }
+
+    private void AdjustPlayerYForSingleplayer(NBTTagCompound? player)
+    {
+        if (player != null && player.HasKey("Pos"))
+        {
+            var posList = player.GetTagList("Pos");
+            if (posList.TagCount() >= 3)
+            {
+                double x = ((NBTTagDouble)posList.TagAt(0)).Value;
+                double y = ((NBTTagDouble)posList.TagAt(1)).Value;
+                double z = ((NBTTagDouble)posList.TagAt(2)).Value;
+                
+                NBTTagList newPos = new NBTTagList();
+                newPos.SetTag(new NBTTagDouble(x));
+                newPos.SetTag(new NBTTagDouble(y + 3.24D)); // Vanilla SP saves foot + yOffset (1.62) + ySize (1.62)
+                newPos.SetTag(new NBTTagDouble(z));
+                player.SetTag("Pos", newPos);
+            }
+        }
+    }
+
+    private NBTTagCompound? GetMostRecentPlayerData()
+    {
+        try
+        {
+            if (_playersDirectory.Exists)
+            {
+                var file = _playersDirectory.GetFiles("*.dat").OrderByDescending(f => f.LastWriteTimeUtc).FirstOrDefault();
+                if (file != null)
+                {
+                    using var stream = file.OpenRead();
+                    return NbtIo.ReadCompressed(stream);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to read fallback player data for level.dat");
+        }
+
+        return null;
     }
 
     public void Save(WorldProperties properties)

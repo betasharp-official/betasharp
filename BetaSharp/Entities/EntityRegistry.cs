@@ -42,7 +42,7 @@ public static class EntityRegistry
 
     private static EntityType Register<T>(Func<IWorldContext, T> factory, string id, int rawId) where T : Entity
     {
-        var type = new EntityType(w => factory(w), typeof(T));
+        var type = new EntityType(w => factory(w), typeof(T), id);
         s_registry.Register(rawId, ResourceLocation.Parse(id.ToLower()), type);
         return type;
     }
