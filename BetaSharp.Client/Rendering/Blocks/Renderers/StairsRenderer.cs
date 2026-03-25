@@ -10,45 +10,56 @@ public class StairsRenderer : IBlockRenderer
         bool hasRendered = false;
         int direction = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
 
-        if (direction == 0) // Ascending East (Stairs face West)
+        switch (direction)
         {
-            // Lower step (West half)
-            var lowerCtx = ctx with { OverrideBounds = new Box(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F) };
-            hasRendered |= lowerCtx.DrawBlock(block, pos);
+            // Ascending East (Stairs face West)
+            case 0:
+                {
+                    // Lower step (West half)
+                    var lowerCtx = ctx with { OverrideBounds = new Box(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F) };
+                    hasRendered |= lowerCtx.DrawBlock(block, pos);
 
-            // Upper step (East half)
-            var upperCtx = ctx with { OverrideBounds = new Box(0.5F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F) };
-            hasRendered |= upperCtx.DrawBlock(block, pos);
-        }
-        else if (direction == 1) // Ascending West (Stairs face East)
-        {
-            // Upper step (West half)
-            var upperCtx = ctx with { OverrideBounds = new Box(0.0F, 0.0F, 0.0F, 0.5F, 1.0F, 1.0F) };
-            hasRendered |= upperCtx.DrawBlock(block, pos);
+                    // Upper step (East half)
+                    var upperCtx = ctx with { OverrideBounds = new Box(0.5F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F) };
+                    hasRendered |= upperCtx.DrawBlock(block, pos);
+                    break;
+                }
+            // Ascending West (Stairs face East)
+            case 1:
+                {
+                    // Upper step (West half)
+                    var upperCtx = ctx with { OverrideBounds = new Box(0.0F, 0.0F, 0.0F, 0.5F, 1.0F, 1.0F) };
+                    hasRendered |= upperCtx.DrawBlock(block, pos);
 
-            // Lower step (East half)
-            var lowerCtx = ctx with { OverrideBounds = new Box(0.5F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F) };
-            hasRendered |= lowerCtx.DrawBlock(block, pos);
-        }
-        else if (direction == 2) // Ascending South (Stairs face North)
-        {
-            // Lower step (North half)
-            var lowerCtx = ctx with { OverrideBounds = new Box(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.5F) };
-            hasRendered |= lowerCtx.DrawBlock(block, pos);
+                    // Lower step (East half)
+                    var lowerCtx = ctx with { OverrideBounds = new Box(0.5F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F) };
+                    hasRendered |= lowerCtx.DrawBlock(block, pos);
+                    break;
+                }
+            // Ascending South (Stairs face North)
+            case 2:
+                {
+                    // Lower step (North half)
+                    var lowerCtx = ctx with { OverrideBounds = new Box(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.5F) };
+                    hasRendered |= lowerCtx.DrawBlock(block, pos);
 
-            // Upper step (South half)
-            var upperCtx = ctx with { OverrideBounds = new Box(0.0F, 0.0F, 0.5F, 1.0F, 1.0F, 1.0F) };
-            hasRendered |= upperCtx.DrawBlock(block, pos);
-        }
-        else if (direction == 3) // Ascending North (Stairs face South)
-        {
-            // Upper step (North half)
-            var upperCtx = ctx with { OverrideBounds = new Box(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F) };
-            hasRendered |= upperCtx.DrawBlock(block, pos);
+                    // Upper step (South half)
+                    var upperCtx = ctx with { OverrideBounds = new Box(0.0F, 0.0F, 0.5F, 1.0F, 1.0F, 1.0F) };
+                    hasRendered |= upperCtx.DrawBlock(block, pos);
+                    break;
+                }
+            // Ascending North (Stairs face South)
+            case 3:
+                {
+                    // Upper step (North half)
+                    var upperCtx = ctx with { OverrideBounds = new Box(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F) };
+                    hasRendered |= upperCtx.DrawBlock(block, pos);
 
-            // Lower step (South half)
-            var lowerCtx = ctx with { OverrideBounds = new Box(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F) };
-            hasRendered |= lowerCtx.DrawBlock(block, pos);
+                    // Lower step (South half)
+                    var lowerCtx = ctx with { OverrideBounds = new Box(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F) };
+                    hasRendered |= lowerCtx.DrawBlock(block, pos);
+                    break;
+                }
         }
 
         // Notice: No cleanup required!
