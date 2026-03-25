@@ -35,6 +35,8 @@ using BetaSharp.Worlds.Colors;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
+using BetaSharp.Client.UI;
+using BetaSharp.Client.UI.Test;
 using ImGuiNET;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Input;
@@ -364,7 +366,7 @@ public partial class BetaSharp
         }
         else
         {
-            displayGuiScreen(new GuiMainMenu());
+            displayGuiScreen(new UIScreenAdapter(new ComplexUIDemoScreen(this)));
         }
     }
 
@@ -448,7 +450,7 @@ public partial class BetaSharp
         statFileWriter.SyncStats();
         if (newScreen == null && world == null)
         {
-            newScreen = new GuiMainMenu();
+            newScreen = new UIScreenAdapter(new ModernUITestScreen(this));
         }
         else if (newScreen == null && player.health <= 0)
         {

@@ -1,0 +1,46 @@
+using BetaSharp.Client.Guis;
+using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.UI.Rendering;
+
+namespace BetaSharp.Client.UI.Controls;
+
+public class Button : UIElement
+{
+    public string Text { get; set; } = "";
+    public Color TextColor { get; set; } = Color.GrayE0;
+    public Color HoverTextColor { get; set; } = Color.HoverYellow;
+    public bool Enabled { get; set; } = true;
+
+    public Button()
+    {
+        Style.Width = 200;
+        Style.Height = 20;
+
+        OnMouseEnter += (e) =>
+        {
+            IsHovered = true;
+            e.Handled = true;
+        };
+
+        OnMouseLeave += (e) =>
+        {
+            IsHovered = false;
+            e.Handled = true;
+        };
+    }
+
+    public override void Render(UIRenderer renderer)
+    {
+        int hoverState = !Enabled ? 0 : (IsHovered ? 2 : 1);
+
+        TextureHandle texture = BetaSharp.Instance.textureManager.GetTextureId("/gui/gui.png");
+
+        renderer.DrawTexturedModalRect(texture, 0, 0, 0, 46 + hoverState * 20, ComputedWidth / 2, ComputedHeight);
+        renderer.DrawTexturedModalRect(texture, ComputedWidth / 2, 0, 200 - ComputedWidth / 2, 46 + hoverState * 20, ComputedWidth / 2, ComputedHeight);
+
+        Color tColor = !Enabled ? Color.GrayA0 : (IsHovered ? HoverTextColor : TextColor);
+        renderer.DrawCenteredText(Text, ComputedWidth / 2, ComputedHeight / 2 - 4, tColor);
+
+        base.Render(renderer);
+    }
+}

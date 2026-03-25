@@ -226,7 +226,7 @@ public class GuiScreen : Gui
     protected virtual void HandleTabLeft() { }
     protected virtual void HandleTabRight() { }
 
-    public void HandleKeyboardInput()
+    public virtual void HandleKeyboardInput()
     {
         if (Keyboard.getEventKeyState())
         {
