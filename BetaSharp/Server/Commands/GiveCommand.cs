@@ -6,39 +6,43 @@ namespace BetaSharp.Server.Commands;
 
 public class GiveCommand : ICommand
 {
-    public string Usage => "give <item> [count]";
+    public string Usage => "give [player] <item> [count]";
     public string Description => "Gives yourself an item";
     public string[] Names => ["give"];
 
     public void Execute(ICommand.CommandContext c)
     {
-        if (c.Args.Length < 1)
+        if (c.Args.Length <= 1)
         {
-            c.Output.SendMessage("Usage: give <item> [count]");
+            c.Output.SendMessage($"Usage: {Usage}");
             return;
         }
-
-        if (ItemLookup.TryResolveItemId(c.Args[0], out int selfItemId))
+        else if (c.Args.Length == 1)
         {
-            ServerPlayerEntity? sender = c.Server.playerManager.getPlayer(c.SenderName);
-            if (sender == null)
+
+            if (ItemLookup.TryResolveItemId(c.Args[0], out int selfItemId))
             {
-                c.Output.SendMessage("Could not find your player.");
+                ServerPlayerEntity? sender = c.Server.playerManager.getPlayer(c.SenderName);
+                if (sender == null)
+                {
+                    c.Output.SendMessage("Could not find your player.");
+                    return;
+                }
+
+                int count = 1;
+                if (c.Args.Length > 1 && int.TryParse(c.Args[1], out int parsedCount))
+                {
+                    count = Math.Clamp(parsedCount, 1, 64);
+                }
+
+                if (!sender.inventory.addItemStackToInventory(new ItemStack(selfItemId, count, 0)))
+                {
+                    sender.dropItem(new ItemStack(selfItemId, count, 0));
+                }
+                c.Output.SendMessage($"Gave {count} of {c.Args[0]} (id: {selfItemId})");
                 return;
             }
-
-            int count = 1;
-            if (c.Args.Length > 1 && int.TryParse(c.Args[1], out int parsedCount))
-            {
-                count = Math.Clamp(parsedCount, 1, 64);
-            }
-
-            sender.dropItem(new ItemStack(selfItemId, count, 0));
-            c.Output.SendMessage($"Gave {count} of {c.Args[0]} (id: {selfItemId})");
-            return;
-        }
-
-        if (c.Args.Length >= 2)
+        } else if (c.Args.Length >= 2)
         {
             string targetName = c.Args[0];
             ServerPlayerEntity? targetPlayer = c.Server.playerManager.getPlayer(targetName);
@@ -67,11 +71,13 @@ public class GiveCommand : ICommand
                 count = Math.Clamp(parsedCount, 1, 64);
             }
 
-            c.LogOp($"Giving {targetPlayer.name} some {itemId}");
-            targetPlayer.dropItem(new ItemStack(itemId, count, 0));
+            c.LogOp($"Giving {targetPlayer.name} {count}x{itemId}");
+            if (!targetPlayer.inventory.addItemStackToInventory(new ItemStack(itemId, count, 0)))
+            {
+                targetPlayer.dropItem(new ItemStack(itemId, count, 0));
+            }
             return;
         }
-
-        c.Output.SendMessage("Usage: give <item> [count]  or  give <player> <id> [count]");
+        return;
     }
 }
