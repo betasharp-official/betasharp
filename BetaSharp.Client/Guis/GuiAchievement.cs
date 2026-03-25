@@ -1,4 +1,5 @@
 using System;
+using BetaSharp.Client.Guis.Controls;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Stats;

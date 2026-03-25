@@ -1,3 +1,4 @@
+using BetaSharp.Client.Guis.Controls;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Items;
@@ -31,10 +32,10 @@ public class GuiStats : Screen
         _currentList = _listGeneral;
 
         TranslationStorage translations = TranslationStorage.Instance;
-        Button doneButton = new(Width / 2 + 4, Height - 28, 150, 20, translations.TranslateKey("gui.done"));
-        Button generalButton = new(Width / 2 - 154, Height - 52, 100, 20, translations.TranslateKey("stat.generalButton"));
-        Button blocksButton = new(Width / 2 - 46, Height - 52, 100, 20, translations.TranslateKey("stat.blocksButton")) { Enabled = _listBlock.GetSize() > 0 };
-        Button itemsButton = new(Width / 2 + 62, Height - 52, 100, 20, translations.TranslateKey("stat.itemsButton")) { Enabled = _listItem.GetSize() > 0 };
+        Button doneButton = new(EffectiveWidth / 2 + 4, EffectiveHeight - 28, 150, translations.TranslateKey("gui.done"));
+        Button generalButton = new(EffectiveWidth / 2 - 154, EffectiveHeight - 52, 100, translations.TranslateKey("stat.generalButton"));
+        Button blocksButton = new(EffectiveWidth / 2 - 46, EffectiveHeight - 52, 100, translations.TranslateKey("stat.blocksButton")) { Enabled = _listBlock.GetSize() > 0 };
+        Button itemsButton = new(EffectiveWidth / 2 + 62, EffectiveHeight - 52, 100, translations.TranslateKey("stat.itemsButton")) { Enabled = _listItem.GetSize() > 0 };
 
         doneButton.Clicked += (_, _) => MC.OpenScreen(parentScreen);
         generalButton.Clicked += (_, _) => _currentList = _listGeneral;

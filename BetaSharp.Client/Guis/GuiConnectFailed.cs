@@ -1,3 +1,5 @@
+using BetaSharp.Client.Guis.Controls;
+
 namespace BetaSharp.Client.Guis;
 
 public class GuiConnectFailed : Screen
@@ -19,7 +21,7 @@ public class GuiConnectFailed : Screen
         }
 
         MC.stopInternalServer();
-        Button titleButton = new(Width / 2 - 100, Height / 4 + 120 + 12, translations.TranslateKey("gui.toMenu"));
+        Button titleButton = new(EffectiveWidth / 2 - 100, EffectiveHeight / 4 + 120 + 12, translations.TranslateKey("gui.toMenu"));
         titleButton.Clicked += (_, _) => MC.OpenScreen(new GuiMainMenu());
         AddChild(titleButton);
     }
@@ -27,7 +29,7 @@ public class GuiConnectFailed : Screen
     protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
-        Gui.DrawCenteredString(FontRenderer, _errorMessage, Width / 2, Height / 2 - 50, 0xFFFFFF);
-        Gui.DrawCenteredString(FontRenderer, _errorDetail, Width / 2, Height / 2 - 10, 0xFFFFFF);
+        Gui.DrawCenteredString(FontRenderer, _errorMessage, EffectiveWidth / 2, EffectiveHeight / 2 - 50, 0xFFFFFF);
+        Gui.DrawCenteredString(FontRenderer, _errorDetail, EffectiveWidth / 2, EffectiveHeight / 2 - 10, 0xFFFFFF);
     }
 }

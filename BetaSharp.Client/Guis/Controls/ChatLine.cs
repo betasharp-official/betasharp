@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Guis;
+namespace BetaSharp.Client.Guis.Controls;
 
 public class ChatLine(string message)
 {

@@ -1,7 +1,8 @@
+using BetaSharp.Client.Guis.Layout;
 using BetaSharp.Client.Rendering.Core;
 using Silk.NET.OpenGL.Legacy;
 
-namespace BetaSharp.Client.Guis;
+namespace BetaSharp.Client.Guis.Controls;
 
 public partial class Control
 {
@@ -74,23 +75,26 @@ public partial class Control
     }
 
     public event EventHandler<RenderEventArgs>? Rendered;
+    public event EventHandler<RenderEventArgs>? PostRendered;
     protected virtual void OnRender(RenderEventArgs e) { }
+    protected virtual void OnPostRender(RenderEventArgs e) { }
     public void DoRender(RenderEventArgs e)
     {
         if (!Visible) return;
 
         bool wasScissorEnabled = GLManager.GL.IsEnabled(EnableCap.ScissorTest);
-        Span<int> prevScissor = stackalloc int[4];
+        Span<int> prevScissor = new int[4];
         GLManager.GL.GetInteger(GetPName.ScissorBox, prevScissor);
 
         var mc = Minecraft.INSTANCE;
         ScaledResolution res = new(mc.options, mc.displayWidth, mc.displayHeight);
         int scale = (int)Math.Round(mc.displayWidth / res.ScaledWidthDouble);
 
-        int scissorX = AbsX * scale;
-        int scissorY = (mc.displayHeight - (AbsY + Height) * scale);
-        int scissorW = Width * scale;
-        int scissorH = Height * scale;
+        Point offset = Parent?.GetChildPositionOffset(this) ?? Point.Empty;
+        int scissorX = (AbsX) * scale;
+        int scissorY = (mc.displayHeight - (AbsY + EffectiveHeight) * scale);
+        int scissorW = (EffectiveWidth) * scale;
+        int scissorH = (EffectiveHeight) * scale;
 
         if (wasScissorEnabled)
         {
@@ -106,15 +110,18 @@ public partial class Control
         GLManager.GL.Scissor(scissorX, scissorY, (uint)scissorW, (uint)scissorH);
 
         GLManager.GL.PushMatrix();
-        GLManager.GL.Translate(X, Y, ZLevel);
+        GLManager.GL.Translate(EffectiveX + offset.X, EffectiveY + offset.Y, ZLevel);
+
+        RenderBackground(e);
 
         OnRender(e);
         Rendered?.Invoke(this, e);
 
-        foreach (Control child in Children.ToArray())
-        {
-            child.DoRender(e);
-        }
+        RenderChildren(e);
+
+        OnPostRender(e);
+        PostRendered?.Invoke(this, e);
+
         GLManager.GL.PopMatrix();
 
         if (wasScissorEnabled)
@@ -163,7 +170,7 @@ public partial class Control
         OnTick();
         Ticked?.Invoke(this, EventArgs.Empty);
 
-        foreach (Control child in Children)
+        foreach (Control child in Children.ToArray())
         {
             child.DoTick();
         }

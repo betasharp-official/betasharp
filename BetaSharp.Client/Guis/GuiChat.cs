@@ -120,12 +120,12 @@ public class GuiChat : Screen
 
     protected override void OnRender(RenderEventArgs e)
     {
-        Gui.DrawRect(2, Height - 14, Width - 2, Height - 2, BackgroundColor);
+        Gui.DrawRect(2, EffectiveHeight - 14, EffectiveWidth - 2, EffectiveHeight - 2, BackgroundColor);
 
         string cursor = (_updateCounter / 6 % 2 == 0) ? "_" : "";
         string textToDraw = "> " + _message + cursor;
 
-        int y = Height - 12;
+        int y = EffectiveHeight - 12;
         int xBase = 4;
 
         FontRenderer.DrawStringWithShadow(textToDraw, xBase, y, TextColorNormal);

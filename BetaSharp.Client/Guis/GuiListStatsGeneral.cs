@@ -8,7 +8,7 @@ public class GuiListStatsGeneral : GuiList
     readonly GuiStats parentStatsGui;
 
 
-    public GuiListStatsGeneral(GuiStats parent) : base(parent.MC, parent.Width, parent.Height, 32, parent.Height - 64, 10)
+    public GuiListStatsGeneral(GuiStats parent) : base(parent.MC, parent.EffectiveWidth, parent.EffectiveHeight, 32, parent.EffectiveHeight - 64, 10)
     {
         parentStatsGui = parent;
         SetShowSelectionHighlight(false);

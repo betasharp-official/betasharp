@@ -1,3 +1,5 @@
+using BetaSharp.Client.Guis.Controls;
+
 namespace BetaSharp.Client.Guis;
 
 public class MouseEventArgs : EventArgs

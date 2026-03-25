@@ -1,3 +1,4 @@
+using BetaSharp.Client.Guis.Controls;
 using BetaSharp.Client.Input;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
@@ -24,8 +25,8 @@ public class GuiCreateWorld : Screen
         TranslationStorage translations = TranslationStorage.Instance;
         Keyboard.enableRepeatEvents(true);
 
-        int centerX = Width / 2;
-        int centerY = Height / 4;
+        int centerX = EffectiveWidth / 2;
+        int centerY = EffectiveHeight / 4;
 
         _textboxWorldName = new(centerX - 100, centerY, FontRenderer, translations.TranslateKey("selectWorld.newWorld"))
         {
@@ -128,8 +129,8 @@ public class GuiCreateWorld : Screen
     {
         TranslationStorage translations = TranslationStorage.Instance;
 
-        int centerX = Width / 2;
-        int centerY = Height / 4;
+        int centerX = EffectiveWidth / 2;
+        int centerY = EffectiveHeight / 4;
 
         DrawDefaultBackground();
         Gui.DrawCenteredString(FontRenderer, translations.TranslateKey("selectWorld.create"), centerX, centerY - 60 + 20, 0xFFFFFF);

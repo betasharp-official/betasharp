@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
+using BetaSharp.Client.Guis.Controls;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering.Blocks.Entities;
 using BetaSharp.Client.Rendering.Core;
@@ -23,7 +24,7 @@ public class GuiEditSign : Screen
         Text = "Edit sign message:";
         DisplayTitle = true;
         Keyboard.enableRepeatEvents(true);
-        Button doneButton = new(Width / 2 - 100, Height / 4 + 120, "Done");
+        Button doneButton = new(EffectiveWidth / 2 - 100, EffectiveHeight / 4 + 120, "Done");
         doneButton.Clicked += (_, _) =>
         {
             _entitySign.markDirty();
@@ -81,7 +82,7 @@ public class GuiEditSign : Screen
         DrawDefaultBackground();
 
         GLManager.GL.PushMatrix();
-        GLManager.GL.Translate(Width / 2f, 0.0F, 50.0F);
+        GLManager.GL.Translate(EffectiveWidth / 2f, 0.0F, 50.0F);
         float scale = 93.75F;
         GLManager.GL.Scale(-scale, -scale, -scale);
         GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);

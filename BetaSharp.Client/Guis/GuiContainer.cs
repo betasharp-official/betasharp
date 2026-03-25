@@ -28,8 +28,8 @@ public abstract class GuiContainer : Screen
     {
         DrawDefaultBackground();
 
-        int guiLeft = (Width - _xSize) / 2;
-        int guiTop = (Height - _ySize) / 2;
+        int guiLeft = (EffectiveWidth - _xSize) / 2;
+        int guiTop = (EffectiveHeight - _ySize) / 2;
 
         DrawGuiContainerBackgroundLayer(e.TickDelta);
 
@@ -154,8 +154,8 @@ public abstract class GuiContainer : Screen
 
     private bool GetIsMouseOverSlot(Slot slot, int mouseX, int mouseY)
     {
-        int guiLeft = (Width - _xSize) / 2;
-        int guiTop = (Height - _ySize) / 2;
+        int guiLeft = (EffectiveWidth - _xSize) / 2;
+        int guiTop = (EffectiveHeight - _ySize) / 2;
         mouseX -= guiLeft;
         mouseY -= guiTop;
 
@@ -170,8 +170,8 @@ public abstract class GuiContainer : Screen
         if (e.Button is 0 or 1)
         {
             Slot slot = GetSlotAtPosition(e.X, e.Y);
-            int guiLeft = (Width - _xSize) / 2;
-            int guiTop = (Height - _ySize) / 2;
+            int guiLeft = (EffectiveWidth - _xSize) / 2;
+            int guiTop = (EffectiveHeight - _ySize) / 2;
 
             bool isOutside = e.X < guiLeft || e.Y < guiTop || e.X >= guiLeft + _xSize || e.Y >= guiTop + _ySize;
 

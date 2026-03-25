@@ -1,7 +1,8 @@
-namespace BetaSharp.Client.Guis;
+namespace BetaSharp.Client.Guis.Layout;
 
 public struct Size
 {
+    public static readonly Size Empty = new();
     public int Width;
     public int Height;
 
@@ -10,6 +11,4 @@ public struct Size
         Width = width;
         Height = height;
     }
-
-    public static implicit operator Size((int, int) tuple) => new(tuple.Item1, tuple.Item2);
 }

@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Guis;
+namespace BetaSharp.Client.Guis.Layout;
 
 public enum Alignment
 {
@@ -10,5 +10,5 @@ public enum Alignment
     Right,
     BottomLeft,
     Bottom,
-    BottomRight
+    BottomRight,
 }

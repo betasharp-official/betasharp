@@ -1,6 +1,6 @@
 using BetaSharp.Client.Options;
 
-namespace BetaSharp.Client.Guis;
+namespace BetaSharp.Client.Guis.Controls;
 
 public class OptionsSlider : Slider
 {

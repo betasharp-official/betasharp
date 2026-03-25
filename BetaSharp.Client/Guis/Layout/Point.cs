@@ -1,7 +1,8 @@
-namespace BetaSharp.Client.Guis;
+namespace BetaSharp.Client.Guis.Layout;
 
 public struct Point
 {
+    public static readonly Point Empty = new();
     public int X;
     public int Y;
 
@@ -10,6 +11,4 @@ public struct Point
         X = x;
         Y = y;
     }
-
-    public static implicit operator Point((int, int) tuple) => new(tuple.Item1, tuple.Item2);
 }

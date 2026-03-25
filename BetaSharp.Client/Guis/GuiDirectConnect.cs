@@ -1,4 +1,6 @@
-﻿using BetaSharp.Client.Input;
+﻿using BetaSharp.Client.Guis.Controls;
+using BetaSharp.Client.Guis.Layout;
+using BetaSharp.Client.Input;
 
 namespace BetaSharp.Client.Guis;
 
@@ -15,16 +17,16 @@ public class GuiDirectConnect : Screen
 
         Keyboard.enableRepeatEvents(true);
 
-        _serverAddress = new(Width / 2 - 100, 106, FontRenderer, _serverData.Ip)
+        _serverAddress = new(EffectiveWidth / 2 - 100, 106, FontRenderer, _serverData.Ip)
         {
             Anchor = Anchors.Top,
             MaxLength = 128,
         };
-        Button joinServerButton = new(Width / 2 - 100, Height / 4 + 96 + 12, "Join Server")
+        Button joinServerButton = new(EffectiveWidth / 2 - 100, EffectiveHeight / 4 + 96 + 12, "Join Server")
         {
             Enabled = _serverAddress.Text.Length > 0 && _serverAddress.Text.Split(":").Length > 0,
         };
-        Button cancelButton = new(Width / 2 - 100, Height / 4 + 120 + 12, "Cancel");
+        Button cancelButton = new(EffectiveWidth / 2 - 100, EffectiveHeight / 4 + 120 + 12, "Cancel");
         joinServerButton.Clicked += (_, _) =>
         {
             _serverData.Ip = _serverAddress.Text;
@@ -47,7 +49,7 @@ public class GuiDirectConnect : Screen
     protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
-        Gui.DrawCenteredString(FontRenderer, "Direct Connect", Width / 2, 17, 0xFFFFFF);
-        Gui.DrawString(FontRenderer, "Server Address", Width / 2 - 100, 94, 0xA0A0A0);
+        Gui.DrawCenteredString(FontRenderer, "Direct Connect", EffectiveWidth / 2, 17, 0xFFFFFF);
+        Gui.DrawString(FontRenderer, "Server Address", EffectiveWidth / 2 - 100, 94, 0xA0A0A0);
     }
 }

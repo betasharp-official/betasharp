@@ -1,3 +1,4 @@
+using BetaSharp.Client.Guis.Controls;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Network;
 using BetaSharp.Network.Packets.C2SPlay;
@@ -10,7 +11,7 @@ public class GuiSleepMP : GuiChat
     {
         Keyboard.enableRepeatEvents(true);
         TranslationStorage translations = TranslationStorage.Instance;
-        Button stopSleepingButton = new(Width / 2 - 100, Height - 40, translations.TranslateKey("multiplayer.stopSleeping"));
+        Button stopSleepingButton = new(EffectiveWidth / 2 - 100, EffectiveHeight - 40, translations.TranslateKey("multiplayer.stopSleeping"));
         stopSleepingButton.Clicked += (_, _) => sendStopSleepingCommand();
         AddChild(stopSleepingButton);
     }

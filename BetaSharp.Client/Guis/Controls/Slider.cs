@@ -1,7 +1,7 @@
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
 
-namespace BetaSharp.Client.Guis;
+namespace BetaSharp.Client.Guis.Controls;
 
 public class Slider : Control
 {
@@ -25,7 +25,7 @@ public class Slider : Control
         DefaultValue = defaultValue == 0 ? min : defaultValue;
     }
 
-    protected float NormalizedValue => Math.Clamp((Value - Min) / (Max - Min), 0f, 1f);
+    protected float NormalizedValue => Math.Clamp(((Value - Min) / (Max - Min)), 0f, 1f);
 
     protected virtual void OnValueChanged(float newValue) { }
 
@@ -35,7 +35,7 @@ public class Slider : Control
     {
         if (!Enabled) return;
 
-        float percentage = (mouseX - (AbsX + 4)) / (float)(Width - 8);
+        float percentage = (mouseX - (AbsX + 4)) / (float)(EffectiveWidth - 8);
         percentage = Math.Clamp(percentage, 0, 1);
 
         float newValue = Min + percentage * (Max - Min);
@@ -84,12 +84,12 @@ public class Slider : Control
         GLManager.GL.Color4(1, 1, 1, 1);
 
         // Left half of background
-        DrawTextureRegion(0, 0, 0, 46, Width / 2, Height);
+        DrawTextureRegion(0, 0, 0, 46, EffectiveWidth / 2, EffectiveHeight);
         // Right half of background
-        DrawTextureRegion(Width / 2, 0, 200 - Width / 2, 46, Width / 2, Height);
+        DrawTextureRegion(EffectiveWidth / 2, 0, 200 - EffectiveWidth / 2, 46, EffectiveWidth / 2, EffectiveHeight);
 
         // Grabber position based on normalized value
-        int grabberX = (int)(NormalizedValue * (Width - 8));
+        int grabberX = (int)(NormalizedValue * (EffectiveWidth - 8));
         // Left half of grabber
         DrawTextureRegion(grabberX, 0, 0, 66, 4, 20);
         // Right half of grabber
@@ -97,6 +97,6 @@ public class Slider : Control
 
         bool hovered = PointInBounds(e.MouseX, e.MouseY);
         uint color = !Enabled ? 0xA0A0A0u : (hovered ? 0xFFFFA0u : 0xE0E0E0u);
-        Gui.DrawCenteredString(font, Text, Width / 2, (Height - 8) / 2, color);
+        Gui.DrawCenteredString(font, Text, EffectiveWidth / 2, (EffectiveHeight - 8) / 2, color);
     }
 }

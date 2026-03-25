@@ -3,51 +3,50 @@ using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.Input;
 
-public static partial class Mouse
+public partial class Mouse
 {
     public const int EventSize = 1 + 1 + 4 + 4 + 4 + 8;
     public const int MouseButtons = 8;
     private const int DoubleClickThresholdPixels = 4;
 
+    private static Mouse _originalInstance = null!;
+    public static Mouse Instance { get; private set; } = null!;
+
     private static bool created;
-    private static Glfw glfw;
-    private static unsafe WindowHandle* window;
+
+    private Glfw _glfw;
+    private unsafe WindowHandle* _window;
 
     // Current state
-    private static readonly bool[] buttons = new bool[MouseButtons];
-    private static int x, y;
-    private static int absolute_x, absolute_y;
-    private static int dx, dy, dwheel;
+    private readonly bool[] _buttons = new bool[MouseButtons];
+    private int _y;
+    private int _absolute_x, _absolute_y;
+    private int _dx, _dy, _dwheel;
 
     // Event queue
-    private static readonly Queue<MouseEvent> eventQueue = new();
+    private readonly Queue<MouseEvent> _eventQueue = new();
 
     // Current event being processed
-    private static int eventButton;
-    private static bool eventState;
-    private static int event_dx, event_dy, event_dwheel;
-    private static int event_x, event_y;
-    private static long event_nanos;
-    private static int eventClickCount;
+    private int _event_y;
 
     // Click tracking for double-click/multi-click detection
-    private static readonly long[] lastClickTime = new long[MouseButtons];
-    private static readonly int[] lastClickX = new int[MouseButtons];
-    private static readonly int[] lastClickY = new int[MouseButtons];
-    private static readonly int[] clickCounts = new int[MouseButtons];
+    private readonly long[] _lastClickTime = new long[MouseButtons];
+    private readonly int[] _lastClickX = new int[MouseButtons];
+    private readonly int[] _lastClickY = new int[MouseButtons];
+    private readonly int[] _clickCounts = new int[MouseButtons];
 
     // Last positions for delta calculation
-    private static int last_event_raw_x, last_event_raw_y;
+    private int _last_event_raw_x, _last_event_raw_y;
 
     // Grab state
-    private static bool _isGrabbed;
-    private static int grab_x, grab_y;
+    private bool _isGrabbedState;
+    private int _grab_x, _grab_y;
 
     // Display dimensions (set from outside)
-    private static int displayWidth = 800;
-    private static int displayHeight = 600;
+    private int _displayWidth = 800;
+    private int _displayHeight = 600;
 
-    private static readonly long DoubleClickDelayNanos = GetSystemDoubleClickTime() * 1_000_000L;
+    private readonly long _doubleClickDelayNanos = GetSystemDoubleClickTime() * 1_000_000L;
 
     [LibraryImport("user32.dll", SetLastError = true)]
     private static partial uint GetDoubleClickTime();
@@ -75,44 +74,62 @@ public static partial class Mouse
         return 300;
     }
 
+    /// <summary>
+    /// Creates the primary singleton Mouse instance for the game window.
+    /// </summary>
     public static unsafe void create(Glfw glfwApi, WindowHandle* windowHandle, int width, int height)
     {
         if (created) return;
 
-        glfw = glfwApi;
-        window = windowHandle;
-        displayWidth = width;
-        displayHeight = height;
-
-        // Set up callbacks
-        glfw.SetCursorPosCallback(window, OnCursorPos);
-        glfw.SetMouseButtonCallback(window, OnMouseButton);
-        glfw.SetScrollCallback(window, OnScroll);
-
-        // Get initial position
-        glfw.GetCursorPos(window, out double initX, out double initY);
-        x = absolute_x = last_event_raw_x = (int)initX;
-        y = absolute_y = last_event_raw_y = (int)initY;
-
+        _originalInstance = CreateInstance(glfwApi, windowHandle, width, height);
+        ResetInstance();
         created = true;
     }
 
-    private static unsafe void OnCursorPos(WindowHandle* window, double xpos, double ypos)
-    {
-        if (!created) return;
+    public static void ResetInstance() => Instance = _originalInstance;
+    public static void SetInstance(Mouse mouse) => Instance = mouse;
 
+    /// <summary>
+    /// Creates a new Mouse instance bound to the given window. Can be used for secondary windows
+    /// (e.g. dev tools).
+    /// </summary>
+    public static unsafe Mouse CreateInstance(Glfw glfwApi, WindowHandle* windowHandle, int width, int height)
+    {
+        Mouse mouse = new()
+        {
+            _glfw = glfwApi,
+            _window = windowHandle,
+            _displayWidth = width,
+            _displayHeight = height,
+        };
+
+        // Set up callbacks
+        glfwApi.SetCursorPosCallback(windowHandle, mouse.OnCursorPos);
+        glfwApi.SetMouseButtonCallback(windowHandle, mouse.OnMouseButton);
+        glfwApi.SetScrollCallback(windowHandle, mouse.OnScroll);
+
+        // Get initial position
+        glfwApi.GetCursorPos(windowHandle, out double initX, out double initY);
+        mouse.X = mouse._absolute_x = mouse._last_event_raw_x = (int)initX;
+        mouse._y = mouse._absolute_y = mouse._last_event_raw_y = (int)initY;
+
+        return mouse;
+    }
+
+    private unsafe void OnCursorPos(WindowHandle* window, double xpos, double ypos)
+    {
         int newX = (int)xpos;
         int newY = (int)ypos;
 
-        dx += newX - x;
-        dy += newY - y;
+        _dx += newX - X;
+        _dy += newY - _y;
 
-        x = newX;
-        y = newY;
-        absolute_x = newX;
-        absolute_y = newY;
+        X = newX;
+        _y = newY;
+        _absolute_x = newX;
+        _absolute_y = newY;
 
-        eventQueue.Enqueue(new MouseEvent
+        _eventQueue.Enqueue(new MouseEvent
         {
             Button = -1,
             State = false,
@@ -123,51 +140,49 @@ public static partial class Mouse
         });
     }
 
-    private static unsafe void OnMouseButton(WindowHandle* window, MouseButton button, InputAction action, KeyModifiers mods)
+    private unsafe void OnMouseButton(WindowHandle* window, MouseButton button, InputAction action, KeyModifiers mods)
     {
-        if (!created) return;
-
         int buttonIndex = (int)button;
         bool pressed = action == InputAction.Press;
 
-        glfw.GetCursorPos(window, out double xpos, out double ypos);
+        _glfw.GetCursorPos(window, out double xpos, out double ypos);
         int posX = (int)xpos;
         int posY = (int)ypos;
         long nanos = GetNanos();
 
         // Update button state
-        if (buttonIndex >= 0 && buttonIndex < buttons.Length)
+        if (buttonIndex >= 0 && buttonIndex < _buttons.Length)
         {
-            buttons[buttonIndex] = pressed;
+            _buttons[buttonIndex] = pressed;
         }
 
         // Calculate click count on button press
         int clickCount = 1;
         if (pressed && buttonIndex is >= 0 and < MouseButtons)
         {
-            long timeSinceLastClick = nanos - lastClickTime[buttonIndex];
-            int distX = Math.Abs(posX - lastClickX[buttonIndex]);
-            int distY = Math.Abs(posY - lastClickY[buttonIndex]);
+            long timeSinceLastClick = nanos - _lastClickTime[buttonIndex];
+            int distX = Math.Abs(posX - _lastClickX[buttonIndex]);
+            int distY = Math.Abs(posY - _lastClickY[buttonIndex]);
 
-            if (timeSinceLastClick <= DoubleClickDelayNanos &&
+            if (timeSinceLastClick <= _doubleClickDelayNanos &&
                 distX <= DoubleClickThresholdPixels &&
                 distY <= DoubleClickThresholdPixels)
             {
-                clickCount = clickCounts[buttonIndex] + 1;
+                clickCount = _clickCounts[buttonIndex] + 1;
             }
             else
             {
                 clickCount = 1;
             }
 
-            lastClickTime[buttonIndex] = nanos;
-            lastClickX[buttonIndex] = posX;
-            lastClickY[buttonIndex] = posY;
-            clickCounts[buttonIndex] = clickCount;
+            _lastClickTime[buttonIndex] = nanos;
+            _lastClickX[buttonIndex] = posX;
+            _lastClickY[buttonIndex] = posY;
+            _clickCounts[buttonIndex] = clickCount;
         }
 
         // Queue button event
-        eventQueue.Enqueue(new MouseEvent
+        _eventQueue.Enqueue(new MouseEvent
         {
             Button = buttonIndex,
             State = pressed,
@@ -179,14 +194,12 @@ public static partial class Mouse
         });
     }
 
-    private static unsafe void OnScroll(WindowHandle* window, double offsetX, double offsetY)
+    private unsafe void OnScroll(WindowHandle* window, double offsetX, double offsetY)
     {
-        if (!created) return;
-
-        glfw.GetCursorPos(window, out double xpos, out double ypos);
+        _glfw.GetCursorPos(window, out double xpos, out double ypos);
 
         // Queue scroll event
-        eventQueue.Enqueue(new MouseEvent
+        _eventQueue.Enqueue(new MouseEvent
         {
             Button = -1,
             State = false,
@@ -197,47 +210,45 @@ public static partial class Mouse
         });
     }
 
-    public static bool next()
+    public bool Next()
     {
-        if (!created) throw new InvalidOperationException("Mouse must be created before you can read events");
-
-        if (eventQueue.Count > 0)
+        if (_eventQueue.Count > 0)
         {
-            MouseEvent evt = eventQueue.Dequeue();
+            MouseEvent evt = _eventQueue.Dequeue();
 
-            eventButton = evt.Button;
-            eventState = evt.State;
-            event_nanos = evt.Nanos;
-            eventClickCount = evt.ClickCount;
+            EventButton = evt.Button;
+            EventButtonState = evt.State;
+            EventNanoseconds = evt.Nanos;
+            EventClickCount = evt.ClickCount;
 
-            if (_isGrabbed)
+            if (_isGrabbedState)
             {
                 // In grabbed mode, report deltas
-                event_dx = evt.X - last_event_raw_x;
-                event_dy = evt.Y - last_event_raw_y;
-                event_x += event_dx;
-                event_y += event_dy;
-                last_event_raw_x = evt.X;
-                last_event_raw_y = evt.Y;
+                EventDX = evt.X - _last_event_raw_x;
+                EventDY = evt.Y - _last_event_raw_y;
+                EventX += EventDX;
+                _event_y += EventDY;
+                _last_event_raw_x = evt.X;
+                _last_event_raw_y = evt.Y;
             }
             else
             {
                 // In non-grabbed mode, report absolute coordinates
                 int new_event_x = evt.X;
                 int new_event_y = evt.Y;
-                event_dx = new_event_x - last_event_raw_x;
-                event_dy = new_event_y - last_event_raw_y;
-                event_x = new_event_x;
-                event_y = new_event_y;
-                last_event_raw_x = new_event_x;
-                last_event_raw_y = new_event_y;
+                EventDX = new_event_x - _last_event_raw_x;
+                EventDY = new_event_y - _last_event_raw_y;
+                EventX = new_event_x;
+                _event_y = new_event_y;
+                _last_event_raw_x = new_event_x;
+                _last_event_raw_y = new_event_y;
             }
 
             // Clamp to display bounds
-            event_x = Math.Min(displayWidth - 1, Math.Max(0, event_x));
-            event_y = Math.Min(displayHeight - 1, Math.Max(0, event_y));
+            EventX = Math.Min(_displayWidth - 1, Math.Max(0, EventX));
+            _event_y = Math.Min(_displayHeight - 1, Math.Max(0, _event_y));
 
-            event_dwheel = evt.DWheel;
+            EventDWheel = evt.DWheel;
 
             return true;
         }
@@ -245,96 +256,148 @@ public static partial class Mouse
         return false;
     }
 
-    public static int getEventButton() => eventButton;
-    public static bool getEventButtonState() => eventState;
-    public static int getEventDX() => event_dx;
-    public static int getEventDY() => event_dy;
-    public static int getEventX() => event_x;
-    public static int getEventY() => displayHeight - event_y;
-    public static int getEventDWheel() => event_dwheel;
-    public static long getEventNanoseconds() => event_nanos;
-    public static int getEventClickCount() => eventClickCount;
+    public int EventButton { get; private set; }
 
-    public static int getX() => x;
-    public static int getY() => displayHeight - y;
+    public bool EventButtonState { get; private set; }
 
-    public static int getDX()
+    public int EventDX { get; private set; }
+
+    public int EventDY { get; private set; }
+
+    public int EventX { get; private set; }
+
+    public int EventY => _displayHeight - _event_y;
+
+    public int EventDWheel { get; private set; }
+
+    public long EventNanoseconds { get; private set; }
+
+    public int EventClickCount { get; private set; }
+
+    public int X { get; private set; }
+
+    public int Y => _displayHeight - _y;
+
+    public int GetDX()
     {
-        int result = dx;
-        dx = 0;
+        int result = _dx;
+        _dx = 0;
         return result;
     }
 
-    public static int getDY()
+    public int GetDY()
     {
-        int result = dy;
-        dy = 0;
+        int result = _dy;
+        _dy = 0;
         return result;
     }
 
-    public static int getDWheel()
+    public int GetDWheel()
     {
-        int result = dwheel;
-        dwheel = 0;
+        int result = _dwheel;
+        _dwheel = 0;
         return result;
     }
+
+    public bool IsButtonDown(int button)
+    {
+        if (button >= _buttons.Length || button < 0) return false;
+        return _buttons[button];
+    }
+
+    public bool IsGrabbed() => _isGrabbedState;
+
+    public unsafe void SetGrabbed(bool grab)
+    {
+        bool wasGrabbed = _isGrabbedState;
+        _isGrabbedState = grab;
+
+        if (grab && !wasGrabbed)
+        {
+            _grab_x = X;
+            _grab_y = _y;
+            _glfw.SetInputMode(_window, CursorStateAttribute.Cursor, CursorModeValue.CursorDisabled);
+        }
+        else if (!grab && wasGrabbed)
+        {
+            _glfw.SetInputMode(_window, CursorStateAttribute.Cursor, CursorModeValue.CursorNormal);
+            _glfw.SetCursorPos(_window, _grab_x, _grab_y);
+        }
+
+        // Reset state
+        _glfw.GetCursorPos(_window, out double xpos, out double ypos);
+        EventX = X = (int)xpos;
+        _event_y = _y = (int)ypos;
+        _last_event_raw_x = (int)xpos;
+        _last_event_raw_y = (int)ypos;
+        _dx = _dy = _dwheel = 0;
+    }
+
+    public unsafe void SetCursorPosition(int x, int y)
+    {
+        _glfw.SetCursorPos(_window, x, y);
+    }
+
+    public void Destroy()
+    {
+        _eventQueue.Clear();
+    }
+
+    public void SetDisplayDimensions(int width, int height)
+    {
+        _displayWidth = width;
+        _displayHeight = height;
+    }
+
+    public static bool next()
+    {
+        if (!created) throw new InvalidOperationException("Mouse must be created before you can read events");
+        return Instance.Next();
+    }
+
+    public static int getEventButton() => Instance.EventButton;
+    public static bool getEventButtonState() => Instance.EventButtonState;
+    public static int getEventDX() => Instance.EventDX;
+    public static int getEventDY() => Instance.EventDY;
+    public static int getEventX() => Instance.EventX;
+    public static int getEventY() => Instance.EventY;
+    public static int getEventDWheel() => Instance.EventDWheel;
+    public static long getEventNanoseconds() => Instance.EventNanoseconds;
+    public static int getEventClickCount() => Instance.EventClickCount;
+
+    public static int getX() => Instance.X;
+    public static int getY() => Instance.Y;
+
+    public static int getDX() => Instance.GetDX();
+    public static int getDY() => Instance.GetDY();
+    public static int getDWheel() => Instance.GetDWheel();
 
     public static bool isButtonDown(int button)
     {
         if (!created) throw new InvalidOperationException("Mouse must be created before you can poll the button state");
-        if (button >= buttons.Length || button < 0) return false;
-        return buttons[button];
+        return Instance.IsButtonDown(button);
     }
 
-    public static bool isGrabbed() => _isGrabbed;
+    public static bool isGrabbed() => Instance.IsGrabbed();
 
-    public static unsafe void setGrabbed(bool grab)
+    public static void setGrabbed(bool grab)
     {
         if (!created) return;
-
-        bool wasGrabbed = _isGrabbed;
-        _isGrabbed = grab;
-
-        if (grab && !wasGrabbed)
-        {
-            grab_x = x;
-            grab_y = y;
-            glfw.SetInputMode(window, CursorStateAttribute.Cursor, CursorModeValue.CursorDisabled);
-        }
-        else if (!grab && wasGrabbed)
-        {
-            glfw.SetInputMode(window, CursorStateAttribute.Cursor, CursorModeValue.CursorNormal);
-            glfw.SetCursorPos(window, grab_x, grab_y);
-        }
-
-        // Reset state
-        glfw.GetCursorPos(window, out double xpos, out double ypos);
-        event_x = x = (int)xpos;
-        event_y = y = (int)ypos;
-        last_event_raw_x = (int)xpos;
-        last_event_raw_y = (int)ypos;
-        dx = dy = dwheel = 0;
+        Instance.SetGrabbed(grab);
     }
 
-    public static unsafe void setCursorPosition(int x, int y)
-    {
-        glfw.SetCursorPos(window, x, y);
-    }
+    public static void setCursorPosition(int x, int y) => Instance.SetCursorPosition(x, y);
 
     public static bool isCreated() => created;
 
     public static void destroy()
     {
         if (!created) return;
+        Instance.Destroy();
         created = false;
-        eventQueue.Clear();
     }
 
-    public static void setDisplayDimensions(int width, int height)
-    {
-        displayWidth = width;
-        displayHeight = height;
-    }
+    public static void setDisplayDimensions(int width, int height) => Instance.SetDisplayDimensions(width, height);
 
     private static long GetNanos()
     {

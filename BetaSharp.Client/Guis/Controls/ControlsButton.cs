@@ -1,7 +1,6 @@
 using BetaSharp.Client.Input;
-using BetaSharp.Client.Options;
 
-namespace BetaSharp.Client.Guis;
+namespace BetaSharp.Client.Guis.Controls;
 
 public class ControlsButton : Button
 {
@@ -11,7 +10,7 @@ public class ControlsButton : Button
     public ControlsButton(int x, int y, KeyBinding keybind) : base(x, y, Keyboard.getKeyName(keybind.keyCode))
     {
         _keybind = keybind;
-        Size = new(70, 20);
+        EffectiveSize = new(70, 20);
     }
 
     protected override void OnFocusChanged(FocusEventArgs e)

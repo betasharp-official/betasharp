@@ -1,3 +1,4 @@
+using BetaSharp.Client.Guis.Controls;
 using BetaSharp.Client.Options;
 
 namespace BetaSharp.Client.Guis;
@@ -17,7 +18,7 @@ public class GuiVideoSettings : Screen
         Text = translations.TranslateKey("options.videoTitle");
         DisplayTitle = true;
 
-        Control container = new(Width / 2 - 155, Height / 6, 310, 188);
+        Control container = new(EffectiveWidth / 2 - 155, EffectiveHeight / 6, 310, 188);
 
         for (int i = 0; i < _options.VideoScreenOptions.Length; i++)
         {

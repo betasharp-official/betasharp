@@ -116,7 +116,7 @@ csharp_prefer_simple_using_statement = false:none
 csharp_style_prefer_switch_expression = true:suggestion
 
 # Expression-bodied members
-csharp_style_expression_bodied_methods = true:refactoring
+csharp_style_expression_bodied_methods = false:none
 csharp_style_expression_bodied_constructors = true:refactoring
 csharp_style_expression_bodied_operators = true:refactoring
 csharp_style_expression_bodied_properties = true:refactoring

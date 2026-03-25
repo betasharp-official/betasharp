@@ -1,3 +1,5 @@
+using BetaSharp.Client.Guis.Controls;
+using BetaSharp.Client.Guis.Layout;
 using BetaSharp.Client.Input;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Storage;
@@ -20,9 +22,9 @@ public class GuiRenameWorld : Screen
         DisplayTitle = true;
         Keyboard.enableRepeatEvents(true);
 
-        Control container = new(Width / 2 - 100, Height / 2 - 52, 200, 104)
+        Control container = new(EffectiveWidth / 2 - 100, EffectiveHeight / 2 - 52, 200, 104)
         {
-            VerticalCenteringBehavior = CenteringBehavior.Middle
+            VerticalCenteringBehavior = CenteringBehavior.Middle,
         };
 
         IWorldStorageSource worldStorage = MC.getSaveLoader();

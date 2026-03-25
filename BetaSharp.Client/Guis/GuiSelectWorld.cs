@@ -1,4 +1,6 @@
-﻿using BetaSharp.Client.Input;
+﻿using BetaSharp.Client.Guis.Controls;
+using BetaSharp.Client.Guis.Layout;
+using BetaSharp.Client.Input;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Storage;
 using java.text;
@@ -42,15 +44,15 @@ public class GuiSelectWorld : Screen
         _worldListContainer = new GuiWorldList(this);
 
         // Bottom buttons container
-        Control container = new(Width / 2 - 154, Height - 52, 308, 44)
+        Control container = new(EffectiveWidth / 2 - 154, EffectiveHeight - 52, 308, 44)
         {
             Anchor = Anchors.Bottom,
         };
-        buttonSelect = new(0, 0, 150, 20, translations.TranslateKey("selectWorld.select")) { Enabled = false };
-        buttonRename = new(0, 24, 70, 20, translations.TranslateKey("selectWorld.rename")) { Enabled = false };
-        buttonDelete = new(80, 24, 70, 20, translations.TranslateKey("selectWorld.delete")) { Enabled = false };
-        Button buttonCreate = new(158, 0, 150, 20, translations.TranslateKey("selectWorld.create"));
-        Button buttonCancel = new(158, 24, 150, 20, translations.TranslateKey("gui.cancel"));
+        buttonSelect = new(0, 0, 150, translations.TranslateKey("selectWorld.select")) { Enabled = false };
+        buttonRename = new(0, 24, 71, translations.TranslateKey("selectWorld.rename")) { Enabled = false };
+        buttonDelete = new(79, 24, 71, translations.TranslateKey("selectWorld.delete")) { Enabled = false };
+        Button buttonCreate = new(158, 0, 150, translations.TranslateKey("selectWorld.create"));
+        Button buttonCancel = new(158, 24, 150, translations.TranslateKey("gui.cancel"));
 
         buttonSelect.Clicked += (_, _) => selectWorld(selectedWorld);
         buttonRename.Clicked += (_, _) => MC.OpenScreen(new GuiRenameWorld(this, getSaveFileName(selectedWorld)));

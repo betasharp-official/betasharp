@@ -18,7 +18,7 @@ public class SorterStatsBlock(GuiListStatsBlock listStats, GuiStats stats) : ICo
             2 => Stats.Stats.MineBlockStatArray[idX],
             0 => Stats.Stats.Crafted[idX],
             1 => Stats.Stats.Used[idX],
-            _ => null
+            _ => null,
         };
 
         StatBase? statY = listStats.ActiveStatType switch
@@ -26,7 +26,7 @@ public class SorterStatsBlock(GuiListStatsBlock listStats, GuiStats stats) : ICo
             2 => Stats.Stats.MineBlockStatArray[idY],
             0 => Stats.Stats.Crafted[idY],
             1 => Stats.Stats.Used[idY],
-            _ => null
+            _ => null,
         };
         if (statX is not null || statY is not null)
         {

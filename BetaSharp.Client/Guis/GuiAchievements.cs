@@ -1,4 +1,6 @@
 using BetaSharp.Blocks;
+using BetaSharp.Client.Guis.Controls;
+using BetaSharp.Client.Guis.Layout;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
@@ -36,9 +38,9 @@ public class GuiAchievements : Screen
         field_27116_m = field_27114_o = field_27112_q = BetaSharp.Achievements.OpenInventory.column * 24 - var2 / 2f - 12;
         field_27115_n = field_27113_p = field_27111_r = BetaSharp.Achievements.OpenInventory.row * 24 - var3 / 2f;
 
-        Control container = new(Width / 2 - 128, Height / 2 - 101, 256, 202)
+        Control container = new(EffectiveWidth / 2 - 128, EffectiveHeight / 2 - 101, 256, 202)
             { VerticalCenteringBehavior = CenteringBehavior.Middle };
-        Button doneButton = new(152, 175, 80, 20, StatCollector.TranslateToLocal("gui.done"));
+        Button doneButton = new(152, 175, 80, StatCollector.TranslateToLocal("gui.done"));
         doneButton.Clicked += (_, _) => MC.OpenScreen(null);
         container.AddChild(doneButton);
         AddChild(container);
@@ -56,8 +58,8 @@ public class GuiAchievements : Screen
     {
         if (Mouse.isButtonDown(0))
         {
-            int var4 = (Width - field_27121_a) / 2;
-            int var5 = (Height - field_27119_i) / 2;
+            int var4 = (EffectiveWidth - field_27121_a) / 2;
+            int var5 = (EffectiveHeight - field_27119_i) / 2;
             int var6 = var4 + 8;
             int var7 = var5 + 17;
             if (field_27122_w is 0 or 1 && e.MouseX >= var6 && e.MouseX < var6 + 224 && e.MouseY >= var7 && e.MouseY < var7 + 155)
@@ -132,8 +134,8 @@ public class GuiAchievements : Screen
 
     protected void func_27110_k()
     {
-        int var1 = (Width - field_27121_a) / 2;
-        int var2 = (Height - field_27119_i) / 2;
+        int var1 = (EffectiveWidth - field_27121_a) / 2;
+        int var2 = (EffectiveHeight - field_27119_i) / 2;
         FontRenderer.DrawString("Achievements", var1 + 15, var2 + 5, 0x404040);
     }
 
@@ -163,8 +165,8 @@ public class GuiAchievements : Screen
 
         TextureHandle var6 = MC.textureManager.GetTextureId("/terrain.png");
         TextureHandle var7 = MC.textureManager.GetTextureId("/achievement/bg.png");
-        int var8 = (Width - field_27121_a) / 2;
-        int var9 = (Height - field_27119_i) / 2;
+        int var8 = (EffectiveWidth - field_27121_a) / 2;
+        int var9 = (EffectiveHeight - field_27119_i) / 2;
         int var10 = var8 + 16;
         int var11 = var9 + 17;
         ZLevel = 0.0F;

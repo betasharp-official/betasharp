@@ -27,8 +27,8 @@ public class GuiCrafting : GuiContainer
     {
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         MC.textureManager.BindTexture(MC.textureManager.GetTextureId("/gui/crafting.png"));
-        int guiLeft = (Width - _xSize) / 2;
-        int guiTop = (Height - _ySize) / 2;
+        int guiLeft = (EffectiveWidth - _xSize) / 2;
+        int guiTop = (EffectiveHeight - _ySize) / 2;
         DrawTextureRegion(guiLeft, guiTop, 0, 0, _xSize, _ySize);
     }
 }

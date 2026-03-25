@@ -4,7 +4,7 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Util;
 using Silk.NET.OpenGL.Legacy;
 
-namespace BetaSharp.Client.Guis;
+namespace BetaSharp.Client.Guis.Controls;
 
 public class TextField : Control
 {
@@ -179,30 +179,11 @@ public class TextField : Control
                 return;
 
             case Keyboard.KEY_DELETE:
-                if (HasSelection)
-                {
-                    DeleteSelection();
-                }
-                else if (_caretPosition < Text.Length)
-                {
-                    SuppressTextChanged(true);
-                    Text = Text.Remove(_caretPosition, 1);
-                    SuppressTextChanged(false);
-                }
+                Delete(false);
                 return;
 
             case Keyboard.KEY_BACK:
-                if (HasSelection)
-                {
-                    DeleteSelection();
-                }
-                else if (_caretPosition > 0)
-                {
-                    _caretPosition--;
-                    SuppressTextChanged(true);
-                    Text = Text.Remove(_caretPosition, 1);
-                    SuppressTextChanged(false);
-                }
+                Delete(true);
                 return;
 
             default:
@@ -234,8 +215,8 @@ public class TextField : Control
 
     protected override void OnRender(RenderEventArgs e)
     {
-        Gui.DrawRect(0, 0, Width, Height, 0xFFA0A0A0);
-        Gui.DrawRect(1, 1, Width - 1, Height - 1, 0xFF000000);
+        Gui.DrawRect(0, 0, EffectiveWidth, EffectiveHeight, 0xFFA0A0A0);
+        Gui.DrawRect(1, 1, EffectiveWidth - 1, EffectiveHeight - 1, 0xFF000000);
 
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate(1, 0, 0); // Offset to right to account for border.
@@ -243,10 +224,10 @@ public class TextField : Control
 
         if (Enabled)
         {
-            bool showCaret = !Focused || _cursorCounter <= 0;
+            bool showCaret = Focused && _cursorCounter <= 0;
             int safePos = Math.Clamp(_caretPosition, 0, Text.Length);
 
-            Gui.DrawString(_fontRenderer, Text, LeftPad, (Height - 8) / 2, 0xE0E0E0);
+            Gui.DrawString(_fontRenderer, Text, LeftPad, (EffectiveHeight - 8) / 2, 0xE0E0E0);
 
             if (showCaret)
             {
@@ -255,7 +236,7 @@ public class TextField : Control
                     string textBeforeCursor = Text[..safePos];
                     int caretX = LeftPad + _fontRenderer.GetStringWidth(textBeforeCursor);
 
-                    Gui.DrawRect(caretX - 1, 6, caretX, Height - LeftPad - 1, HasSelection ? 0xFFA0A0A0 : 0xFFD0D0D0);
+                    Gui.DrawRect(caretX - 1, 6, caretX, EffectiveHeight - LeftPad - 1, HasSelection ? 0xFFA0A0A0 : 0xFFD0D0D0);
                 }
                 else
                 {
@@ -263,7 +244,7 @@ public class TextField : Control
                     if (Text.Length > 0) caretX = 5 + _fontRenderer.GetStringWidth(Text);
                     else caretX = LeftPad;
 
-                    Gui.DrawString(_fontRenderer, "_", caretX, (Height - 8) / 2, 0xE0E0E0);
+                    Gui.DrawString(_fontRenderer, "_", caretX, (EffectiveHeight - 8) / 2, 0xE0E0E0);
                 }
             }
 
@@ -280,7 +261,7 @@ public class TextField : Control
                 int selX1 = LeftPad + preSelectionWidth - 1;
                 int selX2 = selX1 + selectionWidth + 1;
                 int selY1 = 6;
-                int selY2 = Height - LeftPad - 1;
+                int selY2 = EffectiveHeight - LeftPad - 1;
 
                 Tessellator tess = Tessellator.instance;
                 GLManager.GL.Color4(0.0f, 0.0f, 1.0f, 1.0f);
@@ -301,7 +282,7 @@ public class TextField : Control
         }
         else
         {
-            Gui.DrawString(_fontRenderer, Text, LeftPad, (Height - 8) / 2, 0x707070);
+            Gui.DrawString(_fontRenderer, Text, LeftPad, (EffectiveHeight - 8) / 2, 0x707070);
         }
 
         GLManager.GL.PopMatrix();
@@ -357,7 +338,7 @@ public class TextField : Control
 
         if (e.Clicks == 2) // Double-click selects word
         {
-            (_selectionStart, _selectionEnd) = GetLogicalWordBoundaries(pos);
+            (_selectionStart, _selectionEnd) = GetLogicalWordBoundaries(pos, true);
             _caretPosition = _selectionEnd;
             _dragSelectBehavior = DragSelectBehavior.Word;
             return;
@@ -459,7 +440,7 @@ public class TextField : Control
         return Text[start..end];
     }
 
-    private void DeleteChar(bool backspace)
+    private void Delete(bool backspace)
     {
         if (HasSelection)
         {
@@ -573,7 +554,7 @@ public class TextField : Control
     }
 
     /// <summary>
-    /// Returns the start and end indices of the word at the given position.
+    /// Returns the start and end indices of the word at the given position.<br/>
     /// If the position is between words, it returns the boundaries of the next word.
     /// If the position is in the middle of multiple consecutive spaces,
     /// it treats them as a word and returns their boundaries.
@@ -582,8 +563,11 @@ public class TextField : Control
     /// if there's only one space.
     /// </summary>
     /// <param name="pos">The index to find the word boundaries for</param>
+    /// <param name="includeTrailingSpaces">
+    /// If the position is on a word and there are spaces after it, whether to put the end index after the spaces.
+    /// </param>
     /// <returns>A tuple of (start, end) indices of the word</returns>
-    private (int start, int end) GetLogicalWordBoundaries(int pos)
+    private (int start, int end) GetLogicalWordBoundaries(int pos, bool includeTrailingSpaces = false)
     {
         if (Text.Length == 0) return (0, 0);
         if (pos >= Text.Length) pos = Text.Length - 1;
@@ -591,9 +575,10 @@ public class TextField : Control
         int start = pos;
         int end = pos;
 
-        if (Text[pos] == ' ' && (
-                (pos > 0 && Text[pos - 1] == ' ')
-                || (pos < Text.Length - 1 && Text[pos + 1] == ' ')))
+        bool onSpace = Text[pos] == ' ';
+        bool prevIsSpace = pos > 0 && Text[pos - 1] == ' ';
+        bool nextIsSpace = pos < Text.Length - 1 && Text[pos + 1] == ' ';
+        if (onSpace && (prevIsSpace || nextIsSpace))
         {
             // If we're on a space, find the boundaries of this space word
             while (start > 0 && Text[start - 1] == ' ')
@@ -616,6 +601,13 @@ public class TextField : Control
             {
                 end++;
             }
+            if (includeTrailingSpaces)
+            {
+                while (end < Text.Length && Text[end] == ' ')
+                {
+                    end++;
+                }
+            }
         }
 
         return (start, end);
@@ -623,6 +615,6 @@ public class TextField : Control
 
     private void ResetCursorFlash()
     {
-        _cursorCounter = -CursorPeriod * 4;
+        _cursorCounter = -CursorPeriod * 3;
     }
 }

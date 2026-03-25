@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Guis;
+namespace BetaSharp.Client.Guis.Layout;
 
 public enum CenteringBehavior
 {

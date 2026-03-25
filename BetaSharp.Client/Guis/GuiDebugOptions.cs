@@ -1,3 +1,4 @@
+using BetaSharp.Client.Guis.Controls;
 using BetaSharp.Client.Options;
 
 namespace BetaSharp.Client.Guis;
@@ -11,7 +12,7 @@ public class GuiDebugOptions : Screen
 
         TranslationStorage translations = TranslationStorage.Instance;
 
-        Control container = new(Width / 2 - 155, Height / 6, 310, 188);
+        Control container = new(EffectiveWidth / 2 - 155, EffectiveHeight / 6, 310, 188);
         for (int i = 0; i < options.DebugScreenOptions.Length; i++)
         {
             GameOption option = options.DebugScreenOptions[i];

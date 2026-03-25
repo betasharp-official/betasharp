@@ -1,3 +1,4 @@
+using BetaSharp.Client.Guis.Controls;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 
@@ -14,8 +15,8 @@ public class GuiIngameMenu : Screen
         Children.Clear();
 
         int verticalOffset = -16;
-        int centerX = Width / 2;
-        int centerY = Height / 4;
+        int centerX = EffectiveWidth / 2;
+        int centerY = EffectiveHeight / 4;
         int buttonLeft = centerX - 100;
 
         string quitText = (MC.isMultiplayerWorld() && MC.internalServer == null) ? "Disconnect" : "Save and quit to title";
@@ -24,11 +25,11 @@ public class GuiIngameMenu : Screen
         Button backToGameButton = new(0, 0, "Back to game");
         Button achievementsButton = new(0, 24, StatCollector.TranslateToLocal("gui.achievements"))
         {
-            Size = new(98, 20),
+            EffectiveSize = new(98, 20),
         };
         Button statsButton = new(102, 24, StatCollector.TranslateToLocal("gui.stats"))
         {
-            Size = new(98, 20),
+            EffectiveSize = new(98, 20),
         };
         Button optionsButton = new(0, 72, "Options...");
         Button quitButton = new(0, 96, quitText);
@@ -72,9 +73,9 @@ public class GuiIngameMenu : Screen
             float pulse = (_menuTickCounter % 10 + e.TickDelta) / 10.0F;
             pulse = MathHelper.Sin(pulse * (float)Math.PI * 2.0F) * 0.2F + 0.8F;
             int color = (int)(255.0F * pulse);
-            Gui.DrawString(FontRenderer, "Saving level..", 8, Height - 16, (uint)(color << 16 | color << 8 | color));
+            Gui.DrawString(FontRenderer, "Saving level..", 8, EffectiveHeight - 16, (uint)(color << 16 | color << 8 | color));
         }
 
-        Gui.DrawCenteredString(FontRenderer, "Game menu", Width / 2, 40, 0xFFFFFF);
+        Gui.DrawCenteredString(FontRenderer, "Game menu", EffectiveWidth / 2, 40, 0xFFFFFF);
     }
 }

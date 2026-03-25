@@ -144,67 +144,61 @@ public class Keyboard
 
     public const int KEYBOARD_SIZE = 256;
 
+    private static Keyboard _originalInstance = null!;
+    public static Keyboard Instance { get; private set; } = null!;
+
     private static bool created;
-    private static Glfw glfw;
-    private static unsafe WindowHandle* window;
 
-    private static readonly bool[] keyDownBuffer = new bool[KEYBOARD_SIZE];
-    private static readonly Queue<KeyEvent> eventQueue = new();
-    private static KeyEvent current_event = new();
-    private static bool repeat_enabled;
+    private Glfw _glfw;
+    private unsafe WindowHandle* _window;
 
-    private static Dictionary<Keys, int> keyMap;
-    private static string[] keyNames;
+    private readonly bool[] _keyDownBuffer = new bool[KEYBOARD_SIZE];
+    private readonly Queue<KeyEvent> _eventQueue = new();
+    private KeyEvent _currentEvent = new();
+    private bool _repeatEnabled;
 
+    private static Dictionary<Keys, int> s_keyMap = null!;
+    private static string[] s_keyNames = null!;
+
+    /// <summary>
+    /// Creates the primary singleton Keyboard instance for the game window.
+    /// </summary>
     public static unsafe void create(Glfw glfwApi, WindowHandle* windowHandle)
     {
         if (created) return;
 
-        glfw = glfwApi;
-        window = windowHandle;
-
         InitializeKeyMap();
+        InitializeKeyNames();
 
-        glfw.SetKeyCallback(window, OnKey);
-        glfw.SetCharCallback(window, OnChar);
-
-        keyNames = new string[256];
-
-        var keyboardType = typeof(Keyboard);
-        var fields = keyboardType.GetFields(
-            System.Reflection.BindingFlags.Public |
-            System.Reflection.BindingFlags.Static |
-            System.Reflection.BindingFlags.FlattenHierarchy
-        );
-
-        foreach (var field in fields)
-        {
-            if (field.IsLiteral && !field.IsInitOnly && field.Name.StartsWith("KEY_"))
-            {
-                int keyCode = (int)field.GetValue(null);
-                string keyName = field.Name[4..];
-
-                if (keyCode >= 0 && keyCode < keyNames.Length)
-                {
-                    keyNames[keyCode] = keyName;
-                }
-            }
-        }
-
-        for (int i = 0; i < keyNames.Length; i++)
-        {
-            if (keyNames[i] == null)
-            {
-                keyNames[i] = "UNKNOWN";
-            }
-        }
-
+        _originalInstance = CreateInstance(glfwApi, windowHandle);
+        ResetInstance();
         created = true;
+    }
+
+    public static void ResetInstance() => Instance = _originalInstance;
+    public static void SetInstance(Keyboard keyboard) => Instance = keyboard;
+
+    /// <summary>
+    /// Creates a new Keyboard instance bound to the given window. Can be used for secondary windows
+    /// (e.g. dev tools).
+    /// </summary>
+    public static unsafe Keyboard CreateInstance(Glfw glfwApi, WindowHandle* windowHandle)
+    {
+        Keyboard keyboard = new()
+        {
+            _glfw = glfwApi,
+            _window = windowHandle,
+        };
+
+        glfwApi.SetKeyCallback(windowHandle, keyboard.OnKey);
+        glfwApi.SetCharCallback(windowHandle, keyboard.OnChar);
+
+        return keyboard;
     }
 
     private static void InitializeKeyMap()
     {
-        keyMap = new Dictionary<Keys, int> {
+        s_keyMap = new Dictionary<Keys, int> {
             { Keys.Escape, KEY_ESCAPE },
             { Keys.Number1, KEY_1 },
             { Keys.Number2, KEY_2 },
@@ -311,6 +305,40 @@ public class Keyboard
         };
     }
 
+    private static void InitializeKeyNames()
+    {
+        s_keyNames = new string[256];
+
+        var keyboardType = typeof(Keyboard);
+        var fields = keyboardType.GetFields(
+            System.Reflection.BindingFlags.Public |
+            System.Reflection.BindingFlags.Static |
+            System.Reflection.BindingFlags.FlattenHierarchy
+        );
+
+        foreach (var field in fields)
+        {
+            if (field.IsLiteral && !field.IsInitOnly && field.Name.StartsWith("KEY_"))
+            {
+                int keyCode = (int)field.GetValue(null)!;
+                string keyName = field.Name[4..];
+
+                if (keyCode >= 0 && keyCode < s_keyNames.Length)
+                {
+                    s_keyNames[keyCode] = keyName;
+                }
+            }
+        }
+
+        for (int i = 0; i < s_keyNames.Length; i++)
+        {
+            if (s_keyNames[i] == null)
+            {
+                s_keyNames[i] = "UNKNOWN";
+            }
+        }
+    }
+
     private static readonly Dictionary<char, char> ShiftMap = new() {
         { '1', '!' }, { '2', '@' }, { '3', '#' }, { '4', '$' }, { '5', '%' },
         { '6', '^' }, { '7', '&' }, { '8', '*' }, { '9', '(' }, { '0', ')' },
@@ -325,24 +353,21 @@ public class Keyboard
         return c;
     }
 
-    private static unsafe void OnKey(WindowHandle* window, Keys key, int scancode, InputAction action,
+    private unsafe void OnKey(WindowHandle* window, Keys key, int scancode, InputAction action,
         KeyModifiers mods)
     {
-        if (!created) return;
-
-        if (!keyMap.TryGetValue(key, out int lwjglKey)) lwjglKey = KEY_NONE;
+        if (!s_keyMap.TryGetValue(key, out int lwjglKey)) lwjglKey = KEY_NONE;
 
         bool pressed = action == InputAction.Press || action == InputAction.Repeat;
         bool isRepeat = action == InputAction.Repeat;
 
-        if (lwjglKey > 0 && lwjglKey < KEYBOARD_SIZE) keyDownBuffer[lwjglKey] = pressed && !isRepeat;
-
+        if (lwjglKey > 0 && lwjglKey < KEYBOARD_SIZE) _keyDownBuffer[lwjglKey] = pressed && !isRepeat;
 
         char character = '\0';
         if (pressed)
         {
             // Get name of keyboard key and assign it (this feels stupid)
-            string? name = glfw.GetKeyName((int)key, scancode);
+            string? name = _glfw.GetKeyName((int)key, scancode);
             if (!string.IsNullOrEmpty(name)) character = name[0];
 
             // Shift the char if shifted. TODO Missing caps lock check but can't find how to check
@@ -351,7 +376,7 @@ public class Keyboard
             if (key == Keys.Space) character = ' ';
         }
 
-        eventQueue.Enqueue(new KeyEvent
+        _eventQueue.Enqueue(new KeyEvent
         {
             Key = lwjglKey,
             Character = character,
@@ -363,76 +388,97 @@ public class Keyboard
         // pendingChar = null;
     }
 
-    private static unsafe void OnChar(WindowHandle* window, uint codepoint)
+    private unsafe void OnChar(WindowHandle* window, uint codepoint)
     {
-        if (!created) return;
-
         char character = (char)codepoint;
         OnCharacterTyped?.Invoke(character);
     }
 
     public static event Action<char>? OnCharacterTyped;
 
-    public static bool Next()
+    public bool NextEvent()
     {
-        if (!created) throw new InvalidOperationException("Keyboard must be created before you can read events");
-
-        while (eventQueue.Count > 0)
+        while (_eventQueue.Count > 0)
         {
-            KeyEvent evt = eventQueue.Dequeue();
+            KeyEvent evt = _eventQueue.Dequeue();
 
-            if (evt.Repeat && !repeat_enabled)
+            if (evt.Repeat && !_repeatEnabled)
                 continue;
 
-            current_event = evt;
+            _currentEvent = evt;
             return true;
         }
 
         return false;
     }
 
-    public static bool getEventKeyState() => current_event.State;
-    public static int getEventKey() => current_event.Key;
-    public static char getEventCharacter() => (char)current_event.Character;
-    public static long getEventNanoseconds() => current_event.Nanos;
-    public static bool isRepeatEvent() => current_event.Repeat;
+    public bool EventKeyState => _currentEvent.State;
+    public int EventKey => _currentEvent.Key;
+    public char EventCharacter => (char)_currentEvent.Character;
+    public long EventNanoseconds => _currentEvent.Nanos;
+    public bool IsRepeatEvent => _currentEvent.Repeat;
+
+    public bool IsKeyDown(int key)
+    {
+        if (key >= KEYBOARD_SIZE || key < 0) return false;
+        return _keyDownBuffer[key];
+    }
+
+    public void EnableRepeatEvents(bool enable)
+    {
+        _repeatEnabled = enable;
+    }
+
+    public bool AreRepeatEventsEnabled() => _repeatEnabled;
+
+    public void Destroy()
+    {
+        _eventQueue.Clear();
+    }
+
+    public static bool Next()
+    {
+        if (!created) throw new InvalidOperationException("Keyboard must be created before you can read events");
+        return Instance.NextEvent();
+    }
+
+    public static bool getEventKeyState() => Instance.EventKeyState;
+    public static int getEventKey() => Instance.EventKey;
+    public static char getEventCharacter() => Instance.EventCharacter;
+    public static long getEventNanoseconds() => Instance.EventNanoseconds;
+    public static bool isRepeatEvent() => Instance.IsRepeatEvent;
 
     public static bool isKeyDown(int key)
     {
         if (!created) throw new InvalidOperationException("Keyboard must be created before you can poll it");
-        if (key >= KEYBOARD_SIZE || key < 0) return false;
-        return keyDownBuffer[key];
+        return Instance.IsKeyDown(key);
     }
 
-    public static void enableRepeatEvents(bool enable)
-    {
-        repeat_enabled = enable;
-    }
-
-    public static bool areRepeatEventsEnabled() => repeat_enabled;
+    public static void enableRepeatEvents(bool enable) => Instance.EnableRepeatEvents(enable);
+    public static bool areRepeatEventsEnabled() => Instance.AreRepeatEventsEnabled();
 
     public static bool isCreated() => created;
 
     public static void destroy()
     {
         if (!created) return;
+        Instance.Destroy();
         created = false;
-        eventQueue.Clear();
+    }
+
+    public static string getKeyName(int keyCode)
+    {
+        if (keyCode >= 0 && keyCode < s_keyNames.Length)
+        {
+            return s_keyNames[keyCode];
+        }
+
+        return "UNKNOWN";
     }
 
     private static long GetNanos()
     {
         return DateTime.UtcNow.Ticks * 100;
-    }
-
-    public static string getKeyName(int keyCode)
-    {
-        if (keyCode >= 0 && keyCode < keyNames.Length)
-        {
-            return keyNames[keyCode];
-        }
-
-        return "UNKNOWN";
     }
 
     private struct KeyEvent

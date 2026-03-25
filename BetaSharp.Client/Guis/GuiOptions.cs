@@ -1,3 +1,4 @@
+using BetaSharp.Client.Guis.Controls;
 using BetaSharp.Client.Options;
 
 namespace BetaSharp.Client.Guis;
@@ -10,15 +11,12 @@ public class GuiOptions : Screen
         Text = translations.TranslateKey("options.title");
         DisplayTitle = true;
 
-        int buttonLeft = Width / 2 - 100;
-        int topY = Height / 6;
-
-        Control container = new(buttonLeft - 55, topY, 310, 188);
+        Control container = new(EffectiveWidth / 2 - 155, EffectiveHeight / 6, 310, 188);
         for (int i = 0; i < options.MainScreenOptions.Length; i++)
         {
             GameOption option = options.MainScreenOptions[i];
-            int x = (i % 2 * 160);
-            int y = (24 * (i / 2));
+            int x = i % 2 * 160;
+            int y = 24 * (i / 2);
 
             switch (option)
             {
@@ -34,10 +32,10 @@ public class GuiOptions : Screen
             }
         }
 
-        Button videoSettingsButton = new(0, 72, 150, 20, translations.TranslateKey("options.video"));
-        Button debugSettingsButton = new(160, 72, 150, 20, "Debug Settings...");
-        Button audioSettingsButton = new(0, 96, 150, 20, "Audio Settings");
-        Button controlsButton = new(160, 96, 150, 20, translations.TranslateKey("options.controls"));
+        Button videoSettingsButton = new(0, 72, 150, translations.TranslateKey("options.video"));
+        Button debugSettingsButton = new(160, 72, 150, "Debug Settings...");
+        Button audioSettingsButton = new(0, 96, 150, "Audio Settings");
+        Button controlsButton = new(160, 96, 150, translations.TranslateKey("options.controls"));
         Button doneButton = new(55, 168, translations.TranslateKey("gui.done"));
         videoSettingsButton.Clicked += (_, _) =>
         {

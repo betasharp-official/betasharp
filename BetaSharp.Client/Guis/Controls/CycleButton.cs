@@ -1,19 +1,18 @@
 using BetaSharp.Client.Options;
 
-namespace BetaSharp.Client.Guis;
+namespace BetaSharp.Client.Guis.Controls;
 
-public class ToggleButton : Button
+public class CycleButton : Button
 {
-    private readonly BoolOption _option;
+    private readonly CycleOption _option;
     private long _lastClickTime;
     private const long DoubleClickThresholdMs = 400;
     public GameOption Option => _option;
 
-    public ToggleButton(int x, int y, BoolOption option)
-        : base(x, y, option.GetDisplayString(TranslationStorage.Instance))
+    public CycleButton(int x, int y, CycleOption option)
+        : base(x, y, 150, option.GetDisplayString(TranslationStorage.Instance))
     {
         _option = option;
-        Size = new(150, 20);
     }
 
     protected override void OnClick(MouseEventArgs e)
@@ -21,12 +20,13 @@ public class ToggleButton : Button
         long currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         if (currentTime - _lastClickTime < DoubleClickThresholdMs)
         {
+            // Double-click: reset to default
             _option.ResetToDefault();
             _lastClickTime = 0;
         }
         else
         {
-            _option.Toggle();
+            _option.Cycle();
             _lastClickTime = currentTime;
         }
         RefreshDisplay();

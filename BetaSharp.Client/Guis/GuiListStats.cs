@@ -16,7 +16,7 @@ public abstract class GuiListStats<T, K> : GuiList where K : class, T
 
     private GuiStats statsGui;
 
-    public GuiListStats(GuiStats statsGui) : base(statsGui.MC, statsGui.Width, statsGui.Height, 32, statsGui.Height - 64, 20)
+    public GuiListStats(GuiStats statsGui) : base(statsGui.MC, statsGui.EffectiveWidth, statsGui.EffectiveHeight, 32, statsGui.EffectiveHeight - 64, 20)
     {
         this.statsGui = statsGui;
     }
@@ -78,7 +78,7 @@ public abstract class GuiListStats<T, K> : GuiList where K : class, T
         if (mouseY >= _top && mouseY <= _bottom)
         {
             int slotIndex = GetSlotAt(mouseX, mouseY);
-            int centerX = statsGui.Width / 2 - 108;
+            int centerX = statsGui.EffectiveWidth / 2 - 108;
 
             if (slotIndex >= 0)
             {
@@ -92,7 +92,7 @@ public abstract class GuiListStats<T, K> : GuiList where K : class, T
                     var m when m is >= 97 and <= 115 => GetKeyForColumn(0),
                     var m when m is >= 147 and <= 165 => GetKeyForColumn(1),
                     var m when m is >= 197 and <= 215 => GetKeyForColumn(2),
-                    _ => string.Empty
+                    _ => string.Empty,
                 };
 
                 if (!string.IsNullOrEmpty(key))

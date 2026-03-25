@@ -1,3 +1,4 @@
+using BetaSharp.Client.Guis.Controls;
 using BetaSharp.Client.Options;
 
 namespace BetaSharp.Client.Guis;
@@ -13,7 +14,7 @@ public class GuiControls : Screen
         TranslationStorage translations = TranslationStorage.Instance;
         int leftX = GetLeftColumnX();
 
-        Control container = new(leftX, Height / 6, 310, 188);
+        Control container = new(leftX, EffectiveHeight / 6, 310, 188);
 
         for (int i = 0; i < _options.KeyBindings.Length; ++i)
         {
@@ -21,9 +22,9 @@ public class GuiControls : Screen
         }
 
         OptionsSlider sensitivitySlider = new(150, 130, _options.MouseSensitivityOption)
-            { Size = new(125, 20) };
+            { EffectiveSize = new(125, 20) };
         ToggleButton invertMouseButton = new(0, 130, _options.InvertMouseOption)
-            { Size = new(125, 20) };
+            { EffectiveSize = new(125, 20) };
         Button doneButton = new(55, 168, translations.TranslateKey("gui.done"));
         doneButton.Clicked += (_, _) =>
         {
@@ -42,9 +43,9 @@ public class GuiControls : Screen
 
         for (int i = 0; i < _options.KeyBindings.Length; ++i)
         {
-            Gui.DrawString(FontRenderer, _options.GetKeyBindingDescription(i), leftX + i % 2 * 160 + 70 + 6, Height / 6 + 24 * (i >> 1) + 7, 0xFFFFFFFF);
+            Gui.DrawString(FontRenderer, _options.GetKeyBindingDescription(i), leftX + i % 2 * 160 + 70 + 6, EffectiveHeight / 6 + 24 * (i >> 1) + 7, 0xFFFFFFFF);
         }
     }
 
-    private int GetLeftColumnX() => Width / 2 - 155;
+    private int GetLeftColumnX() => EffectiveWidth / 2 - 155;
 }

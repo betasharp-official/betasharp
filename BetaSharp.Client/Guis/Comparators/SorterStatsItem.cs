@@ -18,7 +18,7 @@ public class SorterStatsItem(GuiListStatsItem listStats, GuiStats stats) : IComp
             0 => Stats.Stats.Broken[idX],
             1 => Stats.Stats.Crafted[idX],
             2 => Stats.Stats.Used[idX],
-            _ => null
+            _ => null,
         };
 
         StatBase? statY = listStats.ActiveStatType switch
@@ -26,7 +26,7 @@ public class SorterStatsItem(GuiListStatsItem listStats, GuiStats stats) : IComp
             0 => Stats.Stats.Broken[idY],
             1 => Stats.Stats.Crafted[idY],
             2 => Stats.Stats.Used[idY],
-            _ => null
+            _ => null,
         };
 
         if (statX is not null || statY is not null)

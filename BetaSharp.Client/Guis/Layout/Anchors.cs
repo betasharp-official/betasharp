@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Guis;
+namespace BetaSharp.Client.Guis.Layout;
 
 [Flags]
 public enum Anchors
@@ -7,5 +7,5 @@ public enum Anchors
     Left = 1,
     Top = 2,
     Right = 4,
-    Bottom = 8
+    Bottom = 8,
 }

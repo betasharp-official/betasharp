@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using BetaSharp.Client.Guis.Controls;
 using BetaSharp.Client.Rendering;
 using Microsoft.Extensions.Logging;
 
@@ -17,8 +18,8 @@ public class GuiTexturePacks : Screen
     {
         _parentScreen = parent;
         TranslationStorage translations = TranslationStorage.Instance;
-        Button openFolderButton = new Button(Width / 2 - 154, Height - 48, 150, 20, translations.TranslateKey("texturePack.openFolder"));
-        Button doneButton = new Button(Width / 2 + 4, Height - 48, 150, 20, translations.TranslateKey("gui.done"));
+        Button openFolderButton = new(EffectiveWidth / 2 - 154, EffectiveHeight - 48, 150, translations.TranslateKey("texturePack.openFolder"));
+        Button doneButton = new(EffectiveWidth / 2 + 4, EffectiveHeight - 48, 150, translations.TranslateKey("gui.done"));
         MC.texturePackList.updateAvaliableTexturePacks();
         _texturePackFolder = new java.io.File(Minecraft.getMinecraftDir(), "texturepacks").getAbsolutePath();
         _guiTexturePackList = new GuiTexturePackList(this);
@@ -56,8 +57,8 @@ public class GuiTexturePacks : Screen
         }
 
         TranslationStorage translations = TranslationStorage.Instance;
-        Gui.DrawCenteredString(FontRenderer, translations.TranslateKey("texturePack.title"), Width / 2, 16, 0xFFFFFF);
-        Gui.DrawCenteredString(FontRenderer, translations.TranslateKey("texturePack.folderInfo"), Width / 2 - 77, Height - 26, 0x808080);
+        Gui.DrawCenteredString(FontRenderer, translations.TranslateKey("texturePack.title"), EffectiveWidth / 2, 16, 0xFFFFFF);
+        Gui.DrawCenteredString(FontRenderer, translations.TranslateKey("texturePack.folderInfo"), EffectiveWidth / 2 - 77, EffectiveHeight - 26, 0x808080);
     }
 
     protected override void OnTick()

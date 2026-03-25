@@ -1,3 +1,5 @@
+using BetaSharp.Client.Guis.Controls;
+using BetaSharp.Client.Guis.Layout;
 using BetaSharp.Client.Input;
 
 namespace BetaSharp.Client.Guis;
@@ -15,7 +17,7 @@ public class GuiScreenAddServer : Screen
         Text = "Edit Server Info";
         DisplayTitle = true;
 
-        Control container = new(Width / 2 - 100, Height / 2 - 80, 200, 160)
+        Control container = new(EffectiveWidth / 2 - 100, EffectiveHeight / 2 - 80, 200, 160)
         {
             VerticalCenteringBehavior = CenteringBehavior.Middle,
         };

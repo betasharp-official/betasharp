@@ -1,3 +1,5 @@
+using BetaSharp.Client.Guis.Controls;
+using BetaSharp.Client.Guis.Layout;
 using BetaSharp.Client.Input;
 using BetaSharp.NBT;
 
@@ -30,20 +32,20 @@ public class GuiMultiplayer : Screen
         Children.Clear();
         _serverListSelector = new GuiListServer(this)
         {
-            Anchor = Anchors.Top | Anchors.Left | Anchors.Right | Anchors.Bottom
+            Anchor = Anchors.Top | Anchors.Left | Anchors.Right | Anchors.Bottom,
         };
 
-        Control container = new(Width / 2 - 154, Height - 52, 308, 44)
+        Control container = new(EffectiveWidth / 2 - 154, EffectiveHeight - 52, 308, 44)
         {
             Anchor = Anchors.Bottom,
         };
-        _btnEdit = new(0, 24, 70, 20, "Edit") { Enabled = false };
-        _btnDelete = new(80, 24, 70, 20, "Delete") { Enabled = false };
-        _btnSelect = new(0, 0, 100, 20, "Join Server") { Enabled = false };
-        Button directConnectButton = new(104, 0, 100, 20, "Direct Connect");
-        Button addServerButton = new(208, 0, 100, 20, "Add server");
-        Button refreshButton = new(158, 24, 70, 20, "Refresh");
-        Button cancelButton = new(234, 24, 75, 20, "Cancel");
+        _btnSelect =                 new(0,   0,  100, "Join Server") { Enabled = false };
+        Button directConnectButton = new(104, 0,  100, "Direct Connect");
+        Button addServerButton =     new(208, 0,  100, "Add server");
+        _btnEdit =                   new(0,   24, 74,  "Edit") { Enabled = false };
+        _btnDelete =                 new(77,  24, 74,  "Delete") { Enabled = false };
+        Button refreshButton =       new(156, 24, 74,  "Refresh");
+        Button cancelButton =        new(234, 24, 74,  "Cancel");
 
         _btnEdit.Clicked += (_, _) =>
         {
@@ -215,7 +217,7 @@ public class GuiMultiplayer : Screen
     protected override void OnRender(RenderEventArgs e)
     {
         DrawDefaultBackground();
-        Gui.DrawCenteredString(FontRenderer, "Play Multiplayer", Width / 2, 20, 0xFFFFFF);
+        Gui.DrawCenteredString(FontRenderer, "Play Multiplayer", EffectiveWidth / 2, 20, 0xFFFFFF);
     }
 
     private void JoinServer(ServerData server)

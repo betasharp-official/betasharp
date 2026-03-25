@@ -54,6 +54,6 @@ public class GuiListStatsBlock : GuiListStats<StatCrafting, StatCrafting>
     {
         0 => "stat.crafted",
         1 => "stat.used",
-        _ => "stat.mined"
+        _ => "stat.mined",
     };
 }

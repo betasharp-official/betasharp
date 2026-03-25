@@ -60,7 +60,7 @@ public partial class Minecraft
     public TextureManager textureManager;
     public SkinManager skinManager;
     public TextRenderer fontRenderer;
-    public Screen currentScreen;
+    public Screen? currentScreen;
     public LoadingScreenRenderer loadingScreen;
     public GameRenderer gameRenderer;
     private int ticksRan;
@@ -505,6 +505,7 @@ public partial class Minecraft
                     Profiler.Record("frame Time", Timer.DeltaTime * 1000.0f);
                     Profiler.PushGroup("run");
                 }
+
                 try
                 {
                     if (Display.isCloseRequested())
@@ -580,11 +581,17 @@ public partial class Minecraft
                             Profiler.PushGroup("render");
                             TextureStats.StartFrame();
                         }
+
                         gameRenderer.onFrameUpdate(Timer.renderPartialTicks);
                         if (options.DebugMode)
                         {
                             TextureStats.EndFrame();
                             Profiler.PopGroup();
+                        }
+
+                        if (DevToolsWindow.IsOpen)
+                        {
+                            DevToolsWindow.UpdateAndRender();
                         }
                     }
 

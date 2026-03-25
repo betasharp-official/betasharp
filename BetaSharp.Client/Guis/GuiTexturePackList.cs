@@ -10,7 +10,7 @@ public class GuiTexturePackList : GuiList
 
 
     public GuiTexturePackList(GuiTexturePacks parent)
-        : base(parent.MC, parent.Width, parent.Height, 32, parent.Height - 55 + 4, 36)
+        : base(parent.MC, parent.EffectiveWidth, parent.EffectiveHeight, 32, parent.EffectiveHeight - 55 + 4, 36)
     {
         _parentTexturePackGui = parent;
     }

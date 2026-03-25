@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Silk.NET.OpenGL.Legacy;
 using System;
 using System.Collections.Generic;
+using BetaSharp.Client.Guis.Controls;
 
 namespace BetaSharp.Client.Guis;
 
@@ -22,6 +23,7 @@ public class Screen : Control
     public GuiParticle ParticlesGui;
     protected bool IsSubscribedToKeyboard = false;
     protected bool DisplayTitle;
+    protected virtual bool CanExitWithEscape => true;
     private Control? _focusedControl;
 
     public Screen()
@@ -35,7 +37,7 @@ public class Screen : Control
         {
             if (DisplayTitle)
             {
-                Gui.DrawCenteredString(FontRenderer, Text, Width / 2, 20, 0xFFFFFF);
+                Gui.DrawCenteredString(FontRenderer, Text, EffectiveWidth / 2, 20, 0xFFFFFF);
             }
         };
     }
@@ -77,6 +79,7 @@ public class Screen : Control
         MC = mc;
         FontRenderer = mc.fontRenderer;
         Size = new(width, height);
+        EffectiveSize = new(width, height);
     }
 
     public virtual void OnGuiClosed() { }
@@ -90,7 +93,7 @@ public class Screen : Control
     {
         if (MC.world != null)
         {
-            Gui.DrawGradientRect(0, 0, Width, Height, 0xC0101010, 0xD0101010);
+            Gui.DrawGradientRect(0, 0, EffectiveWidth, EffectiveHeight, 0xC0101010, 0xD0101010);
         }
         else
         {
@@ -110,9 +113,9 @@ public class Screen : Control
         tess.startDrawingQuads();
         tess.setColorOpaque_I(0x404040);
 
-        tess.addVertexWithUV(0.0D, Height, 0.0D, 0.0D, (double)(Height / scale + var1));
-        tess.addVertexWithUV(Width, Height, 0.0D, (double)(Width / scale), (double)(Height / scale + var1));
-        tess.addVertexWithUV(Width, 0.0D, 0.0D, (double)(Width / scale), 0 + var1);
+        tess.addVertexWithUV(0.0D, EffectiveHeight, 0.0D, 0.0D, (double)(EffectiveHeight / scale + var1));
+        tess.addVertexWithUV(EffectiveWidth, EffectiveHeight, 0.0D, (double)(EffectiveWidth / scale), (double)(EffectiveHeight / scale + var1));
+        tess.addVertexWithUV(EffectiveWidth, 0.0D, 0.0D, (double)(EffectiveWidth / scale), 0 + var1);
         tess.addVertexWithUV(0.0D, 0.0D, 0.0D, 0.0D, 0 + var1);
         tess.draw();
     }
@@ -157,10 +160,18 @@ public class Screen : Control
 
         while (Keyboard.Next())
         {
-            if (Keyboard.getEventKeyState() && Keyboard.getEventKey() == Keyboard.KEY_ESCAPE)
+            if (Keyboard.getEventKeyState())
             {
-                MC.OpenScreen(null);
-                return;
+                if (CanExitWithEscape && Keyboard.getEventKey() == Keyboard.KEY_ESCAPE)
+                {
+                    MC.OpenScreen(null);
+                    return;
+                }
+                if (Keyboard.getEventKey() == Keyboard.KEY_F12)
+                {
+                    DevToolsWindow.Toggle();
+                    return;
+                }
             }
             if (_focusedControl != null)
             {

@@ -54,6 +54,6 @@ public class GuiListStatsItem : GuiListStats<StatCrafting, StatCrafting>
     {
         1 => "stat.crafted",
         2 => "stat.used",
-        _ => "stat.depleted"
+        _ => "stat.depleted",
     };
 }

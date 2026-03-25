@@ -1,3 +1,4 @@
+using BetaSharp.Client.Guis.Controls;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering.Core;
 using Silk.NET.OpenGL.Legacy;
@@ -28,7 +29,7 @@ public abstract class GuiList : Control
     public GuiList(Minecraft mc, int width, int height, int top, int bottom, int posZ)
     {
         _mc = mc;
-        Size = new(width, height);
+        EffectiveSize = new(width, height);
         _top = top;
         _bottom = bottom;
         _posZ = posZ;
@@ -86,7 +87,7 @@ public abstract class GuiList : Control
 
     public int GetSlotAt(int mouseX, int mouseY)
     {
-        int centerX = Width / 2 - 110;
+        int centerX = EffectiveWidth / 2 - 110;
         int minX = centerX + 110;
         int maxX = mouseY - _top - _headerHeight + (int)_amountScrolled - 4;
         int relativeY = maxX / _posZ;
@@ -119,7 +120,7 @@ public abstract class GuiList : Control
         DrawBackground();
 
         int listSize = GetSize();
-        int scrollbarXStart = Width / 2 + 124;
+        int scrollbarXStart = EffectiveWidth / 2 + 124;
         int scrollbarXEnd = scrollbarXStart + 6;
 
         if (Mouse.isButtonDown(0))
@@ -130,8 +131,8 @@ public abstract class GuiList : Control
 
                 if (mouseY >= _top && mouseY <= _bottom)
                 {
-                    int contentMinX = Width / 2 - 110;
-                    int contentMaxX = Width / 2 + 110;
+                    int contentMinX = EffectiveWidth / 2 - 110;
+                    int contentMaxX = EffectiveWidth / 2 + 110;
                     int relativeY = mouseY - _top - _headerHeight + (int)_amountScrolled - 4;
                     int slotIndex = relativeY / _posZ;
 
@@ -198,7 +199,7 @@ public abstract class GuiList : Control
         tess.addVertexWithUV(_left, _top, 0.0, _left / textureScale, (_top + (int)_amountScrolled) / textureScale);
         tess.draw();
 
-        int startX = Width / 2 - 92 - 16;
+        int startX = EffectiveWidth / 2 - 92 - 16;
         int startY = _top + 4 - (int)_amountScrolled;
 
         if (_hasHeader)
@@ -215,8 +216,8 @@ public abstract class GuiList : Control
 
             if (_showSelectionHighlight && IsSelected(i))
             {
-                int minX = Width / 2 - 110;
-                int maxX = Width / 2 + 110;
+                int minX = EffectiveWidth / 2 - 110;
+                int maxX = EffectiveWidth / 2 + 110;
                 GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
                 GLManager.GL.Disable(GLEnum.Texture2D);
 
@@ -240,7 +241,7 @@ public abstract class GuiList : Control
 
         GLManager.GL.Disable(GLEnum.DepthTest);
         OverlayBackground(0, _top, 255, 255);
-        OverlayBackground(_bottom, Height, 255, 255);
+        OverlayBackground(_bottom, EffectiveHeight, 255, 255);
 
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
@@ -328,11 +329,11 @@ public abstract class GuiList : Control
         // Bottom vertices
         tess.setColorRGBA_I(0x404040, alphaEnd);
         tess.addVertexWithUV(0.0, endY, 0.0, 0.0, endY / (double)textureScale);
-        tess.addVertexWithUV(Width, endY, 0.0, Width / textureScale, endY / (double)textureScale);
+        tess.addVertexWithUV(EffectiveWidth, endY, 0.0, EffectiveWidth / textureScale, endY / (double)textureScale);
 
         // Top vertices
         tess.setColorRGBA_I(0x404040, alphaStart);
-        tess.addVertexWithUV(Width, startY, 0.0, Width / textureScale, startY / (double)textureScale);
+        tess.addVertexWithUV(EffectiveWidth, startY, 0.0, EffectiveWidth / textureScale, startY / (double)textureScale);
         tess.addVertexWithUV(0.0, startY, 0.0, 0.0, startY / (double)textureScale);
 
         tess.draw();

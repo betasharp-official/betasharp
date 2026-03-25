@@ -1,3 +1,4 @@
+using BetaSharp.Client.Guis.Controls;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Threading;
 using Microsoft.Extensions.Logging;
@@ -31,7 +32,7 @@ public class GuiConnecting : Screen
     private void AddCancelButton()
     {
         TranslationStorage translations = TranslationStorage.Instance;
-        Control container = new(Width / 2 - 100, Height / 4 + 120 + 12, 200, 20);
+        Control container = new(EffectiveWidth / 2 - 100, EffectiveHeight / 4 + 120 + 12, 200, 20);
         Button cancelButton = new(0, 0, translations.TranslateKey("gui.cancel"));
         cancelButton.Clicked += (_, _) =>
         {
@@ -57,13 +58,13 @@ public class GuiConnecting : Screen
         TranslationStorage translations = TranslationStorage.Instance;
         if (ClientHandler == null)
         {
-            Gui.DrawCenteredString(FontRenderer, translations.TranslateKey("connect.connecting"), Width / 2, Height / 2 - 50, 0xFFFFFF);
-            Gui.DrawCenteredString(FontRenderer, "", Width / 2, Height / 2 - 10, 0xFFFFFF);
+            Gui.DrawCenteredString(FontRenderer, translations.TranslateKey("connect.connecting"), EffectiveWidth / 2, EffectiveHeight / 2 - 50, 0xFFFFFF);
+            Gui.DrawCenteredString(FontRenderer, "", EffectiveWidth / 2, EffectiveHeight / 2 - 10, 0xFFFFFF);
         }
         else
         {
-            Gui.DrawCenteredString(FontRenderer, translations.TranslateKey("connect.authorizing"), Width / 2, Height / 2 - 50, 0xFFFFFF);
-            Gui.DrawCenteredString(FontRenderer, ClientHandler.field_1209_a, Width / 2, Height / 2 - 10, 0xFFFFFF);
+            Gui.DrawCenteredString(FontRenderer, translations.TranslateKey("connect.authorizing"), EffectiveWidth / 2, EffectiveHeight / 2 - 50, 0xFFFFFF);
+            Gui.DrawCenteredString(FontRenderer, ClientHandler.field_1209_a, EffectiveWidth / 2, EffectiveHeight / 2 - 10, 0xFFFFFF);
         }
     }
 }

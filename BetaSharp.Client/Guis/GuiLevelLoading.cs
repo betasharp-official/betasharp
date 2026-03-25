@@ -68,7 +68,7 @@ public class GuiLevelLoading : Screen
             progress = MC.internalServer.progress;
         }
 
-        Gui.DrawCenteredString(FontRenderer, title, Width / 2, Height / 2 - 50, 0xFFFFFF);
-        Gui.DrawCenteredString(FontRenderer, progressMsg + " (" + progress + "%)", Width / 2, Height / 2 - 10, 0xFFFFFF);
+        Gui.DrawCenteredString(FontRenderer, title, EffectiveWidth / 2, EffectiveHeight / 2 - 50, 0xFFFFFF);
+        Gui.DrawCenteredString(FontRenderer, progressMsg + " (" + progress + "%)", EffectiveWidth / 2, EffectiveHeight / 2 - 10, 0xFFFFFF);
     }
 }
