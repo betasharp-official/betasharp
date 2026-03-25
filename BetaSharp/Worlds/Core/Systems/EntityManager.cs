@@ -13,8 +13,8 @@ public class EntityManager
     [ThreadStatic] private static List<Entity>? _tempCollisionEntities;
     [ThreadStatic] private static List<Box>? _tempCollisionBoxes;
     [ThreadStatic] private static List<Entity>? _tempCollisionEntitiesResult;
-    private readonly List<BlockEntity> _blockEntityUpdateQueue = [];
 
+    private readonly List<BlockEntity> _blockEntityUpdateQueue = [];
     private readonly IWorldContext _world;
     private readonly Dictionary<int, Entity> _entitiesById = new();
     private readonly List<Entity> _entitiesToUnload = [];
@@ -23,7 +23,6 @@ public class EntityManager
     public List<BlockEntity> BlockEntities = [];
     public List<Entity> Entities = [];
     public List<Entity> GlobalEntities = [];
-
     public List<EntityPlayer> Players = [];
 
     public EntityManager(IWorldContext world)
@@ -46,68 +45,131 @@ public class EntityManager
         return true;
     }
 
-    public void UpdateEntityLists()
+    private static int ClampChunkSlice(int slice)
     {
-        // 1. Clean up unloaded entities
-        foreach (Entity entity in _entitiesToUnload)
+        if (slice < 0) return 0;
+        if (slice >= 8) return 7;
+        return slice;
+    }
+
+    private bool ShouldSkipStandaloneUpdate(Entity entity)
+    {
+        if (entity.vehicle == null)
         {
-            Entities.Remove(entity);
+            return false;
         }
 
-        for (int i = 0; i < _entitiesToUnload.Count; ++i)
+        if (!entity.dead && !entity.vehicle.dead && ReferenceEquals(entity.vehicle.passenger, entity))
         {
-            Entity entity = _entitiesToUnload[i];
-            int chunkX = entity.chunkX;
-            int chunkZ = entity.chunkZ;
+            return true;
+        }
 
-            if (entity.isPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
+        entity.vehicle.passenger = null;
+        entity.vehicle = null;
+        return false;
+    }
+
+    private void RemoveEntityFromChunkList(Entity entity, int chunkX, int chunkZ, int chunkSlice)
+    {
+        if (_world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
+        {
+            _world.ChunkHost.GetChunk(chunkX, chunkZ).RemoveEntity(entity, ClampChunkSlice(chunkSlice));
+        }
+    }
+
+    private void RemoveEntityFromAllKnownChunkLists(Entity entity)
+    {
+        RemoveEntityFromChunkList(entity, entity.chunkX, entity.chunkZ, entity.chunkSlice);
+
+        int currentChunkX = MathHelper.Floor(entity.x / 16.0D);
+        int currentChunkY = MathHelper.Floor(entity.y / 16.0D);
+        int currentChunkZ = MathHelper.Floor(entity.z / 16.0D);
+
+        if (currentChunkX != entity.chunkX || currentChunkY != entity.chunkSlice || currentChunkZ != entity.chunkZ)
+        {
+            RemoveEntityFromChunkList(entity, currentChunkX, currentChunkZ, currentChunkY);
+        }
+    }
+
+    private void RemoveEntityNow(Entity entity, bool forceNotify = false)
+    {
+        if (entity.passenger != null)
+        {
+            entity.passenger.setVehicle(null);
+        }
+
+        if (entity.vehicle != null)
+        {
+            entity.setVehicle(null);
+        }
+
+        RemoveEntityFromAllKnownChunkLists(entity);
+
+        bool wasTracked = false;
+
+        if (Entities.Remove(entity))
+        {
+            wasTracked = true;
+        }
+
+        if (_entitiesToUnload.Remove(entity))
+        {
+            wasTracked = true;
+        }
+
+        if (_entitiesById.TryGetValue(entity.id, out Entity? current) && ReferenceEquals(current, entity))
+        {
+            _entitiesById.Remove(entity.id);
+            wasTracked = true;
+        }
+
+        if (entity is EntityPlayer player)
+        {
+            if (Players.Remove(player))
             {
-                _world.ChunkHost.GetChunk(chunkX, chunkZ).RemoveEntity(entity);
+                wasTracked = true;
             }
+        }
 
-            if (_entitiesById.TryGetValue(entity.id, out Entity? current) && ReferenceEquals(current, entity))
-            {
-                _entitiesById.Remove(entity.id);
-            }
-
+        if (wasTracked || forceNotify)
+        {
             NotifyEntityRemoved(entity);
         }
+    }
 
+    private void ProcessQueuedUnloads()
+    {
+        if (_entitiesToUnload.Count == 0)
+        {
+            return;
+        }
+
+        Entity[] pendingUnloads = _entitiesToUnload.ToArray();
         _entitiesToUnload.Clear();
 
-        // 2. Process active entities and clean up dead ones
-        for (int i = 0; i < Entities.Count; ++i)
+        foreach (Entity entity in pendingUnloads)
+        {
+            RemoveEntityNow(entity, forceNotify: true);
+        }
+    }
+
+    public void UpdateEntityLists()
+    {
+        ProcessQueuedUnloads();
+
+        for (int i = Entities.Count - 1; i >= 0; --i)
         {
             Entity entity = Entities[i];
 
-            if (entity.vehicle != null)
+            if (ShouldSkipStandaloneUpdate(entity))
             {
-                if (!entity.vehicle.dead && Equals(entity.vehicle.passenger, entity))
-                {
-                    continue;
-                }
-
-                entity.vehicle.passenger = null;
-                entity.vehicle = null;
+                continue;
             }
 
-            if (!entity.dead) continue;
-
-            int chunkX = entity.chunkX;
-            int chunkZ = entity.chunkZ;
-
-            if (entity.isPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
+            if (entity.dead)
             {
-                _world.ChunkHost.GetChunk(chunkX, chunkZ).RemoveEntity(entity);
+                RemoveEntityNow(entity);
             }
-
-            Entities.RemoveAt(i--);
-            if (_entitiesById.TryGetValue(entity.id, out Entity? current2) && ReferenceEquals(current2, entity))
-            {
-                _entitiesById.Remove(entity.id);
-            }
-
-            NotifyEntityRemoved(entity);
         }
     }
 
@@ -122,12 +184,10 @@ public class EntityManager
             return false;
         }
 
-
         if (entity is EntityPlayer player)
         {
             Players.Add(player);
         }
-
 
         _world.ChunkHost.GetChunk(chunkX, chunkZ).AddEntity(entity);
         Entities.Add(entity);
@@ -150,6 +210,7 @@ public class EntityManager
         }
 
         entity.markDead();
+
         if (entity is EntityPlayer player)
         {
             Players.Remove(player);
@@ -159,22 +220,7 @@ public class EntityManager
     public void ServerRemove(Entity entity)
     {
         entity.markDead();
-        if (entity is EntityPlayer player)
-        {
-            Players.Remove(player);
-        }
-
-
-        int chunkX = entity.chunkX;
-        int chunkZ = entity.chunkZ;
-        if (entity.isPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
-        {
-            _world.ChunkHost.GetChunk(chunkX, chunkZ).RemoveEntity(entity);
-        }
-
-        Entities.Remove(entity);
-        _entitiesById.Remove(entity.id);
-        NotifyEntityRemoved(entity);
+        RemoveEntityNow(entity);
     }
 
     public bool AreAllPlayersAsleep()
@@ -203,10 +249,11 @@ public class EntityManager
     {
         List<BlockEntity> blockEntInArea = [];
 
-        for (int var8 = 0; var8 < BlockEntities.Count; var8++)
+        for (int i = 0; i < BlockEntities.Count; i++)
         {
-            BlockEntity blockEnt = BlockEntities[var8];
-            if (blockEnt.X >= minX && blockEnt.Y >= minY && blockEnt.Z >= minZ && blockEnt.X < maxX && blockEnt.Y < maxY && blockEnt.Z < maxZ)
+            BlockEntity blockEnt = BlockEntities[i];
+            if (blockEnt.X >= minX && blockEnt.Y >= minY && blockEnt.Z >= minZ &&
+                blockEnt.X < maxX && blockEnt.Y < maxY && blockEnt.Z < maxZ)
             {
                 blockEntInArea.Add(blockEnt);
             }
@@ -232,41 +279,18 @@ public class EntityManager
 
         using (Profiler.Begin("ClearUnloadedEntities"))
         {
-            for (int i = 0; i < _entitiesToUnload.Count; ++i)
-            {
-                Entity entityToUnload = _entitiesToUnload[i];
-                int chunkX = entityToUnload.chunkX;
-                int chunkZ = entityToUnload.chunkZ;
-
-                if (entityToUnload.isPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
-                {
-                    _world.ChunkHost.GetChunk(chunkX, chunkZ).RemoveEntity(entityToUnload);
-                }
-            }
-
-            for (int i = 0; i < _entitiesToUnload.Count; ++i)
-            {
-                NotifyEntityRemoved(_entitiesToUnload[i]);
-            }
-
-            _entitiesToUnload.Clear();
+            ProcessQueuedUnloads();
         }
 
         using (Profiler.Begin("UpdateEntities"))
         {
-            for (int i = 0; i < Entities.Count; ++i)
+            for (int i = Entities.Count - 1; i >= 0; --i)
             {
                 Entity entity = Entities[i];
 
-                if (entity.vehicle != null)
+                if (ShouldSkipStandaloneUpdate(entity))
                 {
-                    if (!entity.vehicle.dead && Equals(entity.vehicle.passenger, entity))
-                    {
-                        continue;
-                    }
-
-                    entity.vehicle.passenger = null;
-                    entity.vehicle = null;
+                    continue;
                 }
 
                 if (!entity.dead)
@@ -276,21 +300,7 @@ public class EntityManager
 
                 if (entity.dead)
                 {
-                    int chunkX = entity.chunkX;
-                    int chunkZ = entity.chunkZ;
-
-                    if (entity.isPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
-                    {
-                        _world.ChunkHost.GetChunk(chunkX, chunkZ).RemoveEntity(entity);
-                    }
-
-                    Entities.RemoveAt(i--);
-                    if (_entitiesById.TryGetValue(entity.id, out Entity? current) && ReferenceEquals(current, entity))
-                    {
-                        _entitiesById.Remove(entity.id);
-                    }
-
-                    NotifyEntityRemoved(entity);
+                    RemoveEntityNow(entity);
                 }
             }
         }
@@ -550,6 +560,7 @@ public class EntityManager
         int maxY = MathHelper.Floor(area.MaxY + 1.0D);
         int minZ = MathHelper.Floor(area.MinZ);
         int maxZ = MathHelper.Floor(area.MaxZ + 1.0D);
+
         if (minX > maxX)
         {
             (minX, maxX) = (maxX, minX);
@@ -594,19 +605,25 @@ public class EntityManager
 
         for (int i = 0; i < _tempCollisionEntities.Count; ++i)
         {
+            Entity other = _tempCollisionEntities[i];
+            if (other.dead)
+            {
+                continue;
+            }
+
             if (collisionCount >= maxCollisions)
             {
                 break;
             }
 
-            Box? entityBox = _tempCollisionEntities[i].getBoundingBox();
+            Box? entityBox = other.getBoundingBox();
             if (entityBox != null && entityBox.Value.Intersects(area))
             {
                 collidingBoundingBoxes.Add(entityBox.Value);
                 collisionCount++;
             }
 
-            entityBox = entity.getCollisionAgainstShape(_tempCollisionEntities[i]);
+            entityBox = entity.getCollisionAgainstShape(other);
             if (entityBox != null && entityBox.Value.Intersects(area))
             {
                 collidingBoundingBoxes.Add(entityBox.Value);
@@ -833,23 +850,25 @@ public class EntityManager
 
     public void SetBlockEntity(int x, int y, int z, BlockEntity? blockEntity)
     {
-        if (blockEntity != null && !blockEntity.isRemoved())
+        if (blockEntity == null || blockEntity.isRemoved())
         {
-            if (_processingDeferred)
+            return;
+        }
+
+        if (_processingDeferred)
+        {
+            blockEntity.X = x;
+            blockEntity.Y = y;
+            blockEntity.Z = z;
+            _blockEntityUpdateQueue.Add(blockEntity);
+        }
+        else
+        {
+            BlockEntities.Add(blockEntity);
+            Chunk? chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
+            if (chunk != null)
             {
-                blockEntity.X = x;
-                blockEntity.Y = y;
-                blockEntity.Z = z;
-                _blockEntityUpdateQueue.Add(blockEntity);
-            }
-            else
-            {
-                BlockEntities.Add(blockEntity);
-                Chunk? chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
-                if (chunk != null)
-                {
-                    chunk.SetBlockEntity(x & 15, y, z & 15, blockEntity);
-                }
+                chunk.SetBlockEntity(x & 15, y, z & 15, blockEntity);
             }
         }
     }

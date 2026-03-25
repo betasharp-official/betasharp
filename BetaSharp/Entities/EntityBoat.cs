@@ -10,9 +10,11 @@ namespace BetaSharp.Entities;
 public class EntityBoat : Entity
 {
     public override EntityType Type => EntityRegistry.Boat;
+
     public int boatCurrentDamage;
     public int boatTimeSinceHit;
     public int boatRockDirection;
+
     private int lerpSteps;
     private double targetX;
     private double targetY;
@@ -22,6 +24,11 @@ public class EntityBoat : Entity
     private double boatVelocityX;
     private double boatVelocityY;
     private double boatVelocityZ;
+
+    private const double MaxHorizontalSpeed = 0.4D;
+    private const double RiderInputAcceleration = 0.18D;
+    private const double RiderTurnVelocityBlend = 0.25D;
+    private const double YawSmoothing = 0.35D;
 
     public EntityBoat(IWorldContext world) : base(world)
     {
@@ -33,11 +40,21 @@ public class EntityBoat : Entity
         standingEyeHeight = height / 2.0F;
     }
 
+    public EntityBoat(IWorldContext world, double x, double y, double z) : this(world)
+    {
+        setPosition(x, y + standingEyeHeight, z);
+        velocityX = 0.0D;
+        velocityY = 0.0D;
+        velocityZ = 0.0D;
+        prevX = x;
+        prevY = y;
+        prevZ = z;
+    }
+
     protected override bool bypassesSteppingEffects()
     {
         return false;
     }
-
 
     public override Box? getCollisionAgainstShape(Entity entity)
     {
@@ -54,20 +71,9 @@ public class EntityBoat : Entity
         return true;
     }
 
-    public EntityBoat(IWorldContext world, double x, double y, double z) : this(world)
-    {
-        setPosition(x, y + (double)standingEyeHeight, z);
-        velocityX = 0.0D;
-        velocityY = 0.0D;
-        velocityZ = 0.0D;
-        prevX = x;
-        prevY = y;
-        prevZ = z;
-    }
-
     public override double getPassengerRidingHeight()
     {
-        return (double)height * 0.0D - (double)0.3F;
+        return (double)height * 0.0D - 0.3D;
     }
 
     public override bool damage(Entity entity, int amount)
@@ -78,6 +84,7 @@ public class EntityBoat : Entity
             boatTimeSinceHit = 10;
             boatCurrentDamage += amount * 10;
             scheduleVelocityUpdate();
+
             if (boatCurrentDamage > 40)
             {
                 if (passenger != null)
@@ -85,13 +92,12 @@ public class EntityBoat : Entity
                     passenger.setVehicle(this);
                 }
 
-                int i;
-                for (i = 0; i < 3; ++i)
+                for (int i = 0; i < 3; ++i)
                 {
                     dropItem(Block.Planks.id, 1, 0.0F);
                 }
 
-                for (i = 0; i < 2; ++i)
+                for (int i = 0; i < 2; ++i)
                 {
                     dropItem(Item.Stick.id, 1, 0.0F);
                 }
@@ -101,10 +107,8 @@ public class EntityBoat : Entity
 
             return true;
         }
-        else
-        {
-            return true;
-        }
+
+        return true;
     }
 
     public override void animateHurt()
@@ -124,9 +128,9 @@ public class EntityBoat : Entity
         this.targetX = targetX;
         this.targetY = targetY;
         this.targetZ = targetZ;
-        this.targetYaw = (double)targetYaw;
-        this.targetPitch = (double)targetPitch;
-        this.lerpSteps = lerpSteps + 4;
+        this.targetYaw = targetYaw;
+        this.targetPitch = targetPitch;
+        this.lerpSteps = lerpSteps + 2;
         velocityX = boatVelocityX;
         velocityY = boatVelocityY;
         velocityZ = boatVelocityZ;
@@ -142,6 +146,7 @@ public class EntityBoat : Entity
     public override void tick()
     {
         base.tick();
+
         if (boatTimeSinceHit > 0)
         {
             --boatTimeSinceHit;
@@ -155,240 +160,279 @@ public class EntityBoat : Entity
         prevX = x;
         prevY = y;
         prevZ = z;
-        byte var1 = 5;
-        double var2 = 0.0D;
 
-        for (int i = 0; i < var1; ++i)
+        const int waterSliceCount = 5;
+        double waterSubmersion = 0.0D;
+
+        for (int i = 0; i < waterSliceCount; ++i)
         {
-            double var5 = boundingBox.MinY + (boundingBox.MaxY - boundingBox.MinY) * (double)(i + 0) / (double)var1 - 0.125D;
-            double var7 = boundingBox.MinY + (boundingBox.MaxY - boundingBox.MinY) * (double)(i + 1) / (double)var1 - 0.125D;
-            Box var9 = new Box(boundingBox.MinX, var5, boundingBox.MinZ, boundingBox.MaxX, var7, boundingBox.MaxZ);
-            if (world.Reader.IsMaterialInBox(var9, m => m == Material.Water))
+            double sliceMinY = boundingBox.MinY + (boundingBox.MaxY - boundingBox.MinY) * i / waterSliceCount - 0.125D;
+            double sliceMaxY = boundingBox.MinY + (boundingBox.MaxY - boundingBox.MinY) * (i + 1) / waterSliceCount - 0.125D;
+            Box sliceBox = new Box(boundingBox.MinX, sliceMinY, boundingBox.MinZ, boundingBox.MaxX, sliceMaxY, boundingBox.MaxZ);
+
+            if (world.Reader.IsMaterialInBox(sliceBox, m => m == Material.Water))
             {
-                var2 += 1.0D / (double)var1;
+                waterSubmersion += 1.0D / waterSliceCount;
             }
         }
 
-        double var6;
-        double var8;
-        double var10;
-        double var21;
         if (world.IsRemote)
         {
-            if (lerpSteps > 0)
-            {
-                var21 = x + (targetX - x) / (double)lerpSteps;
-                var6 = y + (targetY - y) / (double)lerpSteps;
-                var8 = z + (targetZ - z) / (double)lerpSteps;
-
-                for (var10 = this.targetYaw - (double)yaw; var10 < -180.0D; var10 += 360.0D)
-                {
-                }
-
-                while (var10 >= 180.0D)
-                {
-                    var10 -= 360.0D;
-                }
-
-                yaw = (float)((double)yaw + var10 / (double)lerpSteps);
-                pitch = (float)((double)pitch + (targetPitch - (double)pitch) / (double)lerpSteps);
-                --lerpSteps;
-                setPosition(var21, var6, var8);
-                setRotation(yaw, pitch);
-            }
-            else
-            {
-                var21 = x + velocityX;
-                var6 = y + velocityY;
-                var8 = z + velocityZ;
-                setPosition(var21, var6, var8);
-                if (onGround)
-                {
-                    velocityX *= 0.5D;
-                    velocityY *= 0.5D;
-                    velocityZ *= 0.5D;
-                }
-
-                velocityX *= (double)0.99F;
-                velocityY *= (double)0.95F;
-                velocityZ *= (double)0.99F;
-            }
-
+            tickClient();
         }
         else
         {
-            if (var2 < 1.0D)
-            {
-                var21 = var2 * 2.0D - 1.0D;
-                velocityY += (double)0.04F * var21;
-            }
-            else
-            {
-                if (velocityY < 0.0D)
-                {
-                    velocityY /= 2.0D;
-                }
-
-                velocityY += (double)0.007F;
-            }
-
-            if (passenger != null)
-            {
-                velocityX += passenger.velocityX * 0.2D;
-                velocityZ += passenger.velocityZ * 0.2D;
-            }
-
-            var21 = 0.4D;
-            if (velocityX < -var21)
-            {
-                velocityX = -var21;
-            }
-
-            if (velocityX > var21)
-            {
-                velocityX = var21;
-            }
-
-            if (velocityZ < -var21)
-            {
-                velocityZ = -var21;
-            }
-
-            if (velocityZ > var21)
-            {
-                velocityZ = var21;
-            }
-
-            if (onGround)
-            {
-                velocityX *= 0.5D;
-                velocityY *= 0.5D;
-                velocityZ *= 0.5D;
-            }
-
-            move(velocityX, velocityY, velocityZ);
-            var6 = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
-            if (var6 > 0.15D)
-            {
-                var8 = System.Math.Cos((double)yaw * System.Math.PI / 180.0D);
-                var10 = System.Math.Sin((double)yaw * System.Math.PI / 180.0D);
-
-                for (int var12 = 0; (double)var12 < 1.0D + var6 * 60.0D; ++var12)
-                {
-                    double randomOffset = (double)(random.NextFloat() * 2.0F - 1.0F);
-                    double sideOffset = (double)(random.NextInt(2) * 2 - 1) * 0.7D;
-                    double particleX;
-                    double particleZ;
-                    if (random.NextBoolean())
-                    {
-                        particleX = x - var8 * randomOffset * 0.8D + var10 * sideOffset;
-                        particleZ = z - var10 * randomOffset * 0.8D - var8 * sideOffset;
-                        world.Broadcaster.AddParticle("splash", particleX, y - 0.125D, particleZ, velocityX, velocityY, velocityZ);
-                    }
-                    else
-                    {
-                        particleX = x + var8 + var10 * randomOffset * 0.7D;
-                        particleZ = z + var10 - var8 * randomOffset * 0.7D;
-                        world.Broadcaster.AddParticle("splash", particleX, y - 0.125D, particleZ, velocityX, velocityY, velocityZ);
-                    }
-                }
-            }
-
-            if (horizontalCollison && var6 > 0.15D)
-            {
-                if (!world.IsRemote)
-                {
-                    markDead();
-
-                    int j;
-                    for (j = 0; j < 3; ++j)
-                    {
-                        dropItem(Block.Planks.id, 1, 0.0F);
-                    }
-
-                    for (j = 0; j < 2; ++j)
-                    {
-                        dropItem(Item.Stick.id, 1, 0.0F);
-                    }
-                }
-            }
-            else
-            {
-                velocityX *= (double)0.99F;
-                velocityY *= (double)0.95F;
-                velocityZ *= (double)0.99F;
-            }
-
-            pitch = 0.0F;
-            var8 = (double)yaw;
-            var10 = prevX - x;
-            double var23 = prevZ - z;
-            if (var10 * var10 + var23 * var23 > 0.001D)
-            {
-                var8 = (double)((float)(System.Math.Atan2(var23, var10) * 180.0D / System.Math.PI));
-            }
-
-            double yawDelta;
-            for (yawDelta = var8 - (double)yaw; yawDelta >= 180.0D; yawDelta -= 360.0D)
-            {
-            }
-
-            while (yawDelta < -180.0D)
-            {
-                yawDelta += 360.0D;
-            }
-
-            if (yawDelta > 20.0D)
-            {
-                yawDelta = 20.0D;
-            }
-
-            if (yawDelta < -20.0D)
-            {
-                yawDelta = -20.0D;
-            }
-
-            yaw = (float)((double)yaw + yawDelta);
-            setRotation(yaw, pitch);
-            var entitiesInbound = world.Entities.GetEntities(this, boundingBox.Expand((double)0.2F, 0.0D, (double)0.2F));
-            int i;
-            if (entitiesInbound != null && entitiesInbound.Count > 0)
-            {
-                for (i = 0; i < entitiesInbound.Count; ++i)
-                {
-                    Entity entity = entitiesInbound[i];
-                    if (entity != passenger && entity.isPushable() && entity is EntityBoat)
-                    {
-                        entity.onCollision(this);
-                    }
-                }
-            }
-
-            for (i = 0; i < 4; ++i)
-            {
-                int x = MathHelper.Floor(base.x + ((double)(i % 2) - 0.5D) * 0.8D);
-                int y = MathHelper.Floor(base.y);
-                int z = MathHelper.Floor(base.z + ((double)(i / 2) - 0.5D) * 0.8D);
-                if (world.Reader.GetBlockId(x, y, z) == Block.Snow.id)
-                {
-                    world.Writer.SetBlock(x, y, z, 0);
-                }
-            }
-
-            if (passenger != null && passenger.dead)
-            {
-                passenger = null;
-            }
-
+            tickServer(waterSubmersion);
         }
+    }
+
+    private void tickClient()
+    {
+        if (lerpSteps > 0)
+        {
+            double nextX = x + (targetX - x) / lerpSteps;
+            double nextY = y + (targetY - y) / lerpSteps;
+            double nextZ = z + (targetZ - z) / lerpSteps;
+
+            double yawDelta = WrapDegrees(targetYaw - yaw);
+            yaw = (float)(yaw + yawDelta / lerpSteps);
+            pitch = (float)(pitch + (targetPitch - pitch) / lerpSteps);
+
+            --lerpSteps;
+            setPosition(nextX, nextY, nextZ);
+            setRotation(yaw, pitch);
+            return;
+        }
+
+        double movedX = x + velocityX;
+        double movedY = y + velocityY;
+        double movedZ = z + velocityZ;
+        setPosition(movedX, movedY, movedZ);
+
+        if (onGround)
+        {
+            velocityX *= 0.5D;
+            velocityY *= 0.5D;
+            velocityZ *= 0.5D;
+        }
+
+        velocityX *= 0.99D;
+        velocityY *= 0.95D;
+        velocityZ *= 0.99D;
+
+        pitch = 0.0F;
+        updateBoatYawFromMotion();
+    }
+
+    private void tickServer(double waterSubmersion)
+    {
+        if (waterSubmersion < 1.0D)
+        {
+            double buoyancyFactor = waterSubmersion * 2.0D - 1.0D;
+            velocityY += 0.04D * buoyancyFactor;
+        }
+        else
+        {
+            if (velocityY < 0.0D)
+            {
+                velocityY /= 2.0D;
+            }
+
+            velocityY += 0.007D;
+        }
+
+        applyRiderInput();
+
+        if (velocityX < -MaxHorizontalSpeed)
+        {
+            velocityX = -MaxHorizontalSpeed;
+        }
+
+        if (velocityX > MaxHorizontalSpeed)
+        {
+            velocityX = MaxHorizontalSpeed;
+        }
+
+        if (velocityZ < -MaxHorizontalSpeed)
+        {
+            velocityZ = -MaxHorizontalSpeed;
+        }
+
+        if (velocityZ > MaxHorizontalSpeed)
+        {
+            velocityZ = MaxHorizontalSpeed;
+        }
+
+        if (onGround)
+        {
+            velocityX *= 0.5D;
+            velocityY *= 0.5D;
+            velocityZ *= 0.5D;
+        }
+
+        move(velocityX, velocityY, velocityZ);
+
+        double horizontalSpeed = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
+        if (horizontalSpeed > 0.15D)
+        {
+            spawnSplashParticles(horizontalSpeed);
+        }
+
+        if (horizontalCollison && horizontalSpeed > 0.15D)
+        {
+            if (!world.IsRemote)
+            {
+                markDead();
+
+                for (int i = 0; i < 3; ++i)
+                {
+                    dropItem(Block.Planks.id, 1, 0.0F);
+                }
+
+                for (int i = 0; i < 2; ++i)
+                {
+                    dropItem(Item.Stick.id, 1, 0.0F);
+                }
+            }
+        }
+        else
+        {
+            velocityX *= 0.99D;
+            velocityY *= 0.95D;
+            velocityZ *= 0.99D;
+        }
+
+        pitch = 0.0F;
+        updateBoatYawFromMotion();
+
+        var nearbyEntities = world.Entities.GetEntities(this, boundingBox.Expand(0.2D, 0.0D, 0.2D));
+        if (nearbyEntities != null && nearbyEntities.Count > 0)
+        {
+            for (int i = 0; i < nearbyEntities.Count; ++i)
+            {
+                Entity entity = nearbyEntities[i];
+                if (entity != passenger && entity.isPushable() && entity is EntityBoat)
+                {
+                    entity.onCollision(this);
+                }
+            }
+        }
+
+        for (int i = 0; i < 4; ++i)
+        {
+            int snowX = MathHelper.Floor(base.x + ((i % 2) - 0.5D) * 0.8D);
+            int snowY = MathHelper.Floor(base.y);
+            int snowZ = MathHelper.Floor(base.z + ((i / 2) - 0.5D) * 0.8D);
+
+            if (world.Reader.GetBlockId(snowX, snowY, snowZ) == Block.Snow.id)
+            {
+                world.Writer.SetBlock(snowX, snowY, snowZ, 0);
+            }
+        }
+
+        if (passenger != null && passenger.dead)
+        {
+            passenger = null;
+        }
+    }
+
+    private void applyRiderInput()
+    {
+        if (passenger == null)
+        {
+            return;
+        }
+
+        velocityX += passenger.velocityX * RiderInputAcceleration;
+        velocityZ += passenger.velocityZ * RiderInputAcceleration;
+
+        double riderInputSpeedSq = passenger.velocityX * passenger.velocityX + passenger.velocityZ * passenger.velocityZ;
+        if (riderInputSpeedSq <= 1.0E-4D)
+        {
+            return;
+        }
+
+        double speed = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
+        if (speed <= 0.01D)
+        {
+            return;
+        }
+
+        double riderInputSpeed = System.Math.Sqrt(riderInputSpeedSq);
+        double targetVelocityX = passenger.velocityX / riderInputSpeed * speed;
+        double targetVelocityZ = passenger.velocityZ / riderInputSpeed * speed;
+
+        velocityX += (targetVelocityX - velocityX) * RiderTurnVelocityBlend;
+        velocityZ += (targetVelocityZ - velocityZ) * RiderTurnVelocityBlend;
+
+        double desiredYaw = System.Math.Atan2(-targetVelocityZ, -targetVelocityX) * 180.0D / System.Math.PI;
+        yaw = (float)(yaw + WrapDegrees(desiredYaw - yaw) * YawSmoothing);
+    }
+
+    private void updateBoatYawFromMotion()
+    {
+        double desiredYaw = yaw;
+        double motionX = prevX - x;
+        double motionZ = prevZ - z;
+
+        if (motionX * motionX + motionZ * motionZ > 0.001D)
+        {
+            desiredYaw = System.Math.Atan2(motionZ, motionX) * 180.0D / System.Math.PI;
+        }
+
+        yaw = (float)(yaw + WrapDegrees(desiredYaw - yaw) * YawSmoothing);
+        setRotation(yaw, pitch);
+    }
+
+    private void spawnSplashParticles(double horizontalSpeed)
+    {
+        double yawCos = System.Math.Cos(yaw * System.Math.PI / 180.0D);
+        double yawSin = System.Math.Sin(yaw * System.Math.PI / 180.0D);
+
+        for (int i = 0; i < 1.0D + horizontalSpeed * 60.0D; ++i)
+        {
+            double randomOffset = random.NextFloat() * 2.0F - 1.0F;
+            double sideOffset = (random.NextInt(2) * 2 - 1) * 0.7D;
+
+            double particleX;
+            double particleZ;
+
+            if (random.NextBoolean())
+            {
+                particleX = x - yawCos * randomOffset * 0.8D + yawSin * sideOffset;
+                particleZ = z - yawSin * randomOffset * 0.8D - yawCos * sideOffset;
+            }
+            else
+            {
+                particleX = x + yawCos + yawSin * randomOffset * 0.7D;
+                particleZ = z + yawSin - yawCos * randomOffset * 0.7D;
+            }
+
+            world.Broadcaster.AddParticle("splash", particleX, y - 0.125D, particleZ, velocityX, velocityY, velocityZ);
+        }
+    }
+
+    private static double WrapDegrees(double angle)
+    {
+        while (angle >= 180.0D)
+        {
+            angle -= 360.0D;
+        }
+
+        while (angle < -180.0D)
+        {
+            angle += 360.0D;
+        }
+
+        return angle;
     }
 
     public override void updatePassengerPosition()
     {
         if (passenger != null)
         {
-            double xOffset = System.Math.Cos((double)yaw * System.Math.PI / 180.0D) * 0.4D;
-            double zOffset = System.Math.Sin((double)yaw * System.Math.PI / 180.0D) * 0.4D;
+            double xOffset = Math.Cos(yaw * Math.PI / 180.0D) * 0.4D;
+            double zOffset = Math.Sin(yaw * Math.PI / 180.0D) * 0.4D;
             passenger.setPosition(x + xOffset, y + getPassengerRidingHeight() + passenger.getStandingEyeHeight(), z + zOffset);
         }
     }
@@ -412,14 +456,12 @@ public class EntityBoat : Entity
         {
             return true;
         }
-        else
-        {
-            if (!world.IsRemote)
-            {
-                player.setVehicle(this);
-            }
 
-            return true;
+        if (!world.IsRemote)
+        {
+            player.setVehicle(this);
         }
+
+        return true;
     }
 }

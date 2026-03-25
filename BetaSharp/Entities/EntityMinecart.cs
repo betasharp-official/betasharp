@@ -8,20 +8,12 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Entities;
 
-//TODO: BREAKING MINECART CRASHES THE GAME!!
+// TODO: BREAKING MINECART CRASHES THE GAME!!
 public class EntityMinecart : Entity, IInventory
 {
     public override EntityType Type => EntityRegistry.Minecart;
-    private ItemStack[] cargoItems;
-    public int minecartCurrentDamage;
-    public int minecartTimeSinceHit;
-    public int minecartRockDirection;
-    private bool yawFlipped;
-    public int type;
-    public int fuel;
-    public double pushX;
-    public double pushZ;
-    private static readonly int[][][] field_855_j =
+
+    private static readonly int[][][] RailShapeVectors =
     [
         [[0, 0, -1], [0, 0, 1]],
         [[-1, 0, 0], [1, 0, 0]],
@@ -37,15 +29,29 @@ public class EntityMinecart : Entity, IInventory
 
     private readonly ILogger<EntityMinecart> _logger = Log.Instance.For<EntityMinecart>();
 
-    private int field_9415_k;
-    private double field_9414_l;
-    private double field_9413_m;
-    private double field_9412_n;
-    private double field_9411_o;
-    private double field_9410_p;
-    private double cartVelocityX;
-    private double cartVelocityY;
-    private double cartVelocityZ;
+    private ItemStack[] cargoItems;
+
+    // Kept with original names for external compatibility.
+    public int minecartCurrentDamage;
+    public int minecartTimeSinceHit;
+    public int minecartRockDirection;
+    public int type;
+    public int fuel;
+    public double pushX;
+    public double pushZ;
+
+    private bool yawFlipped;
+
+    // Client-side interpolation state.
+    private int clientInterpolationSteps;
+    private double clientTargetX;
+    private double clientTargetY;
+    private double clientTargetZ;
+    private double clientTargetYaw;
+    private double clientTargetPitch;
+    private double clientVelocityX;
+    private double clientVelocityY;
+    private double clientVelocityZ;
 
     public EntityMinecart(IWorldContext world) : base(world)
     {
@@ -59,30 +65,9 @@ public class EntityMinecart : Entity, IInventory
         standingEyeHeight = height / 2.0F;
     }
 
-    protected override bool bypassesSteppingEffects()
-    {
-        return false;
-    }
-
-
-    public override Box? getCollisionAgainstShape(Entity entity)
-    {
-        return entity.boundingBox;
-    }
-
-    public override Box? getBoundingBox()
-    {
-        return null;
-    }
-
-    public override bool isPushable()
-    {
-        return true;
-    }
-
     public EntityMinecart(IWorldContext world, double x, double y, double z, int type) : this(world)
     {
-        setPosition(x, y + (double)standingEyeHeight, z);
+        setTrackAlignedPosition(x, y, z);
         velocityX = 0.0D;
         velocityY = 0.0D;
         velocityZ = 0.0D;
@@ -92,9 +77,29 @@ public class EntityMinecart : Entity, IInventory
         this.type = type;
     }
 
+    protected override bool bypassesSteppingEffects()
+    {
+        return false;
+    }
+
+    public override Box? getCollisionAgainstShape(Entity entity)
+    {
+        return entity.boundingBox;
+    }
+
+    public override Box? getBoundingBox()
+    {
+        return boundingBox;
+    }
+
+    public override bool isPushable()
+    {
+        return true;
+    }
+
     public override double getPassengerRidingHeight()
     {
-        return (double)height * 0.0D - (double)0.3F;
+        return (double)height * 0.0D - 0.3D;
     }
 
     public override bool damage(Entity entity, int amount)
@@ -105,6 +110,7 @@ public class EntityMinecart : Entity, IInventory
             minecartTimeSinceHit = 10;
             scheduleVelocityUpdate();
             minecartCurrentDamage += amount * 10;
+
             if (minecartCurrentDamage > 40)
             {
                 if (passenger != null)
@@ -114,6 +120,7 @@ public class EntityMinecart : Entity, IInventory
 
                 markDead();
                 dropItem(Item.Minecart.id, 1, 0.0F);
+
                 if (type == 1)
                 {
                     EntityMinecart minecart = this;
@@ -136,12 +143,20 @@ public class EntityMinecart : Entity, IInventory
                                 }
 
                                 itemStack.count -= dropCount;
-                                EntityItem entityItem = new EntityItem(world, x + (double)offsetX, y + (double)offsetY, z + (double)offsetZ, new ItemStack(itemStack.itemId, dropCount, itemStack.getDamage()));
+
+                                EntityItem droppedItem = new EntityItem(
+                                    world,
+                                    x + offsetX,
+                                    y + offsetY,
+                                    z + offsetZ,
+                                    new ItemStack(itemStack.itemId, dropCount, itemStack.getDamage())
+                                );
+
                                 float scatterSpeed = 0.05F;
-                                entityItem.velocityX = (double)((float)random.NextGaussian() * scatterSpeed);
-                                entityItem.velocityY = (double)((float)random.NextGaussian() * scatterSpeed + 0.2F);
-                                entityItem.velocityZ = (double)((float)random.NextGaussian() * scatterSpeed);
-                                world.SpawnEntity(entityItem);
+                                droppedItem.velocityX = (float)random.NextGaussian() * scatterSpeed;
+                                droppedItem.velocityY = (float)random.NextGaussian() * scatterSpeed + 0.2F;
+                                droppedItem.velocityZ = (float)random.NextGaussian() * scatterSpeed;
+                                world.SpawnEntity(droppedItem);
                             }
                         }
                     }
@@ -156,10 +171,8 @@ public class EntityMinecart : Entity, IInventory
 
             return true;
         }
-        else
-        {
-            return true;
-        }
+
+        return true;
     }
 
     public override void animateHurt()
@@ -195,12 +208,20 @@ public class EntityMinecart : Entity, IInventory
                     }
 
                     itemStack.count -= dropCount;
-                    EntityItem entityItem = new EntityItem(world, x + (double)offsetX, y + (double)offsetY, z + (double)offsetZ, new ItemStack(itemStack.itemId, dropCount, itemStack.getDamage()));
+
+                    EntityItem droppedItem = new EntityItem(
+                        world,
+                        x + offsetX,
+                        y + offsetY,
+                        z + offsetZ,
+                        new ItemStack(itemStack.itemId, dropCount, itemStack.getDamage())
+                    );
+
                     float scatterSpeed = 0.05F;
-                    entityItem.velocityX = (double)((float)random.NextGaussian() * scatterSpeed);
-                    entityItem.velocityY = (double)((float)random.NextGaussian() * scatterSpeed + 0.2F);
-                    entityItem.velocityZ = (double)((float)random.NextGaussian() * scatterSpeed);
-                    world.SpawnEntity(entityItem);
+                    droppedItem.velocityX = (float)random.NextGaussian() * scatterSpeed;
+                    droppedItem.velocityY = (float)random.NextGaussian() * scatterSpeed + 0.2F;
+                    droppedItem.velocityZ = (float)random.NextGaussian() * scatterSpeed;
+                    world.SpawnEntity(droppedItem);
                 }
             }
         }
@@ -220,539 +241,585 @@ public class EntityMinecart : Entity, IInventory
             --minecartCurrentDamage;
         }
 
-        double var7;
-        if (world.IsRemote && field_9415_k > 0)
+        if (world.IsRemote && clientInterpolationSteps > 0)
         {
-            if (field_9415_k > 0)
+            double interpolatedX = x + (clientTargetX - x) / clientInterpolationSteps;
+            double interpolatedY = y + (clientTargetY - y) / clientInterpolationSteps;
+            double interpolatedZ = z + (clientTargetZ - z) / clientInterpolationSteps;
+
+            double yawDelta = clientTargetYaw - yaw;
+            while (yawDelta < -180.0D)
             {
-                double var46 = x + (field_9414_l - x) / (double)field_9415_k;
-                double var47 = y + (field_9413_m - y) / (double)field_9415_k;
-                double var5 = z + (field_9412_n - z) / (double)field_9415_k;
+                yawDelta += 360.0D;
+            }
 
-                for (var7 = field_9411_o - (double)yaw; var7 < -180.0D; var7 += 360.0D)
+            while (yawDelta >= 180.0D)
+            {
+                yawDelta -= 360.0D;
+            }
+
+            yaw = (float)(yaw + yawDelta / clientInterpolationSteps);
+            pitch = (float)(pitch + (clientTargetPitch - pitch) / clientInterpolationSteps);
+            --clientInterpolationSteps;
+
+            setPosition(interpolatedX, interpolatedY, interpolatedZ);
+            setRotation(yaw, pitch);
+            return;
+        }
+
+        if (world.IsRemote)
+        {
+            setPosition(x, y, z);
+            setRotation(yaw, pitch);
+            return;
+        }
+
+        prevX = x;
+        prevY = y;
+        prevZ = z;
+
+        velocityY -= 0.04D;
+
+        int blockX = MathHelper.Floor(x);
+        int blockY = MathHelper.Floor(y);
+        int blockZ = MathHelper.Floor(z);
+
+        if (BlockRail.isRail(world, blockX, blockY - 1, blockZ))
+        {
+            --blockY;
+        }
+
+        double maxSpeed = 0.4D;
+        bool shouldEmitSmoke = false;
+        double slopeAcceleration = 1.0D / 128.0D;
+
+        int railBlockId = world.Reader.GetBlockId(blockX, blockY, blockZ);
+        if (BlockRail.isRail(railBlockId))
+        {
+            Vec3D? previousTrackPosition = getTrackPosition(x, y, z);
+            int railMeta = world.Reader.GetBlockMeta(blockX, blockY, blockZ);
+
+            double trackY = blockY;
+            bool poweredRailActive = false;
+            bool poweredRailBraking = false;
+
+            if (railBlockId == Block.PoweredRail.id)
+            {
+                poweredRailActive = (railMeta & 8) != 0;
+                poweredRailBraking = !poweredRailActive;
+            }
+
+            if (((BlockRail)Block.Blocks[railBlockId]).isAlwaysStraight())
+            {
+                railMeta &= 7;
+            }
+
+            if (railMeta >= 2 && railMeta <= 5)
+            {
+                trackY = blockY + 1;
+            }
+
+            if (railMeta == 2)
+            {
+                velocityX -= slopeAcceleration;
+            }
+
+            if (railMeta == 3)
+            {
+                velocityX += slopeAcceleration;
+            }
+
+            if (railMeta == 4)
+            {
+                velocityZ += slopeAcceleration;
+            }
+
+            if (railMeta == 5)
+            {
+                velocityZ -= slopeAcceleration;
+            }
+
+            int[][] railEnds = RailShapeVectors[railMeta];
+            double railDirX = railEnds[1][0] - railEnds[0][0];
+            double railDirZ = railEnds[1][2] - railEnds[0][2];
+            double railDirLength = System.Math.Sqrt(railDirX * railDirX + railDirZ * railDirZ);
+            double velocityDotRail = velocityX * railDirX + velocityZ * railDirZ;
+
+            if (velocityDotRail < 0.0D)
+            {
+                railDirX = -railDirX;
+                railDirZ = -railDirZ;
+            }
+
+            double horizontalSpeed = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
+            velocityX = horizontalSpeed * railDirX / railDirLength;
+            velocityZ = horizontalSpeed * railDirZ / railDirLength;
+
+            if (poweredRailBraking)
+            {
+                double brakingSpeed = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
+                if (brakingSpeed < 0.03D)
                 {
+                    velocityX = 0.0D;
+                    velocityY = 0.0D;
+                    velocityZ = 0.0D;
                 }
-
-                while (var7 >= 180.0D)
+                else
                 {
-                    var7 -= 360.0D;
+                    velocityX *= 0.5D;
+                    velocityY = 0.0D;
+                    velocityZ *= 0.5D;
                 }
+            }
 
-                yaw = (float)((double)yaw + var7 / (double)field_9415_k);
-                pitch = (float)((double)pitch + (field_9410_p - (double)pitch) / (double)field_9415_k);
-                --field_9415_k;
-                setPosition(var46, var47, var5);
-                setRotation(yaw, pitch);
+            double positionAlongRail = 0.0D;
+            double railStartX = blockX + 0.5D + railEnds[0][0] * 0.5D;
+            double railStartZ = blockZ + 0.5D + railEnds[0][2] * 0.5D;
+            double railEndX = blockX + 0.5D + railEnds[1][0] * 0.5D;
+            double railEndZ = blockZ + 0.5D + railEnds[1][2] * 0.5D;
+
+            railDirX = railEndX - railStartX;
+            railDirZ = railEndZ - railStartZ;
+
+            if (railDirX == 0.0D)
+            {
+                x = blockX + 0.5D;
+                positionAlongRail = z - blockZ;
+            }
+            else if (railDirZ == 0.0D)
+            {
+                z = blockZ + 0.5D;
+                positionAlongRail = x - blockX;
             }
             else
             {
-                setPosition(x, y, z);
-                setRotation(yaw, pitch);
+                double offsetFromRailStartX = x - railStartX;
+                double offsetFromRailStartZ = z - railStartZ;
+                positionAlongRail = (offsetFromRailStartX * railDirX + offsetFromRailStartZ * railDirZ) * 2.0D;
             }
 
-        }
-        else
-        {
-            prevX = x;
-            prevY = y;
-            prevZ = z;
-            velocityY -= (double)0.04F;
-            int floorX = MathHelper.Floor(x);
-            int floorY = MathHelper.Floor(y);
-            int floorZ = MathHelper.Floor(z);
-            if (BlockRail.isRail(world, floorX, floorY - 1, floorZ))
+            x = railStartX + railDirX * positionAlongRail;
+            z = railStartZ + railDirZ * positionAlongRail;
+
+            setTrackAlignedPosition(x, trackY, z);
+
+            double moveX = velocityX;
+            double moveZ = velocityZ;
+
+            if (passenger != null)
             {
-                --floorY;
+                moveX *= 0.75D;
+                moveZ *= 0.75D;
             }
 
-            double var4 = 0.4D;
-            bool var6 = false;
-            var7 = 1.0D / 128.0D;
-            int var9 = world.Reader.GetBlockId(floorX, floorY, floorZ);
-            if (BlockRail.isRail(var9))
+            if (moveX < -maxSpeed)
             {
-                Vec3D? var10 = func_514_g(x, y, z);
-                int var11 = world.Reader.GetBlockMeta(floorX, floorY, floorZ);
-                y = (double)floorY;
-                bool var12 = false;
-                bool var13 = false;
-                if (var9 == Block.PoweredRail.id)
-                {
-                    var12 = (var11 & 8) != 0;
-                    var13 = !var12;
-                }
+                moveX = -maxSpeed;
+            }
 
-                if (((BlockRail)Block.Blocks[var9]).isAlwaysStraight())
-                {
-                    var11 &= 7;
-                }
+            if (moveX > maxSpeed)
+            {
+                moveX = maxSpeed;
+            }
 
-                if (var11 >= 2 && var11 <= 5)
-                {
-                    y = (double)(floorY + 1);
-                }
+            if (moveZ < -maxSpeed)
+            {
+                moveZ = -maxSpeed;
+            }
 
-                if (var11 == 2)
-                {
-                    velocityX -= var7;
-                }
+            if (moveZ > maxSpeed)
+            {
+                moveZ = maxSpeed;
+            }
 
-                if (var11 == 3)
-                {
-                    velocityX += var7;
-                }
+            move(moveX, 0.0D, moveZ);
 
-                if (var11 == 4)
-                {
-                    velocityZ += var7;
-                }
+            if (railEnds[0][1] != 0 &&
+                MathHelper.Floor(x) - blockX == railEnds[0][0] &&
+                MathHelper.Floor(z) - blockZ == railEnds[0][2])
+            {
+                setTrackAlignedPosition(x, trackY + railEnds[0][1], z);
+            }
+            else if (railEnds[1][1] != 0 &&
+                     MathHelper.Floor(x) - blockX == railEnds[1][0] &&
+                     MathHelper.Floor(z) - blockZ == railEnds[1][2])
+            {
+                setTrackAlignedPosition(x, trackY + railEnds[1][1], z);
+            }
 
-                if (var11 == 5)
+            if (passenger != null)
+            {
+                velocityX *= 0.997F;
+                velocityY = 0.0D;
+                velocityZ *= 0.997F;
+            }
+            else
+            {
+                if (type == 2)
                 {
-                    velocityZ -= var7;
-                }
-
-                int[][] var14 = field_855_j[var11];
-                double var15 = (double)(var14[1][0] - var14[0][0]);
-                double var17 = (double)(var14[1][2] - var14[0][2]);
-                double var19 = System.Math.Sqrt(var15 * var15 + var17 * var17);
-                double var21 = velocityX * var15 + velocityZ * var17;
-                if (var21 < 0.0D)
-                {
-                    var15 = -var15;
-                    var17 = -var17;
-                }
-
-                double var23 = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
-                velocityX = var23 * var15 / var19;
-                velocityZ = var23 * var17 / var19;
-                double var25;
-                if (var13)
-                {
-                    var25 = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
-                    if (var25 < 0.03D)
+                    double furnacePushMagnitude = MathHelper.Sqrt(pushX * pushX + pushZ * pushZ);
+                    if (furnacePushMagnitude > 0.01D)
                     {
-                        velocityX *= 0.0D;
-                        velocityY *= 0.0D;
-                        velocityZ *= 0.0D;
+                        shouldEmitSmoke = true;
+                        pushX /= furnacePushMagnitude;
+                        pushZ /= furnacePushMagnitude;
+
+                        double furnaceAcceleration = 0.04D;
+                        velocityX *= 0.8F;
+                        velocityY = 0.0D;
+                        velocityZ *= 0.8F;
+                        velocityX += pushX * furnaceAcceleration;
+                        velocityZ += pushZ * furnaceAcceleration;
                     }
                     else
                     {
-                        velocityX *= 0.5D;
-                        velocityY *= 0.0D;
-                        velocityZ *= 0.5D;
+                        velocityX *= 0.9F;
+                        velocityY = 0.0D;
+                        velocityZ *= 0.9F;
                     }
                 }
 
-                var25 = 0.0D;
-                double var27 = (double)floorX + 0.5D + (double)var14[0][0] * 0.5D;
-                double var29 = (double)floorZ + 0.5D + (double)var14[0][2] * 0.5D;
-                double var31 = (double)floorX + 0.5D + (double)var14[1][0] * 0.5D;
-                double var33 = (double)floorZ + 0.5D + (double)var14[1][2] * 0.5D;
-                var15 = var31 - var27;
-                var17 = var33 - var29;
-                double var35;
-                double var37;
-                double var39;
-                if (var15 == 0.0D)
+                velocityX *= 0.96F;
+                velocityY = 0.0D;
+                velocityZ *= 0.96F;
+            }
+
+            Vec3D? currentTrackPosition = getTrackPosition(x, y, z);
+            if (currentTrackPosition != null && previousTrackPosition != null)
+            {
+                double railHeightDeltaForce = (previousTrackPosition.Value.y - currentTrackPosition.Value.y) * 0.05D;
+                horizontalSpeed = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
+                if (horizontalSpeed > 0.0D)
                 {
-                    x = (double)floorX + 0.5D;
-                    var25 = z - (double)floorZ;
-                }
-                else if (var17 == 0.0D)
-                {
-                    z = (double)floorZ + 0.5D;
-                    var25 = x - (double)floorX;
-                }
-                else
-                {
-                    var35 = x - var27;
-                    var37 = z - var29;
-                    var39 = (var35 * var15 + var37 * var17) * 2.0D;
-                    var25 = var39;
+                    velocityX = velocityX / horizontalSpeed * (horizontalSpeed + railHeightDeltaForce);
+                    velocityZ = velocityZ / horizontalSpeed * (horizontalSpeed + railHeightDeltaForce);
                 }
 
-                x = var27 + var15 * var25;
-                z = var29 + var17 * var25;
-                setPosition(x, y + (double)standingEyeHeight, z);
-                var35 = velocityX;
-                var37 = velocityZ;
-                if (passenger != null)
-                {
-                    var35 *= 0.75D;
-                    var37 *= 0.75D;
-                }
+                // Important fix:
+                // Always keep rail snapping on the same Y convention used everywhere else.
+                setTrackAlignedPosition(x, currentTrackPosition.Value.y, z);
+            }
 
-                if (var35 < -var4)
-                {
-                    var35 = -var4;
-                }
+            int currentBlockX = MathHelper.Floor(x);
+            int currentBlockZ = MathHelper.Floor(z);
+            if (currentBlockX != blockX || currentBlockZ != blockZ)
+            {
+                horizontalSpeed = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
+                velocityX = horizontalSpeed * (currentBlockX - blockX);
+                velocityZ = horizontalSpeed * (currentBlockZ - blockZ);
+            }
 
-                if (var35 > var4)
+            if (type == 2)
+            {
+                double pushMagnitude = MathHelper.Sqrt(pushX * pushX + pushZ * pushZ);
+                if (pushMagnitude > 0.01D && velocityX * velocityX + velocityZ * velocityZ > 0.001D)
                 {
-                    var35 = var4;
-                }
+                    pushX /= pushMagnitude;
+                    pushZ /= pushMagnitude;
 
-                if (var37 < -var4)
-                {
-                    var37 = -var4;
-                }
-
-                if (var37 > var4)
-                {
-                    var37 = var4;
-                }
-
-                move(var35, 0.0D, var37);
-                if (var14[0][1] != 0 && MathHelper.Floor(x) - floorX == var14[0][0] && MathHelper.Floor(z) - floorZ == var14[0][2])
-                {
-                    setPosition(x, y + (double)var14[0][1], z);
-                }
-                else if (var14[1][1] != 0 && MathHelper.Floor(x) - floorX == var14[1][0] && MathHelper.Floor(z) - floorZ == var14[1][2])
-                {
-                    setPosition(x, y + (double)var14[1][1], z);
-                }
-
-                if (passenger != null)
-                {
-                    velocityX *= (double)0.997F;
-                    velocityY *= 0.0D;
-                    velocityZ *= (double)0.997F;
-                }
-                else
-                {
-                    if (type == 2)
+                    if (pushX * velocityX + pushZ * velocityZ < 0.0D)
                     {
-                        var39 = (double)MathHelper.Sqrt(pushX * pushX + pushZ * pushZ);
-                        if (var39 > 0.01D)
-                        {
-                            var6 = true;
-                            pushX /= var39;
-                            pushZ /= var39;
-                            double var41 = 0.04D;
-                            velocityX *= (double)0.8F;
-                            velocityY *= 0.0D;
-                            velocityZ *= (double)0.8F;
-                            velocityX += pushX * var41;
-                            velocityZ += pushZ * var41;
-                        }
-                        else
-                        {
-                            velocityX *= (double)0.9F;
-                            velocityY *= 0.0D;
-                            velocityZ *= (double)0.9F;
-                        }
+                        pushX = 0.0D;
+                        pushZ = 0.0D;
                     }
-
-                    velocityX *= (double)0.96F;
-                    velocityY *= 0.0D;
-                    velocityZ *= (double)0.96F;
-                }
-
-                Vec3D? var52 = func_514_g(x, y, z);
-                if (var52 != null && var10 != null)
-                {
-                    double var40 = (var10.Value.y - var52.Value.y) * 0.05D;
-                    var23 = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
-                    if (var23 > 0.0D)
+                    else
                     {
-                        velocityX = velocityX / var23 * (var23 + var40);
-                        velocityZ = velocityZ / var23 * (var23 + var40);
+                        pushX = velocityX;
+                        pushZ = velocityZ;
                     }
-
-                    setPosition(x, var52.Value.y, z);
                 }
+            }
 
-                int var53 = MathHelper.Floor(x);
-                int var54 = MathHelper.Floor(z);
-                if (var53 != floorX || var54 != floorZ)
+            if (poweredRailActive)
+            {
+                double speedMagnitude = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
+                if (speedMagnitude > 0.01D)
                 {
-                    var23 = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
-                    velocityX = var23 * (double)(var53 - floorX);
-                    velocityZ = var23 * (double)(var54 - floorZ);
+                    double poweredRailBoost = 0.06D;
+                    velocityX += velocityX / speedMagnitude * poweredRailBoost;
+                    velocityZ += velocityZ / speedMagnitude * poweredRailBoost;
                 }
-
-                double var42;
-                if (type == 2)
+                else if (railMeta == 1)
                 {
-                    var42 = (double)MathHelper.Sqrt(pushX * pushX + pushZ * pushZ);
-                    if (var42 > 0.01D && velocityX * velocityX + velocityZ * velocityZ > 0.001D)
+                    if (world.Reader.ShouldSuffocate(blockX - 1, blockY, blockZ))
                     {
-                        pushX /= var42;
-                        pushZ /= var42;
-                        if (pushX * velocityX + pushZ * velocityZ < 0.0D)
-                        {
-                            pushX = 0.0D;
-                            pushZ = 0.0D;
-                        }
-                        else
-                        {
-                            pushX = velocityX;
-                            pushZ = velocityZ;
-                        }
+                        velocityX = 0.02D;
                     }
-                }
-
-                if (var12)
-                {
-                    var42 = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
-                    if (var42 > 0.01D)
+                    else if (world.Reader.ShouldSuffocate(blockX + 1, blockY, blockZ))
                     {
-                        double var44 = 0.06D;
-                        velocityX += velocityX / var42 * var44;
-                        velocityZ += velocityZ / var42 * var44;
+                        velocityX = -0.02D;
                     }
-                    else if (var11 == 1)
+                }
+                else if (railMeta == 0)
+                {
+                    if (world.Reader.ShouldSuffocate(blockX, blockY, blockZ - 1))
                     {
-                        if (world.Reader.ShouldSuffocate(floorX - 1, floorY, floorZ))
-                        {
-                            velocityX = 0.02D;
-                        }
-                        else if (world.Reader.ShouldSuffocate(floorX + 1, floorY, floorZ))
-                        {
-                            velocityX = -0.02D;
-                        }
+                        velocityZ = 0.02D;
                     }
-                    else if (var11 == 0)
+                    else if (world.Reader.ShouldSuffocate(blockX, blockY, blockZ + 1))
                     {
-                        if (world.Reader.ShouldSuffocate(floorX, floorY, floorZ - 1))
-                        {
-                            velocityZ = 0.02D;
-                        }
-                        else if (world.Reader.ShouldSuffocate(floorX, floorY, floorZ + 1))
-                        {
-                            velocityZ = -0.02D;
-                        }
+                        velocityZ = -0.02D;
                     }
                 }
             }
-            else
-            {
-                if (velocityX < -var4)
-                {
-                    velocityX = -var4;
-                }
-
-                if (velocityX > var4)
-                {
-                    velocityX = var4;
-                }
-
-                if (velocityZ < -var4)
-                {
-                    velocityZ = -var4;
-                }
-
-                if (velocityZ > var4)
-                {
-                    velocityZ = var4;
-                }
-
-                if (onGround)
-                {
-                    velocityX *= 0.5D;
-                    velocityY *= 0.5D;
-                    velocityZ *= 0.5D;
-                }
-
-                move(velocityX, velocityY, velocityZ);
-                if (!onGround)
-                {
-                    velocityX *= (double)0.95F;
-                    velocityY *= (double)0.95F;
-                    velocityZ *= (double)0.95F;
-                }
-            }
-
-            pitch = 0.0F;
-            double var48 = prevX - x;
-            double var49 = prevZ - z;
-            if (var48 * var48 + var49 * var49 > 0.001D)
-            {
-                yaw = (float)(System.Math.Atan2(var49, var48) * 180.0D / System.Math.PI);
-                if (yawFlipped)
-                {
-                    yaw += 180.0F;
-                }
-            }
-
-            double var50;
-            for (var50 = (double)(yaw - prevYaw); var50 >= 180.0D; var50 -= 360.0D)
-            {
-            }
-
-            while (var50 < -180.0D)
-            {
-                var50 += 360.0D;
-            }
-
-            if (var50 < -170.0D || var50 >= 170.0D)
-            {
-                yaw += 180.0F;
-                yawFlipped = !yawFlipped;
-            }
-
-            setRotation(yaw, pitch);
-            var var16 = world.Entities.GetEntities(this, boundingBox.Expand((double)0.2F, 0.0D, (double)0.2F));
-            if (var16 != null && var16.Count > 0)
-            {
-                for (int var51 = 0; var51 < var16.Count; ++var51)
-                {
-                    Entity var18 = var16[var51];
-                    if (var18 != passenger && var18.isPushable() && var18 is EntityMinecart)
-                    {
-                        var18.onCollision(this);
-                    }
-                }
-            }
-
-            if (passenger != null && passenger.dead)
-            {
-                passenger = null;
-            }
-
-            if (var6 && random.NextInt(4) == 0)
-            {
-                --fuel;
-                if (fuel < 0)
-                {
-                    pushX = pushZ = 0.0D;
-                }
-
-                world.Broadcaster.AddParticle("largesmoke", x, y + 0.8D, z, 0.0D, 0.0D, 0.0D);
-            }
-
-        }
-    }
-
-    public Vec3D? func_515_a(double x, double y, double z, double var7)
-    {
-        int var9 = MathHelper.Floor(x);
-        int var10 = MathHelper.Floor(y);
-        int var11 = MathHelper.Floor(z);
-        if (BlockRail.isRail(world, var9, var10 - 1, var11))
-        {
-            --var10;
-        }
-
-        int var12 = world.Reader.GetBlockId(var9, var10, var11);
-        if (!BlockRail.isRail(var12))
-        {
-            return null;
         }
         else
         {
-            int var13 = world.Reader.GetBlockMeta(var9, var10, var11);
-            if (((BlockRail)Block.Blocks[var12]).isAlwaysStraight())
+            if (velocityX < -maxSpeed)
             {
-                var13 &= 7;
+                velocityX = -maxSpeed;
             }
 
-            y = (double)var10;
-            if (var13 >= 2 && var13 <= 5)
+            if (velocityX > maxSpeed)
             {
-                y = (double)(var10 + 1);
+                velocityX = maxSpeed;
             }
 
-            int[][] var14 = field_855_j[var13];
-            double var15 = (double)(var14[1][0] - var14[0][0]);
-            double var17 = (double)(var14[1][2] - var14[0][2]);
-            double var19 = System.Math.Sqrt(var15 * var15 + var17 * var17);
-            var15 /= var19;
-            var17 /= var19;
-            x += var15 * var7;
-            z += var17 * var7;
-            if (var14[0][1] != 0 && MathHelper.Floor(x) - var9 == var14[0][0] && MathHelper.Floor(z) - var11 == var14[0][2])
+            if (velocityZ < -maxSpeed)
             {
-                y += (double)var14[0][1];
-            }
-            else if (var14[1][1] != 0 && MathHelper.Floor(x) - var9 == var14[1][0] && MathHelper.Floor(z) - var11 == var14[1][2])
-            {
-                y += (double)var14[1][1];
+                velocityZ = -maxSpeed;
             }
 
-            return func_514_g(x, y, z);
+            if (velocityZ > maxSpeed)
+            {
+                velocityZ = maxSpeed;
+            }
+
+            if (onGround)
+            {
+                velocityX *= 0.5D;
+                velocityY *= 0.5D;
+                velocityZ *= 0.5D;
+            }
+
+            move(velocityX, velocityY, velocityZ);
+
+            if (!onGround)
+            {
+                velocityX *= 0.95F;
+                velocityY *= 0.95F;
+                velocityZ *= 0.95F;
+            }
         }
+
+        pitch = 0.0F;
+
+        double deltaX = prevX - x;
+        double deltaZ = prevZ - z;
+        if (deltaX * deltaX + deltaZ * deltaZ > 0.001D)
+        {
+            yaw = (float)(System.Math.Atan2(deltaZ, deltaX) * 180.0D / System.Math.PI);
+            if (yawFlipped)
+            {
+                yaw += 180.0F;
+            }
+        }
+
+        double yawChange = yaw - prevYaw;
+        while (yawChange >= 180.0D)
+        {
+            yawChange -= 360.0D;
+        }
+
+        while (yawChange < -180.0D)
+        {
+            yawChange += 360.0D;
+        }
+
+        if (yawChange < -170.0D || yawChange >= 170.0D)
+        {
+            yaw += 180.0F;
+            yawFlipped = !yawFlipped;
+        }
+
+        setRotation(yaw, pitch);
+
+        var nearbyEntities = world.Entities.GetEntities(this, boundingBox.Expand(0.2D, 0.0D, 0.2D));
+        if (nearbyEntities != null && nearbyEntities.Count > 0)
+        {
+            for (int i = 0; i < nearbyEntities.Count; ++i)
+            {
+                Entity otherEntity = nearbyEntities[i];
+                if (otherEntity != passenger && otherEntity.isPushable() && otherEntity is EntityMinecart)
+                {
+                    otherEntity.onCollision(this);
+                }
+            }
+        }
+
+        if (passenger != null && passenger.dead)
+        {
+            passenger = null;
+        }
+
+        if (shouldEmitSmoke && random.NextInt(4) == 0)
+        {
+            --fuel;
+            if (fuel < 0)
+            {
+                pushX = 0.0D;
+                pushZ = 0.0D;
+            }
+
+            world.Broadcaster.AddParticle("largesmoke", x, y + 0.8D, z, 0.0D, 0.0D, 0.0D);
+        }
+    }
+
+    private void setTrackAlignedPosition(double x, double trackY, double z)
+    {
+        setPosition(x, trackY + standingEyeHeight, z);
+    }
+
+    public Vec3D? getTrackPositionOffset(double x, double y, double z, double distanceAlongTrack)
+    {
+        int blockX = MathHelper.Floor(x);
+        int blockY = MathHelper.Floor(y);
+        int blockZ = MathHelper.Floor(z);
+
+        if (BlockRail.isRail(world, blockX, blockY - 1, blockZ))
+        {
+            --blockY;
+        }
+
+        int blockId = world.Reader.GetBlockId(blockX, blockY, blockZ);
+        if (!BlockRail.isRail(blockId))
+        {
+            return null;
+        }
+
+        int railMeta = world.Reader.GetBlockMeta(blockX, blockY, blockZ);
+        if (((BlockRail)Block.Blocks[blockId]).isAlwaysStraight())
+        {
+            railMeta &= 7;
+        }
+
+        y = blockY;
+        if (railMeta >= 2 && railMeta <= 5)
+        {
+            y = blockY + 1;
+        }
+
+        int[][] railEnds = RailShapeVectors[railMeta];
+        double railDirX = railEnds[1][0] - railEnds[0][0];
+        double railDirZ = railEnds[1][2] - railEnds[0][2];
+        double railDirLength = System.Math.Sqrt(railDirX * railDirX + railDirZ * railDirZ);
+
+        railDirX /= railDirLength;
+        railDirZ /= railDirLength;
+
+        x += railDirX * distanceAlongTrack;
+        z += railDirZ * distanceAlongTrack;
+
+        if (railEnds[0][1] != 0 &&
+            MathHelper.Floor(x) - blockX == railEnds[0][0] &&
+            MathHelper.Floor(z) - blockZ == railEnds[0][2])
+        {
+            y += railEnds[0][1];
+        }
+        else if (railEnds[1][1] != 0 &&
+                 MathHelper.Floor(x) - blockX == railEnds[1][0] &&
+                 MathHelper.Floor(z) - blockZ == railEnds[1][2])
+        {
+            y += railEnds[1][1];
+        }
+
+        return getTrackPosition(x, y, z);
+    }
+
+    public Vec3D? getTrackPosition(double x, double y, double z)
+    {
+        int blockX = MathHelper.Floor(x);
+        int blockY = MathHelper.Floor(y);
+        int blockZ = MathHelper.Floor(z);
+
+        if (BlockRail.isRail(world, blockX, blockY - 1, blockZ))
+        {
+            --blockY;
+        }
+
+        int blockId = world.Reader.GetBlockId(blockX, blockY, blockZ);
+        if (!BlockRail.isRail(blockId))
+        {
+            return null;
+        }
+
+        int railMeta = world.Reader.GetBlockMeta(blockX, blockY, blockZ);
+        y = blockY;
+
+        if (((BlockRail)Block.Blocks[blockId]).isAlwaysStraight())
+        {
+            railMeta &= 7;
+        }
+
+        if (railMeta >= 2 && railMeta <= 5)
+        {
+            y = blockY + 1;
+        }
+
+        int[][] railEnds = RailShapeVectors[railMeta];
+
+        double railStartX = blockX + 0.5D + railEnds[0][0] * 0.5D;
+        double railStartY = blockY + 0.5D + railEnds[0][1] * 0.5D;
+        double railStartZ = blockZ + 0.5D + railEnds[0][2] * 0.5D;
+
+        double railEndX = blockX + 0.5D + railEnds[1][0] * 0.5D;
+        double railEndY = blockY + 0.5D + railEnds[1][1] * 0.5D;
+        double railEndZ = blockZ + 0.5D + railEnds[1][2] * 0.5D;
+
+        double railDirX = railEndX - railStartX;
+        double railDirY = (railEndY - railStartY) * 2.0D;
+        double railDirZ = railEndZ - railStartZ;
+
+        double positionAlongRail;
+        if (railDirX == 0.0D)
+        {
+            x = blockX + 0.5D;
+            positionAlongRail = z - blockZ;
+        }
+        else if (railDirZ == 0.0D)
+        {
+            z = blockZ + 0.5D;
+            positionAlongRail = x - blockX;
+        }
+        else
+        {
+            double offsetX = x - railStartX;
+            double offsetZ = z - railStartZ;
+            positionAlongRail = (offsetX * railDirX + offsetZ * railDirZ) * 2.0D;
+        }
+
+        x = railStartX + railDirX * positionAlongRail;
+        y = railStartY + railDirY * positionAlongRail;
+        z = railStartZ + railDirZ * positionAlongRail;
+
+        if (railDirY < 0.0D)
+        {
+            ++y;
+        }
+
+        if (railDirY > 0.0D)
+        {
+            y += 0.5D;
+        }
+
+        return new Vec3D(x, y, z);
+    }
+
+    // Compatibility wrappers for any external code still calling the old names.
+    public Vec3D? func_515_a(double x, double y, double z, double var7)
+    {
+        return getTrackPositionOffset(x, y, z, var7);
     }
 
     public Vec3D? func_514_g(double x, double y, double z)
     {
-        int floorX = MathHelper.Floor(x);
-        int floorY = MathHelper.Floor(y);
-        int floorZ = MathHelper.Floor(z);
-        if (BlockRail.isRail(world, floorX, floorY - 1, floorZ))
-        {
-            --floorY;
-        }
-
-        int blockId = world.Reader.GetBlockId(floorX, floorY, floorZ);
-        if (BlockRail.isRail(blockId))
-        {
-            int meta = world.Reader.GetBlockMeta(floorX, floorY, floorZ);
-            y = (double)floorY;
-            if (((BlockRail)Block.Blocks[blockId]).isAlwaysStraight())
-            {
-                meta &= 7;
-            }
-
-            if (meta >= 2 && meta <= 5)
-            {
-                y = (double)(floorY + 1);
-            }
-
-            int[][] var12 = field_855_j[meta];
-            double var13 = 0.0D;
-            double var15 = (double)floorX + 0.5D + (double)var12[0][0] * 0.5D;
-            double var17 = (double)floorY + 0.5D + (double)var12[0][1] * 0.5D;
-            double var19 = (double)floorZ + 0.5D + (double)var12[0][2] * 0.5D;
-            double var21 = (double)floorX + 0.5D + (double)var12[1][0] * 0.5D;
-            double var23 = (double)floorY + 0.5D + (double)var12[1][1] * 0.5D;
-            double var25 = (double)floorZ + 0.5D + (double)var12[1][2] * 0.5D;
-            double var27 = var21 - var15;
-            double var29 = (var23 - var17) * 2.0D;
-            double var31 = var25 - var19;
-            if (var27 == 0.0D)
-            {
-                x = (double)floorX + 0.5D;
-                var13 = z - (double)floorZ;
-            }
-            else if (var31 == 0.0D)
-            {
-                z = (double)floorZ + 0.5D;
-                var13 = x - (double)floorX;
-            }
-            else
-            {
-                double var33 = x - var15;
-                double var35 = z - var19;
-                double var37 = (var33 * var27 + var35 * var31) * 2.0D;
-                var13 = var37;
-            }
-
-            x = var15 + var27 * var13;
-            y = var17 + var29 * var13;
-            z = var19 + var31 * var13;
-            if (var29 < 0.0D)
-            {
-                ++y;
-            }
-
-            if (var29 > 0.0D)
-            {
-                y += 0.5D;
-            }
-
-            return new Vec3D(x, y, z);
-        }
-        else
-        {
-            return null;
-        }
+        return getTrackPosition(x, y, z);
     }
 
     public override void writeNbt(NBTTagCompound nbt)
     {
         nbt.SetInteger("Type", type);
+
         if (type == 2)
         {
             nbt.SetDouble("PushX", pushX);
@@ -776,12 +843,12 @@ public class EntityMinecart : Entity, IInventory
 
             nbt.SetTag("Items", items);
         }
-
     }
 
     public override void readNbt(NBTTagCompound nbt)
     {
         type = nbt.GetInteger("Type");
+
         if (type == 2)
         {
             pushX = nbt.GetDouble("PushX");
@@ -803,7 +870,6 @@ public class EntityMinecart : Entity, IInventory
                 }
             }
         }
-
     }
 
     public override float getShadowRadius()
@@ -813,86 +879,108 @@ public class EntityMinecart : Entity, IInventory
 
     public override void onCollision(Entity entity)
     {
-        if (!world.IsRemote)
+        if (world.IsRemote)
         {
-            if (entity != passenger)
+            return;
+        }
+
+        if (entity == passenger)
+        {
+            return;
+        }
+
+        if (entity is EntityLiving &&
+            entity is not EntityPlayer &&
+            type == 0 &&
+            velocityX * velocityX + velocityZ * velocityZ > 0.01D &&
+            passenger == null &&
+            entity.vehicle == null)
+        {
+            entity.setVehicle(this);
+        }
+
+        double deltaX = entity.x - x;
+        double deltaZ = entity.z - z;
+        double distanceSq = deltaX * deltaX + deltaZ * deltaZ;
+
+        if (distanceSq < 1.0E-4D)
+        {
+            return;
+        }
+
+        double distance = MathHelper.Sqrt(distanceSq);
+        deltaX /= distance;
+        deltaZ /= distance;
+
+        double forceScale = 1.0D / distance;
+        if (forceScale > 1.0D)
+        {
+            forceScale = 1.0D;
+        }
+
+        deltaX *= forceScale;
+        deltaZ *= forceScale;
+
+        deltaX *= 0.1F;
+        deltaZ *= 0.1F;
+
+        deltaX *= 1.0F - pushSpeedReduction;
+        deltaZ *= 1.0F - pushSpeedReduction;
+
+        deltaX *= 0.5D;
+        deltaZ *= 0.5D;
+
+        if (entity is EntityMinecart otherCart)
+        {
+            double otherDeltaX = entity.x - x;
+            double otherDeltaZ = entity.z - z;
+
+            // Preserved gameplay logic, but with readable names.
+            double collisionAlignment = otherDeltaX * entity.velocityZ + otherDeltaZ * entity.prevX;
+            collisionAlignment *= collisionAlignment;
+
+            if (collisionAlignment > 5.0D)
             {
-                if (entity is EntityLiving && entity is not EntityPlayer && type == 0 && velocityX * velocityX + velocityZ * velocityZ > 0.01D && passenger == null && entity.vehicle == null)
-                {
-                    entity.setVehicle(this);
-                }
-
-                double var2 = entity.x - x;
-                double var4 = entity.z - z;
-                double var6 = var2 * var2 + var4 * var4;
-                if (var6 >= (double)1.0E-4F)
-                {
-                    var6 = (double)MathHelper.Sqrt(var6);
-                    var2 /= var6;
-                    var4 /= var6;
-                    double var8 = 1.0D / var6;
-                    if (var8 > 1.0D)
-                    {
-                        var8 = 1.0D;
-                    }
-
-                    var2 *= var8;
-                    var4 *= var8;
-                    var2 *= (double)0.1F;
-                    var4 *= (double)0.1F;
-                    var2 *= (double)(1.0F - pushSpeedReduction);
-                    var4 *= (double)(1.0F - pushSpeedReduction);
-                    var2 *= 0.5D;
-                    var4 *= 0.5D;
-                    if (entity is EntityMinecart)
-                    {
-                        double var10 = entity.x - x;
-                        double var12 = entity.z - z;
-                        double var14 = var10 * entity.velocityZ + var12 * entity.prevX;
-                        var14 *= var14;
-                        if (var14 > 5.0D)
-                        {
-                            return;
-                        }
-
-                        double var16 = entity.velocityX + velocityX;
-                        double var18 = entity.velocityZ + velocityZ;
-                        if (((EntityMinecart)entity).type == 2 && type != 2)
-                        {
-                            velocityX *= (double)0.2F;
-                            velocityZ *= (double)0.2F;
-                            addVelocity(entity.velocityX - var2, 0.0D, entity.velocityZ - var4);
-                            entity.velocityX *= (double)0.7F;
-                            entity.velocityZ *= (double)0.7F;
-                        }
-                        else if (((EntityMinecart)entity).type != 2 && type == 2)
-                        {
-                            entity.velocityX *= (double)0.2F;
-                            entity.velocityZ *= (double)0.2F;
-                            entity.addVelocity(velocityX + var2, 0.0D, velocityZ + var4);
-                            velocityX *= (double)0.7F;
-                            velocityZ *= (double)0.7F;
-                        }
-                        else
-                        {
-                            var16 /= 2.0D;
-                            var18 /= 2.0D;
-                            velocityX *= (double)0.2F;
-                            velocityZ *= (double)0.2F;
-                            addVelocity(var16 - var2, 0.0D, var18 - var4);
-                            entity.velocityX *= (double)0.2F;
-                            entity.velocityZ *= (double)0.2F;
-                            entity.addVelocity(var16 + var2, 0.0D, var18 + var4);
-                        }
-                    }
-                    else
-                    {
-                        addVelocity(-var2, 0.0D, -var4);
-                        entity.addVelocity(var2 / 4.0D, 0.0D, var4 / 4.0D);
-                    }
-                }
-
+                return;
             }
+
+            double averageVelocityX = entity.velocityX + velocityX;
+            double averageVelocityZ = entity.velocityZ + velocityZ;
+
+            if (otherCart.type == 2 && type != 2)
+            {
+                velocityX *= 0.2F;
+                velocityZ *= 0.2F;
+                addVelocity(entity.velocityX - deltaX, 0.0D, entity.velocityZ - deltaZ);
+                entity.velocityX *= 0.7F;
+                entity.velocityZ *= 0.7F;
+            }
+            else if (otherCart.type != 2 && type == 2)
+            {
+                entity.velocityX *= 0.2F;
+                entity.velocityZ *= 0.2F;
+                entity.addVelocity(velocityX + deltaX, 0.0D, velocityZ + deltaZ);
+                velocityX *= 0.7F;
+                velocityZ *= 0.7F;
+            }
+            else
+            {
+                averageVelocityX /= 2.0D;
+                averageVelocityZ /= 2.0D;
+
+                velocityX *= 0.2F;
+                velocityZ *= 0.2F;
+                addVelocity(averageVelocityX - deltaX, 0.0D, averageVelocityZ - deltaZ);
+
+                entity.velocityX *= 0.2F;
+                entity.velocityZ *= 0.2F;
+                entity.addVelocity(averageVelocityX + deltaX, 0.0D, averageVelocityZ + deltaZ);
+            }
+        }
+        else
+        {
+            addVelocity(-deltaX, 0.0D, -deltaZ);
+            entity.addVelocity(deltaX / 4.0D, 0.0D, deltaZ / 4.0D);
         }
     }
 
@@ -908,30 +996,26 @@ public class EntityMinecart : Entity, IInventory
 
     public ItemStack? removeStack(int slotIndex, int amount)
     {
-        if (cargoItems[slotIndex] != null)
-        {
-            ItemStack itemStack;
-            if (cargoItems[slotIndex].count <= amount)
-            {
-                itemStack = cargoItems[slotIndex];
-                cargoItems[slotIndex] = null;
-                return itemStack;
-            }
-            else
-            {
-                itemStack = cargoItems[slotIndex].split(amount);
-                if (cargoItems[slotIndex].count == 0)
-                {
-                    cargoItems[slotIndex] = null;
-                }
-
-                return itemStack;
-            }
-        }
-        else
+        if (cargoItems[slotIndex] == null)
         {
             return null;
         }
+
+        ItemStack itemStack;
+        if (cargoItems[slotIndex].count <= amount)
+        {
+            itemStack = cargoItems[slotIndex];
+            cargoItems[slotIndex] = null;
+            return itemStack;
+        }
+
+        itemStack = cargoItems[slotIndex].split(amount);
+        if (cargoItems[slotIndex].count == 0)
+        {
+            cargoItems[slotIndex] = null;
+        }
+
+        return itemStack;
     }
 
     public void setStack(int slotIndex, ItemStack? itemStack)
@@ -941,7 +1025,6 @@ public class EntityMinecart : Entity, IInventory
         {
             itemStack.count = getMaxCountPerStack();
         }
-
     }
 
     public string getName()
@@ -999,28 +1082,29 @@ public class EntityMinecart : Entity, IInventory
         return true;
     }
 
-    public override void setPositionAndAnglesAvoidEntities(double var1, double var3, double var5, float var7, float var8, int var9)
+    public override void setPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch, int interpolationSteps)
     {
-        field_9414_l = var1;
-        field_9413_m = var3;
-        field_9412_n = var5;
-        field_9411_o = (double)var7;
-        field_9410_p = (double)var8;
-        field_9415_k = var9 + 2;
-        velocityX = cartVelocityX;
-        velocityY = cartVelocityY;
-        velocityZ = cartVelocityZ;
+        clientTargetX = x;
+        clientTargetY = y;
+        clientTargetZ = z;
+        clientTargetYaw = yaw;
+        clientTargetPitch = pitch;
+        clientInterpolationSteps = interpolationSteps + 2;
+
+        velocityX = clientVelocityX;
+        velocityY = clientVelocityY;
+        velocityZ = clientVelocityZ;
     }
 
     public override void setVelocityClient(double velocityX, double velocityY, double velocityZ)
     {
-        cartVelocityX = base.velocityX = velocityX;
-        cartVelocityY = base.velocityY = velocityY;
-        cartVelocityZ = base.velocityZ = velocityZ;
+        clientVelocityX = base.velocityX = velocityX;
+        clientVelocityY = base.velocityY = velocityY;
+        clientVelocityZ = base.velocityZ = velocityZ;
     }
 
     public bool canPlayerUse(EntityPlayer player)
     {
-        return dead ? false : player.getSquaredDistance(this) <= 64.0D;
+        return !dead && player.getSquaredDistance(this) <= 64.0D;
     }
 }
