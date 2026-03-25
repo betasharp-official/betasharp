@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Generation.Biomes;
 
@@ -11,35 +12,54 @@ public class DebugLocation : DebugComponent
     private static readonly string[] s_cardinalDirections = ["south", "west", "north", "east"];
     private static readonly string[] s_towards = ["positive Z", "negative X", "negative Z", "positive X"];
 
+    public bool ShowXYZ = true;
+    public bool ShowBlockXYZ = true;
+    public bool ShowFacing = true;
+    public bool ShowBiome = true;
+    public bool ShowLight = true;
+
     public DebugLocation() { }
 
     public override IEnumerable<DebugRowData> GetRows(DebugContext ctx)
     {
-        double x = Math.Floor(ctx.Game.player.x * 1000) / 1000;
-        double y = Math.Floor(ctx.Game.player.y * 100000) / 100000;
-        double z = Math.Floor(ctx.Game.player.z * 1000) / 1000;
+        if (ShowXYZ)
+        {
+            double x = Math.Floor(ctx.Game.player.x * 1000) / 1000;
+            double y = Math.Floor(ctx.Game.player.y * 100000) / 100000;
+            double z = Math.Floor(ctx.Game.player.z * 1000) / 1000;
+
+            yield return new DebugRowData("XYZ: " + x + " / " + y + " / " + z);
+        }
 
         int bx = (int)Math.Floor(ctx.Game.player.x);
         int by = (int)Math.Floor(ctx.Game.player.y);
         int bz = (int)Math.Floor(ctx.Game.player.z);
+        if (ShowBlockXYZ) yield return new DebugRowData("Block: " + bx + " " + by + " " + bz);
 
-        int facingIndex = MathHelper.Floor((double)(ctx.Game.player.yaw * 4.0F / 360.0F) + 0.5D) & 3;
-        string cardinalDirection = GetCardinalDirection(facingIndex);
-        string verticalLookDirection = GetVerticalLookDirection(ctx.Game.player.pitch);
-        string towards = GetTowards(facingIndex);
+        if (ShowFacing)
+        {
+            int facingIndex = MathHelper.Floor((double)(ctx.Game.player.yaw * 4.0F / 360.0F) + 0.5D) & 3;
+            string cardinalDirection = GetCardinalDirection(facingIndex);
+            string verticalLookDirection = GetVerticalLookDirection(ctx.Game.player.pitch);
+            string towards = GetTowards(facingIndex);
 
-        double yaw = Math.Floor(WrapYaw(ctx.Game.player.yaw) * 10) / 10;
-        double pitch = Math.Floor(ctx.Game.player.pitch * 10) / 10;
+            double yaw = Math.Floor(WrapYaw(ctx.Game.player.yaw) * 10) / 10;
+            double pitch = Math.Floor(ctx.Game.player.pitch * 10) / 10;
+            yield return new DebugRowData("Facing: " + cardinalDirection + " " + verticalLookDirection + " (" +
+                towards + ") (" + yaw + " / " + pitch + ")");
+        }
 
-        Biome biome = ctx.Game.world.Dimension.BiomeSource.GetBiome(bx, bz);
-        int light = ctx.Game.world.Lighting.GetLightLevel(bx, by, bz);
+        if (ShowBiome)
+        {
+            Biome biome = ctx.Game.world.Dimension.BiomeSource.GetBiome(bx, bz);
+            yield return new DebugRowData("Biome: " + biome.Name);
+        }
 
-        yield return new DebugRowData("XYZ: " + x + " / " + y + " / " + z);
-        yield return new DebugRowData("Block: " + bx + " " + by + " " + bz);
-        yield return new DebugRowData("Facing: " + cardinalDirection + " " + verticalLookDirection + " (" +
-            towards + ") (" + yaw + " / " + pitch + ")");
-        yield return new DebugRowData("Biome: " + biome.Name);
-        yield return new DebugRowData("Light: " + light);
+        if (ShowLight)
+        {
+            int light = ctx.Game.world.Lighting.GetLightLevel(bx, by, bz);
+            yield return new DebugRowData("Light: " + light);
+        }
     }
 
     private static string GetTowards(int facingIndex)
@@ -87,5 +107,23 @@ public class DebugLocation : DebugComponent
         {
             Right = Right
         };
+    }
+
+    public override void writeNBT(NBTTagCompound nbt) {
+        nbt.SetBoolean("ShowXYZ", ShowXYZ);
+        nbt.SetBoolean("ShowBlockXYZ", ShowBlockXYZ);
+        nbt.SetBoolean("ShowFacing", ShowFacing);
+        nbt.SetBoolean("ShowBiome", ShowBiome);
+        nbt.SetBoolean("ShowLight", ShowLight);
+    }
+
+    public override void readNBT(NBTTagCompound nbt)
+    {
+        Console.WriteLine(nbt);
+        ShowXYZ = nbt.GetBoolean("ShowXYZ");
+        ShowBlockXYZ = nbt.GetBoolean("ShowBlockXYZ");
+        ShowFacing = nbt.GetBoolean("ShowFacing");
+        ShowBiome = nbt.GetBoolean("ShowBiome");
+        ShowLight = nbt.GetBoolean("ShowLight");
     }
 }
