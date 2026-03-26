@@ -68,7 +68,7 @@ public abstract class World : IWorldContext
 
 
 
-        Properties!.LevelName = levelName;
+
 
 
         if (Dimension is OverworldDimension && Properties.TerrainType == WorldType.Sky)

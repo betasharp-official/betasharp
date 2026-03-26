@@ -28,6 +28,7 @@ public class UIElement
 
     public bool IsHovered { get; internal set; }
     public bool IsFocused { get; internal set; }
+    public bool Enabled { get; set; } = true;
 
     public bool ClipToBounds { get; set; } = false;
 

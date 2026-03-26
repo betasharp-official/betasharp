@@ -28,12 +28,16 @@ public abstract class UIScreen
 
     public void Initialize()
     {
-        if (_isInitialized) return;
-        _isInitialized = true;
-        Init();
+        if (!_isInitialized)
+        {
+            Init();
+            _isInitialized = true;
+        }
+        OnEnter();
     }
 
     protected abstract void Init();
+    public virtual void OnEnter() { }
     public virtual void Uninit() { }
 
     public virtual void Update(float partialTicks)
@@ -74,7 +78,7 @@ public abstract class UIScreen
 
             _hoveredElement = newHovered;
 
-            if (_hoveredElement != null)
+            if (_hoveredElement != null && _hoveredElement.Enabled)
             {
                 _hoveredElement.IsHovered = true;
                 _hoveredElement.OnMouseEnter?.Invoke(new UIMouseEvent { Target = _hoveredElement, MouseX = (int)mouseX, MouseY = (int)mouseY });
@@ -101,7 +105,7 @@ public abstract class UIScreen
                 if (FocusedElement != null) FocusedElement.IsFocused = true;
             }
 
-            if (target != null)
+            if (target != null && target.Enabled)
             {
                 var evt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = button };
                 target.OnMouseDown?.Invoke(evt);
@@ -112,6 +116,10 @@ public abstract class UIScreen
                     target.OnClick?.Invoke(evt);
                 }
             }
+            else if (target != null)
+            {
+                DraggingElement = null; // Don't drag if disabled
+            }
         }
         else
         {
@@ -121,7 +129,7 @@ public abstract class UIScreen
                 MouseButton button = Enum.IsDefined(typeof(MouseButton), rawButton) ? (MouseButton)rawButton : MouseButton.Unknown;
 
                 UIElement? target = Root.HitTest(scaledX, scaledY);
-                if (target != null)
+                if (target != null && target.Enabled)
                 {
                     var evt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = button };
                     target.OnMouseUp?.Invoke(evt);
@@ -146,8 +154,11 @@ public abstract class UIScreen
                 UIElement? current = target;
                 while (current != null)
                 {
-                    current.OnMouseScroll?.Invoke(scrollEvt);
-                    if (scrollEvt.Handled) break;
+                    if (current.Enabled)
+                    {
+                        current.OnMouseScroll?.Invoke(scrollEvt);
+                        if (scrollEvt.Handled) break;
+                    }
                     current = current.Parent;
                 }
             }
@@ -158,7 +169,7 @@ public abstract class UIScreen
     {
         if (Keyboard.getEventKeyState())
         {
-            if (FocusedElement != null)
+            if (FocusedElement != null && FocusedElement.Enabled)
             {
                 var evt = new UIKeyEvent
                 {

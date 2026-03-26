@@ -61,7 +61,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         Button btnCreate = new() { Text = translations.TranslateKey("selectWorld.create") };
         btnCreate.Style.Width = 150;
         btnCreate.Style.SetMargin(2);
-        btnCreate.OnClick += (e) => Game.displayGuiScreen(new GuiCreateWorld(new UIScreenAdapter(this)));
+        btnCreate.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(new CreateWorldScreen(Game)));
         row1.AddChild(btnCreate);
 
         buttonContainer.AddChild(row1);
@@ -91,6 +91,13 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         buttonContainer.AddChild(row2);
         Root.AddChild(buttonContainer);
 
+        UpdateButtons();
+    }
+
+    public override void OnEnter()
+    {
+        LoadSaves();
+        PopulateWorldList();
         UpdateButtons();
     }
 
@@ -167,7 +174,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
     {
         if (_selectedWorldIndex < 0) return;
         string fileName = _saveList[_selectedWorldIndex].FileName;
-        Game.displayGuiScreen(new GuiRenameWorld(new UIScreenAdapter(this), fileName));
+        Game.displayGuiScreen(new UIScreenAdapter(new RenameWorldScreen(Game, this, fileName)));
     }
 
     private void DeleteSelected()
