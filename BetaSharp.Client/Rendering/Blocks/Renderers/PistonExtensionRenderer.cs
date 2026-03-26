@@ -7,9 +7,9 @@ public class PistonExtensionRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.World.getBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
         int facing = BlockPistonExtension.getFacing(metadata);
-        float luminance = block.getLuminance(ctx.World, pos.x, pos.y, pos.z);
+        float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
 
         // Using CustomFlag to track if this is a ShortArm rendering phase
         bool isShortArm = ctx.CustomFlag;

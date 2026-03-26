@@ -1,5 +1,5 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
@@ -17,9 +17,9 @@ public class BlockBreakable : Block
         return false;
     }
 
-    public override bool isSideVisible(IBlockAccess iBlockAccess, int x, int y, int z, int side)
+    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side)
     {
-        int neighborBlockId = iBlockAccess.getBlockId(x, y, z);
-        return !hideAdjacentFaces && neighborBlockId == id ? false : base.isSideVisible(iBlockAccess, x, y, z, side);
+        int neighborBlockId = iBlockReader.GetBlockId(x, y, z);
+        return !hideAdjacentFaces && neighborBlockId == id ? false : base.isSideVisible(iBlockReader, x, y, z, side);
     }
 }

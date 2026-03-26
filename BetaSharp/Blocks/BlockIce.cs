@@ -1,57 +1,40 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
 internal class BlockIce : BlockBreakable
 {
-
     public BlockIce(int id, int textureId) : base(id, textureId, Material.Ice, false)
     {
         slipperiness = 0.98F;
         setTickRandomly(true);
     }
 
-    public override int getRenderLayer()
-    {
-        return 1;
-    }
+    public override int getRenderLayer() => 1;
 
-    public override bool isSideVisible(IBlockAccess iBlockAccess, int x, int y, int z, int side)
-    {
-        return base.isSideVisible(iBlockAccess, x, y, z, 1 - side);
-    }
+    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side) => base.isSideVisible(iBlockReader, x, y, z, 1 - side);
 
-    public override void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta)
+    public override void onAfterBreak(OnAfterBreakEvent @event)
     {
-        base.afterBreak(world, player, x, y, z, meta);
-        Material materialBelow = world.getMaterial(x, y - 1, z);
+        base.onAfterBreak(@event);
+        Material materialBelow = @event.World.Reader.GetMaterial(@event.X, @event.Y - 1, @event.Z);
         if (materialBelow.BlocksMovement || materialBelow.IsFluid)
         {
-            world.setBlock(x, y, z, Block.FlowingWater.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, FlowingWater.id);
         }
-
     }
 
-    public override int getDroppedItemCount(JavaRandom random)
-    {
-        return 0;
-    }
+    public override int getDroppedItemCount() => 0;
 
-    public override void onTick(World world, int x, int y, int z, JavaRandom random)
+    public override void onTick(OnTickEvent @event)
     {
-        if (world.getBrightness(LightType.Block, x, y, z) > 11 - Block.BlockLightOpacity[id])
+        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y, @event.Z) > 11 - BlockLightOpacity[id])
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, Block.Water.id);
+            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Water.id);
         }
-
     }
 
-    public override int getPistonBehavior()
-    {
-        return 0;
-    }
+    public override int getPistonBehavior() => 0;
 }

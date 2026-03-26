@@ -1,14 +1,14 @@
 using BetaSharp.Blocks.Entities;
-using BetaSharp.Client.Achievements;
 using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Client.Input;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.NBT;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities;
 
@@ -21,7 +21,7 @@ public class ClientPlayerEntity : EntityPlayer
     private readonly MouseFilter field_21904_bK = new();
     private readonly MouseFilter field_21902_bL = new();
 
-    public ClientPlayerEntity(BetaSharp game, World world, Session session, int dimensionId) : base(world)
+    public ClientPlayerEntity(BetaSharp game, IWorldContext world, Session session, int dimensionId) : base(world)
     {
         this.Game = game;
         base.dimensionId = dimensionId;
@@ -45,13 +45,13 @@ public class ClientPlayerEntity : EntityPlayer
     {
         if (!Game.statFileWriter.HasAchievementUnlocked(global::BetaSharp.Achievements.OpenInventory))
         {
-            Game.guiAchievement.queueAchievementInformation(global::BetaSharp.Achievements.OpenInventory);
+            Game.guiAchievement.QueueAchievementInformation(global::BetaSharp.Achievements.OpenInventory);
         }
 
         lastScreenDistortion = changeDimensionCooldown;
         if (inTeleportationState)
         {
-            if (!world.isRemote && vehicle != null)
+            if (!world.IsRemote && vehicle != null)
             {
                 setVehicle((Entity)null);
             }
@@ -160,7 +160,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void sendPickup(Entity entity, int count)
     {
-        Game.particleManager.addEffect(new EntityPickupFX(Game.world, entity, this, -0.5F));
+        Game.particleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(Game.world, entity, this, -0.5F)));
     }
 
     public int getPlayerArmorValue()
@@ -170,7 +170,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public virtual void sendChatMessage(string message)
     {
-        Game.ingameGUI.addChatMessage($"<{name}> {message}");
+        Game.ingameGUI.AddChatMessage($"<{name}> {message}");
     }
 
     public override bool isSneaking()
@@ -195,9 +195,7 @@ public class ClientPlayerEntity : EntityPlayer
             lastHealth = health;
             hearts = maxHealth;
             applyDamage(damageAmount);
-
         }
-
     }
 
     public override void respawn()
@@ -211,7 +209,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void sendMessage(string message)
     {
-        Game.ingameGUI.addChatMessageTranslate(message);
+        Game.ingameGUI.AddChatMessageTranslate(message);
     }
 
     public override void increaseStat(StatBase stat, int value)
@@ -228,7 +226,7 @@ public class ClientPlayerEntity : EntityPlayer
                 {
                     if (!alreadyUnlocked)
                     {
-                        Game.guiAchievement.queueTakenAchievement(achievement);
+                        Game.guiAchievement.QueueTakenAchievement(achievement);
                     }
 
                     Game.statFileWriter.ReadStat(stat, value);
@@ -238,13 +236,12 @@ public class ClientPlayerEntity : EntityPlayer
             {
                 Game.statFileWriter.ReadStat(stat, value);
             }
-
         }
     }
 
     private bool isBlockTranslucent(int x, int y, int z)
     {
-        return world.shouldSuffocate(x, y, z);
+        return world.Reader.ShouldSuffocate(x, y, z);
     }
 
     protected override bool pushOutOfBlocks(double posX, double posY, double posZ)

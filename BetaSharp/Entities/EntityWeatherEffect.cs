@@ -1,10 +1,10 @@
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
 public abstract class EntityWeatherEffect : Entity
 {
-    public EntityWeatherEffect(World world) : base(world)
+    public EntityWeatherEffect(IWorldContext world) : base(world)
     {
     }
 }

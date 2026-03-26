@@ -1,14 +1,15 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
+using BetaSharp.Profiling;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.PathFinding;
 
 internal class PathFinder
 {
-    private IBlockAccess _worldMap;
+    private IBlockReader _worldMap;
     private readonly Path _path = new();
     private readonly PathPoint[] _pointMap = new PathPoint[1024];
     private readonly PathPoint[] _pathOptions = new PathPoint[32];
@@ -16,28 +17,36 @@ internal class PathFinder
     private readonly PathPoint[] _pointPool = new PathPoint[4096];
     private int _poolIndex;
 
-    public PathFinder(World world)
+    public PathFinder(IWorldContext world)
     {
-        _worldMap = world;
+        _worldMap = world.Reader;
         for (int i = 0; i < _pointPool.Length; i++)
         {
             _pointPool[i] = new PathPoint(0, 0, 0);
         }
     }
 
-    public void SetWorld(IBlockAccess worldMap)
+    internal PathEntity? findPath(Entity entity, Entity target, float range)
+    {
+        Profiler.Start("AI.PathFinding.FindPathToTarget");
+        PathEntity? result = CreateEntityPathTo(entity, target.x, target.boundingBox.MinY, target.z, range);
+        Profiler.Stop("AI.PathFinding.FindPathToTarget");
+        return result;
+    }
+
+
+
+    internal PathEntity? findPath(Entity entity, int x, int y, int z, float range)
+    {
+        Profiler.Start("AI.PathFinding.FindPathToPosition");
+        PathEntity? result = CreateEntityPathTo(entity, x + 0.5f, y + 0.5f, z + 0.5f, range);
+        Profiler.Stop("AI.PathFinding.FindPathToPosition");
+        return result;
+    }
+
+    public void SetWorld(IBlockReader worldMap)
     {
         _worldMap = worldMap;
-    }
-
-    internal PathEntity? CreateEntityPathTo(Entity entity, Entity target, float maxDistance)
-    {
-        return CreateEntityPathTo(entity, target.x, target.boundingBox.MinY, target.z, maxDistance);
-    }
-
-    internal PathEntity? CreateEntityPathTo(Entity entity, int x, int y, int z, float maxDistance)
-    {
-        return CreateEntityPathTo(entity, x + 0.5f, y + 0.5f, z + 0.5f, maxDistance);
     }
 
     private PathEntity? CreateEntityPathTo(Entity entity, double targetX, double targetY, double targetZ,
@@ -244,7 +253,7 @@ internal class PathFinder
             {
                 for (int iz = z; iz < z + size.Z; ++iz)
                 {
-                    int blockId = _worldMap.getBlockId(ix, iy, iz);
+                    int blockId = _worldMap.GetBlockId(ix, iy, iz);
                     if (blockId > 0)
                     {
                         if (blockId != Block.IronDoor.id && blockId != Block.Door.id)
@@ -256,7 +265,7 @@ internal class PathFinder
                         }
                         else
                         {
-                            int meta = _worldMap.getBlockMeta(ix, iy, iz);
+                            int meta = _worldMap.GetBlockMeta(ix, iy, iz);
                             if (!BlockDoor.isOpen(meta))
                             {
                                 return 0;

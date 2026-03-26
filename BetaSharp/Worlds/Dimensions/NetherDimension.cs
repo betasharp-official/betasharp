@@ -1,8 +1,8 @@
 using BetaSharp.Blocks;
-using BetaSharp.Worlds.Biomes;
-using BetaSharp.Worlds.Biomes.Source;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Gen.Chunks;
+using BetaSharp.Worlds.Generation.Biomes;
+using BetaSharp.Worlds.Generation.Biomes.Source;
 using Silk.NET.Maths;
 
 namespace BetaSharp.Worlds.Dimensions;
@@ -36,14 +36,14 @@ internal class NetherDimension : Dimension
         }
     }
 
-    public override ChunkSource CreateChunkGenerator()
+    public override IChunkSource CreateChunkGenerator()
     {
-        return new NetherChunkGenerator(World, World.getSeed());
+        return new NetherChunkGenerator(World, World.Seed);
     }
 
     public override bool IsValidSpawnPoint(int x, int z)
     {
-        int blockId = World.getSpawnBlockId(x, z);
+        int blockId = World.GetSpawnBlockId(x, z);
         return blockId != Block.Bedrock.id && blockId != 0 && Block.BlocksOpaque[blockId];
     }
 

@@ -3,6 +3,8 @@ using BetaSharp.Entities;
 using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Entities.FX;
 
@@ -24,7 +26,7 @@ public class EntityFX : Entity
     public static double interpPosY;
     public static double interpPosZ;
 
-    public EntityFX(World world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : base(world)
+    public EntityFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : base(world)
     {
         setBoundingBoxSpacing(0.2F, 0.2F);
         standingEyeHeight = height / 2.0F;

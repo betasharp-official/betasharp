@@ -7,7 +7,8 @@ using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Rendering.Entities;
 
@@ -98,10 +99,10 @@ public class EntityRenderDispatcher
         fontRenderer = textRenderer;
         if (camera.isSleeping())
         {
-            int var7 = world.getBlockId(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
+            int var7 = world.Reader.GetBlockId(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
             if (var7 == Block.Bed.id)
             {
-                int var8 = world.getBlockMeta(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
+                int var8 = world.Reader.GetBlockMeta(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
                 int var9 = var8 & 3;
                 playerViewY = var9 * 90 + 180;
                 playerViewX = 0.0F;

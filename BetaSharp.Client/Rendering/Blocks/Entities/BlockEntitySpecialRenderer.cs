@@ -1,6 +1,7 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Rendering.Blocks.Entities;
 

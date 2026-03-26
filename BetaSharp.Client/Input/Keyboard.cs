@@ -335,7 +335,7 @@ public class Keyboard
         bool pressed = action == InputAction.Press || action == InputAction.Repeat;
         bool isRepeat = action == InputAction.Repeat;
 
-        if (lwjglKey > 0 && lwjglKey < KEYBOARD_SIZE) keyDownBuffer[lwjglKey] = pressed && !isRepeat;
+        if (lwjglKey > 0 && lwjglKey < KEYBOARD_SIZE) keyDownBuffer[lwjglKey] = pressed;
 
 
         char character = '\0';

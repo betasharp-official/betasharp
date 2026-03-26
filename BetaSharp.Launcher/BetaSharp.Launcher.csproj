@@ -16,6 +16,11 @@
     <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\BetaSharp.Client\BetaSharp.Client.csproj" ReferenceOutputAssembly="false" Private="false"/>
     <ProjectReference Include="..\BetaSharp.Server\BetaSharp.Server.csproj" ReferenceOutputAssembly="false" Private="false"/>
@@ -23,7 +28,8 @@
 
   <Target Name="_CopyClientOutput">
     <PropertyGroup>
-      <ClientOutputDir>..\BetaSharp.Client\bin\$(Configuration)\$(TargetFramework)\</ClientOutputDir>
+      <ClientRuntimeDir Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)\</ClientRuntimeDir>
+      <ClientOutputDir>..\BetaSharp.Client\bin\$(Configuration)\$(TargetFramework)\$(ClientRuntimeDir)</ClientOutputDir>
     </PropertyGroup>
 
     <ItemGroup>
@@ -35,7 +41,8 @@
 
   <Target Name="_CopyServerOutput">
     <PropertyGroup>
-      <ServerOutputDir>..\BetaSharp.Server\bin\$(Configuration)\$(TargetFramework)\</ServerOutputDir>
+      <ServerRuntimeDir Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)\</ServerRuntimeDir>
+      <ServerOutputDir>..\BetaSharp.Server\bin\$(Configuration)\$(TargetFramework)\$(ServerRuntimeDir)</ServerOutputDir>
     </PropertyGroup>
 
     <ItemGroup>
@@ -53,6 +60,14 @@
     <MSBuild Projects="$(MSBuildProjectFile)" Targets="_CopyServerOutput" Properties="ServerCopyDestination=$(OutputPath)Server\"/>
   </Target>
 
+  <Target Name="CopyClientOutputPublish" AfterTargets="Publish">
+    <MSBuild Projects="$(MSBuildProjectFile)" Targets="_CopyClientOutput" Properties="ClientCopyDestination=$(PublishDir)Client\"/>
+  </Target>
+
+  <Target Name="CopyServerOutputPublish" AfterTargets="Publish">
+    <MSBuild Projects="$(MSBuildProjectFile)" Targets="_CopyServerOutput" Properties="ServerCopyDestination=$(PublishDir)Server\"/>
+  </Target>
+
   <ItemGroup>
     <AvaloniaResource Include="logo.png"/>
     <AvaloniaResource Include="logo.ico"/>
@@ -63,6 +78,7 @@
 
     <PackageReference Include="Avalonia" Version="11.3.12"/>
     <PackageReference Include="Avalonia.Desktop" Version="11.3.12"/>
+    <PackageReference Include="Avalonia.Labs.Qr" Version="11.3.1"/>
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12"/>
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.12"/>
 

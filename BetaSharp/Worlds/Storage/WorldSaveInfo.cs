@@ -2,12 +2,6 @@ namespace BetaSharp.Worlds.Storage;
 
 public class WorldSaveInfo : IComparable<WorldSaveInfo>
 {
-    public string FileName { get; }
-    public string DisplayName { get; }
-    public long LastPlayed { get; }
-    public long Size { get; }
-    public bool IsUnsupported { get; }
-
     public WorldSaveInfo(string fileName, string displayName, long lastPlayed, long size, bool isUnsupported)
     {
         FileName = fileName;
@@ -17,9 +11,18 @@ public class WorldSaveInfo : IComparable<WorldSaveInfo>
         IsUnsupported = isUnsupported;
     }
 
+    public string FileName { get; }
+    public string DisplayName { get; }
+    public long LastPlayed { get; }
+    public long Size { get; }
+    public bool IsUnsupported { get; }
+
     public int CompareTo(WorldSaveInfo? other)
     {
-        if (other is null) return 1;
+        if (other is null)
+        {
+            return 1;
+        }
 
         int timeComparison = other.LastPlayed.CompareTo(LastPlayed);
         if (timeComparison != 0)

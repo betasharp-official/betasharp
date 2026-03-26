@@ -1,6 +1,6 @@
 using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
@@ -8,7 +8,7 @@ public abstract class EntityMonster : EntityCreature, Monster
 {
     protected int attackStrength = 2;
 
-    public EntityMonster(World world) : base(world)
+    public EntityMonster(IWorldContext world) : base(world)
     {
         health = 20;
     }
@@ -27,7 +27,7 @@ public abstract class EntityMonster : EntityCreature, Monster
     public override void tick()
     {
         base.tick();
-        if (!world.isRemote && world.difficulty == 0)
+        if (!world.IsRemote && world.Difficulty == 0)
         {
             markDead();
         }
@@ -36,7 +36,7 @@ public abstract class EntityMonster : EntityCreature, Monster
 
     protected override Entity findPlayerToAttack()
     {
-        EntityPlayer player = world.getClosestPlayer(this, 16.0D);
+        EntityPlayer player = world.Entities.GetClosestPlayer(this.x, this.y, this.z, 16.0D);
         return player != null && canSee(player) ? player : null;
     }
 
@@ -76,7 +76,7 @@ public abstract class EntityMonster : EntityCreature, Monster
 
     protected override float getBlockPathWeight(int x, int y, int z)
     {
-        return 0.5F - world.getLuminance(x, y, z);
+        return 0.5F - world.Lighting.GetLuminance(x, y, z);
     }
 
     public override void writeNbt(NBTTagCompound nbt)
@@ -91,25 +91,23 @@ public abstract class EntityMonster : EntityCreature, Monster
 
     public override bool canSpawn()
     {
-        int x = MathHelper.Floor(base.x);
+        int x = MathHelper.Floor(this.x);
         int y = MathHelper.Floor(boundingBox.MinY);
-        int z = MathHelper.Floor(base.z);
-        if (world.getBrightness(LightType.Sky, x, y, z) > random.NextInt(32))
+        int z = MathHelper.Floor(this.z);
+        if (world.Lighting.GetBrightness(LightType.Sky, x, y, z) > random.NextInt(32))
         {
             return false;
         }
-        else
-        {
-            int lightLevel = world.getLightLevel(x, y, z);
-            if (world.isThundering())
-            {
-                int ambientDarkness = world.ambientDarkness;
-                world.ambientDarkness = 10;
-                lightLevel = world.getLightLevel(x, y, z);
-                world.ambientDarkness = ambientDarkness;
-            }
 
-            return lightLevel <= random.NextInt(8) && base.canSpawn();
+        int lightLevel = world.Lighting.GetLightLevel(x, y, z);
+        if (world.Environment.IsThundering())
+        {
+            int ambientDarkness = world.Environment.AmbientDarkness;
+            world.Environment.AmbientDarkness = 10;
+            lightLevel = world.Lighting.GetLightLevel(x, y, z);
+            world.Environment.AmbientDarkness = ambientDarkness;
         }
+
+        return lightLevel <= random.NextInt(8) && base.canSpawn();
     }
 }

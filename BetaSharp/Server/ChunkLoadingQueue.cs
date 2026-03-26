@@ -1,13 +1,15 @@
 using BetaSharp.Entities;
+using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Server;
 
 internal class ChunkLoadingQueue(ChunkMap chunkMap)
 {
-    private readonly ChunkMap chunkMap = chunkMap;
+    private readonly ChunkMap _chunkMap = chunkMap;
     private readonly Dictionary<long, PendingChunk> _pendingChunks = [];
     //TODO: MAKE THIS CONFIGURABLE
     private const int MAX_CHUNKS_PER_TICK = 5;
+    private long _nextSequence;
 
     public void Add(int x, int z, ServerPlayerEntity player)
     {
@@ -15,29 +17,41 @@ internal class ChunkLoadingQueue(ChunkMap chunkMap)
 
         if (_pendingChunks.TryGetValue(hash, out var pending))
         {
-            if (!pending.Players.Contains(player))
-            {
-                pending.Players.Add(player);
-            }
+            pending.AddPlayer(player);
         }
         else
         {
-            _pendingChunks[hash] = new PendingChunk(hash, x, z, player);
+            _pendingChunks[hash] = new PendingChunk(hash, x, z, _nextSequence++, player);
         }
     }
 
     public void RemovePlayer(ServerPlayerEntity player)
     {
         var toRemove = new List<long>();
-        foreach (var (hash, chunk) in _pendingChunks)
+        foreach ((long hash, PendingChunk chunk) in _pendingChunks)
         {
-            chunk.Players.Remove(player);
-            if (chunk.Players.Count == 0)
+            chunk.RemovePlayer(player);
+            if (chunk.IsEmpty)
             {
                 toRemove.Add(hash);
             }
         }
-        foreach (var hash in toRemove)
+        foreach (long hash in toRemove)
+        {
+            _pendingChunks.Remove(hash);
+        }
+    }
+
+    public void Remove(int x, int z, ServerPlayerEntity player)
+    {
+        long hash = ChunkMap.GetChunkHash(x, z);
+        if (!_pendingChunks.TryGetValue(hash, out PendingChunk? pending))
+        {
+            return;
+        }
+
+        pending.RemovePlayer(player);
+        if (pending.IsEmpty)
         {
             _pendingChunks.Remove(hash);
         }
@@ -49,16 +63,16 @@ internal class ChunkLoadingQueue(ChunkMap chunkMap)
 
         // Convert to list once and sort once — avoids repeated full-sort of the backing store.
         var sortedChunks = new List<PendingChunk>(_pendingChunks.Values);
-        sortedChunks.Sort((a, b) => a.GetMinDistanceSqr().CompareTo(b.GetMinDistanceSqr()));
+        sortedChunks.Sort((a, b) => a.GetPriority().CompareTo(b.GetPriority()));
 
         int chunksLoaded = 0;
-        foreach (var chunkToLoad in sortedChunks)
+        foreach (PendingChunk chunkToLoad in sortedChunks)
         {
             if (chunksLoaded >= MAX_CHUNKS_PER_TICK) break;
 
             _pendingChunks.Remove(chunkToLoad.Hash);
 
-            var chunk = chunkMap.GetOrCreateChunk(chunkToLoad.X, chunkToLoad.Z, true);
+            ChunkMap.TrackedChunk? chunk = _chunkMap.GetOrCreateChunk(chunkToLoad.X, chunkToLoad.Z, true);
             if (chunk != null)
             {
                 foreach (var player in chunkToLoad.Players)
@@ -78,33 +92,49 @@ internal class ChunkLoadingQueue(ChunkMap chunkMap)
         public long Hash { get; }
         public int X { get; }
         public int Z { get; }
-        public List<ServerPlayerEntity> Players { get; } = [];
+        public ChunkPos ChunkPos { get; }
+        public HashSet<ServerPlayerEntity> Players { get; } = [];
+        public long Sequence { get; }
+        public bool IsEmpty => Players.Count == 0;
 
-        // Cached chunk-center coordinates — computed once at construction.
-        public double CenterX { get; }
-        public double CenterZ { get; }
-
-        public PendingChunk(long hash, int x, int z, ServerPlayerEntity initiator)
+        public PendingChunk(long hash, int x, int z, long sequence, ServerPlayerEntity initiator)
         {
             Hash = hash;
             X = x;
             Z = z;
-            CenterX = x * 16 + 8;
-            CenterZ = z * 16 + 8;
-            Players.Add(initiator);
+            ChunkPos = new ChunkPos(x, z);
+            Sequence = sequence;
+            AddPlayer(initiator);
         }
 
-        public double GetMinDistanceSqr()
+        public void AddPlayer(ServerPlayerEntity player)
         {
-            double min = double.MaxValue;
-            foreach (var p in Players)
+            Players.Add(player);
+        }
+
+        public void RemovePlayer(ServerPlayerEntity player)
+        {
+            Players.Remove(player);
+        }
+
+        public ChunkPriority GetPriority()
+        {
+            bool hasAny = false;
+            ChunkPriority bestPriority = default;
+
+            foreach (var player in Players)
             {
-                double dx = p.x - CenterX;
-                double dz = p.z - CenterZ;
-                double d = dx * dx + dz * dz;
-                if (d < min) min = d;
+                ChunkPriority candidate = player.GetChunkPriority(ChunkPos, Sequence);
+                if (!hasAny || candidate.CompareTo(bestPriority) < 0)
+                {
+                    bestPriority = candidate;
+                    hasAny = true;
+                }
             }
-            return min;
+
+            return hasAny
+                ? bestPriority
+                : new ChunkPriority(int.MaxValue, double.MaxValue, Sequence);
         }
     }
 }

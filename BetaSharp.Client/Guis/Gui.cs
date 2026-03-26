@@ -20,7 +20,7 @@ public class Gui
         DrawRect(x, startY + 1, x + 1, endY, color);
     }
 
-    protected static void DrawRect(int x1, int y1, int x2, int y2, Color color)
+    public static void DrawRect(int x1, int y1, int x2, int y2, Color color)
     {
         if (x1 < x2) (x1, x2) = (x2, x1);
         if (y1 < y2) (y1, y2) = (y2, y1);

@@ -1,7 +1,6 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
-using BetaSharp.Worlds.Colors;
+using BetaSharp.Worlds.ClientData.Colors;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
@@ -15,70 +14,71 @@ public class BlockGrass : Block
 
     public override int getTexture(int side)
     {
-        if (side == 1) return 0;  // top: grass green
-        if (side == 0) return 2;  // bottom: dirt
-        return 3;                  // sides: grass+dirt edge
+        if (side == 1)
+        {
+            return 0; // top: grass green
+        }
+
+        if (side == 0)
+        {
+            return 2; // bottom: dirt
+        }
+
+        return 3; // sides: grass+dirt edge
     }
 
-    public override int getColorForFace(int meta, int face)
-    {
-        return face == 1 ? GrassColors.getDefaultColor() : 0xFFFFFF;
-    }
+    public override int getColorForFace(int meta, int face) => face == 1 ? GrassColors.getDefaultColor() : 0xFFFFFF;
 
-    public override int getTextureId(IBlockAccess iBlockAccess, int x, int y, int z, int side)
+    public override int getTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
     {
         if (side == 1)
         {
             return 0;
         }
-        else if (side == 0)
+
+        if (side == 0)
         {
             return 2;
         }
-        else
-        {
-            Material materialAbove = iBlockAccess.getMaterial(x, y + 1, z);
-            return materialAbove != Material.SnowLayer && materialAbove != Material.SnowBlock ? 3 : 68;
-        }
+
+        Material materialAbove = iBlockReader.GetMaterial(x, y + 1, z);
+        return materialAbove != Material.SnowLayer && materialAbove != Material.SnowBlock ? 3 : 68;
     }
 
-    public override int getColorMultiplier(IBlockAccess iBlockAccess, int x, int y, int z)
+    public override int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z)
     {
-        iBlockAccess.getBiomeSource().GetBiomesInArea(x, z, 1, 1);
-        double temperature = iBlockAccess.getBiomeSource().TemperatureMap[0];
-        double downfall = iBlockAccess.getBiomeSource().DownfallMap[0];
+        iBlockReader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
+        double temperature = iBlockReader.GetBiomeSource().TemperatureMap[0];
+        double downfall = iBlockReader.GetBiomeSource().DownfallMap[0];
         return GrassColors.getColor(temperature, downfall);
     }
 
-    public override void onTick(World world, int x, int y, int z, JavaRandom random)
+    public override void onTick(OnTickEvent ctx)
     {
-        if (!world.isRemote)
+        if (!ctx.World.IsRemote)
         {
-            if (world.getLightLevel(x, y + 1, z) < 4 && Block.BlockLightOpacity[world.getBlockId(x, y + 1, z)] > 2)
+            if (ctx.World.Lighting.GetLightLevel(ctx.X, ctx.Y + 1, ctx.Z) < 4 && BlockLightOpacity[ctx.World.Reader.GetBlockId(ctx.X, ctx.Y + 1, ctx.Z)] > 2)
             {
-                if (random.NextInt(4) != 0)
+                if (Random.Shared.Next(4) != 0)
                 {
                     return;
                 }
 
-                world.setBlock(x, y, z, Block.Dirt.id);
+                ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, Dirt.id);
             }
-            else if (world.getLightLevel(x, y + 1, z) >= 9)
+            else if (ctx.World.Lighting.GetLightLevel(ctx.X, ctx.Y + 1, ctx.Z) >= 9)
             {
-                int spreadX = x + random.NextInt(3) - 1;
-                int spreadY = y + random.NextInt(5) - 3;
-                int spreadZ = z + random.NextInt(3) - 1;
-                int blockAboveId = world.getBlockId(spreadX, spreadY + 1, spreadZ);
-                if (world.getBlockId(spreadX, spreadY, spreadZ) == Block.Dirt.id && world.getLightLevel(spreadX, spreadY + 1, spreadZ) >= 4 && Block.BlockLightOpacity[blockAboveId] <= 2)
+                int spreadX = ctx.X + Random.Shared.Next(3) - 1;
+                int spreadY = ctx.Y + Random.Shared.Next(5) - 3;
+                int spreadZ = ctx.Z + Random.Shared.Next(3) - 1;
+                int blockAboveId = ctx.World.Reader.GetBlockId(spreadX, spreadY + 1, spreadZ);
+                if (ctx.World.Reader.GetBlockId(spreadX, spreadY, spreadZ) == Dirt.id && ctx.World.Lighting.GetLightLevel(spreadX, spreadY + 1, spreadZ) >= 4 && BlockLightOpacity[blockAboveId] <= 2)
                 {
-                    world.setBlock(spreadX, spreadY, spreadZ, Block.GrassBlock.id);
+                    ctx.World.Writer.SetBlock(spreadX, spreadY, spreadZ, GrassBlock.id);
                 }
             }
         }
     }
 
-    public override int getDroppedItemId(int blocKMeta, JavaRandom random)
-    {
-        return Block.Dirt.getDroppedItemId(0, random);
-    }
+    public override int getDroppedItemId(int blocKMeta) => Dirt.getDroppedItemId(0);
 }

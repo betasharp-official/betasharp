@@ -10,7 +10,7 @@ public class MinecartTrackRenderer : IBlockRenderer
         // Cast the generic block to a BlockRail to access rail-specific methods
         BlockRail rail = (BlockRail)block;
 
-        int metadata = ctx.World.getBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
 
         int textureId = rail.getTexture(0, metadata);
         if (ctx.OverrideTexture >= 0)
@@ -24,7 +24,7 @@ public class MinecartTrackRenderer : IBlockRenderer
             metadata &= 7;
         }
 
-        float luminance = rail.getLuminance(ctx.World, pos.x, pos.y, pos.z);
+        float luminance = rail.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
         ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
 
         int texU = (textureId & 15) << 4;

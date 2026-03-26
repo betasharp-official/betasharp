@@ -1,10 +1,7 @@
-using BetaSharp.Util.Maths;
-
 namespace BetaSharp.Blocks;
 
 public class BlockDeadBush : BlockPlant
 {
-
     public BlockDeadBush(int i, int j) : base(i, j)
     {
         float halfSize = 0.4F;
@@ -13,7 +10,7 @@ public class BlockDeadBush : BlockPlant
 
     protected override bool canPlantOnTop(int id)
     {
-        return id == Block.Sand.id;
+        return id == Sand.id;
     }
 
     public override int getTexture(int side, int meta)
@@ -21,7 +18,7 @@ public class BlockDeadBush : BlockPlant
         return textureId;
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
+    public override int getDroppedItemId(int blockMeta)
     {
         return -1;
     }

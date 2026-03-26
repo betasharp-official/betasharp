@@ -1,7 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
@@ -11,11 +11,11 @@ public class EntityFallingSand : Entity
     public int blockId;
     public int fallTime;
 
-    public EntityFallingSand(World world) : base(world)
+    public EntityFallingSand(IWorldContext world) : base(world)
     {
     }
 
-    public EntityFallingSand(World world, double x, double y, double z, int blockId) : base(world)
+    public EntityFallingSand(IWorldContext world, double x, double y, double z, int blockId) : base(world)
     {
         this.blockId = blockId;
         preventEntitySpawning = true;
@@ -61,9 +61,9 @@ public class EntityFallingSand : Entity
             int floorX = MathHelper.Floor(x);
             int floorY = MathHelper.Floor(y);
             int floorZ = MathHelper.Floor(z);
-            if (world.getBlockId(floorX, floorY, floorZ) == blockId)
+            if (world.Reader.GetBlockId(floorX, floorY, floorZ) == blockId)
             {
-                world.setBlock(floorX, floorY, floorZ, 0);
+                world.Writer.SetBlock(floorX, floorY, floorZ, 0);
             }
 
             if (onGround)
@@ -72,12 +72,12 @@ public class EntityFallingSand : Entity
                 velocityZ *= (double)0.7F;
                 velocityY *= -0.5D;
                 markDead();
-                if ((!world.canPlace(blockId, floorX, floorY, floorZ, true, 1) || BlockSand.canFallThrough(world, floorX, floorY - 1, floorZ) || !world.setBlock(floorX, floorY, floorZ, blockId)) && !world.isRemote)
+                if ((!Block.Blocks[blockId].canPlaceAt(new CanPlaceAtContext(world, 0, floorX, floorY, floorZ)) || BlockSand.canFallThrough(new OnTickEvent(world, floorX, floorY - 1, floorZ, 0, blockId)) || !world.Writer.SetBlock(floorX, floorY, floorZ, blockId)) && !world.IsRemote)
                 {
                     dropItem(blockId, 1);
                 }
             }
-            else if (fallTime > 100 && !world.isRemote)
+            else if (fallTime > 100 && !world.IsRemote)
             {
                 dropItem(blockId, 1);
                 markDead();
@@ -101,7 +101,7 @@ public class EntityFallingSand : Entity
         return 0.0F;
     }
 
-    public World getWorld()
+    public IWorldContext getWorld()
     {
         return world;
     }

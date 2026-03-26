@@ -1,11 +1,12 @@
-﻿using BetaSharp.Blocks;
+using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Chunks;
+using BetaSharp.Worlds.Core;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server;
@@ -13,13 +14,12 @@ namespace BetaSharp.Server;
 internal class ChunkMap
 {
     public List<ServerPlayerEntity> players = [];
-    private readonly Dictionary<long, TrackedChunk> chunkMapping = new();
-    private readonly List<TrackedChunk> chunksToUpdate = [];
+    private readonly Dictionary<long, TrackedChunk> _chunkMapping = new();
+    private readonly List<TrackedChunk> _chunksToUpdate = [];
     public readonly ChunkLoadingQueue loadQueue;
-    private BetaSharpServer server;
-    private readonly int dimensionId;
-    private int viewDistance;
-    private readonly int[][] DIRECTIONS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+    private BetaSharpServer _server;
+    private readonly int _dimensionId;
+    private int _viewDistance;
     private readonly ILogger<ChunkMap> _logger = Log.Instance.For<ChunkMap>();
 
     public ChunkMap(BetaSharpServer server, int dimensionId, int viewRadius)
@@ -33,21 +33,21 @@ internal class ChunkMap
             throw new ArgumentException("Too small view Radius! Min is 4.", nameof(viewRadius));
         }
 
-        viewDistance = viewRadius;
-        this.server = server;
-        this.dimensionId = dimensionId;
+        _viewDistance = viewRadius;
+        _server = server;
+        _dimensionId = dimensionId;
         loadQueue = new ChunkLoadingQueue(this);
     }
 
     public ServerWorld getWorld()
     {
-        return server.getWorld(dimensionId);
+        return _server.getWorld(_dimensionId);
     }
 
     public void SetViewDistance(int newDistance)
     {
-        int oldDistance = viewDistance;
-        viewDistance = newDistance;
+        int oldDistance = _viewDistance;
+        _viewDistance = newDistance;
 
         if (newDistance < oldDistance)
         {
@@ -57,27 +57,34 @@ internal class ChunkMap
                 int px = (int)player.lastX >> 4;
                 int pz = (int)player.lastZ >> 4;
 
-                foreach (var item in GetChunks(player))
+                foreach (var item in GetChunks(player, oldDistance))
                 {
                     if (isWithinViewDistance(item.x, item.z, px, pz))
                     {
                         continue;
                     }
 
-                    TrackedChunk chunk = GetOrCreateChunk(item.x, item.z, false);
-                    chunk?.removePlayer(player);
+                    if (GetOrCreateChunk(item.x, item.z, false) is TrackedChunk chunk)
+                    {
+                        chunk.removePlayer(player);
+                    }
+                    else
+                    {
+                        loadQueue.Remove(item.x, item.z, player);
+                        player.CancelChunkSend(item);
+                    }
                 }
             }
         }
         else if (newDistance > oldDistance)
         {
             // Load chunks that are now within view distance
-            foreach (var player in players)
+            foreach (ServerPlayerEntity player in players)
             {
                 int px = (int)player.lastX >> 4;
                 int pz = (int)player.lastZ >> 4;
 
-                foreach (var item in GetChunks(player))
+                foreach (ChunkPos item in GetChunks(player))
                 {
                     if (isWithinOldViewDistance(item.x, item.z, px, pz, oldDistance))
                     {
@@ -109,12 +116,12 @@ internal class ChunkMap
 
     public void updateChunks()
     {
-        foreach (var chunk in chunksToUpdate)
+        foreach (TrackedChunk chunk in _chunksToUpdate)
         {
             chunk.updateChunk();
         }
 
-        chunksToUpdate.Clear();
+        _chunksToUpdate.Clear();
         loadQueue.Tick();
     }
 
@@ -123,36 +130,55 @@ internal class ChunkMap
         return (chunkX + 2147483647L) | ((chunkZ + 2147483647L) << 32);
     }
 
-    internal TrackedChunk GetOrCreateChunk(int chunkX, int chunkZ, bool createIfAbsent)
+    internal TrackedChunk? GetOrCreateChunk(int chunkX, int chunkZ, bool createIfAbsent)
     {
-        long var4 = GetChunkHash(chunkX, chunkZ);
-        TrackedChunk var6 = chunkMapping.GetValueOrDefault(var4);
-        if (var6 == null && createIfAbsent)
+        long chunkHash = GetChunkHash(chunkX, chunkZ);
+        TrackedChunk? chunk = _chunkMapping.GetValueOrDefault(chunkHash);
+        if (chunk == null && createIfAbsent)
         {
-            var6 = new TrackedChunk(this, chunkX, chunkZ);
-            chunkMapping[var4] = var6;
+            chunk = new TrackedChunk(this, chunkX, chunkZ);
+            _chunkMapping[chunkHash] = chunk;
         }
 
-        return var6;
+        return chunk;
     }
 
     public void markBlockForUpdate(int x, int y, int z)
     {
         int var4 = x >> 4;
         int var5 = z >> 4;
-        TrackedChunk var6 = GetOrCreateChunk(var4, var5, false);
-        if (var6 != null)
+        TrackedChunk? var6 = GetOrCreateChunk(var4, var5, false);
+        var6?.updatePlayerChunks(x & 15, y, z & 15);
+    }
+
+    internal bool IsChunkTrackedAndSent(int chunkX, int chunkZ)
+    {
+        long key = GetChunkHash(chunkX, chunkZ);
+        return _chunkMapping.TryGetValue(key, out TrackedChunk? trackedChunk) && trackedChunk != null && trackedChunk.HasPlayersAndHasBeenSent();
+    }
+
+    internal static bool HasPlayerReceivedChunkTerrain(ServerPlayerEntity player, int chunkX, int chunkZ)
+    {
+        var pos = new ChunkPos(chunkX, chunkZ);
+        return player.ChunksTerrainSentToClient.ContainsKey(pos);
+    }
+
+    public void OnChunkDecorated(int chunkX, int chunkZ)
+    {
+        long key = GetChunkHash(chunkX, chunkZ);
+        if (_chunkMapping.TryGetValue(key, out TrackedChunk? trackedChunk) && trackedChunk != null)
         {
-            var6.updatePlayerChunks(x & 15, y, z & 15);
+            trackedChunk.EnqueueForTrackingPlayers();
         }
     }
 
     public void addPlayer(ServerPlayerEntity player)
     {
+        player.ResetChunkStreamingState();
         player.lastX = player.x;
         player.lastZ = player.z;
 
-        foreach (var item in GetChunks(player))
+        foreach (ChunkPos item in GetChunks(player))
         {
             if (GetOrCreateChunk(item.X, item.Z, false) is { } centerChunk)
             {
@@ -169,35 +195,28 @@ internal class ChunkMap
 
     public void removePlayer(ServerPlayerEntity player)
     {
-        foreach (var item in GetChunks(player))
+        foreach (ChunkPos item in GetChunks(player))
         {
-            var chunk = GetOrCreateChunk(item.X, item.Z, false);
+            TrackedChunk? chunk = GetOrCreateChunk(item.X, item.Z, false);
             chunk?.removePlayer(player);
         }
 
         players.Remove(player);
         loadQueue.RemovePlayer(player);
+        player.ResetChunkStreamingState();
     }
 
     private bool isWithinViewDistance(int chunkX, int chunkZ, int centerX, int centerZ)
     {
         int var5 = chunkX - centerX;
         int var6 = chunkZ - centerZ;
-        return var5 >= -viewDistance && var5 <= viewDistance && var6 >= -viewDistance && var6 <= viewDistance;
+        return var5 >= -_viewDistance && var5 <= _viewDistance && var6 >= -_viewDistance && var6 <= _viewDistance;
     }
 
     public void updatePlayerChunks(ServerPlayerEntity player)
     {
         int playerChunkCenterX = (int)player.x >> 4;
         int playerChunkCenterZ = (int)player.z >> 4;
-        double playerDeltaX = player.lastX - player.x;
-        double playerDeltaZ = player.lastZ - player.z;
-        double playerDeltaSquared = playerDeltaX * playerDeltaX + playerDeltaZ * playerDeltaZ;
-        if (playerDeltaSquared < 64.0)
-        {
-            return;
-        }
-
         int playerLastChunkCenterX = (int)player.lastX >> 4;
         int playerLastChunkCenterZ = (int)player.lastZ >> 4;
         int playerChunkCenterDeltaX = playerChunkCenterX - playerLastChunkCenterX;
@@ -207,9 +226,11 @@ internal class ChunkMap
             return;
         }
 
-        for (int x = playerChunkCenterX - viewDistance; x <= playerChunkCenterX + viewDistance; x++)
+        player.UpdateChunkStreamingMotion(playerChunkCenterDeltaX, playerChunkCenterDeltaZ);
+
+        for (int x = playerChunkCenterX - _viewDistance; x <= playerChunkCenterX + _viewDistance; x++)
         {
-            for (int z = playerChunkCenterZ - viewDistance; z <= playerChunkCenterZ + viewDistance; z++)
+            for (int z = playerChunkCenterZ - _viewDistance; z <= playerChunkCenterZ + _viewDistance; z++)
             {
                 if (!isWithinViewDistance(x, z, playerLastChunkCenterX, playerLastChunkCenterZ))
                 {
@@ -228,8 +249,18 @@ internal class ChunkMap
 
                 if (!isWithinViewDistance(x - playerChunkCenterDeltaX, z - playerChunkCenterDeltaZ, playerChunkCenterX, playerChunkCenterZ))
                 {
-                    TrackedChunk chunk = GetOrCreateChunk(x - playerChunkCenterDeltaX, z - playerChunkCenterDeltaZ, false);
-                    chunk?.removePlayer(player);
+                    int oldChunkX = x - playerChunkCenterDeltaX;
+                    int oldChunkZ = z - playerChunkCenterDeltaZ;
+                    if (GetOrCreateChunk(oldChunkX, oldChunkZ, false) is TrackedChunk chunk)
+                    {
+                        chunk.removePlayer(player);
+                    }
+                    else
+                    {
+                        ChunkPos oldChunkPos = new(oldChunkX, oldChunkZ);
+                        loadQueue.Remove(oldChunkX, oldChunkZ, player);
+                        player.CancelChunkSend(oldChunkPos);
+                    }
                 }
             }
         }
@@ -240,32 +271,37 @@ internal class ChunkMap
 
     public int getBlockViewDistance()
     {
-        return viewDistance * 16 - 16;
+        return _viewDistance * 16 - 16;
     }
 
     private ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player)
     {
+        return GetChunks(player, _viewDistance);
+    }
+
+    private ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player, int radius)
+    {
         int playerChunkX = (int)player.x >> 4;
         int playerChunkZ = (int)player.z >> 4;
-        int diameter = viewDistance * 2 + 1;
+        int diameter = radius * 2 + 1;
         var chunks = new ChunkPos[diameter * diameter];
         int index = 0;
 
         chunks[index++] = new ChunkPos(playerChunkX, playerChunkZ);
 
-        for (int radius = 1; radius <= viewDistance; radius++)
+        for (int currentRadius = 1; currentRadius <= radius; currentRadius++)
         {
-            for (int dx = -radius; dx <= radius; dx++)
-                chunks[index++] = new ChunkPos(playerChunkX + dx, playerChunkZ - radius);
+            for (int dx = -currentRadius; dx <= currentRadius; dx++)
+                chunks[index++] = new ChunkPos(playerChunkX + dx, playerChunkZ - currentRadius);
 
-            for (int dz = -radius + 1; dz <= radius; dz++)
-                chunks[index++] = new ChunkPos(playerChunkX + radius, playerChunkZ + dz);
+            for (int dz = -currentRadius + 1; dz <= currentRadius; dz++)
+                chunks[index++] = new ChunkPos(playerChunkX + currentRadius, playerChunkZ + dz);
 
-            for (int dx = radius - 1; dx >= -radius; dx--)
-                chunks[index++] = new ChunkPos(playerChunkX + dx, playerChunkZ + radius);
+            for (int dx = currentRadius - 1; dx >= -currentRadius; dx--)
+                chunks[index++] = new ChunkPos(playerChunkX + dx, playerChunkZ + currentRadius);
 
-            for (int dz = radius - 1; dz >= -radius + 1; dz--)
-                chunks[index++] = new ChunkPos(playerChunkX - radius, playerChunkZ + dz);
+            for (int dz = currentRadius - 1; dz >= -currentRadius + 1; dz--)
+                chunks[index++] = new ChunkPos(playerChunkX - currentRadius, playerChunkZ + dz);
         }
 
         return chunks;
@@ -273,136 +309,153 @@ internal class ChunkMap
 
     internal class TrackedChunk
     {
+        private const int MaxDirtyBlocks = 10;
         private readonly ILogger<TrackedChunk> _logger = Log.Instance.For<TrackedChunk>();
-        private readonly ChunkMap chunkMap;
-        private readonly HashSet<ServerPlayerEntity> players;
-        private readonly int chunkX;
-        private readonly int chunkZ;
-        private readonly ChunkPos chunkPos;
-        private readonly short[] dirtyBlocks;
-        private int dirtyBlockCount;
-        private int minX;
-        private int minY;
-        private int minZ;
-        private int maxX;
-        private int maxY;
-        private int maxZ;
+        private readonly ChunkMap _chunkMap;
+        private readonly HashSet<ServerPlayerEntity> _players;
+        private readonly ChunkPos _chunkPos;
+        private readonly short[] _dirtyBlocks;
+        private int _dirtyBlockCount;
+        private int _dirtyBlockMinX;
+        private int _dirtyBlockMinY;
+        private int _dirtyBlockMinZ;
+        private int _dirtyBlockMaxX;
+        private int _dirtyBlockMaxY;
+        private int _dirtyBlockMaxZ;
+        private bool _hasBeenSent;
 
         public TrackedChunk(ChunkMap chunkMap, int chunkX, int chunkZ)
         {
-            this.chunkMap = chunkMap;
-            players = [];
-            dirtyBlocks = new short[10];
-            dirtyBlockCount = 0;
-            this.chunkX = chunkX;
-            this.chunkZ = chunkZ;
-            chunkPos = new ChunkPos(chunkX, chunkZ);
-            chunkMap.getWorld().chunkCache.LoadChunk(chunkX, chunkZ);
+            _chunkMap = chunkMap;
+            _players = [];
+            _dirtyBlocks = new short[MaxDirtyBlocks];
+            _dirtyBlockCount = 0;
+            _chunkPos = new ChunkPos(chunkX, chunkZ);
+            chunkMap.getWorld().ChunkCache.LoadChunk(chunkX, chunkZ);
         }
 
-        public bool HasPlayer(ServerPlayerEntity player) => players.Contains(player);
+        public bool HasPlayer(ServerPlayerEntity player) => _players.Contains(player);
 
         public void addPlayer(ServerPlayerEntity player)
         {
-            if (!players.Add(player))
+            if (!_players.Add(player))
             {
                 return;
             }
 
-            if (player.activeChunks.Add(chunkPos))
+            if (player.activeChunks.Add(_chunkPos))
             {
-                player.networkHandler.sendPacket(ChunkStatusUpdateS2CPacket.Get(chunkPos.X, chunkPos.Z, true));
+                player.networkHandler.sendPacket(ChunkStatusUpdateS2CPacket.Get(_chunkPos.X, _chunkPos.Z, true));
             }
 
-            player.PendingChunkUpdates.Enqueue(chunkPos);
+            player.ScheduleChunkSend(_chunkPos);
         }
+
+        public void EnqueueForTrackingPlayers()
+        {
+            if (_hasBeenSent)
+            {
+                return;
+            }
+
+            _hasBeenSent = true;
+
+            foreach (var player in _players)
+            {
+                player.PendingChunkUpdates.Enqueue(_chunkPos);
+            }
+        }
+
+        internal bool HasPlayersAndHasBeenSent() => _hasBeenSent && _players.Count > 0;
 
         public void removePlayer(ServerPlayerEntity player)
         {
-            if (players.Remove(player))
+            if (_players.Remove(player))
             {
-                if (players.Count == 0)
+                if (_players.Count == 0)
                 {
-                    long var2 = ChunkMap.GetChunkHash(chunkX, chunkZ);
-                    chunkMap.chunkMapping.Remove(var2);
-                    if (dirtyBlockCount > 0)
+                    long var2 = ChunkMap.GetChunkHash(_chunkPos.X, _chunkPos.Z);
+                    _chunkMap._chunkMapping.Remove(var2);
+                    if (_dirtyBlockCount > 0)
                     {
-                        chunkMap.chunksToUpdate.Remove(this);
+                        _chunkMap._chunksToUpdate.Remove(this);
                     }
 
-                    chunkMap.getWorld().chunkCache.isLoaded(chunkX, chunkZ);
+                    _chunkMap.getWorld().ChunkCache.isLoaded(_chunkPos.X, _chunkPos.Z);
                 }
 
-                if (player.activeChunks.Remove(chunkPos))
+                if (player.activeChunks.Remove(_chunkPos))
                 {
-                    player.networkHandler.sendPacket(ChunkStatusUpdateS2CPacket.Get(chunkX, chunkZ, false));
+                    player.networkHandler.sendPacket(ChunkStatusUpdateS2CPacket.Get(_chunkPos.X, _chunkPos.Z, false));
                 }
+
+                player.CancelChunkSend(_chunkPos);
             }
         }
 
         public void updatePlayerChunks(int x, int y, int z)
         {
-            if (dirtyBlockCount == 0)
+            if (_dirtyBlockCount == 0)
             {
-                chunkMap.chunksToUpdate.Add(this);
-                minX = minY = x;
-                minZ = maxX = y;
-                maxY = maxZ = z;
+                _chunkMap._chunksToUpdate.Add(this);
+                _dirtyBlockMinX = _dirtyBlockMaxX = x;
+                _dirtyBlockMinY = _dirtyBlockMaxY = y;
+                _dirtyBlockMinZ = _dirtyBlockMaxZ = z;
             }
 
-            if (minX > x)
+            if (_dirtyBlockMinX > x)
             {
-                minX = x;
+                _dirtyBlockMinX = x;
             }
 
-            if (minY < x)
+            if (_dirtyBlockMinY > y)
             {
-                minY = x;
+                _dirtyBlockMinY = y;
             }
 
-            if (minZ > y)
+            if (_dirtyBlockMinZ > z)
             {
-                minZ = y;
+                _dirtyBlockMinZ = z;
             }
 
-            if (maxX < y)
+            if (_dirtyBlockMaxX < x)
             {
-                maxX = y;
+                _dirtyBlockMaxX = x;
             }
 
-            if (maxY > z)
+            if (_dirtyBlockMaxY < y)
             {
-                maxY = z;
+                _dirtyBlockMaxY = y;
             }
 
-            if (maxZ < z)
+            if (_dirtyBlockMaxZ < z)
             {
-                maxZ = z;
+                _dirtyBlockMaxZ = z;
             }
 
-            if (dirtyBlockCount < 10)
+            if (_dirtyBlockCount < MaxDirtyBlocks)
             {
                 short var4 = (short)(x << 12 | z << 8 | y);
 
-                for (int var5 = 0; var5 < dirtyBlockCount; var5++)
+                for (int var5 = 0; var5 < _dirtyBlockCount; var5++)
                 {
-                    if (dirtyBlocks[var5] == var4)
+                    if (_dirtyBlocks[var5] == var4)
                     {
                         return;
                     }
                 }
 
-                dirtyBlocks[dirtyBlockCount++] = var4;
+                _dirtyBlocks[_dirtyBlockCount++] = var4;
             }
         }
 
         public void sendPacketToPlayers(Packet packet)
         {
-            foreach (var var3 in players)
+            foreach (ServerPlayerEntity serverPlayer in _players)
             {
-                if (var3.activeChunks.Contains(chunkPos))
+                if (serverPlayer.activeChunks.Contains(_chunkPos))
                 {
-                    var3.networkHandler.sendPacket(packet);
+                    serverPlayer.networkHandler.sendPacket(packet);
                 }
             }
             packet.Return();
@@ -410,66 +463,66 @@ internal class ChunkMap
 
         public void updateChunk()
         {
-            ServerWorld var1 = chunkMap.getWorld();
-            if (dirtyBlockCount != 0)
+            ServerWorld sWorld = _chunkMap.getWorld();
+            if (_dirtyBlockCount != 0)
             {
-                if (dirtyBlockCount == 1)
+                if (_dirtyBlockCount == 1)
                 {
-                    int var2 = chunkX * 16 + minX;
-                    int var3 = minZ;
-                    int var4 = chunkZ * 16 + maxY;
-                    sendPacketToPlayers(BlockUpdateS2CPacket.Get(var2, var3, var4, var1));
-                    if (Block.BlocksWithEntity[var1.getBlockId(var2, var3, var4)])
+                    int worldX = _chunkPos.X * 16 + _dirtyBlockMinX;
+                    int worldY = _dirtyBlockMinY;
+                    int worldZ = _chunkPos.Z * 16 + _dirtyBlockMinZ;
+                    sendPacketToPlayers(BlockUpdateS2CPacket.Get(worldX, worldY, worldZ, sWorld));
+                    if (Block.BlocksWithEntity[sWorld.Reader.GetBlockId(worldX, worldY, worldZ)])
                     {
-                        sendBlockEntityUpdate(var1.getBlockEntity(var2, var3, var4));
+                        sendBlockEntityUpdate(sWorld.Entities.GetBlockEntity<BlockEntity>(worldX, worldY, worldZ));
                     }
                 }
-                else if (dirtyBlockCount == 10)
+                else if (_dirtyBlockCount == MaxDirtyBlocks)
                 {
-                    minZ = minZ / 2 * 2;
-                    maxX = (maxX / 2 + 1) * 2;
-                    int var10 = minX + chunkX * 16;
-                    int var12 = minZ;
-                    int var14 = maxY + chunkZ * 16;
-                    int var5 = minY - minX + 1;
-                    int var6 = maxX - minZ + 2;
-                    int var7 = maxZ - maxY + 1;
-                    sendPacketToPlayers(ChunkDataS2CPacket.Get(var10, var12, var14, var5, var6, var7, var1));
-                    var var8 = var1.getBlockEntities(var10, var12, var14, var10 + var5, var12 + var6, var14 + var7);
+                    _dirtyBlockMinY = _dirtyBlockMinY / 2 * 2;
+                    _dirtyBlockMaxY = (_dirtyBlockMaxY / 2 + 1) * 2;
+                    int worldX = _dirtyBlockMinX + _chunkPos.X * 16;
+                    int worldY = _dirtyBlockMinY;
+                    int worldZ = _dirtyBlockMinZ + _chunkPos.Z * 16;
+                    int sizeX = _dirtyBlockMaxX - _dirtyBlockMinX + 1;
+                    int sizeY = _dirtyBlockMaxY - _dirtyBlockMinY + 2;
+                    int sizeZ = _dirtyBlockMaxZ - _dirtyBlockMinZ + 1;
+                    sendPacketToPlayers(ChunkDataS2CPacket.Get(worldX, worldY, worldZ, sizeX, sizeY, sizeZ, sWorld));
+                    List<BlockEntity> blockEntities = sWorld.getBlockEntities(worldX, worldY, worldZ, worldX + sizeX, worldY + sizeY, worldZ + sizeZ);
 
-                    for (int var9 = 0; var9 < var8.Count; var9++)
+                    for (int i = 0; i < blockEntities.Count; i++)
                     {
-                        sendBlockEntityUpdate(var8[var9]);
+                        sendBlockEntityUpdate(blockEntities[i]);
                     }
                 }
                 else
                 {
-                    sendPacketToPlayers(ChunkDeltaUpdateS2CPacket.Get(chunkX, chunkZ, dirtyBlocks, dirtyBlockCount, var1));
+                    sendPacketToPlayers(ChunkDeltaUpdateS2CPacket.Get(_chunkPos.X, _chunkPos.Z, _dirtyBlocks, _dirtyBlockCount, sWorld));
 
-                    for (int var11 = 0; var11 < dirtyBlockCount; var11++)
+                    for (int i = 0; i < _dirtyBlockCount; i++)
                     {
-                        int var13 = chunkX * 16 + (dirtyBlocks[var11] >> 12 & 15);
-                        int var15 = dirtyBlocks[var11] & 0xFF;
-                        int var16 = chunkZ * 16 + (dirtyBlocks[var11] >> 8 & 15);
-                        if (Block.BlocksWithEntity[var1.getBlockId(var13, var15, var16)])
+                        int var13 = _chunkPos.X * 16 + (_dirtyBlocks[i] >> 12 & 15);
+                        int var15 = _dirtyBlocks[i] & 0xFF;
+                        int var16 = _chunkPos.Z * 16 + (_dirtyBlocks[i] >> 8 & 15);
+                        if (Block.BlocksWithEntity[sWorld.Reader.GetBlockId(var13, var15, var16)])
                         {
-                            sendBlockEntityUpdate(var1.getBlockEntity(var13, var15, var16));
+                            sendBlockEntityUpdate(sWorld.Entities.GetBlockEntity<BlockEntity>(var13, var15, var16));
                         }
                     }
                 }
 
-                dirtyBlockCount = 0;
+                _dirtyBlockCount = 0;
             }
         }
 
-        private void sendBlockEntityUpdate(BlockEntity blockentity)
+        private void sendBlockEntityUpdate(BlockEntity? blockentity)
         {
             if (blockentity != null)
             {
-                Packet var2 = blockentity.createUpdatePacket();
-                if (var2 != null)
+                Packet packet = blockentity.createUpdatePacket();
+                if (packet != null)
                 {
-                    sendPacketToPlayers(var2);
+                    sendPacketToPlayers(packet);
                 }
             }
         }

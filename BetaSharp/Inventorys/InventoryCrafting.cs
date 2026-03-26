@@ -46,7 +46,7 @@ public class InventoryCrafting : IInventory
         return "Crafting";
     }
 
-    public ItemStack removeStack(int slotIndex, int amount)
+    public ItemStack? removeStack(int slotIndex, int amount)
     {
         if (stackList[slotIndex] != null)
         {

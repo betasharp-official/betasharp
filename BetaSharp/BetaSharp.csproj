@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net10.0</TargetFramework>
@@ -26,5 +26,8 @@
   <ItemGroup>
     <EmbeddedResource Include="shaders/chunk.vert" />
     <EmbeddedResource Include="shaders/chunk.frag" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="BetaSharp.Tests" />
   </ItemGroup>
 </Project>
