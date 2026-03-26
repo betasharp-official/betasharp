@@ -39,7 +39,7 @@ public class MainMenuScreen : UIScreen
         TranslationStorage translator = TranslationStorage.Instance;
 
         Button btnSingleplayer = new() { Text = translator.TranslateKey("menu.singleplayer") };
-        btnSingleplayer.OnClick += (e) => Game.displayGuiScreen(new GuiSelectWorld(new UIScreenAdapter(this)));
+        btnSingleplayer.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(new WorldScreen(Game)));
         btnSingleplayer.Style.MarginBottom = 4;
         Root.AddChild(btnSingleplayer);
 

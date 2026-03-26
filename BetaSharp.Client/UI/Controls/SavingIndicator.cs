@@ -12,13 +12,13 @@ public class SavingIndicator : UIElement
     public override void Update(float partialTicks)
     {
         base.Update(partialTicks);
-        _tickCounter += 1.0f; // This is called 20 times per second (ticks)
+        _tickCounter += 1.0f;
     }
 
     public override void Render(UIRenderer renderer)
     {
         BetaSharp game = BetaSharp.Instance;
-        // Replicating GuiIngameMenu logic
+
         bool isSavingActive = !game.world.AttemptSaving(_saveStepTimer++);
 
         if (isSavingActive || _tickCounter < 20)
@@ -27,7 +27,7 @@ public class SavingIndicator : UIElement
             pulse = MathHelper.Sin(pulse * (float)Math.PI * 2.0F) * 0.2F + 0.8F;
             int colorVal = (int)(255.0F * pulse);
             Color color = Color.FromRgb((uint)(colorVal << 16 | colorVal << 8 | colorVal));
-            
+
             renderer.DrawText("Saving level..", 0, 0, color);
         }
     }
