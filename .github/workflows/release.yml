@@ -40,6 +40,9 @@ jobs:
           --runtime ${{ matrix.rid }}
           --self-contained true
           --output ./publish/${{ matrix.rid }}
+      - name: Create version.txt
+        shell: bash
+        run: echo "${{ github.event.inputs.version }}" > ./publish/${{ matrix.rid }}/Client/version.txt
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

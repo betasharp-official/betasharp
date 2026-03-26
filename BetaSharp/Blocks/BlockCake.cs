@@ -1,21 +1,16 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
 internal class BlockCake : Block
 {
+    public BlockCake(int id, int textureId) : base(id, textureId, Material.Cake) => setTickRandomly(true);
 
-    public BlockCake(int id, int textureId) : base(id, textureId, Material.Cake)
+    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
-        setTickRandomly(true);
-    }
-
-    public override void updateBoundingBox(IBlockAccess iBlockAccess, int x, int y, int z)
-    {
-        int slicesEaten = iBlockAccess.getBlockMeta(x, y, z);
+        int slicesEaten = blockReader.GetBlockMeta(x, y, z);
         float edgeInset = 1.0F / 16.0F;
         float minX = (float)(1 + slicesEaten * 2) / 16.0F;
         float height = 0.5F;
@@ -29,18 +24,18 @@ internal class BlockCake : Block
         setBoundingBox(edgeInset, 0.0F, edgeInset, 1.0F - edgeInset, height, 1.0F - edgeInset);
     }
 
-    public override Box? getCollisionShape(World world, int x, int y, int z)
+    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
-        int slicesEaten = world.getBlockMeta(x, y, z);
+        int slicesEaten = world.GetBlockMeta(x, y, z);
         float edgeInset = 1.0F / 16.0F;
-        float minX = (float)(1 + slicesEaten * 2) / 16.0F;
+        float minX = (1 + slicesEaten * 2) / 16.0F;
         float height = 0.5F;
         return new Box((double)((float)x + minX), (double)y, (double)((float)z + edgeInset), (double)((float)(x + 1) - edgeInset), (double)((float)y + height - edgeInset), (double)((float)(z + 1) - edgeInset));
     }
 
-    public override Box getBoundingBox(World world, int x, int y, int z)
+    public override Box getBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
-        int slicesEaten = world.getBlockMeta(x, y, z);
+        int slicesEaten = world.GetBlockMeta(x, y, z);
         float edgeInset = 1.0F / 16.0F;
         float minX = (float)(1 + slicesEaten * 2) / 16.0F;
         float height = 0.5F;
@@ -67,62 +62,78 @@ internal class BlockCake : Block
         return false;
     }
 
-    public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
+    public override bool onUse(OnUseEvent @event)
     {
-        tryEat(world, x, y, z, player);
-        return true;
-    }
-
-    public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
-    {
-        tryEat(world, x, y, z, player);
-    }
-
-    private void tryEat(World world, int x, int y, int z, EntityPlayer player)
-    {
-        if (player.health < 20)
+        if (@event.Player.health < 20)
         {
-            player.heal(3);
-            int var6 = world.getBlockMeta(x, y, z) + 1;
-            if (var6 >= 6)
+            @event.Player.heal(3);
+            int slicesEaten = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) + 1;
+            if (slicesEaten >= 6)
             {
-                world.setBlock(x, y, z, 0);
+                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             }
             else
             {
-                world.setBlockMeta(x, y, z, var6);
-                world.setBlocksDirty(x, y, z);
+                @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, slicesEaten);
+                @event.World.Broadcaster.SetBlocksDirty(@event.X, @event.Y, @event.Z);
             }
         }
 
+        return true;
     }
 
-    public override bool canPlaceAt(World world, int x, int y, int z)
+    public override void onBlockBreakStart(OnBlockBreakStartEvent @event)
     {
-        return !base.canPlaceAt(world, x, y, z) ? false : canGrow(world, x, y, z);
-    }
-
-    public override void neighborUpdate(World world, int x, int y, int z, int id)
-    {
-        if (!canGrow(world, x, y, z))
+        if (@event.Player.health >= 20)
         {
-            dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlock(x, y, z, 0);
+            return;
         }
 
+        @event.Player.heal(3);
+        int slicesEaten = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) + 1;
+        if (slicesEaten >= 6)
+        {
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
+        }
+        else
+        {
+            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, slicesEaten);
+            @event.World.Broadcaster.SetBlocksDirty(@event.X, @event.Y, @event.Z);
+        }
     }
 
-    public override bool canGrow(World world, int x, int y, int z)
+    public override bool canPlaceAt(CanPlaceAtContext evt)
     {
-        return world.getMaterial(x, y - 1, z).IsSolid;
+        return !base.canPlaceAt(evt) ? false : canGrow(evt.World.Reader, evt.X, evt.Y, evt.Z);
     }
 
-    public override int getDroppedItemCount(JavaRandom random)
+    public override void neighborUpdate(OnTickEvent @event)
+    {
+        if (canGrow(@event.World.Reader, @event.X, @event.Y, @event.Z))
+        {
+            return;
+        }
+
+        dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
+    }
+
+    public override bool canGrow(OnTickEvent @event)
+    {
+        return canGrow(@event.World.Reader, @event.X, @event.Y, @event.Z);
+    }
+
+    private static bool canGrow(IBlockReader world, int x, int y, int z)
+    {
+        return world.GetMaterial(x, y - 1, z).IsSolid;
+    }
+
+    public override int getDroppedItemCount()
     {
         return 0;
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
+    public override int getDroppedItemId(int blockMeta)
     {
         return 0;
     }

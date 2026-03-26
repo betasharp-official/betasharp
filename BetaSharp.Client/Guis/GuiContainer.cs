@@ -11,7 +11,6 @@ namespace BetaSharp.Client.Guis;
 
 public abstract class GuiContainer : GuiScreen
 {
-
     private static readonly ItemRenderer s_itemRenderer = new();
     protected int _xSize = 176;
     protected int _ySize = 166;
@@ -79,17 +78,36 @@ public abstract class GuiContainer : GuiScreen
         GLManager.GL.Disable(GLEnum.DepthTest);
         DrawGuiContainerForegroundLayer();
 
-        if (playerInv.getCursorStack() == null && _hoveredSlot != null && _hoveredSlot.hasStack())
+        if (playerInv?.getCursorStack() == null && _hoveredSlot != null && _hoveredSlot.hasStack())
         {
-            string itemName = ("" + TranslationStorage.Instance.TranslateNamedKey(_hoveredSlot.getStack().getItemName())).Trim();
+            string itemName = TranslationStorage.Instance.TranslateNamedKey(_hoveredSlot.getStack().getItemName()).Trim();
             if (itemName.Length > 0)
             {
                 int tipX = mouseX - guiLeft + 12;
                 int tipY = mouseY - guiTop - 12;
-                int textWidth = FontRenderer.GetStringWidth(itemName);
 
-                DrawGradientRect(tipX - 3, tipY - 3, tipX + textWidth + 3, tipY + 8 + 3, Color.BlackAlphaC0, Color.BlackAlphaC0);
-                FontRenderer.DrawStringWithShadow(itemName, tipX, tipY, Color.White);
+                List<string> tooltipLines = [itemName];
+                if (Game.options.AdvancedItemTooltips)
+                {
+                    tooltipLines.Add(_hoveredSlot.getStack().getDamage() != 0 ? $"{_hoveredSlot.getStack().itemId}:{_hoveredSlot.getStack().getDamage()}" : $"{_hoveredSlot.getStack().itemId}");
+                }
+
+                int maxTextWidth = tooltipLines.Select(line => FontRenderer.GetStringWidth(line)).Prepend(0).Max();
+
+                int boxHeight = 8;
+                if (tooltipLines.Count > 1)
+                {
+                    boxHeight += 2 + (tooltipLines.Count - 1) * 10;
+                }
+
+                DrawGradientRect(tipX - 3, tipY - 3, tipX + maxTextWidth + 3, tipY + boxHeight + 3, Color.BlackAlphaC0, Color.BlackAlphaC0);
+
+                for (int i = 0; i < tooltipLines.Count; i++)
+                {
+                    FontRenderer.DrawStringWithShadow(tooltipLines[i], tipX, tipY, i == 0 ? Color.White : new Color((byte)170, (byte)170, (byte)170));
+                    if (i == 0) tipY += 2;
+                    tipY += 10;
+                }
             }
         }
 
@@ -121,7 +139,9 @@ public abstract class GuiContainer : GuiScreen
         GLManager.GL.Enable(GLEnum.DepthTest);
     }
 
-    protected virtual void DrawGuiContainerForegroundLayer() { }
+    protected virtual void DrawGuiContainerForegroundLayer()
+    {
+    }
 
     protected abstract void DrawGuiContainerBackgroundLayer(float partialTicks);
 
@@ -194,7 +214,6 @@ public abstract class GuiContainer : GuiScreen
                 Game.playerController.func_27174_a(InventorySlots.SyncId, slotId, button, isShiftClick, Game.player);
             }
         }
-
     }
 
     protected override void HandleQuickMove(int x, int y)
@@ -206,7 +225,9 @@ public abstract class GuiContainer : GuiScreen
         }
     }
 
-    protected override void MouseMovedOrUp(int x, int y, int button) { }
+    protected override void MouseMovedOrUp(int x, int y, int button)
+    {
+    }
 
     protected override void KeyTyped(char eventChar, int eventKey)
     {
@@ -214,7 +235,6 @@ public abstract class GuiContainer : GuiScreen
         {
             Game.player.closeHandledScreen();
         }
-
     }
 
     public override void OnGuiClosed()
@@ -233,7 +253,6 @@ public abstract class GuiContainer : GuiScreen
         {
             Game.player.closeHandledScreen();
         }
-
     }
 
     public override bool HandleDPadNavigation(int dpadX, int dpadY, ref float cursorX, ref float cursorY)

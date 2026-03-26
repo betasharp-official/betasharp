@@ -22,7 +22,7 @@ public class InventoryBasic : IInventory
         return inventoryContents[slotIndex];
     }
 
-    public ItemStack removeStack(int slotIndex, int amount)
+    public ItemStack? removeStack(int slotIndex, int amount)
     {
         if (inventoryContents[slotIndex] != null)
         {

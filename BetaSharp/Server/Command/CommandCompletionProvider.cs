@@ -80,6 +80,6 @@ internal static class CommandCompletionProvider
 
     private static List<string> GetItemNameCompletions(string prefix)
     {
-        return ItemCommands.GetAvailableItemNames(prefix);
+        return ItemLookup.GetAvailableItemNames(prefix);
     }
 }

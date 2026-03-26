@@ -1,5 +1,4 @@
 using BetaSharp.Items;
-using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Blocks;
 
@@ -9,8 +8,5 @@ internal class BlockGravel : BlockSand
     {
     }
 
-    public override int getDroppedItemId(int blockMeta, JavaRandom random)
-    {
-        return random.NextInt(10) == 0 ? Item.Flint.id : id;
-    }
+    public override int getDroppedItemId(int blockMeta) => Random.Shared.Next(10) == 0 ? Item.Flint.id : id;
 }

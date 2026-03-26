@@ -14,12 +14,12 @@ public struct Box
 
     public Box(double minX, double minY, double minZ, double maxX, double maxY, double maxZ)
     {
-        MinX = minX;
-        MinY = minY;
-        MinZ = minZ;
-        MaxX = maxX;
-        MaxY = maxY;
-        MaxZ = maxZ;
+        MinX = Math.Min(minX, maxX);
+        MaxX = Math.Max(minX, maxX);
+        MinY = Math.Min(minY, maxY);
+        MaxY = Math.Max(minY, maxY);
+        MinZ = Math.Min(minZ, maxZ);
+        MaxZ = Math.Max(minZ, maxZ);
     }
 
     public Box Stretch(double x, double y, double z)

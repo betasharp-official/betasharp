@@ -1,6 +1,7 @@
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.NBT;
+using BetaSharp.Worlds.Storage;
 
 namespace BetaSharp.Worlds.Maps;
 
@@ -126,7 +127,7 @@ public class MapState(string id) : PersistentState(id)
 
     public void MarkDirty(int xColumn, int minZ, int maxZ)
     {
-        Dirty = true;
+        MarkDirty();
 
         foreach (MapUpdateTracker mapInfo in _updateTrackers.Values)
         {
@@ -154,7 +155,7 @@ public class MapState(string id) : PersistentState(id)
                 Colors[(i + startZ) * 128 + columnIndex] = packet[i + 3];
             }
 
-            Dirty = true;
+            MarkDirty();
         }
         else if (packet[0] == 1)
         {

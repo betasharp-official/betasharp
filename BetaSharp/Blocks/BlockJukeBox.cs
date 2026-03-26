@@ -2,86 +2,86 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Items;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Blocks;
 
 internal class BlockJukeBox : BlockWithEntity
 {
+    private static readonly ILogger<BlockJukeBox> s_logger = BetaSharp.Log.Instance.For<BlockJukeBox>();
 
     public BlockJukeBox(int id, int textureId) : base(id, textureId, Material.Wood)
     {
     }
 
-    public override int getTexture(int side)
-    {
-        return textureId + (side == 1 ? 1 : 0);
-    }
+    public override int getTexture(int side) => textureId + (side == 1 ? 1 : 0);
 
-    public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
+    public override bool onUse(OnUseEvent @event)
     {
-        if (world.getBlockMeta(x, y, z) == 0)
+        if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) == 0)
         {
             return false;
         }
-        else
-        {
-            tryEjectRecord(world, x, y, z);
-            return true;
-        }
+
+        tryEjectRecord(@event.World, @event.X, @event.Y, @event.Z);
+        return true;
     }
 
-    public void insertRecord(World world, int x, int y, int z, int id)
+    public void insertRecord(IWorldContext world, int x, int y, int z, int id)
     {
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
-            BlockEntityRecordPlayer jukebox = (BlockEntityRecordPlayer)world.getBlockEntity(x, y, z);
+            BlockEntityRecordPlayer? jukebox = world.Entities.GetBlockEntity<BlockEntityRecordPlayer>(x, y, z);
+            if (jukebox == null)
+            {
+                s_logger.LogWarning("Jukebox at {x}, {y}, {z} is missing a block entity", x, y, z);
+                return;
+            }
+
             jukebox.recordId = id;
             jukebox.markDirty();
-            world.setBlockMeta(x, y, z, 1);
+            world.Writer.SetBlockMeta(x, y, z, 1);
         }
     }
 
-    public void tryEjectRecord(World world, int x, int y, int z)
+    public void tryEjectRecord(IWorldContext level, int x, int y, int z)
     {
-        if (!world.isRemote)
+        if (!level.IsRemote)
         {
-            BlockEntityRecordPlayer jukebox = (BlockEntityRecordPlayer)world.getBlockEntity(x, y, z);
-            int recordId = jukebox.recordId;
+            BlockEntityRecordPlayer? jukebox = level.Entities.GetBlockEntity<BlockEntityRecordPlayer>(x, y, z);
+            int recordId = jukebox?.recordId ?? 0;
             if (recordId != 0)
             {
-                world.worldEvent(1005, x, y, z, 0);
-                world.playStreaming((String)null, x, y, z);
-                jukebox.recordId = 0;
+                level.Broadcaster.WorldEvent(1005, x, y, z, 0);
+                level.Broadcaster.PlayStreamingAtPos(null, x, y, z);
+                jukebox!.recordId = 0;
                 jukebox.markDirty();
-                world.setBlockMeta(x, y, z, 0);
+                level.Writer.SetBlockMeta(x, y, z, 0);
                 float spreadFactor = 0.7F;
-                double offsetX = (double)(world.random.NextFloat() * spreadFactor) + (double)(1.0F - spreadFactor) * 0.5D;
-                double offsetY = (double)(world.random.NextFloat() * spreadFactor) + (double)(1.0F - spreadFactor) * 0.2D + 0.6D;
-                double offsetZ = (double)(world.random.NextFloat() * spreadFactor) + (double)(1.0F - spreadFactor) * 0.5D;
-                EntityItem entityItem = new EntityItem(world, (double)x + offsetX, (double)y + offsetY, (double)z + offsetZ, new ItemStack(recordId, 1, 0));
+                double offsetX = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5D;
+                double offsetY = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.2D + 0.6D;
+                double offsetZ = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5D;
+                EntityItem entityItem = new(level, x + offsetX, y + offsetY, z + offsetZ, new ItemStack(recordId, 1, 0));
                 entityItem.delayBeforeCanPickup = 10;
-                world.SpawnEntity(entityItem);
+                level.SpawnEntity(entityItem);
             }
         }
     }
 
-    public override void onBreak(World world, int x, int y, int z)
+    public override void onBreak(OnBreakEvent @event)
     {
-        tryEjectRecord(world, x, y, z);
-        base.onBreak(world, x, y, z);
+        tryEjectRecord(@event.World, @event.X, @event.Y, @event.Z);
+        base.onBreak(@event);
     }
 
-    public override void dropStacks(World world, int x, int y, int z, int meta, float luck)
+    public override void dropStacks(OnDropEvent @event)
     {
-        if (!world.isRemote)
+        if (!@event.World.IsRemote)
         {
-            base.dropStacks(world, x, y, z, meta, luck);
+            base.dropStacks(@event);
         }
     }
 
-    protected override BlockEntity getBlockEntity()
-    {
-        return new BlockEntityRecordPlayer();
-    }
+    public override BlockEntity getBlockEntity() => new BlockEntityRecordPlayer();
 }

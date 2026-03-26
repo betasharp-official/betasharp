@@ -2,7 +2,7 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
@@ -24,7 +24,7 @@ public class EntitySquid : EntityWaterMob
     private float randomMotionVecY;
     private float randomMotionVecZ;
 
-    public EntitySquid(World world) : base(world)
+    public EntitySquid(IWorldContext world) : base(world)
     {
         texture = "/mob/squid.png";
         setBoundingBoxSpacing(0.95F, 0.95F);
@@ -84,7 +84,7 @@ public class EntitySquid : EntityWaterMob
 
     public override bool isInWater()
     {
-        return world.updateMovementInFluid(boundingBox.Expand(0.0D, (double)-0.6F, 0.0D), Material.Water, this);
+        return world.Reader.UpdateMovementInFluid(boundingBox.Expand(0.0D, (double)-0.6F, 0.0D), Material.Water, this);
     }
 
     public override void tickMovement()

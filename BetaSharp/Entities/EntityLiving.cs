@@ -4,7 +4,7 @@ using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
@@ -63,7 +63,7 @@ public abstract class EntityLiving : Entity
     private Entity lookTarget;
     protected int lookTimer;
 
-    public EntityLiving(World world) : base(world)
+    public EntityLiving(IWorldContext world) : base(world)
     {
         preventEntitySpawning = true;
         limbSwingScale = (Random.Shared.NextSingle() + 1.0f) * 0.01f;
@@ -81,7 +81,7 @@ public abstract class EntityLiving : Entity
 
     public bool canSee(Entity entity)
     {
-        return world.raycast(new Vec3D(x, y + (double)getEyeHeight(), z), new Vec3D(entity.x, entity.y + (double)entity.getEyeHeight(), entity.z)).Type == HitResultType.MISS;
+        return world.Reader.Raycast(new Vec3D(x, y + (double)getEyeHeight(), z), new Vec3D(entity.x, entity.y + (double)entity.getEyeHeight(), entity.z)).Type == HitResultType.MISS;
     }
 
     public override string getTexture()
@@ -114,7 +114,7 @@ public abstract class EntityLiving : Entity
         string sound = getLivingSound();
         if (sound != null)
         {
-            world.playSound(this, sound, getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
+            world.Broadcaster.PlaySoundAtEntity(this, sound, getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
         }
 
     }
@@ -134,7 +134,7 @@ public abstract class EntityLiving : Entity
             damage(null, 1);
         }
 
-        if (isImmuneToFire || world.isRemote)
+        if (isImmuneToFire || world.IsRemote)
         {
             fireTicks = 0;
         }
@@ -152,7 +152,7 @@ public abstract class EntityLiving : Entity
                     float offsetX = random.NextFloat() - random.NextFloat();
                     float offsetY = random.NextFloat() - random.NextFloat();
                     float offsetZ = random.NextFloat() - random.NextFloat();
-                    world.addParticle("bubble", x + (double)offsetX, y + (double)offsetY, z + (double)offsetZ, velocityX, velocityY, velocityZ);
+                    world.Broadcaster.AddParticle("bubble", x + (double)offsetX, y + (double)offsetY, z + (double)offsetZ, velocityX, velocityY, velocityZ);
                 }
 
                 damage(null, 2);
@@ -194,7 +194,7 @@ public abstract class EntityLiving : Entity
                     double velX = random.NextGaussian() * 0.02D;
                     double velY = random.NextGaussian() * 0.02D;
                     double velZ = random.NextGaussian() * 0.02D;
-                    world.addParticle("explode", x + (double)(random.NextFloat() * width * 2.0F) - (double)width, y + (double)(random.NextFloat() * height), z + (double)(random.NextFloat() * width * 2.0F) - (double)width, velX, velY, velZ);
+                    world.Broadcaster.AddParticle("explode", x + (double)(random.NextFloat() * width * 2.0F) - (double)width, y + (double)(random.NextFloat() * height), z + (double)(random.NextFloat() * width * 2.0F) - (double)width, velX, velY, velZ);
                 }
             }
         }
@@ -218,7 +218,7 @@ public abstract class EntityLiving : Entity
             double velY = random.NextGaussian() * 0.02D;
             double velZ = random.NextGaussian() * 0.02D;
             double spread = 10.0D;
-            world.addParticle("explode", x + (double)(random.NextFloat() * width * 2.0F) - (double)width - velX * spread, y + (double)(random.NextFloat() * height) - velY * spread, z + (double)(random.NextFloat() * width * 2.0F) - (double)width - velZ * spread, velX, velY, velZ);
+            world.Broadcaster.AddParticle("explode", x + (double)(random.NextFloat() * width * 2.0F) - (double)width - velX * spread, y + (double)(random.NextFloat() * height) - velY * spread, z + (double)(random.NextFloat() * width * 2.0F) - (double)width - velZ * spread, velX, velY, velZ);
         }
 
     }
@@ -369,7 +369,7 @@ public abstract class EntityLiving : Entity
 
     public override bool damage(Entity entity, int amount)
     {
-        if (world.isRemote)
+        if (world.IsRemote)
         {
             return false;
         }
@@ -407,7 +407,7 @@ public abstract class EntityLiving : Entity
                 attackedAtYaw = 0.0F;
                 if (var3)
                 {
-                    world.broadcastEntityEvent(this, (byte)2);
+                    world.Broadcaster.EntityEvent(this, (byte)2);
                     scheduleVelocityUpdate();
                     if (entity != null)
                     {
@@ -432,14 +432,14 @@ public abstract class EntityLiving : Entity
                 {
                     if (var3)
                     {
-                        world.playSound(this, getDeathSound(), getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
+                        world.Broadcaster.PlaySoundAtEntity(this, getDeathSound(), getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
                     }
 
                     onKilledBy(entity);
                 }
                 else if (var3)
                 {
-                    world.playSound(this, getHurtSound(), getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
+                    world.Broadcaster.PlaySoundAtEntity(this, getHurtSound(), getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
                 }
 
                 return true;
@@ -508,12 +508,12 @@ public abstract class EntityLiving : Entity
         }
 
         unused_flag = true;
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             dropFewItems();
         }
 
-        world.broadcastEntityEvent(this, (byte)3);
+        world.Broadcaster.EntityEvent(this, (byte)3);
     }
 
     protected virtual void dropFewItems()
@@ -543,11 +543,11 @@ public abstract class EntityLiving : Entity
         if (var2 > 0)
         {
             damage(null, var2);
-            int var3 = world.getBlockId(MathHelper.Floor(x), MathHelper.Floor(y - (double)0.2F - (double)standingEyeHeight), MathHelper.Floor(z));
+            int var3 = world.Reader.GetBlockId(MathHelper.Floor(x), MathHelper.Floor(y - (double)0.2F - (double)standingEyeHeight), MathHelper.Floor(z));
             if (var3 > 0)
             {
                 BlockSoundGroup soundGroup = Block.Blocks[var3].soundGroup;
-                world.playSound(this, soundGroup.StepSound, soundGroup.Volume * 0.5F, soundGroup.Pitch * (12.0F / 16.0F));
+                world.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.5F, soundGroup.Pitch * (12.0F / 16.0F));
             }
         }
 
@@ -590,7 +590,7 @@ public abstract class EntityLiving : Entity
             if (onGround)
             {
                 friction = 546.0F * 0.1F * 0.1F * 0.1F;
-                int groundBlockId = world.getBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
+                int groundBlockId = world.Reader.GetBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
                 if (groundBlockId > 0)
                 {
                     friction = Block.Blocks[groundBlockId].slipperiness * 0.91F;
@@ -603,7 +603,7 @@ public abstract class EntityLiving : Entity
             if (onGround)
             {
                 friction = 546.0F * 0.1F * 0.1F * 0.1F;
-                int groundBlockId = world.getBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
+                int groundBlockId = world.Reader.GetBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
                 if (groundBlockId > 0)
                 {
                     friction = Block.Blocks[groundBlockId].slipperiness * 0.91F;
@@ -675,7 +675,7 @@ public abstract class EntityLiving : Entity
         int x = MathHelper.Floor(base.x);
         int y = MathHelper.Floor(boundingBox.MinY);
         int z = MathHelper.Floor(base.z);
-        return world.getBlockId(x, y, z) == Block.Ladder.id;
+        return world.Reader.GetBlockId(x, y, z) == Block.Ladder.id;
     }
 
     public override void writeNbt(NBTTagCompound nbt)
@@ -711,6 +711,31 @@ public abstract class EntityLiving : Entity
 
     public virtual void tickMovement()
     {
+        if (world.IsRemote && this is not EntityPlayer)
+        {
+            int minChunkX = MathHelper.Floor(boundingBox.MinX) >> 4;
+            int maxChunkX = MathHelper.Floor(boundingBox.MaxX) >> 4;
+            int minChunkZ = MathHelper.Floor(boundingBox.MinZ) >> 4;
+            int maxChunkZ = MathHelper.Floor(boundingBox.MaxZ) >> 4;
+
+            for (int chunkX = minChunkX; chunkX <= maxChunkX; ++chunkX)
+            {
+                for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ)
+                {
+                    var chunk = world.ChunkHost.GetChunk(chunkX, chunkZ);
+                    if (!chunk.Loaded)
+                    {
+                        jumping = false;
+                        sidewaysSpeed = 0.0F;
+                        forwardSpeed = 0.0F;
+                        rotationSpeed = 0.0F;
+                        velocityX = velocityY = velocityZ = 0.0D;
+                        return;
+                    }
+                }
+            }
+        }
+
         if (newPosRotationIncrements > 0)
         {
             double newX = x + (newPosX - x) / (double)newPosRotationIncrements;
@@ -727,26 +752,31 @@ public abstract class EntityLiving : Entity
                 yawDelta -= 360.0D;
             }
 
-            yaw = (float)((double)yaw + yawDelta / (double)newPosRotationIncrements);
-            pitch = (float)((double)pitch + (newRotationPitch - (double)pitch) / (double)newPosRotationIncrements);
+            yaw = (float)(yaw + yawDelta / newPosRotationIncrements);
+            pitch = (float)(pitch + (newRotationPitch - pitch) / newPosRotationIncrements);
             --newPosRotationIncrements;
             setPosition(newX, newY, newZ);
             setRotation(yaw, pitch);
-            var collisions = world.GetEntityCollisionsScratch(this, boundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
+            var collisions = world.Entities.GetEntityCollisionsScratch(this, boundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
             if (collisions.Count > 0)
             {
-                double highestCollisionY = 0.0D;
+                double highestCollisionY = boundingBox.MinY;
+                bool applyStep = false;
 
-                for (int i = 0; i < collisions.Count; ++i)
+                foreach (var col in collisions)
                 {
-                    Box box = collisions[i];
-                    if (box.MaxY > highestCollisionY)
+                    if (col.MaxY > highestCollisionY && col.MaxY <= boundingBox.MinY + 1.0)
                     {
-                        highestCollisionY = box.MaxY;
+                        highestCollisionY = col.MaxY;
+                        applyStep = true;
                     }
                 }
 
-                newY += highestCollisionY - boundingBox.MinY;
+                if (applyStep)
+                {
+                    newY += highestCollisionY - boundingBox.MinY;
+                }
+                
                 setPosition(newX, newY, newZ);
             }
         }
@@ -785,7 +815,7 @@ public abstract class EntityLiving : Entity
         forwardSpeed *= 0.98F;
         rotationSpeed *= 0.9F;
         travel(sidewaysSpeed, forwardSpeed);
-        var nearbyEntities = world.GetEntitiesScratch(this, boundingBox.Expand((double)0.2F, 0.0D, (double)0.2F));
+        var nearbyEntities = world.Entities.GetEntitiesScratch(this, boundingBox.Expand((double)0.2F, 0.0D, (double)0.2F));
         if (nearbyEntities != null && nearbyEntities.Count > 0)
         {
             for (int i = 0; i < nearbyEntities.Count; ++i)
@@ -817,7 +847,7 @@ public abstract class EntityLiving : Entity
 
     protected void func_27021_X()
     {
-        EntityPlayer player = world.getClosestPlayer(this, -1.0D);
+        EntityPlayer player = world.Entities.GetClosestPlayer(x, y, z, -1.0D);
         if (canDespawn() && player != null)
         {
             double dx = player.x - x;
@@ -847,14 +877,14 @@ public abstract class EntityLiving : Entity
     public virtual void tickLiving()
     {
         ++entityAge;
-        EntityPlayer closestPlayer = world.getClosestPlayer(this, -1.0D);
+        EntityPlayer closestPlayer = world.Entities.GetClosestPlayer(x, y, z, -1.0D);
         func_27021_X();
         sidewaysSpeed = 0.0F;
         forwardSpeed = 0.0F;
         float lookRange = 8.0F;
         if (random.NextFloat() < 0.02F)
         {
-            closestPlayer = world.getClosestPlayer(this, (double)lookRange);
+            closestPlayer = world.Entities.GetClosestPlayer(x, y, z, (double)lookRange);
             if (closestPlayer != null)
             {
                 lookTarget = closestPlayer;
@@ -962,7 +992,7 @@ public abstract class EntityLiving : Entity
 
     public virtual bool canSpawn()
     {
-        return world.canSpawnEntity(boundingBox) && world.GetEntityCollisions(this, boundingBox).Count == 0 && !world.isBoxSubmergedInFluid(boundingBox);
+        return world.Entities.CanSpawnEntity(boundingBox) && world.Entities.GetEntityCollisionsScratch(this, boundingBox).Count == 0 && !world.Reader.IsMaterialInBox(boundingBox, m => m.IsFluid);
     }
 
     protected override void tickInVoid()
@@ -1032,7 +1062,7 @@ public abstract class EntityLiving : Entity
         Vec3D startPos = getPosition(partialTick);
         Vec3D lookDir = getLook(partialTick);
         Vec3D endPos = startPos + range * lookDir;
-        return world.raycast(startPos, endPos);
+        return world.Reader.Raycast(startPos, endPos);
     }
 
     public virtual int getMaxSpawnedInChunk()
@@ -1053,12 +1083,12 @@ public abstract class EntityLiving : Entity
             hearts = maxHealth;
             hurtTime = maxHurtTime = 10;
             attackedAtYaw = 0.0F;
-            world.playSound(this, getHurtSound(), getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
+            world.Broadcaster.PlaySoundAtEntity(this, getHurtSound(), getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
             damage(null, 0);
         }
         else if (statusId == 3)
         {
-            world.playSound(this, getDeathSound(), getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
+            world.Broadcaster.PlaySoundAtEntity(this, getDeathSound(), getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
             health = 0;
             onKilledBy(null);
         }

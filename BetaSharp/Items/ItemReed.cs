@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
@@ -14,9 +15,9 @@ internal class ItemReed : Item
         field_320_a = block.id;
     }
 
-    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
+    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (world.getBlockId(x, y, z) == Block.Snow.id)
+        if (world.Reader.GetBlockId(x, y, z) == Block.Snow.id)
         {
             meta = 0;
         }
@@ -59,14 +60,13 @@ internal class ItemReed : Item
         }
         else
         {
-            if (world.canPlace(field_320_a, x, y, z, false, meta))
+            if (Block.Blocks[field_320_a].canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
             {
                 Block block = Block.Blocks[field_320_a];
-                if (world.setBlock(x, y, z, field_320_a))
+                if (world.Writer.SetBlock(x, y, z, field_320_a))
                 {
-                    Block.Blocks[field_320_a].onPlaced(world, x, y, z, meta);
-                    Block.Blocks[field_320_a].onPlaced(world, x, y, z, entityPlayer);
-                    world.playSound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), block.soundGroup.StepSound, (block.soundGroup.Volume + 1.0F) / 2.0F, block.soundGroup.Pitch * 0.8F);
+                    Block.Blocks[field_320_a].onPlaced(new OnPlacedEvent(world, entityPlayer, meta, meta, x, y, z));
+                    world.Broadcaster.PlaySoundAtEntity(entityPlayer, block.soundGroup.StepSound, (block.soundGroup.Volume + 1.0F) / 2.0F, block.soundGroup.Pitch * 0.8F);
                     --itemStack.count;
                 }
             }

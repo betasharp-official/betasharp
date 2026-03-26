@@ -1,6 +1,7 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp;
 
@@ -12,16 +13,16 @@ public sealed record CreatureKind(Type EntityType, int MobCap, Material SpawnMat
 
     public static readonly CreatureKind[] Values = [Monster, Creature, WaterCreature];
 
-    public bool CanSpawnAtLocation(World world, int x, int y, int z)
+    public bool CanSpawnAtLocation(IBlockReader world, int x, int y, int z)
     {
         if (SpawnMaterial == Material.Water)
         {
-            return world.getMaterial(x, y, z).IsFluid && !world.shouldSuffocate(x, y + 1, z);
+            return world.GetMaterial(x, y, z).IsFluid && !world.ShouldSuffocate(x, y + 1, z);
         }
         else
         {
-            return world.shouldSuffocate(x, y - 1, z) && !world.shouldSuffocate(x, y, z) &&
-                   !world.getMaterial(x, y, z).IsFluid && !world.shouldSuffocate(x, y + 1, z);
+            return world.ShouldSuffocate(x, y - 1, z) && !world.ShouldSuffocate(x, y, z) &&
+                   !world.GetMaterial(x, y, z).IsFluid && !world.ShouldSuffocate(x, y + 1, z);
         }
     }
 }

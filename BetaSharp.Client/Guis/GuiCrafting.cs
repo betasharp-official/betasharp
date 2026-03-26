@@ -1,14 +1,15 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Inventorys;
 using BetaSharp.Screens;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Guis;
 
 public class GuiCrafting : GuiContainer
 {
 
-    public GuiCrafting(InventoryPlayer player, World world, int posX, int posY, int posZ) : base(new CraftingScreenHandler(player, world, posX, posY, posZ))
+    public GuiCrafting(InventoryPlayer player, IWorldContext world, int posX, int posY, int posZ) : base(new CraftingScreenHandler(player, world, posX, posY, posZ))
     {
     }
 

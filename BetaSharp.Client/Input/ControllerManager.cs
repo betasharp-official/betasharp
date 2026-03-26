@@ -21,6 +21,8 @@ public static class ControllerManager
     private static bool s_wasCraftingDown;
     private static bool s_wasSneakDown;
     private static bool s_wasJumpDown;
+    private static long s_nextZoomInAdjustAtMs;
+    private static long s_nextZoomOutAdjustAtMs;
 
     public static bool SneakToggle { get; set; }
     private static bool s_suppressInGameInput;
@@ -30,21 +32,42 @@ public static class ControllerManager
         s_game = game;
     }
 
+    private static bool IsActionDown(string actionKey)
+    {
+        if (s_game == null) return false;
+        foreach (ControllerBinding cb in s_game.options.ControllerBindings)
+        {
+            if (cb.ActionKey == actionKey)
+            {
+                if ((int)cb.Button < 0) return false;
+                return Controller.IsButtonDown(cb.Button);
+            }
+        }
+        return false;
+    }
+
+    public static bool IsZoomHeld()
+    {
+        if (s_game == null) return false;
+        if (s_game.currentScreen != null || !s_game.inGameHasFocus) return false;
+        return IsActionDown("controller.zoom");
+    }
+
     private static void SyncWasStates()
     {
         s_wasAttackDown = Controller.RightTrigger > 0.5f;
         s_wasInteractDown = Controller.LeftTrigger > 0.5f;
-        s_wasInventoryDown = Controller.IsButtonDown(GamepadButton.Y);
-        s_wasDropDown = Controller.IsButtonDown(GamepadButton.B);
-        s_wasHotbarLeftDown = Controller.IsButtonDown(GamepadButton.LeftBumper);
-        s_wasHotbarRightDown = Controller.IsButtonDown(GamepadButton.RightBumper);
-        s_wasCameraDown = Controller.IsButtonDown(GamepadButton.LeftStick);
-        s_wasPauseDown = Controller.IsButtonDown(GamepadButton.Start);
+        s_wasInventoryDown = IsActionDown("controller.inventory");
+        s_wasDropDown = IsActionDown("controller.drop");
+        s_wasHotbarLeftDown = IsActionDown("controller.hotbarLeft");
+        s_wasHotbarRightDown = IsActionDown("controller.hotbarRight");
+        s_wasCameraDown = IsActionDown("controller.camera");
+        s_wasPauseDown = IsActionDown("controller.pause");
         s_wasPlayerListDown = Controller.IsButtonDown(GamepadButton.Back);
-        s_wasPickBlockDown = Controller.IsButtonDown(GamepadButton.DPadUp);
-        s_wasSneakDown = Controller.IsButtonDown(GamepadButton.RightStick);
-        s_wasCraftingDown = Controller.IsButtonDown(GamepadButton.X);
-        s_wasJumpDown = Controller.IsButtonDown(GamepadButton.A);
+        s_wasPickBlockDown = IsActionDown("controller.pickBlock");
+        s_wasSneakDown = IsActionDown("controller.sneak");
+        s_wasCraftingDown = IsActionDown("controller.crafting");
+        s_wasJumpDown = IsActionDown("controller.jump");
     }
 
     public static void UpdateInGame(float tickDelta)
@@ -56,25 +79,26 @@ public static class ControllerManager
             return;
         }
 
-        bool jumpHeld = Controller.IsButtonDown(GamepadButton.A);
+        bool jumpHeld = IsActionDown("controller.jump");
         bool attackHeld = Controller.RightTrigger > 0.5f;
         bool interactHeld = Controller.LeftTrigger > 0.5f;
-        bool inventoryHeld = Controller.IsButtonDown(GamepadButton.Y);
-        bool dropHeld = Controller.IsButtonDown(GamepadButton.B);
-        bool lbHeld = Controller.IsButtonDown(GamepadButton.LeftBumper);
-        bool rbHeld = Controller.IsButtonDown(GamepadButton.RightBumper);
-        bool cameraHeld = Controller.IsButtonDown(GamepadButton.LeftStick);
-        bool pauseHeld = Controller.IsButtonDown(GamepadButton.Start);
+        bool inventoryHeld = IsActionDown("controller.inventory");
+        bool dropHeld = IsActionDown("controller.drop");
+        bool lbHeld = IsActionDown("controller.hotbarLeft");
+        bool rbHeld = IsActionDown("controller.hotbarRight");
+        bool cameraHeld = IsActionDown("controller.camera");
+        bool pauseHeld = IsActionDown("controller.pause");
         bool playerListHeld = Controller.IsButtonDown(GamepadButton.Back);
-        bool pickBlockHeld = Controller.IsButtonDown(GamepadButton.DPadUp);
-        bool sneakHeld = Controller.IsButtonDown(GamepadButton.RightStick);
-        bool craftingHeld = Controller.IsButtonDown(GamepadButton.X);
+        bool pickBlockHeld = IsActionDown("controller.pickBlock");
+        bool sneakHeld = IsActionDown("controller.sneak");
+        bool craftingHeld = IsActionDown("controller.crafting");
+        bool zoomHeld = IsActionDown("controller.zoom");
 
         if (s_suppressInGameInput)
         {
             if (!jumpHeld && !attackHeld && !interactHeld && !inventoryHeld && !dropHeld &&
                 !lbHeld && !rbHeld && !cameraHeld && !pauseHeld && !playerListHeld &&
-                !pickBlockHeld && !sneakHeld && !craftingHeld)
+                !pickBlockHeld && !sneakHeld && !craftingHeld && !zoomHeld)
             {
                 s_suppressInGameInput = false;
             }
@@ -118,7 +142,7 @@ public static class ControllerManager
             s_game.displayGuiScreen(new GuiInventory(s_game.player));
         }
 
-        // Crafting (X Button)
+        // Crafting
         if (craftingHeld && !s_wasCraftingDown)
         {
             s_game.displayGuiScreen(new GuiInventory(s_game.player));
@@ -130,9 +154,38 @@ public static class ControllerManager
             s_game.player.dropSelectedItem();
         }
 
-        // Hotbar
-        if (lbHeld && !s_wasHotbarLeftDown) s_game.player.inventory.changeCurrentItem(1);
-        if (rbHeld && !s_wasHotbarRightDown) s_game.player.inventory.changeCurrentItem(-1);
+        // Hotbar / Zoom adjust
+        if (zoomHeld)
+        {
+            long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+            if (lbHeld && (!s_wasHotbarLeftDown || nowMs >= s_nextZoomInAdjustAtMs))
+            {
+                s_game.options.ZoomScale = System.Math.Clamp(s_game.options.ZoomScale * 1.08F, 1.25F, 20.0F);
+                s_nextZoomInAdjustAtMs = nowMs + (s_wasHotbarLeftDown ? 70L : 220L);
+            }
+            else if (!lbHeld)
+            {
+                s_nextZoomInAdjustAtMs = 0L;
+            }
+
+            if (rbHeld && (!s_wasHotbarRightDown || nowMs >= s_nextZoomOutAdjustAtMs))
+            {
+                s_game.options.ZoomScale = System.Math.Clamp(s_game.options.ZoomScale / 1.08F, 1.25F, 20.0F);
+                s_nextZoomOutAdjustAtMs = nowMs + (s_wasHotbarRightDown ? 70L : 220L);
+            }
+            else if (!rbHeld)
+            {
+                s_nextZoomOutAdjustAtMs = 0L;
+            }
+        }
+        else
+        {
+            if (lbHeld && !s_wasHotbarLeftDown) s_game.player.inventory.changeCurrentItem(1);
+            if (rbHeld && !s_wasHotbarRightDown) s_game.player.inventory.changeCurrentItem(-1);
+            s_nextZoomInAdjustAtMs = 0L;
+            s_nextZoomOutAdjustAtMs = 0L;
+        }
 
         // Camera
         if (cameraHeld && !s_wasCameraDown)
@@ -158,23 +211,19 @@ public static class ControllerManager
             s_game.ClickMiddleMouseButton();
         }
 
-        // Debug Toggle
         if (playerListHeld && !s_wasPlayerListDown)
         {
             s_game.options.ShowDebugInfo = !s_game.options.ShowDebugInfo;
         }
 
-        if (jumpHeld || attackHeld || interactHeld || inventoryHeld || dropHeld || lbHeld || rbHeld || cameraHeld || pauseHeld || playerListHeld || pickBlockHeld || sneakHeld || craftingHeld)
+        if (jumpHeld || attackHeld || interactHeld || inventoryHeld || dropHeld || lbHeld || rbHeld ||
+            cameraHeld || pauseHeld || playerListHeld || pickBlockHeld || sneakHeld || craftingHeld || zoomHeld)
         {
             s_game.isControllerMode = true;
         }
 
         SyncWasStates();
 
-        // Drain the controller event queue. UpdateInGame uses polling (IsButtonDown),
-        // so events are never consumed. Without this drain, leftover events leak into
-        // GUI processing when a screen is opened (e.g. Y opens inventory, then the
-        // Y event fires HandleQuickMove in the newly opened GUI).
         while (Controller.Next()) { }
     }
 
@@ -202,8 +251,13 @@ public static class ControllerManager
         }
     }
 
-    public static void HandleLook(ref float yawDelta, ref float pitchDelta, float sensitivity)
+    public static void HandleLook(ref float yawDelta, ref float pitchDelta, float mouseSensitivity, float deltaTime)
     {
+        if (s_game == null)
+        {
+            return;
+        }
+
         if (Controller.IsActive() && !s_suppressInGameInput)
         {
             float rx = Controller.RightStickX;
@@ -212,11 +266,16 @@ public static class ControllerManager
 
             if (Math.Abs(rx) > deadzone || Math.Abs(ry) > deadzone)
             {
+                const float mult = 120.0f;
+
+                float sensitivity = s_game.options.ControllerSensitivity * 0.6f + 0.2f;
+                sensitivity = sensitivity * sensitivity * sensitivity * 8.0f;
+
                 float activeRx = (Math.Abs(rx) - deadzone) / (1.0f - deadzone);
-                yawDelta += activeRx * activeRx * Math.Sign(rx) * 10f * sensitivity;
+                yawDelta += activeRx * activeRx * Math.Sign(rx) * 10f * sensitivity * deltaTime * mult;
 
                 float activeRy = (Math.Abs(ry) - deadzone) / (1.0f - deadzone);
-                pitchDelta += activeRy * activeRy * Math.Sign(ry) * 10f * sensitivity;
+                pitchDelta += activeRy * activeRy * Math.Sign(ry) * 10f * sensitivity * deltaTime * mult;
             }
         }
     }

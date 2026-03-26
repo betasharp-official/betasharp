@@ -1,14 +1,16 @@
 using BetaSharp.Blocks;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Biomes;
 using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Gen.Features;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
+using BetaSharp.Worlds.Generation.Biomes;
+using BetaSharp.Worlds.Generation.Generators.Features;
 
 namespace BetaSharp.Worlds.Gen.Flat;
 
-internal class FlatChunkGenerator : ChunkSource
+internal class FlatChunkGenerator : IChunkSource
 {
-    private readonly World _world;
+    private readonly IWorldContext _world;
     private readonly FlatGeneratorInfo _generatorInfo;
     private readonly JavaRandom _random;
 
@@ -36,14 +38,14 @@ internal class FlatChunkGenerator : ChunkSource
     private readonly SpringFeature _featureWaterSpring = new(Block.FlowingWater.id);
     private readonly SpringFeature _featureLavaSpring = new(Block.FlowingLava.id);
 
-    public FlatChunkGenerator(World world)
+    public FlatChunkGenerator(IWorldContext world)
     {
         _world = world;
-        _generatorInfo = FlatGeneratorInfo.CreateFromString(world.getProperties().GeneratorOptions);
-        _random = new JavaRandom(world.getSeed());
+        _generatorInfo = FlatGeneratorInfo.CreateFromString(world.Properties.GeneratorOptions);
+        _random = new JavaRandom(world.Seed);
     }
 
-    public ChunkSource CreateParallelInstance() => new FlatChunkGenerator(_world);
+    public IChunkSource CreateParallelInstance() => new FlatChunkGenerator(_world);
 
     public Chunk GetChunk(int chunkX, int chunkZ)
     {
@@ -90,16 +92,16 @@ internal class FlatChunkGenerator : ChunkSource
     public bool IsChunkLoaded(int x, int z) => true;
     public Chunk LoadChunk(int x, int z) => GetChunk(x, z);
 
-    public void DecorateTerrain(ChunkSource chunkSource, int chunkX, int chunkZ)
+    public void DecorateTerrain(IChunkSource chunkSource, int chunkX, int chunkZ)
     {
         int blockX = chunkX * 16;
         int blockZ = chunkZ * 16;
         Biome chunkBiome = Biome.Plains; // Default
 
-        _random.SetSeed(_world.getSeed());
+        _random.SetSeed(_world.Seed);
         long xOffset = _random.NextLong() / 2L * 2L + 1L;
         long zOffset = _random.NextLong() / 2L * 2L + 1L;
-        _random.SetSeed(chunkX * xOffset + chunkZ * zOffset ^ _world.getSeed());
+        _random.SetSeed(chunkX * xOffset + chunkZ * zOffset ^ _world.Seed);
 
         int featureX;
         int featureY;
@@ -225,7 +227,7 @@ internal class FlatChunkGenerator : ChunkSource
                 featureZ = blockZ + _random.NextInt(16) + 8;
                 Feature treeFeature = chunkBiome.GetRandomWorldGenForTrees(_random);
                 treeFeature.prepare(1.0D, 1.0D, 1.0D);
-                treeFeature.Generate(_world, _random, featureX, _world.getTopY(featureX, featureZ), featureZ);
+                treeFeature.Generate(_world, _random, featureX, _world.Reader.GetTopY(featureX, featureZ), featureZ);
             }
 
             // Flowers and Mushrooms
@@ -285,7 +287,7 @@ internal class FlatChunkGenerator : ChunkSource
                 featureZ = blockZ + _random.NextInt(16) + 8;
                 _featureGrass.Generate(_world, _random, featureX, featureY, featureZ);
             }
- 
+
             for (int i = 0; i < 2; ++i)
             {
                 featureX = blockX + _random.NextInt(16) + 8;
@@ -293,7 +295,7 @@ internal class FlatChunkGenerator : ChunkSource
                 featureZ = blockZ + _random.NextInt(16) + 8;
                 _featureDeadBush.Generate(_world, _random, featureX, featureY, featureZ);
             }
- 
+
             for (int i = 0; i < 10; ++i)
             {
                 featureX = blockX + _random.NextInt(16) + 8;
@@ -301,7 +303,7 @@ internal class FlatChunkGenerator : ChunkSource
                 featureZ = blockZ + _random.NextInt(16) + 8;
                 _featureCactus.Generate(_world, _random, featureX, featureY, featureZ);
             }
- 
+
             // Spring Features
             for (int i = 0; i < 50; ++i)
             {

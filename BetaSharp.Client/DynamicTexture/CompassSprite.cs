@@ -93,13 +93,13 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
         double targetAngle = 0.0D;
         if (_game.world != null && _game.player != null)
         {
-            Vec3i spawnPos = _game.world.getSpawnPos();
+            Vec3i spawnPos = _game.world.Properties.GetSpawnPos();
             double deltaX = spawnPos.X - _game.player.x;
             double deltaZ = spawnPos.Z - _game.player.z;
 
             targetAngle = (_game.player.yaw - 90.0F) * Math.PI / 180.0D - Math.Atan2(deltaZ, deltaX);
 
-            if (_game.world.dimension.IsNether)
+            if (_game.world.Dimension.IsNether)
             {
                 targetAngle = Random.Shared.NextDouble() * (float)Math.PI * 2.0D;
             }

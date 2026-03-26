@@ -1,7 +1,7 @@
 using BetaSharp.Items;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
@@ -18,7 +18,7 @@ public class EntityGhast : EntityFlying, Monster
     public int prevAttackCounter;
     public int attackCounter;
 
-    public EntityGhast(World world) : base(world)
+    public EntityGhast(IWorldContext world) : base(world)
     {
         texture = "/mob/ghast.png";
         setBoundingBoxSpacing(4.0F, 4.0F);
@@ -34,7 +34,7 @@ public class EntityGhast : EntityFlying, Monster
 
     public override void tickLiving()
     {
-        if (!world.isRemote && world.difficulty == 0)
+        if (!world.IsRemote && world.Difficulty == 0)
         {
             markDead();
         }
@@ -76,7 +76,7 @@ public class EntityGhast : EntityFlying, Monster
 
         if (targetedEntity == null || aggroCooldown-- <= 0)
         {
-            targetedEntity = world.getClosestPlayer(this, 100.0D);
+            targetedEntity = world.Entities.GetClosestPlayer(x, y, z, 100.0D);
             if (targetedEntity != null)
             {
                 aggroCooldown = 20;
@@ -94,13 +94,13 @@ public class EntityGhast : EntityFlying, Monster
             {
                 if (attackCounter == 10)
                 {
-                    world.playSound(this, "mob.ghast.charge", getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
+                    world.Broadcaster.PlaySoundAtEntity(this, "mob.ghast.charge", getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
                 }
 
                 ++attackCounter;
                 if (attackCounter == 20)
                 {
-                    world.playSound(this, "mob.ghast.fireball", getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
+                    world.Broadcaster.PlaySoundAtEntity(this, "mob.ghast.fireball", getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
                     EntityFireball fireball = new EntityFireball(world, this, dx2, dy2, dz2);
                     double spawnOffset = 4.0D;
                     Vec3D lookDir = getLook(1.0F);
@@ -125,7 +125,7 @@ public class EntityGhast : EntityFlying, Monster
             }
         }
 
-        if (!world.isRemote)
+        if (!world.IsRemote)
         {
             Charging.Value = attackCounter > 10;
         }
@@ -141,7 +141,7 @@ public class EntityGhast : EntityFlying, Monster
         for (int i = 1; (double)i < distance; ++i)
         {
             box.Translate(stepX, stepY, stepZ);
-            if (world.GetEntityCollisions(this, box).Count > 0)
+            if (world.Entities.GetEntityCollisionsScratch(this, box).Count > 0)
             {
                 return false;
             }
@@ -177,7 +177,7 @@ public class EntityGhast : EntityFlying, Monster
 
     public override bool canSpawn()
     {
-        return random.NextInt(20) == 0 && base.canSpawn() && world.difficulty > 0;
+        return random.NextInt(20) == 0 && base.canSpawn() && world.Difficulty > 0;
     }
 
     public override int getMaxSpawnedInChunk()

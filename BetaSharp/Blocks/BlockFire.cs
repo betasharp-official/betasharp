@@ -1,7 +1,7 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Rules;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
@@ -10,10 +10,7 @@ internal class BlockFire : Block
     private readonly int[] _burnChances = new int[256];
     private readonly int[] _spreadChances = new int[256];
 
-    public BlockFire(int id, int textureId) : base(id, textureId, Material.Fire)
-    {
-        setTickRandomly(true);
-    }
+    public BlockFire(int id, int textureId) : base(id, textureId, Material.Fire) => setTickRandomly(true);
 
     protected override void init()
     {
@@ -34,7 +31,7 @@ internal class BlockFire : Block
         _spreadChances[block] = spreadChance;
     }
 
-    public override Box? getCollisionShape(World world, int x, int y, int z)
+    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
         return null;
     }
@@ -54,7 +51,7 @@ internal class BlockFire : Block
         return BlockRendererType.Fire;
     }
 
-    public override int getDroppedItemCount(JavaRandom random)
+    public override int getDroppedItemCount()
     {
         return 0;
     }
@@ -64,98 +61,106 @@ internal class BlockFire : Block
         return 40;
     }
 
-    public override void onTick(World world, int x, int y, int z, JavaRandom random)
+    public override void onTick(OnTickEvent @event)
     {
-        if (!world.Rules.GetBool(DefaultRules.DoFireTick))
+        if (!@event.World.Rules.GetBool(DefaultRules.DoFireTick))    return;
+        
+
+        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == Netherrack.id;
+        if (!canPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z)))
         {
-            return;
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
 
-        bool isOnNetherrack = world.getBlockId(x, y - 1, z) == Block.Netherrack.id;
-        if (!canPlaceAt(world, x, y, z))
+        if (isOnNetherrack ||
+            !@event.World.Environment.IsRaining ||
+            (!@event.World.Environment.IsRainingAt(@event.X, @event.Y, @event.Z) &&
+             !@event.World.Environment.IsRainingAt(@event.X - 1, @event.Y, @event.Z) &&
+             !@event.World.Environment.IsRainingAt(@event.X + 1, @event.Y, @event.Z) &&
+             !@event.World.Environment.IsRainingAt(@event.X, @event.Y, @event.Z - 1) &&
+             !@event.World.Environment.IsRainingAt(@event.X, @event.Y, @event.Z + 1)))
         {
-            world.setBlock(x, y, z, 0);
-        }
-
-        if (isOnNetherrack || !world.isRaining() || !world.isRaining(x, y, z) && !world.isRaining(x - 1, y, z) && !world.isRaining(x + 1, y, z) && !world.isRaining(x, y, z - 1) && !world.isRaining(x, y, z + 1))
-        {
-            int fireAge = world.getBlockMeta(x, y, z);
+            int fireAge = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             if (fireAge < 15)
             {
-                world.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, fireAge + random.NextInt(3) / 2);
+                @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, fireAge + @event.World.Random.NextInt(3) / 2);
             }
 
-            world.ScheduleBlockUpdate(x, y, z, id, getTickRate());
-            if (!isOnNetherrack && !areBlocksAroundFlammable(world, x, y, z))
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id, getTickRate());
+            if (!isOnNetherrack && !areBlocksAroundFlammable(@event.World.Reader, @event.X, @event.Y, @event.Z))
             {
-                if (!world.shouldSuffocate(x, y - 1, z) || fireAge > 3)
+                if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) || fireAge > 3)
                 {
-                    world.setBlock(x, y, z, 0);
+                    @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
                 }
-
             }
-            else if (!isOnNetherrack && !isFlammable(world, x, y - 1, z) && fireAge == 15 && random.NextInt(4) == 0)
+            else if (!isOnNetherrack && !isFlammable(@event.World.Reader, @event.X, @event.Y - 1, @event.Z) && fireAge == 15 && @event.World.Random.NextInt(4) == 0)
             {
-                world.setBlock(x, y, z, 0);
+                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             }
             else
             {
-                trySpreadingFire(world, x + 1, y, z, 300, random, fireAge);
-                trySpreadingFire(world, x - 1, y, z, 300, random, fireAge);
-                trySpreadingFire(world, x, y - 1, z, 250, random, fireAge);
-                trySpreadingFire(world, x, y + 1, z, 250, random, fireAge);
-                trySpreadingFire(world, x, y, z - 1, 300, random, fireAge);
-                trySpreadingFire(world, x, y, z + 1, 300, random, fireAge);
+                trySpreadingFire(@event.World, @event.X + 1, @event.Y, @event.Z, 300, @event.World.Random, fireAge);
+                trySpreadingFire(@event.World, @event.X - 1, @event.Y, @event.Z, 300, @event.World.Random, fireAge);
+                trySpreadingFire(@event.World, @event.X, @event.Y - 1, @event.Z, 250, @event.World.Random, fireAge);
+                trySpreadingFire(@event.World, @event.X, @event.Y + 1, @event.Z, 250, @event.World.Random, fireAge);
+                trySpreadingFire(@event.World, @event.X, @event.Y, @event.Z - 1, 300, @event.World.Random, fireAge);
+                trySpreadingFire(@event.World, @event.X, @event.Y, @event.Z + 1, 300, @event.World.Random, fireAge);
 
-                for (int checkX = x - 1; checkX <= x + 1; ++checkX)
+                for (int checkX = @event.X - 1; checkX <= @event.X + 1; ++checkX)
                 {
-                    for (int checkY = z - 1; checkY <= z + 1; ++checkY)
+                    for (int checkZ = @event.Z - 1; checkZ <= @event.Z + 1; ++checkZ)
                     {
-                        for (int checkZ = y - 1; checkZ <= y + 4; ++checkZ)
+                        for (int checkY = @event.Y - 1; checkY <= @event.Y + 4; ++checkY)
                         {
-                            if (checkX != x || checkZ != y || checkY != z)
+                            if (checkX != @event.X || checkY != @event.Y || checkZ != @event.Z)
                             {
                                 int spreadDifficulty = 100;
-                                if (checkZ > y + 1)
+                                if (checkY > @event.Y + 1)
                                 {
-                                    spreadDifficulty += (checkZ - (y + 1)) * 100;
+                                    spreadDifficulty += (checkY - (@event.Y + 1)) * 100;
                                 }
 
-                                int burnChance = getBurnChance(world, checkX, checkZ, checkY);
+                                int burnChance = getBurnChance(@event.World.Reader, checkX, checkY, checkZ);
                                 if (burnChance > 0)
                                 {
                                     int var13 = (burnChance + 40) / (fireAge + 30);
-                                    if (var13 > 0 && random.NextInt(spreadDifficulty) <= var13 && (!world.isRaining() || !world.isRaining(checkX, checkZ, checkY)) && !world.isRaining(checkX - 1, checkZ, z) && !world.isRaining(checkX + 1, checkZ, checkY) && !world.isRaining(checkX, checkZ, checkY - 1) && !world.isRaining(checkX, checkZ, checkY + 1))
+                                    if (var13 > 0 &&
+                                        @event.World.Random.NextInt(spreadDifficulty) <= var13 &&
+                                        (!@event.World.Environment.IsRaining || !@event.World.Environment.IsRainingAt(checkX, checkY, checkZ)) &&
+                                        !@event.World.Environment.IsRainingAt(checkX - 1, checkY, checkZ) &&
+                                        !@event.World.Environment.IsRainingAt(checkX + 1, checkY, checkZ) &&
+                                        !@event.World.Environment.IsRainingAt(checkX, checkY - 1, checkZ) &&
+                                        !@event.World.Environment.IsRainingAt(checkX, checkY + 1, checkZ))
                                     {
-                                        int spreadChance = fireAge + random.NextInt(5) / 4;
+                                        int spreadChance = fireAge + @event.World.Random.NextInt(5) / 4;
                                         if (spreadChance > 15)
                                         {
                                             spreadChance = 15;
                                         }
 
-                                        world.setBlock(checkX, checkZ, checkY, id, spreadChance);
+                                        @event.World.Writer.SetBlock(checkX, checkY, checkZ, id, spreadChance);
                                     }
                                 }
                             }
                         }
                     }
                 }
-
             }
         }
         else
         {
-            world.setBlock(x, y, z, 0);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
     }
 
-    private void trySpreadingFire(World world, int x, int y, int z, int spreadFactor, JavaRandom random, int currentAge)
+    private void trySpreadingFire(IWorldContext level, int x, int y, int z, int spreadFactor, JavaRandom random, int currentAge)
     {
-        int targetSpreadChance = _spreadChances[world.getBlockId(x, y, z)];
+        int targetSpreadChance = _spreadChances[level.Reader.GetBlockId(x, y, z)];
         if (random.NextInt(spreadFactor) < targetSpreadChance)
         {
-            bool isTnt = world.getBlockId(x, y, z) == Block.TNT.id;
-            if (random.NextInt(currentAge + 10) < 5 && !world.isRaining(x, y, z))
+            bool isTnt = level.Reader.GetBlockId(x, y, z) == TNT.id;
+            if (random.NextInt(currentAge + 10) < 5 && !level.Environment.IsRainingAt(x, y, z))
             {
                 int newFireAge = currentAge + random.NextInt(5) / 4;
                 if (newFireAge > 15)
@@ -163,43 +168,41 @@ internal class BlockFire : Block
                     newFireAge = 15;
                 }
 
-                world.setBlock(x, y, z, id, newFireAge);
+                level.Writer.SetBlock(x, y, z, id, newFireAge);
             }
             else
             {
-                world.setBlock(x, y, z, 0);
+                level.Writer.SetBlock(x, y, z, 0);
             }
 
             if (isTnt)
             {
-                Block.TNT.onMetadataChange(world, x, y, z, 1);
+                TNT.onMetadataChange(new OnMetadataChangeEvent(level, x, y, z, 1));
             }
         }
-
     }
 
-    private bool areBlocksAroundFlammable(World world, int x, int y, int z)
-    {
-        return isFlammable(world, x + 1, y, z) ? true : (isFlammable(world, x - 1, y, z) ? true : (isFlammable(world, x, y - 1, z) ? true : (isFlammable(world, x, y + 1, z) ? true : (isFlammable(world, x, y, z - 1) ? true : isFlammable(world, x, y, z + 1)))));
-    }
+    private bool areBlocksAroundFlammable(IBlockReader world, int x, int y, int z) => isFlammable(world, x + 1, y, z) ? true :
+        isFlammable(world, x - 1, y, z) ? true :
+        isFlammable(world, x, y - 1, z) ? true :
+        isFlammable(world, x, y + 1, z) ? true :
+        isFlammable(world, x, y, z - 1) ? true : isFlammable(world, x, y, z + 1);
 
-    private int getBurnChance(World world, int x, int y, int z)
+    private int getBurnChance(IBlockReader world, int x, int y, int z)
     {
         sbyte initialMax = 0;
-        if (!world.isAir(x, y, z))
+        if (!world.IsAir(x, y, z))
         {
             return 0;
         }
-        else
-        {
-            int maxChance = getBurnChance(world, x + 1, y, z, initialMax);
-            maxChance = getBurnChance(world, x - 1, y, z, maxChance);
-            maxChance = getBurnChance(world, x, y - 1, z, maxChance);
-            maxChance = getBurnChance(world, x, y + 1, z, maxChance);
-            maxChance = getBurnChance(world, x, y, z - 1, maxChance);
-            maxChance = getBurnChance(world, x, y, z + 1, maxChance);
-            return maxChance;
-        }
+
+        int maxChance = getBurnChance(world, x + 1, y, z, initialMax);
+        maxChance = getBurnChance(world, x - 1, y, z, maxChance);
+        maxChance = getBurnChance(world, x, y - 1, z, maxChance);
+        maxChance = getBurnChance(world, x, y + 1, z, maxChance);
+        maxChance = getBurnChance(world, x, y, z - 1, maxChance);
+        maxChance = getBurnChance(world, x, y, z + 1, maxChance);
+        return maxChance;
     }
 
     public override bool hasCollision()
@@ -207,110 +210,107 @@ internal class BlockFire : Block
         return false;
     }
 
-    public override bool isFlammable(IBlockAccess iBlockAccess, int x, int y, int z)
+    public override bool isFlammable(IBlockReader reader, int x, int y, int z)
     {
-        return _burnChances[iBlockAccess.getBlockId(x, y, z)] > 0;
+        return _burnChances[reader.GetBlockId(x, y, z)] > 0;
     }
 
-    public int getBurnChance(World world, int x, int y, int z, int currentChance)
+    public int getBurnChance(IBlockReader world, int x, int y, int z, int currentChance)
     {
-        int blockBurnChance = _burnChances[world.getBlockId(x, y, z)];
+        int blockBurnChance = _burnChances[world.GetBlockId(x, y, z)];
         return blockBurnChance > currentChance ? blockBurnChance : currentChance;
     }
 
-    public override bool canPlaceAt(World world, int x, int y, int z)
-    {
-        return world.shouldSuffocate(x, y - 1, z) || areBlocksAroundFlammable(world, x, y, z);
-    }
+    public override bool canPlaceAt(CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z) || areBlocksAroundFlammable(context.World.Reader, context.X, context.Y, context.Z);
 
-    public override void neighborUpdate(World world, int x, int y, int z, int id)
+    public override void neighborUpdate(OnTickEvent ctx)
     {
-        if (!world.shouldSuffocate(x, y - 1, z) && !areBlocksAroundFlammable(world, x, y, z))
+        if (!ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) && !areBlocksAroundFlammable(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z))
         {
-            world.setBlock(x, y, z, 0);
+            ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
         }
     }
 
-    public override void onPlaced(World world, int x, int y, int z)
+    public override void onPlaced(OnPlacedEvent ctx)
     {
-        if (world.getBlockId(x, y - 1, z) != Block.Obsidian.id || !Block.NetherPortal.create(world, x, y, z))
+        if (ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) != Obsidian.id || !NetherPortal.create(ctx.World.Reader, ctx.World.Writer, ctx.X, ctx.Y, ctx.Z))
         {
-            if (!world.shouldSuffocate(x, y - 1, z) && !areBlocksAroundFlammable(world, x, y, z))
+            if (!ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) && !areBlocksAroundFlammable(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z))
             {
-                world.setBlock(x, y, z, 0);
+                ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
             }
             else
             {
-                world.ScheduleBlockUpdate(x, y, z, id, getTickRate());
+                ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, id, getTickRate());
             }
         }
     }
 
-    public override void randomDisplayTick(World world, int x, int y, int z, JavaRandom random)
+    public override void randomDisplayTick(OnTickEvent ctx)
     {
-        if (random.NextInt(24) == 0)
+        if (ctx.World.Random.NextInt(24) == 0)
         {
-            world.playSound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), "fire.fire", 1.0F + random.NextFloat(), random.NextFloat() * 0.7F + 0.3F);
+            ctx.World.Broadcaster.PlaySoundAtPos(ctx.X + 0.5F, ctx.Y + 0.5F, ctx.Z + 0.5F, "fire.fire", 1.0F + Random.Shared.NextSingle(), Random.Shared.NextSingle() * 0.7F + 0.3F);
         }
 
         int particleIndex;
         float particleX;
         float particleY;
         float particleZ;
-        if (!world.shouldSuffocate(x, y - 1, z) && !Block.Fire.isFlammable(world, x, y - 1, z))
+        if (!ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) && !Fire.isFlammable(ctx.World.Reader, ctx.X, ctx.Y - 1, ctx.Z))
         {
-            if (Block.Fire.isFlammable(world, x - 1, y, z))
+            if (Fire.isFlammable(ctx.World.Reader, ctx.X - 1, ctx.Y, ctx.Z))
             {
                 for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                 {
-                    particleX = (float)x + random.NextFloat() * 0.1F;
-                    particleY = (float)y + random.NextFloat();
-                    particleZ = (float)z + random.NextFloat();
-                    world.addParticle("largesmoke", (double)particleX, (double)particleY, (double)particleZ, 0.0D, 0.0D, 0.0D);
+                    particleX = ctx.X + Random.Shared.NextSingle() * 0.1F;
+                    particleY = ctx.Y + Random.Shared.NextSingle();
+                    particleZ = ctx.Z + Random.Shared.NextSingle();
+                    ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                 }
             }
 
-            if (Block.Fire.isFlammable(world, x + 1, y, z))
+            if (Fire.isFlammable(ctx.World.Reader, ctx.X + 1, ctx.Y, ctx.Z))
             {
                 for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                 {
-                    particleX = (float)(x + 1) - random.NextFloat() * 0.1F;
-                    particleY = (float)y + random.NextFloat();
-                    particleZ = (float)z + random.NextFloat();
-                    world.addParticle("largesmoke", (double)particleX, (double)particleY, (double)particleZ, 0.0D, 0.0D, 0.0D);
+                    particleX = ctx.X + 1 - Random.Shared.NextSingle() * 0.1F;
+                    particleY = ctx.Y + Random.Shared.NextSingle();
+                    particleZ = ctx.Z + Random.Shared.NextSingle();
+                    ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                 }
             }
 
-            if (Block.Fire.isFlammable(world, x, y, z - 1))
+            if (Fire.isFlammable(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z - 1))
             {
                 for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                 {
-                    particleX = (float)x + random.NextFloat();
-                    particleY = (float)y + random.NextFloat();
-                    particleZ = (float)z + random.NextFloat() * 0.1F;
-                    world.addParticle("largesmoke", (double)particleX, (double)particleY, (double)particleZ, 0.0D, 0.0D, 0.0D);
+                    particleX = ctx.X + Random.Shared.NextSingle();
+                    particleY = ctx.Y + Random.Shared.NextSingle();
+                    particleZ = ctx.Z + Random.Shared.NextSingle() * 0.1F;
+                    ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                 }
             }
 
-            if (Block.Fire.isFlammable(world, x, y, z + 1))
+            if (Fire.isFlammable(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z + 1))
             {
                 for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                 {
-                    particleX = (float)x + random.NextFloat();
-                    particleY = (float)y + random.NextFloat();
-                    particleZ = (float)(z + 1) - random.NextFloat() * 0.1F;
-                    world.addParticle("largesmoke", (double)particleX, (double)particleY, (double)particleZ, 0.0D, 0.0D, 0.0D);
+                    particleX = ctx.X + Random.Shared.NextSingle();
+                    particleY = ctx.Y + Random.Shared.NextSingle();
+                    particleZ = ctx.Z + 1 - Random.Shared.NextSingle() * 0.1F;
+                    ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                 }
             }
 
-            if (Block.Fire.isFlammable(world, x, y + 1, z))
+            if (Fire.isFlammable(ctx.World.Reader, ctx.X, ctx.Y + 1, ctx.Z))
             {
                 for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                 {
-                    particleX = (float)x + random.NextFloat();
-                    particleY = (float)(y + 1) - random.NextFloat() * 0.1F;
-                    particleZ = (float)z + random.NextFloat();
-                    world.addParticle("largesmoke", (double)particleX, (double)particleY, (double)particleZ, 0.0D, 0.0D, 0.0D);
+                    particleX = ctx.X + Random.Shared.NextSingle();
+                    particleY = ctx.Y + 1 - Random.Shared.NextSingle() * 0.1F;
+                    particleZ = ctx.Z + Random.Shared.NextSingle();
+                    ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                 }
             }
         }
@@ -318,12 +318,11 @@ internal class BlockFire : Block
         {
             for (particleIndex = 0; particleIndex < 3; ++particleIndex)
             {
-                particleX = (float)x + random.NextFloat();
-                particleY = (float)y + random.NextFloat() * 0.5F + 0.5F;
-                particleZ = (float)z + random.NextFloat();
-                world.addParticle("largesmoke", (double)particleX, (double)particleY, (double)particleZ, 0.0D, 0.0D, 0.0D);
+                particleX = ctx.X + Random.Shared.NextSingle();
+                particleY = ctx.Y + Random.Shared.NextSingle() * 0.5F + 0.5F;
+                particleZ = ctx.Z + Random.Shared.NextSingle();
+                ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
             }
         }
-
     }
 }

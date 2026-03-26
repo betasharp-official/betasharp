@@ -7,22 +7,22 @@
     <Grid RowDefinitions="* Auto" RowSpacing="10">
         <ScrollViewer Padding="0 0 10 0" AllowAutoHide="False" IsEnabled="{CompiledBinding IsReady}" Grid.Row="0">
             <StackPanel Spacing="10" ToolTip.Tip="Sets the server IP address. Defaults to 0.0.0.0">
-                <StackPanel Spacing="5">
+                <StackPanel>
                     <TextBlock Text="Server IP" />
                     <TextBox Text="{Binding ServerIp}" />
                 </StackPanel>
 
-                <StackPanel Spacing="5" ToolTip.Tip="Sets the level's name. Defaults to world">
+                <StackPanel ToolTip.Tip="Sets the level's name. Defaults to world">
                     <TextBlock Text="Level name" />
                     <TextBox Text="{Binding LevelName}" />
                 </StackPanel>
 
-                <StackPanel Spacing="5" ToolTip.Tip="Sets the level's name. Random value is assigned if empty">
+                <StackPanel ToolTip.Tip="Sets the level's name. Random value is assigned if empty">
                     <TextBlock Text="Level seed" />
                     <TextBox Text="{Binding LevelSeed}" />
                 </StackPanel>
 
-                <StackPanel Spacing="5" ToolTip.Tip="Sets the level generators's settings. None if empty">
+                <StackPanel ToolTip.Tip="Sets the level generators's settings. None if empty">
                     <TextBlock Text="Generator settings" />
                     <TextBox Text="{Binding GeneratorSettings}" />
                 </StackPanel>
@@ -43,7 +43,7 @@
                     </StackPanel>
                 </Grid>
 
-                <StackPanel Spacing="5" ToolTip.Tip="Sets the level type">
+                <StackPanel ToolTip.Tip="Sets the level type">
                     <TextBlock Text="Level type" />
 
                     <ComboBox SelectedIndex="{Binding LevelType}" HorizontalAlignment="Stretch">
@@ -52,22 +52,22 @@
                     </ComboBox>
                 </StackPanel>
 
-                <StackPanel Spacing="5" ToolTip.Tip="Sets the server port. Recommended range is 49000 to 65535">
+                <StackPanel ToolTip.Tip="Sets the server port. Recommended range is 49000 to 65535">
                     <TextBlock Text="Server port" />
                     <NumericUpDown Value="{Binding ServerPort}" Increment="1" Minimum="1" Maximum="65535" />
                 </StackPanel>
 
-                <StackPanel Spacing="5" ToolTip.Tip="Sets the view distance. Higher values require more RAM">
+                <StackPanel ToolTip.Tip="Sets the view distance. Higher values require more RAM">
                     <TextBlock Text="View distance" />
                     <NumericUpDown Value="{Binding ViewDistance}" Increment="1" Minimum="4" Maximum="32" />
                 </StackPanel>
 
-                <StackPanel Spacing="5" ToolTip.Tip="Sets the max player count. Higher values require more RAM">
+                <StackPanel ToolTip.Tip="Sets the max player count. Higher values require more RAM">
                     <TextBlock Text="Max players" />
                     <NumericUpDown Value="{Binding MaxPlayers}" Increment="1" Minimum="1" Maximum="500" />
                 </StackPanel>
 
-                <StackPanel Spacing="5" ToolTip.Tip="Sets the spawn generation region size. Higher values take more time for generation">
+                <StackPanel ToolTip.Tip="Sets the spawn generation region size. Higher values take more time for generation">
                     <TextBlock Text="Spawn region size" />
                     <NumericUpDown Value="{Binding SpawnRegionSize}" Increment="1" Minimum="0" Maximum="512" />
                 </StackPanel>

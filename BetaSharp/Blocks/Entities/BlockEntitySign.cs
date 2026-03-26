@@ -6,10 +6,10 @@ namespace BetaSharp.Blocks.Entities;
 
 public class BlockEntitySign : BlockEntity
 {
+    private bool _editable = true;
     public override BlockEntityType Type => BlockEntity.Sign;
     public string[] Texts { get; set; } = ["", "", "", ""];
     public int CurrentRow { get; set; } = -1;
-    private bool _editable = true;
 
     public override void writeNbt(NBTTagCompound nbt)
     {
@@ -33,7 +33,6 @@ public class BlockEntitySign : BlockEntity
                 Texts[line] = Texts[line].Substring(0, 15);
             }
         }
-
     }
 
     public override Packet createUpdatePacket()

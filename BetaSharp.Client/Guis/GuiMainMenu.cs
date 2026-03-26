@@ -16,7 +16,7 @@ public class GuiMainMenu : GuiScreen
 
     private static readonly JavaRandom s_rand = new();
     private string _splashText = "missingno";
-    private GuiButton _multiplayerButton;
+    private GuiButton? _multiplayerButton;
 
     public GuiMainMenu()
     {
@@ -136,11 +136,32 @@ public class GuiMainMenu : GuiScreen
         GLManager.GL.Scale(splashScale, splashScale, splashScale);
         DrawCenteredString(FontRenderer, _splashText, 0, -8, Color.Yellow);
         GLManager.GL.PopMatrix();
-        DrawString(FontRenderer, "BetaSharp Beta 1.7.3", 2, 2, Color.Gray50);
+        string text = "BetaSharp " + BetaSharp.Version;
+        int width = FontRenderer.GetStringWidth(text);
+        bool mouseOver = mouseX >= 2 && mouseY >= 2 && mouseX <= 2 + width && mouseY <= 9;
+        DrawString(FontRenderer, text, 2, 2, mouseOver ? Color.HoverYellow : Color.White);
         string copyrightText = "Copyright Mojang Studios. Not an official Minecraft product.";
         DrawString(FontRenderer, copyrightText, Width - FontRenderer.GetStringWidth(copyrightText) - 2, Height - 20, Color.White);
         string disclaimerText = "Not approved by or associated with Mojang Studios or Microsoft.";
         DrawString(FontRenderer, disclaimerText, Width - FontRenderer.GetStringWidth(disclaimerText) - 2, Height - 10, Color.White);
         base.Render(mouseX, mouseY, partialTicks);
+    }
+
+    protected override void MouseClicked(int mouseX, int mouseY, int button)
+    {
+        string text = "BetaSharp " + BetaSharp.Version;
+        int width = FontRenderer.GetStringWidth(text);
+        bool mouseOver = mouseX >= 2 && mouseY >= 2 && mouseX <= 2 + width && mouseY <= 9;
+        if (mouseOver)
+        {
+            var ps = new System.Diagnostics.ProcessStartInfo("https://github.com/betasharp-official/betasharp")
+            {
+                UseShellExecute = true,
+                Verb = "open"
+            };
+            System.Diagnostics.Process.Start(ps);
+        }
+
+        base.MouseClicked(mouseX, mouseY, button);
     }
 }

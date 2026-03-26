@@ -1,10 +1,10 @@
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
 public abstract class EntityWaterMob : EntityCreature, SpawnableEntity
 {
-    public EntityWaterMob(World world) : base(world)
+    public EntityWaterMob(IWorldContext world) : base(world)
     {
     }
 
@@ -15,7 +15,7 @@ public abstract class EntityWaterMob : EntityCreature, SpawnableEntity
 
     public override bool canSpawn()
     {
-        return world.canSpawnEntity(boundingBox);
+        return world.Entities.CanSpawnEntity(boundingBox);
     }
 
     public override int getTalkInterval()
