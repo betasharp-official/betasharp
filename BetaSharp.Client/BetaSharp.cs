@@ -50,7 +50,9 @@ namespace BetaSharp.Client;
 
 public partial class BetaSharp
 {
+    //TODO: REMOVE THIS
     public static BetaSharp Instance = null!;
+
     private readonly ILogger<BetaSharp> _logger = Log.Instance.For<BetaSharp>();
     public PlayerController playerController;
     private bool fullscreen;

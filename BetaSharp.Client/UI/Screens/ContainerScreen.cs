@@ -2,27 +2,20 @@ using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Screens;
 using BetaSharp.Screens.Slots;
 
 namespace BetaSharp.Client.UI.Screens;
 
-public abstract class ContainerScreen : UIScreen
+public abstract class ContainerScreen(ScreenHandler inventorySlots) : UIScreen(BetaSharp.Instance)
 {
-    public ScreenHandler InventorySlots { get; }
+    public ScreenHandler InventorySlots { get; } = inventorySlots;
     protected int _xSize = 176;
     protected int _ySize = 166;
     protected Panel _containerPanel = null!;
 
     public override bool PausesGame => false;
-
-    protected ContainerScreen(ScreenHandler inventorySlots) : base(BetaSharp.Instance)
-    {
-        InventorySlots = inventorySlots;
-    }
 
     protected override void Init()
     {
@@ -30,6 +23,8 @@ public abstract class ContainerScreen : UIScreen
 
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
+
+        Root.AddChild(new Background(BackgroundType.World));
 
         _containerPanel = new Panel();
         _containerPanel.Style.Width = _xSize;
@@ -40,7 +35,7 @@ public abstract class ContainerScreen : UIScreen
 
     protected void AddSlots()
     {
-        foreach (var slot in InventorySlots.Slots)
+        foreach (Slot slot in InventorySlots.Slots)
         {
             var uiSlot = new UISlot(slot);
             uiSlot.Style.Position = PositionType.Absolute;
@@ -56,7 +51,7 @@ public abstract class ContainerScreen : UIScreen
         int slotId = uiSlot.Slot.id;
         bool isShiftClick = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
         int mouseBtn = (button == MouseButton.Right) ? 1 : 0;
-        
+
         Game.playerController.func_27174_a(InventorySlots.SyncId, slotId, mouseBtn, isShiftClick, Game.player);
     }
 
@@ -71,12 +66,6 @@ public abstract class ContainerScreen : UIScreen
 
     public override void Render(int mouseX, int mouseY, float partialTicks)
     {
-        // Draw standard background before everything
-        // (This replaces DrawDefaultBackground from GuiContainer)
-        // If the screen has its own background element, this might be redundant, 
-        // but GuiContainer always draws it.
-        // UIScreen.Render calls Begin/End around Root.Render.
-        
         base.Render(mouseX, mouseY, partialTicks);
 
         // Render held item on top of everything
@@ -91,10 +80,9 @@ public abstract class ContainerScreen : UIScreen
         }
 
         // Tooltip rendering
-        UISlot? hoveredSlot = Root.HitTest(MouseX, MouseY) as UISlot;
-        if (hoveredSlot != null && cursorStack == null)
+        if (Root.HitTest(MouseX, MouseY) is UISlot hoveredSlot && cursorStack == null)
         {
-            var stack = hoveredSlot.Slot.getStack();
+            ItemStack stack = hoveredSlot.Slot.getStack();
             if (stack != null)
             {
                 string itemName = ("" + TranslationStorage.Instance.TranslateNamedKey(stack.getItemName())).Trim();
