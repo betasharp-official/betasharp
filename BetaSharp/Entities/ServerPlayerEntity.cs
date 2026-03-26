@@ -276,6 +276,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             }
 
             SendChunkData(world, chunkPos);
+            ChunksTerrainSentToClient[chunkPos] = Environment.TickCount64;
             SendBlockEntityUpdates(world, chunkPos);
         }
     }
