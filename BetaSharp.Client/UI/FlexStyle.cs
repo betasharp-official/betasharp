@@ -19,6 +19,7 @@ public class FlexStyle
     public Align AlignItems { get; set; } = Align.Stretch;
     public Align AlignSelf { get; set; } = Align.Auto;
     public Justify JustifyContent { get; set; } = Justify.FlexStart;
+    public Wrap FlexWrap { get; set; } = Wrap.NoWrap;
 
     public float FlexGrow { get; set; } = 0f;
     public float FlexShrink { get; set; } = 1f;

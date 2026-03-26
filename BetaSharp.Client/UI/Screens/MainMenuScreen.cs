@@ -66,7 +66,7 @@ public class MainMenuScreen : UIScreen
 
         Button btnOptions = new() { Text = translator.TranslateKey("menu.options") };
         btnOptions.Style.Width = 98;
-        btnOptions.OnClick += (e) => Game.displayGuiScreen(new GuiOptions(new UIScreenAdapter(this), Game.options));
+        btnOptions.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(new OptionsScreen(this, Game.options)));
 
         Button btnQuit = new() { Text = translator.TranslateKey("menu.quit") };
         btnQuit.Style.Width = 98;

@@ -20,6 +20,7 @@ public static class FlexLayout
         node.nodeStyle.AlignItems = element.Style.AlignItems;
         node.nodeStyle.AlignSelf = element.Style.AlignSelf;
         node.nodeStyle.JustifyContent = element.Style.JustifyContent;
+        node.nodeStyle.FlexWrap = element.Style.FlexWrap;
 
         node.nodeStyle.FlexGrow = element.Style.FlexGrow;
         node.nodeStyle.FlexShrink = element.Style.FlexShrink;

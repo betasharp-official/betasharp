@@ -49,7 +49,7 @@ public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
         Root.AddChild(rowStats);
 
         Button btnOptions = new() { Text = translator.TranslateKey("menu.options") };
-        btnOptions.OnClick += (e) => Game.displayGuiScreen(new GuiOptions(new UIScreenAdapter(this), Game.options));
+        btnOptions.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(new OptionsScreen(this, Game.options)));
         btnOptions.Style.MarginBottom = 4;
         Root.AddChild(btnOptions);
 
