@@ -50,7 +50,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     {
         moved = false;
         connection.tick();
-        player.PlayerTick(true);
+        player.PlayerTick(false);
 
         if (ticks++ - lastKeepAliveTime > 20)
         {
@@ -114,10 +114,6 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 }
 
                 player.onGround = packet.onGround;
-<<<<<<< HEAD
-=======
-                player.playerTick(false);
->>>>>>> f14de99a6daeb9e6c6c632f1f033445f7245ab12
                 player.move(var31, 0.0, var34);
                 player.setPositionAndAngles(var28, var29, var30, var27, var4);
                 player.velocityX = var31;
