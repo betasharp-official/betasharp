@@ -75,6 +75,7 @@ public partial class BetaSharp
     public TextRenderer fontRenderer;
     public GuiScreen currentScreen;
     public bool IsMainMenuOpen => currentScreen is UIScreenAdapter { Screen: MainMenuScreen };
+    public bool IsGameOverOpen => currentScreen is UIScreenAdapter { Screen: GameOverScreen };
     public LoadingScreenRenderer loadingScreen;
     public GameRenderer gameRenderer;
     public PostProcessManager PostProcessManager { get; private set; }
@@ -456,7 +457,7 @@ public partial class BetaSharp
         }
         else if (newScreen == null && player.health <= 0)
         {
-            newScreen = new GuiGameOver();
+            newScreen = new UIScreenAdapter(new GameOverScreen(this));
         }
 
         if (newScreen is UIScreenAdapter { Screen: MainMenuScreen })
@@ -1914,7 +1915,7 @@ public partial class BetaSharp
 
         showText("Respawning");
 
-        if (currentScreen is GuiGameOver)
+        if (IsGameOverOpen)
         {
             displayGuiScreen(null);
         }

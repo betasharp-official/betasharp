@@ -6,6 +6,7 @@ namespace BetaSharp.Client.UI;
 public class UIScreenAdapter : GuiScreen
 {
     public UIScreen Screen { get; }
+    public override bool PausesGame => Screen.PausesGame;
 
     public UIScreenAdapter(UIScreen screen)
     {

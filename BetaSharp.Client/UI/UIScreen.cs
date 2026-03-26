@@ -13,6 +13,7 @@ public abstract class UIScreen
     private UIElement? _hoveredElement;
     public UIElement? FocusedElement { get; set; }
     public UIElement? DraggingElement { get; set; }
+    public virtual bool PausesGame => true;
 
     private bool _isInitialized = false;
 
@@ -23,9 +24,8 @@ public abstract class UIScreen
         Root.Style.Width = null; // Auto fill screen
         Root.Style.Height = null;
         Renderer = new UIRenderer(game.fontRenderer, game.textureManager);
-
     }
- 
+
     public void Initialize()
     {
         if (_isInitialized) return;

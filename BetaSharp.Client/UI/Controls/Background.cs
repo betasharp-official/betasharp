@@ -7,7 +7,8 @@ namespace BetaSharp.Client.UI.Controls;
 public enum BackgroundType
 {
     Dirt,
-    World
+    World,
+    GameOver
 }
 
 public class Background : UIElement
@@ -35,6 +36,10 @@ public class Background : UIElement
         if (Type == BackgroundType.World)
         {
             renderer.DrawGradientRect(0, 0, ComputedWidth, ComputedHeight, Guis.Color.WorldBackgroundDark, Guis.Color.WorldBackground);
+        }
+        else if (Type == BackgroundType.GameOver)
+        {
+            renderer.DrawGradientRect(0, 0, ComputedWidth, ComputedHeight, Guis.Color.GameOverBackgroundDarkRed, Guis.Color.GameOverBackgroundRed);
         }
         else
         {

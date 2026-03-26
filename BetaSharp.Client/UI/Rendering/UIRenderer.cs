@@ -104,9 +104,19 @@ public class UIRenderer
         Gui.DrawGradientRect(ix1, iy1, ix2, iy2, topColor, bottomColor);
     }
 
-    public void DrawText(string text, float x, float y, Color color)
+    public void DrawText(string text, float x, float y, Color color, float scale = 1.0f)
     {
-        _textRenderer.DrawStringWithShadow(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
+        if (scale == 1.0f)
+        {
+            _textRenderer.DrawStringWithShadow(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
+            return;
+        }
+
+        GLManager.GL.PushMatrix();
+        GLManager.GL.Translate(x + _translateX, y + _translateY, 0);
+        GLManager.GL.Scale(scale, scale, 1);
+        _textRenderer.DrawStringWithShadow(text, 0, 0, color);
+        GLManager.GL.PopMatrix();
     }
 
     public void DrawCenteredText(string text, float x, float y, Color color, float rotation = 0, float scale = 1.0f)
