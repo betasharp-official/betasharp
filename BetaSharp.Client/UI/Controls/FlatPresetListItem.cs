@@ -24,7 +24,7 @@ public class FlatPresetListItem(FlatPresetsScreen.PresetItem preset) : ListItem<
             if (block != null)
             {
                 int textureId = block.getTexture(1);
-                s_itemRenderer.drawItemIntoGui(BetaSharp.Instance.fontRenderer, BetaSharp.Instance.textureManager, Value.IconId, Value.IconMeta, textureId, 5, 5);
+                renderer.DrawItemIntoGui(s_itemRenderer, Value.IconId, Value.IconMeta, textureId, 5, 5);
             }
         }
         else
@@ -33,7 +33,7 @@ public class FlatPresetListItem(FlatPresetsScreen.PresetItem preset) : ListItem<
             if (item != null)
             {
                 int textureId = item.getTextureId(Value.IconMeta);
-                s_itemRenderer.drawItemIntoGui(BetaSharp.Instance.fontRenderer, BetaSharp.Instance.textureManager, Value.IconId, Value.IconMeta, textureId, 5, 5);
+                renderer.DrawItemIntoGui(s_itemRenderer, Value.IconId, Value.IconMeta, textureId, 5, 5);
             }
         }
 

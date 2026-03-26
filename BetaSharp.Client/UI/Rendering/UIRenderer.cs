@@ -3,6 +3,7 @@ using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.Rendering.Items;
 using Silk.NET.Maths;
 
 namespace BetaSharp.Client.UI.Rendering;
@@ -45,7 +46,7 @@ public class UIRenderer
         _translateY += y;
     }
 
-    public void PopTranslate(float x, float y)
+    public void PopTranslate()
     {
         if (_translationStack.Count > 0)
         {
@@ -185,5 +186,10 @@ public class UIRenderer
         tess.addVertexWithUV(finalX + width, finalY, 0.0, (finalX + width) / textureScale, (finalY + scrollOffsetY) / textureScale);
         tess.addVertexWithUV(finalX, finalY, 0.0, finalX / textureScale, (finalY + scrollOffsetY) / textureScale);
         tess.draw();
+    }
+
+    public void DrawItemIntoGui(ItemRenderer itemRenderer, int itemId, int itemMeta, int textureId, float x, float y)
+    {
+        itemRenderer.drawItemIntoGui(_textRenderer, TextureManager, itemId, itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
     }
 }

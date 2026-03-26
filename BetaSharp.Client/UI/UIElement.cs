@@ -80,7 +80,7 @@ public class UIElement
         {
             renderer.PushTranslate(child.ComputedX, child.ComputedY);
             child.Render(renderer);
-            renderer.PopTranslate(child.ComputedX, child.ComputedY);
+            renderer.PopTranslate();
         }
     }
 

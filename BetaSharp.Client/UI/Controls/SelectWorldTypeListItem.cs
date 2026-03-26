@@ -1,4 +1,5 @@
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Worlds;
 
@@ -10,9 +11,15 @@ public class SelectWorldTypeListItem(WorldType type) : ListItem<WorldType>(type)
     {
         base.Render(renderer);
 
-        // Icon placeholder or specific icon
-        renderer.DrawRect(4, 4, 24, 24, Color.BackgroundBlackAlpha);
-        // TODO: Render actual icon if available in modernized way
+        if (!string.IsNullOrEmpty(Value.IconPath))
+        {
+            TextureHandle texture = renderer.TextureManager.GetTextureId(Value.IconPath);
+            renderer.DrawTexture(texture, 4, 4, 24, 24);
+        }
+        else
+        {
+            renderer.DrawRect(4, 4, 24, 24, Color.BackgroundBlackAlpha);
+        }
 
         renderer.DrawText(Value.DisplayName, 32, 4, Color.White);
         renderer.DrawText(Value.Description, 32, 16, Color.Gray80);

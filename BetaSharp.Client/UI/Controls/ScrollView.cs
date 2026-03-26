@@ -155,7 +155,7 @@ public class ScrollView : UIElement
 
         renderer.PushTranslate(ContentContainer.ComputedX, ContentContainer.ComputedY);
         ContentContainer.Render(renderer);
-        renderer.PopTranslate(ContentContainer.ComputedX, ContentContainer.ComputedY);
+        renderer.PopTranslate();
 
         renderer.DisableClipping();
 
