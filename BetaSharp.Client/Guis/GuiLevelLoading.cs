@@ -1,3 +1,5 @@
+using BetaSharp.Client.UI;
+using BetaSharp.Client.UI.Screens;
 using BetaSharp.Client.Network;
 using BetaSharp.Network;
 using BetaSharp.Server.Internal;
@@ -33,7 +35,7 @@ public class GuiLevelLoading(string worldDir, WorldSettings settings) : GuiScree
         {
             if (Game.internalServer.stopped)
             {
-                Game.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly"));
+                Game.displayGuiScreen(new UIScreenAdapter(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly")));
                 return;
             }
 
@@ -50,9 +52,10 @@ public class GuiLevelLoading(string worldDir, WorldSettings settings) : GuiScree
 
                 ClientNetworkHandler clientHandler = new(Game, clientConnection);
                 clientConnection.setNetworkHandler(clientHandler);
+                _logger.LogInformation("[Internal-Client] Sending HandshakePacket");
                 clientHandler.addToSendQueue(new global::BetaSharp.Network.Packets.HandshakePacket(Game.session.username));
 
-                Game.displayGuiScreen(new GuiConnecting(Game, clientHandler));
+                Game.displayGuiScreen(new UIScreenAdapter(new ConnectingScreen(Game, clientHandler)));
             }
         }
     }

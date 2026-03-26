@@ -22,6 +22,9 @@ using BetaSharp.Client.Rendering.PostProcessing;
 using BetaSharp.Client.Resource;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.Sound;
+using BetaSharp.Client.UI;
+using BetaSharp.Client.UI.Screens;
+using BetaSharp.Client.UI.Test;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Profiling;
@@ -35,9 +38,6 @@ using BetaSharp.Worlds.Colors;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
-using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Screens;
-using BetaSharp.Client.UI.Test;
 using ImGuiNET;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Input;
@@ -365,7 +365,7 @@ public partial class BetaSharp
         statFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
         if (serverName != null)
         {
-            displayGuiScreen(new GuiConnecting(this, serverName, serverPort));
+            displayGuiScreen(new UIScreenAdapter(new ConnectingScreen(this, serverName, serverPort)));
         }
         else
         {
@@ -839,7 +839,7 @@ public partial class BetaSharp
                 catch (OutOfMemoryException)
                 {
                     crashCleanup();
-                    displayGuiScreen(new GuiErrorScreen());
+                    displayGuiScreen(new UIScreenAdapter(new ErrorScreen("Out of memory!", "Minecraft has run out of memory.")));
                 }
                 finally
                 {

@@ -231,6 +231,6 @@ public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
         string host = parts[0];
         int portNum = 25565;
         if (parts.Length > 1) int.TryParse(parts[1], out portNum);
-        Game.displayGuiScreen(new GuiConnecting(Game, host, portNum));
+        Game.displayGuiScreen(new UIScreenAdapter(new ConnectingScreen(Game, host, portNum)));
     }
 }
