@@ -15,6 +15,14 @@ public unsafe class Lighting
         GLManager.GL.Disable(GLEnum.ColorMaterial);
     }
 
+    public static void turnOnGui()
+    {
+        GLManager.GL.PushMatrix();
+        GLManager.GL.Rotate(120.0F, 1.0F, 0.0F, 0.0F);
+        turnOn();
+        GLManager.GL.PopMatrix();
+    }
+
     public static void turnOn(bool mirrored = false)
     {
         GLManager.GL.Enable(GLEnum.Lighting);

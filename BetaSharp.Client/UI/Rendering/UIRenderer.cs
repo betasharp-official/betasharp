@@ -256,7 +256,7 @@ public class UIRenderer
             GLManager.GL.Enable(GLEnum.RescaleNormal);
             GLManager.GL.Enable(GLEnum.DepthTest);
 
-            Lighting.turnOn();
+            Lighting.turnOnGui();
             _itemRenderer.renderItemIntoGUI(_textRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
             Lighting.turnOff();
 
