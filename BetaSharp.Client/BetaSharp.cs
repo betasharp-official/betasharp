@@ -105,8 +105,7 @@ public partial class BetaSharp
     long prevFrameTime = -1L;
     public bool inGameHasFocus;
     public int MouseTicksRan { get; set; }
-    long systemTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-;
+    long systemTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     private int joinPlayerCounter;
     private ImGuiController imGuiController;
     public InternalServer? internalServer;
@@ -260,6 +259,7 @@ public partial class BetaSharp
         {
             _logger.LogError(ex, "Exception");
         }
+
         texturePackList = new TexturePacks(this, new DirectoryInfo(gameDataDir));
         textureManager = new TextureManager(this, texturePackList, options);
         fontRenderer = new TextRenderer(options, textureManager);
@@ -273,10 +273,7 @@ public partial class BetaSharp
         statFileWriter = new StatFileWriter(session, gameDataDir);
 
         StatStringFormatKeyInv format = new(this);
-        global::BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () =>
-        {
-            return format.formatString(global::BetaSharp.Achievements.OpenInventory.TranslationKey);
-        };
+        global::BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () => { return format.formatString(global::BetaSharp.Achievements.OpenInventory.TranslationKey); };
 
         loadScreen();
 
@@ -346,12 +343,12 @@ public partial class BetaSharp
         _ = new ResourceManager()
             .Add(new BetaResourceDownloader(this, dataDirPath))
             .Add(new ModernAssetDownloader(this, dataDirPath,
-                [
-                 "minecraft/sounds/music/menu/moog_city_2.ogg",
-                 "minecraft/sounds/music/menu/mutation.ogg",
-                 "minecraft/sounds/music/menu/floating_trees.ogg",
-                 "minecraft/sounds/music/menu/beginning_2.ogg",
-                ])).LoadAllAsync();
+            [
+                "minecraft/sounds/music/menu/moog_city_2.ogg",
+                "minecraft/sounds/music/menu/mutation.ogg",
+                "minecraft/sounds/music/menu/floating_trees.ogg",
+                "minecraft/sounds/music/menu/beginning_2.ogg",
+            ])).LoadAllAsync();
 
         checkGLError("Post startup");
         ingameGUI = new GuiIngame(this);
@@ -517,13 +514,17 @@ public partial class BetaSharp
             {
                 changeWorld((World)null);
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+            }
 
             try
             {
                 GLAllocation.deleteTexturesAndDisplayLists();
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+            }
 
             skinManager.Dispose();
             textureManager.Dispose();
@@ -577,6 +578,7 @@ public partial class BetaSharp
                     Profiler.Update(Timer.DeltaTime);
                     Profiler.PushGroup("run");
                 }
+
                 try
                 {
                     if (Display.isCloseRequested())
@@ -706,6 +708,7 @@ public partial class BetaSharp
                             Profiler.PushGroup("render");
                             TextureStats.StartFrame();
                         }
+
                         gameRenderer.onFrameUpdate(Timer.renderPartialTicks);
                         if (options.DebugMode)
                         {
@@ -746,6 +749,7 @@ public partial class BetaSharp
                             {
                                 ImGui.Text($"{po2}KB: {buckets[po2]} meshes");
                             }
+
                             ImGui.TreePop();
                         }
 
@@ -759,7 +763,10 @@ public partial class BetaSharp
                                 totalMeshes = activeMeshes,
                                 buckets = buckets.ToDictionary(k => k.Key.ToString(), v => v.Value)
                             };
-                            string json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions { WriteIndented = true });
+                            string json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions
+                            {
+                                WriteIndented = true
+                            });
                             File.WriteAllText(Path.Combine(getBetaSharpDir(), "mesh_stats.json"), json);
                             _logger.LogInformation($"Exported mesh stats to {Path.Combine(getBetaSharpDir(), "mesh_stats.json")}");
                         }
@@ -824,7 +831,7 @@ public partial class BetaSharp
 
                     for (;
                          DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
- >= lastFpsCheckTime + 1000L;
+                         >= lastFpsCheckTime + 1000L;
                          frameCounter = 0)
                     {
                         debug = frameCounter + " fps";
@@ -873,7 +880,9 @@ public partial class BetaSharp
                 }
             }
         }
-        catch (BetaSharpShutdownException) { }
+        catch (BetaSharpShutdownException)
+        {
+        }
         catch (Exception unexpectedException)
         {
             crashCleanup();
@@ -915,6 +924,7 @@ public partial class BetaSharp
                         GLManager.GL.ReadPixels(0, 0, (uint)framebufferWidth, (uint)framebufferHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
                     }
                 }
+
                 string result = ScreenShotHelper.saveScreenshot(gameDataDir, displayWidth, displayHeight, pixels);
                 ingameGUI.AddChatMessage(result);
             }
@@ -1040,6 +1050,7 @@ public partial class BetaSharp
             {
                 Thread.Sleep(1);
             }
+
             internalServer = null;
         }
     }
@@ -1311,7 +1322,6 @@ public partial class BetaSharp
         }
 
 
-
         Profiler.Start("ingameGUI.updateTick");
         ingameGUI.UpdateTick();
         Profiler.Stop("ingameGUI.updateTick");
@@ -1448,7 +1458,7 @@ public partial class BetaSharp
         }
 
         systemTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-;
+            ;
         Profiler.PopGroup();
     }
 
@@ -1457,7 +1467,7 @@ public partial class BetaSharp
         while (Mouse.next())
         {
             long timeSinceLastMouseEvent = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
- - systemTime;
+                                           - systemTime;
             if (Mouse.getEventDX() != 0 || Mouse.getEventDY() != 0)
             {
                 isControllerMode = false;
@@ -1573,6 +1583,12 @@ public partial class BetaSharp
                             forceReload();
                         }
 
+                        if (Keyboard.getEventKey() == Keyboard.KEY_H && Keyboard.isKeyDown(Keyboard.KEY_F3))
+                        {
+                            options.AdvancedItemTooltips = !options.AdvancedItemTooltips;
+                            options.SaveOptions();
+                        }
+
                         if (Keyboard.getEventKey() == Keyboard.KEY_D && Keyboard.isKeyDown(Keyboard.KEY_F3))
                         {
                             ingameGUI.ClearChatMessages();
@@ -1639,7 +1655,8 @@ public partial class BetaSharp
 
                     if (Keyboard.getEventKey() == options.KeyBindToggleFog.keyCode)
                     {
-                        options.RenderDistanceOption.Value = System.Math.Clamp(options.RenderDistanceOption.Value + (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) ? 1.0f / 28.0f : -1.0f / 28.0f), 0.0f, 1.0f);
+                        options.RenderDistanceOption.Value = System.Math.Clamp(options.RenderDistanceOption.Value + (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) ? 1.0f / 28.0f : -1.0f / 28.0f), 0.0f,
+                            1.0f);
                     }
                 }
             }
@@ -1929,7 +1946,7 @@ public partial class BetaSharp
             if (sessionToken == "-")
             {
                 hasPaidCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-    ;
+                    ;
             }
         }
         else

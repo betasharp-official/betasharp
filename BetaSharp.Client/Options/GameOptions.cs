@@ -17,6 +17,7 @@ public class GameOptions
         "options.difficulty.normal",
         "options.difficulty.hard",
     ];
+
     private static readonly string[] GuiScaleLabels =
     [
         "options.guiScale.auto",
@@ -63,6 +64,7 @@ public class GameOptions
 
     public GameOption[] MainScreenOptions => [DifficultyOption, FovOption];
     public GameOption[] AudioScreenOptions => [MusicVolumeOption, SoundVolumeOption, MenuMusicOption];
+
     public GameOption[] VideoScreenOptions =>
     [
         RenderDistanceOption, FramerateLimitOption, VSyncOption,
@@ -91,11 +93,13 @@ public class GameOptions
     public float LimitFramerate => FramerateLimitOption.Value;
     public float Fov => FovOption.Value;
     public float Gamma => GammaOption.Value * 100f;
+
     public bool InvertMouse
     {
         get => InvertMouseOption.Value;
         set => InvertMouseOption.Value = value;
     }
+
     public int renderDistance => 4 + (int)(RenderDistanceOption.Value * 28.0f);
     public bool ViewBobbing => ViewBobbingOption.Value;
     public bool VSync => VSyncOption.Value;
@@ -134,6 +138,7 @@ public class GameOptions
     public bool HideGUI = false;
     public EnumCameraMode CameraMode = EnumCameraMode.FirstPerson;
     public bool ShowDebugInfo = false;
+    public bool AdvancedItemTooltips = false;
     public string LastServer = "";
     public bool InvertScrolling = false;
     public bool SmoothCamera = false;
@@ -171,16 +176,16 @@ public class GameOptions
 
         ControllerBindings =
         [
-            new ControllerBinding("controller.jump",       "Jump",         GamepadButton.A),
-            new ControllerBinding("controller.inventory",  "Inventory",    GamepadButton.Y),
-            new ControllerBinding("controller.drop",       "Drop",         GamepadButton.B),
-            new ControllerBinding("controller.hotbarLeft", "Hotbar Left",  GamepadButton.LeftBumper),
-            new ControllerBinding("controller.hotbarRight","Hotbar Right", GamepadButton.RightBumper),
-            new ControllerBinding("controller.sneak",      "Sneak",        GamepadButton.RightStick),
-            new ControllerBinding("controller.zoom",       "Zoom",         (GamepadButton)(-1)),
-            new ControllerBinding("controller.pickBlock",  "Pick Block",   GamepadButton.DPadUp),
-            new ControllerBinding("controller.camera",     "Camera Mode",  GamepadButton.LeftStick),
-            new ControllerBinding("controller.pause",      "Pause",        GamepadButton.Start),
+            new ControllerBinding("controller.jump", "Jump", GamepadButton.A),
+            new ControllerBinding("controller.inventory", "Inventory", GamepadButton.Y),
+            new ControllerBinding("controller.drop", "Drop", GamepadButton.B),
+            new ControllerBinding("controller.hotbarLeft", "Hotbar Left", GamepadButton.LeftBumper),
+            new ControllerBinding("controller.hotbarRight", "Hotbar Right", GamepadButton.RightBumper),
+            new ControllerBinding("controller.sneak", "Sneak", GamepadButton.RightStick),
+            new ControllerBinding("controller.zoom", "Zoom", (GamepadButton)(-1)),
+            new ControllerBinding("controller.pickBlock", "Pick Block", GamepadButton.DPadUp),
+            new ControllerBinding("controller.camera", "Camera Mode", GamepadButton.LeftStick),
+            new ControllerBinding("controller.pause", "Pause", GamepadButton.Start),
         ];
 
         LoadOptions();
@@ -310,6 +315,7 @@ public class GameOptions
                 {
                     AnisotropicOption.Value = 0;
                 }
+
                 if (BetaSharp.Instance?.textureManager != null)
                     BetaSharp.Instance.textureManager.Reload();
             }
@@ -420,6 +426,7 @@ public class GameOptions
         switch (key)
         {
             case "skin": Skin = value; break;
+            case "advancedItemTooltips": AdvancedItemTooltips = value == "true"; break;
             case "lastServer": LastServer = value; break;
             case "cameraMode": CameraMode = (EnumCameraMode)int.Parse(value); break;
             case "thirdPersonView":
@@ -453,6 +460,7 @@ public class GameOptions
                         }
                     }
                 }
+
                 break;
         }
     }
@@ -469,6 +477,7 @@ public class GameOptions
             }
 
             writer.WriteLine($"skin:{Skin}");
+            writer.WriteLine($"advancedItemTooltips:{AdvancedItemTooltips.ToString().ToLower()}");
             writer.WriteLine($"lastServer:{LastServer}");
             writer.WriteLine($"cameraMode:{(int)CameraMode}");
 
