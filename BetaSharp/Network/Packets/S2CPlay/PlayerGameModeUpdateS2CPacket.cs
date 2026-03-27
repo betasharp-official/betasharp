@@ -20,7 +20,6 @@ public class PlayerGameModeUpdateS2CPacket() : ExtendedProtocolPacket(PacketId.P
 
         GameMode = new GameMode()
         {
-            Id = -1,
             Name = "remote",
             BrakeSpeed = breakSpeed,
             CanBreak = Bits(0, bits),
