@@ -15,21 +15,14 @@ using Silk.NET.Maths;
 
 namespace BetaSharp.Client.UI.Rendering;
 
-public class UIRenderer
+public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager)
 {
-    private readonly TextRenderer _textRenderer;
-    public TextureManager TextureManager { get; }
+    public TextureManager TextureManager { get; } = textureManager;
     private readonly ItemRenderer _itemRenderer = new();
 
     private float _translateX = 0;
     private float _translateY = 0;
     private readonly Stack<Vector2D<float>> _translationStack = new();
-
-    public UIRenderer(TextRenderer textRenderer, TextureManager textureManager)
-    {
-        _textRenderer = textRenderer;
-        TextureManager = textureManager;
-    }
 
     public void Begin()
     {
@@ -49,7 +42,7 @@ public class UIRenderer
     public void End()
     {
         GLManager.GL.PopMatrix();
-        GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f); // Reset color just in case
+        GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     public void PushColor(Color color)
@@ -60,6 +53,23 @@ public class UIRenderer
     public void PopColor()
     {
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    public void SetDepthMask(bool flag) => GLManager.GL.DepthMask(flag);
+    public void SetAlphaTest(bool flag)
+    {
+        if (flag) GLManager.GL.Enable(GLEnum.AlphaTest);
+        else GLManager.GL.Disable(GLEnum.AlphaTest);
+    }
+
+    public void PushBlend(GLEnum s, GLEnum d)
+    {
+        GLManager.GL.BlendFunc(s, d);
+    }
+
+    public void PopBlend()
+    {
+        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
     }
 
     public void ClearDepth()
@@ -139,11 +149,11 @@ public class UIRenderer
         {
             if (shadow)
             {
-                _textRenderer.DrawStringWithShadow(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
+                textRenderer.DrawStringWithShadow(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
             }
             else
             {
-                _textRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
+                textRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
             }
             return;
         }
@@ -153,11 +163,11 @@ public class UIRenderer
         GLManager.GL.Scale(scale, scale, 1);
         if (shadow)
         {
-            _textRenderer.DrawStringWithShadow(text, 0, 0, color);
+            textRenderer.DrawStringWithShadow(text, 0, 0, color);
         }
         else
         {
-            _textRenderer.DrawString(text, 0, 0, color);
+            textRenderer.DrawString(text, 0, 0, color);
         }
         GLManager.GL.PopMatrix();
     }
@@ -168,11 +178,11 @@ public class UIRenderer
         {
             if (shadow)
             {
-                Gui.DrawCenteredString(_textRenderer, text, (int)(x + _translateX), (int)(y + _translateY), color);
+                Gui.DrawCenteredString(textRenderer, text, (int)(x + _translateX), (int)(y + _translateY), color);
             }
             else
             {
-                _textRenderer.DrawString(text, (int)(x + _translateX), (int)(y + _translateY), color, SixLabors.Fonts.HorizontalAlignment.Center);
+                textRenderer.DrawString(text, (int)(x + _translateX), (int)(y + _translateY), color, SixLabors.Fonts.HorizontalAlignment.Center);
             }
             return;
         }
@@ -184,11 +194,11 @@ public class UIRenderer
 
         if (shadow)
         {
-            Gui.DrawCenteredString(_textRenderer, text, 0, 0, color);
+            Gui.DrawCenteredString(textRenderer, text, 0, 0, color);
         }
         else
         {
-            _textRenderer.DrawString(text, 0, 0, color, SixLabors.Fonts.HorizontalAlignment.Center);
+            textRenderer.DrawString(text, 0, 0, color, SixLabors.Fonts.HorizontalAlignment.Center);
         }
 
         GLManager.GL.PopMatrix();
@@ -216,10 +226,15 @@ public class UIRenderer
 
     public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height)
     {
-        DrawTexturedModalRect(texture, x, y, u, v, width, height, width, height);
+        DrawTexturedModalRect(texture, x, y, u, v, width, height, width, height, 0.0f);
     }
 
     public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height, float uvWidth, float uvHeight)
+    {
+        DrawTexturedModalRect(texture, x, y, u, v, width, height, uvWidth, uvHeight, 0.0f);
+    }
+
+    public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height, float uvWidth, float uvHeight, float z)
     {
         TextureManager.BindTexture(texture);
         float f = 0.00390625F;
@@ -228,10 +243,10 @@ public class UIRenderer
         float finalY = y + _translateY;
 
         tess.startDrawingQuads();
-        tess.addVertexWithUV(finalX + 0, finalY + height, 0.0D, (double)((u + 0) * f), (double)((v + uvHeight) * f));
-        tess.addVertexWithUV(finalX + width, finalY + height, 0.0D, (double)((u + uvWidth) * f), (double)((v + uvHeight) * f));
-        tess.addVertexWithUV(finalX + width, finalY + 0, 0.0D, (double)((u + uvWidth) * f), (double)((v + 0) * f));
-        tess.addVertexWithUV(finalX + 0, finalY + 0, 0.0D, (double)((u + 0) * f), (double)((v + 0) * f));
+        tess.addVertexWithUV(finalX + 0, finalY + height, z, (double)((u + 0) * f), (double)((v + uvHeight) * f));
+        tess.addVertexWithUV(finalX + width, finalY + height, z, (double)((u + uvWidth) * f), (double)((v + uvHeight) * f));
+        tess.addVertexWithUV(finalX + width, finalY + 0, z, (double)((u + uvWidth) * f), (double)((v + 0) * f));
+        tess.addVertexWithUV(finalX + 0, finalY + 0, z, (double)((u + 0) * f), (double)((v + 0) * f));
         tess.draw();
     }
 
@@ -256,7 +271,7 @@ public class UIRenderer
 
     public void DrawItemIntoGui(ItemRenderer itemRenderer, int itemId, int itemMeta, int textureId, float x, float y)
     {
-        itemRenderer.drawItemIntoGui(_textRenderer, TextureManager, itemId, itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
+        itemRenderer.drawItemIntoGui(textRenderer, TextureManager, itemId, itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
     }
 
     public void DrawItem(ItemStack stack, float x, float y)
@@ -275,7 +290,7 @@ public class UIRenderer
             GLManager.GL.Enable(GLEnum.DepthTest);
 
             Lighting.turnOnGui();
-            _itemRenderer.renderItemIntoGUI(_textRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
+            _itemRenderer.renderItemIntoGUI(textRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
             Lighting.turnOff();
 
             GLManager.GL.Disable(GLEnum.CullFace);
@@ -287,7 +302,7 @@ public class UIRenderer
         {
             GLManager.GL.Disable(GLEnum.Lighting);
             GLManager.GL.Disable(GLEnum.DepthTest);
-            _itemRenderer.renderItemIntoGUI(_textRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
+            _itemRenderer.renderItemIntoGUI(textRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
         }
     }
 
@@ -297,7 +312,7 @@ public class UIRenderer
 
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.DepthTest);
-        _itemRenderer.renderItemOverlayIntoGUI(_textRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
+        _itemRenderer.renderItemOverlayIntoGUI(textRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
     }
 
     public void DrawEntity(Entity entity, float x, float y, float scale, float mouseX, float mouseY)

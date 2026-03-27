@@ -210,7 +210,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void sendMessage(string message)
     {
-        Game.HUD.AddChatMessageTranslate(message);
+        Game.HUD.AddChatMessage(message);
     }
 
     public override void increaseStat(StatBase stat, int value)
