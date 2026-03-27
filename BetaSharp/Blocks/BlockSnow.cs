@@ -14,9 +14,9 @@ internal class BlockSnow : Block
         setTickRandomly(true);
     }
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
+    public override Box? getCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z)
     {
-        int meta = world.GetBlockMeta(x, y, z) & 7;
+        int meta = reader.GetBlockMeta(x, y, z) & 7;
         return meta >= 3 ? new Box(x + BoundingBox.MinX, y + BoundingBox.MinY, z + BoundingBox.MinZ, x + BoundingBox.MaxX, y + 0.5F, z + BoundingBox.MaxZ) : null;
     }
 

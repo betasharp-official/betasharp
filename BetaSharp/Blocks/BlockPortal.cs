@@ -10,7 +10,7 @@ public class BlockPortal : BlockBreakable
     {
     }
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
+    public override Box? getCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z) => null;
 
     public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {

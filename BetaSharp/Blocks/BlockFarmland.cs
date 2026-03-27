@@ -14,7 +14,7 @@ internal class BlockFarmland : Block
         setOpacity(255);
     }
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
+    public override Box? getCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z)
     {
         return new Box(x + 0, y + 0, z + 0, x + 1, y + 1, z + 1);
     }
@@ -67,13 +67,13 @@ internal class BlockFarmland : Block
 
     private static bool hasCrop(IBlockReader world, int x, int y, int z)
     {
-        sbyte cropRadius = 0;
+        const sbyte cropRadius = 0;
 
-        for (int var6 = x - cropRadius; var6 <= x + cropRadius; ++var6)
+        for (int dx = x - cropRadius; dx <= x + cropRadius; ++dx)
         {
-            for (int var7 = z - cropRadius; var7 <= z + cropRadius; ++var7)
+            for (int dz = z - cropRadius; dz <= z + cropRadius; ++dz)
             {
-                if (world.GetBlockId(var6, y + 1, var7) == Wheat.id)
+                if (world.GetBlockId(dx, y + 1, dz) == Wheat.id)
                 {
                     return true;
                 }

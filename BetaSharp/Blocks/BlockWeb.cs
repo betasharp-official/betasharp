@@ -15,7 +15,7 @@ internal class BlockWeb : Block
 
     public override bool isOpaque() => false;
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
+    public override Box? getCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z) => null;
 
     public override BlockRendererType getRenderType() => BlockRendererType.Reed;
 

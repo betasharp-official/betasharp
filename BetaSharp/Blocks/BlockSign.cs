@@ -21,7 +21,7 @@ internal class BlockSign : BlockWithEntity
         setBoundingBox(0.5F - width, 0.0F, 0.5F - width, 0.5F + width, height, 0.5F + width);
     }
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
+    public override Box? getCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z) => null;
 
     public override Box getBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z)
     {

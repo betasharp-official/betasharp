@@ -300,7 +300,7 @@ public class Block
         }
     }
 
-    public virtual Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
+    public virtual Box? getCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z)
     {
         return BoundingBox.Offset(x, y, z);
     }

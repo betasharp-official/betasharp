@@ -28,8 +28,8 @@ internal class BlockCrops : BlockPlant
             int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             if (meta < 7)
             {
-                float var7 = getAvailableMoisture(@event.World.Reader, @event.X, @event.Y, @event.Z);
-                if (Random.Shared.Next(100) / var7 == 0)
+                float moisture = getAvailableMoisture(@event.World.Reader, @event.X, @event.Y, @event.Z);
+                if (Random.Shared.Next(100) / moisture == 0)
                 {
                     ++meta;
                     @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);

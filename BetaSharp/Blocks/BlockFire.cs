@@ -31,7 +31,7 @@ internal class BlockFire : Block
         _spreadChances[block] = spreadChance;
     }
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
+    public override Box? getCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z)
     {
         return null;
     }
@@ -63,8 +63,8 @@ internal class BlockFire : Block
 
     public override void onTick(OnTickEvent @event)
     {
-        if (!@event.World.Rules.GetBool(DefaultRules.DoFireTick))    return;
-        
+        if (!@event.World.Rules.GetBool(DefaultRules.DoFireTick)) return;
+
 
         bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == Netherrack.id;
         if (!canPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z)))
@@ -124,9 +124,9 @@ internal class BlockFire : Block
                                 int burnChance = getBurnChance(@event.World.Reader, checkX, checkY, checkZ);
                                 if (burnChance > 0)
                                 {
-                                    int var13 = (burnChance + 40) / (fireAge + 30);
-                                    if (var13 > 0 &&
-                                        @event.World.Random.NextInt(spreadDifficulty) <= var13 &&
+                                    int chance = (burnChance + 40) / (fireAge + 30);
+                                    if (chance > 0 &&
+                                        @event.World.Random.NextInt(spreadDifficulty) <= chance &&
                                         (!@event.World.Environment.IsRaining || !@event.World.Environment.IsRainingAt(checkX, checkY, checkZ)) &&
                                         !@event.World.Environment.IsRainingAt(checkX - 1, checkY, checkZ) &&
                                         !@event.World.Environment.IsRainingAt(checkX + 1, checkY, checkZ) &&

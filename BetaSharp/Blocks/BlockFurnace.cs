@@ -35,7 +35,7 @@ internal class BlockFurnace : BlockWithEntity
         {
             int direction = MathHelper.Floor(@event.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
             int meta = 2;
-            
+
             if (direction == 0) meta = 2;
             else if (direction == 1) meta = 5;
             else if (direction == 2) meta = 3;
@@ -43,14 +43,14 @@ internal class BlockFurnace : BlockWithEntity
 
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
 
-            if (!@event.World.IsRemote) 
+            if (!@event.World.IsRemote)
             {
                 @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
             }
         }
         else
         {
-            updateDirection(@event); 
+            updateDirection(@event);
         }
     }
 
@@ -60,7 +60,7 @@ internal class BlockFurnace : BlockWithEntity
 
         var reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
-        
+
         bool isNorthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z - 1)];
         bool isSouthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z + 1)];
         bool isWestOpaque = BlocksOpaque[reader.GetBlockId(x - 1, y, z)];
@@ -75,6 +75,7 @@ internal class BlockFurnace : BlockWithEntity
         {
             direction = 2;
         }
+
         if (isWestOpaque && !isEastOpaque)
         {
             direction = 5;
@@ -83,6 +84,7 @@ internal class BlockFurnace : BlockWithEntity
         {
             direction = 4;
         }
+
         @event.World.Writer.SetBlockMeta(x, y, z, direction);
     }
 
@@ -109,28 +111,28 @@ internal class BlockFurnace : BlockWithEntity
             return;
         }
 
-        int var6 = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         float particleX = @event.X + 0.5F;
         float particleY = @event.Y + 0.0F + Random.Shared.NextSingle() * 6.0F / 16.0F;
         float particleZ = @event.Z + 0.5F;
         float flameOffset = 0.52F;
         float randomOffset = Random.Shared.NextSingle() * 0.6F - 0.3F;
-        if (var6 == 4)
+        if (meta == 4)
         {
             @event.World.Broadcaster.AddParticle("smoke", particleX - flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
             @event.World.Broadcaster.AddParticle("flame", particleX - flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
         }
-        else if (var6 == 5)
+        else if (meta == 5)
         {
             @event.World.Broadcaster.AddParticle("smoke", particleX + flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
             @event.World.Broadcaster.AddParticle("flame", particleX + flameOffset, particleY, particleZ + randomOffset, 0.0D, 0.0D, 0.0D);
         }
-        else if (var6 == 2)
+        else if (meta == 2)
         {
             @event.World.Broadcaster.AddParticle("smoke", particleX + randomOffset, particleY, particleZ - flameOffset, 0.0D, 0.0D, 0.0D);
             @event.World.Broadcaster.AddParticle("flame", particleX + randomOffset, particleY, particleZ - flameOffset, 0.0D, 0.0D, 0.0D);
         }
-        else if (var6 == 3)
+        else if (meta == 3)
         {
             @event.World.Broadcaster.AddParticle("smoke", particleX + randomOffset, particleY, particleZ + flameOffset, 0.0D, 0.0D, 0.0D);
             @event.World.Broadcaster.AddParticle("flame", particleX + randomOffset, particleY, particleZ + flameOffset, 0.0D, 0.0D, 0.0D);
@@ -207,14 +209,14 @@ internal class BlockFurnace : BlockWithEntity
 
                     while (stack.count > 0)
                     {
-                        int var11 = _random.NextInt(21) + 10;
-                        if (var11 > stack.count)
+                        int count = _random.NextInt(21) + 10;
+                        if (count > stack.count)
                         {
-                            var11 = stack.count;
+                            count = stack.count;
                         }
 
-                        stack.count -= var11;
-                        EntityItem droppedItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, var11, stack.getDamage()));
+                        stack.count -= count;
+                        EntityItem droppedItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, count, stack.getDamage()));
                         float var13 = 0.05F;
                         droppedItem.velocityX = (float)_random.NextGaussian() * var13;
                         droppedItem.velocityY = (float)_random.NextGaussian() * var13 + 0.2F;

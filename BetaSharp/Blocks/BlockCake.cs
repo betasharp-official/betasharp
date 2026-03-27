@@ -24,9 +24,9 @@ internal class BlockCake : Block
         setBoundingBox(edgeInset, 0.0F, edgeInset, 1.0F - edgeInset, height, 1.0F - edgeInset);
     }
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
+    public override Box? getCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z)
     {
-        int slicesEaten = world.GetBlockMeta(x, y, z);
+        int slicesEaten = reader.GetBlockMeta(x, y, z);
         float edgeInset = 1.0F / 16.0F;
         float minX = (1 + slicesEaten * 2) / 16.0F;
         float height = 0.5F;

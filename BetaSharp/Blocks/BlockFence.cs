@@ -15,7 +15,7 @@ internal class BlockFence : Block
         return context.World.Reader.GetBlockId(context.X, context.Y - 1, context.Z) == id ? true : !context.World.Reader.GetMaterial(context.X, context.Y - 1, context.Z).IsSolid ? false : base.canPlaceAt(context);
     }
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
+    public override Box? getCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z)
     {
         return new Box(x, y, z, x + 1, y + 1.5F, z + 1);
     }

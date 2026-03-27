@@ -9,7 +9,7 @@ internal class BlockTorch : Block
 {
     public BlockTorch(int id, int textureId) : base(id, textureId, Material.PistonBreakable) => setTickRandomly(true);
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
+    public override Box? getCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z) => null;
 
     public override bool isOpaque() => false;
 

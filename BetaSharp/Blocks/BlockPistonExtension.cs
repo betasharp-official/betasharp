@@ -14,28 +14,24 @@ public class BlockPistonExtension : Block
         setHardness(0.5F);
     }
 
-    public void setSprite(int sprite) => pistonHeadSprite = sprite;
-
-    public void clearSprite() => pistonHeadSprite = -1;
-
     public override void onBreak(OnBreakEvent @event)
     {
         base.onBreak(@event);
         int x = @event.X;
         int y = @event.Y;
         int z = @event.Z;
-        int var5 = @event.World.Reader.GetBlockMeta(x, y, z);
-        int var6 = PistonConstants.field_31057_a[getFacing(var5)];
-        x += PistonConstants.HEAD_OFFSET_X[var6];
-        y += PistonConstants.HEAD_OFFSET_Y[var6];
-        z += PistonConstants.HEAD_OFFSET_Z[var6];
-        int var7 = @event.World.Reader.GetBlockId(x, y, z);
-        if (var7 == Piston.id || var7 == StickyPiston.id)
+        int meta = @event.World.Reader.GetBlockMeta(x, y, z);
+        int rotation = PistonConstants.PistonRotations[getFacing(meta)];
+        x += PistonConstants.HEAD_OFFSET_X[rotation];
+        y += PistonConstants.HEAD_OFFSET_Y[rotation];
+        z += PistonConstants.HEAD_OFFSET_Z[rotation];
+        int blockId = @event.World.Reader.GetBlockId(x, y, z);
+        if (blockId == Piston.id || blockId == StickyPiston.id)
         {
-            var5 = @event.World.Reader.GetBlockMeta(x, y, z);
-            if (BlockPistonBase.isExtended(var5))
+            meta = @event.World.Reader.GetBlockMeta(x, y, z);
+            if (BlockPistonBase.isExtended(meta))
             {
-                Blocks[var7].dropStacks(new OnDropEvent(@event.World, x, y, z, var5));
+                Blocks[blockId].dropStacks(new OnDropEvent(@event.World, x, y, z, meta));
                 @event.World.Writer.SetBlock(x, y, z, 0);
             }
         }
@@ -43,8 +39,8 @@ public class BlockPistonExtension : Block
 
     public override int getTexture(int side, int meta)
     {
-        int var3 = getFacing(meta);
-        return side == var3 ? pistonHeadSprite >= 0 ? pistonHeadSprite : (meta & 8) != 0 ? textureId - 1 : textureId : side == PistonConstants.field_31057_a[var3] ? 107 : 108;
+        int facing = getFacing(meta);
+        return side == facing ? pistonHeadSprite >= 0 ? pistonHeadSprite : (meta & 8) != 0 ? textureId - 1 : textureId : side == PistonConstants.PistonRotations[facing] ? 107 : 108;
     }
 
     public override BlockRendererType getRenderType() => BlockRendererType.PistonExtension;

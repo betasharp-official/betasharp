@@ -66,10 +66,10 @@ internal class BlockDoor : Block
         return base.getBoundingBox(world, entities, x, y, z);
     }
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
+    public override Box? getCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z)
     {
-        updateBoundingBox(world, x, y, z);
-        return base.getCollisionShape(world, entities, x, y, z);
+        updateBoundingBox(reader, x, y, z);
+        return base.getCollisionShape(reader, entities, x, y, z);
     }
 
     public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => rotate(setOpen(blockReader.GetBlockMeta(x, y, z)));

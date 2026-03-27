@@ -9,9 +9,9 @@ public abstract class BlockFluid : Block
 {
     protected BlockFluid(int id, Material material) : base(id, (material == Material.Lava ? 14 : 12) * 16 + 13, material)
     {
-        float var3 = 0.0F;
-        float var4 = 0.0F;
-        setBoundingBox(0.0F + var4, 0.0F + var3, 0.0F + var4, 1.0F + var4, 1.0F + var3, 1.0F + var4);
+        const float height = 0.0F;
+        const float width = 0.0F;
+        setBoundingBox(0.0F + width, 0.0F + height, 0.0F + width, 1.0F + width, 1.0F + height, 1.0F + width);
         setTickRandomly(true);
     }
 
@@ -78,7 +78,7 @@ public abstract class BlockFluid : Block
         return mat != material && (mat != Material.Ice && (side == 1 || base.isSideVisible(iBlockReader, x, y, z, side)));
     }
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
+    public override Box? getCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z)
     {
         return null;
     }

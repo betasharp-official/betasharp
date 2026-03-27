@@ -30,12 +30,12 @@ public class BlockPistonBase : Block
 
     public override int getTexture(int side, int meta)
     {
-        int var3 = getFacing(meta);
-        return var3 > 5
+        int facing = getFacing(meta);
+        return facing > 5
             ? textureId
-            : side == var3
-                ? !isExtended(meta) && BoundingBox.MinX <= 0.0D && BoundingBox.MinY <= 0.0D && BoundingBox.MinZ <= 0.0D && BoundingBox.MaxX >= 1.0D && BoundingBox.MaxY >= 1.0D && BoundingBox.MaxZ >= 1.0D ? textureId : 110
-                : side == PistonConstants.field_31057_a[var3]
+            : side == facing
+                ? !isExtended(meta) && BoundingBox is { MinX: <= 0.0D, MinY: <= 0.0D, MinZ: <= 0.0D, MaxX: >= 1.0D, MaxY: >= 1.0D, MaxZ: >= 1.0D } ? textureId : 110
+                : side == PistonConstants.PistonRotations[facing]
                     ? 109
                     : 108;
     }
