@@ -325,15 +325,16 @@ public class EntityWolf : EntityAnimal
         {
             if (!isWolfTamed() && !isWolfAngry())
             {
-                if (entity is EntityPlayer)
+                bool isTargetablePlayer = entity is EntityPlayer { GameMode.CanBeTargeted: true };
+                if (isTargetablePlayer)
                 {
                     setWolfAngry(true);
                     playerToAttack = entity;
                 }
 
-                if (entity is EntityArrow && ((EntityArrow)entity).owner != null)
+                if (entity is EntityArrow arrow && arrow.owner != null)
                 {
-                    entity = ((EntityArrow)entity).owner;
+                    entity = arrow.owner;
                 }
 
                 if (entity is EntityLiving)
@@ -345,7 +346,7 @@ public class EntityWolf : EntityAnimal
                         if (!wolf.isWolfTamed() && wolf.playerToAttack == null)
                         {
                             wolf.playerToAttack = entity;
-                            if (entity is EntityPlayer)
+                            if (isTargetablePlayer)
                             {
                                 wolf.setWolfAngry(true);
                             }
@@ -355,7 +356,7 @@ public class EntityWolf : EntityAnimal
             }
             else if (entity != this && entity != null)
             {
-                if (isWolfTamed() && entity is EntityPlayer && ((EntityPlayer)entity).name.Equals(getWolfOwner(), StringComparison.OrdinalIgnoreCase))
+                if (isWolfTamed() && entity is EntityPlayer player && !player.GameMode.CanBeTargeted && (player).name.Equals(getWolfOwner(), StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -369,7 +370,7 @@ public class EntityWolf : EntityAnimal
 
     protected override Entity findPlayerToAttack()
     {
-        return isWolfAngry() ? world.Entities.GetClosestPlayer(this.x, this.y, this.z, 16.0D) : null;
+        return isWolfAngry() ? world.Entities.GetClosestPlayerTarget(this.x, this.y, this.z, 16.0D) : null;
     }
 
     protected override void attackEntity(Entity entity, float distance)
@@ -407,7 +408,7 @@ public class EntityWolf : EntityAnimal
         {
             if (heldItem != null && heldItem.itemId == Item.Bone.id && !isWolfAngry())
             {
-                --heldItem.count;
+                heldItem.ConsumeItem(player);
                 if (heldItem.count <= 0)
                 {
                     player.inventory.setStack(player.inventory.selectedSlot, (ItemStack)null);
@@ -442,7 +443,7 @@ public class EntityWolf : EntityAnimal
                 ItemFood food = (ItemFood)Item.ITEMS[heldItem.itemId];
                 if (food.getIsWolfsFavoriteMeat() && WolfHealth.Value < 20)
                 {
-                    --heldItem.count;
+                    heldItem.ConsumeItem(player);
                     if (heldItem.count <= 0)
                     {
                         player.inventory.setStack(player.inventory.selectedSlot, (ItemStack)null);

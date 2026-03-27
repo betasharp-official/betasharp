@@ -34,7 +34,7 @@ internal class ItemTool : Item
         return 1.0F;
     }
 
-    public override bool postHit(ItemStack itemStack, EntityLiving a, EntityLiving b)
+    public override bool postHit(ItemStack itemStack, EntityLiving a, EntityPlayer b)
     {
         itemStack.damageItem(2, b);
         return true;

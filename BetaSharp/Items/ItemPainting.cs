@@ -47,7 +47,7 @@ internal class ItemPainting : Item
                     world.SpawnEntity(painting);
                 }
 
-                --itemStack.count;
+                itemStack.ConsumeItem(entityPlayer);
             }
 
             return true;

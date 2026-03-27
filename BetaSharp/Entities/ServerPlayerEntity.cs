@@ -334,6 +334,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public override void sendPickup(Entity item, int count)
     {
+        if (!GameMode.CanPickup) return;
         if (!item.dead)
         {
             EntityTracker et = server.getEntityTracker(dimensionId);

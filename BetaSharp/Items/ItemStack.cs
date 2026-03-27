@@ -154,28 +154,45 @@ public class ItemStack
         return Item.ITEMS[itemId].getMaxDamage();
     }
 
+    public void ConsumeItem(EntityPlayer player)
+    {
+        if (!player.GameMode.FiniteResources) return;
+        count--;
+    }
+
     public void damageItem(int damageAmount, Entity entity)
     {
         if (isDamageable())
         {
-            damage += damageAmount;
-            if (damage > getMaxDamage())
+            if (entity is EntityPlayer player)
             {
-                if (entity is EntityPlayer)
-                {
-                    ((EntityPlayer)entity).increaseStat(Stats.Stats.Broken[itemId], 1);
-                }
+                if (!player.GameMode.FiniteResources) return;
 
-                --count;
-                if (count < 0)
+                damage += damageAmount;
+                if (UpdateBroken())
                 {
-                    count = 0;
+                    player.increaseStat(Stats.Stats.Broken[itemId], 1);
                 }
-
-                damage = 0;
             }
-
+            else
+            {
+                damage += damageAmount;
+                UpdateBroken();
+            }
         }
+    }
+
+    private bool UpdateBroken()
+    {
+        if (damage > getMaxDamage())
+        {
+            --count;
+            if (count < 0) count = 0;
+            damage = 0;
+            return true;
+        }
+
+        return false;
     }
 
     public void postHit(EntityLiving entityLiving, EntityPlayer entityPlayer)
@@ -212,9 +229,9 @@ public class ItemStack
     {
     }
 
-    public void useOnEntity(EntityLiving entityLiving)
+    public void useOnEntity(EntityLiving entityLiving, EntityPlayer entityPlayer)
     {
-        Item.ITEMS[itemId].useOnEntity(this, entityLiving);
+        Item.ITEMS[itemId].useOnEntity(this, entityLiving, entityPlayer);
     }
 
     public ItemStack copy()

@@ -46,6 +46,7 @@ public abstract class EntityPlayer : EntityLiving
     public float lastScreenDistortion;
     private int damageSpill;
     public EntityFish fishHook = null;
+    public GameMode GameMode;
 
     public EntityPlayer(IWorldContext world) : base(world)
     {
@@ -60,6 +61,7 @@ public abstract class EntityPlayer : EntityLiving
         rotationOffset = 180.0F;
         fireImmunityTicks = 20;
         texture = "/mob/char.png";
+        GameMode = GameModes.Get(0);
     }
 
     protected void TickSleep()
@@ -454,6 +456,8 @@ public abstract class EntityPlayer : EntityLiving
 
     public override bool damage(Entity damageSource, int amount)
     {
+        if (!GameMode.CanReceiveDamage) return false;
+
         entityAge = 0;
         if (health <= 0)
         {
@@ -506,16 +510,15 @@ public abstract class EntityPlayer : EntityLiving
     {
         if (entity is not EntityCreeper && entity is not EntityGhast)
         {
-            if (entity is EntityWolf)
+            if (entity is EntityWolf wolf)
             {
-                EntityWolf var3 = (EntityWolf)entity;
-                if (var3.isWolfTamed() && name.Equals(var3.getWolfOwner()))
+                if (wolf.isWolfTamed() && name.Equals(wolf.getWolfOwner()))
                 {
                     return;
                 }
             }
 
-            if (entity is not EntityPlayer || isPvpEnabled())
+            if (entity is not EntityPlayer p || isPvpEnabled() && p.GameMode.CanBeTargeted)
             {
                 var var7 = world.Entities.CollectEntitiesOfType<EntityWolf>(new Box(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D).Expand(16.0D, 4.0D, 16.0D));
 
@@ -557,15 +560,16 @@ public abstract class EntityPlayer : EntityLiving
 
     public void interact(Entity entity)
     {
+        if (!GameMode.CanInteract) return;
         if (!entity.interact(this))
         {
-            ItemStack var2 = getHand();
-            if (var2 != null && entity is EntityLiving)
+            ItemStack itemStackInHand = getHand();
+            if (itemStackInHand != null && entity is EntityLiving living)
             {
-                var2.useOnEntity((EntityLiving)entity);
-                if (var2.count <= 0)
+                itemStackInHand.useOnEntity(living, this);
+                if (itemStackInHand.count <= 0)
                 {
-                    var2.onRemoved(this);
+                    itemStackInHand.onRemoved(this);
                     clearStackInHand();
                 }
             }
@@ -595,6 +599,7 @@ public abstract class EntityPlayer : EntityLiving
 
     public void attack(Entity target)
     {
+        if (!GameMode.CanInflictDamage) return;
         int var2 = inventory.getDamageVsEntity(target);
         if (var2 > 0)
         {
@@ -604,22 +609,22 @@ public abstract class EntityPlayer : EntityLiving
             }
 
             target.damage(this, var2);
-            ItemStack var3 = getHand();
-            if (var3 != null && target is EntityLiving)
+            if (target is EntityLiving living)
             {
-                var3.postHit((EntityLiving)target, this);
-                if (var3.count <= 0)
+                ItemStack itemStackInHand = getHand();
+                if (itemStackInHand != null)
                 {
-                    var3.onRemoved(this);
-                    clearStackInHand();
+                    itemStackInHand.postHit(living, this);
+                    if (itemStackInHand.count <= 0)
+                    {
+                        itemStackInHand.onRemoved(this);
+                        clearStackInHand();
+                    }
                 }
-            }
 
-            if (target is EntityLiving)
-            {
-                if (target.isAlive())
+                if (living.isAlive())
                 {
-                    commandWolvesToAttack((EntityLiving)target, true);
+                    commandWolvesToAttack(living, true);
                 }
 
                 increaseStat(Stats.Stats.DamageDealtStat, var2);

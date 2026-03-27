@@ -8,7 +8,7 @@ namespace BetaSharp.Entities;
 public abstract class EntityCreature : EntityLiving
 {
     private PathEntity pathToEntity;
-    protected Entity playerToAttack;
+    protected Entity? playerToAttack;
     protected bool hasAttacked;
 
     public EntityCreature(IWorldContext world) : base(world)
@@ -196,7 +196,7 @@ public abstract class EntityCreature : EntityLiving
         return 0.0F;
     }
 
-    protected virtual Entity findPlayerToAttack()
+    protected virtual Entity? findPlayerToAttack()
     {
         return null;
     }

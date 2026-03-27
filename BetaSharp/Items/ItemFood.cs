@@ -19,7 +19,7 @@ internal class ItemFood : Item
 
     public override ItemStack use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
     {
-        --itemStack.count;
+        itemStack.ConsumeItem(entityPlayer);
         entityPlayer.heal(healAmount);
         return itemStack;
     }

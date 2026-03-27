@@ -110,11 +110,12 @@ public class PlayerController
 
         if (targetId > 0 && !player.isSneaking())
         {
+            if (!player.GameMode.CanInteract) return false;
             bool used = Block.Blocks[targetId].onUse(new OnUseEvent(world, player, blockX, blockY, blockZ));
             if (used) return true;
         }
 
-        if (selectedItem == null) return false;
+        if (selectedItem == null || !player.GameMode.CanPlace) return false;
 
         return selectedItem.useOnBlock(player, world, blockX, blockY, blockZ, blockSide);
     }

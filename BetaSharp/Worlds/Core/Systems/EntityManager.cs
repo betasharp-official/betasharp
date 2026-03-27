@@ -701,9 +701,32 @@ public class EntityManager
         double minDistanceSquared = -1.0D;
         EntityPlayer? closestPlayer = null;
 
-        for (int i = 0; i < Players.Count; ++i)
+        foreach (var player in Players)
         {
-            EntityPlayer player = Players[i];
+            if (!player.GameMode.VisibleToWorld) return null;
+            double distanceSquared = player.getSquaredDistance(x, y, z);
+
+            bool withinRange = range < 0.0D || distanceSquared < range * range;
+            bool isClosestSoFar = minDistanceSquared == -1.0D || distanceSquared < minDistanceSquared;
+
+            if (withinRange && isClosestSoFar)
+            {
+                minDistanceSquared = distanceSquared;
+                closestPlayer = player;
+            }
+        }
+
+        return closestPlayer;
+    }
+
+    public EntityPlayer? GetClosestPlayerTarget(double x, double y, double z, double range)
+    {
+        double minDistanceSquared = -1.0D;
+        EntityPlayer? closestPlayer = null;
+
+        foreach (var player in Players)
+        {
+            if (!player.GameMode.CanBeTargeted) return null;
             double distanceSquared = player.getSquaredDistance(x, y, z);
 
             bool withinRange = range < 0.0D || distanceSquared < range * range;

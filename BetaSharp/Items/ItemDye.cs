@@ -73,7 +73,7 @@ internal class ItemDye : Item
                 if (!world.IsRemote)
                 {
                     ((BlockSapling)Block.Sapling).generate(world, x, y, z);
-                    --itemStack.count;
+                    itemStack.ConsumeItem(entityPlayer);
                 }
                 return true;
             }
@@ -82,7 +82,7 @@ internal class ItemDye : Item
                 if (!world.IsRemote)
                 {
                     ((BlockCrops)Block.Wheat).applyFullGrowth(world, x, y, z);
-                    --itemStack.count;
+                    itemStack.ConsumeItem(entityPlayer);
                 }
                 return true;
             }
@@ -90,7 +90,7 @@ internal class ItemDye : Item
             {
                 if (!world.IsRemote)
                 {
-                    --itemStack.count;
+                    itemStack.ConsumeItem(entityPlayer);
 
                     for (int attempt = 0; attempt < 128; ++attempt)
                     {
@@ -133,16 +133,15 @@ internal class ItemDye : Item
         return false;
     }
 
-    public override void useOnEntity(ItemStack itemStack, EntityLiving entityLiving)
+    public override void useOnEntity(ItemStack itemStack, EntityLiving entityLiving, EntityPlayer entityPlayer)
     {
-        if (entityLiving is EntitySheep)
+        if (entityLiving is EntitySheep sheep)
         {
-            EntitySheep sheep = (EntitySheep)entityLiving;
             int woolColor = BlockCloth.getBlockMeta(itemStack.getDamage());
             if (!sheep.getSheared() && sheep.getFleeceColor() != woolColor)
             {
                 sheep.setFleeceColor(woolColor);
-                --itemStack.count;
+                itemStack.ConsumeItem(entityPlayer);
             }
         }
 

@@ -776,7 +776,7 @@ public abstract class EntityLiving : Entity
                 {
                     newY += highestCollisionY - boundingBox.MinY;
                 }
-                
+
                 setPosition(newX, newY, newZ);
             }
         }
@@ -877,14 +877,13 @@ public abstract class EntityLiving : Entity
     public virtual void tickLiving()
     {
         ++entityAge;
-        EntityPlayer closestPlayer = world.Entities.GetClosestPlayer(x, y, z, -1.0D);
         func_27021_X();
         sidewaysSpeed = 0.0F;
         forwardSpeed = 0.0F;
-        float lookRange = 8.0F;
+        const float lookRange = 8.0F;
         if (random.NextFloat() < 0.02F)
         {
-            closestPlayer = world.Entities.GetClosestPlayer(x, y, z, (double)lookRange);
+            EntityPlayer? closestPlayer = world.Entities.GetClosestPlayer(x, y, z, (double)lookRange);
             if (closestPlayer != null)
             {
                 lookTarget = closestPlayer;

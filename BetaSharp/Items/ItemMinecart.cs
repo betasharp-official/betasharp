@@ -26,7 +26,7 @@ internal class ItemMinecart : Item
                 world.SpawnEntity(new EntityMinecart(world, x + 0.5F, y + 0.5F, z + 0.5F, minecartType));
             }
 
-            --itemStack.count;
+            itemStack.ConsumeItem(entityPlayer);
             return true;
         }
         else

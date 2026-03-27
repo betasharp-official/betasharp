@@ -67,6 +67,7 @@ internal class ServerCommandHandler
         Register(new TeleportCommand());
         Register(new TeleportDimensionCommand());
         Register(new GiveCommand());
+        Register(new GameModeCommand());
 
         // Info commands
         Register(new ListCommand());

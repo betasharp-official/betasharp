@@ -67,7 +67,7 @@ internal class ItemSign : Item
                     world.Writer.SetBlock(x, y, z, Block.WallSign.id, meta);
                 }
 
-                --itemStack.count;
+                itemStack.ConsumeItem(entityPlayer);
                 BlockEntitySign? blockEntitySign = world.Entities.GetBlockEntity<BlockEntitySign>(x, y, z);
                 if (blockEntitySign != null)
                 {

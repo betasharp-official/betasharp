@@ -54,7 +54,7 @@ internal class ItemRedstone : Item
 
         if (Block.RedstoneWire.canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
-            --itemStack.count;
+            itemStack.ConsumeItem(entityPlayer);
             world.Writer.SetBlock(x, y, z, Block.RedstoneWire.id);
         }
 

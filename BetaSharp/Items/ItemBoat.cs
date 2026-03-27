@@ -54,7 +54,7 @@ internal class ItemBoat : Item
                     world.SpawnEntity(new EntityBoat(world, (double)((float)hitX + 0.5F), (double)((float)hitY + 1.0F), (double)((float)hitZ + 0.5F)));
                 }
 
-                --itemStack.count;
+                itemStack.ConsumeItem(entityPlayer);
             }
 
             return itemStack;
