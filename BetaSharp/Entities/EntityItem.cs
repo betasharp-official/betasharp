@@ -131,7 +131,7 @@ public class EntityItem : Entity
         if (!world.IsRemote && player.GameMode.CanPickup)
         {
             int pickedUpCount = stack.count;
-            if (delayBeforeCanPickup == 0 && player.inventory.addItemStackToInventory(stack))
+            if (delayBeforeCanPickup == 0 && player.inventory.AddItemStackToInventory(stack))
             {
                 if (stack.itemId == Block.Log.id)
                 {

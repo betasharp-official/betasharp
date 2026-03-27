@@ -70,14 +70,14 @@ public class ServerPlayerInteractionManager
         {
             world.ExtinguishFire(null, x, y, z, direction);
         }
-        if (!player.GameMode.CanBreak) return;
         failedMiningStartTime = tickCounter;
         int blockId = world.Reader.GetBlockId(x, y, z);
-        if (blockId > 0)
+        if (blockId > 0 && player.GameMode.CanInteract)
         {
             Block.Blocks[blockId].onBlockBreakStart(new OnBlockBreakStartEvent(world, player, x, y, z));
         }
 
+        if (!player.GameMode.CanBreak) return;
         if (blockId > 0 && Block.Blocks[blockId].getHardness(player) >= player.GameMode.BrakeSpeed)
         {
             tryBreakBlock(x, y, z);

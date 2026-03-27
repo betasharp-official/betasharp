@@ -28,7 +28,7 @@ internal class ItemFishingRod : Item
         if (entityPlayer.fishHook != null)
         {
             int durabilityLoss = entityPlayer.fishHook.catchFish();
-            itemStack.damageItem(durabilityLoss, entityPlayer);
+            itemStack.DamageItem(durabilityLoss, entityPlayer);
             entityPlayer.swingHand();
         }
         else

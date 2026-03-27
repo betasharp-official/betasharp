@@ -821,6 +821,11 @@ public class ClientNetworkHandler : NetHandler
         }
     }
 
+    public override void onPlayerGameModeUpdate(PlayerGameModeUpdateS2CPacket packet)
+    {
+        _game.player.GameMode = packet.GameMode;
+    }
+
     public override bool isServerSide()
     {
         return false;

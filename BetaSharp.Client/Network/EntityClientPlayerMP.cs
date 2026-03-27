@@ -125,8 +125,10 @@ public class EntityClientPlayerMP : ClientPlayerEntity
 
     }
 
-    public override void dropSelectedItem()
+    public override void DropSelectedItem()
     {
+        if (!Game.player.GameMode.CanDrop) return;
+
         var selected = getHand();
         if (selected != null && selected.count > 0)
         {

@@ -16,7 +16,7 @@ public class ItemShears : Item
     {
         if (blockId == Block.Leaves.id || blockId == Block.Cobweb.id)
         {
-            itemStack.damageItem(1, entityLiving);
+            itemStack.DamageItem(1, entityLiving);
         }
 
         return base.postMine(itemStack, blockId, x, y, z, entityLiving);

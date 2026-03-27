@@ -53,7 +53,7 @@ internal class ItemFlintAndSteel : Item
             world.Writer.SetBlock(x, y, z, Block.Fire.id);
         }
 
-        itemStack.damageItem(1, entityPlayer);
+        itemStack.DamageItem(1, entityPlayer);
         return true;
     }
 }

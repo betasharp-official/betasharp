@@ -64,12 +64,12 @@ public class CraftingScreenHandler : ScreenHandler
         base.onClosed(player);
         if (!world.IsRemote)
         {
-            for (int var2 = 0; var2 < 9; ++var2)
+            for (int i = 0; i < 9; ++i)
             {
-                ItemStack var3 = input.getStack(var2);
-                if (var3 != null)
+                ItemStack itemStack = input.getStack(i);
+                if (itemStack != null)
                 {
-                    player.dropItem(var3);
+                    player.inventory.AddItemStackToInventoryOrDrop(itemStack);
                 }
             }
 

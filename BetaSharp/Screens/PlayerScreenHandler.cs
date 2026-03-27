@@ -70,7 +70,7 @@ public class PlayerScreenHandler : ScreenHandler
             ItemStack craftingStack = craftingInput.getStack(slotIndex);
             if (craftingStack != null)
             {
-                player.dropItem(craftingStack);
+                player.inventory.AddItemStackToInventory(craftingStack);
                 craftingInput.setStack(slotIndex, null);
             }
         }

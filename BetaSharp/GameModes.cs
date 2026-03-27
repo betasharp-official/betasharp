@@ -176,6 +176,7 @@ public static class GameModes
         CanBeTargeted = false,
         CanExhaustFire = false,
         CanPickup =  false,
+        CanDrop =  false,
         VisibleToWorld = false,
     };
 }

@@ -213,6 +213,7 @@ public abstract class Packet
             New(PacketId.UpdateSign, true, true, true, () => new UpdateSignPacket()),
             New(PacketId.MapUpdateS2C, true, false, true, () => new MapUpdateS2CPacket()),
             New(PacketId.PlayerConnectionUpdateS2C, true, false, false, () => new PlayerConnectionUpdateS2CPacket()),
+            New(PacketId.PlayerGameModeUpdateS2C, true, false, false, () => new PlayerGameModeUpdateS2CPacket()),
             New(PacketId.IncreaseStatS2C, true, false, false, () => new IncreaseStatS2CPacket()),
             New(PacketId.Disconnect, true, true, false, () => new DisconnectPacket())
         ]);
@@ -238,6 +239,7 @@ public abstract class Packet
                 case (byte)PacketId.KeepAlive:
                 case (byte)PacketId.UpdateSign:
                 case (byte)PacketId.PlayerConnectionUpdateS2C:
+                case (byte)PacketId.PlayerGameModeUpdateS2C:
                 case (byte)PacketId.Disconnect:
                 case (byte)PacketId.LoginHello:
                 case (byte)PacketId.Handshake:

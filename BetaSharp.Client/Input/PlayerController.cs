@@ -3,7 +3,6 @@ using BetaSharp.Client.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Input;
 
@@ -17,32 +16,30 @@ public class PlayerController
         Game = var1;
     }
 
-    public virtual void func_717_a(World var1)
+    public virtual void ChangeWorld(World world) { }
+
+    public virtual void clickBlock(int x, int y, int z, int direction)
     {
+        Game.world.ExtinguishFire(Game.player, x, y, z, direction);
+        sendBlockRemoved(x, y, z, direction);
     }
 
-    public virtual void clickBlock(int var1, int var2, int var3, int var4)
+    public virtual bool sendBlockRemoved(int x, int y, int z, int direction)
     {
-        Game.world.ExtinguishFire(Game.player, var1, var2, var3, var4);
-        sendBlockRemoved(var1, var2, var3, var4);
-    }
-
-    public virtual bool sendBlockRemoved(int var1, int var2, int var3, int var4)
-    {
-        World var5 = Game.world;
-        Block var6 = Block.Blocks[var5.Reader.GetBlockId(var1, var2, var3)];
-        var5.Broadcaster.NotifyNeighbors(var1, var2, var3, var5.Reader.GetBlockId(var1, var2, var3));
-        int var7 = var5.Reader.GetBlockMeta(var1, var2, var3);
-        bool var8 = var5.Writer.SetBlock(var1, var2, var3, 0);
-        if (var6 != null && var8)
+        World world = Game.world;
+        Block block = Block.Blocks[world.Reader.GetBlockId(x, y, z)];
+        world.Broadcaster.NotifyNeighbors(x, y, z, world.Reader.GetBlockId(x, y, z));
+        int blockMeta = world.Reader.GetBlockMeta(x, y, z);
+        bool success = world.Writer.SetBlock(x, y, z, 0);
+        if (block != null && success)
         {
-            var6.onMetadataChange(new OnMetadataChangeEvent(var5, var1, var2, var3, var7));
+            block.onMetadataChange(new OnMetadataChangeEvent(world, x, y, z, blockMeta));
         }
 
-        return var8;
+        return success;
     }
 
-    public virtual void sendBlockRemoving(int var1, int var2, int var3, int var4)
+    public virtual void sendBlockRemoving(int x, int y, int z, int direction)
     {
     }
 
@@ -140,7 +137,7 @@ public class PlayerController
         return var5.currentScreenHandler.onSlotClick(var2, var3, var4, var5);
     }
 
-    public virtual void func_20086_a(int var1, EntityPlayer var2)
+    public virtual void OnGuiClosed(int var1, EntityPlayer var2)
     {
         var2.currentScreenHandler.onClosed(var2);
         var2.currentScreenHandler = var2.playerScreenHandler;

@@ -1631,7 +1631,7 @@ public partial class BetaSharp
 
                         if (Keyboard.getEventKey() == options.KeyBindDrop.keyCode)
                         {
-                            player.dropSelectedItem();
+                            player.DropSelectedItem();
                         }
 
                         if (Keyboard.getEventKey() == options.KeyBindChat.keyCode)
@@ -1718,7 +1718,7 @@ public partial class BetaSharp
         world = newWorld;
         if (newWorld != null)
         {
-            playerController.func_717_a(newWorld);
+            playerController.ChangeWorld(newWorld);
             if (!isMultiplayerWorld())
             {
                 if (targetEntity == null)
