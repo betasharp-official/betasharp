@@ -30,9 +30,6 @@ public class Hotbar : UIElement
     {
         if (_game.player == null) return;
 
-        int x = (int)ComputedX;
-        int y = (int)ComputedY;
-
         // --- 1. Background (Hotbar itself) ---
         renderer.TextureManager.BindTexture(renderer.TextureManager.GetTextureId("/gui/gui.png"));
         renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/gui.png"), 0, 0, 0, 0, 182, 22);
@@ -41,10 +38,8 @@ public class Hotbar : UIElement
         InventoryPlayer inventory = _game.player.inventory;
         renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/gui.png"), inventory.selectedSlot * 20 - 1, -1, 0, 22, 24, 22);
 
-        // --- 2. Stat Bars (Health, Armor, Air) ---
         RenderStats(renderer);
 
-        // --- 3. Items ---
         for (int i = 0; i < 9; ++i)
         {
             RenderSlot(renderer, i, i * 20 + 3, 3);

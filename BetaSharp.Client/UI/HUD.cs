@@ -66,6 +66,11 @@ public class HUD : UIScreen
         crosshair.Style.Position = PositionType.Absolute;
         crosshair.Style.Top = crosshair.Style.Left = crosshair.Style.Right = crosshair.Style.Bottom = 0;
         Root.AddChild(crosshair);
+
+        var debugMenu = new DebugMenu(Game);
+        debugMenu.Style.Position = PositionType.Absolute;
+        debugMenu.Style.Top = debugMenu.Style.Left = debugMenu.Style.Right = debugMenu.Style.Bottom = 0;
+        Root.AddChild(debugMenu);
     }
 
     public void AddChatMessage(string message) => Chat.AddMessage(message);
@@ -75,5 +80,6 @@ public class HUD : UIScreen
         base.Update(partialTicks);
 
         LicenseWarning.Visible = BetaSharp.hasPaidCheckTime > 0;
+        Game.componentsStorage.Overlay.Context.GCMonitor.AllowUpdating = Game.options.ShowDebugInfo;
     }
 }
