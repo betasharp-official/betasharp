@@ -7,7 +7,7 @@ public class LeverRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.World.getBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
         int orientation = metadata & 7;
         bool isActivated = (metadata & 8) > 0;
 
@@ -32,7 +32,8 @@ public class LeverRenderer : IBlockRenderer
 
         // Create a sub-context specifically for drawing the baseplate
         var baseCtx = new BlockRenderContext(
-            world: ctx.World,
+            blockReader: ctx.BlockReader,
+            lighting: ctx.Lighting,
             tess: ctx.Tess,
             overrideTexture: baseTextureId,
             renderAllFaces: ctx.RenderAllFaces,
@@ -53,8 +54,9 @@ public class LeverRenderer : IBlockRenderer
         baseCtx.DrawBlock(block, pos);
 
         var handleCtx = new BlockRenderContext(
-            world: ctx.World,
+            blockReader: ctx.BlockReader,
             tess: ctx.Tess,
+            lighting: ctx.Lighting,
             overrideTexture: ctx.OverrideTexture,
             renderAllFaces: ctx.RenderAllFaces,
             flipTexture: ctx.FlipTexture,
@@ -134,12 +136,12 @@ public class LeverRenderer : IBlockRenderer
         }
 
         // --- 4. Draw the Handle Faces ---
-        int colorMultiplier = block.getColorMultiplier(ctx.World, pos.x, pos.y, pos.z);
+        int colorMultiplier = block.getColorMultiplier(ctx.BlockReader, pos.x, pos.y, pos.z);
         float r = (colorMultiplier >> 16 & 255) * 0.0039215686F;
         float g = (colorMultiplier >> 8 & 255) * 0.0039215686F;
         float b = (colorMultiplier & 255) * 0.0039215686F;
 
-        float luminance = block.getLuminance(ctx.World, pos.x, pos.y, pos.z);
+        float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
 
         handleCtx.Tess.setColorOpaque_F(r * luminance, g * luminance, b * luminance);
 

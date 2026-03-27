@@ -3,7 +3,7 @@ using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
@@ -14,7 +14,7 @@ public class EntitySheep : EntityAnimal
 
     public readonly SyncedProperty<byte> SheepData;
 
-    public EntitySheep(World world) : base(world)
+    public EntitySheep(IWorldContext world) : base(world)
     {
         texture = "/mob/sheep.png";
         setBoundingBoxSpacing(0.9F, 1.3F);
@@ -23,7 +23,7 @@ public class EntitySheep : EntityAnimal
 
     public override void PostSpawn()
     {
-        setFleeceColor(getRandomFleeceColor(world.random));
+        setFleeceColor(getRandomFleeceColor(world.Random));
     }
 
     protected override void dropFewItems()
@@ -45,7 +45,7 @@ public class EntitySheep : EntityAnimal
         ItemStack heldItem = player.inventory.getSelectedItem();
         if (heldItem != null && heldItem.itemId == Item.Shears.id && !getSheared())
         {
-            if (!world.isRemote)
+            if (!world.IsRemote)
             {
                 setSheared(true);
                 int woolCount = 2 + random.NextInt(3);

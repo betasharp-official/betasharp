@@ -2,72 +2,73 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Util.Maths;
 using BetaSharp.Util.Maths.Noise;
-using BetaSharp.Worlds.Biomes;
 using BetaSharp.Worlds.Biomes.Source;
 using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Gen.Carvers;
-using BetaSharp.Worlds.Gen.Features;
+using BetaSharp.Worlds.Core.Systems;
+using BetaSharp.Worlds.Generation.Biomes;
+using BetaSharp.Worlds.Generation.Generators.Carvers;
+using BetaSharp.Worlds.Generation.Generators.Features;
 
 namespace BetaSharp.Worlds.Gen.Chunks;
 
-internal class OverworldChunkGenerator : ChunkSource
+internal class OverworldChunkGenerator : IChunkSource
 {
-    private readonly JavaRandom _random;
-    private readonly OctavePerlinNoiseSampler _minLimitPerlinNoise;
-    private readonly OctavePerlinNoiseSampler _maxLimitPerlinNoise;
-    private readonly OctavePerlinNoiseSampler _selectorNoise;
-    private readonly OctavePerlinNoiseSampler _sandGravelNoise;
-    private readonly OctavePerlinNoiseSampler _depthNoise;
-    private readonly OctavePerlinNoiseSampler _floatingIslandScale;
-    private readonly OctavePerlinNoiseSampler _floatingIslandNoise;
-    private readonly OctavePerlinNoiseSampler _forestNoise;
-    private readonly World _world;
-    private double[] _heightMap;
-    private double[] _sandBuffer = new double[256];
-    private double[] _gravelBuffer = new double[256];
-    private double[] _depthBuffer = new double[256];
+    private readonly BiomeSource _biomeSource;
     private readonly Carver _carver = new CaveCarver();
-    private Biome[] _biomes;
-    double[] _selectorNoiseBuffer;
-    double[] _minLimitPerlinNoiseBuffer;
-    double[] _maxLimitPerlinNoiseBuffer;
-    double[] _scaleNoiseBuffer;
-    double[] _depthNoiseBuffer;
-    private double[] _temperatures;
+    private readonly OctavePerlinNoiseSampler _depthNoise;
+    private readonly OctavePerlinNoiseSampler _floatingIslandNoise;
+    private readonly OctavePerlinNoiseSampler _floatingIslandScale;
+    private readonly OctavePerlinNoiseSampler _forestNoise;
+    private readonly IWorldContext _level;
+    private readonly OctavePerlinNoiseSampler _maxLimitPerlinNoise;
+    private readonly OctavePerlinNoiseSampler _minLimitPerlinNoise;
+    private readonly JavaRandom _random;
+    private readonly OctavePerlinNoiseSampler _sandGravelNoise;
 
     // Seed and per-instance biome source (allows thread-safe parallel generation)
     private readonly long _seed;
-    private readonly BiomeSource _biomeSource;
+    private readonly OctavePerlinNoiseSampler _selectorNoise;
+    private Biome[] _biomes;
+    private double[] _depthBuffer = new double[256];
+    private double[] _depthNoiseBuffer;
+    private PlantPatchFeature _featureBrownMushroom;
+    private CactusPatchFeature _featureCactus;
+    private ClayOreFeature _featureClay;
+    private OreFeature _featureCoal;
+    private PlantPatchFeature _featureDandelion;
+    private DeadBushPatchFeature _featureDeadBush;
+    private OreFeature _featureDiamond;
+    private OreFeature _featureDirt;
+    private DungeonFeature _featureDungeon;
+    private OreFeature _featureGold;
+    private GrassPatchFeature _featureGrass1;
+    private GrassPatchFeature _featureGrass2;
+    private OreFeature _featureGravel;
+    private OreFeature _featureIron;
+    private OreFeature _featureLapis;
+    private LakeFeature _featureLavaLake;
+    private SpringFeature _featureLavaSpring;
+    private PumpkinPatchFeature _featurePumpkin;
+    private PlantPatchFeature _featureRedMushroom;
+    private OreFeature _featureRedstone;
+    private PlantPatchFeature _featureRose;
+    private SugarCanePatchFeature _featureSugarcane;
 
     // Pre-allocated feature instances reused across every decorated chunk
     private LakeFeature _featureWaterLake;
-    private LakeFeature _featureLavaLake;
-    private DungeonFeature _featureDungeon;
-    private ClayOreFeature _featureClay;
-    private OreFeature _featureDirt;
-    private OreFeature _featureGravel;
-    private OreFeature _featureCoal;
-    private OreFeature _featureIron;
-    private OreFeature _featureGold;
-    private OreFeature _featureRedstone;
-    private OreFeature _featureDiamond;
-    private OreFeature _featureLapis;
-    private PlantPatchFeature _featureDandelion;
-    private GrassPatchFeature _featureGrass1;
-    private GrassPatchFeature _featureGrass2;
-    private DeadBushPatchFeature _featureDeadBush;
-    private PlantPatchFeature _featureRose;
-    private PlantPatchFeature _featureBrownMushroom;
-    private PlantPatchFeature _featureRedMushroom;
-    private SugarCanePatchFeature _featureSugarcane;
-    private PumpkinPatchFeature _featurePumpkin;
-    private CactusPatchFeature _featureCactus;
     private SpringFeature _featureWaterSpring;
-    private SpringFeature _featureLavaSpring;
+    private double[] _gravelBuffer = new double[256];
+    private double[] _heightMap;
+    private double[] _maxLimitPerlinNoiseBuffer;
+    private double[] _minLimitPerlinNoiseBuffer;
+    private double[] _sandBuffer = new double[256];
+    private double[] _scaleNoiseBuffer;
+    private double[] _selectorNoiseBuffer;
+    private double[] _temperatures;
 
-    public OverworldChunkGenerator(World world, long seed)
+    public OverworldChunkGenerator(IWorldContext world, long seed)
     {
-        _world = world;
+        _level = world;
         _random = new JavaRandom(seed);
         _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
         _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
@@ -78,18 +79,13 @@ internal class OverworldChunkGenerator : ChunkSource
         _floatingIslandNoise = new OctavePerlinNoiseSampler(_random, 16);
         _forestNoise = new OctavePerlinNoiseSampler(_random, 8);
         _seed = seed;
-        _biomeSource = world.getBiomeSource();
+        _biomeSource = world.Dimension.BiomeSource;
         InitFeatures();
     }
 
-    // Creates a thread-safe parallel generator with its own BiomeSource and _random state.
-    // All noise samplers are deterministically equivalent (same seed), so chunk output is identical.
-    public ChunkSource CreateParallelInstance()
-        => new OverworldChunkGenerator(_world, _seed, new BiomeSource(_world));
-
-    private OverworldChunkGenerator(World world, long seed, BiomeSource biomeSource)
+    private OverworldChunkGenerator(IWorldContext level, long seed, BiomeSource biomeSource)
     {
-        _world = world;
+        _level = level;
         _seed = seed;
         _biomeSource = biomeSource;
         _random = new JavaRandom(seed);
@@ -103,6 +99,419 @@ internal class OverworldChunkGenerator : ChunkSource
         _forestNoise = new OctavePerlinNoiseSampler(_random, 8);
         InitFeatures();
     }
+
+    // Creates a thread-safe parallel generator with its own BiomeSource and _random state.
+    // All noise samplers are deterministically equivalent (same seed), so chunk output is identical.
+    public IChunkSource CreateParallelInstance()
+        => new OverworldChunkGenerator(_level, _seed, new BiomeSource(_level));
+
+    public Chunk LoadChunk(int chunkX, int chunkZ) => GetChunk(chunkX, chunkZ);
+
+    /// <summary>
+    ///     Generates a chunk at the given coordinates. The chunk is generated by first creating a low-resolution height map,
+    ///     then interpolating it to determine the base terrain, and finally carving caves and adding features to it.
+    /// </summary>
+    /// <param name="chunkX">The x-coordinate of the chunk</param>
+    /// <param name="chunkZ">The z-coordinate of the chunk</param>
+    /// <returns>The generated chunk</returns>
+    public Chunk GetChunk(int chunkX, int chunkZ)
+    {
+        _random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
+        byte[] blocks = new byte[-short.MinValue];
+        Chunk chunk = new(_level, blocks, chunkX, chunkZ);
+        _biomes = _biomeSource.GetBiomesInArea(_biomes, chunkX * 16, chunkZ * 16, 16, 16);
+        double[] temperatureMap = _biomeSource.TemperatureMap;
+        BuildTerrain(chunkX, chunkZ, blocks, _biomes, temperatureMap);
+        BuildSurfaces(chunkX, chunkZ, blocks, _biomes);
+        _carver.carve(this, _level, chunkX, chunkZ, blocks);
+        chunk.PopulateHeightMap();
+        return chunk;
+    }
+
+    public bool IsChunkLoaded(int x, int z) => true;
+
+    /// <summary>
+    ///     Generates the features of the chunk, such as ores, trees, lakes, etc. The features that are generated depend on the
+    ///     biome of the chunk and some _random factors.
+    /// </summary>
+    /// <param name="source">The chunk source that is generating the chunk</param>
+    /// <param name="chunkX">The x-coordinate of the chunk</param>
+    /// <param name="chunkZ">The z-coordinate of the chunk</param>
+    public void DecorateTerrain(IChunkSource source, int chunkX, int chunkZ)
+    {
+        BlockSand.fallInstantly = true;
+        int blockX = chunkX * 16;
+        int blockZ = chunkZ * 16;
+        Biome chunkBiome = _biomeSource.GetBiome(blockX + 16, blockZ + 16);
+        _random.SetSeed(_level.Seed);
+        long xOffset = _random.NextLong() / 2L * 2L + 1L;
+        long zOffset = _random.NextLong() / 2L * 2L + 1L;
+        _random.SetSeed((chunkX * xOffset + chunkZ * zOffset) ^ _level.Seed);
+        double fraction;
+        int featureX;
+        int featureY;
+        int featureZ;
+
+        // Generate lakes
+        if (_random.NextInt(4) == 0)
+        {
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featureWaterLake.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate lava lakes
+        if (_random.NextInt(8) == 0)
+        {
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(_random.NextInt(120) + 8);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            if (featureY < 64 || _random.NextInt(10) == 0)
+            {
+                _featureLavaLake.Generate(_level, _random, featureX, featureY, featureZ);
+            }
+        }
+
+        // Generate Dungeons
+        for (int i = 0; i < 8; ++i)
+        {
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featureDungeon.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Clay patches
+        for (int i = 0; i < 10; ++i)
+        {
+            featureX = blockX + _random.NextInt(16);
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16);
+            _featureClay.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Dirt blobs
+        for (int i = 0; i < 20; ++i)
+        {
+            featureX = blockX + _random.NextInt(16);
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16);
+            _featureDirt.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Gravel blobs
+        for (int i = 0; i < 10; ++i)
+        {
+            featureX = blockX + _random.NextInt(16);
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16);
+            _featureGravel.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Coal Ore Veins
+        for (int i = 0; i < 20; ++i)
+        {
+            featureX = blockX + _random.NextInt(16);
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16);
+            _featureCoal.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Iron Ore Veins
+        for (int i = 0; i < 20; ++i)
+        {
+            featureX = blockX + _random.NextInt(16);
+            featureY = _random.NextInt(64);
+            featureZ = blockZ + _random.NextInt(16);
+            _featureIron.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Gold Ore Veins
+        for (int i = 0; i < 2; ++i)
+        {
+            featureX = blockX + _random.NextInt(16);
+            featureY = _random.NextInt(32);
+            featureZ = blockZ + _random.NextInt(16);
+            _featureGold.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Redstone Ore Veins
+        for (int i = 0; i < 8; ++i)
+        {
+            featureX = blockX + _random.NextInt(16);
+            featureY = _random.NextInt(16);
+            featureZ = blockZ + _random.NextInt(16);
+            _featureRedstone.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Diamond Ore Veins
+        for (int i = 0; i < 1; ++i)
+        {
+            featureX = blockX + _random.NextInt(16);
+            featureY = _random.NextInt(16);
+            featureZ = blockZ + _random.NextInt(16);
+            _featureDiamond.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Lapis Lazuli Ore Veins
+        for (int i = 0; i < 1; ++i)
+        {
+            featureX = blockX + _random.NextInt(16);
+            featureY = _random.NextInt(16);
+            featureZ = blockZ + _random.NextInt(16);
+            _featureLapis.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Determine the number and type of trees that should be generated
+        fraction = 0.5D;
+        int treeDensitySample = (int)((_forestNoise.generateNoise(blockX * fraction, blockZ * fraction) / 8.0D + _random.NextDouble() * 4.0D + 4.0D) / 3.0D);
+        int numberOfTrees = 0;
+        if (_random.NextInt(10) == 0)
+        {
+            ++numberOfTrees;
+        }
+
+        if (chunkBiome == Biome.Forest)
+        {
+            numberOfTrees += treeDensitySample + 5;
+        }
+
+        if (chunkBiome == Biome.Rainforest)
+        {
+            numberOfTrees += treeDensitySample + 5;
+        }
+
+        if (chunkBiome == Biome.SeasonalForest)
+        {
+            numberOfTrees += treeDensitySample + 2;
+        }
+
+        if (chunkBiome == Biome.Taiga)
+        {
+            numberOfTrees += treeDensitySample + 5;
+        }
+
+        if (chunkBiome == Biome.Desert)
+        {
+            numberOfTrees -= 20;
+        }
+
+        if (chunkBiome == Biome.Tundra)
+        {
+            numberOfTrees -= 20;
+        }
+
+        if (chunkBiome == Biome.Plains)
+        {
+            numberOfTrees -= 20;
+        }
+
+        for (int i = 0; i < numberOfTrees; ++i)
+        {
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            Feature treeFeature = chunkBiome.GetRandomWorldGenForTrees(_random);
+            treeFeature.prepare(1.0D, 1.0D, 1.0D);
+            treeFeature.Generate(_level, _random, featureX, _level.Reader.GetTopY(featureX, featureZ), featureZ);
+        }
+
+        // Choose an appropriate amount of Dandelions
+        byte amountOfDandelions = 0;
+        if (chunkBiome == Biome.Forest)
+        {
+            amountOfDandelions = 2;
+        }
+
+        if (chunkBiome == Biome.SeasonalForest)
+        {
+            amountOfDandelions = 4;
+        }
+
+        if (chunkBiome == Biome.Taiga)
+        {
+            amountOfDandelions = 2;
+        }
+
+        if (chunkBiome == Biome.Plains)
+        {
+            amountOfDandelions = 3;
+        }
+
+
+        // Generate Dandelions
+        for (byte i = 0; i < amountOfDandelions; ++i)
+        {
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featureDandelion.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        byte amountOfTallgrass = 0;
+        if (chunkBiome == Biome.Forest)
+        {
+            amountOfTallgrass = 2;
+        }
+
+        if (chunkBiome == Biome.Rainforest)
+        {
+            amountOfTallgrass = 10;
+        }
+
+        if (chunkBiome == Biome.SeasonalForest)
+        {
+            amountOfTallgrass = 2;
+        }
+
+        if (chunkBiome == Biome.Taiga)
+        {
+            amountOfTallgrass = 1;
+        }
+
+        if (chunkBiome == Biome.Plains)
+        {
+            amountOfTallgrass = 10;
+        }
+
+        // Generate Tallgrass and Ferns
+        for (byte i = 0; i < amountOfTallgrass; ++i)
+        {
+            byte grassMeta = 1;
+            if (chunkBiome == Biome.Rainforest && _random.NextInt(3) != 0)
+            {
+                // Fern
+                grassMeta = 2;
+            }
+
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            (grassMeta == 1 ? _featureGrass1 : _featureGrass2).Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Deadbushes
+        byte amountOfDeadBushes = 0;
+        if (chunkBiome == Biome.Desert)
+        {
+            amountOfDeadBushes = 2;
+        }
+
+        for (byte i = 0; i < amountOfDeadBushes; ++i)
+        {
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featureDeadBush.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Roses
+        if (_random.NextInt(2) == 0)
+        {
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featureRose.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Brown Mushrooms
+        if (_random.NextInt(4) == 0)
+        {
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featureBrownMushroom.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Red Mushrooms
+        if (_random.NextInt(8) == 0)
+        {
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featureRedMushroom.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Sugarcane
+        for (int i = 0; i < 10; ++i)
+        {
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featureSugarcane.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Pumpkin Patches
+        if (_random.NextInt(32) == 0)
+        {
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featurePumpkin.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate Cacti
+        byte amountOfCacti = 0;
+        if (chunkBiome == Biome.Desert)
+        {
+            amountOfCacti += 10;
+        }
+
+        for (int i = 0; i < amountOfCacti; ++i)
+        {
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featureCactus.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate one-block water sources
+        for (int i = 0; i < 50; ++i)
+        {
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(_random.NextInt(120) + 8);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featureWaterSpring.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Generate one-block lava sources
+        for (int x = 0; x < 20; ++x)
+        {
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(_random.NextInt(_random.NextInt(112) + 8) + 8);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featureLavaSpring.Generate(_level, _random, featureX, featureY, featureZ);
+        }
+
+        // Place Snow in cold regions
+        _temperatures = _biomeSource.GetTemperatures(_temperatures, blockX + 8, blockZ + 8, 16, 16);
+
+        for (int x = blockX + 8; x < blockX + 8 + 16; ++x)
+        {
+            for (int z = blockZ + 8; z < blockZ + 8 + 16; ++z)
+            {
+                int offsetX = x - (blockX + 8);
+                int offsetZ = z - (blockZ + 8);
+                int var22 = _level.Reader.GetTopSolidBlockY(x, z);
+                double temperatureSample = _temperatures[offsetX * 16 + offsetZ] - (var22 - 64) / 64.0D * 0.3D;
+                if (temperatureSample < 0.5D && var22 > 0 && var22 < 128 && _level.Reader.IsAir(x, var22, z) && _level.Reader.GetMaterial(x, var22 - 1, z).BlocksMovement &&
+                    _level.Reader.GetMaterial(x, var22 - 1, z) != Material.Ice)
+                {
+                    _level.Writer.SetBlock(x, var22, z, Block.Snow.id, 0, doUpdate: false);
+                }
+            }
+        }
+
+        BlockSand.fallInstantly = false;
+    }
+
+    public bool Save(bool saveEntities, LoadingDisplay display) => true;
+
+    public bool Tick() => false;
+
+    public bool CanSave() => true;
+
+    public string GetDebugInfo() => "RandomLevelSource";
 
     private void InitFeatures()
     {
@@ -133,7 +542,7 @@ internal class OverworldChunkGenerator : ChunkSource
     }
 
     /// <summary>
-    /// Generate the base terrain
+    ///     Generate the base terrain
     /// </summary>
     /// <param name="chunkX">X-Coordinate of this chunk</param>
     /// <param name="chunkZ">Z-Coordinate of this chunk</param>
@@ -183,7 +592,7 @@ internal class OverworldChunkGenerator : ChunkSource
 
                         for (int subX = 0; subX < 4; ++subX)
                         {
-                            int blockIndex = (((subX + sampleX * 4) << 11) | ((sampleZ * 4) << 7) | ((sampleY * 8) + subY));
+                            int blockIndex = ((subX + sampleX * 4) << 11) | ((sampleZ * 4) << 7) | (sampleY * 8 + subY);
                             const short chunkHeight = 128; // Chunk Height
                             double terrainDensity = terrainX0;
                             double densityStepZ = (terrainX1 - terrainX0) * horizontalLerpStep;
@@ -235,7 +644,7 @@ internal class OverworldChunkGenerator : ChunkSource
     }
 
     /// <summary>
-    /// Generate the base terrain
+    ///     Generate the base terrain
     /// </summary>
     /// <param name="chunkX">X-Coordinate of this chunk</param>
     /// <param name="chunkZ">Z-Coordinate of this chunk</param>
@@ -342,40 +751,14 @@ internal class OverworldChunkGenerator : ChunkSource
         }
     }
 
-    public Chunk LoadChunk(int chunkX, int chunkZ)
-    {
-        return GetChunk(chunkX, chunkZ);
-    }
-
+    /// @brief Generates the low-resolution height map that is used to generate the terrain of the overworld. The height map is generated by sampling 5 different noise maps and applying biome-dependent modifications to them.
+    ///
+    /// @param terrainMap The terrain map that the scaled-down terrain values will be written to
+    /// @param chunkPos The x,y,z coordinate of the sub-chunk
+    /// @param max Defines the area of the terrainMap
     /// <summary>
-    /// Generates a chunk at the given coordinates. The chunk is generated by first creating a low-resolution height map, then interpolating it to determine the base terrain, and finally carving caves and adding features to it.
-    /// </summary>
-    /// <param name="chunkX">The x-coordinate of the chunk</param>
-    /// <param name="chunkZ">The z-coordinate of the chunk</param>
-    /// <returns>The generated chunk</returns>
-    public Chunk GetChunk(int chunkX, int chunkZ)
-    {
-        _random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
-        byte[] blocks = new byte[-short.MinValue];
-        Chunk chunk = new Chunk(_world, blocks, chunkX, chunkZ);
-        _biomes = _biomeSource.GetBiomesInArea(_biomes, chunkX * 16, chunkZ * 16, 16, 16);
-        double[] temperatureMap = _biomeSource.TemperatureMap;
-        BuildTerrain(chunkX, chunkZ, blocks, _biomes, temperatureMap);
-        BuildSurfaces(chunkX, chunkZ, blocks, _biomes);
-        _carver.carve(this, _world, chunkX, chunkZ, blocks);
-        chunk.PopulateHeightMap();
-        return chunk;
-    }
-
-    /**
-    * @brief Generates the low-resolution height map that is used to generate the terrain of the overworld. The height map is generated by sampling 5 different noise maps and applying biome-dependent modifications to them.
-    *
-    * @param terrainMap The terrain map that the scaled-down terrain values will be written to
-    * @param chunkPos The x,y,z coordinate of the sub-chunk
-    * @param max Defines the area of the terrainMap
-    */
-    /// <summary>
-    /// Generates the low-resolution height map that is used to generate the terrain of the overworld. The height map is generated by sampling 5 different noise maps and applying biome-dependent modifications to them.
+    ///     Generates the low-resolution height map that is used to generate the terrain of the overworld. The height map is
+    ///     generated by sampling 5 different noise maps and applying biome-dependent modifications to them.
     /// </summary>
     /// <param name="heightMap">The terrain map that the scaled-down terrain values will be written to</param>
     /// <param name="x">The x-coordinate of the sub-chunk</param>
@@ -513,403 +896,5 @@ internal class OverworldChunkGenerator : ChunkSource
         }
 
         return heightMap;
-    }
-
-    public bool IsChunkLoaded(int x, int z)
-    {
-        return true;
-    }
-
-    /// <summary>
-    /// Generates the features of the chunk, such as ores, trees, lakes, etc. The features that are generated depend on the biome of the chunk and some _random factors.
-    /// </summary>
-    /// <param name="source">The chunk source that is generating the chunk</param>
-    /// <param name="chunkX">The x-coordinate of the chunk</param>
-    /// <param name="chunkZ">The z-coordinate of the chunk</param>
-    public void DecorateTerrain(ChunkSource source, int chunkX, int chunkZ)
-    {
-        BlockSand.fallInstantly = true;
-        int blockX = chunkX * 16;
-        int blockZ = chunkZ * 16;
-        Biome chunkBiome = _biomeSource.GetBiome(blockX + 16, blockZ + 16);
-        _random.SetSeed(_world.getSeed());
-        long xOffset = _random.NextLong() / 2L * 2L + 1L;
-        long zOffset = _random.NextLong() / 2L * 2L + 1L;
-        _random.SetSeed(chunkX * xOffset + chunkZ * zOffset ^ _world.getSeed());
-        double fraction;
-        int featureX;
-        int featureY;
-        int featureZ;
-
-        // Generate lakes
-        if (_random.NextInt(4) == 0)
-        {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureWaterLake.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate lava lakes
-        if (_random.NextInt(8) == 0)
-        {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(_random.NextInt(120) + 8);
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            if (featureY < 64 || _random.NextInt(10) == 0)
-            {
-                _featureLavaLake.Generate(_world, _random, featureX, featureY, featureZ);
-            }
-        }
-
-        // Generate Dungeons
-        for (int i = 0; i < 8; ++i)
-        {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureDungeon.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Clay patches
-        for (int i = 0; i < 10; ++i)
-        {
-            featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16);
-            _featureClay.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Dirt blobs
-        for (int i = 0; i < 20; ++i)
-        {
-            featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16);
-            _featureDirt.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Gravel blobs
-        for (int i = 0; i < 10; ++i)
-        {
-            featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16);
-            _featureGravel.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Coal Ore Veins
-        for (int i = 0; i < 20; ++i)
-        {
-            featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16);
-            _featureCoal.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Iron Ore Veins
-        for (int i = 0; i < 20; ++i)
-        {
-            featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(64);
-            featureZ = blockZ + _random.NextInt(16);
-            _featureIron.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Gold Ore Veins
-        for (int i = 0; i < 2; ++i)
-        {
-            featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(32);
-            featureZ = blockZ + _random.NextInt(16);
-            _featureGold.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Redstone Ore Veins
-        for (int i = 0; i < 8; ++i)
-        {
-            featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(16);
-            featureZ = blockZ + _random.NextInt(16);
-            _featureRedstone.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Diamond Ore Veins
-        for (int i = 0; i < 1; ++i)
-        {
-            featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(16);
-            featureZ = blockZ + _random.NextInt(16);
-            _featureDiamond.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Lapis Lazuli Ore Veins
-        for (int i = 0; i < 1; ++i)
-        {
-            featureX = blockX + _random.NextInt(16);
-            featureY = _random.NextInt(16);
-            featureZ = blockZ + _random.NextInt(16);
-            _featureLapis.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Determine the number and type of trees that should be generated
-        fraction = 0.5D;
-        int treeDensitySample = (int)((_forestNoise.generateNoise(blockX * fraction, blockZ * fraction) / 8.0D + _random.NextDouble() * 4.0D + 4.0D) / 3.0D);
-        int numberOfTrees = 0;
-        if (_random.NextInt(10) == 0)
-        {
-            ++numberOfTrees;
-        }
-
-        if (chunkBiome == Biome.Forest)
-        {
-            numberOfTrees += treeDensitySample + 5;
-        }
-
-        if (chunkBiome == Biome.Rainforest)
-        {
-            numberOfTrees += treeDensitySample + 5;
-        }
-
-        if (chunkBiome == Biome.SeasonalForest)
-        {
-            numberOfTrees += treeDensitySample + 2;
-        }
-
-        if (chunkBiome == Biome.Taiga)
-        {
-            numberOfTrees += treeDensitySample + 5;
-        }
-
-        if (chunkBiome == Biome.Desert)
-        {
-            numberOfTrees -= 20;
-        }
-
-        if (chunkBiome == Biome.Tundra)
-        {
-            numberOfTrees -= 20;
-        }
-
-        if (chunkBiome == Biome.Plains)
-        {
-            numberOfTrees -= 20;
-        }
-
-        for (int i = 0; i < numberOfTrees; ++i)
-        {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            Feature treeFeature = chunkBiome.GetRandomWorldGenForTrees(_random);
-            treeFeature.prepare(1.0D, 1.0D, 1.0D);
-            treeFeature.Generate(_world, _random, featureX, _world.getTopY(featureX, featureZ), featureZ);
-        }
-
-        // Choose an appropriate amount of Dandelions
-        byte amountOfDandelions = 0;
-        if (chunkBiome == Biome.Forest)
-        {
-            amountOfDandelions = 2;
-        }
-
-        if (chunkBiome == Biome.SeasonalForest)
-        {
-            amountOfDandelions = 4;
-        }
-
-        if (chunkBiome == Biome.Taiga)
-        {
-            amountOfDandelions = 2;
-        }
-
-        if (chunkBiome == Biome.Plains)
-        {
-            amountOfDandelions = 3;
-        }
-
-
-        // Generate Dandelions
-        for (byte i = 0; i < amountOfDandelions; ++i)
-        {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureDandelion.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        byte amountOfTallgrass = 0;
-        if (chunkBiome == Biome.Forest)
-        {
-            amountOfTallgrass = 2;
-        }
-
-        if (chunkBiome == Biome.Rainforest)
-        {
-            amountOfTallgrass = 10;
-        }
-
-        if (chunkBiome == Biome.SeasonalForest)
-        {
-            amountOfTallgrass = 2;
-        }
-
-        if (chunkBiome == Biome.Taiga)
-        {
-            amountOfTallgrass = 1;
-        }
-
-        if (chunkBiome == Biome.Plains)
-        {
-            amountOfTallgrass = 10;
-        }
-
-        // Generate Tallgrass and Ferns
-        for (byte i = 0; i < amountOfTallgrass; ++i)
-        {
-            byte grassMeta = 1;
-            if (chunkBiome == Biome.Rainforest && _random.NextInt(3) != 0)
-            {
-                // Fern
-                grassMeta = 2;
-            }
-
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            (grassMeta == 1 ? _featureGrass1 : _featureGrass2).Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Deadbushes
-        byte amountOfDeadBushes = 0;
-        if (chunkBiome == Biome.Desert)
-        {
-            amountOfDeadBushes = 2;
-        }
-
-        for (byte i = 0; i < amountOfDeadBushes; ++i)
-        {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureDeadBush.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Roses
-        if (_random.NextInt(2) == 0)
-        {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureRose.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Brown Mushrooms
-        if (_random.NextInt(4) == 0)
-        {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureBrownMushroom.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Red Mushrooms
-        if (_random.NextInt(8) == 0)
-        {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureRedMushroom.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Sugarcane
-        for (int i = 0; i < 10; ++i)
-        {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureSugarcane.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Pumpkin Patches
-        if (_random.NextInt(32) == 0)
-        {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            _featurePumpkin.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate Cacti
-        byte amountOfCacti = 0;
-        if (chunkBiome == Biome.Desert)
-        {
-            amountOfCacti += 10;
-        }
-
-        for (int i = 0; i < amountOfCacti; ++i)
-        {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(128);
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureCactus.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate one-block water sources
-        for (int i = 0; i < 50; ++i)
-        {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(_random.NextInt(120) + 8);
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureWaterSpring.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Generate one-block lava sources
-        for (int x = 0; x < 20; ++x)
-        {
-            featureX = blockX + _random.NextInt(16) + 8;
-            featureY = _random.NextInt(_random.NextInt(_random.NextInt(112) + 8) + 8);
-            featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureLavaSpring.Generate(_world, _random, featureX, featureY, featureZ);
-        }
-
-        // Place Snow in cold regions
-        _temperatures = _biomeSource.GetTemperatures(_temperatures, blockX + 8, blockZ + 8, 16, 16);
-
-        for (int x = blockX + 8; x < blockX + 8 + 16; ++x)
-        {
-            for (int z = blockZ + 8; z < blockZ + 8 + 16; ++z)
-            {
-                int offsetX = x - (blockX + 8);
-                int offsetZ = z - (blockZ + 8);
-                int var22 = _world.getTopSolidBlockY(x, z);
-                double temperatureSample = _temperatures[offsetX * 16 + offsetZ] - (var22 - 64) / 64.0D * 0.3D;
-                if (temperatureSample < 0.5D && var22 > 0 && var22 < 128 && _world.isAir(x, var22, z) && _world.getMaterial(x, var22 - 1, z).BlocksMovement && _world.getMaterial(x, var22 - 1, z) != Material.Ice)
-                {
-                    _world.setBlock(x, var22, z, Block.Snow.id);
-                }
-            }
-        }
-
-        BlockSand.fallInstantly = false;
-    }
-
-    public bool Save(bool saveEntities, LoadingDisplay display)
-    {
-        return true;
-    }
-
-    public bool Tick()
-    {
-        return false;
-    }
-
-    public bool CanSave()
-    {
-        return true;
-    }
-
-    public string GetDebugInfo()
-    {
-        return "RandomLevelSource";
     }
 }

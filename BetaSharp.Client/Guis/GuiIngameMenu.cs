@@ -75,7 +75,7 @@ public class GuiIngameMenu : GuiScreen
     {
         DrawDefaultBackground();
 
-        bool isSavingActive = !Game.world.attemptSaving(_saveStepTimer++);
+        bool isSavingActive = !Game.world.AttemptSaving(_saveStepTimer++);
 
         if (isSavingActive || _menuTickCounter < 20)
         {

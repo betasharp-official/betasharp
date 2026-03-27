@@ -6,7 +6,7 @@ using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Server.Internal;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
 using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
 
@@ -131,9 +131,9 @@ public class ServerLoginNetworkHandler : NetHandler
             ent.setWorld(server.getWorld(ent.dimensionId));
             _logger.LogInformation($"{getConnectionInfo()} logged in with entity id {ent.id} at ({ent.x}, {ent.y}, {ent.z})");
             ServerWorld var3 = server.getWorld(ent.dimensionId);
-            Vec3i var4 = var3.getSpawnPos();
+            Vec3i var4 = var3.Properties.GetSpawnPos();
             ServerPlayNetworkHandler handler = new ServerPlayNetworkHandler(server, connection, ent);
-            handler.sendPacket(new LoginHelloPacket("", ent.id, var3.getSeed(), (sbyte)var3.dimension.Id));
+            handler.sendPacket(new LoginHelloPacket("", ent.id, var3.Seed, (sbyte)var3.Dimension.Id));
             handler.sendPacket(PlayerSpawnPositionS2CPacket.Get(var4.X, var4.Y, var4.Z));
             server.playerManager.sendWorldInfo(ent, var3);
             server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(ent.id, PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Join, ent.name));
@@ -141,7 +141,7 @@ public class ServerLoginNetworkHandler : NetHandler
             server.playerManager.addPlayer(ent);
             handler.teleport(ent.x, ent.y, ent.z, ent.yaw, ent.pitch);
             server.connections.AddConnection(handler);
-            handler.sendPacket(WorldTimeUpdateS2CPacket.Get(var3.getTime()));
+            handler.sendPacket(WorldTimeUpdateS2CPacket.Get(var3.GetTime()));
             ent.initScreenHandler();
         }
 

@@ -4,6 +4,7 @@ using BetaSharp.Launcher.Features;
 using BetaSharp.Launcher.Features.Alert;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Home;
+using BetaSharp.Launcher.Features.Home.GitHub;
 using BetaSharp.Launcher.Features.Hosting;
 using BetaSharp.Launcher.Features.Mojang;
 using BetaSharp.Launcher.Features.Properties;
@@ -76,5 +77,6 @@ internal static partial class Bootstrapper
     [Singleton(typeof(ViewLocator))]
     [Transient(typeof(MojangClient))]
     [Transient(typeof(XboxClient))]
+    [Transient(typeof(GitHubClient))]
     private static partial void ConfigureServices(IServiceCollection services);
 }

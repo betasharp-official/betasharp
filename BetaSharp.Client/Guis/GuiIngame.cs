@@ -11,7 +11,7 @@ using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Colors;
+using BetaSharp.Worlds.ClientData.Colors;
 
 namespace BetaSharp.Client.Guis;
 
@@ -409,7 +409,7 @@ public class GuiIngame : Gui
 
         if (hit.Type == HitResultType.TILE)
         {
-            blockId = g.world.getBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
+            blockId = g.world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
             block = Block.Blocks[blockId];
 
             if (block is BlockTallGrass)
@@ -692,9 +692,4 @@ public class GuiIngame : Gui
         if (_chatScrollPos < 0) _chatScrollPos = 0;
         if (_chatScrollPos > maxScroll) _chatScrollPos = maxScroll;
     }
-
-
-
-
-
 }

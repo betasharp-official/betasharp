@@ -7,7 +7,7 @@ public class RepeaterRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.World.getBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
         int direction = metadata & 3;
         int delay = (metadata & 12) >> 2;
         // 1. Base Rendering
@@ -16,7 +16,7 @@ public class RepeaterRenderer : IBlockRenderer
         slabCtx.DrawBlock(block, pos);
 
         // 2. Prepare Torch Rendering
-        float luminance = block.getLuminance(ctx.World, pos.x, pos.y, pos.z);
+        float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
         if (Block.BlocksLightLuminance[block.id] > 0)
         {
             luminance = (luminance + 1.0F) * 0.5F;

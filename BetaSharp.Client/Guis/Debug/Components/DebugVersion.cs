@@ -11,7 +11,7 @@ public class DebugVersion : DebugComponent
 
     public override void Draw(DebugContext ctx)
     {
-        ctx.String("BetaSharp 1.7.3");
+        ctx.String("BetaSharp " + BetaSharp.Version);
     }
 
     public override DebugComponent Duplicate()

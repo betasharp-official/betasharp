@@ -2,7 +2,8 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
@@ -17,83 +18,43 @@ internal class ItemDoor : Item
         maxCount = 1;
     }
 
-    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
+    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int side)
     {
-        if (meta != 1)
+        if (side != 1) return false;
+        y++;
+
+        int blockId = doorMaterial == Material.Wood ? Block.Door.id : Block.IronDoor.id;
+        if (!Block.Blocks[blockId].canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z))) return false;
+
+        int facing = MathHelper.Floor((entityPlayer.yaw + 180.0f) * 4.0f / 360.0f - 0.5f) & 3;
+        int offsetX = 0;
+        int offsetZ = 0;
+        if (facing == 0) offsetZ = 1;
+        if (facing == 1) offsetX = -1;
+        if (facing == 2) offsetZ = -1;
+        if (facing == 3) offsetX = 1;
+
+        int leftSolid = (world.Reader.ShouldSuffocate(x - offsetX, y, z - offsetZ) ? 1 : 0) +
+                        (world.Reader.ShouldSuffocate(x - offsetX, y + 1, z - offsetZ) ? 1 : 0);
+        int rightSolid = (world.Reader.ShouldSuffocate(x + offsetX, y, z + offsetZ) ? 1 : 0) +
+                         (world.Reader.ShouldSuffocate(x + offsetX, y + 1, z + offsetZ) ? 1 : 0);
+        bool leftHasDoor = world.Reader.GetBlockId(x - offsetX, y, z - offsetZ) == blockId ||
+                           world.Reader.GetBlockId(x - offsetX, y + 1, z - offsetZ) == blockId;
+        bool rightHasDoor = world.Reader.GetBlockId(x + offsetX, y, z + offsetZ) == blockId ||
+                            world.Reader.GetBlockId(x + offsetX, y + 1, z + offsetZ) == blockId;
+        bool mirror = (leftHasDoor && !rightHasDoor) || (rightSolid > leftSolid);
+
+        if (mirror)
         {
-            return false;
+            facing = (facing - 1) & 3;
+            facing += 4;
         }
-        else
-        {
-            ++y;
-            Block block;
-            if (doorMaterial == Material.Wood)
-            {
-                block = Block.Door;
-            }
-            else
-            {
-                block = Block.IronDoor;
-            }
 
-            if (!block.canPlaceAt(world, x, y, z))
-            {
-                return false;
-            }
-            else
-            {
-                int direction = MathHelper.Floor((double)((entityPlayer.yaw + 180.0F) * 4.0F / 360.0F) - 0.5D) & 3;
-                sbyte offsetX = 0;
-                sbyte offsetZ = 0;
-                if (direction == 0)
-                {
-                    offsetZ = 1;
-                }
-
-                if (direction == 1)
-                {
-                    offsetX = -1;
-                }
-
-                if (direction == 2)
-                {
-                    offsetZ = -1;
-                }
-
-                if (direction == 3)
-                {
-                    offsetX = 1;
-                }
-
-                int solidBlocksLeft = (world.shouldSuffocate(x - offsetX, y, z - offsetZ) ? 1 : 0) + (world.shouldSuffocate(x - offsetX, y + 1, z - offsetZ) ? 1 : 0);
-                int solidBlocksRight = (world.shouldSuffocate(x + offsetX, y, z + offsetZ) ? 1 : 0) + (world.shouldSuffocate(x + offsetX, y + 1, z + offsetZ) ? 1 : 0);
-                bool hasDoorOnLeft = world.getBlockId(x - offsetX, y, z - offsetZ) == block.id || world.getBlockId(x - offsetX, y + 1, z - offsetZ) == block.id;
-                bool hasDoorOnRight = world.getBlockId(x + offsetX, y, z + offsetZ) == block.id || world.getBlockId(x + offsetX, y + 1, z + offsetZ) == block.id;
-                bool shouldMirror = false;
-                if (hasDoorOnLeft && !hasDoorOnRight)
-                {
-                    shouldMirror = true;
-                }
-                else if (solidBlocksRight > solidBlocksLeft)
-                {
-                    shouldMirror = true;
-                }
-
-                if (shouldMirror)
-                {
-                    direction = direction - 1 & 3;
-                    direction += 4;
-                }
-
-                world.pauseTicking = true;
-                world.setBlock(x, y, z, block.id, direction);
-                world.setBlock(x, y + 1, z, block.id, direction + 8);
-                world.pauseTicking = false;
-                world.notifyNeighbors(x, y, z, block.id);
-                world.notifyNeighbors(x, y + 1, z, block.id);
-                --itemStack.count;
-                return true;
-            }
-        }
+        world.Writer.SetBlock(x, y, z, blockId, facing);
+        world.Writer.SetBlock(x, y + 1, z, blockId, facing + 8);
+        world.Broadcaster.NotifyNeighbors(x, y, z, blockId);
+        world.Broadcaster.NotifyNeighbors(x, y + 1, z, blockId);
+        itemStack.count--;
+        return true;
     }
 }

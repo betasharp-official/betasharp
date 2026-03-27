@@ -1,5 +1,6 @@
 using BetaSharp.Client.Input;
 using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
 
 namespace BetaSharp.Client.Guis;
@@ -134,7 +135,21 @@ public class GuiSelectWorld : GuiScreen
             Game.statFileWriter.ReadStat(Stats.Stats.LoadWorldStat, 1);
             Game.playerController = new PlayerControllerSP(Game);
             string worldFileName = getSaveFileName(worldIndex) ?? $"World{worldIndex}";
-            Game.startWorld(worldFileName, getSaveName(worldIndex), new WorldSettings(0L, WorldType.Default));
+
+            IWorldStorageSource worldStorage = Game.getSaveLoader();
+            WorldProperties? props = worldStorage.GetProperties(worldFileName);
+
+            WorldSettings settings;
+            if (props != null)
+            {
+                settings = new WorldSettings(props.RandomSeed, props.TerrainType, props.GeneratorOptions);
+            }
+            else
+            {
+                settings = new WorldSettings(0L, WorldType.Default);
+            }
+
+            Game.startWorld(worldFileName, getSaveName(worldIndex), settings);
         }
     }
 
@@ -175,6 +190,5 @@ public class GuiSelectWorld : GuiScreen
     public static GuiButton getDeleteButton(GuiSelectWorld screen) => screen.buttonDelete;
     public static string getWorldNameHeader(GuiSelectWorld screen) => screen.worldNameHeader;
     public static string getUnsupportedFormatMessage(GuiSelectWorld screen) => screen.unsupportedFormatMessage;
-
     public static string getDateFormatter(GuiSelectWorld screen) => screen.dateFormatter;
 }

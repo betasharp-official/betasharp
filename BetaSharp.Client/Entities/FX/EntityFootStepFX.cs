@@ -2,7 +2,7 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Client.Entities.FX;
 
@@ -36,7 +36,7 @@ public class EntityFootStepFX : EntityFX
         float renderX = (float)(x - interpPosX);
         float renderY = (float)(y - interpPosY);
         float renderZ = (float)(z - interpPosZ);
-        float brightness = world.getLuminance(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z));
+        float brightness = world.Lighting.GetLuminance(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z));
         textureManager.BindTexture(textureManager.GetTextureId("/misc/footprint.png"));
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);

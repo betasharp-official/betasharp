@@ -7,7 +7,7 @@ using BetaSharp.Server.Network;
 using BetaSharp.Server.Worlds;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Dimensions;
 
 namespace BetaSharp.Server;
@@ -39,16 +39,25 @@ public class PlayerManager
 
     public void saveAllPlayers(ServerWorld[] world)
     {
-        _saveHandler = world[0].getWorldStorage().GetPlayerStorage();
+        _saveHandler = world[0].GetWorldStorage().GetPlayerStorage();
+        if (world.Length > 0 && world[0] != null)
+        {
+            world[0].ChunkMap = _chunkMaps[0];
+        }
+        if (world.Length > 1 && world[1] != null)
+        {
+            world[1].ChunkMap = _chunkMaps[1];
+        }
     }
 
     public void updatePlayerAfterDimensionChange(ServerPlayerEntity player)
     {
-        // Removal from the source chunk map is handled by sendPlayerToDimension before coordinate scaling.
+        player.ResetChunkStreamingState();
         player.activeChunks.Clear();
+        player.ChunksTerrainSentToClient.Clear();
         GetChunkMap(player.dimensionId).addPlayer(player);
         ServerWorld var2 = _server.getWorld(player.dimensionId);
-        var2.chunkCache.LoadChunk((int)player.x >> 4, (int)player.z >> 4);
+        var2.ChunkCache.LoadChunk((int)player.x >> 4, (int)player.z >> 4);
     }
 
     public int getBlockViewDistance()
@@ -74,15 +83,16 @@ public class PlayerManager
     public void addPlayer(ServerPlayerEntity player)
     {
         players.Add(player);
+        player.ResetChunkStreamingState();
         ServerWorld var2 = _server.getWorld(player.dimensionId);
-        var2.chunkCache.LoadChunk((int)player.x >> 4, (int)player.z >> 4);
+        var2.ChunkCache.LoadChunk((int)player.x >> 4, (int)player.z >> 4);
 
-        while (var2.GetEntityCollisions(player, player.boundingBox).Count != 0)
+        while (var2.Entities.GetEntityCollisions(player, player.boundingBox).Count != 0)
         {
             player.setPosition(player.x, player.y + 1.0, player.z);
         }
 
-        var2.SpawnEntity(player);
+        var2.Entities.SpawnEntity(player);
         GetChunkMap(player.dimensionId).addPlayer(player);
     }
 
@@ -94,7 +104,7 @@ public class PlayerManager
     public void disconnect(ServerPlayerEntity player)
     {
         _saveHandler.SavePlayerData(player);
-        _server.getWorld(player.dimensionId).Remove(player);
+        _server.getWorld(player.dimensionId).Entities.Remove(player);
         players.Remove(player);
         GetChunkMap(player.dimensionId).removePlayer(player);
     }
@@ -149,7 +159,7 @@ public class PlayerManager
         _server.getEntityTracker(player.dimensionId).onEntityRemoved(player);
         GetChunkMap(player.dimensionId).removePlayer(player);
         players.Remove(player);
-        _server.getWorld(player.dimensionId).serverRemove(player);
+        _server.getWorld(player.dimensionId).Entities.ServerRemove(player);
         Vec3i? var3 = player.getSpawnPos();
         player.dimensionId = dimensionId;
         ServerPlayerEntity serverPlayer = new(
@@ -175,9 +185,9 @@ public class PlayerManager
             }
         }
 
-        var5.chunkCache.LoadChunk((int)serverPlayer.x >> 4, (int)serverPlayer.z >> 4);
+        var5.ChunkCache.LoadChunk((int)serverPlayer.x >> 4, (int)serverPlayer.z >> 4);
 
-        while (var5.GetEntityCollisions(serverPlayer, serverPlayer.boundingBox).Count != 0)
+        while (var5.Entities.GetEntityCollisions(serverPlayer, serverPlayer.boundingBox).Count != 0)
         {
             serverPlayer.setPosition(serverPlayer.x, serverPlayer.y + 1.0, serverPlayer.z);
         }
@@ -224,7 +234,7 @@ public class PlayerManager
 
         player.dimensionId = targetDim;
         player.networkHandler.sendPacket(PlayerRespawnPacket.Get((sbyte)player.dimensionId));
-        currentWorld.serverRemove(player);
+        currentWorld.Entities.ServerRemove(player);
         player.dead = false;
         double x = player.x;
         double z = player.z;
@@ -237,7 +247,7 @@ public class PlayerManager
             player.setPositionAndAnglesKeepPrevAngles(x, player.y, z, player.yaw, player.pitch);
             if (player.isAlive())
             {
-                currentWorld.updateEntity(player, false);
+                currentWorld.Entities.UpdateEntity(player, false);
             }
         }
         else
@@ -247,22 +257,22 @@ public class PlayerManager
             player.setPositionAndAnglesKeepPrevAngles(x, player.y, z, player.yaw, player.pitch);
             if (player.isAlive())
             {
-                currentWorld.updateEntity(player, false);
+                currentWorld.Entities.UpdateEntity(player, false);
             }
         }
 
         if (player.isAlive())
         {
-            targetWorld.SpawnEntity(player);
+            targetWorld.Entities.SpawnEntity(player);
             player.setPositionAndAnglesKeepPrevAngles(x, player.y, z, player.yaw, player.pitch);
-            targetWorld.updateEntity(player, false);
-            targetWorld.chunkCache.forceLoad = true;
+            targetWorld.Entities.UpdateEntity(player, false);
+            targetWorld.ChunkCache.forceLoad = true;
             new PortalForcer().MoveToPortal(targetWorld, player);
-            targetWorld.chunkCache.forceLoad = false;
+            targetWorld.ChunkCache.forceLoad = false;
 
             // Fully drain lighting updates generated during portal chunk
             // creation before the chunks are queued for the client.
-            while (targetWorld.doLightingUpdates()) { }
+            while (targetWorld.Lighting.DoLightingUpdates()) { }
         }
 
         updatePlayerAfterDimensionChange(player);
@@ -285,6 +295,14 @@ public class PlayerManager
         for (int var1 = 0; var1 < _chunkMaps.Length; var1++)
         {
             _chunkMaps[var1].updateChunks();
+        }
+    }
+
+    public void flushPendingChunkUpdates()
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            players[i].FlushPendingChunkUpdates();
         }
     }
 
@@ -428,7 +446,7 @@ public class PlayerManager
         sendToAround(null, x, y, z, range, dimensionId, packet);
     }
 
-    public void sendToAround(EntityPlayer player, double x, double y, double z, double range, int dimensionId, Packet packet)
+    public void sendToAround(EntityPlayer? player, double x, double y, double z, double range, int dimensionId, Packet packet)
     {
         for (int var12 = 0; var12 < players.Count; var12++)
         {
@@ -517,8 +535,8 @@ public class PlayerManager
 
     public void sendWorldInfo(ServerPlayerEntity player, ServerWorld world)
     {
-        player.networkHandler.sendPacket(WorldTimeUpdateS2CPacket.Get(world.getTime()));
-        if (world.isRaining())
+        player.networkHandler.sendPacket(WorldTimeUpdateS2CPacket.Get(world.GetTime()));
+        if (world.Properties.IsRaining)
         {
             player.networkHandler.sendPacket(GameStateChangeS2CPacket.Get(1));
         }

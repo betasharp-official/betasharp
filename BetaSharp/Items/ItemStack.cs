@@ -1,7 +1,8 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.NBT;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
@@ -72,7 +73,7 @@ public class ItemStack
         return getItem().getTextureId(this);
     }
 
-    public bool useOnBlock(EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
+    public bool useOnBlock(EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
         bool item = getItem().useOnBlock(this, entityPlayer, world, x, y, z, meta);
         if (item)
@@ -88,7 +89,7 @@ public class ItemStack
         return getItem().getMiningSpeedMultiplier(this, block);
     }
 
-    public ItemStack use(World world, EntityPlayer entityPlayer)
+    public ItemStack use(IWorldContext world, EntityPlayer entityPlayer)
     {
         return getItem().use(this, world, entityPlayer);
     }
@@ -251,7 +252,7 @@ public class ItemStack
         return count + "x" + Item.ITEMS[itemId].getItemName() + "@" + damage;
     }
 
-    public void inventoryTick(World world, Entity entity, int slotIndex, bool shouldUpdate)
+    public void inventoryTick(IWorldContext world, Entity entity, int slotIndex, bool shouldUpdate)
     {
         if (bobbingAnimationTime > 0)
         {
@@ -261,7 +262,7 @@ public class ItemStack
         Item.ITEMS[itemId].inventoryTick(this, world, entity, slotIndex, shouldUpdate);
     }
 
-    public void onCraft(World world, EntityPlayer entityPlayer)
+    public void onCraft(IWorldContext world, EntityPlayer entityPlayer)
     {
         entityPlayer.increaseStat(Stats.Stats.Crafted[itemId], count);
         Item.ITEMS[itemId].onCraft(this, world, entityPlayer);

@@ -21,8 +21,8 @@ public class DebugTargetedBlock : DebugComponent
         int blockX = g.objectMouseOver.BlockX;
         int blockY = g.objectMouseOver.BlockY;
         int blockZ = g.objectMouseOver.BlockZ;
-        int blockId = g.world.getBlockId(blockX, blockY, blockZ);
-        int blockMeta = g.world.getBlockMeta(blockX, blockY, blockZ);
+        int blockId = g.world.Reader.GetBlockId(blockX, blockY, blockZ);
+        int blockMeta = g.world.Reader.GetBlockMeta(blockX, blockY, blockZ);
         string sideName = GetTargetedSideName(g.objectMouseOver.Side);
 
         string blockName = "Unknown";

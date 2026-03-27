@@ -1,4 +1,5 @@
 using BetaSharp.Blocks.Entities;
+using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
@@ -13,7 +14,7 @@ using BetaSharp.Server.Commands;
 using BetaSharp.Server.Internal;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Network;
@@ -49,6 +50,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     {
         moved = false;
         connection.tick();
+        player.PlayerTick(false);
+
         if (ticks++ - lastKeepAliveTime > 20)
         {
             sendPacket(KeepAlivePacket.Get());
@@ -75,7 +78,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public override void onPlayerMove(PlayerMovePacket packet)
     {
-        ServerWorld var2 = server.getWorld(player.dimensionId);
+        ServerWorld sWorld = server.getWorld(player.dimensionId);
         moved = true;
         if (!teleported)
         {
@@ -111,14 +114,13 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 }
 
                 player.onGround = packet.onGround;
-                player.playerTick(true);
                 player.move(var31, 0.0, var34);
                 player.setPositionAndAngles(var28, var29, var30, var27, var4);
                 player.velocityX = var31;
                 player.velocityZ = var34;
                 if (player.vehicle != null)
                 {
-                    var2.tickVehicle(player.vehicle, true);
+                    sWorld.Entities.TickVehicleBypassingFilter(player.vehicle, true);
                 }
 
                 if (player.vehicle != null)
@@ -130,15 +132,14 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 teleportTargetX = player.x;
                 teleportTargetY = player.y;
                 teleportTargetZ = player.z;
-                var2.updateEntity(player);
+                sWorld.Entities.UpdateEntity(player, true);
                 return;
             }
 
             if (player.isSleeping())
             {
-                player.playerTick(true);
                 player.setPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, player.yaw, player.pitch);
-                var2.updateEntity(player);
+                sWorld.Entities.UpdateEntity(player, true);
                 return;
             }
 
@@ -182,7 +183,6 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 var12 = packet.pitch;
             }
 
-            player.playerTick(true);
             player.cameraOffset = 0.0F;
             player.setPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
             if (!teleported)
@@ -202,7 +202,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             }
 
             float var21 = (1 / 16f);
-            bool var22 = var2.GetEntityCollisions(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
+            bool var22 = sWorld.Entities.GetEntityCollisionsScratch(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
             player.move(var32, var15, var17);
             var32 = var5 - player.x;
             var15 = var7 - player.y;
@@ -223,7 +223,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             }
 
             player.setPositionAndAngles(var5, var7, var9, var11, var12);
-            bool var24 = var2.GetEntityCollisions(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
+            bool var24 = sWorld.Entities.GetEntityCollisionsScratch(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
             if (var22 && (var23 || !var24) && !player.isSleeping())
             {
                 teleport(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
@@ -231,7 +231,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             }
 
             Box var25 = player.boundingBox.Expand(var21, var21, var21).Stretch(0.0, -0.55, 0.0);
-            if (server.flightEnabled || var2.isAnyBlockInBox(var25))
+            if (server.flightEnabled || sWorld.Reader.IsMaterialInBox(var25, m => m != Material.Air))
             {
                 floatingTime = 0;
             }
@@ -308,7 +308,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             else if (packet.action == 2)
             {
                 player.interactionManager.continueMining(x, y, z);
-                if (world.getBlockId(x, y, z) != 0)
+                if (world.Reader.GetBlockId(x, y, z) != 0)
                 {
                     player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
                 }
@@ -319,7 +319,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     private bool CanBypassSpawnProtection(int x, int z, ServerWorld world)
     {
         const int spawnProtection = 16;
-        Vec3i spawnPos = world.getSpawnPos();
+        Vec3i spawnPos = world.Properties.GetSpawnPos();
         bool notBlockedFromSpawnProtection = Math.Abs(x - spawnPos.X) > spawnProtection || Math.Abs(z - spawnPos.Z) > spawnProtection;
         notBlockedFromSpawnProtection = notBlockedFromSpawnProtection || world.BypassSpawnProtection || server is InternalServer || server.playerManager.isOperator(player.name);
         return notBlockedFromSpawnProtection;
@@ -524,7 +524,12 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public int getBlockDataSendQueueSize()
     {
-        return connection.getDelayedSendQueueSize();
+        return getWorldPacketBacklog();
+    }
+
+    public int getWorldPacketBacklog()
+    {
+        return connection.getWorldPacketBacklog();
     }
 
     public void SendMessage(string message)
@@ -612,9 +617,9 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     public override void handleUpdateSign(UpdateSignPacket packet)
     {
         ServerWorld var2 = server.getWorld(player.dimensionId);
-        if (var2.isPosLoaded(packet.x, packet.y, packet.z))
+        if (var2.Reader.IsPosLoaded(packet.x, packet.y, packet.z))
         {
-            BlockEntity var3 = var2.getBlockEntity(packet.x, packet.y, packet.z);
+            BlockEntity var3 = var2.Entities.GetBlockEntity<BlockEntitySign>(packet.x, packet.y, packet.z);
             if (var3 is BlockEntitySign var4)
             {
                 if (!var4.IsEditable())
@@ -661,7 +666,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
                 var7.SetEditable(false);
                 var7.markDirty();
-                var2.blockUpdateEvent(var10, var11, var12);
+                var2.Broadcaster.BlockUpdateEvent(var10, var11, var12);
             }
         }
     }

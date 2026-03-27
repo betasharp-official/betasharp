@@ -2,6 +2,7 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Rules;
 using BetaSharp.Worlds.Biomes;
+using BetaSharp.Worlds.Generation.Biomes;
 
 namespace BetaSharp.Registries;
 

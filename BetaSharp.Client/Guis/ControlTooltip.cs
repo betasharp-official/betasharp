@@ -78,7 +78,7 @@ public static class ControlTooltip
             int blockX = hit.BlockX;
             int blockY = hit.BlockY;
             int blockZ = hit.BlockZ;
-            int blockId = game.world.getBlockId(blockX, blockY, blockZ);
+            int blockId = game.world.Reader.GetBlockId(blockX, blockY, blockZ);
 
             if (blockId == Block.Chest.id || blockId == Block.Furnace.id || blockId == Block.LitFurnace.id || blockId == Block.CraftingTable.id || blockId == Block.Dispenser.id)
                 useAction = "Interact";

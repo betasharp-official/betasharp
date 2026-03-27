@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Biomes;
+using BetaSharp.Worlds.Generation.Biomes;
 
 namespace BetaSharp.Client.Guis.Debug.Components;
 
@@ -31,8 +31,8 @@ public class DebugLocation : DebugComponent
         double yaw = Math.Floor(WrapYaw(ctx.Game.player.yaw) * 10) / 10;
         double pitch = Math.Floor(ctx.Game.player.pitch * 10) / 10;
 
-        Biome biome = ctx.Game.world.getBiomeSource().GetBiome(bx, bz);
-        int light = ctx.Game.world.getLightLevel(bx, by, bz);
+        Biome biome = ctx.Game.world.Dimension.BiomeSource.GetBiome(bx, bz);
+        int light = ctx.Game.world.Lighting.GetLightLevel(bx, by, bz);
 
         ctx.String("XYZ: " + x + " / " + y + " / " + z);
         ctx.String("Block: " + bx + " " + by + " " + bz);

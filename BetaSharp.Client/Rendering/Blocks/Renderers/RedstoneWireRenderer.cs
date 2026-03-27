@@ -7,13 +7,13 @@ public class RedstoneWireRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int powerLevel = ctx.World.getBlockMeta(pos.x, pos.y, pos.z);
+        int powerLevel = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
 
         int textureId = block.getTexture(1, powerLevel);
         if (ctx.OverrideTexture >= 0) textureId = ctx.OverrideTexture;
 
         // --- 1. Calculate the Glow Color ---
-        float luminance = block.getLuminance(ctx.World, pos.x, pos.y, pos.z);
+        float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
         float powerPercent = powerLevel / 15.0F;
 
         // Red component increases with power
@@ -37,32 +37,32 @@ public class RedstoneWireRenderer : IBlockRenderer
         float maxV = (texV + 15.99F) / 256.0F;
 
         // --- 3. Connection Logic ---
-        bool connectsWest = BlockRedstoneWire.isPowerProviderOrWire(ctx.World, pos.x - 1, pos.y, pos.z, 1) ||
-                            (!ctx.World.shouldSuffocate(pos.x - 1, pos.y, pos.z) &&
-                             BlockRedstoneWire.isPowerProviderOrWire(ctx.World, pos.x - 1, pos.y - 1, pos.z, -1));
-        bool connectsEast = BlockRedstoneWire.isPowerProviderOrWire(ctx.World, pos.x + 1, pos.y, pos.z, 3) ||
-                            (!ctx.World.shouldSuffocate(pos.x + 1, pos.y, pos.z) &&
-                             BlockRedstoneWire.isPowerProviderOrWire(ctx.World, pos.x + 1, pos.y - 1, pos.z, -1));
-        bool connectsNorth = BlockRedstoneWire.isPowerProviderOrWire(ctx.World, pos.x, pos.y, pos.z - 1, 2) ||
-                             (!ctx.World.shouldSuffocate(pos.x, pos.y, pos.z - 1) &&
-                              BlockRedstoneWire.isPowerProviderOrWire(ctx.World, pos.x, pos.y - 1, pos.z - 1, -1));
-        bool connectsSouth = BlockRedstoneWire.isPowerProviderOrWire(ctx.World, pos.x, pos.y, pos.z + 1, 0) ||
-                             (!ctx.World.shouldSuffocate(pos.x, pos.y, pos.z + 1) &&
-                              BlockRedstoneWire.isPowerProviderOrWire(ctx.World, pos.x, pos.y - 1, pos.z + 1, -1));
+        bool connectsWest = BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y, pos.z, 1) ||
+                            (!ctx.BlockReader.ShouldSuffocate(pos.x - 1, pos.y, pos.z) &&
+                             BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y - 1, pos.z, -1));
+        bool connectsEast = BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y, pos.z, 3) ||
+                            (!ctx.BlockReader.ShouldSuffocate(pos.x + 1, pos.y, pos.z) &&
+                             BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y - 1, pos.z, -1));
+        bool connectsNorth = BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y, pos.z - 1, 2) ||
+                             (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z - 1) &&
+                              BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y - 1, pos.z - 1, -1));
+        bool connectsSouth = BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y, pos.z + 1, 0) ||
+                             (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z + 1) &&
+                              BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y - 1, pos.z + 1, -1));
 
-        if (!ctx.World.shouldSuffocate(pos.x, pos.y + 1, pos.z))
+        if (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y + 1, pos.z))
         {
-            if (ctx.World.shouldSuffocate(pos.x - 1, pos.y, pos.z) &&
-                BlockRedstoneWire.isPowerProviderOrWire(ctx.World, pos.x - 1, pos.y + 1, pos.z, -1))
+            if (ctx.BlockReader.ShouldSuffocate(pos.x - 1, pos.y, pos.z) &&
+                BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y + 1, pos.z, -1))
                 connectsWest = true;
-            if (ctx.World.shouldSuffocate(pos.x + 1, pos.y, pos.z) &&
-                BlockRedstoneWire.isPowerProviderOrWire(ctx.World, pos.x + 1, pos.y + 1, pos.z, -1))
+            if (ctx.BlockReader.ShouldSuffocate(pos.x + 1, pos.y, pos.z) &&
+                BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y + 1, pos.z, -1))
                 connectsEast = true;
-            if (ctx.World.shouldSuffocate(pos.x, pos.y, pos.z - 1) &&
-                BlockRedstoneWire.isPowerProviderOrWire(ctx.World, pos.x, pos.y + 1, pos.z - 1, -1))
+            if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z - 1) &&
+                BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y + 1, pos.z - 1, -1))
                 connectsNorth = true;
-            if (ctx.World.shouldSuffocate(pos.x, pos.y, pos.z + 1) &&
-                BlockRedstoneWire.isPowerProviderOrWire(ctx.World, pos.x, pos.y + 1, pos.z + 1, -1))
+            if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z + 1) &&
+                BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y + 1, pos.z + 1, -1))
                 connectsSouth = true;
         }
 
@@ -144,7 +144,7 @@ public class RedstoneWireRenderer : IBlockRenderer
         ctx.Tess.addVertexWithUV(renderMinX, groundY, renderMaxZ, u4, v4 + shroudVOffset);
 
         // --- 6. Render Slopes ---
-        if (!ctx.World.shouldSuffocate(pos.x, pos.y + 1, pos.z))
+        if (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y + 1, pos.z))
         {
             // Reset to the straight texture variant for slopes
             minU = (texU + 16) / 256.0F;
@@ -152,8 +152,8 @@ public class RedstoneWireRenderer : IBlockRenderer
             float slopeHeight = pos.y + 1.021875F;
 
             // West Slope
-            if (ctx.World.shouldSuffocate(pos.x - 1, pos.y, pos.z) &&
-                ctx.World.getBlockId(pos.x - 1, pos.y + 1, pos.z) == block.id)
+            if (ctx.BlockReader.ShouldSuffocate(pos.x - 1, pos.y, pos.z) &&
+                ctx.BlockReader.GetBlockId(pos.x - 1, pos.y + 1, pos.z) == block.id)
             {
                 ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
                 ctx.Tess.addVertexWithUV(pos.x + 0.015625f, slopeHeight, pos.z + 1, maxU, minV);
@@ -169,8 +169,8 @@ public class RedstoneWireRenderer : IBlockRenderer
             }
 
             // East Slope
-            if (ctx.World.shouldSuffocate(pos.x + 1, pos.y, pos.z) &&
-                ctx.World.getBlockId(pos.x + 1, pos.y + 1, pos.z) == block.id)
+            if (ctx.BlockReader.ShouldSuffocate(pos.x + 1, pos.y, pos.z) &&
+                ctx.BlockReader.GetBlockId(pos.x + 1, pos.y + 1, pos.z) == block.id)
             {
                 ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
                 ctx.Tess.addVertexWithUV(pos.x + 1 - 0.015625f, pos.y, pos.z + 1, minU, maxV);
@@ -186,8 +186,8 @@ public class RedstoneWireRenderer : IBlockRenderer
             }
 
             // North Slope
-            if (ctx.World.shouldSuffocate(pos.x, pos.y, pos.z - 1) &&
-                ctx.World.getBlockId(pos.x, pos.y + 1, pos.z - 1) == block.id)
+            if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z - 1) &&
+                ctx.BlockReader.GetBlockId(pos.x, pos.y + 1, pos.z - 1) == block.id)
             {
                 ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
                 ctx.Tess.addVertexWithUV(pos.x + 1, pos.y, pos.z + 0.015625f, minU, maxV);
@@ -203,8 +203,8 @@ public class RedstoneWireRenderer : IBlockRenderer
             }
 
             // South Slope
-            if (ctx.World.shouldSuffocate(pos.x, pos.y, pos.z + 1) &&
-                ctx.World.getBlockId(pos.x, pos.y + 1, pos.z + 1) == block.id)
+            if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z + 1) &&
+                ctx.BlockReader.GetBlockId(pos.x, pos.y + 1, pos.z + 1) == block.id)
             {
                 ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
                 ctx.Tess.addVertexWithUV(pos.x + 1, slopeHeight, pos.z + 1 - 0.015625f, maxU, minV);

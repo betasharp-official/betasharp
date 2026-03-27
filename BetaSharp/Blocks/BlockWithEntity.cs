@@ -1,33 +1,25 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
 public abstract class BlockWithEntity : Block
 {
+    protected BlockWithEntity(int id, Material material) : base(id, material) => BlocksWithEntity[id] = true;
 
-    protected BlockWithEntity(int id, Material material) : base(id, material)
+    protected BlockWithEntity(int id, int textureId, Material material) : base(id, textureId, material) => BlocksWithEntity[id] = true;
+
+    public override void onPlaced(OnPlacedEvent ctx)
     {
-        BlocksWithEntity[id] = true;
+        base.onPlaced(ctx);
+        ctx.World.Entities.SetBlockEntity(ctx.X, ctx.Y, ctx.Z, getBlockEntity());
     }
 
-    protected BlockWithEntity(int id, int textureId, Material material) : base(id, textureId, material)
+    public override void onBreak(OnBreakEvent ctx)
     {
-        BlocksWithEntity[id] = true;
+        base.onBreak(ctx);
+        ctx.World.Entities.RemoveBlockEntity(ctx.X, ctx.Y, ctx.Z);
     }
 
-    public override void onPlaced(World world, int x, int y, int z)
-    {
-        base.onPlaced(world, x, y, z);
-        world.setBlockEntity(x, y, z, getBlockEntity());
-    }
-
-    public override void onBreak(World world, int x, int y, int z)
-    {
-        base.onBreak(world, x, y, z);
-        world.removeBlockEntity(x, y, z);
-    }
-
-    protected abstract BlockEntity getBlockEntity();
+    public abstract BlockEntity getBlockEntity();
 }

@@ -1,11 +1,11 @@
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
 public class EntityGiantZombie : EntityMonster
 {
     public override EntityType Type => EntityRegistry.Giant;
-    public EntityGiantZombie(World world) : base(world)
+    public EntityGiantZombie(IWorldContext world) : base(world)
     {
         texture = "/mob/zombie.png";
         movementSpeed = 0.5F;
@@ -17,6 +17,6 @@ public class EntityGiantZombie : EntityMonster
 
     protected override float getBlockPathWeight(int x, int y, int z)
     {
-        return world.getLuminance(x, y, z) - 0.5F;
+        return world.Lighting.GetLuminance(x, y, z) - 0.5F;
     }
 }

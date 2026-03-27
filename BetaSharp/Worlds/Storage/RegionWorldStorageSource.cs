@@ -1,14 +1,14 @@
 using BetaSharp.NBT;
 using BetaSharp.Worlds.Chunks.Storage;
+using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Worlds.Storage;
 
 public class RegionWorldStorageSource : IWorldStorageSource
 {
-    protected readonly DirectoryInfo BaseDir;
-
     private readonly ILogger<RegionWorldStorageSource> _logger = Log.Instance.For<RegionWorldStorageSource>();
+    protected readonly DirectoryInfo BaseDir;
 
     public RegionWorldStorageSource(string path)
     {
@@ -23,11 +23,14 @@ public class RegionWorldStorageSource : IWorldStorageSource
 
     public virtual List<WorldSaveInfo> GetAll()
     {
-        var saves = new List<WorldSaveInfo>();
+        List<WorldSaveInfo> saves = new();
 
-        if (!BaseDir.Exists) return saves;
+        if (!BaseDir.Exists)
+        {
+            return saves;
+        }
 
-        foreach (var subDir in BaseDir.GetDirectories())
+        foreach (DirectoryInfo subDir in BaseDir.GetDirectories())
         {
             string folderName = subDir.Name;
             WorldProperties? props = GetProperties(folderName);
@@ -49,43 +52,35 @@ public class RegionWorldStorageSource : IWorldStorageSource
         return saves;
     }
 
-    public virtual void Flush()
-    {
-        RegionIo.Flush();
-    }
+    public virtual void Flush() => RegionIo.Flush();
 
-    public virtual IWorldStorage Get(string worldName, bool createPlayerStorage)
-    {
-        return new RegionWorldStorage(BaseDir.FullName, worldName, createPlayerStorage);
-    }
-
-    private static long GetFolderSize(DirectoryInfo folder)
-    {
-        long size = 0;
-        foreach (var file in folder.GetFiles()) size += file.Length;
-        foreach (var subDir in folder.GetDirectories()) size += GetFolderSize(subDir);
-        return size;
-    }
+    public virtual IWorldStorage Get(string worldName, bool createPlayerStorage) => new RegionWorldStorage(BaseDir.FullName, worldName, createPlayerStorage);
 
     public virtual WorldProperties? GetProperties(string worldName)
     {
-        var worldDir = new DirectoryInfo(System.IO.Path.Combine(BaseDir.FullName, worldName));
-        if (!worldDir.Exists) return null;
+        DirectoryInfo worldDir = new(Path.Combine(BaseDir.FullName, worldName));
+        if (!worldDir.Exists)
+        {
+            return null;
+        }
 
         string[] searchFiles = { "level.dat", "level.dat_old" };
 
-        foreach (var fileName in searchFiles)
+        foreach (string fileName in searchFiles)
         {
-            var file = new FileInfo(System.IO.Path.Combine(worldDir.FullName, fileName));
-            if (!file.Exists) continue;
+            FileInfo file = new(Path.Combine(worldDir.FullName, fileName));
+            if (!file.Exists)
+            {
+                continue;
+            }
 
             try
             {
-                using var stream = file.OpenRead();
-                var root = NbtIo.ReadCompressed(stream);
-                var data = root.GetCompoundTag("Data");
+                using FileStream stream = file.OpenRead();
+                NBTTagCompound root = NbtIo.ReadCompressed(stream);
+                NBTTagCompound data = root.GetCompoundTag("Data");
 
-                var properties = new WorldProperties(data)
+                WorldProperties properties = new(data)
                 {
                     SizeOnDisk = GetFolderSize(worldDir)
                 };
@@ -102,13 +97,16 @@ public class RegionWorldStorageSource : IWorldStorageSource
 
     public void Rename(string worldFolder, string newName)
     {
-        var file = new FileInfo(System.IO.Path.Combine(BaseDir.FullName, worldFolder, "level.dat"));
-        if (!file.Exists) return;
+        FileInfo file = new(Path.Combine(BaseDir.FullName, worldFolder, "level.dat"));
+        if (!file.Exists)
+        {
+            return;
+        }
 
         try
         {
             NBTTagCompound root;
-            using (var readStream = file.OpenRead())
+            using (FileStream readStream = file.OpenRead())
             {
                 root = NbtIo.ReadCompressed(readStream);
             }
@@ -128,10 +126,26 @@ public class RegionWorldStorageSource : IWorldStorageSource
 
     public void Delete(string worldFolder)
     {
-        var dir = new DirectoryInfo(System.IO.Path.Combine(BaseDir.FullName, worldFolder));
+        DirectoryInfo dir = new(Path.Combine(BaseDir.FullName, worldFolder));
         if (dir.Exists)
         {
-            dir.Delete(recursive: true);
+            dir.Delete(true);
         }
+    }
+
+    private static long GetFolderSize(DirectoryInfo folder)
+    {
+        long size = 0;
+        foreach (FileInfo file in folder.GetFiles())
+        {
+            size += file.Length;
+        }
+
+        foreach (DirectoryInfo subDir in folder.GetDirectories())
+        {
+            size += GetFolderSize(subDir);
+        }
+
+        return size;
     }
 }

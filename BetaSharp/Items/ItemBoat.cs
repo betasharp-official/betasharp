@@ -2,7 +2,8 @@ using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
@@ -14,7 +15,7 @@ internal class ItemBoat : Item
         maxCount = 1;
     }
 
-    public override ItemStack use(ItemStack itemStack, World world, EntityPlayer entityPlayer)
+    public override ItemStack use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
     {
         float partialTick = 1.0F;
         float pitch = entityPlayer.prevPitch + (entityPlayer.pitch - entityPlayer.prevPitch) * partialTick;
@@ -31,7 +32,7 @@ internal class ItemBoat : Item
         float dirZ = cosYaw * cosPitch;
         double rayLength = 5.0D;
         Vec3D rayEnd = rayStart + new Vec3D((double)dirX * rayLength, (double)sinPitch * rayLength, (double)dirZ * rayLength);
-        HitResult hitResult = world.raycast(rayStart, rayEnd, true);
+        HitResult hitResult = world.Reader.Raycast(rayStart, rayEnd, true);
         if (hitResult.Type == HitResultType.MISS)
         {
             return itemStack;
@@ -43,9 +44,9 @@ internal class ItemBoat : Item
                 int hitX = hitResult.BlockX;
                 int hitY = hitResult.BlockY;
                 int hitZ = hitResult.BlockZ;
-                if (!world.isRemote)
+                if (!world.IsRemote)
                 {
-                    if (world.getBlockId(hitX, hitY, hitZ) == Block.Snow.id)
+                    if (world.Reader.GetBlockId(hitX, hitY, hitZ) == Block.Snow.id)
                     {
                         --hitY;
                     }

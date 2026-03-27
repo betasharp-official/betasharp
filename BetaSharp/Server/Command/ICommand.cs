@@ -45,7 +45,7 @@ public interface ICommand
         /// <summary>
         /// Log to all operators and console.
         /// </summary>
-        protected void LogOp(string message)
+        public void LogOp(string message)
         {
             string logMessage = SenderName + ": " + message;
             Server.playerManager.BroadcastOp("§7(" + logMessage + ")");

@@ -49,6 +49,7 @@ namespace BetaSharp.Blocks.Materials
         public int PistonBehavior { get; private set; }
 
         public bool Suffocates => _transparent ? false : BlocksMovement;
+
         public Material(MapColor mapColor)
         {
             MapColor = mapColor;
@@ -90,5 +91,4 @@ namespace BetaSharp.Blocks.Materials
             return this;
         }
     }
-
 }

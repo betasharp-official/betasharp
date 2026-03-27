@@ -2,7 +2,7 @@ using BetaSharp.Client.Network;
 using BetaSharp.Network;
 using BetaSharp.Server.Internal;
 using BetaSharp.Server.Threading;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Guis;

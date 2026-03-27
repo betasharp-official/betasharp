@@ -1,6 +1,4 @@
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Reflection;
 using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -10,7 +8,7 @@ using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.DynamicTexture;
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
-using BetaSharp.Client.Guis.Debug.Components;
+using BetaSharp.Client.Guis.Debug;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Options;
@@ -32,10 +30,11 @@ using BetaSharp.Stats;
 using BetaSharp.Util;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
+using BetaSharp.Worlds.ClientData.Colors;
 using BetaSharp.Worlds.Colors;
+using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
-using BetaSharp.Client.Guis.Debug;
 using ImGuiNET;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Input;
@@ -55,6 +54,9 @@ public partial class BetaSharp
     private bool hasCrashed;
     public int displayWidth;
     public int displayHeight;
+
+    private const string UnknownVersion = "unknown version";
+    public static string Version { get; private set; } = UnknownVersion;
 
     public Timer Timer { get; } = new(20.0F);
     public World world;
@@ -103,20 +105,13 @@ public partial class BetaSharp
     long prevFrameTime = -1L;
     public bool inGameHasFocus;
     public int MouseTicksRan { get; set; }
-    long systemTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-;
+    long systemTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     private int joinPlayerCounter;
     private ImGuiController imGuiController;
     public InternalServer? internalServer;
     private GLErrorHandler _glErrorHandler;
     private readonly DebugTelemetry _debugTelemetry = new();
 
-    private bool _wasLeftBumperDown;
-    private bool _wasRightBumperDown;
-    private bool _wasLeftTriggerDown;
-    private bool _wasRightTriggerDown;
-    private bool _wasStartButtonDown;
-    private bool _wasYButtonDown;
     private bool _wasDpadLeftDown;
     private bool _wasDpadRightDown;
     private bool _wasDpadUpDown;
@@ -169,8 +164,30 @@ public partial class BetaSharp
         _logger.LogError(crashInfo, "BetaSharp has crashed!");
     }
 
+    private void LoadVersion()
+    {
+        try
+        {
+            if (File.Exists("version.txt"))
+            {
+                Version = File.ReadAllText("version.txt").Trim().ToLower();
+            }
+            else
+            {
+                Version = "development build";
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("Failed to load version: {}", ex.Message);
+            Version = UnknownVersion;
+        }
+    }
+
     public unsafe void startGame()
     {
+        LoadVersion();
+
         Bootstrap.Initialize();
         DebugComponents.RegisterComponents();
 
@@ -202,7 +219,7 @@ public partial class BetaSharp
             Display.setLocation((maximumWidth - displayWidth) / 2, (maximumHeight - displayHeight) / 2);
         }
 
-        Display.setTitle("BetaSharp Beta 1.7.3");
+        Display.setTitle("BetaSharp " + Version);
 
         gameDataDir = getBetaSharpDir();
         saveLoader = new RegionWorldStorageSource(Path.Combine(gameDataDir, "saves"));
@@ -242,6 +259,7 @@ public partial class BetaSharp
         {
             _logger.LogError(ex, "Exception");
         }
+
         texturePackList = new TexturePacks(this, new DirectoryInfo(gameDataDir));
         textureManager = new TextureManager(this, texturePackList, options);
         fontRenderer = new TextRenderer(options, textureManager);
@@ -255,10 +273,7 @@ public partial class BetaSharp
         statFileWriter = new StatFileWriter(session, gameDataDir);
 
         StatStringFormatKeyInv format = new(this);
-        global::BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () =>
-        {
-            return format.formatString(global::BetaSharp.Achievements.OpenInventory.TranslationKey);
-        };
+        global::BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () => { return format.formatString(global::BetaSharp.Achievements.OpenInventory.TranslationKey); };
 
         loadScreen();
 
@@ -328,12 +343,12 @@ public partial class BetaSharp
         _ = new ResourceManager()
             .Add(new BetaResourceDownloader(this, dataDirPath))
             .Add(new ModernAssetDownloader(this, dataDirPath,
-                [
-                 "minecraft/sounds/music/menu/moog_city_2.ogg",
-                 "minecraft/sounds/music/menu/mutation.ogg",
-                 "minecraft/sounds/music/menu/floating_trees.ogg",
-                 "minecraft/sounds/music/menu/beginning_2.ogg",
-                ])).LoadAllAsync();
+            [
+                "minecraft/sounds/music/menu/moog_city_2.ogg",
+                "minecraft/sounds/music/menu/mutation.ogg",
+                "minecraft/sounds/music/menu/floating_trees.ogg",
+                "minecraft/sounds/music/menu/beginning_2.ogg",
+            ])).LoadAllAsync();
 
         checkGLError("Post startup");
         ingameGUI = new GuiIngame(this);
@@ -499,13 +514,17 @@ public partial class BetaSharp
             {
                 changeWorld((World)null);
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+            }
 
             try
             {
                 GLAllocation.deleteTexturesAndDisplayLists();
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+            }
 
             skinManager.Dispose();
             textureManager.Dispose();
@@ -559,6 +578,7 @@ public partial class BetaSharp
                     Profiler.Update(Timer.DeltaTime);
                     Profiler.PushGroup("run");
                 }
+
                 try
                 {
                     if (Display.isCloseRequested())
@@ -663,7 +683,7 @@ public partial class BetaSharp
                     if (world != null)
                     {
                         if (options.DebugMode) Profiler.Start("updateLighting");
-                        world.doLightingUpdates();
+                        world.Lighting.DoLightingUpdates();
                         if (options.DebugMode) Profiler.Stop("updateLighting");
                     }
 
@@ -688,6 +708,7 @@ public partial class BetaSharp
                             Profiler.PushGroup("render");
                             TextureStats.StartFrame();
                         }
+
                         gameRenderer.onFrameUpdate(Timer.renderPartialTicks);
                         if (options.DebugMode)
                         {
@@ -728,6 +749,7 @@ public partial class BetaSharp
                             {
                                 ImGui.Text($"{po2}KB: {buckets[po2]} meshes");
                             }
+
                             ImGui.TreePop();
                         }
 
@@ -741,7 +763,10 @@ public partial class BetaSharp
                                 totalMeshes = activeMeshes,
                                 buckets = buckets.ToDictionary(k => k.Key.ToString(), v => v.Value)
                             };
-                            string json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions { WriteIndented = true });
+                            string json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions
+                            {
+                                WriteIndented = true
+                            });
                             File.WriteAllText(Path.Combine(getBetaSharpDir(), "mesh_stats.json"), json);
                             _logger.LogInformation($"Exported mesh stats to {Path.Combine(getBetaSharpDir(), "mesh_stats.json")}");
                         }
@@ -773,7 +798,7 @@ public partial class BetaSharp
                         prevFrameTime = Stopwatch.GetTimestamp();
                     }
 
-                    guiAchievement.updateAchievementWindow();
+                    guiAchievement.UpdateAchievementWindow();
 
                     if (Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
@@ -806,7 +831,7 @@ public partial class BetaSharp
 
                     for (;
                          DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
- >= lastFpsCheckTime + 1000L;
+                         >= lastFpsCheckTime + 1000L;
                          frameCounter = 0)
                     {
                         debug = frameCounter + " fps";
@@ -855,7 +880,9 @@ public partial class BetaSharp
                 }
             }
         }
-        catch (BetaSharpShutdownException) { }
+        catch (BetaSharpShutdownException)
+        {
+        }
         catch (Exception unexpectedException)
         {
             crashCleanup();
@@ -897,6 +924,7 @@ public partial class BetaSharp
                         GLManager.GL.ReadPixels(0, 0, (uint)framebufferWidth, (uint)framebufferHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
                     }
                 }
+
                 string result = ScreenShotHelper.saveScreenshot(gameDataDir, displayWidth, displayHeight, pixels);
                 ingameGUI.AddChatMessage(result);
             }
@@ -1022,6 +1050,7 @@ public partial class BetaSharp
             {
                 Thread.Sleep(1);
             }
+
             internalServer = null;
         }
     }
@@ -1252,7 +1281,7 @@ public partial class BetaSharp
     {
         if (objectMouseOver.Type != HitResultType.MISS)
         {
-            int blockId = world.getBlockId(objectMouseOver.BlockX, objectMouseOver.BlockY, objectMouseOver.BlockZ);
+            int blockId = world.Reader.GetBlockId(objectMouseOver.BlockX, objectMouseOver.BlockY, objectMouseOver.BlockZ);
             if (blockId == Block.GrassBlock.id)
             {
                 blockId = Block.Dirt.id;
@@ -1293,7 +1322,6 @@ public partial class BetaSharp
         }
 
 
-
         Profiler.Start("ingameGUI.updateTick");
         ingameGUI.UpdateTick();
         Profiler.Stop("ingameGUI.updateTick");
@@ -1328,7 +1356,7 @@ public partial class BetaSharp
             {
                 displayGuiScreen((GuiScreen)null);
             }
-            else if (player.isSleeping() && world != null && world.isRemote)
+            else if (player.isSleeping() && world != null && world.IsRemote)
             {
                 displayGuiScreen(new GuiSleepMP());
             }
@@ -1367,19 +1395,19 @@ public partial class BetaSharp
                 if (joinPlayerCounter == 30)
                 {
                     joinPlayerCounter = 0;
-                    world.LoadChunksNearEntity(player);
+                    world.Entities.LoadChunksNearEntity(player);
                 }
             }
 
-            world.difficulty = options.Difficulty;
+            world.SetDifficulty(options.Difficulty);
             if (internalServer != null)
             {
                 internalServer.SetDifficulty(options.Difficulty);
             }
 
-            if (world.isRemote)
+            if (world.IsRemote)
             {
-                world.difficulty = 3;
+                world.SetDifficulty(3);
             }
 
             Profiler.Start("entityRendererUpdate");
@@ -1398,12 +1426,12 @@ public partial class BetaSharp
             Profiler.PushGroup("theWorldUpdateEntities");
             if (!isGamePaused)
             {
-                if (world.lightningTicksLeft > 0)
+                if (world.Environment.LightningTicksLeft > 0)
                 {
-                    --world.lightningTicksLeft;
+                    --world.Environment.LightningTicksLeft;
                 }
 
-                world.tickEntities();
+                world.Entities.TickEntities();
             }
 
             Profiler.PopGroup();
@@ -1430,7 +1458,7 @@ public partial class BetaSharp
         }
 
         systemTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-;
+            ;
         Profiler.PopGroup();
     }
 
@@ -1439,7 +1467,7 @@ public partial class BetaSharp
         while (Mouse.next())
         {
             long timeSinceLastMouseEvent = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
- - systemTime;
+                                           - systemTime;
             if (Mouse.getEventDX() != 0 || Mouse.getEventDY() != 0)
             {
                 isControllerMode = false;
@@ -1555,6 +1583,12 @@ public partial class BetaSharp
                             forceReload();
                         }
 
+                        if (Keyboard.getEventKey() == Keyboard.KEY_H && Keyboard.isKeyDown(Keyboard.KEY_F3))
+                        {
+                            options.AdvancedItemTooltips = !options.AdvancedItemTooltips;
+                            options.SaveOptions();
+                        }
+
                         if (Keyboard.getEventKey() == Keyboard.KEY_D && Keyboard.isKeyDown(Keyboard.KEY_F3))
                         {
                             ingameGUI.ClearChatMessages();
@@ -1621,7 +1655,8 @@ public partial class BetaSharp
 
                     if (Keyboard.getEventKey() == options.KeyBindToggleFog.keyCode)
                     {
-                        options.RenderDistanceOption.Value = System.Math.Clamp(options.RenderDistanceOption.Value + (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) ? 1.0f / 28.0f : -1.0f / 28.0f), 0.0f, 1.0f);
+                        options.RenderDistanceOption.Value = System.Math.Clamp(options.RenderDistanceOption.Value + (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) ? 1.0f / 28.0f : -1.0f / 28.0f), 0.0f,
+                            1.0f);
                     }
                 }
             }
@@ -1662,12 +1697,12 @@ public partial class BetaSharp
 
     public bool isMultiplayerWorld()
     {
-        return world != null && world.isRemote;
+        return world != null && world.IsRemote;
     }
 
     public void startWorld(string worldName, string mainMenuText, WorldSettings settings)
     {
-        changeWorld((World)null);
+        changeWorld(null);
         displayGuiScreen(new GuiLevelLoading(worldName, settings));
     }
 
@@ -1688,13 +1723,13 @@ public partial class BetaSharp
             {
                 if (targetEntity == null)
                 {
-                    player = (ClientPlayerEntity)newWorld.getPlayerForProxy(typeof(ClientPlayerEntity));
+                    player = (ClientPlayerEntity)newWorld.GetPlayerForProxy(typeof(ClientPlayerEntity));
                 }
             }
             else if (player != null)
             {
                 player.teleportToTop();
-                newWorld?.SpawnEntity(player);
+                newWorld?.Entities.SpawnEntity(player);
             }
 
             if (player == null)
@@ -1712,16 +1747,16 @@ public partial class BetaSharp
             playerController.fillHotbar(player);
             if (targetEntity != null)
             {
-                newWorld.saveWorldData();
+                newWorld.SaveWorldData();
             }
 
-            newWorld.addPlayer(player);
+            newWorld.AddPlayer(player);
 
             skinManager.RequestDownload(player.name);
 
-            if (newWorld.isNewWorld)
+            if (newWorld.IsNewWorld)
             {
-                newWorld.savingProgress(loadingScreen);
+                newWorld.SavingProgress(loadingScreen);
             }
 
             camera = player;
@@ -1742,7 +1777,7 @@ public partial class BetaSharp
         int loadedChunkCount = 0;
         int totalChunksToLoad = loadingRadius * 2 / 16 + 1;
         totalChunksToLoad *= totalChunksToLoad;
-        Vec3i centerPos = world.getSpawnPos();
+        Vec3i centerPos = world.Properties.GetSpawnPos();
         if (player != null)
         {
             centerPos.X = (int)player.x;
@@ -1754,16 +1789,16 @@ public partial class BetaSharp
             for (int zOffset = -loadingRadius; zOffset <= loadingRadius; zOffset += 16)
             {
                 loadingScreen.setLoadingProgress(loadedChunkCount++ * 100 / totalChunksToLoad);
-                world.getBlockId(centerPos.X + xOffset, 64, centerPos.Z + zOffset);
+                world.Reader.GetBlockId(centerPos.X + xOffset, 64, centerPos.Z + zOffset);
 
-                while (world.doLightingUpdates())
+                while (world.Lighting.DoLightingUpdates())
                 {
                 }
             }
         }
 
         loadingScreen.progressStage("Simulating world for a bit");
-        world.tickChunks();
+        world.TickChunks();
     }
 
     public void installResource(string resourcePath, FileInfo resourceFile)
@@ -1813,7 +1848,7 @@ public partial class BetaSharp
 
     public string getWorldDebugInfo()
     {
-        return world.getDebugInfo();
+        return world.GetDebugInfo();
     }
 
     public string getParticleDebugInfo()
@@ -1852,17 +1887,17 @@ public partial class BetaSharp
         }
 
         bool useBedSpawn = respawnPos is not null;
-        Vec3i finalRespawnPos = respawnPos ?? world.getSpawnPos();
+        Vec3i finalRespawnPos = respawnPos ?? world.Properties.GetSpawnPos();
 
         world.UpdateSpawnPosition();
-        world.updateEntityLists();
+        world.Entities.UpdateEntityLists();
 
         int previousPlayerId = 0;
 
         if (player is not null)
         {
             previousPlayerId = player.id;
-            world.Remove(player);
+            world.Entities.Remove(player);
         }
 
         camera = null;
@@ -1884,7 +1919,7 @@ public partial class BetaSharp
         }
 
         playerController.flipPlayer(player);
-        world.addPlayer(player);
+        world.AddPlayer(player);
         player.movementInput = new MovementInputFromOptions(options);
         player.id = previousPlayerId;
         player.spawn();
@@ -1911,7 +1946,7 @@ public partial class BetaSharp
             if (sessionToken == "-")
             {
                 hasPaidCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-    ;
+                    ;
             }
         }
         else

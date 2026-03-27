@@ -20,17 +20,14 @@ internal class ChunkSnapshot : IDisposable
     {
         _blocks = ArrayPool<byte>.Shared.Rent(32768);
         Buffer.BlockCopy(toSnapshot.Blocks, 0, _blocks, 0, toSnapshot.Blocks.Length);
-        
+
         _data = createNibbleArray(toSnapshot.Meta.Bytes);
         SkylightMap = createNibbleArray(toSnapshot.SkyLight.Bytes);
         BlocklightMap = createNibbleArray(toSnapshot.BlockLight.Bytes);
 
-        foreach (KeyValuePair<BlockPos, BlockEntity> entry in toSnapshot.BlockEntities)
+        foreach ((BlockPos pos, BlockEntity entity) in toSnapshot.BlockEntities)
         {
-            BlockEntity entity = entry.Value;
-            BlockPos pos = entry.Key;
-
-            if (pos.y < 0 || pos.y >= 128) continue;
+            if (pos.y is < 0 or >= 128) continue;
 
             NBTTagCompound nbt = new();
             entity.writeNbt(nbt);
