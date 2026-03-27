@@ -49,7 +49,7 @@ public static class FlexLayout
         if (element.Style.Right.HasValue) node.StyleSetPosition(Edge.Right, element.Style.Right.Value);
 
         // Add custom text bounds callbacks for leaves
-        if (element is Controls.Label || element is Controls.Button || element is Controls.TextField || element is Screens.MainMenuSplash)
+        if (element is Controls.Core.Label || element is Controls.Core.Button || element is Controls.Core.TextField || element is Controls.MainMenu.MainMenuSplash)
         {
             node.SetMeasureFunc((n, w, wm, h, hm) =>
             {

@@ -1,5 +1,6 @@
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Worlds;
 

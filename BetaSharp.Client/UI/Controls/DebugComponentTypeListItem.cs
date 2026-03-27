@@ -1,5 +1,6 @@
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Guis.Debug;
+using BetaSharp.Client.UI.Controls.Core;
 
 namespace BetaSharp.Client.UI.Controls;
 

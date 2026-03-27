@@ -1,7 +1,7 @@
 using System.Net.Sockets;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Screens;
+using BetaSharp.Client.UI.Screens.Menu.Net;
 using BetaSharp.Network.Packets;
 using Microsoft.Extensions.Logging;
 

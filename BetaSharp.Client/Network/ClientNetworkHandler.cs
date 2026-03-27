@@ -7,7 +7,7 @@ using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Screens;
+using BetaSharp.Client.UI.Screens.Menu.Net;
 using BetaSharp.Client.Worlds;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
@@ -23,7 +23,6 @@ using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Mechanics;
 using BetaSharp.Worlds.Storage;
 using Microsoft.Extensions.Logging;
-using Socket = System.Net.Sockets.Socket;
 
 namespace BetaSharp.Client.Network;
 

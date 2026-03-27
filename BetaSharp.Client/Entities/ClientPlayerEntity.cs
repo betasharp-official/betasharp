@@ -3,7 +3,8 @@ using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Screens;
+using BetaSharp.Client.UI.Screens.InGame;
+using BetaSharp.Client.UI.Screens.InGame.Containers;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.NBT;
@@ -18,13 +19,10 @@ public class ClientPlayerEntity : EntityPlayer
     public override EntityType Type => EntityRegistry.Player;
     public MovementInput movementInput;
     protected BetaSharp Game;
-    private readonly MouseFilter field_21903_bJ = new();
-    private readonly MouseFilter field_21904_bK = new();
-    private readonly MouseFilter field_21902_bL = new();
 
     public ClientPlayerEntity(BetaSharp game, IWorldContext world, Session session, int dimensionId) : base(world)
     {
-        this.Game = game;
+        Game = game;
         base.dimensionId = dimensionId;
         name = session.username;
     }

@@ -1,5 +1,6 @@
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Resource.Pack;
+using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls;

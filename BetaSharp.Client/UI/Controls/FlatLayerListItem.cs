@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Items;
+using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Worlds.Gen.Flat;
 

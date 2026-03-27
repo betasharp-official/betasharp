@@ -1,8 +1,8 @@
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
-using Silk.NET.GLFW;
 using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Screens;
+using BetaSharp.Client.UI.Screens.InGame.Containers;
+using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.Input;
 
