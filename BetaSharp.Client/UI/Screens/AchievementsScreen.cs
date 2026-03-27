@@ -66,8 +66,7 @@ public class AchievementsScreen(UIScreen? parent, StatFileWriter stats) : UIScre
 
         PopulateAchievementList(cardList);
 
-        // Done button
-        Button btnDone = new() { Text = "Return to Game" };
+        Button btnDone = new() { Text = "Done" };
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 10;
         btnDone.Style.FlexShrink = 0;
