@@ -38,7 +38,7 @@ public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
 
         Button btnAchievements = new() { Text = StatCollector.TranslateToLocal("gui.achievements") };
         btnAchievements.Style.Width = 98;
-        btnAchievements.OnClick += (e) => Game.displayGuiScreen(new GuiAchievements(Game.statFileWriter));
+        btnAchievements.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(new AchievementsScreen(this, Game.statFileWriter)));
 
         Button btnStats = new() { Text = StatCollector.TranslateToLocal("gui.stats") };
         btnStats.Style.Width = 98;

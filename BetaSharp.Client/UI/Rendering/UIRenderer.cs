@@ -205,6 +205,11 @@ public class UIRenderer
 
     public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height)
     {
+        DrawTexturedModalRect(texture, x, y, u, v, width, height, width, height);
+    }
+
+    public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height, float uvWidth, float uvHeight)
+    {
         TextureManager.BindTexture(texture);
         float f = 0.00390625F;
         Tessellator tess = Tessellator.instance;
@@ -212,9 +217,9 @@ public class UIRenderer
         float finalY = y + _translateY;
 
         tess.startDrawingQuads();
-        tess.addVertexWithUV(finalX + 0, finalY + height, 0.0D, (double)((u + 0) * f), (double)((v + height) * f));
-        tess.addVertexWithUV(finalX + width, finalY + height, 0.0D, (double)((u + width) * f), (double)((v + height) * f));
-        tess.addVertexWithUV(finalX + width, finalY + 0, 0.0D, (double)((u + width) * f), (double)((v + 0) * f));
+        tess.addVertexWithUV(finalX + 0, finalY + height, 0.0D, (double)((u + 0) * f), (double)((v + uvHeight) * f));
+        tess.addVertexWithUV(finalX + width, finalY + height, 0.0D, (double)((u + uvWidth) * f), (double)((v + uvHeight) * f));
+        tess.addVertexWithUV(finalX + width, finalY + 0, 0.0D, (double)((u + uvWidth) * f), (double)((v + 0) * f));
         tess.addVertexWithUV(finalX + 0, finalY + 0, 0.0D, (double)((u + 0) * f), (double)((v + 0) * f));
         tess.draw();
     }

@@ -35,11 +35,15 @@ public class Button : UIElement
 
         TextureHandle texture = BetaSharp.Instance.textureManager.GetTextureId("/gui/gui.png");
 
-        renderer.DrawTexturedModalRect(texture, 0, 0, 0, 46 + hoverState * 20, ComputedWidth / 2, ComputedHeight);
-        renderer.DrawTexturedModalRect(texture, ComputedWidth / 2, 0, 200 - ComputedWidth / 2, 46 + hoverState * 20, ComputedWidth / 2, ComputedHeight);
+        // Use fixed UV height of 20 to avoid reading into the next button in the spritesheet
+        float uvHeight = 20;
+        float vStart = 46 + hoverState * 20;
+
+        renderer.DrawTexturedModalRect(texture, 0, 0, 0, vStart, ComputedWidth / 2, ComputedHeight, ComputedWidth / 2, uvHeight);
+        renderer.DrawTexturedModalRect(texture, ComputedWidth / 2, 0, 200 - ComputedWidth / 2, vStart, ComputedWidth / 2, ComputedHeight, ComputedWidth / 2, uvHeight);
 
         Color tColor = !Enabled ? Color.GrayA0 : (IsHovered ? HoverTextColor : TextColor);
-        renderer.DrawCenteredText(Text, ComputedWidth / 2, ComputedHeight / 2 - 4, tColor);
+        renderer.DrawCenteredText(Text, ComputedWidth / 2, (float)Math.Floor(ComputedHeight / 2) - 4, tColor);
 
         base.Render(renderer);
     }

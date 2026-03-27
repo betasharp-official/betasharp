@@ -16,19 +16,20 @@ public class StatsScreen(UIScreen? parent, StatFileWriter stats) : UIScreen(pare
     protected override void Init()
     {
         Root.Style.AlignItems = Align.Center;
-        Root.Style.JustifyContent = Justify.Center;
+        Root.Style.JustifyContent = Justify.FlexStart;
 
         Root.AddChild(new Background(BackgroundType.World));
 
         Label title = new() { Text = "Statistics", TextColor = Color.White };
-        title.Style.MarginTop = 15;
-        title.Style.MarginBottom = 15;
+        title.Style.MarginTop = 25;
+        title.Style.MarginBottom = 6;
         Root.AddChild(title);
 
         // Tab bar
         Panel tabBar = new();
         tabBar.Style.FlexDirection = FlexDirection.Row;
-        tabBar.Style.MarginBottom = 15;
+        tabBar.Style.Height = 30;
+        tabBar.Style.MarginBottom = 6;
 
         _btnGeneral = CreateTabButton("General", Tab.General);
         _btnBlocks = CreateTabButton("Blocks", Tab.Blocks);
@@ -41,8 +42,8 @@ public class StatsScreen(UIScreen? parent, StatFileWriter stats) : UIScreen(pare
 
         // Content area
         _contentPanel = new();
-        _contentPanel.Style.Width = 350;
-        _contentPanel.Style.Height = 200;
+        _contentPanel.Style.Width = 360;
+        _contentPanel.Style.Height = 130;
         _contentPanel.Style.BackgroundColor = new Color(0, 0, 0, 160);
         _contentPanel.Style.SetPadding(5);
         _contentPanel.Style.FlexShrink = 0; // Prevent squeezing
@@ -50,8 +51,8 @@ public class StatsScreen(UIScreen? parent, StatFileWriter stats) : UIScreen(pare
 
         // Done button
         Button btnDone = new() { Text = "Done" };
-        btnDone.Style.MarginTop = 20;
-        btnDone.Style.MarginBottom = 20;
+        btnDone.Style.MarginTop = 10;
+        btnDone.Style.MarginBottom = 10;
         btnDone.Style.FlexShrink = 0; // Prevent squeezing
         btnDone.OnClick += (_) => Game.displayGuiScreen(parent != null ? new UIScreenAdapter(parent) : null);
         Root.AddChild(btnDone);
@@ -74,10 +75,10 @@ public class StatsScreen(UIScreen? parent, StatFileWriter stats) : UIScreen(pare
         _currentTab = tab;
         _contentPanel!.Children.Clear();
 
-        // Update button colors/states to show selection
-        _btnGeneral!.Style.BackgroundColor = _currentTab == Tab.General ? new Color(255, 255, 255, 60) : null;
-        _btnBlocks!.Style.BackgroundColor = _currentTab == Tab.Blocks ? new Color(255, 255, 255, 60) : null;
-        _btnItems!.Style.BackgroundColor = _currentTab == Tab.Items ? new Color(255, 255, 255, 60) : null;
+        // disabled = currently active
+        _btnGeneral!.Enabled = _currentTab != Tab.General;
+        _btnBlocks!.Enabled = _currentTab != Tab.Blocks;
+        _btnItems!.Enabled = _currentTab != Tab.Items;
 
         ScrollView scrollView = new();
         scrollView.Style.FlexGrow = 1.0f;
