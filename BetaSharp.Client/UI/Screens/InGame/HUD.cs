@@ -1,8 +1,9 @@
 using BetaSharp.Client.UI.Controls;
+using BetaSharp.Client.UI.Controls.Achievement;
 using BetaSharp.Client.UI.Controls.HUD;
 using BetaSharp.Client.UI.Layout.Flexbox;
 
-namespace BetaSharp.Client.UI;
+namespace BetaSharp.Client.UI.Screens.InGame;
 
 public class HUD : UIScreen
 {

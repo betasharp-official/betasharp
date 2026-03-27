@@ -5,7 +5,7 @@ using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Worlds.Gen.Flat;
 
-namespace BetaSharp.Client.UI.Controls;
+namespace BetaSharp.Client.UI.Controls.ListItems;
 
 public class FlatLayerListItem(FlatLayerInfo layer) : ListItem<FlatLayerInfo>(layer)
 {

@@ -3,6 +3,7 @@ using BetaSharp.Client.Guis;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
+using BetaSharp.Client.UI.Controls.ListItems;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using Microsoft.Extensions.Logging;
 

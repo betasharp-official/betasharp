@@ -1,15 +1,11 @@
-using System;
 using BetaSharp.Client.Guis;
-using BetaSharp.Client.Rendering;
 using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Stats;
 
-namespace BetaSharp.Client.UI.Controls;
+namespace BetaSharp.Client.UI.Controls.Achievement;
 
 public class AchievementToast : UIElement
 {
-    private readonly BetaSharp _game;
-    private Achievement? _achievement;
+    private global::BetaSharp.Achievement? _achievement;
     private string? _title;
     private string? _description;
     private long _startTime;
@@ -18,12 +14,11 @@ public class AchievementToast : UIElement
 
     public AchievementToast(BetaSharp game)
     {
-        _game = game;
         Style.Width = 160;
         Style.Height = 32;
     }
 
-    public void QueueAchievement(Achievement ach)
+    public void QueueAchievement(global::BetaSharp.Achievement ach)
     {
         _achievement = ach;
         _title = "Achievement get!";
@@ -32,12 +27,12 @@ public class AchievementToast : UIElement
         _isInfo = false;
     }
 
-    public void QueueInfo(Achievement ach)
+    public void QueueInfo(global::BetaSharp.Achievement ach)
     {
         _achievement = ach;
         _title = ach.StatName;
         _description = ach.getTranslatedDescription();
-        _startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 2500L; // Start late for "info" type? (based on legacy)
+        _startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 2500L;
         _isInfo = true;
     }
 
@@ -54,9 +49,9 @@ public class AchievementToast : UIElement
 
         double progress = elapsed / (double)Duration;
         double anim = CalculateAnim(progress);
-        
+
         float y = (float)(-anim * 36);
-        
+
         renderer.TextureManager.BindTexture(renderer.TextureManager.GetTextureId("/achievement/bg.png"));
         renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/achievement/bg.png"), 0, y, 96, 202, 160, 32);
 
@@ -73,7 +68,7 @@ public class AchievementToast : UIElement
         renderer.DrawItem(_achievement.icon, 8, y + 8);
     }
 
-    private double CalculateAnim(double progress)
+    private static double CalculateAnim(double progress)
     {
         double p = progress * 2.0;
         if (p > 1.0) p = 2.0 - p;

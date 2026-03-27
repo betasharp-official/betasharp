@@ -3,14 +3,14 @@ using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Stats;
 
-namespace BetaSharp.Client.UI.Controls;
+namespace BetaSharp.Client.UI.Controls.Achievement;
 
 public class AchievementCard : UIElement
 {
-    private readonly Achievement _achievement;
+    private readonly global::BetaSharp.Achievement _achievement;
     private readonly StatFileWriter _stats;
 
-    public AchievementCard(Achievement ach, StatFileWriter stats)
+    public AchievementCard(global::BetaSharp.Achievement ach, StatFileWriter stats)
     {
         _achievement = ach;
         _stats = stats;

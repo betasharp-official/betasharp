@@ -2,7 +2,7 @@ using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Rendering;
 
-namespace BetaSharp.Client.UI.Controls;
+namespace BetaSharp.Client.UI.Controls.ListItems;
 
 public class ServerListItem(ServerData data) : ListItem<ServerData>(data)
 {

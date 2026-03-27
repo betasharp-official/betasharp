@@ -2,6 +2,7 @@ using BetaSharp.Client.Guis;
 using BetaSharp.Client.Guis.Debug;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
+using BetaSharp.Client.UI.Controls.ListItems;
 using BetaSharp.Client.UI.Layout.Flexbox;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
@@ -153,10 +154,12 @@ public class DebugEditorScreen : UIScreen
     private void RefreshList()
     {
         _scroll.ContentContainer.Children.Clear();
-        foreach (var comp in _components)
+        foreach (DebugComponent comp in _components)
         {
-            var item = new DebugComponentListItem(comp);
-            item.IsSelected = (comp == _selectedComponent);
+            var item = new DebugComponentListItem(comp)
+            {
+                IsSelected = (comp == _selectedComponent)
+            };
             item.OnClick += (_) =>
             {
                 _selectedComponent = comp;

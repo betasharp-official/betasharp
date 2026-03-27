@@ -27,7 +27,6 @@ using BetaSharp.Client.UI.Screens.InGame;
 using BetaSharp.Client.UI.Screens.InGame.Containers;
 using BetaSharp.Client.UI.Screens.Menu;
 using BetaSharp.Client.UI.Screens.Menu.Net;
-using BetaSharp.Client.UI.Test;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Profiling;
@@ -457,7 +456,7 @@ public partial class BetaSharp
         statFileWriter.SyncStats();
         if (newScreen == null && world == null)
         {
-            newScreen = new UIScreenAdapter(new ModernUITestScreen(this));
+            newScreen = new UIScreenAdapter(new MainMenuScreen(this));
         }
         else if (newScreen == null && player.health <= 0)
         {

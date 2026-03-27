@@ -4,7 +4,7 @@ using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 
-namespace BetaSharp.Client.UI.Controls;
+namespace BetaSharp.Client.UI.Controls.HUD;
 
 public class Hotbar : UIElement
 {

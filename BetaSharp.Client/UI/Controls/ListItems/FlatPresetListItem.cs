@@ -6,7 +6,7 @@ using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Client.UI.Screens.Menu.World;
 using BetaSharp.Items;
 
-namespace BetaSharp.Client.UI.Controls;
+namespace BetaSharp.Client.UI.Controls.ListItems;
 
 public class FlatPresetListItem(FlatPresetsScreen.PresetItem preset) : ListItem<FlatPresetsScreen.PresetItem>(preset)
 {
