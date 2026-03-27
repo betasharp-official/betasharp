@@ -140,13 +140,11 @@ public class PlayerControllerMP : PlayerController
     {
         if (curBlockDamageMP <= 0.0F)
         {
-            Game.ingameGUI._damageGuiPartialTime = 0.0F;
             Game.terrainRenderer.damagePartialTime = 0.0F;
         }
         else
         {
             float var2 = prevBlockDamageMP + (curBlockDamageMP - prevBlockDamageMP) * var1;
-            Game.ingameGUI._damageGuiPartialTime = var2;
             Game.terrainRenderer.damagePartialTime = var2;
         }
 

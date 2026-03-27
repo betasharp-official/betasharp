@@ -49,6 +49,17 @@ public class UIRenderer
     public void End()
     {
         GLManager.GL.PopMatrix();
+        GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f); // Reset color just in case
+    }
+
+    public void PushColor(Color color)
+    {
+        GLManager.GL.Color4(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, color.A / 255.0f);
+    }
+
+    public void PopColor()
+    {
+        GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     public void ClearDepth()

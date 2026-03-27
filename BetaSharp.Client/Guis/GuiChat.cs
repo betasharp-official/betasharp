@@ -80,7 +80,7 @@ public class GuiChat : GuiScreen
             }
             else
             {
-                Game.ingameGUI.ScrollChat(1);
+                Game.HUD.Chat.ScrollMessages(1);
             }
             return;
         }
@@ -104,7 +104,7 @@ public class GuiChat : GuiScreen
             }
             else
             {
-                Game.ingameGUI.ScrollChat(-1);
+                Game.HUD.Chat.ScrollMessages(-1);
             }
             return;
         }
@@ -197,7 +197,7 @@ public class GuiChat : GuiScreen
         int wheel = Mouse.getEventDWheel();
         if (wheel != 0)
         {
-            Game.ingameGUI.ScrollChat(wheel > 0 ? 1 : -1);
+            Game.HUD.Chat.ScrollMessages(wheel > 0 ? 1 : -1);
         }
     }
 
@@ -205,14 +205,14 @@ public class GuiChat : GuiScreen
     {
         if (button != 0) return;
 
-        if (Game.ingameGUI.HoveredItemName != null)
-        {
-            if (_message.Length > 0 && !_message.EndsWith(" "))
+            if (Game.HUD.Chat.HoveredItemName != null)
             {
-                _message += " ";
-            }
+                if (_message.Length > 0 && !_message.EndsWith(" "))
+                {
+                    _message += " ";
+                }
 
-            _message += Game.ingameGUI.HoveredItemName;
+                _message += Game.HUD.Chat.HoveredItemName;
 
             const byte maxLen = 100;
             if (_message.Length > maxLen)

@@ -300,7 +300,8 @@ public class GameRenderer
                 Profiler.Start("renderGameOverlay");
                 if (!_client.options.HideGUI || _client.currentScreen != null)
                 {
-                    _client.ingameGUI.RenderGameOverlay(tickDelta);
+                    setupHudRender();
+                    _client.HUD.Render(scaledMouseX, scaledMouseY, tickDelta);
                 }
 
                 Profiler.Stop("renderGameOverlay");
@@ -318,6 +319,7 @@ public class GameRenderer
             if (_client.currentScreen != null)
             {
                 GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
+                setupHudRender();
                 _client.currentScreen.Render(scaledMouseX, scaledMouseY, tickDelta);
                 if (_client.currentScreen != null && _client.currentScreen.ParticlesGui != null)
                 {

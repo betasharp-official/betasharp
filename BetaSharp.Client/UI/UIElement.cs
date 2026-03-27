@@ -5,6 +5,7 @@ public class UIElement
     public UIElement? Parent { get; set; }
     public List<UIElement> Children { get; } = [];
 
+    public bool Visible { get; set; } = true;
     public FlexStyle Style { get; set; } = new FlexStyle();
 
     // Computed Layout Box

@@ -765,7 +765,7 @@ public class WorldRenderer : IWorldEventListener
     {
         if (var1 != null)
         {
-            _game.ingameGUI.SetRecordPlayingMessage("C418 - " + var1);
+            _game.HUD.Chat.SetRecordPlaying(var1);
         }
 
         _game.sndManager.PlayStreaming(var1, var2, var3, var4, 1.0F, 1.0F);

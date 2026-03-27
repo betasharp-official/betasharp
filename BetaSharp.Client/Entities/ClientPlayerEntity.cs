@@ -46,7 +46,7 @@ public class ClientPlayerEntity : EntityPlayer
     {
         if (!Game.statFileWriter.HasAchievementUnlocked(global::BetaSharp.Achievements.OpenInventory))
         {
-            Game.guiAchievement.QueueAchievementInformation(global::BetaSharp.Achievements.OpenInventory);
+            Game.HUD.AchievementToast.QueueInfo(global::BetaSharp.Achievements.OpenInventory);
         }
 
         lastScreenDistortion = changeDimensionCooldown;
@@ -171,7 +171,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public virtual void sendChatMessage(string message)
     {
-        Game.ingameGUI.AddChatMessage($"<{name}> {message}");
+        Game.HUD.AddChatMessage($"<{name}> {message}");
     }
 
     public override bool isSneaking()
@@ -210,7 +210,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void sendMessage(string message)
     {
-        Game.ingameGUI.AddChatMessageTranslate(message);
+        Game.HUD.AddChatMessageTranslate(message);
     }
 
     public override void increaseStat(StatBase stat, int value)
@@ -227,7 +227,7 @@ public class ClientPlayerEntity : EntityPlayer
                 {
                     if (!alreadyUnlocked)
                     {
-                        Game.guiAchievement.QueueTakenAchievement(achievement);
+                        Game.HUD.AchievementToast.QueueAchievement(achievement);
                     }
 
                     Game.statFileWriter.ReadStat(stat, value);

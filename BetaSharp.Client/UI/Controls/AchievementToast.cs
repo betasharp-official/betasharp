@@ -1,0 +1,87 @@
+using System;
+using BetaSharp.Client.Guis;
+using BetaSharp.Client.Rendering;
+using BetaSharp.Client.UI.Rendering;
+using BetaSharp.Stats;
+
+namespace BetaSharp.Client.UI.Controls;
+
+public class AchievementToast : UIElement
+{
+    private readonly BetaSharp _game;
+    private Achievement? _achievement;
+    private string? _title;
+    private string? _description;
+    private long _startTime;
+    private bool _isInfo;
+    private const long Duration = 3000L;
+
+    public AchievementToast(BetaSharp game)
+    {
+        _game = game;
+        Style.Width = 160;
+        Style.Height = 32;
+    }
+
+    public void QueueAchievement(Achievement ach)
+    {
+        _achievement = ach;
+        _title = "Achievement get!";
+        _description = ach.StatName;
+        _startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        _isInfo = false;
+    }
+
+    public void QueueInfo(Achievement ach)
+    {
+        _achievement = ach;
+        _title = ach.StatName;
+        _description = ach.getTranslatedDescription();
+        _startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 2500L; // Start late for "info" type? (based on legacy)
+        _isInfo = true;
+    }
+
+    public override void Render(UIRenderer renderer)
+    {
+        if (_achievement == null || _startTime == 0) return;
+
+        long elapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _startTime;
+        if (!_isInfo && elapsed > Duration)
+        {
+            _startTime = 0;
+            return;
+        }
+
+        double progress = elapsed / (double)Duration;
+        double anim = CalculateAnim(progress);
+        
+        float y = (float)(-anim * 36);
+        
+        renderer.TextureManager.BindTexture(renderer.TextureManager.GetTextureId("/achievement/bg.png"));
+        renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/achievement/bg.png"), 0, y, 96, 202, 160, 32);
+
+        if (_isInfo)
+        {
+            renderer.DrawText(_description ?? "", 30, y + 7, Color.White);
+        }
+        else
+        {
+            renderer.DrawText(_title ?? "", 30, y + 7, Color.Yellow);
+            renderer.DrawText(_description ?? "", 30, y + 18, Color.White);
+        }
+
+        renderer.DrawItem(_achievement.icon, 8, y + 8);
+    }
+
+    private double CalculateAnim(double progress)
+    {
+        double p = progress * 2.0;
+        if (p > 1.0) p = 2.0 - p;
+        p *= 4.0;
+        p = 1.0 - p;
+        if (p < 0.0) p = 0.0;
+        p *= p;
+        p *= p;
+        return p;
+    }
+}

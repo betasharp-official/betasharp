@@ -85,8 +85,7 @@ public partial class BetaSharp
     private int leftClickCounter;
     private int tempDisplayWidth;
     private int tempDisplayHeight;
-    public GuiAchievement guiAchievement;
-    public GuiIngame ingameGUI;
+    public HUD HUD { get; private set; } = null!;
     public bool skipRenderWorld;
     public HitResult objectMouseOver = new HitResult(HitResultType.MISS);
     public GameOptions options;
@@ -132,7 +131,7 @@ public partial class BetaSharp
     public BetaSharp(int width, int height, bool isFullscreen)
     {
         loadingScreen = new LoadingScreenRenderer(this);
-        guiAchievement = new GuiAchievement(this);
+        loadingScreen = new LoadingScreenRenderer(this);
         tempDisplayHeight = height;
         fullscreen = isFullscreen;
         displayWidth = width;
@@ -361,7 +360,7 @@ public partial class BetaSharp
                 ])).LoadAllAsync();
 
         checkGLError("Post startup");
-        ingameGUI = new GuiIngame(this);
+        HUD = new HUD(this);
         PostProcessManager = new PostProcessManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), options);
 
         statFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
@@ -464,7 +463,7 @@ public partial class BetaSharp
 
         if (newScreen is UIScreenAdapter { Screen: MainMenuScreen })
         {
-            ingameGUI.ClearChatMessages();
+            HUD.Chat.ClearMessages();
         }
 
         currentScreen = newScreen;
@@ -798,7 +797,7 @@ public partial class BetaSharp
                         prevFrameTime = Stopwatch.GetTimestamp();
                     }
 
-                    guiAchievement.UpdateAchievementWindow();
+                    // HUD.Update handles this
 
                     if (Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
@@ -923,7 +922,7 @@ public partial class BetaSharp
                     }
                 }
                 string result = ScreenShotHelper.saveScreenshot(gameDataDir, displayWidth, displayHeight, pixels);
-                ingameGUI.AddChatMessage(result);
+                HUD.AddChatMessage(result);
             }
         }
         else
@@ -1319,9 +1318,9 @@ public partial class BetaSharp
 
 
 
-        Profiler.Start("ingameGUI.updateTick");
-        ingameGUI.UpdateTick();
-        Profiler.Stop("ingameGUI.updateTick");
+        Profiler.Start("HUD.update");
+        HUD.Update(1.0f);
+        Profiler.Stop("HUD.update");
         gameRenderer.UpdateTargetedEntity(1.0F);
 
         gameRenderer.tick(partialTicks);
@@ -1582,7 +1581,7 @@ public partial class BetaSharp
 
                         if (Keyboard.getEventKey() == Keyboard.KEY_D && Keyboard.isKeyDown(Keyboard.KEY_F3))
                         {
-                            ingameGUI.ClearChatMessages();
+                            HUD.Chat.ClearMessages();
                         }
 
                         if (Keyboard.getEventKey() == Keyboard.KEY_C && Keyboard.isKeyDown(Keyboard.KEY_F3))
