@@ -1596,7 +1596,14 @@ public partial class BetaSharp
 
                         if (Keyboard.getEventKey() == Keyboard.KEY_F3)
                         {
-                            options.ShowDebugInfo = !options.ShowDebugInfo;
+                            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
+                            {
+                                displayGuiScreen(new UIScreenAdapter(new DebugEditorScreen(this, null)));
+                            }
+                            else
+                            {
+                                options.ShowDebugInfo = !options.ShowDebugInfo;
+                            }
                         }
 
                         if (Keyboard.getEventKey() == Keyboard.KEY_F5)

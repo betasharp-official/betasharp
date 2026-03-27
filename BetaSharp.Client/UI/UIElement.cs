@@ -6,6 +6,13 @@ public class UIElement
     public List<UIElement> Children { get; } = [];
 
     public bool Visible { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets whether this element can be hit-tested by the mouse.
+    /// If false, the element and its children will be invisible to mouse events (hover, click, etc.),
+    /// allowing events to pass through to the parent or elements behind it.
+    /// </summary>
+    public bool IsHitTestVisible { get; set; } = true;
     public FlexStyle Style { get; set; } = new FlexStyle();
 
     // Computed Layout Box
@@ -92,6 +99,8 @@ public class UIElement
 
     public virtual UIElement? HitTest(float screenX, float screenY)
     {
+        if (!IsHitTestVisible) return null;
+
         if (ClipToBounds && !ContainsPoint(screenX, screenY))
         {
             return null;
