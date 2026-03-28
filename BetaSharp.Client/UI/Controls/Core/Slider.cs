@@ -19,6 +19,7 @@ public class Slider : UIElement
         {
             if (e.Button == MouseButton.Left)
             {
+                BetaSharp.Instance.sndManager.PlaySoundFX("random.click", 1.0F, 1.0F);
                 UpdateValueFromMouse(e.MouseX);
                 e.Handled = true;
             }

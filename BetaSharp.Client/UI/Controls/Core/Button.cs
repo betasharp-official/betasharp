@@ -16,6 +16,12 @@ public class Button : UIElement
         Style.Width = 200;
         Style.Height = 20;
 
+        OnClick += (e) =>
+        {
+            if (Enabled)
+                BetaSharp.Instance.sndManager.PlaySoundFX("random.click", 1.0F, 1.0F);
+        };
+
         OnMouseEnter += (e) =>
         {
             IsHovered = true;
