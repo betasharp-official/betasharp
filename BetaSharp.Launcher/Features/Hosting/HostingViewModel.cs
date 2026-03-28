@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Launcher.Features.Hosting;
 
-internal sealed partial class HostingViewModel(ILogger<HostingViewModel> logger, ProcessService processService, NavigationService navigationService) : ObservableObject
+internal sealed partial class HostingViewModel(ILogger<HostingViewModel> logger, ProcessService processService, NavigationService navigationService) : ObservableObject, IDisposable
 {
     public ObservableCollection<string> Logs { get; } = [];
 
@@ -154,6 +154,11 @@ internal sealed partial class HostingViewModel(ILogger<HostingViewModel> logger,
     }
 
     private void OnExited(object? sender, EventArgs eventArgs)
+    {
+        Stop();
+    }
+
+    public void Dispose()
     {
         Stop();
     }
