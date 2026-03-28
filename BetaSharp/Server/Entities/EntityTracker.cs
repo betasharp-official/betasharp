@@ -1,5 +1,6 @@
 ﻿using BetaSharp.Entities;
 using BetaSharp.Network.Packets;
+using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Server.Entities;
 
@@ -173,6 +174,21 @@ public class EntityTracker
         else
         {
             packet.Return();
+        }
+    }
+
+    public void updateListenerForChunk(ServerPlayerEntity player, int chunkX, int chunkZ)
+    {
+        foreach (EntityTrackerEntry tracker in entries)
+        {
+            Entity entity = tracker.currentTrackedEntity;
+            if (entity != player
+                && !entity.dead
+                && MathHelper.Floor(entity.x / 16.0) == chunkX
+                && MathHelper.Floor(entity.z / 16.0) == chunkZ)
+            {
+                tracker.updateListener(player);
+            }
         }
     }
 

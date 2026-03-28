@@ -278,6 +278,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             SendChunkData(world, chunkPos);
             ChunksTerrainSentToClient[chunkPos] = Environment.TickCount64;
             SendBlockEntityUpdates(world, chunkPos);
+            server.getEntityTracker(dimensionId).updateListenerForChunk(this, chunkPos.X, chunkPos.Z);
         }
     }
 
