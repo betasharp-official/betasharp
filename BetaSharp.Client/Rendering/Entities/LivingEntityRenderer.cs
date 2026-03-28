@@ -49,7 +49,7 @@ public class LivingEntityRenderer : EntityRenderer
             float var11 = var1.prevYaw + (var1.yaw - var1.prevYaw) * var9;
             float var12 = var1.prevPitch + (var1.pitch - var1.prevPitch) * var9;
             func_22012_b(var1, var2, var4, var6);
-            float var13 = func_170_d(var1, var9);
+            float var13 = getAnimationProgress(var1, var9);
             rotateCorpse(var1, var13, var10, var9);
             float var14 = 1.0F / 16.0F;
             GLManager.GL.Enable(GLEnum.RescaleNormal);
@@ -167,7 +167,7 @@ public class LivingEntityRenderer : EntityRenderer
         return var1.getSwingProgress(var2);
     }
 
-    protected virtual float func_170_d(EntityLiving var1, float var2)
+    protected virtual float getAnimationProgress(EntityLiving var1, float var2)
     {
         return var1.age + var2;
     }

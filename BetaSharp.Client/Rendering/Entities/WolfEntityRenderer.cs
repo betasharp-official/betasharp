@@ -29,7 +29,7 @@ public class WolfEntityRenderer : LivingEntityRenderer
         func_25006_b((EntityWolf)var1, var2);
     }
 
-    protected override float func_170_d(EntityLiving var1, float var2)
+    protected override float getAnimationProgress(EntityLiving var1, float var2)
     {
         return func_25004_a((EntityWolf)var1, var2);
     }
