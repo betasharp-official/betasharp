@@ -160,25 +160,35 @@ public class ItemStack
         count--;
     }
 
-    public void damageItem(int damageAmount, Entity entity)
+    public void DamageItem(int damageAmount, Entity entity)
     {
-        if (isDamageable())
-        {
-            if (entity is EntityPlayer player)
-            {
-                if (!player.GameMode.FiniteResources) return;
+        if (!isDamageable()) return;
 
-                damage += damageAmount;
-                if (UpdateBroken())
-                {
-                    player.increaseStat(Stats.Stats.Broken[itemId], 1);
-                }
-            }
-            else
-            {
-                damage += damageAmount;
-                UpdateBroken();
-            }
+        if (entity is EntityPlayer player)
+        {
+            DamageItemForced(damageAmount, player);
+        }
+        else
+        {
+            damage += damageAmount;
+            UpdateBroken();
+        }
+    }
+
+    public void DamageItem(int damageAmount, EntityPlayer player)
+    {
+        if (!isDamageable()) return;
+        DamageItemForced(damageAmount, player);
+    }
+
+    private void DamageItemForced(int damageAmount, EntityPlayer player)
+    {
+        if (!player.GameMode.FiniteResources) return;
+
+        damage += damageAmount;
+        if (UpdateBroken())
+        {
+            player.increaseStat(Stats.Stats.Broken[itemId], 1);
         }
     }
 

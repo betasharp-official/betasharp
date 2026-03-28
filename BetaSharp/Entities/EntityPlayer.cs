@@ -295,7 +295,7 @@ public abstract class EntityPlayer : EntityLiving
         velocityY = (double)0.1F;
         if (name.Equals("Notch"))
         {
-            dropItem(new ItemStack(Item.Apple, 1), true);
+            DropItem(new ItemStack(Item.Apple, 1), true);
         }
 
         inventory.dropInventory();
@@ -326,49 +326,53 @@ public abstract class EntityPlayer : EntityLiving
         }
     }
 
-    public virtual void dropSelectedItem()
+    public virtual void DropSelectedItem()
     {
-        dropItem(inventory.removeStack(inventory.selectedSlot, 1), false);
-    }
-
-    public void dropItem(ItemStack stack)
-    {
-        dropItem(stack, false);
-    }
-
-    public void dropItem(ItemStack stack, bool throwRandomly)
-    {
-        if (stack != null)
+        if (GameMode.CanDrop)
         {
-            EntityItem var3 = new EntityItem(world, x, y - (double)0.3F + (double)getEyeHeight(), z, stack);
-            var3.delayBeforeCanPickup = 40;
-            float var4 = 0.1F;
-            float var5;
-            if (throwRandomly)
-            {
-                var5 = random.NextFloat() * 0.5F;
-                float var6 = random.NextFloat() * (float)System.Math.PI * 2.0F;
-                var3.velocityX = (double)(-MathHelper.Sin(var6) * var5);
-                var3.velocityZ = (double)(MathHelper.Cos(var6) * var5);
-                var3.velocityY = (double)0.2F;
-            }
-            else
-            {
-                var4 = 0.3F;
-                var3.velocityX = (double)(-MathHelper.Sin(yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(pitch / 180.0F * (float)System.Math.PI) * var4);
-                var3.velocityZ = (double)(MathHelper.Cos(yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(pitch / 180.0F * (float)System.Math.PI) * var4);
-                var3.velocityY = (double)(-MathHelper.Sin(pitch / 180.0F * (float)System.Math.PI) * var4 + 0.1F);
-                var4 = 0.02F;
-                var5 = random.NextFloat() * (float)System.Math.PI * 2.0F;
-                var4 *= random.NextFloat();
-                var3.velocityX += Math.Cos((double)var5) * (double)var4;
-                var3.velocityY += (double)((random.NextFloat() - random.NextFloat()) * 0.1F);
-                var3.velocityZ += Math.Sin((double)var5) * (double)var4;
-            }
-
-            spawnItem(var3);
-            increaseStat(Stats.Stats.DropStat, 1);
+            DropItem(inventory.removeStack(inventory.selectedSlot, 1), false);
         }
+    }
+
+    /// <summary>
+    /// Drop <see cref="ItemStack"/> into the world
+    /// </summary>
+    /// <returns>True when item was removed</returns>
+    public bool DropItem(ItemStack? stack, bool throwRandomly = false)
+    {
+        if (!GameMode.CanDrop) return false;
+        if (stack == null) return true;
+
+        EntityItem var3 = new EntityItem(world, x, y - (double)0.3F + (double)getEyeHeight(), z, stack);
+        var3.delayBeforeCanPickup = 40;
+        float var4 = 0.1F;
+        float var5;
+        if (throwRandomly)
+        {
+            var5 = random.NextFloat() * 0.5F;
+            float var6 = random.NextFloat() * (float)System.Math.PI * 2.0F;
+            var3.velocityX = (double)(-MathHelper.Sin(var6) * var5);
+            var3.velocityZ = (double)(MathHelper.Cos(var6) * var5);
+            var3.velocityY = (double)0.2F;
+        }
+        else
+        {
+            var4 = 0.3F;
+            var3.velocityX = (double)(-MathHelper.Sin(yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(pitch / 180.0F * (float)System.Math.PI) * var4);
+            var3.velocityZ = (double)(MathHelper.Cos(yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(pitch / 180.0F * (float)System.Math.PI) * var4);
+            var3.velocityY = (double)(-MathHelper.Sin(pitch / 180.0F * (float)System.Math.PI) * var4 + 0.1F);
+            var4 = 0.02F;
+            var5 = random.NextFloat() * (float)System.Math.PI * 2.0F;
+            var4 *= random.NextFloat();
+            var3.velocityX += Math.Cos((double)var5) * (double)var4;
+            var3.velocityY += (double)((random.NextFloat() - random.NextFloat()) * 0.1F);
+            var3.velocityZ += Math.Sin((double)var5) * (double)var4;
+        }
+
+        spawnItem(var3);
+        increaseStat(Stats.Stats.DropStat, 1);
+
+        return true;
     }
 
     protected virtual void spawnItem(EntityItem itemEntity)

@@ -22,13 +22,13 @@ internal class ItemSword : Item
 
     public override bool postHit(ItemStack itemStack, EntityLiving a, EntityPlayer entityPlayer)
     {
-        itemStack.damageItem(1, entityPlayer);
+        itemStack.DamageItem(1, entityPlayer);
         return true;
     }
 
     public override bool postMine(ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving entityLiving)
     {
-        itemStack.damageItem(2, entityLiving);
+        itemStack.DamageItem(2, entityLiving);
         return true;
     }
 

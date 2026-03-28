@@ -2,19 +2,17 @@ using BetaSharp.Blocks;
 using BetaSharp.Client.Sound;
 using BetaSharp.Entities;
 using BetaSharp.Items;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Input;
 
 public class PlayerControllerSP : PlayerController
 {
-    private int field_1074_c = -1;
-    private int field_1073_d = -1;
-    private int field_1072_e = -1;
+    private int _mineX = -1;
+    private int _mineY = -1;
+    private int _mineZ = -1;
     private float curBlockDamage;
     private float prevBlockDamage;
-    private float field_1069_h;
+    private byte _mineSoundTimer;
     private int blockHitWait;
 
     public PlayerControllerSP(BetaSharp var1) : base(var1)
@@ -27,43 +25,48 @@ public class PlayerControllerSP : PlayerController
         playerEntity.prevYaw = -180.0F;
     }
 
-    public override bool sendBlockRemoved(int x, int y, int z, int var4)
+    public override bool sendBlockRemoved(int x, int y, int z, int direction)
     {
+        if (!Game.player.GameMode.CanBreak) return false;
+
         int blockId = Game.world.Reader.GetBlockId(x, y, z);
-        int var6 = Game.world.Reader.GetBlockMeta(x, y, z);
-        bool var7 = base.sendBlockRemoved(x, y, z, var4);
-        ItemStack var8 = Game.player.getHand();
-        bool var9 = Game.player.canHarvest(Block.Blocks[blockId]);
-        if (var8 != null)
+        bool blockRemoved = base.sendBlockRemoved(x, y, z, direction);
+        ItemStack itemStackInHand = Game.player.getHand();
+        bool canHarvest = Game.player.canHarvest(Block.Blocks[blockId]);
+        if (itemStackInHand != null)
         {
-            var8.postMine(blockId, x, y, z, Game.player);
-            if (var8.count == 0)
+            itemStackInHand.postMine(blockId, x, y, z, Game.player);
+            if (itemStackInHand.count == 0)
             {
-                var8.onRemoved(Game.player);
+                itemStackInHand.onRemoved(Game.player);
                 Game.player.clearStackInHand();
             }
         }
 
-        if (var7 && var9)
+        if (blockRemoved && canHarvest)
         {
             Block.Blocks[blockId].onBreak(new OnBreakEvent(Game.world, Game.player, x, y, z));
         }
 
-        return var7;
+        return blockRemoved;
     }
 
-    public override void clickBlock(int var1, int var2, int var3, int var4)
+    public override void clickBlock(int x, int y, int z, int direction)
     {
-        Game.world.ExtinguishFire(Game.player, var1, var2, var3, var4);
-        int var5 = Game.world.Reader.GetBlockId(var1, var2, var3);
-        if (var5 > 0 && curBlockDamage == 0.0F)
+        if (Game.player.GameMode.CanExhaustFire)
         {
-            Block.Blocks[var5].onBlockBreakStart(new OnBlockBreakStartEvent(Game.world, Game.player, var1, var2, var3));
+            Game.world.ExtinguishFire(Game.player, x, y, z, direction);
         }
 
-        if (var5 > 0 && Block.Blocks[var5].getHardness(Game.player) >= 1.0F)
+        int blockId = Game.world.Reader.GetBlockId(x, y, z);
+        if (blockId > 0 && curBlockDamage == 0.0F && Game.player.GameMode.CanInteract)
         {
-            sendBlockRemoved(var1, var2, var3, var4);
+            Block.Blocks[blockId].onBlockBreakStart(new OnBlockBreakStartEvent(Game.world, Game.player, x, y, z));
+        }
+
+        if (blockId > 0 && Game.player.GameMode.CanBreak && Block.Blocks[blockId].getHardness(Game.player) >= Game.player.GameMode.BrakeSpeed)
+        {
+            sendBlockRemoved(x, y, z, direction);
         }
 
     }
@@ -74,36 +77,37 @@ public class PlayerControllerSP : PlayerController
         blockHitWait = 0;
     }
 
-    public override void sendBlockRemoving(int var1, int var2, int var3, int var4)
+    public override void sendBlockRemoving(int x, int y, int z, int direction)
     {
+        if (!Game.player.GameMode.CanBreak) return;
         if (blockHitWait > 0)
         {
             --blockHitWait;
         }
         else
         {
-            if (var1 == field_1074_c && var2 == field_1073_d && var3 == field_1072_e)
+            if (x == _mineX && y == _mineY && z == _mineZ)
             {
-                int var5 = Game.world.Reader.GetBlockId(var1, var2, var3);
-                if (var5 == 0)
+                int blockId = Game.world.Reader.GetBlockId(x, y, z);
+                if (blockId == 0)
                 {
                     return;
                 }
 
-                Block var6 = Block.Blocks[var5];
-                curBlockDamage += var6.getHardness(Game.player);
-                if (field_1069_h % 4.0F == 0.0F && var6 != null)
+                Block block = Block.Blocks[blockId];
+                curBlockDamage += block.getHardness(Game.player);
+                if (_mineSoundTimer % 4 == 0 && block != null)
                 {
-                    Game.sndManager.PlaySound(var6.soundGroup.StepSound, (float)var1 + 0.5F, (float)var2 + 0.5F, (float)var3 + 0.5F, (var6.soundGroup.Volume + 1.0F) / 8.0F, var6.soundGroup.Pitch * 0.5F);
+                    Game.sndManager.PlaySound(block.soundGroup.StepSound, x + 0.5F, y + 0.5F, z + 0.5F, (block.soundGroup.Volume + 1.0F) / 8.0F, block.soundGroup.Pitch * 0.5F);
                 }
 
-                ++field_1069_h;
-                if (curBlockDamage >= 1.0F)
+                ++_mineSoundTimer;
+                if (curBlockDamage >= Game.player.GameMode.BrakeSpeed)
                 {
-                    sendBlockRemoved(var1, var2, var3, var4);
+                    sendBlockRemoved(x, y, z, direction);
                     curBlockDamage = 0.0F;
                     prevBlockDamage = 0.0F;
-                    field_1069_h = 0.0F;
+                    _mineSoundTimer = 0;
                     blockHitWait = 5;
                 }
             }
@@ -111,10 +115,10 @@ public class PlayerControllerSP : PlayerController
             {
                 curBlockDamage = 0.0F;
                 prevBlockDamage = 0.0F;
-                field_1069_h = 0.0F;
-                field_1074_c = var1;
-                field_1073_d = var2;
-                field_1072_e = var3;
+                _mineSoundTimer = 0;
+                _mineX = x;
+                _mineY = y;
+                _mineZ = z;
             }
 
         }
@@ -139,11 +143,6 @@ public class PlayerControllerSP : PlayerController
     public override float getBlockReachDistance()
     {
         return 4.0F;
-    }
-
-    public override void func_717_a(World var1)
-    {
-        base.func_717_a(var1);
     }
 
     public override void updateController()

@@ -17,7 +17,7 @@ public class ServerWorld : World
 {
     private readonly Dictionary<int, Entity> entitiesById = [];
     private readonly BetaSharpServer server;
-   public bool BypassSpawnProtection { get; }
+    public bool BypassSpawnProtection { get; }
     public ServerChunkCache ChunkCache;
     internal ChunkMap ChunkMap;
     public bool savingDisabled;

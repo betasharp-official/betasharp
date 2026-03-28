@@ -43,7 +43,7 @@ public class GameModeCommand : ICommand
         }
     }
 
-    private void SetGameMode(EntityPlayer p, string arg, ICommand.CommandContext c)
+    private void SetGameMode(ServerPlayerEntity p, string arg, ICommand.CommandContext c)
     {
         // mode by id
         if (int.TryParse(arg, out int mode))
@@ -83,8 +83,9 @@ public class GameModeCommand : ICommand
         }
     }
 
-    private void SetGameMode(EntityPlayer p, GameMode gameMode, ICommand.CommandContext c)
+    private void SetGameMode(ServerPlayerEntity p, GameMode gameMode, ICommand.CommandContext c)
     {
+        p.networkHandler.sendPacket(PlayerGameModeUpdateS2CPacket.Get(gameMode));
         p.GameMode = gameMode;
         string s = $"{p.name} game mode set to {gameMode.Name}.";
         s_logger.LogInformation(s);

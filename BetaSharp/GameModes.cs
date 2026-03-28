@@ -52,36 +52,17 @@ public static class GameModes
             return;
         }
 
-
-        gameModes.Sort((a, b) => a.Id.CompareTo(b.Id));
-
-        int highestId = gameModes.Last().Id;
-
-        if (highestId != gameModes.Count - 1)
+        // remove dublicates
+        for (int i = gameModes.Count - 1; i >= 1; i--)
         {
-            bool needsResort = false;
-
-            for (int i = gameModes.Count - 1; i >= 0; i--)
+            for (int j = 0; j < i; j++)
             {
-                // if id is 0, auto assign id if not name is DefaultName.
-                if (gameModes[i].Id < 0)
+                if (gameModes[i].Name == gameModes[j].Name)
                 {
-                    needsResort = true;
-                    gameModes[i].Id = ++highestId;
-                    s_logger.LogInformation($"Mapped game mode {gameModes[i].Name} to index {i}.");
-
-                    continue;
+                    s_logger.LogError($"Duplicate game mode ID found: {gameModes[i].Name}. Removing duplicate.");
+                    gameModes.RemoveAt(i-1);
+                    break;
                 }
-
-                if (gameModes[i].Id != gameModes[i - 1].Id) continue;
-
-                s_logger.LogError($"Duplicate game mode ID found: {gameModes[i].Id}. Removing duplicate.");
-                gameModes.RemoveAt(i);
-            }
-
-            if (needsResort)
-            {
-                gameModes.Sort((a, b) => a.Id.CompareTo(b.Id));
             }
         }
 
@@ -93,11 +74,9 @@ public static class GameModes
 
     public static bool TryGet(int id, [NotNullWhen(true)] out GameMode? gameMode)
     {
-        foreach (var gm in s_gameModes)
+        if (id >= 0 && s_gameModes.Length > id)
         {
-            if (gm.Id != id) continue;
-
-            gameMode = gm;
+            gameMode = s_gameModes[id];
             return true;
         }
 
@@ -141,13 +120,11 @@ public static class GameModes
 
     private static GameMode NewSurvivalGameMode() => new()
     {
-        Id = 0,
         Name = "survival",
     };
 
     private static GameMode NewCreativeGameMode() => new()
     {
-        Id = 1,
         Name = "creative",
         BrakeSpeed = 0f,
         CanReceiveDamage = false,
@@ -158,7 +135,6 @@ public static class GameModes
 
     private static GameMode NewAdventureGameMode() => new()
     {
-        Id = 2,
         Name = "adventure",
         CanBreak = false,
         CanPlace = false,
@@ -166,7 +142,6 @@ public static class GameModes
 
     private static GameMode NewSpectatorGameMode() => new()
     {
-        Id = 3,
         Name = "spectator",
         CanBreak = false,
         CanPlace = false,
@@ -176,6 +151,7 @@ public static class GameModes
         CanBeTargeted = false,
         CanExhaustFire = false,
         CanPickup =  false,
+        CanDrop =  false,
         VisibleToWorld = false,
     };
 }

@@ -268,7 +268,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         ServerWorld world = server.getWorld(player.dimensionId);
         if (packet.action == 4)
         {
-            player.dropSelectedItem();
+            player.DropSelectedItem();
         }
         else
         {
