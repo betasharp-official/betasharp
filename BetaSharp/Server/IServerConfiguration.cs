@@ -19,7 +19,7 @@ public interface IServerConfiguration
     int GetViewDistance(int fallback);
     bool GetWhiteList(bool fallback);
     int GetSpawnRegionSize(int fallback);
-    int GetDefaultGamemode(int fallback);
+    string GetDefaultGamemode(string fallback);
     void Save();
 
     bool GetProperty(string property, bool fallback);

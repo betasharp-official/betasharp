@@ -4,7 +4,7 @@ namespace BetaSharp.Network.Packets.S2CPlay;
 
 public class PlayerGameModeUpdateS2CPacket() : ExtendedProtocolPacket(PacketId.PlayerGameModeUpdateS2C)
 {
-    public GameMode GameMode { get; private set; } = GameModes.Get(0);
+    public GameMode GameMode { get; private set; } = GameModes.DefaultGameMode;
 
     public static PlayerGameModeUpdateS2CPacket Get(GameMode mode)
     {

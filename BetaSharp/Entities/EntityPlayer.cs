@@ -61,7 +61,7 @@ public abstract class EntityPlayer : EntityLiving
         rotationOffset = 180.0F;
         fireImmunityTicks = 20;
         texture = "/mob/char.png";
-        GameMode = GameModes.Get(0);
+        GameMode = GameModes.DefaultGameMode;
     }
 
     protected void TickSleep()

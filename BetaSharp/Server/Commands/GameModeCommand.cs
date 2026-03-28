@@ -27,6 +27,12 @@ public class GameModeCommand : ICommand
 
         if (c.Args.Length == 1)
         {
+            if (c.Args[0].Equals("list", StringComparison.OrdinalIgnoreCase))
+            {
+                ListGameModes(c);
+                return;
+            }
+
             var p = c.Server.playerManager.getPlayer(c.SenderName)!;
             SetGameMode(p, c.Args[0], c);
         }
@@ -43,6 +49,16 @@ public class GameModeCommand : ICommand
         }
     }
 
+    private void ListGameModes(ICommand.CommandContext c)
+    {
+        int i = 0;
+        while (GameModes.TryGet(i, out var gameMode))
+        {
+            c.Output.SendMessage(i.ToString().PadRight(2) + " " + gameMode.Name);
+            i++;
+        }
+    }
+
     private void SetGameMode(ServerPlayerEntity p, string arg, ICommand.CommandContext c)
     {
         // mode by id
@@ -51,36 +67,19 @@ public class GameModeCommand : ICommand
             if (GameModes.TryGet(mode, out var gameMode))
             {
                 SetGameMode(p, gameMode, c);
-            }
-            else
-            {
-                c.Output.SendMessage("Mode not found.");
-            }
-        }
-        // mode by letter
-        else if (arg.Length == 1)
-        {
-            if (GameModes.TryGet(arg[0], out var gameMode))
-            {
-                SetGameMode(p, gameMode, c);
-            }
-            else
-            {
-                c.Output.SendMessage("Mode not found.");
+                return;
             }
         }
         // mode by name
         else
         {
-            if (GameModes.TryGet(arg, out var gameMode))
+            if (GameModes.TryGet(arg, out var gameMode, true))
             {
                 SetGameMode(p, gameMode, c);
-            }
-            else
-            {
-                c.Output.SendMessage("Mode not found.");
+                return;
             }
         }
+        c.Output.SendMessage("Gamemode not found.");
     }
 
     private void SetGameMode(ServerPlayerEntity p, GameMode gameMode, ICommand.CommandContext c)

@@ -122,7 +122,7 @@ internal class InternalServerConfiguration : IServerConfiguration
         return fallback;
     }
 
-    public int GetDefaultGamemode(int fallback) => fallback;
+    public string GetDefaultGamemode(string fallback) => fallback;
 
     public void Save()
     {

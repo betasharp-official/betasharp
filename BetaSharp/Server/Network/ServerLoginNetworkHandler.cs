@@ -129,18 +129,7 @@ public class ServerLoginNetworkHandler : NetHandler
         {
             server.playerManager.loadPlayerData(ent);
             ent.setWorld(server.getWorld(ent.dimensionId));
-            int gm = server.config.GetDefaultGamemode(0);
-            if (gm > 0)
-            {
-                if (GameModes.TryGet(gm, out GameMode? gameMode))
-                {
-                    ent.GameMode = gameMode;
-                }
-                else
-                {
-                    _logger.LogError($"Gamemode ID {gm} not found.");
-                }
-            }
+            ent.GameMode = GameModes.DefaultGameMode;
             _logger.LogInformation($"{getConnectionInfo()} logged in with entity id {ent.id} at ({ent.x}, {ent.y}, {ent.z})");
             ServerWorld var3 = server.getWorld(ent.dimensionId);
             Vec3i var4 = var3.Properties.GetSpawnPos();

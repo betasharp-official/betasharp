@@ -6,6 +6,8 @@ namespace BetaSharp;
 
 public static class GameModes
 {
+    public static GameMode DefaultGameMode { get; private set; } = null!;
+
     private static readonly ILogger s_logger = Log.Instance.For(nameof(GameModes));
     // ReSharper disable once StringLiteralTypo
     private static readonly ResourceLocation s_location = new(ResourceLocation.DefaultNamespace, "gamemode");
@@ -38,7 +40,7 @@ public static class GameModes
         if (gameModes.Count == 0)
         {
             s_logger.LogError("No game Modes found, adding default game modes.");
-            gameModes.Add(NewSurvivalGameMode());
+            gameModes.Add(DefaultGameMode = NewSurvivalGameMode());
             gameModes.Add(NewCreativeGameMode());
             gameModes.Add(NewAdventureGameMode());
             gameModes.Add(NewSpectatorGameMode());
@@ -52,21 +54,54 @@ public static class GameModes
             return;
         }
 
-        // remove dublicates
-        for (int i = gameModes.Count - 1; i >= 1; i--)
+        // remove duplicates
+        for (int i = 0; i <= gameModes.Count-2; i++)
         {
-            for (int j = 0; j < i; j++)
+            for (int j = gameModes.Count-1; j > i; j--)
             {
                 if (gameModes[i].Name == gameModes[j].Name)
                 {
-                    s_logger.LogError($"Duplicate game mode ID found: {gameModes[i].Name}. Removing duplicate.");
-                    gameModes.RemoveAt(i-1);
+                    s_logger.LogError($"Duplicate gamemode found: {gameModes[j].Name}. Removing duplicate.");
+                    gameModes.RemoveAt(j);
                     break;
                 }
             }
         }
 
         s_gameModes = gameModes.ToArray();
+        SetDefaultGameMode();
+    }
+
+    public static void SetDefaultGameMode(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            SetDefaultGameMode();
+        }
+        else if (!TrySetDefaultGameMode(name))
+        {
+            s_logger.LogError($"SetDefaultGameMode: Gamemode with name {name} not found.");
+        }
+    }
+
+    public static void SetDefaultGameMode()
+    {
+        if (TrySetDefaultGameMode("survival")) return;
+        if (TrySetDefaultGameMode("default")) return;
+
+        DefaultGameMode = Get(0);
+        s_logger.LogWarning($"SetDefaultGameMode: No default gamemode found. using {DefaultGameMode.Name}");
+    }
+
+    private static bool TrySetDefaultGameMode(string name)
+    {
+        if (TryGet(name, out var gameMode, true))
+        {
+            DefaultGameMode = gameMode;
+            return true;
+        }
+
+        return false;
     }
 
     public static GameMode Get(int id) =>
@@ -84,10 +119,10 @@ public static class GameModes
         return false;
     }
 
-    public static GameMode Get(string name) =>
-        TryGet(name, out var gameMode) ? gameMode : throw new ArgumentException($"Game mode with name {name} not found.");
+    public static GameMode Get(string name, bool shortName = false) =>
+        TryGet(name, out var gameMode, shortName) ? gameMode : throw new ArgumentException($"Game mode with name {name} not found.");
 
-    public static bool TryGet(string name, [NotNullWhen(true)] out GameMode? gameMode)
+    public static bool TryGet(string name, [NotNullWhen(true)] out GameMode? gameMode, bool shortName = false)
     {
         foreach (var gm in s_gameModes)
         {
@@ -95,6 +130,21 @@ public static class GameModes
 
             gameMode = gm;
             return true;
+        }
+
+        if (shortName)
+        {
+            int nameLen = name.Length;
+
+            if (nameLen == 1) return TryGet(name[0], out gameMode);
+
+            foreach (var gm in s_gameModes)
+            {
+                if (gm.Name.Length <= nameLen || gm.Name.Substring(0, nameLen) != name) continue;
+
+                gameMode = gm;
+                return true;
+            }
         }
 
         gameMode = null;

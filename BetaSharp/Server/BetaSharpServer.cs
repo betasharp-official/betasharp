@@ -82,6 +82,8 @@ public abstract class BetaSharpServer : ICommandOutput
 
         var startupSw = Stopwatch.StartNew();
 
+        GameModes.SetDefaultGameMode(config.GetDefaultGamemode(""));
+
         string worldName = config.GetLevelName("world");
         string seedString = config.GetLevelSeed("");
         long seed = Random.Shared.NextInt64();
