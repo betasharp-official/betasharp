@@ -57,7 +57,7 @@ public class GameOverScreen(BetaSharp game) : UIScreen(game)
         btnTitle.OnClick += (e) =>
         {
             Game.changeWorld(null!);
-            Game.displayGuiScreen(new UIScreenAdapter(new MainMenuScreen(Game)));
+            Game.displayGuiScreen(new MainMenuScreen(Game));
         };
         Root.AddChild(btnTitle);
     }

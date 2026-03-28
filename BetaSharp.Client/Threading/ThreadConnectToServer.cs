@@ -1,6 +1,5 @@
 using System.Net.Sockets;
 using BetaSharp.Client.Network;
-using BetaSharp.Client.UI;
 using BetaSharp.Client.UI.Screens.Menu.Net;
 using BetaSharp.Network.Packets;
 using Microsoft.Extensions.Logging;
@@ -41,7 +40,7 @@ public class ThreadConnectToServer(ConnectingScreen connectingScreen, BetaSharp 
                 return;
             }
 
-            game.displayGuiScreen(new UIScreenAdapter(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", "Unknown host \'" + hostName + "\'")));
+            game.displayGuiScreen(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", "Unknown host \'" + hostName + "\'"));
         }
         catch (SocketException ex)
         {
@@ -50,7 +49,7 @@ public class ThreadConnectToServer(ConnectingScreen connectingScreen, BetaSharp 
                 return;
             }
 
-            game.displayGuiScreen(new UIScreenAdapter(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", ex.Message)));
+            game.displayGuiScreen(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", ex.Message));
         }
         catch (Exception e)
         {
@@ -60,7 +59,7 @@ public class ThreadConnectToServer(ConnectingScreen connectingScreen, BetaSharp 
             }
 
             _logger.LogError(e, e.Message);
-            game.displayGuiScreen(new UIScreenAdapter(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", e.ToString())));
+            game.displayGuiScreen(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", e.ToString()));
         }
     }
 }

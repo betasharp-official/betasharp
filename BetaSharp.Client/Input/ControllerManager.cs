@@ -1,4 +1,3 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.UI;
 using BetaSharp.Client.UI.Screens.InGame.Containers;
@@ -141,13 +140,13 @@ public static class ControllerManager
         // Inventory
         if (inventoryHeld && !s_wasInventoryDown)
         {
-            s_game.displayGuiScreen(new UIScreenAdapter(new InventoryScreen(s_game.player)));
+            s_game.displayGuiScreen(new InventoryScreen(s_game.player));
         }
 
         // Crafting
         if (craftingHeld && !s_wasCraftingDown)
         {
-            s_game.displayGuiScreen(new UIScreenAdapter(new InventoryScreen(s_game.player)));
+            s_game.displayGuiScreen(new InventoryScreen(s_game.player));
         }
 
         // Drop
@@ -229,7 +228,7 @@ public static class ControllerManager
         while (Controller.Next()) { }
     }
 
-    public static void UpdateGui(GuiScreen screen)
+    public static void UpdateGui(UIScreen? screen)
     {
         if (s_game == null || screen == null) return;
         s_suppressInGameInput = true;

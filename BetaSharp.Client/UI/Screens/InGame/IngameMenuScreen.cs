@@ -41,18 +41,18 @@ public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
 
         Button btnAchievements = new() { Text = StatCollector.TranslateToLocal("gui.achievements") };
         btnAchievements.Style.Width = 98;
-        btnAchievements.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(new AchievementsScreen(this, Game.statFileWriter)));
+        btnAchievements.OnClick += (e) => Game.displayGuiScreen(new AchievementsScreen(this, Game.statFileWriter));
 
         Button btnStats = new() { Text = StatCollector.TranslateToLocal("gui.stats") };
         btnStats.Style.Width = 98;
-        btnStats.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(new StatsScreen(this, Game.statFileWriter)));
+        btnStats.OnClick += (e) => Game.displayGuiScreen(new StatsScreen(this, Game.statFileWriter));
 
         rowStats.AddChild(btnAchievements);
         rowStats.AddChild(btnStats);
         Root.AddChild(rowStats);
 
         Button btnOptions = new() { Text = translator.TranslateKey("menu.options") };
-        btnOptions.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(new OptionsScreen(this, Game.options)));
+        btnOptions.OnClick += (e) => Game.displayGuiScreen(new OptionsScreen(this, Game.options));
         btnOptions.Style.MarginBottom = 4;
         Root.AddChild(btnOptions);
 
@@ -69,7 +69,7 @@ public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
             Game.stopInternalServer();
             Game.changeWorld(null!);
             Game.options.ShowDebugInfo = false;
-            Game.displayGuiScreen(new UIScreenAdapter(new MainMenuScreen(Game)));
+            Game.displayGuiScreen(new MainMenuScreen(Game));
         };
         Root.AddChild(btnQuit);
 

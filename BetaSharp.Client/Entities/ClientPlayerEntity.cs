@@ -1,6 +1,5 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Entities.FX;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI;
 using BetaSharp.Client.UI.Screens.InGame;
@@ -57,7 +56,7 @@ public class ClientPlayerEntity : EntityPlayer
 
             if (Game.currentScreen != null)
             {
-                Game.displayGuiScreen((GuiScreen)null);
+                Game.displayGuiScreen(null);
             }
 
             if (changeDimensionCooldown == 0.0F)
@@ -134,27 +133,27 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void openEditSignScreen(BlockEntitySign sign)
     {
-        Game.displayGuiScreen(new UIScreenAdapter(new SignEditScreen(Game, sign)));
+        Game.displayGuiScreen(new SignEditScreen(Game, sign));
     }
 
     public override void openChestScreen(IInventory inventory)
     {
-        Game.displayGuiScreen(new UIScreenAdapter(new ChestScreen(base.inventory, inventory)));
+        Game.displayGuiScreen(new ChestScreen(base.inventory, inventory));
     }
 
     public override void openCraftingScreen(int x, int y, int z)
     {
-        Game.displayGuiScreen(new UIScreenAdapter(new CraftingScreen(inventory, world, x, y, z)));
+        Game.displayGuiScreen(new CraftingScreen(inventory, world, x, y, z));
     }
 
     public override void openFurnaceScreen(BlockEntityFurnace furnace)
     {
-        Game.displayGuiScreen(new UIScreenAdapter(new FurnaceScreen(inventory, furnace)));
+        Game.displayGuiScreen(new FurnaceScreen(inventory, furnace));
     }
 
     public override void openDispenserScreen(BlockEntityDispenser dispenser)
     {
-        Game.displayGuiScreen(new UIScreenAdapter(new DispenserScreen(inventory, dispenser)));
+        Game.displayGuiScreen(new DispenserScreen(inventory, dispenser));
     }
 
     public override void sendPickup(Entity entity, int count)

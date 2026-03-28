@@ -19,7 +19,7 @@ public class EntityPreview : UIElement
 
             if (LookAtCursor)
             {
-                if (game.currentScreen is UIScreenAdapter adapter && adapter.Screen is UIScreen screen)
+                if (game.currentScreen is UIScreen screen)
                 {
                     mouseX = screen.MouseX;
                     mouseY = screen.MouseY;

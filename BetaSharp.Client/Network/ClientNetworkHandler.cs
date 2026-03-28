@@ -6,7 +6,6 @@ using BetaSharp.Client.Entities;
 using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering.Entities;
-using BetaSharp.Client.UI;
 using BetaSharp.Client.UI.Screens.Menu.Net;
 using BetaSharp.Client.Worlds;
 using BetaSharp.Entities;
@@ -103,7 +102,7 @@ public class ClientNetworkHandler : NetHandler
         };
         _game.changeWorld(_worldClient);
         _game.player.dimensionId = packet.dimensionId;
-        _game.displayGuiScreen(new UIScreenAdapter(new DownloadingTerrainScreen(this)));
+        _game.displayGuiScreen(new DownloadingTerrainScreen(this));
         _game.player.id = packet.protocolVersion;
     }
 
@@ -413,7 +412,7 @@ public class ClientNetworkHandler : NetHandler
         _netManager.disconnect("disconnect.kicked");
         Disconnected = true;
         _game.changeWorld(null);
-        _game.displayGuiScreen(new UIScreenAdapter(new ConnectFailedScreen("disconnect.disconnected", "disconnect.genericReason", packet.reason)));
+        _game.displayGuiScreen(new ConnectFailedScreen("disconnect.disconnected", "disconnect.genericReason", packet.reason));
     }
 
     public override void onDisconnected(string reason, object[]? args)
@@ -422,7 +421,7 @@ public class ClientNetworkHandler : NetHandler
         {
             Disconnected = true;
             _game.changeWorld(null);
-            _game.displayGuiScreen(new UIScreenAdapter(new ConnectFailedScreen("disconnect.lost", reason, (object[]?)args)));
+            _game.displayGuiScreen(new ConnectFailedScreen("disconnect.lost", reason, (object[]?)args));
         }
     }
 
@@ -623,7 +622,7 @@ public class ClientNetworkHandler : NetHandler
             };
             _game.changeWorld(_worldClient);
             _game.player.dimensionId = packet.dimensionId;
-            _game.displayGuiScreen(new UIScreenAdapter(new DownloadingTerrainScreen(this)));
+            _game.displayGuiScreen(new DownloadingTerrainScreen(this));
         }
 
         _game.respawn(true, packet.dimensionId);

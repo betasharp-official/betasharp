@@ -48,7 +48,7 @@ public class RenameWorldScreen(BetaSharp game, WorldScreen parent, string worldF
             if (_txfName.Text.Trim().Length > 0)
             {
                 worldStorage.Rename(_worldFolderName, _txfName.Text.Trim());
-                Game.displayGuiScreen(new UIScreenAdapter(parent));
+                Game.displayGuiScreen(parent);
             }
         };
         buttonPanel.AddChild(btnRename);
@@ -56,7 +56,7 @@ public class RenameWorldScreen(BetaSharp game, WorldScreen parent, string worldF
         Button btnCancel = new() { Text = translations.TranslateKey("gui.cancel") };
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(parent));
+        btnCancel.OnClick += (e) => Game.displayGuiScreen(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);

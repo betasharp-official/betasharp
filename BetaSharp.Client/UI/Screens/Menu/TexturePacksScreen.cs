@@ -128,7 +128,7 @@ public class TexturePacksScreen(UIScreen? parent) : UIScreen(parent?.Game ?? Bet
         Game.textureManager.Reload();
         if (_parent != null)
         {
-            Game.displayGuiScreen(new UIScreenAdapter(_parent));
+            Game.displayGuiScreen(_parent);
         }
         else
         {

@@ -65,7 +65,7 @@ public class DebugEditorScreen : UIScreen
         };
         addButton.Style.Width = 150;
         addButton.Style.SetMargin(2);
-        addButton.OnClick += (_) => Game.displayGuiScreen(new UIScreenAdapter(new NewDebugComponentScreen(Game, this)));
+        addButton.OnClick += (_) => Game.displayGuiScreen(new NewDebugComponentScreen(Game, this));
         buttonContainer.AddChild(addButton);
 
         var saveButton = new Button
@@ -188,7 +188,7 @@ public class DebugEditorScreen : UIScreen
     {
         if (_parentScreen != null)
         {
-            Game.displayGuiScreen(new UIScreenAdapter(_parentScreen));
+            Game.displayGuiScreen(_parentScreen);
         }
         else
         {

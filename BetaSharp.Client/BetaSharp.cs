@@ -77,9 +77,9 @@ public partial class BetaSharp
     public TextureManager textureManager;
     public SkinManager skinManager;
     public TextRenderer fontRenderer;
-    public GuiScreen currentScreen;
-    public bool IsMainMenuOpen => currentScreen is UIScreenAdapter { Screen: MainMenuScreen };
-    public bool IsGameOverOpen => currentScreen is UIScreenAdapter { Screen: GameOverScreen };
+    public UIScreen? currentScreen;
+    public bool IsMainMenuOpen => currentScreen is MainMenuScreen;
+    public bool IsGameOverOpen => currentScreen is GameOverScreen;
     public LoadingScreenRenderer loadingScreen;
     public GameRenderer gameRenderer;
     public PostProcessManager PostProcessManager { get; private set; }
@@ -368,11 +368,11 @@ public partial class BetaSharp
         statFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
         if (serverName != null)
         {
-            displayGuiScreen(new UIScreenAdapter(new ConnectingScreen(this, serverName, serverPort)));
+            displayGuiScreen(new ConnectingScreen(this, serverName, serverPort));
         }
         else
         {
-            displayGuiScreen(new UIScreenAdapter(new MainMenuScreen(this)));
+            displayGuiScreen(new MainMenuScreen(this));
         }
     }
 
@@ -437,13 +437,13 @@ public partial class BetaSharp
         return saveLoader;
     }
 
-    public void displayGuiScreen(GuiScreen? newScreen)
+    public void displayGuiScreen(UIScreen? newScreen)
     {
         Mouse.ClearEvents();
         Controller.ClearEvents();
-        currentScreen?.OnGuiClosed();
+        currentScreen?.Uninit();
 
-        if (newScreen is UIScreenAdapter { Screen: MainMenuScreen })
+        if (newScreen is MainMenuScreen)
         {
             statFileWriter.Tick();
 
@@ -456,14 +456,14 @@ public partial class BetaSharp
         statFileWriter.SyncStats();
         if (newScreen == null && world == null)
         {
-            newScreen = new UIScreenAdapter(new MainMenuScreen(this));
+            newScreen = new MainMenuScreen(this);
         }
         else if (newScreen == null && player.health <= 0)
         {
-            newScreen = new UIScreenAdapter(new GameOverScreen(this));
+            newScreen = new GameOverScreen(this);
         }
 
-        if (newScreen is UIScreenAdapter { Screen: MainMenuScreen })
+        if (newScreen is MainMenuScreen)
         {
             HUD.Chat.ClearMessages();
         }
@@ -485,10 +485,7 @@ public partial class BetaSharp
         if (newScreen != null)
         {
             setIngameNotInFocus();
-            ScaledResolution scaledResolution = new(options, displayWidth, displayHeight);
-            int scaledWidth = scaledResolution.ScaledWidth;
-            int scaledHeight = scaledResolution.ScaledHeight;
-            newScreen.SetWorldAndResolution(this, scaledWidth, scaledHeight);
+            newScreen.Initialize();
             skipRenderWorld = false;
         }
         else
@@ -842,7 +839,7 @@ public partial class BetaSharp
                 catch (OutOfMemoryException)
                 {
                     crashCleanup();
-                    displayGuiScreen(new UIScreenAdapter(new ErrorScreen("Out of memory!", "Minecraft has run out of memory.")));
+                    displayGuiScreen(new ErrorScreen("Out of memory!", "Minecraft has run out of memory."));
                 }
                 finally
                 {
@@ -1032,7 +1029,7 @@ public partial class BetaSharp
                 GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
                 inGameHasFocus = true;
                 mouseHelper.grabMouseCursor();
-                displayGuiScreen((GuiScreen)null);
+                displayGuiScreen(null);
                 leftClickCounter = 10000;
                 MouseTicksRan = TicksRan + 10000;
             }
@@ -1069,7 +1066,7 @@ public partial class BetaSharp
     {
         if (currentScreen == null)
         {
-            displayGuiScreen(new UIScreenAdapter(new IngameMenuScreen(this)));
+            displayGuiScreen(new IngameMenuScreen(this));
         }
     }
 
@@ -1263,13 +1260,7 @@ public partial class BetaSharp
         displayHeight = newHeight;
         Mouse.setDisplayDimensions(displayWidth, displayHeight);
 
-        if (currentScreen != null)
-        {
-            ScaledResolution scaledResolution = new(options, newWidth, newHeight);
-            int scaledWidth = scaledResolution.ScaledWidth;
-            int scaledHeight = scaledResolution.ScaledHeight;
-            currentScreen.SetWorldAndResolution(this, scaledWidth, scaledHeight);
-        }
+        // UIScreen recomputes dimensions dynamically in Render(); no resize call needed.
 
         PostProcessManager.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
     }
@@ -1352,16 +1343,16 @@ public partial class BetaSharp
         {
             if (player.health <= 0)
             {
-                displayGuiScreen((GuiScreen)null);
+                displayGuiScreen(null);
             }
             else if (player.isSleeping() && world != null && world.IsRemote)
             {
-                displayGuiScreen(new UIScreenAdapter(new SleepScreen(this)));
+                displayGuiScreen(new SleepScreen(this));
             }
         }
-        else if (currentScreen is UIScreenAdapter { Screen: SleepScreen } && !player.isSleeping())
+        else if (currentScreen is SleepScreen && !player.isSleeping())
         {
-            displayGuiScreen((GuiScreen)null);
+            displayGuiScreen(null);
         }
 
         if (currentScreen != null)
@@ -1593,7 +1584,7 @@ public partial class BetaSharp
                         {
                             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
                             {
-                                displayGuiScreen(new UIScreenAdapter(new DebugEditorScreen(this, null)));
+                                displayGuiScreen(new DebugEditorScreen(this, null));
                             }
                             else
                             {
@@ -1618,7 +1609,7 @@ public partial class BetaSharp
 
                         if (Keyboard.getEventKey() == options.KeyBindInventory.keyCode)
                         {
-                            displayGuiScreen(new UIScreenAdapter(new InventoryScreen(player)));
+                            displayGuiScreen(new InventoryScreen(player));
                         }
 
                         if (Keyboard.getEventKey() == options.KeyBindDrop.keyCode)
@@ -1628,12 +1619,12 @@ public partial class BetaSharp
 
                         if (Keyboard.getEventKey() == options.KeyBindChat.keyCode)
                         {
-                            displayGuiScreen(new UIScreenAdapter(new ChatScreen(this)));
+                            displayGuiScreen(new ChatScreen(this));
                         }
 
                         if (Keyboard.getEventKey() == options.KeyBindCommand.keyCode)
                         {
-                            displayGuiScreen(new UIScreenAdapter(new ChatScreen(this, "/")));
+                            displayGuiScreen(new ChatScreen(this, "/"));
                         }
                     }
 
@@ -1694,7 +1685,7 @@ public partial class BetaSharp
     public void startWorld(string worldName, string mainMenuText, WorldSettings settings)
     {
         changeWorld(null);
-        displayGuiScreen(new UIScreenAdapter(new LevelLoadingScreen(worldName, settings)));
+        displayGuiScreen(new LevelLoadingScreen(worldName, settings));
     }
 
     public void changeWorld(World? newWorld, string loadingText = "", EntityPlayer targetEntity = null)

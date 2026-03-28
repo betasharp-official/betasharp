@@ -81,7 +81,7 @@ public class NewDebugComponentScreen(BetaSharp game, DebugEditorScreen parent) :
         };
         cancelButton.Style.Width = 100;
         cancelButton.Style.SetMargin(2);
-        cancelButton.OnClick += (_) => Game.displayGuiScreen(new UIScreenAdapter(parent));
+        cancelButton.OnClick += (_) => Game.displayGuiScreen(parent);
         buttonContainer.AddChild(cancelButton);
     }
 
@@ -109,7 +109,7 @@ public class NewDebugComponentScreen(BetaSharp game, DebugEditorScreen parent) :
             var instance = (DebugComponent)Activator.CreateInstance(_selectedType)!;
             instance.Right = right;
             parent.AddComponent(instance);
-            Game.displayGuiScreen(new UIScreenAdapter(parent));
+            Game.displayGuiScreen(parent);
         }
     }
 }

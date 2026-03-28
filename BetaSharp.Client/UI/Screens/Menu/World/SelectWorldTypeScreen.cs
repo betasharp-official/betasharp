@@ -44,7 +44,7 @@ public class SelectWorldTypeScreen(BetaSharp game, CreateWorldScreen parent, Wor
             if (_selectedIndex >= 0)
             {
                 parent.SetWorldType(_types[_selectedIndex]);
-                Game.displayGuiScreen(new UIScreenAdapter(parent));
+                Game.displayGuiScreen(parent);
             }
         };
         buttonPanel.AddChild(btnDone);
@@ -52,7 +52,7 @@ public class SelectWorldTypeScreen(BetaSharp game, CreateWorldScreen parent, Wor
         Button btnCancel = new() { Text = "Cancel" };
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(parent));
+        btnCancel.OnClick += (e) => Game.displayGuiScreen(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);

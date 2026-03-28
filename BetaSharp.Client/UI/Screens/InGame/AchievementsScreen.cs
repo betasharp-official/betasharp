@@ -72,7 +72,7 @@ public class AchievementsScreen(UIScreen? parent, StatFileWriter stats) : UIScre
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 10;
         btnDone.Style.FlexShrink = 0;
-        btnDone.OnClick += (_) => Game.displayGuiScreen(parent != null ? new UIScreenAdapter(parent) : null);
+        btnDone.OnClick += (_) => Game.displayGuiScreen(parent);
         Root.AddChild(btnDone);
     }
 

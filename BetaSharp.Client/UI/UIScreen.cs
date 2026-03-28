@@ -1,3 +1,4 @@
+using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Layout;
 using BetaSharp.Client.UI.Rendering;
@@ -29,6 +30,7 @@ public abstract class UIScreen
     public float MouseX { get; protected set; }
     public float MouseY { get; protected set; }
     public virtual bool PausesGame => true;
+    public virtual bool AllowUserInput => false;
 
     private bool _isInitialized = false;
 
@@ -43,6 +45,7 @@ public abstract class UIScreen
 
     public void Initialize()
     {
+        Keyboard.enableRepeatEvents(true);
         if (!_isInitialized)
         {
             Init();
@@ -53,7 +56,24 @@ public abstract class UIScreen
 
     protected abstract void Init();
     public virtual void OnEnter() { }
-    public virtual void Uninit() { }
+
+    public virtual void Uninit()
+    {
+        Keyboard.enableRepeatEvents(false);
+    }
+
+    public virtual void UpdateScreen() { }
+
+    public void HandleInput()
+    {
+        while (Mouse.next()) { HandleMouseInput(); }
+        while (Keyboard.Next()) { HandleKeyboardInput(); }
+        ControllerManager.UpdateGui(this);
+    }
+
+    public virtual bool HandleDPadNavigation(int dpadX, int dpadY, ref float cursorX, ref float cursorY) => false;
+
+    public virtual void GetTooltips(List<ActionTip> tips) { }
 
     public virtual void Update(float partialTicks)
     {

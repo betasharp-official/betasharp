@@ -48,7 +48,7 @@ public class DirectConnectScreen(BetaSharp game, UIScreen parent, ServerData ser
 
         Button btnCancel = new() { Text = "Cancel" };
         btnCancel.Style.Width = 100;
-        btnCancel.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(parent));
+        btnCancel.OnClick += (e) => Game.displayGuiScreen(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);
@@ -60,6 +60,6 @@ public class DirectConnectScreen(BetaSharp game, UIScreen parent, ServerData ser
         string host = parts[0];
         int portNum = 25565;
         if (parts.Length > 1) int.TryParse(parts[1], out portNum);
-        Game.displayGuiScreen(new UIScreenAdapter(new ConnectingScreen(Game, host, portNum)));
+        Game.displayGuiScreen(new ConnectingScreen(Game, host, portNum));
     }
 }

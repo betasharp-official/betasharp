@@ -22,7 +22,7 @@ public class AllControlsScreen : BaseOptionsScreen
         btnKeyboard.Style.MarginBottom = 4;
         btnKeyboard.OnClick += (e) =>
         {
-            Game.displayGuiScreen(new UIScreenAdapter(new ControlsScreen(this, Options)));
+            Game.displayGuiScreen(new ControlsScreen(this, Options));
         };
         list.AddChild(btnKeyboard);
 
@@ -30,7 +30,7 @@ public class AllControlsScreen : BaseOptionsScreen
         btnController.Style.Width = 310;
         btnController.OnClick += (e) =>
         {
-            Game.displayGuiScreen(new UIScreenAdapter(new ControllerControlsScreen(this, Options)));
+            Game.displayGuiScreen(new ControllerControlsScreen(this, Options));
         };
         list.AddChild(btnController);
 

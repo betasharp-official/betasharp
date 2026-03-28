@@ -2,6 +2,7 @@ using System.Reflection;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.UI;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Hit;
@@ -133,7 +134,7 @@ public static class ControlTooltip
         }
     }
 
-    private static void PopulateGuiTips(GuiScreen screen)
+    private static void PopulateGuiTips(UIScreen screen)
     {
         Add(ControlIcon.B, "Back");
 

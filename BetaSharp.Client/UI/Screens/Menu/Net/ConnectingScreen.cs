@@ -69,7 +69,7 @@ public class ConnectingScreen : UIScreen
     {
         IsCancelled = true;
         ClientHandler?.disconnect();
-        Game.displayGuiScreen(new UIScreenAdapter(new MainMenuScreen(Game)));
+        Game.displayGuiScreen(new MainMenuScreen(Game));
     }
 
     public override void Update(float partialTicks)

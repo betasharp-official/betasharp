@@ -76,7 +76,7 @@ public abstract class BaseOptionsScreen(UIScreen? parent, GameOptions options, s
         Options.SaveOptions();
         if (Parent != null)
         {
-            Game.displayGuiScreen(new UIScreenAdapter(Parent));
+            Game.displayGuiScreen(Parent);
         }
         else
         {

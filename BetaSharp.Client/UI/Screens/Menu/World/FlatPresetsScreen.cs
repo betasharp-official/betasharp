@@ -90,7 +90,7 @@ public class FlatPresetsScreen(BetaSharp game, CreateFlatWorldScreen parent) : U
         Button btnCancel = new() { Text = "Cancel" };
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(parent));
+        btnCancel.OnClick += (e) => Game.displayGuiScreen(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);
@@ -126,7 +126,7 @@ public class FlatPresetsScreen(BetaSharp game, CreateFlatWorldScreen parent) : U
         if (_txfOptions.Text.Length > 0)
         {
             parent.GeneratorOptions = _txfOptions.Text;
-            Game.displayGuiScreen(new UIScreenAdapter(parent));
+            Game.displayGuiScreen(parent);
         }
     }
 }

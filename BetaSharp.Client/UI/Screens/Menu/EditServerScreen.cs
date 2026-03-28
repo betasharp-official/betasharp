@@ -52,13 +52,13 @@ public class EditServerScreen(BetaSharp game, MultiplayerScreen parent, ServerDa
             serverData.Name = _txfName.Text;
             serverData.Ip = _txfAddress.Text;
             parent.ConfirmEdit(serverData, isEditing);
-            Game.displayGuiScreen(new UIScreenAdapter(parent));
+            Game.displayGuiScreen(parent);
         };
         buttonPanel.AddChild(btnDone);
 
         Button btnCancel = new() { Text = "Cancel" };
         btnCancel.Style.Width = 100;
-        btnCancel.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(parent));
+        btnCancel.OnClick += (e) => Game.displayGuiScreen(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);

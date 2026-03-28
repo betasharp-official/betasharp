@@ -31,7 +31,7 @@ public class ConfirmationScreen(BetaSharp game, UIScreen parent, string title, s
         btnConfirm.OnClick += (e) =>
         {
             callback(true);
-            Game.displayGuiScreen(new UIScreenAdapter(parent));
+            Game.displayGuiScreen(parent);
         };
         buttonPanel.AddChild(btnConfirm);
 
@@ -40,7 +40,7 @@ public class ConfirmationScreen(BetaSharp game, UIScreen parent, string title, s
         btnCancel.OnClick += (e) =>
         {
             callback(false);
-            Game.displayGuiScreen(new UIScreenAdapter(parent));
+            Game.displayGuiScreen(parent);
         };
         buttonPanel.AddChild(btnCancel);
 

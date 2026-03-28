@@ -63,7 +63,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         Button btnCreate = new() { Text = translations.TranslateKey("selectWorld.create") };
         btnCreate.Style.Width = 150;
         btnCreate.Style.SetMargin(2);
-        btnCreate.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(new CreateWorldScreen(Game)));
+        btnCreate.OnClick += (e) => Game.displayGuiScreen(new CreateWorldScreen(Game));
         row1.AddChild(btnCreate);
 
         buttonContainer.AddChild(row1);
@@ -87,7 +87,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         Button btnCancel = new() { Text = translations.TranslateKey("gui.cancel") };
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Game.displayGuiScreen(new UIScreenAdapter(new MainMenuScreen(Game)));
+        btnCancel.OnClick += (e) => Game.displayGuiScreen(new MainMenuScreen(Game));
         row2.AddChild(btnCancel);
 
         buttonContainer.AddChild(row2);
@@ -176,7 +176,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
     {
         if (_selectedWorldIndex < 0) return;
         string fileName = _saveList[_selectedWorldIndex].FileName;
-        Game.displayGuiScreen(new UIScreenAdapter(new RenameWorldScreen(Game, this, fileName)));
+        Game.displayGuiScreen(new RenameWorldScreen(Game, this, fileName));
     }
 
     private void DeleteSelected()
@@ -188,7 +188,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         string deleteQuestion = translations.TranslateKey("selectWorld.deleteQuestion");
         string deleteWarning = "'" + worldInfo.DisplayName + "' " + translations.TranslateKey("selectWorld.deleteWarning");
 
-        Game.displayGuiScreen(new UIScreenAdapter(new ConfirmationScreen(Game, this, deleteQuestion, deleteWarning, translations.TranslateKey("selectWorld.deleteButton"), translations.TranslateKey("gui.cancel"), (confirmed) =>
+        Game.displayGuiScreen(new ConfirmationScreen(Game, this, deleteQuestion, deleteWarning, translations.TranslateKey("selectWorld.deleteButton"), translations.TranslateKey("gui.cancel"), (confirmed) =>
         {
             if (confirmed)
             {
@@ -199,7 +199,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
                 PopulateWorldList();
                 UpdateButtons();
             }
-            Game.displayGuiScreen(new UIScreenAdapter(this));
-        })));
+            Game.displayGuiScreen(this);
+        }));
     }
 }

@@ -61,7 +61,7 @@ public class LevelLoadingScreen(string worldDir, WorldSettings settings) : UIScr
         {
             if (Game.internalServer.stopped)
             {
-                Game.displayGuiScreen(new UIScreenAdapter(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly")));
+                Game.displayGuiScreen(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly"));
                 return;
             }
 
@@ -85,7 +85,7 @@ public class LevelLoadingScreen(string worldDir, WorldSettings settings) : UIScr
                 _logger.LogInformation("[Internal-Client] Sending HandshakePacket");
                 clientHandler.addToSendQueue(new HandshakePacket(Game.session.username));
 
-                Game.displayGuiScreen(new UIScreenAdapter(new ConnectingScreen(Game, clientHandler)));
+                Game.displayGuiScreen(new ConnectingScreen(Game, clientHandler));
             }
         }
     }
