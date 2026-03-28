@@ -119,7 +119,7 @@ public abstract class ContainerScreen(ScreenHandler inventorySlots) : UIScreen(B
         base.Uninit();
         if (Game.player != null)
         {
-            Game.playerController.func_20086_a(InventorySlots.SyncId, Game.player);
+            Game.playerController.OnGuiClosed(InventorySlots.SyncId, Game.player);
         }
     }
 }

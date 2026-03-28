@@ -5,9 +5,10 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Guis;
-using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering.Entities;
+using BetaSharp.Client.Rendering.Entities;
+using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Client.UI.Screens.Menu.Net;
 using BetaSharp.Client.Worlds;
 using BetaSharp.Entities;
@@ -448,9 +449,9 @@ public class ClientNetworkHandler : NetHandler
 
         if (ent != null && collector != null)
         {
-            worldClient.Broadcaster.PlaySoundAtEntity(ent, "random.pop", 0.2F, ((rand.NextFloat() - rand.NextFloat()) * 0.7F + 1.0F) * 2.0F);
-            _game.particleManager.addEffect(new EntityPickupFX(_game.world, ent, collector, -0.5F));
-            worldClient.RemoveEntityFromWorld(packet.entityId);
+            _worldClient.Broadcaster.PlaySoundAtEntity(ent, "random.pop", 0.2F, ((_rand.NextFloat() - _rand.NextFloat()) * 0.7F + 1.0F) * 2.0F);
+            _game.particleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(_game.world, ent, collector, -0.5F)));
+            _worldClient.RemoveEntityFromWorld(packet.entityId);
         }
 
     }
@@ -503,35 +504,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onHandshake(HandshakePacket packet)
     {
-        if (packet.username.Equals("-"))
-        {
-            addToSendQueue(new LoginHelloPacket(_game.session.username, 14, LoginHelloPacket.BETASHARP_CLIENT_SIGNATURE, 0));
-        }
-        else
-        {
-            try
-            {
-                //TODO: AUTH
-                string authUrl = "http://www.minecraft.net/game/joinserver.jsp?user=" + _game.session.username + "&sessionId=" + _game.session.sessionId + "&serverId=" + packet.username;
-
-                string? response = _httpClient.GetStringAsync(authUrl).GetAwaiter().GetResult();
-                response = response?.Trim();
-
-                if (string.IsNullOrEmpty(response) || response.Equals("ok", StringComparison.OrdinalIgnoreCase))
-                {
-                    addToSendQueue(new LoginHelloPacket(_game.session.username, 14, LoginHelloPacket.BETASHARP_CLIENT_SIGNATURE, 0));
-                }
-                else
-                {
-                    netManager.disconnect("disconnect.loginFailedInfo", response);
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, e.Message);
-                netManager.disconnect("disconnect.genericReason", "Internal client error: " + e.Message);
-            }
-        }
+        addToSendQueue(new LoginHelloPacket(_game.session.username, 14, LoginHelloPacket.BETASHARP_CLIENT_SIGNATURE, 0));
     }
 
     public void disconnect()

@@ -1319,9 +1319,9 @@ public partial class BetaSharp
 
 
 
-        Profiler.Start("ingameGUI.updateTick");
-        ingameGUI.UpdateTick();
-        Profiler.Stop("ingameGUI.updateTick");
+        Profiler.Start("HUD.update");
+        HUD.Update(1.0f);
+        Profiler.Stop("HUD.update");
         gameRenderer.UpdateTargetedEntity(1.0F);
 
         gameRenderer.tick(partialTicks);

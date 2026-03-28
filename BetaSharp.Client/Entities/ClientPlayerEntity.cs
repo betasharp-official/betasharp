@@ -2,6 +2,7 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
+using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Client.UI;
 using BetaSharp.Client.UI.Screens.InGame;
 using BetaSharp.Client.UI.Screens.InGame.Containers;
