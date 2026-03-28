@@ -36,7 +36,7 @@ internal class PagedBucketAllocator
 
         public bool TryAllocate(uint stagingBufferId, int offset, int length, out uint slot)
         {
-            Debug.Assert(length <= _bucket.BytesPerSlot);
+            System.Diagnostics.Debug.Assert(length <= _bucket.BytesPerSlot);
 
             if (!FreeSlots.TryPop(out slot))
             {
@@ -149,7 +149,7 @@ internal class PagedBucketAllocator
 
     private static int GetBucketIndex(int size)
     {
-        Debug.Assert(size > 0 && size <= 1 << 20, $"Size out of bucket range: {size}");
+        System.Diagnostics.Debug.Assert(size > 0 && size <= 1 << 20, $"Size out of bucket range: {size}");
         return BitOperations.Log2((uint)size) - 7;
     }
 }
