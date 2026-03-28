@@ -165,14 +165,14 @@ internal class BlockDispenser : BlockWithEntity
         else if (itemStack.itemId == Item.Egg.id)
         {
             EntityEgg egg = new(@event.World, spawnX, spawnY, spawnZ);
-            egg.setEggHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
+            egg.setHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
             @event.World.Entities.SpawnEntity(egg);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }
         else if (itemStack.itemId == Item.Snowball.id)
         {
             EntitySnowball snowball = new(@event.World, spawnX, spawnY, spawnZ);
-            snowball.setSnowballHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
+            snowball.setHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
             @event.World.Entities.SpawnEntity(snowball);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }
