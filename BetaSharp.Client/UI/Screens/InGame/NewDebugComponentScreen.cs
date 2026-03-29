@@ -36,12 +36,12 @@ public class NewDebugComponentScreen(BetaSharp game, DebugEditorScreen parent) :
         _scroll.Style.MarginBottom = 10;
         Root.AddChild(_scroll);
 
-        foreach (Type type in DebugComponents.Components)
+        foreach (Type componentType in DebugComponents.RegisteredComponentTypes)
         {
-            var item = new DebugComponentTypeListItem(type);
+            var item = new DebugComponentTypeListItem(componentType);
             item.OnClick += (_) =>
             {
-                _selectedType = type;
+                _selectedType = componentType;
                 RefreshList();
                 UpdateButtons();
             };

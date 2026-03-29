@@ -6,66 +6,49 @@ namespace BetaSharp.Client.Debug;
 
 public static class DebugComponents
 {
-    public static readonly List<Type> Components = [];
+    public static IEnumerable<Type> RegisteredComponentTypes => s_registry.Values.Select(v => v.Type);
 
-    private static void CheckSubclass(Type t)
+    private static readonly Dictionary<string, (Type Type, Func<DebugComponent> Factory)> s_registry =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    public static void Register<T>() where T : DebugComponent, new()
     {
-        if (!typeof(DebugComponent).IsAssignableFrom(t))
-        {
-            throw new InvalidOperationException("Type is not a DebugComponent!");
-        }
-    }
-    public static void Register(Type t)
-    {
-        CheckSubclass(t);
-        Components.Add(t);
+        Type type = typeof(T);
+        s_registry[type.Name] = (type, () => new T());
     }
 
     public static void RegisterComponents()
     {
-        Register(typeof(DebugVersion));
-        Register(typeof(DebugFPS));
-        Register(typeof(DebugSeparator));
-        Register(typeof(DebugEntities));
-        Register(typeof(DebugWorld));
-        Register(typeof(DebugParticles));
-        Register(typeof(DebugLocation));
-        Register(typeof(DebugMemory));
-        Register(typeof(DebugFramework));
-        Register(typeof(DebugSystem));
-        Register(typeof(DebugTargetedBlock));
-        Register(typeof(DebugServer));
+        Register<DebugVersion>();
+        Register<DebugFPS>();
+        Register<DebugSeparator>();
+        Register<DebugEntities>();
+        Register<DebugWorld>();
+        Register<DebugParticles>();
+        Register<DebugLocation>();
+        Register<DebugMemory>();
+        Register<DebugFramework>();
+        Register<DebugSystem>();
+        Register<DebugTargetedBlock>();
+        Register<DebugServer>();
     }
+
     public static string GetName(Type t)
     {
-        CheckSubclass(t);
-
         DisplayNameAttribute? attr = t.GetCustomAttribute<DisplayNameAttribute>();
-        if (attr is null) return t.Name; // default to type name
-
-        return attr.DisplayName;
+        return attr?.DisplayName ?? t.Name;
     }
 
     public static string? GetDescription(Type t)
     {
-        CheckSubclass(t);
-
-        DescriptionAttribute? attr = t.GetCustomAttribute<DescriptionAttribute>();
-        if (attr is null) return null;
-
-        return attr.Description;
+        return t.GetCustomAttribute<DescriptionAttribute>()?.Description;
     }
 
-    public static DebugComponent? CreateInstanceFromTypeName(string typeName)
+    public static DebugComponent? CreateFromTypeName(string typeName)
     {
-        foreach (Type t in Components)
+        if (s_registry.TryGetValue(typeName, out (Type Type, Func<DebugComponent> Factory) entry))
         {
-            if (t.Name == typeName)
-            {
-                object? instance = Activator.CreateInstance(t);
-                if (instance is DebugComponent dc)
-                    return dc;
-            }
+            return entry.Factory();
         }
 
         return null;

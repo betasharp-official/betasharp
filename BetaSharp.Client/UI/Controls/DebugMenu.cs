@@ -45,7 +45,10 @@ public class DebugMenu : UIElement
             foreach (DebugComponent component in _game.componentsStorage.Overlay.Components)
             {
                 UIElement column = component.Right ? _rightColumn : _leftColumn;
-                component.AddRows(column, ctx);
+                foreach (DebugRowData row in component.GetRows(ctx))
+                {
+                    column.AddChild(row.IsSpacer ? DebugRow.Spacer() : new DebugRow(row.Text!, row.TextColor));
+                }
             }
         }
 

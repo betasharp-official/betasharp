@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Controls;
 
 namespace BetaSharp.Client.Debug.Components;
 
@@ -10,14 +8,14 @@ public class DebugMemory : DebugComponent
 {
     public DebugMemory() { }
 
-    public override void AddRows(UIElement column, DebugContext ctx)
+    public override IEnumerable<DebugRowData> GetRows(DebugContext ctx)
     {
         long maxMem = ctx.GCMonitor.MaxMemoryBytes;
         long usedMem = ctx.GCMonitor.UsedMemoryBytes;
         long heapMem = ctx.GCMonitor.UsedHeapBytes;
 
-        column.AddChild(new DebugRow($"Mem: {FormatPercentage(usedMem, maxMem)} {FormatMegabytes(usedMem)}/{FormatMegabytes(maxMem)}MB"));
-        column.AddChild(new DebugRow($"Allocated: {FormatPercentage(heapMem, maxMem)} {FormatMegabytes(heapMem)}MB"));
+        yield return new DebugRowData($"Mem: {FormatPercentage(usedMem, maxMem)} {FormatMegabytes(usedMem)}/{FormatMegabytes(maxMem)}MB");
+        yield return new DebugRowData($"Allocated: {FormatPercentage(heapMem, maxMem)} {FormatMegabytes(heapMem)}MB");
     }
 
     public override DebugComponent Duplicate()

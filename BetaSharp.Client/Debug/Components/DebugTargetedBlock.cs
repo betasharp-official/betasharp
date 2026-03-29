@@ -1,7 +1,5 @@
 using System.ComponentModel;
 using BetaSharp.Blocks;
-using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Controls;
 using BetaSharp.Util.Hit;
 
 namespace BetaSharp.Client.Debug.Components;
@@ -14,11 +12,11 @@ public class DebugTargetedBlock : DebugComponent
 
     private static readonly string[] s_blockSides = ["Down", "Up", "North", "South", "West", "East"];
 
-    public override void AddRows(UIElement column, DebugContext ctx)
+    public override IEnumerable<DebugRowData> GetRows(DebugContext ctx)
     {
         BetaSharp g = ctx.Game;
 
-        if (g.objectMouseOver.Type != HitResultType.TILE || g.world == null) return;
+        if (g.objectMouseOver.Type != HitResultType.TILE || g.world == null) yield break;
 
         int blockX = g.objectMouseOver.BlockX;
         int blockY = g.objectMouseOver.BlockY;
@@ -46,10 +44,10 @@ public class DebugTargetedBlock : DebugComponent
             }
         }
 
-        column.AddChild(new DebugRow("Targeted block:"));
-        column.AddChild(new DebugRow($"{blockName} ({blockId}:{blockMeta})"));
-        column.AddChild(new DebugRow($"XYZ: {blockX} / {blockY} / {blockZ}"));
-        column.AddChild(new DebugRow($"Face: {sideName}"));
+        yield return new DebugRowData("Targeted block:");
+        yield return new DebugRowData($"{blockName} ({blockId}:{blockMeta})");
+        yield return new DebugRowData($"XYZ: {blockX} / {blockY} / {blockZ}");
+        yield return new DebugRowData($"Face: {sideName}");
     }
 
     public override DebugComponent Duplicate()

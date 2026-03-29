@@ -24,7 +24,7 @@ public class DebugComponentsStorage
 
     public static void DefaultComponents(List<DebugComponent> list)
     {
-        void right(DebugComponent comp)
+        void Right(DebugComponent comp)
         {
             comp.Right = true;
             list.Add(comp);
@@ -40,12 +40,12 @@ public class DebugComponentsStorage
         list.Add(new DebugSeparator());
         list.Add(new DebugServer());
 
-        right(new DebugFramework());
-        right(new DebugMemory());
-        right(new DebugSeparator());
-        right(new DebugSystem());
-        right(new DebugSeparator());
-        right(new DebugTargetedBlock());
+        Right(new DebugFramework());
+        Right(new DebugMemory());
+        Right(new DebugSeparator());
+        Right(new DebugSystem());
+        Right(new DebugSeparator());
+        Right(new DebugTargetedBlock());
     }
 
     public void LoadComponents()
@@ -74,7 +74,7 @@ public class DebugComponentsStorage
                         continue;
                     }
 
-                    DebugComponent? comp = DebugComponents.CreateInstanceFromTypeName(parts[0]);
+                    DebugComponent? comp = DebugComponents.CreateFromTypeName(parts[0]);
                     if (comp is null)
                     {
                         _logger.LogWarning("\"" + parts[0] + "\" is not a component type.");

@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Controls;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Generation.Biomes;
 
@@ -15,7 +13,7 @@ public class DebugLocation : DebugComponent
 
     public DebugLocation() { }
 
-    public override void AddRows(UIElement column, DebugContext ctx)
+    public override IEnumerable<DebugRowData> GetRows(DebugContext ctx)
     {
         double x = Math.Floor(ctx.Game.player.x * 1000) / 1000;
         double y = Math.Floor(ctx.Game.player.y * 100000) / 100000;
@@ -36,12 +34,12 @@ public class DebugLocation : DebugComponent
         Biome biome = ctx.Game.world.Dimension.BiomeSource.GetBiome(bx, bz);
         int light = ctx.Game.world.Lighting.GetLightLevel(bx, by, bz);
 
-        column.AddChild(new DebugRow("XYZ: " + x + " / " + y + " / " + z));
-        column.AddChild(new DebugRow("Block: " + bx + " " + by + " " + bz));
-        column.AddChild(new DebugRow("Facing: " + cardinalDirection + " " + verticalLookDirection + " (" +
-            towards + ") (" + yaw + " / " + pitch + ")"));
-        column.AddChild(new DebugRow("Biome: " + biome.Name));
-        column.AddChild(new DebugRow("Light: " + light));
+        yield return new DebugRowData("XYZ: " + x + " / " + y + " / " + z);
+        yield return new DebugRowData("Block: " + bx + " " + by + " " + bz);
+        yield return new DebugRowData("Facing: " + cardinalDirection + " " + verticalLookDirection + " (" +
+            towards + ") (" + yaw + " / " + pitch + ")");
+        yield return new DebugRowData("Biome: " + biome.Name);
+        yield return new DebugRowData("Light: " + light);
     }
 
     private static string GetTowards(int facingIndex)
@@ -50,6 +48,7 @@ public class DebugLocation : DebugComponent
             ? "Towards " + s_towards[facingIndex]
             : "Towards N/A";
     }
+
     private static string GetCardinalDirection(int facingIndex)
     {
         return facingIndex >= 0 && facingIndex < s_cardinalDirections.Length

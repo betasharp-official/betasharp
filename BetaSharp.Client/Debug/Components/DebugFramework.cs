@@ -1,7 +1,5 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Controls;
 
 namespace BetaSharp.Client.Debug.Components;
 
@@ -11,9 +9,9 @@ public class DebugFramework : DebugComponent
 {
     public DebugFramework() { }
 
-    public override void AddRows(UIElement column, DebugContext ctx)
+    public override IEnumerable<DebugRowData> GetRows(DebugContext ctx)
     {
-        column.AddChild(new DebugRow(RuntimeInformation.FrameworkDescription));
+        yield return new DebugRowData(RuntimeInformation.FrameworkDescription);
     }
 
     public override DebugComponent Duplicate()

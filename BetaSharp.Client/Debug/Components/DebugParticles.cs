@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Controls;
 
 namespace BetaSharp.Client.Debug.Components;
 
@@ -10,9 +8,9 @@ public class DebugParticles : DebugComponent
 {
     public DebugParticles() { }
 
-    public override void AddRows(UIElement column, DebugContext ctx)
+    public override IEnumerable<DebugRowData> GetRows(DebugContext ctx)
     {
-        column.AddChild(new DebugRow(ctx.Game.getParticleDebugInfo()));
+        yield return new DebugRowData(ctx.Game.getParticleDebugInfo());
     }
 
     public override DebugComponent Duplicate()

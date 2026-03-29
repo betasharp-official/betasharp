@@ -2,14 +2,8 @@ using BetaSharp.Util;
 
 namespace BetaSharp.Client.Debug;
 
-public class DebugContext
+public class DebugContext(BetaSharp game)
 {
-    public readonly BetaSharp Game;
-    public readonly GCMonitor GCMonitor;
-
-    public DebugContext(BetaSharp game)
-    {
-        Game = game;
-        GCMonitor = new GCMonitor();
-    }
+    public readonly BetaSharp Game = game;
+    public readonly GCMonitor GCMonitor = new();
 }

@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Controls;
 
 namespace BetaSharp.Client.Debug.Components;
 
@@ -10,9 +8,9 @@ public class DebugSeparator : DebugComponent
 {
     public DebugSeparator() { }
 
-    public override void AddRows(UIElement column, DebugContext ctx)
+    public override IEnumerable<DebugRowData> GetRows(DebugContext ctx)
     {
-        column.AddChild(DebugRow.Spacer());
+        yield return DebugRowData.Spacer();
     }
 
     public override DebugComponent Duplicate()
