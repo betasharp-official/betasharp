@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using BetaSharp.Launcher.Features;
+using BetaSharp.Launcher.Features.Hosting;
 using BetaSharp.Launcher.Features.Shell;
 using BetaSharp.Launcher.Features.Splash;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,8 +39,16 @@ internal sealed class App : Application
                 .Navigate<SplashViewModel>();
 
             desktop.MainWindow = _services.GetRequiredService<ShellView>();
+            desktop.Exit += DesktopOnExit;
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void DesktopOnExit(object? sender, ControlledApplicationLifetimeExitEventArgs eventArgs)
+    {
+        _services
+            .GetRequiredService<HostingViewModel>()
+            .Stop();
     }
 }

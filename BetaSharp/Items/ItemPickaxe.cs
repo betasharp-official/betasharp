@@ -25,6 +25,8 @@ internal class ItemPickaxe : ItemTool
         Block.Netherrack,
         Block.LapisOre,
         Block.LapisBlock,
+        Block.RedstoneOre,
+        Block.CobblestoneStairs
     ];
 
     public ItemPickaxe(int id, EnumToolMaterial enumToolMaterial) : base(id, 2, enumToolMaterial, blocksEffectiveAgainst)
