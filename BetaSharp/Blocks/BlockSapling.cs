@@ -17,17 +17,11 @@ internal class BlockSapling : BlockPlant
 
     public override void OnTick(OnTickEvent @event)
     {
-        if (@event.World.IsRemote)
-        {
-            return;
-        }
+        if (@event.World.IsRemote) return;
 
         base.OnTick(@event);
 
-        if (@event.World.Reader.GetBrightness(@event.X, @event.Y + 1, @event.Z) < 9 || Random.Shared.Next(30) != 0)
-        {
-            return;
-        }
+        if (@event.World.Reader.GetBrightness(@event.X, @event.Y + 1, @event.Z) < 9 || Random.Shared.Next(30) != 0) return;
 
         int saplingMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((saplingMeta & 8) == 0)

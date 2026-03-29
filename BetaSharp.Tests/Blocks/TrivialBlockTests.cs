@@ -9,7 +9,7 @@ public class BlockRegistryTests
     public void StandardBlocks_HaveValidConfiguration(Block block, float expectedHardness, string expectedName)
     {
         Assert.Equal(expectedHardness, block.Hardness, 5);
-        Assert.Equal($"tile.{expectedName}", block.GetBlockName());
+        Assert.Equal($"tile.{expectedName}", block.BlockName);
         Assert.NotNull(block.SoundGroup);
     }
 }

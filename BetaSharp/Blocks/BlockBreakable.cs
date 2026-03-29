@@ -7,9 +7,9 @@ public class BlockBreakable : Block
 {
     private readonly bool _hideAdjacentFaces;
 
-    protected BlockBreakable(int id, int textureId, Material material, bool hideAdjacentFaces) : base(id, textureId, material) => _hideAdjacentFaces = hideAdjacentFaces;
+    public override bool IsOpaque => false;
 
-    public override bool IsOpaque() => false;
+    protected BlockBreakable(int id, int textureId, Material material, bool hideAdjacentFaces) : base(id, textureId, material) => _hideAdjacentFaces = hideAdjacentFaces;
 
     public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {

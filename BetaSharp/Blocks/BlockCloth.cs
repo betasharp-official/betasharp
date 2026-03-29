@@ -6,10 +6,7 @@ internal class BlockCloth() : Block(35, 64, Material.Wool)
 {
     public override int GetTexture(Side side, int meta)
     {
-        if (meta == 0)
-        {
-            return TextureId;
-        }
+        if (meta == 0) return TextureId;
 
         meta = ~(meta & 15);
         return 113 + ((meta & 8) >> 3) + (meta & 7) * 16;

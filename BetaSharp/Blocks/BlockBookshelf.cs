@@ -6,5 +6,5 @@ internal class BlockBookshelf(int id, int textureId) : Block(id, textureId, Mate
 {
     public override int GetTexture(Side side) => side <= Side.Up ? 4 : TextureId; // 4 is the wood plank texture id
 
-    public override int GetDroppedItemCount() => 0;
+    public override int DroppedItemCount => 0;
 }

@@ -32,10 +32,7 @@ public abstract class BlockFluid : Block
 
     private int GetLiquidDepth(IBlockReader iBlockReader, int x, int y, int z)
     {
-        if (iBlockReader.GetMaterial(x, y, z) != Material)
-        {
-            return -1;
-        }
+        if (iBlockReader.GetMaterial(x, y, z) != Material) return -1;
 
         int depth = iBlockReader.GetBlockMeta(x, y, z);
         if (depth >= 8)
@@ -46,13 +43,13 @@ public abstract class BlockFluid : Block
         return depth;
     }
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
     public override bool HasCollision(int meta, bool allowLiquids) => allowLiquids && meta == 0;
 
-    public override bool IsSolidFace(IBlockReader iBlockReader, int x, int y, int z, int face)
+    protected override bool IsSolidFace(IBlockReader iBlockReader, int x, int y, int z, int face)
     {
         Material mat = iBlockReader.GetMaterial(x, y, z);
         return mat != Material && mat != Material.Ice && (face == (int)Side.Up || base.IsSolidFace(iBlockReader, x, y, z, face));
@@ -70,7 +67,7 @@ public abstract class BlockFluid : Block
 
     public override int GetDroppedItemId(int blockMeta) => 0;
 
-    public override int GetDroppedItemCount() => 0;
+    public override int DroppedItemCount => 0;
 
     private Vector3D<double> GetFlow(IBlockReader iBlockReader, int x, int y, int z)
     {
@@ -142,7 +139,7 @@ public abstract class BlockFluid : Block
         return new Vec3D(flowVec.X, flowVec.Y, flowVec.Z);
     }
 
-    public override int GetTickRate() => Material == Material.Water ? 5 : Material == Material.Lava ? 30 : 0;
+    public override int TickRate => Material == Material.Water ? 5 : Material == Material.Lava ? 30 : 0;
 
     public override float GetLuminance(ILightProvider lighting, int x, int y, int z)
     {
@@ -207,11 +204,7 @@ public abstract class BlockFluid : Block
 
     private void CheckBlockCollisions(IBlockReader reader, IBlockWriter writer, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        if (reader.GetBlockId(x, y, z) != Id)
-        {
-            return;
-        }
-
+        if (reader.GetBlockId(x, y, z) != Id) return;
         if (Material != Material.Lava) return;
 
         bool hasWaterAdjacent =

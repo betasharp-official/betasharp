@@ -24,10 +24,10 @@ public class FakeWorld : IWorldContext, IBlockReader, IBlockWriter
     public bool IsAir(int x, int y, int z) => GetBlockId(x, y, z) == 0;
     public Material GetMaterial(int x, int y, int z) => BetaSharp.Blocks.Block.Blocks[GetBlockId(x, y, z)]?.Material ?? BetaSharp.Blocks.Materials.Material.Air;
     public bool IsOpaque(int x, int y, int z) => false;
-    public bool ShouldSuffocate(int x, int y, int z) 
+    public bool ShouldSuffocate(int x, int y, int z)
     {
         int id = GetBlockId(x, y, z);
-        return id != 0 && BetaSharp.Blocks.Block.Blocks[id]?.IsOpaque() == true && BetaSharp.Blocks.Block.Blocks[id]?.IsFullCube() == true;
+        return id != 0 && BetaSharp.Blocks.Block.Blocks[id]?.IsOpaque == true && BetaSharp.Blocks.Block.Blocks[id]?.IsFullCube == true;
     }
     public BiomeSource GetBiomeSource() => null!;
     public bool IsTopY(int x, int y, int z) => false;
@@ -107,7 +107,7 @@ public class FakeWorld : IWorldContext, IBlockReader, IBlockWriter
     public Dimension Dimension { get; } = null!;
     public WorldTickScheduler TickScheduler { get; }
     public PersistentStateManager StateManager { get; } = null!;
-    
+
     public FakeWorld()
     {
         Broadcaster = new WorldEventBroadcaster(new(), this, this);

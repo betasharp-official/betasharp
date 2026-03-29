@@ -8,23 +8,17 @@ internal class BlockStationary : BlockFluid
     public BlockStationary(int id, Material material) : base(id, material)
     {
         SetTickRandomly(false);
-        if (material == Material.Lava)
-        {
-            SetTickRandomly(true);
-        }
+        if (material == Material.Lava) SetTickRandomly(true);
     }
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
         base.NeighborUpdate(@event);
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) != Id)
-        {
-            return;
-        }
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) != Id) return;
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, Id - 1, meta, false);
-        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, Id - 1, GetTickRate());
+        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, Id - 1, TickRate);
     }
 
     private void convertToFlowing(OnTickEvent @event)
@@ -32,23 +26,18 @@ internal class BlockStationary : BlockFluid
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, Id - 1, meta, false);
         @event.World.Broadcaster.SetBlocksDirty(@event.X, @event.Y, @event.Z, @event.X, @event.Y, @event.Z);
-        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, Id - 1, GetTickRate());
+        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, Id - 1, TickRate);
     }
 
     public override void OnTick(OnTickEvent @event)
     {
-        int x = @event.X;
-        int y = @event.Y;
-        int z = @event.Z;
+        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
         if (@event.World.Reader.GetBlockId(x, y, z) == Id)
         {
             convertToFlowing(@event);
         }
 
-        if (Material != Material.Lava)
-        {
-            return;
-        }
+        if (Material != Material.Lava) return;
 
         int attempts = @event.World.Random.NextInt(3);
 

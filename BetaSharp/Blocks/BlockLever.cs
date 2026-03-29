@@ -8,9 +8,9 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
 {
     public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
     public override BlockRendererType GetRenderType() => BlockRendererType.Lever;
 
@@ -237,5 +237,5 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
                (direction == 1 && side == (int)Side.East);
     }
 
-    public override bool CanEmitRedstonePower() => true;
+    public override bool CanEmitRedstonePower => true;
 }

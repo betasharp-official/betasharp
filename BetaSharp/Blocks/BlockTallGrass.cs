@@ -36,18 +36,18 @@ public class BlockTallGrass : BlockPlant
 
     public override int GetColorMultiplier(IBlockReader reader, int x, int y, int z, int knownMeta)
     {
-        if (knownMeta == 0)
-        {
-            return 0xFFFFFF;
-        }
+        if (knownMeta == 0) return 0xFFFFFF;
 
         long positionSeed = x * 3129871 + z * 6129781 + y;
         positionSeed = positionSeed * positionSeed * 42317861L + positionSeed * 11L;
         int bx = (int)(x + ((positionSeed >> 14) & 31L));
         int bz = (int)(z + ((positionSeed >> 24) & 31L));
+
         reader.GetBiomeSource().GetBiomesInArea(bx, bz, 1, 1);
+
         double temperature = reader.GetBiomeSource().TemperatureMap[0];
         double downfall = reader.GetBiomeSource().DownfallMap[0];
+
         return GrassColors.getColor(temperature, downfall);
     }
 

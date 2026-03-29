@@ -17,7 +17,7 @@ public class BlockRedstoneRepeater : Block
         SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
     }
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
     public override bool CanPlaceAt(CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z) &&
                                                                   base.CanPlaceAt(context);
@@ -67,16 +67,13 @@ public class BlockRedstoneRepeater : Block
 
     public override bool IsPoweringSide(IBlockReader reader, int x, int y, int z, int side)
     {
-        if (!_lit)
-        {
-            return false;
-        }
+        if (!_lit) return false;
 
         int facing = reader.GetBlockMeta(x, y, z) & 3;
-        return (facing == 0 && side == (int)Side.South) ||
-               (facing == 1 && side == (int)Side.West) ||
-               (facing == 2 && side == (int)Side.North) ||
-               (facing == 3 && side == (int)Side.East);
+        return (facing == 0 && side == Side.South.ToInt()) ||
+               (facing == 1 && side == Side.West.ToInt()) ||
+               (facing == 2 && side == Side.North.ToInt()) ||
+               (facing == 3 && side == Side.East.ToInt());
     }
 
     public override void NeighborUpdate(OnTickEvent @event)
@@ -124,7 +121,7 @@ public class BlockRedstoneRepeater : Block
         return true;
     }
 
-    public override bool CanEmitRedstonePower() => true;
+    public override bool CanEmitRedstonePower => true;
 
     public override void OnPlaced(OnPlacedEvent @event)
     {
@@ -151,16 +148,13 @@ public class BlockRedstoneRepeater : Block
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, Id);
     }
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
     public override int GetDroppedItemId(int blockMeta) => Item.Repeater.id;
 
     public override void RandomDisplayTick(OnTickEvent ctx)
     {
-        if (!_lit)
-        {
-            return;
-        }
+        if (!_lit) return;
 
         int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         double particleX = ctx.X + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
@@ -168,9 +162,12 @@ public class BlockRedstoneRepeater : Block
         double particleZ = ctx.Z + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
         double offsetX = 0.0D;
         double offsetY = 0.0D;
+
+        int facing = meta & 3;
+
         if (Random.Shared.Next(2) == 0)
         {
-            switch (meta & 3)
+            switch (facing)
             {
                 case 0:
                     offsetY = -0.3125D;
@@ -189,7 +186,7 @@ public class BlockRedstoneRepeater : Block
         else
         {
             int delayIndex = (meta & 12) >> 2;
-            switch (meta & 3)
+            switch (facing)
             {
                 case 0:
                     offsetY = RenderOffset[delayIndex];

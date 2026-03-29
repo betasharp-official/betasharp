@@ -7,23 +7,25 @@ namespace BetaSharp.Blocks;
 
 internal class BlockPressurePlate : Block
 {
+    private const float EdgeInset = 1.0F / 16.0F;
+    private const float HalfWidth = 0.5F;
+    private const float HalfHeight = 2.0F / 16.0F;
+    private const float HalfDepth = 0.5F;
+
     private readonly PressurePlateActiviationRule _activationRule;
+    public override int TickRate => 20;
+    public override bool IsOpaque => false;
+    public override bool IsFullCube => false;
+    public override PistonBehavior PistonBehavior => PistonBehavior.Destroy;
 
     public BlockPressurePlate(int id, int textureId, PressurePlateActiviationRule rule, Material material) : base(id, textureId, material)
     {
         _activationRule = rule;
         SetTickRandomly(true);
-        float edgeInset = 1.0F / 16.0F;
-        SetBoundingBox(edgeInset, 0.0F, edgeInset, 1.0F - edgeInset, 1 / 32f, 1.0F - edgeInset);
+        SetBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1 / 32f, 1.0F - EdgeInset);
     }
 
-    public override int GetTickRate() => 20;
-
     public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
-
-    public override bool IsOpaque() => false;
-
-    public override bool IsFullCube() => false;
 
     public override bool CanPlaceAt(CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
 
@@ -35,10 +37,7 @@ internal class BlockPressurePlate : Block
     {
         bool shouldBreak = !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
 
-        if (!shouldBreak)
-        {
-            return;
-        }
+        if (!shouldBreak) return;
 
         DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -46,10 +45,7 @@ internal class BlockPressurePlate : Block
 
     public override void OnTick(OnTickEvent @event)
     {
-        if (@event.World.IsRemote)
-        {
-            return;
-        }
+        if (@event.World.IsRemote) return;
 
         if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) != 0)
         {
@@ -59,10 +55,7 @@ internal class BlockPressurePlate : Block
 
     public override void OnEntityCollision(OnEntityCollisionEvent @event)
     {
-        if (@event.World.IsRemote)
-        {
-            return;
-        }
+        if (@event.World.IsRemote) return;
 
         if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) != 1)
         {
@@ -74,7 +67,6 @@ internal class BlockPressurePlate : Block
     {
         const float detectionInset = 2.0F / 16.0F;
         bool wasPressed = ctx.Reader.GetBlockMeta(x, y, z) == 1;
-        bool shouldBePressed = false;
 
         List<Entity>? entitiesInBox = _activationRule switch
         {
@@ -84,10 +76,7 @@ internal class BlockPressurePlate : Block
             _ => null
         };
 
-        if (entitiesInBox?.Count > 0)
-        {
-            shouldBePressed = true;
-        }
+        bool shouldBePressed = entitiesInBox?.Count > 0;
 
         switch (shouldBePressed)
         {
@@ -109,7 +98,7 @@ internal class BlockPressurePlate : Block
 
         if (shouldBePressed)
         {
-            ctx.TickScheduler.ScheduleBlockUpdate(x, y, z, Id, GetTickRate());
+            ctx.TickScheduler.ScheduleBlockUpdate(x, y, z, Id, TickRate);
         }
     }
 
@@ -141,17 +130,12 @@ internal class BlockPressurePlate : Block
 
     public override bool IsPoweringSide(IBlockReader reader, int x, int y, int z, int side) => reader.GetBlockMeta(x, y, z) > 0;
 
-    public override bool IsStrongPoweringSide(IBlockReader reader, int x, int y, int z, int side) => reader.GetBlockMeta(x, y, z) == 0 ? false : side == (int)Side.Up;
+    public override bool IsStrongPoweringSide(IBlockReader reader, int x, int y, int z, int side) => reader.GetBlockMeta(x, y, z) != 0 && side == Side.Up.ToInt();
 
-    public override bool CanEmitRedstonePower() => true;
+    public override bool CanEmitRedstonePower => true;
 
     public override void SetupRenderBoundingBox()
     {
-        const float halfWidth = 0.5F;
-        const float halfHeight = 2.0F / 16.0F;
-        const float halfDepth = 0.5F;
-        SetBoundingBox(0.5F - halfWidth, 0.5F - halfHeight, 0.5F - halfDepth, 0.5F + halfWidth, 0.5F + halfHeight, 0.5F + halfDepth);
+        SetBoundingBox(0.5F - HalfWidth, 0.5F - HalfHeight, 0.5F - HalfDepth, 0.5F + HalfWidth, 0.5F + HalfHeight, 0.5F + HalfDepth);
     }
-
-    public override int GetPistonBehavior() => 1;
 }

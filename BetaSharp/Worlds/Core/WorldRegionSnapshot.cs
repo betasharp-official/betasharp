@@ -125,13 +125,13 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
     public bool ShouldSuffocate(int x, int y, int z)
     {
         Block block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.Material.BlocksMovement && block.IsFullCube();
+        return block != null && block.Material.BlocksMovement && block.IsFullCube;
     }
 
     public bool IsOpaque(int x, int y, int z)
     {
         Block block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.IsOpaque();
+        return block != null && block.IsOpaque;
     }
 
     public int GetBlockMeta(int x, int y, int z) => getBlockMeta(x, y, z);
@@ -233,13 +233,13 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
     public bool shouldSuffocate(int x, int y, int z)
     {
         Block block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.Material.BlocksMovement && block.IsFullCube();
+        return block != null && block.Material.BlocksMovement && block.IsFullCube;
     }
 
     public bool isOpaque(int x, int y, int z)
     {
         Block block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.IsOpaque();
+        return block != null && block.IsOpaque;
     }
 
     public bool getIsLit()

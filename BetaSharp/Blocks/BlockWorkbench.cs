@@ -10,10 +10,7 @@ internal class BlockWorkbench : Block
 
     public override bool OnUse(OnUseEvent ctx)
     {
-        if (ctx.World.IsRemote)
-        {
-            return true;
-        }
+        if (ctx.World.IsRemote) return true;
 
         ctx.Player.openCraftingScreen(ctx.X, ctx.Y, ctx.Z);
         return true;

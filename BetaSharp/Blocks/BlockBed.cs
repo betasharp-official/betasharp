@@ -10,18 +10,19 @@ public class BlockBed : Block
 {
     private static readonly int[][] s_bedOffsets = [[0, 1], [-1, 0], [0, -1], [1, 0]];
 
+    public override bool IsFullCube => false;
+
+    public override bool IsOpaque => false;
+
+    public override PistonBehavior PistonBehavior => PistonBehavior.Destroy;
+
     public BlockBed(int id) : base(id, 134, Material.Wool) => SetDefaultShape();
 
     public override bool OnUse(OnUseEvent @event)
     {
-        if (@event.World.IsRemote)
-        {
-            return true;
-        }
+        if (@event.World.IsRemote) return true;
 
-        int x = @event.X;
-        int y = @event.Y;
-        int z = @event.Z;
+        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
 
         int meta = @event.World.Reader.GetBlockMeta(x, y, z);
         if (!IsHeadOfBed(meta))
@@ -30,10 +31,7 @@ public class BlockBed : Block
             x += s_bedOffsets[direction][0];
             z += s_bedOffsets[direction][1];
 
-            if (@event.World.Reader.GetBlockId(x, y, z) != Id)
-            {
-                return true;
-            }
+            if (@event.World.Reader.GetBlockId(x, y, z) != Id) return true;
 
             meta = @event.World.Reader.GetBlockMeta(x, y, z);
         }
@@ -60,10 +58,7 @@ public class BlockBed : Block
             EntityPlayer? occupant = null;
             foreach (EntityPlayer otherPlayer in @event.World.Entities.Players)
             {
-                if (!otherPlayer.isSleeping())
-                {
-                    continue;
-                }
+                if (!otherPlayer.isSleeping()) continue;
 
                 Vec3i sleepingPos = otherPlayer.sleepingPos;
                 if (sleepingPos.X == x && sleepingPos.Y == y && sleepingPos.Z == z)
@@ -103,23 +98,31 @@ public class BlockBed : Block
 
     public override int GetTexture(Side side, int meta)
     {
-        if (side == Side.Down)
-        {
-            return Planks.TextureId;
-        }
+        if (side == Side.Down) return Planks.TextureId;
 
         int direction = GetDirection(meta);
         Side sideFacing = Facings.BedFacings[direction][side.ToInt()];
-        return IsHeadOfBed(meta) ? sideFacing == Side.North ? TextureId + 2 + 16 : sideFacing != Side.East && sideFacing != Side.West ? TextureId + 1 : TextureId + 1 + 16 :
-            sideFacing == Side.South ? TextureId - 1 + 16 :
-            sideFacing != Side.East && sideFacing != Side.West ? TextureId : TextureId + 16;
+
+        if (IsHeadOfBed(meta))
+        {
+            return sideFacing switch
+            {
+                Side.North => TextureId + 2 + 16,
+                Side.East or Side.West => TextureId + 1 + 16,
+                _ => TextureId + 1
+            };
+        }
+
+        return sideFacing switch
+        {
+            Side.South => TextureId - 1 + 16,
+            Side.East or Side.West => TextureId + 16,
+            _ => TextureId
+        };
     }
 
     public override BlockRendererType GetRenderType() => BlockRendererType.Bed;
 
-    public override bool IsFullCube() => false;
-
-    public override bool IsOpaque() => false;
 
     public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => SetDefaultShape();
 
@@ -222,6 +225,4 @@ public class BlockBed : Block
             base.DropStacks(@event);
         }
     }
-
-    public override int GetPistonBehavior() => 1;
 }

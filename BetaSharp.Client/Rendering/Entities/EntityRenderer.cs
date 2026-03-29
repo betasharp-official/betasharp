@@ -178,7 +178,7 @@ public abstract class EntityRenderer
 
     private void renderShadowOnBlock(Block block, Vec3D pos, int blockX, int blockY, int blockZ, float shadowiness, float radius, Vec3D offset)
     {
-        if (!block.IsFullCube()) return;
+        if (!block.IsFullCube) return;
 
         double shadowDarkness = (shadowiness - (pos.y - (blockY + offset.y)) / 2.0D) * 0.5D * World.GetLuminance(blockX, blockY, blockZ);
 

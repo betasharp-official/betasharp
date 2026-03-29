@@ -100,15 +100,9 @@ public class Block
     public static readonly Block CobblestoneStairs = new BlockStairs(67, Cobblestone).SetBlockName("stairsStone").IgnoreMetaUpdates();
     public static readonly Block WallSign = new BlockSign(68, typeof(BlockEntitySign), false).SetHardness(1.0F).SetSoundGroup(SoundWoodFootstep).SetBlockName("sign").DisableStats().IgnoreMetaUpdates();
     public static readonly Block Lever = new BlockLever(69, 96).SetHardness(0.5F).SetSoundGroup(SoundWoodFootstep).SetBlockName("lever").IgnoreMetaUpdates();
-
-    public static readonly Block StonePressurePlate = new BlockPressurePlate(70, Stone.TextureId, PressurePlateActiviationRule.MOBS, Material.Stone).SetHardness(0.5F).SetSoundGroup(SoundStoneFootstep).SetBlockName("pressurePlate")
-        .IgnoreMetaUpdates();
-
+    public static readonly Block StonePressurePlate = new BlockPressurePlate(70, Stone.TextureId, PressurePlateActiviationRule.MOBS, Material.Stone).SetHardness(0.5F).SetSoundGroup(SoundStoneFootstep).SetBlockName("pressurePlate") .IgnoreMetaUpdates();
     public static readonly Block IronDoor = new BlockDoor(71, Material.Metal).SetHardness(5.0F).SetSoundGroup(SoundMetalFootstep).SetBlockName("doorIron").DisableStats().IgnoreMetaUpdates();
-
-    public static readonly Block WoodenPressurePlate = new BlockPressurePlate(72, Planks.TextureId, PressurePlateActiviationRule.EVERYTHING, Material.Wood).SetHardness(0.5F).SetSoundGroup(SoundWoodFootstep).SetBlockName("pressurePlate")
-        .IgnoreMetaUpdates();
-
+    public static readonly Block WoodenPressurePlate = new BlockPressurePlate(72, Planks.TextureId, PressurePlateActiviationRule.EVERYTHING, Material.Wood).SetHardness(0.5F).SetSoundGroup(SoundWoodFootstep).SetBlockName("pressurePlate") .IgnoreMetaUpdates();
     public static readonly Block RedstoneOre = new BlockRedstoneOre(73, 51, false).SetHardness(3.0F).SetResistance(5.0F).SetSoundGroup(SoundStoneFootstep).SetBlockName("oreRedstone").IgnoreMetaUpdates();
     public static readonly Block LitRedstoneOre = new BlockRedstoneOre(74, 51, true).SetLuminance(10.0F / 16.0F).SetHardness(3.0F).SetResistance(5.0F).SetSoundGroup(SoundStoneFootstep).SetBlockName("oreRedstone").IgnoreMetaUpdates();
     public static readonly Block RedstoneTorch = new BlockRedstoneTorch(75, 115, false).SetHardness(0.0F).SetSoundGroup(SoundWoodFootstep).SetBlockName("notGate").IgnoreMetaUpdates();
@@ -134,7 +128,6 @@ public class Block
     public static readonly Block Trapdoor = new BlockTrapDoor(96, Material.Wood).SetHardness(3.0F).SetSoundGroup(SoundWoodFootstep).SetBlockName("trapdoor").DisableStats().IgnoreMetaUpdates();
     public readonly int Id;
     public readonly Material Material;
-    private string? _blockName;
     public Box BoundingBox;
     public float Hardness;
     public float ParticleFallSpeedModifier;
@@ -143,6 +136,13 @@ public class Block
     public float Slipperiness;
     public BlockSoundGroup SoundGroup;
     public int TextureId;
+    public virtual bool IsOpaque => true;
+    public virtual int TickRate => 10;
+    public virtual int DroppedItemCount => 1;
+    public virtual bool CanEmitRedstonePower { get; } = false;
+    public string? BlockName { get; private set; }
+    public virtual bool IsFullCube { get; } = true;
+    public virtual PistonBehavior PistonBehavior => Material.PistonBehavior;
 
     static Block()
     {
@@ -182,8 +182,8 @@ public class Block
         Blocks[id] = this;
         Id = id;
         SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-        BlocksOpaque[id] = IsOpaque();
-        BlockLightOpacity[id] = IsOpaque() ? 255 : 0;
+        BlocksOpaque[id] = IsOpaque;
+        BlockLightOpacity[id] = IsOpaque ? 255 : 0;
         BlocksAllowVision[id] = !material.BlocksVision;
         BlocksWithEntity[id] = false;
     }
@@ -223,8 +223,6 @@ public class Block
         Resistance = resistance * 3.0F;
         return this;
     }
-
-    public virtual bool IsFullCube() => true;
 
     public virtual BlockRendererType GetRenderType() => BlockRendererType.Standard;
 
@@ -295,7 +293,7 @@ public class Block
         };
     }
 
-    public virtual bool IsSolidFace(IBlockReader iBlockReader, int x, int y, int z, int face) => iBlockReader.GetMaterial(x, y, z).IsSolid;
+    protected virtual bool IsSolidFace(IBlockReader iBlockReader, int x, int y, int z, int face) => iBlockReader.GetMaterial(x, y, z).IsSolid;
 
     public virtual int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, int side) => GetTextureId(iBlockReader, x, y, z, side.ToSide());
     public virtual int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side) => GetTexture(side, iBlockReader.GetBlockMeta(x, y, z));
@@ -321,7 +319,6 @@ public class Block
 
     public virtual Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => BoundingBox.Offset(x, y, z);
 
-    public virtual bool IsOpaque() => true;
 
     public virtual bool HasCollision(int meta, bool allowLiquids) => HasCollision();
 
@@ -336,9 +333,6 @@ public class Block
     {
     }
 
-    public virtual int GetTickRate() => 10;
-
-    public virtual int GetDroppedItemCount() => 1;
 
     public virtual int GetDroppedItemId(int blockMeta) => Id;
 
@@ -346,12 +340,9 @@ public class Block
 
     public virtual void DropStacks(OnDropEvent ctx)
     {
-        if (ctx.World.IsRemote || !ctx.World.Rules.GetBool(DefaultRules.DoTileDrops))
-        {
-            return;
-        }
+        if (ctx.World.IsRemote || !ctx.World.Rules.GetBool(DefaultRules.DoTileDrops)) return;
 
-        int dropCount = GetDroppedItemCount();
+        int dropCount = DroppedItemCount;
 
         for (int attempt = 0; attempt < dropCount; ++attempt)
         {
@@ -370,10 +361,7 @@ public class Block
 
     protected static void DropStack(IWorldContext world, int x, int y, int z, ItemStack itemStack)
     {
-        if (world.IsRemote || !world.Rules.GetBool(DefaultRules.DoTileDrops))
-        {
-            return;
-        }
+        if (world.IsRemote || !world.Rules.GetBool(DefaultRules.DoTileDrops)) return;
 
         const float spreadFactor = 0.7F;
         double offsetX = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5D;
@@ -437,7 +425,6 @@ public class Block
 
     public virtual bool IsPoweringSide(IBlockReader reader, int x, int y, int z, int side) => false;
 
-    public virtual bool CanEmitRedstonePower() => false;
 
     public virtual bool IsFlammable(IBlockReader iBlockReader, int x, int y, int z) => false;
 
@@ -454,15 +441,13 @@ public class Block
 
     public virtual bool CanGrow(OnTickEvent ctx) => true;
 
-    public Block SetBlockName(string name)
+    protected Block SetBlockName(string name)
     {
-        _blockName = $"tile.{name}";
+        BlockName = $"tile.{name}";
         return this;
     }
 
-    public string TranslateBlockName() => StatCollector.TranslateToLocal($"{GetBlockName()}.name");
-
-    public string? GetBlockName() => _blockName;
+    public string TranslateBlockName() => StatCollector.TranslateToLocal($"{BlockName}.name");
 
 
     public bool GetEnableStats() => ShouldTrackStatistics;
@@ -472,8 +457,6 @@ public class Block
         ShouldTrackStatistics = false;
         return this;
     }
-
-    public virtual int GetPistonBehavior() => Material.PistonBehavior;
 
     public virtual void OnBreak(OnBreakEvent e)
     {

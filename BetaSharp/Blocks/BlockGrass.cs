@@ -15,9 +15,9 @@ public class BlockGrass : Block
     public override int GetTexture(Side side) =>
         side switch
         {
-            Side.Up => 0, // top: grass green
-            Side.Down => 2, // bottom: dirt
-            _ => 3 // sides: grass+dirt edge
+            Side.Up => 0,
+            Side.Down => 2,
+            _ => 3
         };
 
     public override int GetColorForFace(int meta, Side face) => face == Side.Up ? GrassColors.getDefaultColor() : 0xFFFFFF;
@@ -48,18 +48,11 @@ public class BlockGrass : Block
 
     public override void OnTick(OnTickEvent ctx)
     {
-        if (ctx.World.IsRemote)
-        {
-            return;
-        }
+        if (ctx.World.IsRemote) return;
 
         if (ctx.World.Lighting.GetLightLevel(ctx.X, ctx.Y + 1, ctx.Z) < 4 && BlockLightOpacity[ctx.World.Reader.GetBlockId(ctx.X, ctx.Y + 1, ctx.Z)] > 2)
         {
-            if (Random.Shared.Next(4) != 0)
-            {
-                return;
-            }
-
+            if (Random.Shared.Next(4) != 0) return;
             ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, Dirt.Id);
         }
         else if (ctx.World.Lighting.GetLightLevel(ctx.X, ctx.Y + 1, ctx.Z) >= 9)

@@ -32,9 +32,9 @@ public class BlockPistonMoving : BlockWithEntity
 
     public override BlockRendererType GetRenderType() => BlockRendererType.Entity;
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
     public override bool OnUse(OnUseEvent @event)
     {

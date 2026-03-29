@@ -11,9 +11,9 @@ internal class BlockFence(int id, int texture) : Block(id, texture, Material.Woo
 
     public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => new Box(x, y, z, x + 1, y + 1.5F, z + 1);
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
     public override BlockRendererType GetRenderType() => BlockRendererType.Fence;
 }

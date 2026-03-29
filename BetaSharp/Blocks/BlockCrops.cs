@@ -7,12 +7,13 @@ namespace BetaSharp.Blocks;
 
 public class BlockCrops : BlockPlant
 {
+    private const float HalfWidth = 0.5F;
+
     public BlockCrops(int i, int j) : base(i, j)
     {
         TextureId = j;
         SetTickRandomly(true);
-        float halfWidth = 0.5F;
-        SetBoundingBox(0.5F - halfWidth, 0.0F, 0.5F - halfWidth, 0.5F + halfWidth, 0.25F, 0.5F + halfWidth);
+        SetBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, 0.25F, 0.5F + HalfWidth);
     }
 
     protected override bool CanPlantOnTop(int id) => id == Farmland.Id;
@@ -21,20 +22,13 @@ public class BlockCrops : BlockPlant
     {
         base.OnTick(@event);
         if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y + 1, @event.Z) < 9)
-        {
             return;
-        }
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        if (meta >= 7)
-        {
-            return;
-        }
+        if (meta >= 7) return;
 
         if (Random.Shared.Next(100) / GetAvailableMoisture(@event.World.Reader, @event.X, @event.Y, @event.Z) != 0)
-        {
             return;
-        }
 
         ++meta;
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
@@ -91,10 +85,7 @@ public class BlockCrops : BlockPlant
 
     public override int GetTexture(Side side, int meta)
     {
-        if (meta < 0)
-        {
-            meta = 7;
-        }
+        if (meta < 0) meta = 7;
 
         return TextureId + meta;
     }
@@ -104,17 +95,11 @@ public class BlockCrops : BlockPlant
     public override void DropStacks(OnDropEvent @event)
     {
         base.DropStacks(@event);
-        if (@event.World.IsRemote || !@event.World.Rules.GetBool(DefaultRules.DoTileDrops))
-        {
-            return;
-        }
+        if (@event.World.IsRemote || !@event.World.Rules.GetBool(DefaultRules.DoTileDrops)) return;
 
         for (int attempt = 0; attempt < 3; ++attempt)
         {
-            if (Random.Shared.Next(15) > @event.Meta)
-            {
-                continue;
-            }
+            if (Random.Shared.Next(15) > @event.Meta) continue;
 
             const float spreadFactor = 0.7F;
             float offsetX = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5F;
@@ -130,5 +115,5 @@ public class BlockCrops : BlockPlant
 
     public override int GetDroppedItemId(int blockMeta) => blockMeta == 7 ? Item.Wheat.id : -1;
 
-    public override int GetDroppedItemCount() => 1;
+    public override int DroppedItemCount => 1;
 }

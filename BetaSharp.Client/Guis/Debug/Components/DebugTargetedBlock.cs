@@ -38,9 +38,9 @@ public class DebugTargetedBlock : DebugComponent
             {
                 blockName = translatedName;
             }
-            else if (!string.IsNullOrWhiteSpace(block.GetBlockName()))
+            else if (!string.IsNullOrWhiteSpace(block.BlockName))
             {
-                blockName = block.GetBlockName();
+                blockName = block.BlockName;
             }
         }
 

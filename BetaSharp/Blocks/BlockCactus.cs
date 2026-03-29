@@ -56,9 +56,9 @@ internal class BlockCactus : Block
         _ => TextureId
     };
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
     public override BlockRendererType GetRenderType() => BlockRendererType.Cactus;
 
@@ -67,10 +67,7 @@ internal class BlockCactus : Block
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (CanGrow(@event))
-        {
-            return;
-        }
+        if (CanGrow(@event)) return;
 
         DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -80,26 +77,10 @@ internal class BlockCactus : Block
 
     private static bool CanGrow(IBlockReader world, int x, int y, int z)
     {
-        if (world.GetMaterial(x - 1, y, z).IsSolid)
-        {
-            return false;
-        }
-
-        if (world.GetMaterial(x + 1, y, z).IsSolid)
-        {
-            return false;
-        }
-
-        if (world.GetMaterial(x, y, z - 1).IsSolid)
-        {
-            return false;
-        }
-
-        if (world.GetMaterial(x, y, z + 1).IsSolid)
-        {
-            return false;
-        }
-
+        if (world.GetMaterial(x - 1, y, z).IsSolid) return false;
+        if (world.GetMaterial(x + 1, y, z).IsSolid) return false;
+        if (world.GetMaterial(x, y, z - 1).IsSolid) return false;
+        if (world.GetMaterial(x, y, z + 1).IsSolid) return false;
         int blockBelowId = world.GetBlockId(x, y - 1, z);
         return blockBelowId == Cactus.Id || blockBelowId == Sand.Id;
     }

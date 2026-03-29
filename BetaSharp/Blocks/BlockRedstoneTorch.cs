@@ -28,16 +28,13 @@ internal class BlockRedstoneTorch : BlockTorch
         foreach (RedstoneUpdateInfo _ in updates.Where(updateInfo => updateInfo.x == ctx.X && updateInfo.y == ctx.Y && updateInfo.z == ctx.Z))
         {
             ++updateCount;
-            if (updateCount >= 8)
-            {
-                return true;
-            }
+            if (updateCount >= 8) return true;
         }
 
         return false;
     }
 
-    public override int GetTickRate() => 2;
+    public override int TickRate => 2;
 
     public override void OnPlaced(OnPlacedEvent @event)
     {
@@ -46,10 +43,7 @@ internal class BlockRedstoneTorch : BlockTorch
             base.OnPlaced(@event);
         }
 
-        if (!_lit)
-        {
-            return;
-        }
+        if (!_lit) return;
 
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, Id);
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, Id);
@@ -61,10 +55,7 @@ internal class BlockRedstoneTorch : BlockTorch
 
     public override void OnBreak(OnBreakEvent @event)
     {
-        if (!_lit)
-        {
-            return;
-        }
+        if (!_lit) return;
 
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, Id);
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, Id);
@@ -76,53 +67,41 @@ internal class BlockRedstoneTorch : BlockTorch
 
     public override bool IsPoweringSide(IBlockReader reader, int x, int y, int z, int side)
     {
-        if (!_lit)
-        {
-            return false;
-        }
+        if (!_lit) return false;
 
         int meta = reader.GetBlockMeta(x, y, z);
-        return (meta != 5 || side != (int)Side.Up) && (meta != 3 || side != (int)Side.South) && (meta != 4 || side != (int)Side.North) && (meta != 1 || side != (int)Side.East) && (meta != 2 || side != (int)Side.West);
+        return (meta != 5 || side != Side.Up.ToInt()) && (meta != 3 || side != Side.South.ToInt()) && (meta != 4 || side != Side.North.ToInt()) && (meta != 1 || side != Side.East.ToInt()) && (meta != 2 || side != Side.West.ToInt());
     }
 
     private static bool ShouldUnpower(OnTickEvent @event)
     {
-        int x = @event.X;
-        int y = @event.Y;
-        int z = @event.Z;
+        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
         RedstoneEngine redstoneEngine = @event.World.Redstone;
         int meta = @event.World.Reader.GetBlockMeta(x, y, z);
-        return (meta == 5 && redstoneEngine.IsPoweringSide(x, y - 1, z, (int)Side.Down)) || (meta == 3 && redstoneEngine.IsPoweringSide(x, y, z - 1, (int)Side.North)) ||
-               (meta == 4 && redstoneEngine.IsPoweringSide(x, y, z + 1, (int)Side.South)) || (meta == 1 && redstoneEngine.IsPoweringSide(x - 1, y, z, (int)Side.West)) ||
-               (meta == 2 && redstoneEngine.IsPoweringSide(x + 1, y, z, (int)Side.East));
+        return (meta == 5 && redstoneEngine.IsPoweringSide(x, y - 1, z, Side.Down.ToInt())) || (meta == 3 && redstoneEngine.IsPoweringSide(x, y, z - 1, Side.North.ToInt())) ||
+               (meta == 4 && redstoneEngine.IsPoweringSide(x, y, z + 1, Side.South.ToInt())) || (meta == 1 && redstoneEngine.IsPoweringSide(x - 1, y, z, Side.West.ToInt())) ||
+               (meta == 2 && redstoneEngine.IsPoweringSide(x + 1, y, z, Side.East.ToInt()));
     }
 
     public override void OnTick(OnTickEvent @event)
     {
-        int x = @event.X;
-        int y = @event.Y;
-        int z = @event.Z;
+        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
         bool shouldTurnOff = ShouldUnpower(@event);
         List<RedstoneUpdateInfo> updates = s_torchUpdates.Value!;
 
-        while (updates.Count > 0 && @event.World.GetTime() - updates[0].updateTime > 100L)
-        {
-            updates.RemoveAt(0);
-        }
+        while (updates.Count > 0 && @event.World.GetTime() - updates[0].updateTime > 100L) updates.RemoveAt(0);
 
-        if (_lit)
+        if (!_lit && !shouldTurnOff && !IsBurnedOut(@event, false))
         {
-            if (!shouldTurnOff)
-            {
-                return;
-            }
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, LitRedstoneTorch.Id, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z));
+        }
+        else
+        {
+            if (!shouldTurnOff) return;
 
             @event.World.Writer.SetBlock(x, y, z, RedstoneTorch.Id, @event.World.Reader.GetBlockMeta(x, y, z));
 
-            if (!IsBurnedOut(@event, true))
-            {
-                return;
-            }
+            if (!IsBurnedOut(@event, true)) return;
 
             @event.World.Broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, "random.fizz", 0.5F, 2.6F + (Random.Shared.NextSingle() - Random.Shared.NextSingle()) * 0.8F);
 
@@ -134,30 +113,23 @@ internal class BlockRedstoneTorch : BlockTorch
                 @event.World.Broadcaster.AddParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
             }
         }
-        else if (!shouldTurnOff && !IsBurnedOut(@event, false))
-        {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, LitRedstoneTorch.Id, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z));
-        }
     }
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
         base.NeighborUpdate(@event);
-        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, Id, GetTickRate());
+        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, Id, TickRate);
     }
 
     public override bool IsStrongPoweringSide(IBlockReader reader, int x, int y, int z, int side) => side == (int)Side.Down && IsPoweringSide(reader, x, y, z, side);
 
     public override int GetDroppedItemId(int blockMeta) => LitRedstoneTorch.Id;
 
-    public override bool CanEmitRedstonePower() => true;
+    public override bool CanEmitRedstonePower => true;
 
     public override void RandomDisplayTick(OnTickEvent @event)
     {
-        if (!_lit)
-        {
-            return;
-        }
+        if (!_lit) return;
 
         const double verticalOffset = 0.22F;
         const double horizontalOffset = 0.27F;

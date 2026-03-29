@@ -10,6 +10,13 @@ internal class BlockFire : Block
     private readonly int[] _burnChances = new int[256];
     private readonly int[] _spreadChances = new int[256];
 
+    public override bool IsOpaque => false;
+
+    public override bool IsFullCube => false;
+    public override int DroppedItemCount => 0;
+
+    public override int TickRate => 40;
+
     public BlockFire(int id, int textureId) : base(id, textureId, Material.Fire) => SetTickRandomly(true);
 
     protected override void Init()
@@ -32,23 +39,11 @@ internal class BlockFire : Block
     }
 
     public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
-
-    public override bool IsOpaque() => false;
-
-    public override bool IsFullCube() => false;
-
     public override BlockRendererType GetRenderType() => BlockRendererType.Fire;
-
-    public override int GetDroppedItemCount() => 0;
-
-    public override int GetTickRate() => 40;
 
     public override void OnTick(OnTickEvent @event)
     {
-        if (!@event.World.Rules.GetBool(DefaultRules.DoFireTick))
-        {
-            return;
-        }
+        if (!@event.World.Rules.GetBool(DefaultRules.DoFireTick)) return;
 
         bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == Netherrack.Id;
         if (!CanPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z)))
@@ -70,7 +65,7 @@ internal class BlockFire : Block
                 @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, fireAge + @event.World.Random.NextInt(3) / 2);
             }
 
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, Id, GetTickRate());
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, Id, TickRate);
             if (!isOnNetherrack && !AreBlocksAroundFlammable(@event.World.Reader, @event.X, @event.Y, @event.Z))
             {
                 if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) || fireAge > 3)
@@ -182,10 +177,7 @@ internal class BlockFire : Block
     private int GetBurnChance(IBlockReader world, int x, int y, int z)
     {
         const sbyte initialMax = 0;
-        if (!world.IsAir(x, y, z))
-        {
-            return 0;
-        }
+        if (!world.IsAir(x, y, z)) return 0;
 
         int maxChance = GetBurnChance(world, x + 1, y, z, initialMax);
         maxChance = GetBurnChance(world, x - 1, y, z, maxChance);
@@ -231,7 +223,7 @@ internal class BlockFire : Block
         }
         else
         {
-            ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, Id, GetTickRate());
+            ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, Id, TickRate);
         }
     }
 
@@ -246,69 +238,70 @@ internal class BlockFire : Block
         float particleX;
         float particleY;
         float particleZ;
-        if (!ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) && !Fire.IsFlammable(ctx.World.Reader, ctx.X, ctx.Y - 1, ctx.Z))
-        {
-            if (Fire.IsFlammable(ctx.World.Reader, ctx.X - 1, ctx.Y, ctx.Z))
-            {
-                for (particleIndex = 0; particleIndex < 2; ++particleIndex)
-                {
-                    particleX = ctx.X + Random.Shared.NextSingle() * 0.1F;
-                    particleY = ctx.Y + Random.Shared.NextSingle();
-                    particleZ = ctx.Z + Random.Shared.NextSingle();
-                    ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
-                }
-            }
 
-            if (Fire.IsFlammable(ctx.World.Reader, ctx.X + 1, ctx.Y, ctx.Z))
-            {
-                for (particleIndex = 0; particleIndex < 2; ++particleIndex)
-                {
-                    particleX = ctx.X + 1 - Random.Shared.NextSingle() * 0.1F;
-                    particleY = ctx.Y + Random.Shared.NextSingle();
-                    particleZ = ctx.Z + Random.Shared.NextSingle();
-                    ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
-                }
-            }
-
-            if (Fire.IsFlammable(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z - 1))
-            {
-                for (particleIndex = 0; particleIndex < 2; ++particleIndex)
-                {
-                    particleX = ctx.X + Random.Shared.NextSingle();
-                    particleY = ctx.Y + Random.Shared.NextSingle();
-                    particleZ = ctx.Z + Random.Shared.NextSingle() * 0.1F;
-                    ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
-                }
-            }
-
-            if (Fire.IsFlammable(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z + 1))
-            {
-                for (particleIndex = 0; particleIndex < 2; ++particleIndex)
-                {
-                    particleX = ctx.X + Random.Shared.NextSingle();
-                    particleY = ctx.Y + Random.Shared.NextSingle();
-                    particleZ = ctx.Z + 1 - Random.Shared.NextSingle() * 0.1F;
-                    ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
-                }
-            }
-
-            if (Fire.IsFlammable(ctx.World.Reader, ctx.X, ctx.Y + 1, ctx.Z))
-            {
-                for (particleIndex = 0; particleIndex < 2; ++particleIndex)
-                {
-                    particleX = ctx.X + Random.Shared.NextSingle();
-                    particleY = ctx.Y + 1 - Random.Shared.NextSingle() * 0.1F;
-                    particleZ = ctx.Z + Random.Shared.NextSingle();
-                    ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
-                }
-            }
-        }
-        else
+        if (ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z) || Fire.IsFlammable(ctx.World.Reader, ctx.X, ctx.Y - 1, ctx.Z))
         {
             for (particleIndex = 0; particleIndex < 3; ++particleIndex)
             {
                 particleX = ctx.X + Random.Shared.NextSingle();
                 particleY = ctx.Y + Random.Shared.NextSingle() * 0.5F + 0.5F;
+                particleZ = ctx.Z + Random.Shared.NextSingle();
+                ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+            }
+
+            return;
+        }
+
+        if (Fire.IsFlammable(ctx.World.Reader, ctx.X - 1, ctx.Y, ctx.Z))
+        {
+            for (particleIndex = 0; particleIndex < 2; ++particleIndex)
+            {
+                particleX = ctx.X + Random.Shared.NextSingle() * 0.1F;
+                particleY = ctx.Y + Random.Shared.NextSingle();
+                particleZ = ctx.Z + Random.Shared.NextSingle();
+                ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+            }
+        }
+
+        if (Fire.IsFlammable(ctx.World.Reader, ctx.X + 1, ctx.Y, ctx.Z))
+        {
+            for (particleIndex = 0; particleIndex < 2; ++particleIndex)
+            {
+                particleX = ctx.X + 1 - Random.Shared.NextSingle() * 0.1F;
+                particleY = ctx.Y + Random.Shared.NextSingle();
+                particleZ = ctx.Z + Random.Shared.NextSingle();
+                ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+            }
+        }
+
+        if (Fire.IsFlammable(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z - 1))
+        {
+            for (particleIndex = 0; particleIndex < 2; ++particleIndex)
+            {
+                particleX = ctx.X + Random.Shared.NextSingle();
+                particleY = ctx.Y + Random.Shared.NextSingle();
+                particleZ = ctx.Z + Random.Shared.NextSingle() * 0.1F;
+                ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+            }
+        }
+
+        if (Fire.IsFlammable(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z + 1))
+        {
+            for (particleIndex = 0; particleIndex < 2; ++particleIndex)
+            {
+                particleX = ctx.X + Random.Shared.NextSingle();
+                particleY = ctx.Y + Random.Shared.NextSingle();
+                particleZ = ctx.Z + 1 - Random.Shared.NextSingle() * 0.1F;
+                ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+            }
+        }
+
+        if (Fire.IsFlammable(ctx.World.Reader, ctx.X, ctx.Y + 1, ctx.Z))
+        {
+            for (particleIndex = 0; particleIndex < 2; ++particleIndex)
+            {
+                particleX = ctx.X + Random.Shared.NextSingle();
+                particleY = ctx.Y + 1 - Random.Shared.NextSingle() * 0.1F;
                 particleZ = ctx.Z + Random.Shared.NextSingle();
                 ctx.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
             }

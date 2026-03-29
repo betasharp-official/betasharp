@@ -17,20 +17,15 @@ internal class BlockReed : Block
 
     public override void OnTick(OnTickEvent @event)
     {
-        if (!@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z))
+        if (!@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z)) return;
+
+        int heightBelow = 1;
+        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == Id)
         {
-            return;
+            heightBelow++;
         }
 
-        int heightBelow;
-        for (heightBelow = 1; @event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == Id; ++heightBelow)
-        {
-        }
-
-        if (heightBelow >= 3)
-        {
-            return;
-        }
+        if (heightBelow >= 3) return;
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (meta == 15)
@@ -74,9 +69,9 @@ internal class BlockReed : Block
 
     public override int GetDroppedItemId(int blockMeta) => Item.SugarCane.id;
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
     public override BlockRendererType GetRenderType() => BlockRendererType.Reed;
 }

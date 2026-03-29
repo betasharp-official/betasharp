@@ -2,7 +2,7 @@ using BetaSharp.Worlds.Maps;
 
 namespace BetaSharp.Blocks.Materials;
 
-public class Material
+public class Material(MapColor mapColor)
 {
     public static readonly Material Air = new MaterialTransparent(MapColor.Air);
     public static readonly Material SolidOrganic = new(MapColor.Grass);
@@ -28,16 +28,14 @@ public class Material
     public static readonly Material Cactus = new Material(MapColor.Foliage).SetTransparent().SetDestroyPistonBehavior();
     public static readonly Material Clay = new(MapColor.Clay);
     public static readonly Material Pumpkin = new Material(MapColor.Foliage).SetDestroyPistonBehavior();
-    public static readonly Material NetherPortal = new MaterialPortal(MapColor.Air).SetUnpushablePistonBehavior();
+    public static readonly Material NetherPortal = new MaterialPortal(MapColor.Air).SetUnPushablePistonBehavior();
     public static readonly Material Cake = new Material(MapColor.Air).SetDestroyPistonBehavior();
     public static readonly Material Cobweb = new Material(MapColor.Cloth).SetRequiresTool().SetDestroyPistonBehavior();
-    public static readonly Material Piston = new Material(MapColor.Stone).SetUnpushablePistonBehavior();
+    public static readonly Material Piston = new Material(MapColor.Stone).SetUnPushablePistonBehavior();
 
     private bool _transparent;
 
-    public Material(MapColor mapColor) => MapColor = mapColor;
-
-    public MapColor MapColor { get; }
+    public MapColor MapColor { get; } = mapColor;
     public virtual bool IsFluid => false;
     public virtual bool IsSolid => true;
     public virtual bool BlocksVision => true;
@@ -48,9 +46,9 @@ public class Material
 
     public bool IsHandHarvestable { get; private set; } = true;
 
-    public int PistonBehavior { get; private set; }
+    public PistonBehavior PistonBehavior { get; private set; } = PistonBehavior.Push;
 
-    public bool Suffocates => _transparent ? false : BlocksMovement;
+    public bool Suffocates => !_transparent && BlocksMovement;
 
     private Material SetTransparent()
     {
@@ -70,7 +68,7 @@ public class Material
         return this;
     }
 
-    public Material SetReplaceable()
+    protected Material SetReplaceable()
     {
         IsReplaceable = true;
         return this;
@@ -78,13 +76,13 @@ public class Material
 
     protected Material SetDestroyPistonBehavior()
     {
-        PistonBehavior = 1;
+        PistonBehavior = PistonBehavior.Destroy;
         return this;
     }
 
-    protected Material SetUnpushablePistonBehavior()
+    private Material SetUnPushablePistonBehavior()
     {
-        PistonBehavior = 2;
+        PistonBehavior = PistonBehavior.UnPushable;
         return this;
     }
 }

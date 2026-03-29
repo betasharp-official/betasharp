@@ -29,9 +29,7 @@ public class BlockPlant : Block
     private void BreakIfCannotGrow(IWorldContext level, int x, int y, int z)
     {
         if (CanGrow(new OnTickEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z), level.Reader.GetBlockId(x, y, z))))
-        {
             return;
-        }
 
         DropStacks(new OnDropEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z)));
         level.Writer.SetBlock(x, y, z, 0);
@@ -43,9 +41,9 @@ public class BlockPlant : Block
 
     public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
     public override BlockRendererType GetRenderType() => BlockRendererType.Reed;
 }

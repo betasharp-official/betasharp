@@ -14,29 +14,27 @@ internal class BlockPumpkin : Block
         _lit = lit;
     }
 
+    private static Side GetFrontFace(int meta) => meta switch
+    {
+        0 => Side.South,
+        1 => Side.West,
+        2 => Side.North,
+        3 => Side.East,
+        _ => Side.South
+    };
+
     public override int GetTexture(Side side, int meta)
     {
-        if (side is Side.Up or Side.Down)
-        {
-            return TextureId;
-        }
+        if (side is Side.Up or Side.Down) return TextureId;
 
         int faceTexture = TextureId + 1 + 16;
-        if (_lit)
-        {
-            ++faceTexture;
-        }
-
-        return meta == 2 && side == Side.North ? faceTexture :
-            meta == 3 && side == Side.East ? faceTexture :
-            meta == 0 && side == Side.South ? faceTexture :
-            meta == 1 && side == Side.West ? faceTexture : TextureId + 16;
+        if (_lit) ++faceTexture;
+        return side == GetFrontFace(meta) ? faceTexture : TextureId + 16;
     }
 
     public override int GetTexture(Side side) => side switch
     {
-        Side.Up => TextureId,
-        Side.Down => TextureId,
+        Side.Up or Side.Down => TextureId,
         Side.South => TextureId + 1 + 16,
         _ => TextureId + 16
     };
@@ -49,10 +47,7 @@ internal class BlockPumpkin : Block
 
     public override void OnPlaced(OnPlacedEvent @event)
     {
-        if (@event.Placer == null)
-        {
-            return;
-        }
+        if (@event.Placer == null) return;
 
         int direction = MathHelper.Floor(@event.Placer.yaw * 4.0F / 360.0F + 2.5D) & 3;
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, direction);

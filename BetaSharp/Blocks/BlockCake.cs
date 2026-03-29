@@ -6,8 +6,8 @@ namespace BetaSharp.Blocks;
 
 internal class BlockCake : Block
 {
-    public const float EdgeInset = 1.0F / 16.0F;
-    public const float Height = 0.5F;
+    private const float EdgeInset = 1.0F / 16.0F;
+    private const float Height = 0.5F;
 
     public BlockCake(int id, int textureId) : base(id, textureId, Material.Cake) => SetTickRandomly(true);
 
@@ -43,16 +43,13 @@ internal class BlockCake : Block
         _ => TextureId + 1
     };
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
     public override bool OnUse(OnUseEvent @event)
     {
-        if (@event.Player.health >= 20)
-        {
-            return true;
-        }
+        if (@event.Player.health >= 20) return true;
 
         @event.Player.heal(3);
         int slicesEaten = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) + 1;
@@ -106,7 +103,7 @@ internal class BlockCake : Block
 
     private static bool CanGrow(IBlockReader world, int x, int y, int z) => world.GetMaterial(x, y - 1, z).IsSolid;
 
-    public override int GetDroppedItemCount() => 0;
+    public override int DroppedItemCount => 0;
 
     public override int GetDroppedItemId(int blockMeta) => 0;
 }

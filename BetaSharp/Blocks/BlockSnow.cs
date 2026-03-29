@@ -8,6 +8,10 @@ namespace BetaSharp.Blocks;
 
 internal class BlockSnow : Block
 {
+    public override bool IsOpaque => false;
+
+    public override bool IsFullCube => false;
+
     public BlockSnow(int id, int textureId) : base(id, textureId, Material.SnowLayer)
     {
         SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
@@ -20,9 +24,6 @@ internal class BlockSnow : Block
         return meta >= 3 ? new Box(x + BoundingBox.MinX, y + BoundingBox.MinY, z + BoundingBox.MinZ, x + BoundingBox.MaxX, y + 0.5F, z + BoundingBox.MaxZ) : null;
     }
 
-    public override bool IsOpaque() => false;
-
-    public override bool IsFullCube() => false;
 
     public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
@@ -35,7 +36,7 @@ internal class BlockSnow : Block
     {
         int blockBelowId = evt.World.Reader.GetBlockId(evt.X, evt.Y - 1, evt.Z);
         return blockBelowId != 0 &&
-               Blocks[blockBelowId]!.IsOpaque() &&
+               Blocks[blockBelowId]!.IsOpaque &&
                evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z).BlocksMovement;
     }
 
@@ -70,14 +71,11 @@ internal class BlockSnow : Block
 
     public override int GetDroppedItemId(int blockMeta) => Item.Snowball.id;
 
-    public override int GetDroppedItemCount() => 0;
+    public override int DroppedItemCount => 0;
 
     public override void OnTick(OnTickEvent @event)
     {
-        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y, @event.Z) <= 11)
-        {
-            return;
-        }
+        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y, @event.Z) <= 11) return;
 
         DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);

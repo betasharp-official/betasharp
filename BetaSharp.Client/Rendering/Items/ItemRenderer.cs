@@ -55,8 +55,8 @@ public class ItemRenderer : EntityRenderer
             GLManager.GL.Rotate(var12, 0.0F, 1.0F, 0.0F);
             loadTexture("/terrain.png");
             float var28 = 0.25F;
-            if (!Block.Blocks[var10.itemId].IsFullCube() && var10.itemId != Block.Slab.Id
-                && Block.Blocks[var10.itemId].GetRenderType() != BlockRendererType.PistonBase)
+            if (!Block.Blocks[var10.itemId].IsFullCube && var10.itemId != Block.Slab.Id
+                                                       && Block.Blocks[var10.itemId].GetRenderType() != BlockRendererType.PistonBase)
             {
                 var28 = 0.5F;
             }

@@ -11,9 +11,9 @@ internal class BlockTorch : Block
 
     public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
     public override BlockRendererType GetRenderType() => BlockRendererType.Torch;
 
@@ -91,10 +91,7 @@ internal class BlockTorch : Block
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (!breakIfCannotPlaceAt(@event, @event.X, @event.Y, @event.Z))
-        {
-            return;
-        }
+        if (!breakIfCannotPlaceAt(@event, @event.X, @event.Y, @event.Z)) return;
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         bool shouldDrop = (!@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) && meta == 1) ||
@@ -103,10 +100,7 @@ internal class BlockTorch : Block
                           (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1) && meta == 4) ||
                           (!canPlaceOn(@event.World.Reader, @event.X, @event.Y - 1, @event.Z) && meta == 5);
 
-        if (!shouldDrop)
-        {
-            return;
-        }
+        if (!shouldDrop) return;
 
         DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -114,10 +108,7 @@ internal class BlockTorch : Block
 
     private bool breakIfCannotPlaceAt(OnTickEvent @event, int x, int y, int z)
     {
-        if (CanPlaceAt(new CanPlaceAtContext(@event.World, 0, x, y, z)))
-        {
-            return true;
-        }
+        if (CanPlaceAt(new CanPlaceAtContext(@event.World, 0, x, y, z))) return true;
 
         DropStacks(new OnDropEvent(@event.World, x, y, z, @event.World.Reader.GetBlockMeta(x, y, z)));
         @event.World.Writer.SetBlock(x, y, z, 0);

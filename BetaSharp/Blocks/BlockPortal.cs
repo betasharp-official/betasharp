@@ -6,6 +6,8 @@ namespace BetaSharp.Blocks;
 
 public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, Material.NetherPortal, false)
 {
+    public override bool IsOpaque => false;
+    public override bool IsFullCube => false;
     public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
     public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
@@ -25,10 +27,6 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
             SetBoundingBox(0.5F - thickness, 0.0F, 0.5F - halfExtent, 0.5F + thickness, 1.0F, 0.5F + halfExtent);
         }
     }
-
-    public override bool IsOpaque() => false;
-
-    public override bool IsFullCube() => false;
 
     public static bool Create(IBlockReader reader, IBlockWriter writer, int x, int y, int z)
     {
@@ -62,21 +60,11 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
             for (verticalOffset = -1; verticalOffset <= 3; ++verticalOffset)
             {
                 bool isFrame = horizontalOffset == -1 || horizontalOffset == 2 || verticalOffset == -1 || verticalOffset == 3;
-                if ((horizontalOffset != -1 && horizontalOffset != 2) || (verticalOffset != -1 && verticalOffset != 3))
-                {
-                    int blockId = reader.GetBlockId(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset);
-                    if (isFrame)
-                    {
-                        if (blockId != Obsidian.Id)
-                        {
-                            return false;
-                        }
-                    }
-                    else if (blockId != 0 && blockId != Fire.Id)
-                    {
-                        return false;
-                    }
-                }
+                if (horizontalOffset is -1 or 2 && verticalOffset is -1 or 3) continue;
+
+                int blockId = reader.GetBlockId(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset);
+                if (isFrame && blockId != Obsidian.Id) return false;
+                if (blockId != 0 && blockId != Fire.Id) return false;
             }
         }
 
@@ -137,10 +125,7 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
 
     public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (iBlockReader.GetBlockId(x, y, z) == Id)
-        {
-            return false;
-        }
+        if (iBlockReader.GetBlockId(x, y, z) == Id) return false;
 
         bool edgeWest = iBlockReader.GetBlockId(x - 1, y, z) == Id && iBlockReader.GetBlockId(x - 2, y, z) != Id;
         bool edgeEast = iBlockReader.GetBlockId(x + 1, y, z) == Id && iBlockReader.GetBlockId(x + 2, y, z) != Id;
@@ -148,13 +133,14 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
         bool edgeSouth = iBlockReader.GetBlockId(x, y, z + 1) == Id && iBlockReader.GetBlockId(x, y, z + 2) != Id;
         bool extendsInX = edgeWest || edgeEast;
         bool extendsInZ = edgeNorth || edgeSouth;
+
         return (extendsInX && side == Side.West) ||
                (extendsInX && side == Side.East) ||
                (extendsInZ && side == Side.North) ||
                (extendsInZ && side == Side.South);
     }
 
-    public override int GetDroppedItemCount() => 0;
+    public override int DroppedItemCount => 0;
 
     public override int GetRenderLayer() => 1;
 

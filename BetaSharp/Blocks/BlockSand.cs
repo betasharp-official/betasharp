@@ -13,9 +13,9 @@ internal class BlockSand(int id, int textureId) : Block(id, textureId, Material.
         set => s_fallInstantly.Value = value;
     }
 
-    public override void OnPlaced(OnPlacedEvent ctx) => ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, Id, GetTickRate());
+    public override void OnPlaced(OnPlacedEvent ctx) => ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, Id, TickRate);
 
-    public override void NeighborUpdate(OnTickEvent ctx) => ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, Id, GetTickRate());
+    public override void NeighborUpdate(OnTickEvent ctx) => ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, Id, TickRate);
 
     public override void OnTick(OnTickEvent @event) => ProcessFall(@event);
 
@@ -24,10 +24,7 @@ internal class BlockSand(int id, int textureId) : Block(id, textureId, Material.
         int x = @event.X;
         int y = @event.Y;
         int z = @event.Z;
-        if (y <= 0 || !CanFallThrough(new OnTickEvent(@event.World, x, y - 1, z, 0, @event.BlockId)))
-        {
-            return;
-        }
+        if (y <= 0 || !CanFallThrough(new OnTickEvent(@event.World, x, y - 1, z, 0, @event.BlockId))) return;
 
         const sbyte checkRadius = 32;
         if (!FallInstantly && @event.World.ChunkHost.IsRegionLoaded(x - checkRadius, y - checkRadius, z - checkRadius, x + checkRadius, y + checkRadius, z + checkRadius))
@@ -51,20 +48,13 @@ internal class BlockSand(int id, int textureId) : Block(id, textureId, Material.
         }
     }
 
-    public override int GetTickRate() => 3;
+    public override int TickRate => 3;
 
     public static bool CanFallThrough(OnTickEvent ctx)
     {
         int blockId = ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z);
-        if (blockId == 0)
-        {
-            return true;
-        }
-
-        if (blockId == Fire.Id)
-        {
-            return true;
-        }
+        if (blockId == 0) return true;
+        if (blockId == Fire.Id) return true;
 
         Material? material = Blocks[blockId]?.Material;
         return material == Material.Water || material == Material.Lava;

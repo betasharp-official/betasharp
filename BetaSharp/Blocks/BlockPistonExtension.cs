@@ -17,9 +17,7 @@ public class BlockPistonExtension : Block
     public override void OnBreak(OnBreakEvent @event)
     {
         base.OnBreak(@event);
-        int x = @event.X;
-        int y = @event.Y;
-        int z = @event.Z;
+        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
         int blockMeta = @event.World.Reader.GetBlockMeta(x, y, z);
         Side towardPiston = SideExtensions.OppositeFace(GetFacing(blockMeta));
         x += PistonConstants.HeadOffsetX(towardPiston);
@@ -49,13 +47,13 @@ public class BlockPistonExtension : Block
 
     public override BlockRendererType GetRenderType() => BlockRendererType.PistonExtension;
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
     public override bool CanPlaceAt(CanPlaceAtContext context) => false;
 
-    public override int GetDroppedItemCount() => 0;
+    public override int DroppedItemCount => 0;
 
     public override void AddIntersectingBoundingBox(IBlockReader reader, EntityManager entities, int x, int y, int z, Box box, List<Box> boxes)
     {

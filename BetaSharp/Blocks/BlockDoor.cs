@@ -8,9 +8,12 @@ namespace BetaSharp.Blocks;
 
 internal class BlockDoor : Block
 {
-    protected const float HalfWidth = 0.5F;
-    protected const float Height = 1.0F;
-    protected const float Thickness = 3.0F / 16.0F;
+    private const float HalfWidth = 0.5F;
+    private const float Height = 1.0F;
+    private const float Thickness = 3.0F / 16.0F;
+    public override bool IsOpaque => false;
+    public override PistonBehavior PistonBehavior => PistonBehavior.Destroy;
+    public override bool IsFullCube => false;
 
     public BlockDoor(int id, Material material) : base(id, material)
     {
@@ -23,12 +26,10 @@ internal class BlockDoor : Block
         SetBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, Height, 0.5F + HalfWidth);
     }
 
+
     public override int GetTexture(Side side, int meta)
     {
-        if (side is Side.Down or Side.Up)
-        {
-            return TextureId;
-        }
+        if (side is Side.Down or Side.Up) return TextureId;
 
         int facing = SetOpen(meta);
         if (facing is 0 or 2 ^ (side.ToInt() <= 3))
@@ -47,9 +48,6 @@ internal class BlockDoor : Block
         return texture;
     }
 
-    public override bool IsOpaque() => false;
-
-    public override bool IsFullCube() => false;
 
     public override BlockRendererType GetRenderType() => BlockRendererType.Door;
 
@@ -91,10 +89,7 @@ internal class BlockDoor : Block
 
     private bool UpdateDorState(IWorldContext world, int x, int y, int z)
     {
-        if (Material == Material.Metal)
-        {
-            return true;
-        }
+        if (Material == Material.Metal) return true;
 
         int meta = world.Reader.GetBlockMeta(x, y, z);
         if ((meta & 8) != 0)
@@ -134,10 +129,7 @@ internal class BlockDoor : Block
         else
         {
             bool isOpen = (world.Reader.GetBlockMeta(x, y, z) & 4) > 0;
-            if (isOpen == open)
-            {
-                return;
-            }
+            if (isOpen == open) return;
 
             if (world.Reader.GetBlockId(x, y + 1, z) == Id)
             {
@@ -160,7 +152,7 @@ internal class BlockDoor : Block
                 @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             }
 
-            if (@event.BlockId > 0 && Blocks[@event.BlockId]!.CanEmitRedstonePower())
+            if (@event.BlockId > 0 && Blocks[@event.BlockId]!.CanEmitRedstonePower)
             {
                 NeighborUpdate(@event);
             }
@@ -191,7 +183,7 @@ internal class BlockDoor : Block
                     DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, meta));
                 }
             }
-            else if (@event.BlockId > 0 && Blocks[@event.BlockId]!.CanEmitRedstonePower())
+            else if (@event.BlockId > 0 && Blocks[@event.BlockId]!.CanEmitRedstonePower)
             {
                 bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
                 SetOpen(@event.World, @event.X, @event.Y, @event.Z, isPowered);
@@ -215,6 +207,4 @@ internal class BlockDoor : Block
                                                               base.CanPlaceAt(evt);
 
     public static bool IsOpen(int meta) => (meta & 4) != 0;
-
-    public override int GetPistonBehavior() => 1;
 }

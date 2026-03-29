@@ -9,7 +9,7 @@ internal class BlockMobSpawner(int id, int textureId) : BlockWithEntity(id, text
 
     public override int GetDroppedItemId(int blockMeta) => 0;
 
-    public override int GetDroppedItemCount() => 0;
+    public override int DroppedItemCount => 0;
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 }

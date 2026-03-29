@@ -15,9 +15,9 @@ public class BlockRedstoneWire : Block
 
     public override Box? GetCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z) => null;
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
     public override BlockRendererType GetRenderType() => BlockRendererType.RedstoneWire;
 
@@ -103,10 +103,7 @@ public class BlockRedstoneWire : Block
             }
         }
 
-        if (oldMeta == newMeta)
-        {
-            return;
-        }
+        if (oldMeta == newMeta) return;
 
 
         level.Writer.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, newMeta);
@@ -119,24 +116,20 @@ public class BlockRedstoneWire : Block
             int nz = z;
             int ny = y - 1;
 
-            if (dir == 0)
+            switch (dir)
             {
-                nx = x - 1;
-            }
-
-            if (dir == 1)
-            {
-                ++nx;
-            }
-
-            if (dir == 2)
-            {
-                nz = z - 1;
-            }
-
-            if (dir == 3)
-            {
-                ++nz;
+                case 0:
+                    nx = x - 1;
+                    break;
+                case 1:
+                    ++nx;
+                    break;
+                case 2:
+                    nz = z - 1;
+                    break;
+                case 3:
+                    ++nz;
+                    break;
             }
 
             if (level.Reader.ShouldSuffocate(nx, y, nz))
@@ -169,10 +162,7 @@ public class BlockRedstoneWire : Block
             }
         }
 
-        if (oldMeta != 0 && newMeta != 0)
-        {
-            return;
-        }
+        if (oldMeta != 0 && newMeta != 0) return;
 
         neighbors.Add(new BlockPos(x, y, z));
         neighbors.Add(new BlockPos(x - 1, y, z));
@@ -185,10 +175,7 @@ public class BlockRedstoneWire : Block
 
     private void NotifyWireNeighborsOfNeighborChange(IWorldContext level, int x, int y, int z)
     {
-        if (level.Reader.GetBlockId(x, y, z) != Id)
-        {
-            return;
-        }
+        if (level.Reader.GetBlockId(x, y, z) != Id) return;
 
         level.Broadcaster.NotifyNeighbors(x, y, z, Id);
         level.Broadcaster.NotifyNeighbors(x - 1, y, z, Id);
@@ -202,10 +189,7 @@ public class BlockRedstoneWire : Block
     public override void OnPlaced(OnPlacedEvent @event)
     {
         base.OnPlaced(@event);
-        if (@event.World.IsRemote)
-        {
-            return;
-        }
+        if (@event.World.IsRemote) return;
 
         UpdateAndPropagateCurrentStrength(@event.World, @event.X, @event.Y, @event.Z);
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, Id);
@@ -255,10 +239,7 @@ public class BlockRedstoneWire : Block
     public override void OnBreak(OnBreakEvent @event)
     {
         base.OnBreak(@event);
-        if (@event.World.IsRemote)
-        {
-            return;
-        }
+        if (@event.World.IsRemote) return;
 
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, Id);
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, Id);
@@ -306,10 +287,7 @@ public class BlockRedstoneWire : Block
 
     private int GetMaxCurrentStrength(IBlockReader reader, int x, int y, int z, int currentStrength)
     {
-        if (reader.GetBlockId(x, y, z) != Id)
-        {
-            return currentStrength;
-        }
+        if (reader.GetBlockId(x, y, z) != Id) return currentStrength;
 
         int meta = reader.GetBlockMeta(x, y, z);
         return meta > currentStrength ? meta : currentStrength;
@@ -317,10 +295,7 @@ public class BlockRedstoneWire : Block
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (@event.World.IsRemote)
-        {
-            return;
-        }
+        if (@event.World.IsRemote) return;
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         bool canPlace = CanPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z));
@@ -344,20 +319,11 @@ public class BlockRedstoneWire : Block
 
     public override bool IsPoweringSide(IBlockReader reader, int x, int y, int z, int facing)
     {
-        if (!s_wiresProvidePower.Value)
-        {
-            return false;
-        }
+        if (!s_wiresProvidePower.Value) return false;
 
-        if (reader.GetBlockMeta(x, y, z) == 0)
-        {
-            return false;
-        }
+        if (reader.GetBlockMeta(x, y, z) == 0) return false;
 
-        if (facing == 1)
-        {
-            return true;
-        }
+        if (facing == Side.Up.ToInt()) return true;
 
         bool north = IsPowerProviderOrWire(reader, x - 1, y, z, 1) || (!reader.ShouldSuffocate(x - 1, y, z) && IsPowerProviderOrWire(reader, x - 1, y - 1, z, -1));
         bool south = IsPowerProviderOrWire(reader, x + 1, y, z, 3) || (!reader.ShouldSuffocate(x + 1, y, z) && IsPowerProviderOrWire(reader, x + 1, y - 1, z, -1));
@@ -399,7 +365,7 @@ public class BlockRedstoneWire : Block
                (facing == 5 && south && !west && !east);
     }
 
-    public override bool CanEmitRedstonePower() => s_wiresProvidePower.Value;
+    public override bool CanEmitRedstonePower => s_wiresProvidePower.Value;
 
     public override void RandomDisplayTick(OnTickEvent @event)
     {
@@ -443,7 +409,7 @@ public class BlockRedstoneWire : Block
             return false;
         }
 
-        if (Blocks[blockId]!.CanEmitRedstonePower())
+        if (Blocks[blockId]!.CanEmitRedstonePower)
         {
             return true;
         }

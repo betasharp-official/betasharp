@@ -17,9 +17,7 @@ internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.T
     {
         base.OnPlaced(@event);
         if (!@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
-        {
             return;
-        }
 
         OnMetadataChange(new OnMetadataChangeEvent(@event.World, @event.X, @event.Y, @event.Z, 1));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -27,14 +25,14 @@ internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.T
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (@event.BlockId > 0 && Blocks[@event.BlockId]!.CanEmitRedstonePower() && @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
-        {
-            OnMetadataChange(new OnMetadataChangeEvent(@event.World, @event.X, @event.Y, @event.Z, 1));
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-        }
+        if (@event.BlockId <= 0 || !Blocks[@event.BlockId]!.CanEmitRedstonePower || !@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
+            return;
+
+        OnMetadataChange(new OnMetadataChangeEvent(@event.World, @event.X, @event.Y, @event.Z, 1));
+        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 
-    public override int GetDroppedItemCount() => 0;
+    public override int DroppedItemCount => 0;
 
     public override void OnDestroyedByExplosion(OnDestroyedByExplosionEvent @event)
     {

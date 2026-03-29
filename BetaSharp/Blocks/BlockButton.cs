@@ -10,18 +10,15 @@ internal class BlockButton : Block
 
     public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override int GetTickRate() => 20;
+    public override int TickRate => 20;
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
     private static bool IsValidPlacementSide(IBlockReader read, int x, int y, int z, Side side = Side.Down)
     {
-        if (side == Side.North)
-        {
-            return read.ShouldSuffocate(x, y, z + 1);
-        }
+        if (side == Side.North) return read.ShouldSuffocate(x, y, z + 1);
 
         return read.ShouldSuffocate(x - 1, y, z) ||
                read.ShouldSuffocate(x + 1, y, z) ||
@@ -52,10 +49,7 @@ internal class BlockButton : Block
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (!BreakIfCannotPlaceAt(@event))
-        {
-            return;
-        }
+        if (!BreakIfCannotPlaceAt(@event)) return;
 
         int facing = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) & 7;
         bool shouldBreak = (!@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) && facing == 1) ||
@@ -63,10 +57,7 @@ internal class BlockButton : Block
                            (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) && facing == 3) ||
                            (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1) && facing == 4);
 
-        if (!shouldBreak)
-        {
-            return;
-        }
+        if (!shouldBreak) return;
 
         DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -74,25 +65,24 @@ internal class BlockButton : Block
 
     private bool BreakIfCannotPlaceAt(OnTickEvent @event)
     {
-        if (IsValidPlacementSide(@event.World.Reader, @event.X, @event.Y, @event.Z))
-        {
-            return true;
-        }
+        if (IsValidPlacementSide(@event.World.Reader, @event.X, @event.Y, @event.Z)) return true;
 
         DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         return false;
     }
 
-    public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager entities, int x, int y, int z)
+    public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
+        const float minY = 6.0F / 16.0F;
+        const float maxY = 10.0F / 16.0F;
+        const float halfWidth = 3.0F / 16.0F;
+
         int meta = blockReader.GetBlockMeta(x, y, z);
         int facing = meta & 7;
         bool isPressed = (meta & 8) > 0;
-        float minY = 6.0F / 16.0F;
-        float maxY = 10.0F / 16.0F;
-        float halfWidth = 3.0F / 16.0F;
         float thickness = 2.0F / 16.0F;
+
         if (isPressed)
         {
             thickness = 1.0F / 16.0F;
@@ -151,7 +141,7 @@ internal class BlockButton : Block
             level.Broadcaster.NotifyNeighbors(x, y - 1, z, Id);
         }
 
-        level.TickScheduler.ScheduleBlockUpdate(x, y, z, Id, GetTickRate());
+        level.TickScheduler.ScheduleBlockUpdate(x, y, z, Id, TickRate);
         return true;
     }
 
@@ -209,7 +199,7 @@ internal class BlockButton : Block
                (facing == 1 && side == (int)Side.East);
     }
 
-    public override bool CanEmitRedstonePower() => true;
+    public override bool CanEmitRedstonePower => true;
 
     public override void OnTick(OnTickEvent @event)
     {

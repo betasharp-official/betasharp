@@ -9,10 +9,7 @@ internal class BlockLockedChest : Block
 
     public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (side is Side.Up or Side.Down)
-        {
-            return TextureId - 1;
-        }
+        if (side is Side.Up or Side.Down) return TextureId - 1;
 
         int blockNorth = iBlockReader.GetBlockId(x, y, z - 1);
         int blockSouth = iBlockReader.GetBlockId(x, y, z + 1);

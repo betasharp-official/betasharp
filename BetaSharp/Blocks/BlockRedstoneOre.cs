@@ -18,7 +18,7 @@ internal class BlockRedstoneOre : Block
         _lit = lit;
     }
 
-    public override int GetTickRate() => 30;
+    public override int TickRate => 30;
 
     public override void OnBlockBreakStart(OnBlockBreakStartEvent @event)
     {
@@ -57,7 +57,7 @@ internal class BlockRedstoneOre : Block
 
     public override int GetDroppedItemId(int blockMeta) => Item.Redstone.id;
 
-    public override int GetDroppedItemCount() => 4 + Random.Shared.Next(2);
+    public override int DroppedItemCount => 4 + Random.Shared.Next(2);
 
     public override void RandomDisplayTick(OnTickEvent ctx)
     {
@@ -70,29 +70,32 @@ internal class BlockRedstoneOre : Block
     private static void SpawnParticles(IBlockReader reader, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         const double faceOffset = 1.0D / 16.0D;
-        for (int direction = 0; direction < 6; ++direction)
+        for (int i = 0; i < 6; ++i)
         {
+            Side side = (Side)i;
+
             double particleX = x + Random.Shared.NextSingle();
             double particleY = y + Random.Shared.NextSingle();
             double particleZ = z + Random.Shared.NextSingle();
-            switch (direction)
+
+            switch (side)
             {
-                case 0 when !reader.IsOpaque(x, y + 1, z):
+                case Side.Up when !reader.IsOpaque(x, y + 1, z):
                     particleY = y + 1 + faceOffset;
                     break;
-                case 1 when !reader.IsOpaque(x, y - 1, z):
+                case Side.Down when !reader.IsOpaque(x, y - 1, z):
                     particleY = y + 0 - faceOffset;
                     break;
-                case 2 when !reader.IsOpaque(x, y, z + 1):
+                case Side.South when !reader.IsOpaque(x, y, z + 1):
                     particleZ = z + 1 + faceOffset;
                     break;
-                case 3 when !reader.IsOpaque(x, y, z - 1):
+                case Side.North when !reader.IsOpaque(x, y, z - 1):
                     particleZ = z + 0 - faceOffset;
                     break;
-                case 4 when !reader.IsOpaque(x + 1, y, z):
+                case Side.East when !reader.IsOpaque(x + 1, y, z):
                     particleX = x + 1 + faceOffset;
                     break;
-                case 5 when !reader.IsOpaque(x - 1, y, z):
+                case Side.West when !reader.IsOpaque(x - 1, y, z):
                     particleX = x + 0 - faceOffset;
                     break;
             }

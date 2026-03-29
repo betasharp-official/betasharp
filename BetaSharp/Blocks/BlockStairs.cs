@@ -19,9 +19,9 @@ internal class BlockStairs : Block
 
     public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
     public override BlockRendererType GetRenderType() => BlockRendererType.Stairs;
 
@@ -65,7 +65,7 @@ internal class BlockStairs : Block
 
     public override void OnMetadataChange(OnMetadataChangeEvent @event) => _baseBlock.OnMetadataChange(@event);
 
-    public override float GetLuminance(ILightProvider lighting, int x, int y, int z) => _baseBlock.GetLuminance(lighting, x, y, z);
+    public override float GetLuminance(ILightProvider? lighting, int x, int y, int z) => _baseBlock.GetLuminance(lighting, x, y, z);
 
     public override float GetBlastResistance(Entity entity) => _baseBlock.GetBlastResistance(entity);
 
@@ -73,7 +73,7 @@ internal class BlockStairs : Block
 
     public override int GetDroppedItemId(int blockMeta) => _baseBlock.GetDroppedItemId(blockMeta);
 
-    public override int GetDroppedItemCount() => _baseBlock.GetDroppedItemCount();
+    public override int DroppedItemCount => _baseBlock.DroppedItemCount;
 
     public override int GetTexture(Side side, int meta) => _baseBlock.GetTexture(side, meta);
 
@@ -81,7 +81,7 @@ internal class BlockStairs : Block
 
     public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side) => _baseBlock.GetTextureId(iBlockReader, x, y, z, side);
 
-    public override int GetTickRate() => _baseBlock.GetTickRate();
+    public override int TickRate => _baseBlock.TickRate;
 
     public override Box GetBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z) => _baseBlock.GetBoundingBox(world, entities, x, y, z);
 

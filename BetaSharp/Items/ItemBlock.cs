@@ -103,11 +103,11 @@ internal class ItemBlock : Item
 
     public override String getItemNameIS(ItemStack itemStack)
     {
-        return Block.Blocks[blockID].GetBlockName();
+        return Block.Blocks[blockID].BlockName;
     }
 
     public override String getItemName()
     {
-        return Block.Blocks[blockID].GetBlockName();
+        return Block.Blocks[blockID].BlockName;
     }
 }

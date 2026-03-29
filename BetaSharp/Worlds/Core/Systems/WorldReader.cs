@@ -53,7 +53,7 @@ public class WorldReader : IBlockReader
     public bool IsOpaque(int x, int y, int z)
     {
         Block? block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.IsOpaque();
+        return block != null && block.IsOpaque;
     }
 
     public bool ShouldSuffocate(int x, int y, int z)
@@ -64,7 +64,7 @@ public class WorldReader : IBlockReader
         }
 
         Block? block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.Material.Suffocates && block.IsFullCube();
+        return block != null && block.Material.Suffocates && block.IsFullCube;
     }
 
     public BiomeSource GetBiomeSource() => _dimension.BiomeSource;

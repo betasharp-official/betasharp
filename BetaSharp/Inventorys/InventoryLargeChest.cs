@@ -10,7 +10,7 @@ internal class InventoryLargeChest : IInventory
     private IInventory upperChest;
     private IInventory lowerChest;
 
-    public InventoryLargeChest(string name, IInventory upperChest, IInventory lowerChest)
+    public InventoryLargeChest(string name, IInventory? upperChest, IInventory? lowerChest)
     {
         this.name = name;
         this.upperChest = upperChest;

@@ -13,7 +13,7 @@ internal class BlockDispenser : BlockWithEntity
 
     public BlockDispenser(int id) : base(id, Material.Stone) => TextureId = 45;
 
-    public override int GetTickRate() => 4;
+    public override int TickRate => 4;
 
     public override int GetDroppedItemId(int blockMeta) => Dispenser.Id;
 
@@ -45,10 +45,7 @@ internal class BlockDispenser : BlockWithEntity
 
     private static void UpdateDirection(OnPlacedEvent @event)
     {
-        if (@event.World.IsRemote)
-        {
-            return;
-        }
+        if (@event.World.IsRemote) return;
 
         IBlockReader reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
@@ -196,7 +193,7 @@ internal class BlockDispenser : BlockWithEntity
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (@event.BlockId <= 0 || !Blocks[@event.BlockId]!.CanEmitRedstonePower())
+        if (@event.BlockId <= 0 || !Blocks[@event.BlockId]!.CanEmitRedstonePower)
         {
             return;
         }
@@ -204,7 +201,7 @@ internal class BlockDispenser : BlockWithEntity
         bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
         if (isPowered)
         {
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, Id, GetTickRate());
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, Id, TickRate);
         }
     }
 

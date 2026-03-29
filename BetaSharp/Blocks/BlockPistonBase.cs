@@ -61,7 +61,7 @@ public class BlockPistonBase : Block
 
     public override BlockRendererType GetRenderType() => BlockRendererType.PistonBase;
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
     public override bool OnUse(OnUseEvent _) => false;
 
@@ -191,7 +191,7 @@ public class BlockPistonBase : Block
                         }
 
                         if (wasRetractingMovingBlock || targetId <= 0 || !CanMoveBlock(targetId, @event.World, targetX, targetY, targetZ, false) ||
-                            (Blocks[targetId]!.GetPistonBehavior() != 0 && targetId != Piston.Id && targetId != StickyPiston.Id))
+                            (Blocks[targetId]!.PistonBehavior != 0 && targetId != Piston.Id && targetId != StickyPiston.Id))
                         {
                             if (!wasRetractingMovingBlock)
                             {
@@ -262,7 +262,7 @@ public class BlockPistonBase : Block
         base.AddIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
     }
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
     public static Side GetFacing(int meta) => (meta & 7).ToSide();
 
@@ -309,12 +309,12 @@ public class BlockPistonBase : Block
                 return false;
             }
 
-            if (Blocks[id]!.GetPistonBehavior() == 2)
+            if (Blocks[id]!.PistonBehavior == PistonBehavior.UnPushable)
             {
                 return false;
             }
 
-            if (!allowBreaking && Blocks[id]!.GetPistonBehavior() == 1)
+            if (!allowBreaking && Blocks[id]!.PistonBehavior == PistonBehavior.Destroy)
             {
                 return false;
             }
@@ -358,7 +358,7 @@ public class BlockPistonBase : Block
                 return false;
             }
 
-            if (Blocks[blockId]!.GetPistonBehavior() == 1)
+            if (Blocks[blockId]!.PistonBehavior == PistonBehavior.Destroy)
             {
                 return true;
             }
@@ -399,7 +399,7 @@ public class BlockPistonBase : Block
                         return false;
                     }
 
-                    if (Blocks[blockId]!.GetPistonBehavior() != 1)
+                    if (Blocks[blockId]!.PistonBehavior != PistonBehavior.Destroy)
                     {
                         if (pushCount == 12)
                         {

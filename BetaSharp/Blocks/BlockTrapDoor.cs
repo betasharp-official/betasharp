@@ -12,17 +12,14 @@ internal class BlockTrapDoor : Block
         const float halfWidth = 0.5F;
         const float fullHeight = 1.0F;
         TextureId = 84;
-        if (material == Material.Metal)
-        {
-            ++TextureId;
-        }
+        if (material == Material.Metal) ++TextureId;
 
         SetBoundingBox(0.5F - halfWidth, 0.0F, 0.5F - halfWidth, 0.5F + halfWidth, fullHeight, 0.5F + halfWidth);
     }
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
     public override BlockRendererType GetRenderType() => BlockRendererType.Standard;
 
@@ -50,10 +47,7 @@ internal class BlockTrapDoor : Block
     {
         const float height = 3.0F / 16.0F;
         SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, height, 1.0F);
-        if (!IsOpen(meta))
-        {
-            return;
-        }
+        if (!IsOpen(meta)) return;
 
         switch (meta & 3)
         {
@@ -142,7 +136,7 @@ internal class BlockTrapDoor : Block
             DropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, meta));
         }
 
-        if (Id <= 0 || !Blocks[Id]!.CanEmitRedstonePower())
+        if (Id <= 0 || !Blocks[Id]!.CanEmitRedstonePower)
         {
             return;
         }

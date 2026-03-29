@@ -9,19 +9,19 @@ internal class BlockLadder(int id, int textureId) : Block(id, textureId, Materia
     public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
         const float thickness = 2.0F / 16.0F;
-        int meta = world.GetBlockMeta(x, y, z);
+        Side meta = world.GetBlockMeta(x, y, z).ToSide();
         switch (meta)
         {
-            case (int)Side.North:
+            case Side.North:
                 SetBoundingBox(0.0F, 0.0F, 1.0F - thickness, 1.0F, 1.0F, 1.0F);
                 break;
-            case (int)Side.South:
+            case Side.South:
                 SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, thickness);
                 break;
-            case (int)Side.West:
+            case Side.West:
                 SetBoundingBox(1.0F - thickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 break;
-            case (int)Side.East:
+            case Side.East:
                 SetBoundingBox(0.0F, 0.0F, 0.0F, thickness, 1.0F, 1.0F);
                 break;
         }
@@ -32,19 +32,19 @@ internal class BlockLadder(int id, int textureId) : Block(id, textureId, Materia
     public override Box GetBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
         const float thickness = 2.0F / 16.0F;
-        int meta = world.GetBlockMeta(x, y, z);
+        Side meta = world.GetBlockMeta(x, y, z).ToSide();
         switch (meta)
         {
-            case (int)Side.North:
+            case Side.North:
                 SetBoundingBox(0.0F, 0.0F, 1.0F - thickness, 1.0F, 1.0F, 1.0F);
                 break;
-            case (int)Side.South:
+            case Side.South:
                 SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, thickness);
                 break;
-            case (int)Side.West:
+            case Side.West:
                 SetBoundingBox(1.0F - thickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 break;
-            case (int)Side.East:
+            case Side.East:
                 SetBoundingBox(0.0F, 0.0F, 0.0F, thickness, 1.0F, 1.0F);
                 break;
         }
@@ -52,9 +52,9 @@ internal class BlockLadder(int id, int textureId) : Block(id, textureId, Materia
         return base.GetBoundingBox(world, entities, x, y, z);
     }
 
-    public override bool IsOpaque() => false;
+    public override bool IsOpaque => false;
 
-    public override bool IsFullCube() => false;
+    public override bool IsFullCube => false;
 
     public override BlockRendererType GetRenderType() => BlockRendererType.Ladder;
 
@@ -107,5 +107,5 @@ internal class BlockLadder(int id, int textureId) : Block(id, textureId, Materia
         base.NeighborUpdate(ctx);
     }
 
-    public override int GetDroppedItemCount() => 1;
+    public override int DroppedItemCount => 1;
 }

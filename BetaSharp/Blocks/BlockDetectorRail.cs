@@ -8,16 +8,13 @@ internal class BlockDetectorRail : BlockRail
 {
     public BlockDetectorRail(int id, int textureId) : base(id, textureId, true) => SetTickRandomly(true);
 
-    public override int GetTickRate() => 20;
+    public override int TickRate => 20;
 
-    public override bool CanEmitRedstonePower() => true;
+    public override bool CanEmitRedstonePower => true;
 
     public override void OnEntityCollision(OnEntityCollisionEvent @event)
     {
-        if (@event.World.IsRemote)
-        {
-            return;
-        }
+        if (@event.World.IsRemote) return;
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((meta & 8) == 0)
@@ -28,10 +25,7 @@ internal class BlockDetectorRail : BlockRail
 
     public override void OnTick(OnTickEvent @event)
     {
-        if (@event.World.IsRemote)
-        {
-            return;
-        }
+        if (@event.World.IsRemote) return;
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((meta & 8) != 0)
@@ -69,7 +63,7 @@ internal class BlockDetectorRail : BlockRail
 
         if (hasMinecart)
         {
-            context.TickScheduler.ScheduleBlockUpdate(x, y, z, id, GetTickRate());
+            context.TickScheduler.ScheduleBlockUpdate(x, y, z, id, TickRate);
         }
     }
 }
