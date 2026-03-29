@@ -159,7 +159,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         }
 
         GLManager.GL.PushMatrix();
-        GLManager.GL.Translate(x + _translateX, y + _translateY, 0);
+        GLManager.GL.Translate(MathF.Floor(x + _translateX), MathF.Floor(y + _translateY), 0);
         GLManager.GL.Scale(scale, scale, 1);
         if (shadow)
         {
@@ -183,17 +183,17 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         {
             if (shadow)
             {
-                DrawCenteredStringRaw(textRenderer, text, (int)(x + _translateX), (int)(y + _translateY), color);
+                DrawCenteredStringRaw(textRenderer, text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
             }
             else
             {
-                textRenderer.DrawString(text, (int)(x + _translateX), (int)(y + _translateY), color, SixLabors.Fonts.HorizontalAlignment.Center);
+                textRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color, SixLabors.Fonts.HorizontalAlignment.Center);
             }
             return;
         }
 
         GLManager.GL.PushMatrix();
-        GLManager.GL.Translate(x + _translateX, y + _translateY, 0);
+        GLManager.GL.Translate(MathF.Floor(x + _translateX), MathF.Floor(y + _translateY), 0);
         if (rotation != 0) GLManager.GL.Rotate(rotation, 0, 0, 1);
         if (scale != 1.0f) GLManager.GL.Scale(scale, scale, 1);
 
@@ -218,8 +218,8 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
     public void DrawBoundTexture(float x, float y, float width, float height)
     {
         Tessellator tess = Tessellator.instance;
-        float finalX = x + _translateX;
-        float finalY = y + _translateY;
+        float finalX = MathF.Floor(x + _translateX);
+        float finalY = MathF.Floor(y + _translateY);
 
         tess.startDrawingQuads();
         tess.addVertexWithUV(finalX, finalY + height, 0.0D, 0.0D, 1.0D);
@@ -244,8 +244,8 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         TextureManager.BindTexture(texture);
         float f = 0.00390625F;
         Tessellator tess = Tessellator.instance;
-        float finalX = x + _translateX;
-        float finalY = y + _translateY;
+        float finalX = MathF.Floor(x + _translateX);
+        float finalY = MathF.Floor(y + _translateY);
 
         tess.startDrawingQuads();
         tess.addVertexWithUV(finalX + 0, finalY + height, z, (double)((u + 0) * f), (double)((v + uvHeight) * f));
@@ -260,8 +260,8 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         TextureManager.BindTexture(texture);
         Tessellator tess = Tessellator.instance;
 
-        float finalX = x + _translateX;
-        float finalY = y + _translateY;
+        float finalX = MathF.Floor(x + _translateX);
+        float finalY = MathF.Floor(y + _translateY);
 
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
