@@ -3,6 +3,7 @@ using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout;
 using BetaSharp.Client.UI.Rendering;
 using Silk.NET.GLFW;
+using Silk.NET.Maths;
 
 namespace BetaSharp.Client.UI;
 
@@ -33,7 +34,7 @@ public abstract class UIScreen
     public virtual bool PausesGame => true;
     public virtual bool AllowUserInput => false;
 
-    private bool _isInitialized = false;
+    private bool _isInitialized;
 
     private Slider? _editingSlider;
     private int _sliderDpadHeldX;
@@ -45,11 +46,18 @@ public abstract class UIScreen
 
     public bool IsEditingSlider => _editingSlider != null;
 
+    private ScaledResolution CurrentScaledResolution =>
+        new(Game.options, Game.displayWidth, Game.displayHeight);
+
+    private Vector2D<float> ToScaledCoords(float x, float y, ScaledResolution res) =>
+        new(x * res.ScaledWidth / Game.displayWidth,
+            y * res.ScaledHeight / Game.displayHeight);
+
     public UIScreen(BetaSharp game)
     {
         Game = game;
         Root = new UIElement();
-        Root.Style.Width = null; // Auto fill screen
+        Root.Style.Width = null;
         Root.Style.Height = null;
         Renderer = new UIRenderer(game.fontRenderer, game.textureManager);
     }
@@ -89,11 +97,10 @@ public abstract class UIScreen
         float ry = Controller.RightStickY;
         if (ry == 0f) return;
 
-        ScaledResolution res = new(Game.options, Game.displayWidth, Game.displayHeight);
-        float scaledX = Game.VirtualCursor.X * res.ScaledWidth / Game.displayWidth;
-        float scaledY = Game.VirtualCursor.Y * res.ScaledHeight / Game.displayHeight;
+        ScaledResolution res = CurrentScaledResolution;
+        Vector2D<float> scaled = ToScaledCoords(Game.VirtualCursor.X, Game.VirtualCursor.Y, res);
 
-        UIElement? current = Root.HitTest(scaledX, scaledY);
+        UIElement? current = Root.HitTest(scaled.X, scaled.Y);
         while (current != null)
         {
             if (current is ScrollView sv && sv.Enabled && sv.MaxScrollY > 0)
@@ -107,12 +114,9 @@ public abstract class UIScreen
 
     private void HandleSliderEditTick()
     {
-        // Exit if A is no longer held
         if (!Controller.IsButtonDown(GamepadButton.A))
         {
-            _editingSlider = null;
-            _sliderDpadHeldX = 0;
-            _sliderStickAccumulated = 0f;
+            CancelSliderEdit();
             return;
         }
 
@@ -154,11 +158,17 @@ public abstract class UIScreen
         }
     }
 
+    private void CancelSliderEdit()
+    {
+        _editingSlider = null;
+        _sliderDpadHeldX = 0;
+        _sliderStickAccumulated = 0f;
+    }
+
     public virtual bool HandleDPadNavigation(int dpadX, int dpadY, ref float cursorX, ref float cursorY)
     {
-        ScaledResolution res = new(Game.options, Game.displayWidth, Game.displayHeight);
-        float scaledCursorX = cursorX * res.ScaledWidth / Game.displayWidth;
-        float scaledCursorY = cursorY * res.ScaledHeight / Game.displayHeight;
+        ScaledResolution res = CurrentScaledResolution;
+        Vector2D<float> scaledCursor = ToScaledCoords(cursorX, cursorY, res);
 
         // While editing a slider, DPad is handled by HandleSliderEditTick — block navigation
         if (_editingSlider != null) return true;
@@ -177,8 +187,8 @@ public abstract class UIScreen
             float cx = element.ScreenX + element.ComputedWidth / 2f;
             float cy = element.ScreenY + element.ComputedHeight / 2f;
 
-            float dx = cx - scaledCursorX;
-            float dy = cy - scaledCursorY;
+            float dx = cx - scaledCursor.X;
+            float dy = cy - scaledCursor.Y;
 
             float primary = dpadX != 0 ? dx * dpadX : dy * dpadY;
             float perp = dpadX != 0 ? Math.Abs(dy) : Math.Abs(dx);
@@ -202,8 +212,8 @@ public abstract class UIScreen
                 float cx = element.ScreenX + element.ComputedWidth / 2f;
                 float cy = element.ScreenY + element.ComputedHeight / 2f;
 
-                float dx = cx - scaledCursorX;
-                float dy = cy - scaledCursorY;
+                float dx = cx - scaledCursor.X;
+                float dy = cy - scaledCursor.Y;
 
                 float primary = dpadX != 0 ? dx * dpadX : dy * dpadY;
                 if (primary <= 1f) continue;
@@ -262,19 +272,17 @@ public abstract class UIScreen
 
     public virtual void Render(int mouseX, int mouseY, float partialTicks)
     {
-        ScaledResolution res = new(Game.options, Game.displayWidth, Game.displayHeight);
+        ScaledResolution res = CurrentScaledResolution;
 
         Root.Style.Width = res.ScaledWidth;
         Root.Style.Height = res.ScaledHeight;
 
         FlexLayout.ApplyLayout(Root, res.ScaledWidth, res.ScaledHeight);
 
-        float scaledMouseX = mouseX;
-        float scaledMouseY = mouseY;
-        MouseX = scaledMouseX;
-        MouseY = scaledMouseY;
+        MouseX = mouseX;
+        MouseY = mouseY;
 
-        UpdateHovers(scaledMouseX, scaledMouseY);
+        UpdateHovers(mouseX, mouseY);
 
         Renderer.Begin();
         Root.Render(Renderer);
@@ -305,77 +313,84 @@ public abstract class UIScreen
 
     public void HandleMouseInput()
     {
-        ScaledResolution res = new(Game.options, Game.displayWidth, Game.displayHeight);
+        ScaledResolution res = CurrentScaledResolution;
         float scaledX = Mouse.getEventX() * res.ScaledWidth / (float)Game.displayWidth;
         float scaledY = res.ScaledHeight - Mouse.getEventY() * res.ScaledHeight / (float)Game.displayHeight - 1f;
 
         if (Mouse.getEventButtonState())
+            HandleMouseButtonDown(scaledX, scaledY);
+        else
+            HandleMouseButtonUpOrMove(scaledX, scaledY);
+
+        HandleMouseScroll(scaledX, scaledY);
+    }
+
+    private void HandleMouseButtonDown(float scaledX, float scaledY)
+    {
+        MouseButton button = ParseMouseButton(Mouse.getEventButton());
+        UIElement? target = Root.HitTest(scaledX, scaledY);
+
+        FocusedElement = target;
+
+        if (target != null && target.Enabled)
         {
-            int rawButton = Mouse.getEventButton();
-            MouseButton button = Enum.IsDefined(typeof(MouseButton), rawButton) ? (MouseButton)rawButton : MouseButton.Unknown;
-            UIElement? target = Root.HitTest(scaledX, scaledY);
+            var evt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = button };
+            target.OnMouseDown?.Invoke(evt);
+            DraggingElement = target;
 
-            FocusedElement = target;
-
-            if (target != null && target.Enabled)
-            {
-                var evt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = button };
-                target.OnMouseDown?.Invoke(evt);
-                DraggingElement = target;
-
-                if (button == MouseButton.Left)
-                {
-                    target.OnClick?.Invoke(evt);
-                }
-            }
-            else if (target != null)
-            {
-                DraggingElement = null; // Don't drag if disabled
-            }
+            if (button == MouseButton.Left)
+                target.OnClick?.Invoke(evt);
         }
         else
         {
-            int rawButton = Mouse.getEventButton();
-            if (rawButton != -1) // -1 means moved, not button up
-            {
-                MouseButton button = Enum.IsDefined(typeof(MouseButton), rawButton) ? (MouseButton)rawButton : MouseButton.Unknown;
-
-                UIElement? target = Root.HitTest(scaledX, scaledY);
-                if (target != null && target.Enabled)
-                {
-                    var evt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = button };
-                    target.OnMouseUp?.Invoke(evt);
-                }
-
-                DraggingElement = null; // Snap dragging off when button released
-            }
-            else if (DraggingElement != null)
-            {
-                var moveEvt = new UIMouseEvent { Target = DraggingElement, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = MouseButton.Unknown };
-                DraggingElement.OnMouseMove?.Invoke(moveEvt);
-            }
-        }
-
-        int dWheel = Mouse.getEventDWheel();
-        if (dWheel != 0)
-        {
-            UIElement? target = Root.HitTest(scaledX, scaledY);
-            if (target != null)
-            {
-                var scrollEvt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, ScrollDelta = dWheel };
-                UIElement? current = target;
-                while (current != null)
-                {
-                    if (current.Enabled)
-                    {
-                        current.OnMouseScroll?.Invoke(scrollEvt);
-                        if (scrollEvt.Handled) break;
-                    }
-                    current = current.Parent;
-                }
-            }
+            DraggingElement = null; // Don't drag if disabled
         }
     }
+
+    private void HandleMouseButtonUpOrMove(float scaledX, float scaledY)
+    {
+        int rawButton = Mouse.getEventButton();
+        if (rawButton != -1) // -1 means moved, not button up
+        {
+            MouseButton button = ParseMouseButton(rawButton);
+            UIElement? target = Root.HitTest(scaledX, scaledY);
+            if (target != null && target.Enabled)
+            {
+                var evt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = button };
+                target.OnMouseUp?.Invoke(evt);
+            }
+            DraggingElement = null; // Snap dragging off when button released
+        }
+        else if (DraggingElement != null)
+        {
+            var moveEvt = new UIMouseEvent { Target = DraggingElement, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = MouseButton.Unknown };
+            DraggingElement.OnMouseMove?.Invoke(moveEvt);
+        }
+    }
+
+    private void HandleMouseScroll(float scaledX, float scaledY)
+    {
+        int dWheel = Mouse.getEventDWheel();
+        if (dWheel == 0) return;
+
+        UIElement? target = Root.HitTest(scaledX, scaledY);
+        if (target == null) return;
+
+        var scrollEvt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, ScrollDelta = dWheel };
+        UIElement? current = target;
+        while (current != null)
+        {
+            if (current.Enabled)
+            {
+                current.OnMouseScroll?.Invoke(scrollEvt);
+                if (scrollEvt.Handled) break;
+            }
+            current = current.Parent;
+        }
+    }
+
+    private static MouseButton ParseMouseButton(int rawButton) =>
+        Enum.IsDefined(typeof(MouseButton), rawButton) ? (MouseButton)rawButton : MouseButton.Unknown;
 
     public void HandleKeyboardInput()
     {
@@ -403,7 +418,7 @@ public abstract class UIScreen
         if (key == Keyboard.KEY_ESCAPE || key == Keyboard.KEY_NONE)
         {
             Uninit();
-            Game.displayGuiScreen(null); // Default close behavior
+            Game.displayGuiScreen(null);
         }
     }
 
@@ -414,11 +429,10 @@ public abstract class UIScreen
 
         if (button == GamepadButton.A && isDown)
         {
-            ScaledResolution res = new(Game.options, Game.displayWidth, Game.displayHeight);
-            float scaledX = Game.VirtualCursor.X * res.ScaledWidth / Game.displayWidth;
-            float scaledY = Game.VirtualCursor.Y * res.ScaledHeight / Game.displayHeight;
+            ScaledResolution res = CurrentScaledResolution;
+            Vector2D<float> scaled = ToScaledCoords(Game.VirtualCursor.X, Game.VirtualCursor.Y, res);
 
-            UIElement? target = Root.HitTest(scaledX, scaledY);
+            UIElement? target = Root.HitTest(scaled.X, scaled.Y);
 
             // Holding A on a slider enters slider-edit mode instead of clicking
             if (target is Slider slider && slider.Enabled)
@@ -431,7 +445,7 @@ public abstract class UIScreen
             FocusedElement = target;
             if (target != null && target.Enabled)
             {
-                var evt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = MouseButton.Left };
+                var evt = new UIMouseEvent { Target = target, MouseX = (int)scaled.X, MouseY = (int)scaled.Y, Button = MouseButton.Left };
                 target.OnMouseDown?.Invoke(evt);
                 target.OnClick?.Invoke(evt);
             }
@@ -439,15 +453,9 @@ public abstract class UIScreen
         else if (button == GamepadButton.B && isDown)
         {
             if (_editingSlider != null)
-            {
-                _editingSlider = null;
-                _sliderDpadHeldX = 0;
-                _sliderStickAccumulated = 0f;
-            }
+                CancelSliderEdit();
             else
-            {
                 KeyTyped(Keyboard.KEY_ESCAPE, '\0');
-            }
         }
     }
 }
