@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using BetaSharp.Launcher.Features;
+using BetaSharp.Launcher.Features.Hosting;
 using BetaSharp.Launcher.Features.Shell;
 using BetaSharp.Launcher.Features.Splash;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,34 +18,9 @@ internal sealed class App : Application
 
     private readonly IServiceProvider _services = Bootstrapper.Build();
 
-    // Taken from BetaSharp.Client, should a shared project be created?
     static App()
     {
-        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-        if (string.IsNullOrEmpty(home))
-        {
-            home = ".";
-        }
-
-        string path;
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "." + nameof(BetaSharp));
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            path = Path.Combine(home, "Library", "Application Support", nameof(BetaSharp));
-        }
-        else
-        {
-            string? xdg = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
-            path = !string.IsNullOrEmpty(xdg) ? Path.Combine(xdg, nameof(BetaSharp)) : Path.Combine(home, ".local", "share", nameof(BetaSharp));
-        }
-
-        Folder = Path.Combine(path, "launcher");
-
+        Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $".{nameof(BetaSharp)}", "launcher");
         Directory.CreateDirectory(Folder);
     }
 
@@ -63,8 +39,16 @@ internal sealed class App : Application
                 .Navigate<SplashViewModel>();
 
             desktop.MainWindow = _services.GetRequiredService<ShellView>();
+            desktop.Exit += DesktopOnExit;
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void DesktopOnExit(object? sender, ControlledApplicationLifetimeExitEventArgs eventArgs)
+    {
+        _services
+            .GetRequiredService<HostingViewModel>()
+            .Stop();
     }
 }

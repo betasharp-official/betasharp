@@ -177,7 +177,7 @@ public class InventoryPlayer : IInventory
         }
     }
 
-    public bool addItemStackToInventory(ItemStack itemStack)
+    public bool AddItemStackToInventory(ItemStack itemStack)
     {
         int slotIndex;
         if (itemStack.isDamaged())
@@ -205,6 +205,12 @@ public class InventoryPlayer : IInventory
 
             return itemStack.count < slotIndex;
         }
+    }
+
+    public void AddItemStackToInventoryOrDrop(ItemStack itemStack)
+    {
+        if (AddItemStackToInventory(itemStack)) return;
+        player.DropItem(itemStack);
     }
 
     public ItemStack? removeStack(int slotIndex, int amount)
@@ -407,7 +413,7 @@ public class InventoryPlayer : IInventory
         {
             if (armor[slotIndex] != null && armor[slotIndex].getItem() is ItemArmor)
             {
-                armor[slotIndex].damageItem(durabilityLoss, player);
+                armor[slotIndex].DamageItem(durabilityLoss, player);
                 if (armor[slotIndex].count == 0)
                 {
                     armor[slotIndex].onRemoved(player);
@@ -425,7 +431,7 @@ public class InventoryPlayer : IInventory
         {
             if (main[slotIndex] != null)
             {
-                player.dropItem(main[slotIndex], true);
+                player.DropItem(main[slotIndex], true);
                 main[slotIndex] = null;
             }
         }
@@ -434,7 +440,7 @@ public class InventoryPlayer : IInventory
         {
             if (armor[slotIndex] != null)
             {
-                player.dropItem(armor[slotIndex], true);
+                player.DropItem(armor[slotIndex], true);
                 armor[slotIndex] = null;
             }
         }

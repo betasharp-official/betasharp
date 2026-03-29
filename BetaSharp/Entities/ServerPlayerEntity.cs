@@ -278,6 +278,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             SendChunkData(world, chunkPos);
             ChunksTerrainSentToClient[chunkPos] = Environment.TickCount64;
             SendBlockEntityUpdates(world, chunkPos);
+            server.getEntityTracker(dimensionId).updateListenerForChunk(this, chunkPos.X, chunkPos.Z);
         }
     }
 
@@ -334,6 +335,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public override void sendPickup(Entity item, int count)
     {
+        if (!GameMode.CanPickup) return;
         if (!item.dead)
         {
             EntityTracker et = server.getEntityTracker(dimensionId);

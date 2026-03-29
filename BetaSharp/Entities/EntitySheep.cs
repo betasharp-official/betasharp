@@ -59,7 +59,7 @@ public class EntitySheep : EntityAnimal
                 }
             }
 
-            heldItem.damageItem(1, player);
+            heldItem.DamageItem(1, player);
         }
 
         return false;

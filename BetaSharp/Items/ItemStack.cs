@@ -154,28 +154,55 @@ public class ItemStack
         return Item.ITEMS[itemId].getMaxDamage();
     }
 
-    public void damageItem(int damageAmount, Entity entity)
+    public void ConsumeItem(EntityPlayer player)
     {
-        if (isDamageable())
+        if (!player.GameMode.FiniteResources) return;
+        count--;
+    }
+
+    public void DamageItem(int damageAmount, Entity entity)
+    {
+        if (!isDamageable()) return;
+
+        if (entity is EntityPlayer player)
+        {
+            DamageItemForced(damageAmount, player);
+        }
+        else
         {
             damage += damageAmount;
-            if (damage > getMaxDamage())
-            {
-                if (entity is EntityPlayer)
-                {
-                    ((EntityPlayer)entity).increaseStat(Stats.Stats.Broken[itemId], 1);
-                }
-
-                --count;
-                if (count < 0)
-                {
-                    count = 0;
-                }
-
-                damage = 0;
-            }
-
+            UpdateBroken();
         }
+    }
+
+    public void DamageItem(int damageAmount, EntityPlayer player)
+    {
+        if (!isDamageable()) return;
+        DamageItemForced(damageAmount, player);
+    }
+
+    private void DamageItemForced(int damageAmount, EntityPlayer player)
+    {
+        if (!player.GameMode.FiniteResources) return;
+
+        damage += damageAmount;
+        if (UpdateBroken())
+        {
+            player.increaseStat(Stats.Stats.Broken[itemId], 1);
+        }
+    }
+
+    private bool UpdateBroken()
+    {
+        if (damage > getMaxDamage())
+        {
+            --count;
+            if (count < 0) count = 0;
+            damage = 0;
+            return true;
+        }
+
+        return false;
     }
 
     public void postHit(EntityLiving entityLiving, EntityPlayer entityPlayer)
@@ -212,9 +239,9 @@ public class ItemStack
     {
     }
 
-    public void useOnEntity(EntityLiving entityLiving)
+    public void useOnEntity(EntityLiving entityLiving, EntityPlayer entityPlayer)
     {
-        Item.ITEMS[itemId].useOnEntity(this, entityLiving);
+        Item.ITEMS[itemId].useOnEntity(this, entityLiving, entityPlayer);
     }
 
     public ItemStack copy()

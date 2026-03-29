@@ -611,6 +611,8 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onOpenScreen(OpenScreenS2CPacket packet)
     {
+        if (!_game.player.GameMode.CanInteract) return;
+
         if (packet.screenHandlerId == 0)
         {
             InventoryBasic inventory = new(packet.name, packet.slotsCount);
@@ -817,6 +819,11 @@ public class ClientNetworkHandler : NetHandler
             Entity? ent = worldClient.GetEntity(packet.entityId);
             EntityRenderDispatcher.instance.skinManager?.Release(packet.name);
         }
+    }
+
+    public override void onPlayerGameModeUpdate(PlayerGameModeUpdateS2CPacket packet)
+    {
+        _game.player.GameMode = packet.GameMode;
     }
 
     public override bool isServerSide()

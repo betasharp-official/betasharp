@@ -418,7 +418,7 @@ public class PlayerManager
         return ops.Contains(name.Trim().ToLower());
     }
 
-    public ServerPlayerEntity getPlayer(string name)
+    public ServerPlayerEntity? getPlayer(string name)
     {
         for (int var2 = 0; var2 < players.Count; var2++)
         {

@@ -129,11 +129,13 @@ public class ServerLoginNetworkHandler : NetHandler
         {
             server.playerManager.loadPlayerData(ent);
             ent.setWorld(server.getWorld(ent.dimensionId));
+            ent.GameMode = GameModes.DefaultGameMode;
             _logger.LogInformation($"{getConnectionInfo()} logged in with entity id {ent.id} at ({ent.x}, {ent.y}, {ent.z})");
             ServerWorld var3 = server.getWorld(ent.dimensionId);
             Vec3i var4 = var3.Properties.GetSpawnPos();
             ServerPlayNetworkHandler handler = new ServerPlayNetworkHandler(server, connection, ent);
             handler.sendPacket(new LoginHelloPacket("", ent.id, var3.Seed, (sbyte)var3.Dimension.Id));
+            handler.sendPacket(PlayerGameModeUpdateS2CPacket.Get(ent.GameMode));
             handler.sendPacket(PlayerSpawnPositionS2CPacket.Get(var4.X, var4.Y, var4.Z));
             server.playerManager.sendWorldInfo(ent, var3);
             server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(ent.id, PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Join, ent.name));

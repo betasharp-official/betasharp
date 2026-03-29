@@ -51,6 +51,10 @@ public class ClientWorld : World
             {
                 SpawnEntity(entity);
             }
+            else
+            {
+                pendingEntities.Remove(entity);
+            }
         }
 
         _networkHandler.tick();
@@ -158,6 +162,7 @@ public class ClientWorld : World
         Entity? existingEnt = GetEntity(networkId);
         if (existingEnt != null)
         {
+            forcedEntities.Remove(existingEnt);
             Remove(existingEnt);
         }
 

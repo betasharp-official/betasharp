@@ -20,15 +20,15 @@ internal class ItemSword : Item
         return block.id == Block.Cobweb.id ? 15.0F : 1.5F;
     }
 
-    public override bool postHit(ItemStack itemStack, EntityLiving a, EntityLiving b)
+    public override bool postHit(ItemStack itemStack, EntityLiving a, EntityPlayer entityPlayer)
     {
-        itemStack.damageItem(1, b);
+        itemStack.DamageItem(1, entityPlayer);
         return true;
     }
 
     public override bool postMine(ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving entityLiving)
     {
-        itemStack.damageItem(2, entityLiving);
+        itemStack.DamageItem(2, entityLiving);
         return true;
     }
 

@@ -46,6 +46,7 @@ public abstract class EntityPlayer : EntityLiving
     public float lastScreenDistortion;
     private int damageSpill;
     public EntityFish fishHook = null;
+    public GameMode GameMode;
 
     public EntityPlayer(IWorldContext world) : base(world)
     {
@@ -60,6 +61,7 @@ public abstract class EntityPlayer : EntityLiving
         rotationOffset = 180.0F;
         fireImmunityTicks = 20;
         texture = "/mob/char.png";
+        GameMode = GameModes.DefaultGameMode;
     }
 
     protected void TickSleep()
@@ -293,7 +295,7 @@ public abstract class EntityPlayer : EntityLiving
         velocityY = (double)0.1F;
         if (name.Equals("Notch"))
         {
-            dropItem(new ItemStack(Item.Apple, 1), true);
+            DropItem(new ItemStack(Item.Apple, 1), true);
         }
 
         inventory.dropInventory();
@@ -324,49 +326,53 @@ public abstract class EntityPlayer : EntityLiving
         }
     }
 
-    public virtual void dropSelectedItem()
+    public virtual void DropSelectedItem()
     {
-        dropItem(inventory.removeStack(inventory.selectedSlot, 1), false);
-    }
-
-    public void dropItem(ItemStack stack)
-    {
-        dropItem(stack, false);
-    }
-
-    public void dropItem(ItemStack stack, bool throwRandomly)
-    {
-        if (stack != null)
+        if (GameMode.CanDrop)
         {
-            EntityItem var3 = new EntityItem(world, x, y - (double)0.3F + (double)getEyeHeight(), z, stack);
-            var3.delayBeforeCanPickup = 40;
-            float var4 = 0.1F;
-            float var5;
-            if (throwRandomly)
-            {
-                var5 = random.NextFloat() * 0.5F;
-                float var6 = random.NextFloat() * (float)System.Math.PI * 2.0F;
-                var3.velocityX = (double)(-MathHelper.Sin(var6) * var5);
-                var3.velocityZ = (double)(MathHelper.Cos(var6) * var5);
-                var3.velocityY = (double)0.2F;
-            }
-            else
-            {
-                var4 = 0.3F;
-                var3.velocityX = (double)(-MathHelper.Sin(yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(pitch / 180.0F * (float)System.Math.PI) * var4);
-                var3.velocityZ = (double)(MathHelper.Cos(yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(pitch / 180.0F * (float)System.Math.PI) * var4);
-                var3.velocityY = (double)(-MathHelper.Sin(pitch / 180.0F * (float)System.Math.PI) * var4 + 0.1F);
-                var4 = 0.02F;
-                var5 = random.NextFloat() * (float)System.Math.PI * 2.0F;
-                var4 *= random.NextFloat();
-                var3.velocityX += Math.Cos((double)var5) * (double)var4;
-                var3.velocityY += (double)((random.NextFloat() - random.NextFloat()) * 0.1F);
-                var3.velocityZ += Math.Sin((double)var5) * (double)var4;
-            }
-
-            spawnItem(var3);
-            increaseStat(Stats.Stats.DropStat, 1);
+            DropItem(inventory.removeStack(inventory.selectedSlot, 1), false);
         }
+    }
+
+    /// <summary>
+    /// Drop <see cref="ItemStack"/> into the world
+    /// </summary>
+    /// <returns>True when item was removed</returns>
+    public bool DropItem(ItemStack? stack, bool throwRandomly = false)
+    {
+        if (!GameMode.CanDrop) return false;
+        if (stack == null) return true;
+
+        EntityItem var3 = new EntityItem(world, x, y - (double)0.3F + (double)getEyeHeight(), z, stack);
+        var3.delayBeforeCanPickup = 40;
+        float var4 = 0.1F;
+        float var5;
+        if (throwRandomly)
+        {
+            var5 = random.NextFloat() * 0.5F;
+            float var6 = random.NextFloat() * (float)System.Math.PI * 2.0F;
+            var3.velocityX = (double)(-MathHelper.Sin(var6) * var5);
+            var3.velocityZ = (double)(MathHelper.Cos(var6) * var5);
+            var3.velocityY = (double)0.2F;
+        }
+        else
+        {
+            var4 = 0.3F;
+            var3.velocityX = (double)(-MathHelper.Sin(yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(pitch / 180.0F * (float)System.Math.PI) * var4);
+            var3.velocityZ = (double)(MathHelper.Cos(yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(pitch / 180.0F * (float)System.Math.PI) * var4);
+            var3.velocityY = (double)(-MathHelper.Sin(pitch / 180.0F * (float)System.Math.PI) * var4 + 0.1F);
+            var4 = 0.02F;
+            var5 = random.NextFloat() * (float)System.Math.PI * 2.0F;
+            var4 *= random.NextFloat();
+            var3.velocityX += Math.Cos((double)var5) * (double)var4;
+            var3.velocityY += (double)((random.NextFloat() - random.NextFloat()) * 0.1F);
+            var3.velocityZ += Math.Sin((double)var5) * (double)var4;
+        }
+
+        spawnItem(var3);
+        increaseStat(Stats.Stats.DropStat, 1);
+
+        return true;
     }
 
     protected virtual void spawnItem(EntityItem itemEntity)
@@ -454,6 +460,8 @@ public abstract class EntityPlayer : EntityLiving
 
     public override bool damage(Entity damageSource, int amount)
     {
+        if (!GameMode.CanReceiveDamage) return false;
+
         entityAge = 0;
         if (health <= 0)
         {
@@ -506,16 +514,15 @@ public abstract class EntityPlayer : EntityLiving
     {
         if (entity is not EntityCreeper && entity is not EntityGhast)
         {
-            if (entity is EntityWolf)
+            if (entity is EntityWolf wolf)
             {
-                EntityWolf var3 = (EntityWolf)entity;
-                if (var3.isWolfTamed() && name.Equals(var3.getWolfOwner()))
+                if (wolf.isWolfTamed() && name.Equals(wolf.getWolfOwner()))
                 {
                     return;
                 }
             }
 
-            if (entity is not EntityPlayer || isPvpEnabled())
+            if (entity is not EntityPlayer p || isPvpEnabled() && p.GameMode.CanBeTargeted)
             {
                 var var7 = world.Entities.CollectEntitiesOfType<EntityWolf>(new Box(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D).Expand(16.0D, 4.0D, 16.0D));
 
@@ -557,15 +564,16 @@ public abstract class EntityPlayer : EntityLiving
 
     public void interact(Entity entity)
     {
+        if (!GameMode.CanInteract) return;
         if (!entity.interact(this))
         {
-            ItemStack var2 = getHand();
-            if (var2 != null && entity is EntityLiving)
+            ItemStack itemStackInHand = getHand();
+            if (itemStackInHand != null && entity is EntityLiving living)
             {
-                var2.useOnEntity((EntityLiving)entity);
-                if (var2.count <= 0)
+                itemStackInHand.useOnEntity(living, this);
+                if (itemStackInHand.count <= 0)
                 {
-                    var2.onRemoved(this);
+                    itemStackInHand.onRemoved(this);
                     clearStackInHand();
                 }
             }
@@ -595,6 +603,7 @@ public abstract class EntityPlayer : EntityLiving
 
     public void attack(Entity target)
     {
+        if (!GameMode.CanInflictDamage) return;
         int var2 = inventory.getDamageVsEntity(target);
         if (var2 > 0)
         {
@@ -604,22 +613,22 @@ public abstract class EntityPlayer : EntityLiving
             }
 
             target.damage(this, var2);
-            ItemStack var3 = getHand();
-            if (var3 != null && target is EntityLiving)
+            if (target is EntityLiving living)
             {
-                var3.postHit((EntityLiving)target, this);
-                if (var3.count <= 0)
+                ItemStack itemStackInHand = getHand();
+                if (itemStackInHand != null)
                 {
-                    var3.onRemoved(this);
-                    clearStackInHand();
+                    itemStackInHand.postHit(living, this);
+                    if (itemStackInHand.count <= 0)
+                    {
+                        itemStackInHand.onRemoved(this);
+                        clearStackInHand();
+                    }
                 }
-            }
 
-            if (target is EntityLiving)
-            {
-                if (target.isAlive())
+                if (living.isAlive())
                 {
-                    commandWolvesToAttack((EntityLiving)target, true);
+                    commandWolvesToAttack(living, true);
                 }
 
                 increaseStat(Stats.Stats.DamageDealtStat, var2);

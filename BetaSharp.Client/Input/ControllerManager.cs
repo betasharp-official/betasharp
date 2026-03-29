@@ -151,7 +151,7 @@ public static class ControllerManager
         // Drop
         if (dropHeld && !s_wasDropDown)
         {
-            s_game.player.dropSelectedItem();
+            s_game.player.DropSelectedItem();
         }
 
         // Hotbar / Zoom adjust

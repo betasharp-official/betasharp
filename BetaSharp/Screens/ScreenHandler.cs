@@ -107,13 +107,15 @@ public abstract class ScreenHandler
                 {
                     if (button == 0)
                     {
-                        player.dropItem(playerInventory.getCursorStack());
-                        playerInventory.setItemStack(null);
+                        if (player.DropItem(playerInventory.getCursorStack()))
+                        {
+                            playerInventory.setItemStack(null);
+                        }
                     }
 
-                    if (button == 1)
+                    if (button == 1 && player.GameMode.CanDrop)
                     {
-                        player.dropItem(playerInventory.getCursorStack().split(1));
+                        player.DropItem(playerInventory.getCursorStack().split(1));
                         if (playerInventory.getCursorStack().count == 0)
                         {
                             playerInventory.setItemStack(null);
@@ -243,8 +245,17 @@ public abstract class ScreenHandler
         InventoryPlayer playerInventory = player.inventory;
         if (playerInventory.getCursorStack() is not null)
         {
-            player.dropItem(playerInventory.getCursorStack());
-            playerInventory.setItemStack(null);
+            if (player.GameMode.CanDrop)
+            {
+                if (player.DropItem(playerInventory.getCursorStack()))
+                {
+                    playerInventory.setItemStack(null);
+                }
+            }
+            else
+            {
+                player.inventory.AddItemStackToInventoryOrDrop(playerInventory.getCursorStack());
+            }
         }
 
     }

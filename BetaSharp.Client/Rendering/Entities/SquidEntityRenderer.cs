@@ -42,7 +42,7 @@ public class SquidEntityRenderer : LivingEntityRenderer
         func_21005_a((EntitySquid)var1, var2);
     }
 
-    protected override float func_170_d(EntityLiving var1, float var2)
+    protected override float getAnimationProgress(EntityLiving var1, float var2)
     {
         return func_21006_b((EntitySquid)var1, var2);
     }

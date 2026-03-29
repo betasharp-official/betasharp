@@ -76,7 +76,7 @@ public class EntityGhast : EntityFlying, Monster
 
         if (targetedEntity == null || aggroCooldown-- <= 0)
         {
-            targetedEntity = world.Entities.GetClosestPlayer(x, y, z, 100.0D);
+            targetedEntity = world.Entities.GetClosestPlayerTarget(x, y, z, 100.0D);
             if (targetedEntity != null)
             {
                 aggroCooldown = 20;

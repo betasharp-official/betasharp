@@ -18,7 +18,7 @@ public class PlayerControllerMP : PlayerController
     private int currentblockZ = -1;
     private float curBlockDamageMP;
     private float prevBlockDamageMP;
-    private float field_9441_h;
+    private byte _mineSoundTimer;
     private int blockHitDelay;
     private bool isHittingBlock;
     private readonly ClientNetworkHandler netClientHandler;
@@ -35,51 +35,54 @@ public class PlayerControllerMP : PlayerController
         playerEntity.prevYaw = -180.0F;
     }
 
-    public override bool sendBlockRemoved(int x, int y, int z, int var4)
+    public override bool sendBlockRemoved(int x, int y, int z, int direction)
     {
+        if (!Game.player.GameMode.CanBreak) return false;
+
         int blockId = Game.world.Reader.GetBlockId(x, y, z);
-        bool var6 = base.sendBlockRemoved(x, y, z, var4);
-        ItemStack var7 = Game.player.getHand();
-        if (var7 != null)
+        bool blockRemoved = base.sendBlockRemoved(x, y, z, direction);
+        ItemStack hand = Game.player.getHand();
+        if (hand != null)
         {
-            var7.postMine(blockId, x, y, z, Game.player);
-            if (var7.count == 0)
+            hand.postMine(blockId, x, y, z, Game.player);
+            if (hand.count == 0)
             {
-                var7.onRemoved(Game.player);
+                hand.onRemoved(Game.player);
                 Game.player.clearStackInHand();
             }
         }
 
-        return var6;
+        return blockRemoved;
     }
 
-    public override void clickBlock(int var1, int var2, int var3, int var4)
+    public override void clickBlock(int x, int y, int z, int direction)
     {
-        if (!isHittingBlock || var1 != currentBlockX || var2 != currentBlockY || var3 != currentblockZ)
+        if (!isHittingBlock || x != currentBlockX || y != currentBlockY || z != currentblockZ)
         {
-            netClientHandler.addToSendQueue(PlayerActionC2SPacket.Get(0, var1, var2, var3, var4));
-            int var5 = Game.world.Reader.GetBlockId(var1, var2, var3);
-            if (var5 > 0 && curBlockDamageMP == 0.0F)
+            netClientHandler.addToSendQueue(PlayerActionC2SPacket.Get(0, x, y, z, direction));
+            int blockId = Game.world.Reader.GetBlockId(x, y, z);
+            if (blockId > 0 && curBlockDamageMP == 0.0F && Game.player.GameMode.CanInteract)
             {
-                Block.Blocks[var5].onBlockBreakStart(new OnBlockBreakStartEvent(Game.world, Game.player, var1, var2, var3));
+                Block.Blocks[blockId].onBlockBreakStart(new OnBlockBreakStartEvent(Game.world, Game.player, x, y, z));
             }
 
-            if (var5 > 0 && Block.Blocks[var5].getHardness(Game.player) >= 1.0F)
+            if (!Game.player.GameMode.CanBreak) return;
+
+            if (blockId > 0 && Block.Blocks[blockId].getHardness(Game.player) >= Game.player.GameMode.BrakeSpeed)
             {
-                sendBlockRemoved(var1, var2, var3, var4);
+                sendBlockRemoved(x, y, z, direction);
             }
             else
             {
                 isHittingBlock = true;
-                currentBlockX = var1;
-                currentBlockY = var2;
-                currentblockZ = var3;
+                currentBlockX = x;
+                currentBlockY = y;
+                currentblockZ = z;
                 curBlockDamageMP = 0.0F;
                 prevBlockDamageMP = 0.0F;
-                field_9441_h = 0.0F;
+                _mineSoundTimer = 0;
             }
         }
-
     }
 
     public override void resetBlockRemoving()
@@ -88,8 +91,9 @@ public class PlayerControllerMP : PlayerController
         isHittingBlock = false;
     }
 
-    public override void sendBlockRemoving(int var1, int var2, int var3, int var4)
+    public override void sendBlockRemoving(int x, int y, int z, int direction)
     {
+        if (!Game.player.GameMode.CanBreak) return;
         if (isHittingBlock)
         {
             syncCurrentPlayItem();
@@ -99,9 +103,9 @@ public class PlayerControllerMP : PlayerController
             }
             else
             {
-                if (var1 == currentBlockX && var2 == currentBlockY && var3 == currentblockZ)
+                if (x == currentBlockX && y == currentBlockY && z == currentblockZ)
                 {
-                    int var5 = Game.world.Reader.GetBlockId(var1, var2, var3);
+                    int var5 = Game.world.Reader.GetBlockId(x, y, z);
                     if (var5 == 0)
                     {
                         isHittingBlock = false;
@@ -110,26 +114,26 @@ public class PlayerControllerMP : PlayerController
 
                     Block var6 = Block.Blocks[var5];
                     curBlockDamageMP += var6.getHardness(Game.player);
-                    if (field_9441_h % 4.0F == 0.0F && var6 != null)
+                    if (_mineSoundTimer % 4 == 0 && var6 != null)
                     {
-                        Game.sndManager.PlaySound(var6.soundGroup.StepSound, (float)var1 + 0.5F, (float)var2 + 0.5F, (float)var3 + 0.5F, (var6.soundGroup.Volume + 1.0F) / 8.0F, var6.soundGroup.Pitch * 0.5F);
+                        Game.sndManager.PlaySound(var6.soundGroup.StepSound, (float)x + 0.5F, (float)y + 0.5F, (float)z + 0.5F, (var6.soundGroup.Volume + 1.0F) / 8.0F, var6.soundGroup.Pitch * 0.5F);
                     }
 
-                    ++field_9441_h;
+                    ++_mineSoundTimer;
                     if (curBlockDamageMP >= 1.0F)
                     {
                         isHittingBlock = false;
-                        netClientHandler.addToSendQueue(PlayerActionC2SPacket.Get(2, var1, var2, var3, var4));
-                        sendBlockRemoved(var1, var2, var3, var4);
+                        netClientHandler.addToSendQueue(PlayerActionC2SPacket.Get(2, x, y, z, direction));
+                        sendBlockRemoved(x, y, z, direction);
                         curBlockDamageMP = 0.0F;
                         prevBlockDamageMP = 0.0F;
-                        field_9441_h = 0.0F;
+                        _mineSoundTimer = 0;
                         blockHitDelay = 5;
                     }
                 }
                 else
                 {
-                    clickBlock(var1, var2, var3, var4);
+                    clickBlock(x, y, z, direction);
                 }
 
             }
@@ -155,11 +159,6 @@ public class PlayerControllerMP : PlayerController
     public override float getBlockReachDistance()
     {
         return 4.0F;
-    }
-
-    public override void func_717_a(World var1)
-    {
-        base.func_717_a(var1);
     }
 
     public override void updateController()
@@ -231,7 +230,7 @@ public class PlayerControllerMP : PlayerController
         return var7;
     }
 
-    public override void func_20086_a(int var1, EntityPlayer var2)
+    public override void OnGuiClosed(int var1, EntityPlayer var2)
     {
         if (var1 != -9999)
         {

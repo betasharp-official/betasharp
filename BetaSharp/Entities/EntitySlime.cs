@@ -82,7 +82,7 @@ public class EntitySlime : EntityLiving, Monster
     public override void tickLiving()
     {
         func_27021_X();
-        EntityPlayer player = world.Entities.GetClosestPlayer(this.x, this.y, this.z, 16.0D);
+        EntityPlayer player = world.Entities.GetClosestPlayerTarget(this.x, this.y, this.z, 16.0D);
         if (player != null)
         {
             faceEntity(player, 10.0F, 20.0F);

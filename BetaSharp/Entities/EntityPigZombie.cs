@@ -59,7 +59,7 @@ internal class EntityPigZombie : EntityZombie
 
     public override bool damage(Entity entity, int amount)
     {
-        if (entity is EntityPlayer)
+        if (entity is EntityPlayer { GameMode.CanBeTargeted: true })
         {
             var entities = world.Entities.GetEntities(this, boundingBox.Expand(32.0D, 32.0D, 32.0D));
 

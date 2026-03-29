@@ -128,10 +128,10 @@ public class EntityItem : Entity
 
     public override void onPlayerInteraction(EntityPlayer player)
     {
-        if (!world.IsRemote)
+        if (!world.IsRemote && player.GameMode.CanPickup)
         {
             int pickedUpCount = stack.count;
-            if (delayBeforeCanPickup == 0 && player.inventory.addItemStackToInventory(stack))
+            if (delayBeforeCanPickup == 0 && player.inventory.AddItemStackToInventory(stack))
             {
                 if (stack.itemId == Block.Log.id)
                 {

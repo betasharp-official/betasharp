@@ -36,13 +36,13 @@ public class EntitySpider : EntityMonster
         return false;
     }
 
-    protected override Entity findPlayerToAttack()
+    protected override Entity? findPlayerToAttack()
     {
         float brightness = getBrightnessAtEyes(1.0F);
         if (brightness < 0.5F)
         {
             double distance = 16.0D;
-            return world.Entities.GetClosestPlayer(this.x, this.y, this.z, distance);
+            return world.Entities.GetClosestPlayerTarget(this.x, this.y, this.z, distance);
         }
         else
         {

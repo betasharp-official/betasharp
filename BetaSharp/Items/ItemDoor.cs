@@ -54,7 +54,7 @@ internal class ItemDoor : Item
         world.Writer.SetBlock(x, y + 1, z, blockId, facing + 8);
         world.Broadcaster.NotifyNeighbors(x, y, z, blockId);
         world.Broadcaster.NotifyNeighbors(x, y + 1, z, blockId);
-        itemStack.count--;
+        itemStack.ConsumeItem(entityPlayer);
         return true;
     }
 }

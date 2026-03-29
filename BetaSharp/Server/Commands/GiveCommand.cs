@@ -36,10 +36,7 @@ public class GiveCommand : ICommand
                     count = Math.Clamp(parsedCount, 1, 64);
                 }
 
-                if (!sender.inventory.addItemStackToInventory(new ItemStack(selfItemId, count, 0)))
-                {
-                    sender.dropItem(new ItemStack(selfItemId, count, 0));
-                }
+                sender.inventory.AddItemStackToInventoryOrDrop(new ItemStack(selfItemId, count, 0));
                 c.LogOp($"{sender.name} Gave {count} [{selfItemId}] to {sender.name}");
                 c.Output.SendMessage($"Gave {count} [{selfItemId}] to {sender.name}");
                 return;
@@ -74,10 +71,7 @@ public class GiveCommand : ICommand
                 }
 
                 c.LogOp($"Giving {targetPlayer.name} {count}x{itemId}");
-                if (!targetPlayer.inventory.addItemStackToInventory(new ItemStack(itemId, count, 0)))
-                {
-                    targetPlayer.dropItem(new ItemStack(itemId, count, 0));
-                }
+                targetPlayer.inventory.AddItemStackToInventoryOrDrop(new ItemStack(itemId, count, 0));
                 c.LogOp($"{sender} Gave {count} [{itemId}] to {targetPlayer.name}");
                 c.Output.SendMessage($"Gave {count} [{itemId}] to {targetPlayer.name}");
                 return;

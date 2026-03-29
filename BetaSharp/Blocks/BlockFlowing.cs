@@ -3,15 +3,11 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
-internal class BlockFlowing : BlockFluid
+internal class BlockFlowing(int id, Material material) : BlockFluid(id, material)
 {
     private readonly ThreadLocal<int> _adjacentSources = new(() => 0);
     private readonly ThreadLocal<int[]> _distanceToGap = new(() => new int[4]);
     private readonly ThreadLocal<bool[]> _spread = new(() => new bool[4]);
-
-    public BlockFlowing(int id, Material material) : base(id, material)
-    {
-    }
 
     private void convertToSource(IWorldContext world, int x, int y, int z)
     {
@@ -34,7 +30,7 @@ internal class BlockFlowing : BlockFluid
         int newLevel;
         if (currentState > 0)
         {
-            int minDepth = -100;
+            const int minDepth = -100;
             _adjacentSources.Value = 0;
             int lowestNeighborDepth = getLowestDepth(ctx.World.Reader, ctx.X - 1, ctx.Y, ctx.Z, minDepth);
             lowestNeighborDepth = getLowestDepth(ctx.World.Reader, ctx.X + 1, ctx.Y, ctx.Z, lowestNeighborDepth);
@@ -61,11 +57,7 @@ internal class BlockFlowing : BlockFluid
 
             if (_adjacentSources.Value >= 2 && material == Material.Water)
             {
-                if (ctx.World.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z).IsSolid)
-                {
-                    newLevel = 0;
-                }
-                else if (ctx.World.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z) == material && ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) == 0)
+                if (ctx.World.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z).IsSolid || ctx.World.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z) == material && ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) == 0)
                 {
                     newLevel = 0;
                 }
@@ -186,24 +178,20 @@ internal class BlockFlowing : BlockFluid
 
             int neighborX = x;
             int neighborZ = z;
-            if (direction == 0)
+            switch (direction)
             {
-                neighborX = x - 1;
-            }
-
-            if (direction == 1)
-            {
-                ++neighborX;
-            }
-
-            if (direction == 2)
-            {
-                neighborZ = z - 1;
-            }
-
-            if (direction == 3)
-            {
-                ++neighborZ;
+                case 0:
+                    neighborX = x - 1;
+                    break;
+                case 1:
+                    ++neighborX;
+                    break;
+                case 2:
+                    neighborZ = z - 1;
+                    break;
+                case 3:
+                    ++neighborZ;
+                    break;
             }
 
             if (isLiquidBreaking(world, neighborX, y, neighborZ) || (world.GetMaterial(neighborX, y, neighborZ) == material && world.GetBlockMeta(neighborX, y, neighborZ) == 0))
@@ -236,24 +224,20 @@ internal class BlockFlowing : BlockFluid
             distanceToGap[direction] = 1000;
             neighborX = x;
             int neighborZ = z;
-            if (direction == 0)
+            switch (direction)
             {
-                neighborX = x - 1;
-            }
-
-            if (direction == 1)
-            {
-                ++neighborX;
-            }
-
-            if (direction == 2)
-            {
-                neighborZ = z - 1;
-            }
-
-            if (direction == 3)
-            {
-                ++neighborZ;
+                case 0:
+                    neighborX = x - 1;
+                    break;
+                case 1:
+                    ++neighborX;
+                    break;
+                case 2:
+                    neighborZ = z - 1;
+                    break;
+                case 3:
+                    ++neighborZ;
+                    break;
             }
 
             if (isLiquidBreaking(world, neighborX, y, neighborZ) || (world.GetMaterial(neighborX, y, neighborZ) == material && world.GetBlockMeta(neighborX, y, neighborZ) == 0))
@@ -292,7 +276,7 @@ internal class BlockFlowing : BlockFluid
     {
         if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
         {
-            return true;
+            return false;
         }
 
         if (!reader.IsPosLoaded(x, y, z))
@@ -301,36 +285,34 @@ internal class BlockFlowing : BlockFluid
         }
 
         int blockId = reader.GetBlockId(x, y, z);
-        if (blockId != Door.id && blockId != IronDoor.id && blockId != Sign.id && blockId != Ladder.id && blockId != SugarCane.id)
+        if (blockId == Door.id || blockId == IronDoor.id || blockId == Sign.id || blockId == Ladder.id || blockId == SugarCane.id)
         {
-            if (blockId == 0)
-            {
-                return false;
-            }
-
-            Material mat = Blocks[blockId].material;
-            return mat.BlocksMovement;
+            return true;
         }
 
-        return true;
+        if (blockId == 0)
+        {
+            return false;
+        }
+
+        Material mat = Blocks[blockId].material;
+        return mat.BlocksMovement;
+
     }
 
     private int getLowestDepth(IBlockReader reader, int x, int y, int z, int depth)
     {
         int liquidState = getLiquidState(reader, x, y, z);
-        if (liquidState < 0)
+        switch (liquidState)
         {
-            return depth;
-        }
-
-        if (liquidState == 0)
-        {
-            _adjacentSources.Value++;
-        }
-
-        if (liquidState >= 8)
-        {
-            liquidState = 0;
+            case < 0:
+                return depth;
+            case 0:
+                _adjacentSources.Value++;
+                break;
+            case >= 8:
+                liquidState = 0;
+                break;
         }
 
         return depth >= 0 && liquidState >= depth ? depth : liquidState;

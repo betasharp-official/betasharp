@@ -33,7 +33,7 @@ internal class ItemHoe : Item
             else
             {
                 world.Writer.SetBlock(x, y, z, block.id);
-                itemStack.damageItem(1, entityPlayer);
+                itemStack.DamageItem(1, entityPlayer);
                 return true;
             }
         }
