@@ -19,7 +19,7 @@ public class NewDebugComponentScreen(BetaSharp game, DebugEditorScreen parent) :
         Root.Style.SetPadding(20);
         Root.Style.AlignItems = Align.Center;
 
-        Root.AddChild(new Background(BackgroundType.World));
+        Root.AddChild(new Background(Game.world != null ? BackgroundType.World : BackgroundType.Dirt));
 
         var title = new Label
         {

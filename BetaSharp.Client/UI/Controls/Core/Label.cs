@@ -8,7 +8,13 @@ public class Label : UIElement
     public string Text { get; set; } = "";
     public Color TextColor { get; set; } = Color.White;
     public bool Centered { get; set; } = false;
-    public float Scale { get; set; } = 1.0f;
+
+    // Scale is rounded to the nearest whole number for pixel art consistency.
+    public float Scale
+    {
+        get;
+        set => field = MathF.Round(value);
+    } = 1.0f;
     public bool HasShadow { get; set; } = true;
 
     public override void Measure(float availableWidth, float availableHeight)
