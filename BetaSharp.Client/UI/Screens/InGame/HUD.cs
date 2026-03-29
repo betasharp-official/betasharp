@@ -8,6 +8,7 @@ namespace BetaSharp.Client.UI.Screens.InGame;
 public class HUD : UIScreen
 {
     public override bool PausesGame => false;
+    protected override bool AutoAddTooltipBar => false;
 
     public Hotbar Hotbar { get; private set; } = null!;
     public ChatOverlay Chat { get; private set; } = null!;
@@ -73,6 +74,14 @@ public class HUD : UIScreen
         debugMenu.Style.Position = PositionType.Absolute;
         debugMenu.Style.Top = debugMenu.Style.Left = debugMenu.Style.Right = debugMenu.Style.Bottom = 0;
         Root.AddChild(debugMenu);
+
+        var tooltipBar = new ControlTooltipBar(Game);
+        tooltipBar.Style.Position = PositionType.Absolute;
+        tooltipBar.Style.Bottom = 4;
+        tooltipBar.Style.Left = 2;
+        tooltipBar.Style.MarginLeft = 16;
+        tooltipBar.Style.MarginBottom = 4;
+        Root.AddChild(tooltipBar);
     }
 
     public void AddChatMessage(string message) => Chat.AddMessage(message);

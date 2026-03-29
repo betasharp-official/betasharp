@@ -1,8 +1,6 @@
 using System.Reflection;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Guis;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Hit;
@@ -26,49 +24,11 @@ public static class ControlTooltip
 {
     public static ControllerType ControllerType = ControllerType.XboxOne;
 
-    private static readonly List<ActionTip> s_tips = [];
     private static readonly Dictionary<int, bool> s_usabilityCache = [];
 
-    public static void Clear() => s_tips.Clear();
-
-    public static void Add(ControlIcon icon, string action)
+    internal static void PopulateInGameTips(BetaSharp game, List<ActionTip> tips)
     {
-        s_tips.Add(new ActionTip(icon, action));
-    }
-
-    public static void Render(BetaSharp game, int screenWidth, int screenHeight, float partialTicks)
-    {
-        if (game.options.HideGUI || !game.isControllerMode) return;
-
-        Clear();
-        if (game.currentScreen == null)
-        {
-            PopulateInGameTips(game);
-        }
-        else
-        {
-            PopulateGuiTips(game.currentScreen);
-        }
-
-        if (s_tips.Count == 0) return;
-
-        int x = 24;
-        int y = screenHeight - 30;
-        const int spacing = 10;
-
-        foreach (ActionTip tip in s_tips)
-        {
-            int iconWidth = DrawIcon(game, tip, x, y);
-            x += iconWidth + 4;
-
-            game.fontRenderer.DrawStringWithShadow(tip.Action, x, y + 2, Color.White);
-            x += game.fontRenderer.GetStringWidth(tip.Action) + spacing;
-        }
-    }
-
-    private static void PopulateInGameTips(BetaSharp game)
-    {
-        Add(ControlIcon.Y, "Inventory");
+        tips.Add(new ActionTip(ControlIcon.Y, "Inventory"));
 
         string? useAction = null;
         ItemStack held = game.player.inventory.getSelectedItem();
@@ -117,34 +77,61 @@ public static class ControlTooltip
         }
 
         if (useAction != null)
-        {
-            Add(ControlIcon.Lt, useAction);
-        }
+            tips.Add(new ActionTip(ControlIcon.Lt, useAction));
 
         if (hit.Type != HitResultType.MISS)
         {
-            string attackAction = "Mine";
-            if (hit.Type == HitResultType.ENTITY) attackAction = "Attack";
-            Add(ControlIcon.Rt, attackAction);
+            string attackAction = hit.Type == HitResultType.ENTITY ? "Attack" : "Mine";
+            tips.Add(new ActionTip(ControlIcon.Rt, attackAction));
         }
 
         if (game.player.inventory.getSelectedItem() != null)
-        {
-            Add(ControlIcon.B, "Drop");
-        }
+            tips.Add(new ActionTip(ControlIcon.B, "Drop"));
     }
 
-    private static void PopulateGuiTips(UIScreen screen)
+    internal static void PopulateGuiTips(UIScreen screen, List<ActionTip> tips)
     {
-        Add(ControlIcon.B, "Back");
+        tips.Add(new ActionTip(ControlIcon.B, "Back"));
 
-        screen.GetTooltips(s_tips);
+        screen.GetTooltips(tips);
+
+        if (tips.All(t => t.Icon != ControlIcon.A) && screen.HasInteractiveElementUnderCursor())
+            tips.Add(new ActionTip(ControlIcon.A, "Select"));
+    }
+
+    internal static string? GetAssetPath(ControlIcon icon)
+    {
+        string iconName = icon switch
+        {
+            ControlIcon.A => "down_button",
+            ControlIcon.B => "right_button",
+            ControlIcon.X => "left_button",
+            ControlIcon.Y => "up_button",
+            ControlIcon.Lt => "left_trigger",
+            ControlIcon.Rt => "right_trigger",
+            ControlIcon.Lb => "left_bumper",
+            ControlIcon.Rb => "right_bumper",
+            ControlIcon.Ls => "left_stick",
+            ControlIcon.Rs => "right_stick",
+            ControlIcon.LsClick => "left_stick_button",
+            ControlIcon.RsClick => "right_stick_button",
+            ControlIcon.DPadUp => "dpad_up",
+            ControlIcon.DPadDown => "dpad_down",
+            ControlIcon.DPadLeft => "dpad_left",
+            ControlIcon.DPadRight => "dpad_right",
+            ControlIcon.Start => "start_button",
+            ControlIcon.Back => "back_button",
+            ControlIcon.TouchPad => "touchpad",
+            _ => "unknown"
+        };
+
+        return $"/gui/controls/{ControllerType.Key}/{iconName}.png";
     }
 
     private static bool IsItemUsable(ItemStack stack)
     {
         if (stack == null) return false;
-        if (stack.itemId < 256) return true; // Blocks are always placeable
+        if (stack.itemId < 256) return true;
 
         if (s_usabilityCache.TryGetValue(stack.itemId, out bool usable))
             return usable;
@@ -153,8 +140,6 @@ public static class ControlTooltip
         if (item == null) return false;
 
         Type type = item.GetType();
-
-        // Using a more permissive search to handle internal subclasses
         MethodInfo[] methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         foreach (MethodInfo method in methods)
         {
@@ -183,57 +168,5 @@ public static class ControlTooltip
         if (typeName.Contains("Bow")) return "Shoot";
 
         return "Use";
-    }
-
-    private static int DrawIcon(BetaSharp game, ActionTip tip, int x, int y)
-    {
-        string? assetPath = GetAssetPath(tip.Icon);
-        if (assetPath == null) return 0;
-
-        TextureHandle texture = game.textureManager.GetTextureId(assetPath);
-        game.textureManager.BindTexture(texture);
-
-        int size = 16;
-        float u1 = 0, v1 = 0, u2 = 1, v2 = 1;
-
-        Tessellator tess = Tessellator.instance;
-        tess.startDrawingQuads();
-        tess.setColorOpaque_I(0xFFFFFF);
-        tess.addVertexWithUV(x, y + size, 0, u1, v2);
-        tess.addVertexWithUV(x + size, y + size, 0, u2, v2);
-        tess.addVertexWithUV(x + size, y, 0, u2, v1);
-        tess.addVertexWithUV(x, y, 0, u1, v1);
-        tess.draw();
-
-        return size;
-    }
-
-    private static string? GetAssetPath(ControlIcon icon)
-    {
-        string iconName = icon switch
-        {
-            ControlIcon.A => "down_button",
-            ControlIcon.B => "right_button",
-            ControlIcon.X => "left_button",
-            ControlIcon.Y => "up_button",
-            ControlIcon.Lt => "left_trigger",
-            ControlIcon.Rt => "right_trigger",
-            ControlIcon.Lb => "left_bumper",
-            ControlIcon.Rb => "right_bumper",
-            ControlIcon.Ls => "left_stick",
-            ControlIcon.Rs => "right_stick",
-            ControlIcon.LsClick => "left_stick_button",
-            ControlIcon.RsClick => "right_stick_button",
-            ControlIcon.DPadUp => "dpad_up",
-            ControlIcon.DPadDown => "dpad_down",
-            ControlIcon.DPadLeft => "dpad_left",
-            ControlIcon.DPadRight => "dpad_right",
-            ControlIcon.Start => "start_button",
-            ControlIcon.Back => "back_button",
-            ControlIcon.TouchPad => "touchpad",
-            _ => "unknown"
-        };
-
-        return $"/gui/controls/{ControllerType.Key}/{iconName}.png";
     }
 }

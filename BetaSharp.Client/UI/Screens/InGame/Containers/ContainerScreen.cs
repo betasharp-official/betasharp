@@ -6,6 +6,7 @@ using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Items;
 using BetaSharp.Screens;
 using BetaSharp.Screens.Slots;
+using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
@@ -100,6 +101,50 @@ public abstract class ContainerScreen(ScreenHandler inventorySlots) : UIScreen(B
                 }
             }
         }
+    }
+
+    public override void GetTooltips(List<ActionTip> tips)
+    {
+        ItemStack cursorStack = Game.player.inventory.getCursorStack();
+
+        if (Root.HitTest(MouseX, MouseY) is UISlot hoveredSlot)
+        {
+            ItemStack slotStack = hoveredSlot.Slot.getStack();
+
+            if (cursorStack == null && slotStack != null)
+            {
+                tips.Add(new ActionTip(ControlIcon.A, "Move"));
+                tips.Add(new ActionTip(ControlIcon.Y, "Quick Move"));
+                if (slotStack.count > 1)
+                    tips.Add(new ActionTip(ControlIcon.X, "Take Half"));
+            }
+            else if (cursorStack != null)
+            {
+                tips.Add(new ActionTip(ControlIcon.A, "Place"));
+                tips.Add(new ActionTip(ControlIcon.X, "Place One"));
+            }
+        }
+    }
+
+    public override void HandleControllerInput()
+    {
+        var button = (GamepadButton)Controller.GetEventButton();
+        bool isDown = Controller.GetEventButtonState();
+
+        if (isDown && (button == GamepadButton.X || button == GamepadButton.Y))
+        {
+            if (GetElementUnderVirtualCursor() is UISlot uiSlot)
+            {
+                int slotId = uiSlot.Slot.id;
+                if (button == GamepadButton.Y)
+                    Game.playerController.func_27174_a(InventorySlots.SyncId, slotId, 0, true, Game.player);
+                else
+                    Game.playerController.func_27174_a(InventorySlots.SyncId, slotId, 1, false, Game.player);
+                return;
+            }
+        }
+
+        base.HandleControllerInput();
     }
 
     public override void KeyTyped(int key, char character)

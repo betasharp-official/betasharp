@@ -17,12 +17,12 @@ public class Hotbar : UIElement
         _game = game;
         Style.Width = 182;
         Style.Height = 22;
-        Style.MarginBottom = game.isControllerMode ? 40 : 0;
     }
 
     public override void Update(float partialTicks)
     {
         base.Update(partialTicks);
+        Style.MarginBottom = _game.isControllerMode ? 28 : 0;
         _updateCounter++;
     }
 

@@ -1,6 +1,8 @@
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls.Core;
+using BetaSharp.Client.UI.Controls.HUD;
 using BetaSharp.Client.UI.Layout;
+using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Rendering;
 using Silk.NET.GLFW;
 using Silk.NET.Maths;
@@ -33,6 +35,7 @@ public abstract class UIScreen
     public float MouseY { get; protected set; }
     public virtual bool PausesGame => true;
     public virtual bool AllowUserInput => false;
+    protected virtual bool AutoAddTooltipBar => true;
 
     private bool _isInitialized;
 
@@ -68,6 +71,18 @@ public abstract class UIScreen
         if (!_isInitialized)
         {
             Init();
+
+            if (AutoAddTooltipBar)
+            {
+                var tooltipBar = new ControlTooltipBar(Game, this);
+                tooltipBar.Style.Position = PositionType.Absolute;
+                tooltipBar.Style.Bottom = 4;
+                tooltipBar.Style.Left = 2;
+                tooltipBar.Style.MarginLeft = 16;
+                tooltipBar.Style.MarginBottom = 4;
+                Root.AddChild(tooltipBar);
+            }
+
             _isInitialized = true;
         }
         OnEnter();
@@ -261,6 +276,19 @@ public abstract class UIScreen
         if (cx < 0 || cx > screenW || cy < 0 || cy > screenH) return;
 
         result.Add(element);
+    }
+
+    public bool HasInteractiveElementUnderCursor()
+    {
+        UIElement? el = _hoveredElement;
+        return el != null && el.Enabled && el is not ScrollView && (el.OnClick != null || el.OnMouseDown != null);
+    }
+
+    protected UIElement? GetElementUnderVirtualCursor()
+    {
+        ScaledResolution res = CurrentScaledResolution;
+        Vector2D<float> scaled = ToScaledCoords(Game.VirtualCursor.X, Game.VirtualCursor.Y, res);
+        return Root.HitTest(scaled.X, scaled.Y);
     }
 
     public virtual void GetTooltips(List<ActionTip> tips) { }
