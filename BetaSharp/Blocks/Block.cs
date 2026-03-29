@@ -100,20 +100,11 @@ public class Block
     public static readonly Block CobblestoneStairs = new BlockStairs(67, Cobblestone).SetBlockName("stairsStone").IgnoreMetaUpdates();
     public static readonly Block WallSign = new BlockSign(68, typeof(BlockEntitySign), false).SetHardness(1.0F).SetSoundGroup(SoundWoodFootstep).SetBlockName("sign").DisableStats().IgnoreMetaUpdates();
     public static readonly Block Lever = new BlockLever(69, BlockTextures.Lever).SetHardness(0.5F).SetSoundGroup(SoundWoodFootstep).SetBlockName("lever").IgnoreMetaUpdates();
-
-    public static readonly Block StonePressurePlate = new BlockPressurePlate(70, BlockTextures.Stone, PressurePlateActiviationRule.MOBS, Material.Stone).SetHardness(0.5F).SetSoundGroup(SoundStoneFootstep).SetBlockName("pressurePlate")
-        .IgnoreMetaUpdates();
-
+    public static readonly Block StonePressurePlate = new BlockPressurePlate(70, BlockTextures.Stone, PressurePlateActiviationRule.MOBS, Material.Stone).SetHardness(0.5F).SetSoundGroup(SoundStoneFootstep).SetBlockName("pressurePlate").IgnoreMetaUpdates();
     public static readonly Block IronDoor = new BlockDoor(71, Material.Metal).SetHardness(5.0F).SetSoundGroup(SoundMetalFootstep).SetBlockName("doorIron").DisableStats().IgnoreMetaUpdates();
-
-    public static readonly Block WoodenPressurePlate = new BlockPressurePlate(72, BlockTextures.OakPlanks, PressurePlateActiviationRule.EVERYTHING, Material.Wood).SetHardness(0.5F).SetSoundGroup(SoundWoodFootstep)
-        .SetBlockName("pressurePlate").IgnoreMetaUpdates();
-
+    public static readonly Block WoodenPressurePlate = new BlockPressurePlate(72, BlockTextures.OakPlanks, PressurePlateActiviationRule.EVERYTHING, Material.Wood).SetHardness(0.5F).SetSoundGroup(SoundWoodFootstep).SetBlockName("pressurePlate").IgnoreMetaUpdates();
     public static readonly Block RedstoneOre = new BlockRedstoneOre(73, BlockTextures.RedstoneOre, false).SetHardness(3.0F).SetResistance(5.0F).SetSoundGroup(SoundStoneFootstep).SetBlockName("oreRedstone").IgnoreMetaUpdates();
-
-    public static readonly Block LitRedstoneOre = new BlockRedstoneOre(74, BlockTextures.RedstoneOre, true).SetLuminance(10.0F / 16.0F).SetHardness(3.0F).SetResistance(5.0F).SetSoundGroup(SoundStoneFootstep).SetBlockName("oreRedstone")
-        .IgnoreMetaUpdates();
-
+    public static readonly Block LitRedstoneOre = new BlockRedstoneOre(74, BlockTextures.RedstoneOre, true).SetLuminance(10.0F / 16.0F).SetHardness(3.0F).SetResistance(5.0F).SetSoundGroup(SoundStoneFootstep).SetBlockName("oreRedstone").IgnoreMetaUpdates();
     public static readonly Block RedstoneTorch = new BlockRedstoneTorch(75, BlockTextures.RedstoneTorchUnlit, false).SetHardness(0.0F).SetSoundGroup(SoundWoodFootstep).SetBlockName("notGate").IgnoreMetaUpdates();
     public static readonly Block LitRedstoneTorch = new BlockRedstoneTorch(76, BlockTextures.RedstoneTorchLit, true).SetHardness(0.0F).SetLuminance(0.5F).SetSoundGroup(SoundWoodFootstep).SetBlockName("notGate").IgnoreMetaUpdates();
     public static readonly Block Button = new BlockButton(77, BlockTextures.Stone).SetHardness(0.5F).SetSoundGroup(SoundStoneFootstep).SetBlockName("button").IgnoreMetaUpdates();
