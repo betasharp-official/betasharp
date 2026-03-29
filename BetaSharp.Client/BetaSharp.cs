@@ -120,14 +120,8 @@ public partial class BetaSharp
     private GLErrorHandler _glErrorHandler;
     private readonly DebugTelemetry _debugTelemetry = new();
 
-    private bool _wasDpadLeftDown;
-    private bool _wasDpadRightDown;
-    private bool _wasDpadUpDown;
-    private bool _wasDpadDownDown;
-
     public bool isControllerMode;
-    public float virtualCursorX;
-    public float virtualCursorY;
+    public VirtualCursor VirtualCursor { get; } = new VirtualCursor();
 
     public BetaSharp(int width, int height, bool isFullscreen)
     {
@@ -409,10 +403,10 @@ public partial class BetaSharp
         Display.swapBuffers();
     }
 
-    public void drawTextureRegion(int x, int y, int texX, int texY, int width, int height)
+    public static void drawTextureRegion(int x, int y, int texX, int texY, int width, int height)
     {
-        float uScale = 1 / 256f;
-        float vScale = 1 / 256f;
+        const float uScale = 1 / 256f;
+        const float vScale = 1 / 256f;
 
         Tessellator tess = Tessellator.instance;
         tess.startDrawingQuads();
@@ -468,8 +462,7 @@ public partial class BetaSharp
 
         if (currentScreen != null)
         {
-            virtualCursorX = displayWidth / 2.0f;
-            virtualCursorY = displayHeight / 2.0f;
+            VirtualCursor.Reset(displayWidth, displayHeight);
         }
 
         if (internalServer != null)
@@ -602,53 +595,7 @@ public partial class BetaSharp
 
                     if (isControllerMode && currentScreen != null)
                     {
-                        float lx = Controller.LeftStickX;
-                        float ly = Controller.LeftStickY;
-
-                        bool dpadLeft = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadLeft);
-                        bool dpadRight = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadRight);
-                        bool dpadUp = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadUp);
-                        bool dpadDown = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadDown);
-
-                        bool dpadHandled = false;
-
-                        if (currentScreen != null)
-                        {
-                            int dpadX = 0, dpadY = 0;
-                            if (dpadLeft && !_wasDpadLeftDown) dpadX = -1;
-                            if (dpadRight && !_wasDpadRightDown) dpadX = 1;
-                            if (dpadUp && !_wasDpadUpDown) dpadY = -1;
-                            if (dpadDown && !_wasDpadDownDown) dpadY = 1;
-
-                            if (dpadX != 0 || dpadY != 0)
-                            {
-                                dpadHandled = currentScreen.HandleDPadNavigation(dpadX, dpadY, ref virtualCursorX, ref virtualCursorY);
-                            }
-                        }
-
-                        _wasDpadLeftDown = dpadLeft;
-                        _wasDpadRightDown = dpadRight;
-                        _wasDpadUpDown = dpadUp;
-                        _wasDpadDownDown = dpadDown;
-
-                        if (!dpadHandled)
-                        {
-                            if (dpadLeft) lx = -0.2f;
-                            if (dpadRight) lx = 0.2f;
-                            if (dpadUp) ly = -0.2f;
-                            if (dpadDown) ly = 0.2f;
-                        }
-
-                        ScaledResolution sr = new(options, displayWidth, displayHeight);
-                        float speed = 200f * sr.ScaleFactor;
-
-                        virtualCursorX += lx * speed * Timer.DeltaTime;
-                        virtualCursorY += ly * speed * Timer.DeltaTime;
-
-                        if (virtualCursorX < 0) virtualCursorX = 0;
-                        if (virtualCursorX > displayWidth) virtualCursorX = displayWidth;
-                        if (virtualCursorY < 0) virtualCursorY = 0;
-                        if (virtualCursorY > displayHeight) virtualCursorY = displayHeight;
+                        VirtualCursor.Update(currentScreen, options, displayWidth, displayHeight, Timer.DeltaTime);
                     }
 
                     if (isGamePaused && world != null)
@@ -1939,7 +1886,6 @@ public partial class BetaSharp
         if (playerName != null && sessionToken != null)
         {
             game.session = new Session(playerName, sessionToken);
-            game.session.sessionId = "wdad";
 
             if (sessionToken == "-")
             {

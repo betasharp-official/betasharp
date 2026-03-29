@@ -272,8 +272,8 @@ public class GameRenderer
             int scaledMouseY;
             if (_client.isControllerMode)
             {
-                scaledMouseX = (int)(_client.virtualCursorX * scaledWidth / _client.displayWidth);
-                scaledMouseY = (int)(_client.virtualCursorY * scaledHeight / _client.displayHeight);
+                scaledMouseX = (int)(_client.VirtualCursor.X * scaledWidth / _client.displayWidth);
+                scaledMouseY = (int)(_client.VirtualCursor.Y * scaledHeight / _client.displayHeight);
             }
             else
             {
@@ -327,9 +327,9 @@ public class GameRenderer
                 }
             }
 
-            
+
             _client.PostProcessManager.End();
-            
+
 
             if (var7 < 240)
             {
@@ -477,7 +477,7 @@ public class GameRenderer
 
         if (_client.ShowChunkBorders)
         {
-                renderChunkBorders(tickDelta);
+            renderChunkBorders(tickDelta);
         }
 
         worldRenderer.renderClouds(tickDelta);
@@ -539,7 +539,7 @@ public class GameRenderer
             tess.addVertex(maxX, 128.0, z);
         }
 
-        for (int y = 0; y <= 128; y+=4)
+        for (int y = 0; y <= 128; y += 4)
         {
             if (y % 16 == 0) tess.setColorRGBA_F(0.0F, 0.0F, 1.0F, 1.0F);
             tess.addVertex(minX, y, minZ);
@@ -565,8 +565,8 @@ public class GameRenderer
 
         for (int i = 0; i < 4; i++)
         {
-            double x = minX + (i*16);
-            double z = minZ + (i*16);
+            double x = minX + (i * 16);
+            double z = minZ + (i * 16);
 
             tess.addVertex(x, 0.0, minZ);
             tess.addVertex(x, 128.0, minZ);
@@ -817,7 +817,7 @@ public class GameRenderer
 
     public void DrawVirtualCursor(int x, int y)
     {
-        if (_client.isControllerMode)
+        if (_client.isControllerMode && _client.currentScreen?.IsEditingSlider != true)
         {
             GLManager.GL.Disable(GLEnum.Lighting);
             GLManager.GL.Disable(GLEnum.DepthTest);

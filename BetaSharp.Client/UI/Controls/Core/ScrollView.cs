@@ -98,6 +98,12 @@ public class ScrollView : UIElement
         };
     }
 
+    public void ScrollBy(float delta)
+    {
+        ScrollY = Math.Clamp(ScrollY + delta, 0, MaxScrollY);
+        FixContentOffset();
+    }
+
     public void AddContent(UIElement child)
     {
         ContentContainer.AddChild(child);

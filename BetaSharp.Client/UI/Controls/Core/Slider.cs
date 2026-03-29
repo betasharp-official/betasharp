@@ -8,6 +8,11 @@ public class Slider : UIElement
 {
     public float Value { get; set; } = 0f;
     public string Text { get; set; } = "";
+    /// <summary>
+    /// The normalized step size for one discrete unit (e.g. 0.01 for a 0–100 range).
+    /// Used by controller DPad and stick navigation to move by exactly one value at a time.
+    /// </summary>
+    public float Step { get; set; } = 0.01f;
     public Action<float>? OnValueChanged;
 
     public Slider()
@@ -30,6 +35,12 @@ public class Slider : UIElement
             UpdateValueFromMouse(e.MouseX);
             e.Handled = true;
         };
+    }
+
+    public void AdjustValue(float delta)
+    {
+        Value = Math.Clamp(Value + delta, 0f, 1f);
+        OnValueChanged?.Invoke(Value);
     }
 
     private void UpdateValueFromMouse(int mouseX)
