@@ -1,3 +1,4 @@
+using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.NBT;
@@ -124,6 +125,30 @@ internal class RegionChunkStorage : IChunkStorage
         }
 
         nbt.SetTag("TileEntities", blockEntityTags);
+
+        if (world.IsRemote) return;
+
+        NBTTagList tileTickTags = new();
+        long worldTime = world.GetTime();
+        foreach ((int x, int y, int z, int blockId, long scheduledTime, long scheduledOrder) in world.TickScheduler.GetPendingTicksInChunk(chunk.X, chunk.Z))
+        {
+            long delta = scheduledTime - worldTime;
+            int t = (int)Math.Clamp(delta, (long)int.MinValue, (long)int.MaxValue);
+            int p = scheduledOrder > int.MaxValue ? int.MaxValue : (int)scheduledOrder;
+            NBTTagCompound tickTag = new();
+            tickTag.SetInteger("x", x);
+            tickTag.SetInteger("y", y);
+            tickTag.SetInteger("z", z);
+            tickTag.SetInteger("t", t);
+            tickTag.SetInteger("p", p);
+            tickTag.SetInteger("i", blockId);
+            tileTickTags.SetTag(tickTag);
+        }
+
+        if (tileTickTags.TagCount() > 0)
+        {
+            nbt.SetTag("TileTicks", tileTickTags);
+        }
     }
 
     public static Chunk LoadChunkFromNbt(IWorldContext world, NBTTagCompound nbt)
@@ -196,6 +221,53 @@ internal class RegionChunkStorage : IChunkStorage
                 }
             }
         }
+
+        if (world.IsRemote || !nbt.HasKey("TileTicks")) return chunk;
+
+        NBTTagList tileTickTags = nbt.GetTagList("TileTicks");
+        int minWx = chunkX * 16;
+        int maxWx = minWx + 15;
+        int minWz = chunkZ * 16;
+        int maxWz = minWz + 15;
+
+        for (int i = 0; i < tileTickTags.TagCount(); i++)
+        {
+            try
+            {
+                if (tileTickTags.TagAt(i) is not NBTTagCompound tickTag)
+                {
+                    continue;
+                }
+
+                if (!tickTag.HasKey("i"))
+                {
+                    continue;
+                }
+
+                int blockId = tickTag.GetInteger("i");
+                if (blockId <= 0 || blockId >= Block.Blocks.Length || Block.Blocks[blockId] == null)
+                {
+                    continue;
+                }
+
+                int x = tickTag.GetInteger("x");
+                int y = tickTag.GetInteger("y");
+                int z = tickTag.GetInteger("z");
+                if (y < 0 || y > 127 || x < minWx || x > maxWx || z < minWz || z > maxWz)
+                {
+                    Log.Instance.For<RegionChunkStorage>().LogDebug("Skipping TileTicks entry with out-of-range coordinates ({X},{Y},{Z}) for chunk {ChunkX},{ChunkZ}", x, y, z, chunkX, chunkZ);
+                    continue;
+                }
+
+                int t = tickTag.GetInteger("t");
+                world.TickScheduler.ScheduleBlockUpdateFromChunkLoad(x, y, z, blockId, t);
+            }
+            catch (InvalidCastException)
+            {
+                Log.Instance.For<RegionChunkStorage>().LogDebug("Skipping TileTicks entry with unexpected NBT types at index {Index}", i);
+            }
+        }
+
 
         return chunk;
     }

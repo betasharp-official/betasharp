@@ -5,7 +5,7 @@ namespace BetaSharp.Worlds.Core.Systems;
 public class WorldTickScheduler
 {
     private readonly IWorldContext _context;
- 
+
     private readonly Lock _queueLock = new();
     private readonly PriorityQueue<BlockUpdate, (long, long)> _scheduledUpdates = new();
     private readonly HashSet<ScheduledBlockTick> _pendingScheduledKeys = new();
@@ -23,7 +23,7 @@ public class WorldTickScheduler
     public void ScheduleBlockUpdateFromChunkLoad(int x, int y, int z, int blockId, int tickRate)
     {
         var key = new ScheduledBlockTick(x, y, z, blockId);
-        
+
         lock (_queueLock)
         {
             if (!_pendingScheduledKeys.Add(key))
@@ -57,7 +57,7 @@ public class WorldTickScheduler
         else
         {
             var key = new ScheduledBlockTick(x, y, z, blockId);
-            
+
             lock (_queueLock)
             {
                 if (!_pendingScheduledKeys.Add(key))
@@ -75,7 +75,7 @@ public class WorldTickScheduler
         if (_context.IsRemote) return;
 
         long currentTime = _context.GetTime();
-        
+
         List<BlockUpdate> readyToExecute = new();
         List<BlockUpdate> deferredTicks = new();
 
@@ -99,16 +99,16 @@ public class WorldTickScheduler
 
                 bool posLoaded = _context.Reader.IsPosLoaded(blockUpdate.X - loadRadius, minY, blockUpdate.Z - loadRadius) &&
                                  _context.Reader.IsPosLoaded(blockUpdate.X + loadRadius, maxY, blockUpdate.Z + loadRadius);
-                
-                if (!posLoaded) 
+
+                if (!posLoaded)
                 {
                     deferredTicks.Add(blockUpdate);
-                    continue; 
+                    continue;
                 }
-            
+
                 int currentBlockId = _context.Reader.GetBlockId(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
                 if (currentBlockId != blockUpdate.BlockId || currentBlockId <= 0) continue;
-            
+
                 readyToExecute.Add(blockUpdate);
             }
 
@@ -137,14 +137,14 @@ public class WorldTickScheduler
     ///     Returns pending block updates whose (x,z) falls within the given chunk bounds.
     ///     Used for persisting scheduled ticks to chunk NBT (TileTicks) on save.
     /// </summary>
-    public IEnumerable<(int X, int Y, int Z, int BlockId, long ScheduledTime)> GetPendingTicksInChunk(int chunkX, int chunkZ)
+    public IEnumerable<(int X, int Y, int Z, int BlockId, long ScheduledTime, long ScheduledOrder)> GetPendingTicksInChunk(int chunkX, int chunkZ)
     {
         int minX = chunkX * 16;
         int maxX = minX + 15;
         int minZ = chunkZ * 16;
         int maxZ = minZ + 15;
 
-        List<(int X, int Y, int Z, int BlockId, long ScheduledTime)> pending = new();
+        List<(int X, int Y, int Z, int BlockId, long ScheduledTime, long ScheduledOrder)> pending = [];
 
         lock (_queueLock)
         {
@@ -152,7 +152,7 @@ public class WorldTickScheduler
             {
                 if (blockUpdate.X >= minX && blockUpdate.X <= maxX && blockUpdate.Z >= minZ && blockUpdate.Z <= maxZ)
                 {
-                    pending.Add((blockUpdate.X, blockUpdate.Y, blockUpdate.Z, blockUpdate.BlockId, blockUpdate.ScheduledTime));
+                    pending.Add((blockUpdate.X, blockUpdate.Y, blockUpdate.Z, blockUpdate.BlockId, blockUpdate.ScheduledTime, blockUpdate.ScheduledOrder));
                 }
             }
         }
