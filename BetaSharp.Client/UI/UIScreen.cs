@@ -287,6 +287,19 @@ public abstract class UIScreen
         float cy = element.ScreenY + element.ComputedHeight / 2f;
         if (cx < 0 || cx > screenW || cy < 0 || cy > screenH) return;
 
+        // Reject elements clipped by an ancestor ScrollView
+        UIElement? ancestor = element.Parent;
+        while (ancestor != null)
+        {
+            if (ancestor is ScrollView scrollAncestor)
+            {
+                if (cx < scrollAncestor.ScreenX || cx > scrollAncestor.ScreenX + scrollAncestor.ComputedWidth ||
+                    cy < scrollAncestor.ScreenY || cy > scrollAncestor.ScreenY + scrollAncestor.ComputedHeight)
+                    return;
+            }
+            ancestor = ancestor.Parent;
+        }
+
         result.Add(element);
     }
 
