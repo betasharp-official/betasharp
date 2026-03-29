@@ -69,6 +69,54 @@ public abstract class BaseOptionsScreen(UIScreen? parent, GameOptions options, s
         return list;
     }
 
+    protected static Panel CreateTwoColumnList()
+    {
+        Panel list = new();
+        list.Style.FlexDirection = FlexDirection.Row;
+        list.Style.FlexWrap = Wrap.Wrap;
+        list.Style.JustifyContent = Justify.Center;
+        list.Style.Width = 330;
+        return list;
+    }
+
+    protected static UIElement CreateSectionHeader(string text)
+    {
+        Panel header = new();
+        header.Style.FlexDirection = FlexDirection.Row;
+        header.Style.AlignItems = Align.Center;
+        header.Style.Width = 330;
+        header.Style.MarginTop = 10;
+        header.Style.MarginBottom = 4;
+        header.IsHitTestVisible = false;
+
+        Panel leftLine = new();
+        leftLine.Style.FlexGrow = 1;
+        leftLine.Style.Height = 1;
+        leftLine.Style.BackgroundColor = Color.Gray70;
+        leftLine.Style.MarginLeft = 8;
+
+        Label label = new()
+        {
+            Text = text,
+            TextColor = Color.GrayAA,
+            Centered = true
+        };
+        label.Style.MarginLeft = 8;
+        label.Style.MarginRight = 8;
+
+        Panel rightLine = new();
+        rightLine.Style.FlexGrow = 1;
+        rightLine.Style.Height = 1;
+        rightLine.Style.BackgroundColor = Color.Gray70;
+        rightLine.Style.MarginRight = 8;
+
+        header.AddChild(leftLine);
+        header.AddChild(label);
+        header.AddChild(rightLine);
+
+        return header;
+    }
+
     protected abstract IEnumerable<GameOption> GetOptions();
 
     protected virtual void OnDone()

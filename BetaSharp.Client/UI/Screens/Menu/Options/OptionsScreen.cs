@@ -1,3 +1,4 @@
+using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls.Core;
 
@@ -20,6 +21,15 @@ public class OptionsScreen(UIScreen? parent, GameOptions options) : BaseOptionsS
             control.Style.Width = 310;
             list.AddChild(control);
         }
+
+        // Separator
+        Panel separator = new();
+        separator.Style.Width = 310;
+        separator.Style.Height = 1;
+        separator.Style.BackgroundColor = Color.Gray70;
+        separator.Style.MarginTop = 6;
+        separator.Style.MarginBottom = 6;
+        list.AddChild(separator);
 
         // Sub-menu buttons
         TranslationStorage translations = TranslationStorage.Instance;
