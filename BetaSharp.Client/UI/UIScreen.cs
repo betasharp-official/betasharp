@@ -98,8 +98,20 @@ public abstract class UIScreen
 
     public void HandleInput()
     {
-        while (Mouse.next()) { HandleMouseInput(); }
-        while (Keyboard.Next()) { HandleKeyboardInput(); }
+        while (Mouse.next())
+        {
+            if (Mouse.getEventDX() != 0 || Mouse.getEventDY() != 0 || Mouse.getEventButton() != -1)
+            {
+                Game.isControllerMode = false;
+                Mouse.setCursorVisible(true);
+            }
+            HandleMouseInput();
+        }
+        while (Keyboard.Next())
+        {
+            Game.isControllerMode = false;
+            HandleKeyboardInput();
+        }
         ControllerManager.UpdateGui(this);
         HandleControllerScroll();
         if (_editingSlider != null) HandleSliderEditTick();
