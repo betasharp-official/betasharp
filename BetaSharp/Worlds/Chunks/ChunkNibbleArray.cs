@@ -1,8 +1,9 @@
+using System.Buffers;
 using System.Runtime.CompilerServices;
 
 namespace BetaSharp.Worlds.Chunks;
 
-public class ChunkNibbleArray
+public readonly struct ChunkNibbleArray
 {
     public readonly byte[] Bytes;
 
@@ -14,6 +15,13 @@ public class ChunkNibbleArray
     public ChunkNibbleArray(byte[] bytes)
     {
         Bytes = bytes;
+    }
+
+    public static ChunkNibbleArray MakeCopy(byte[] toCopy)
+    {
+        byte[] bytes = ArrayPool<byte>.Shared.Rent(toCopy.Length);
+        Buffer.BlockCopy(toCopy, 0, bytes, 0, toCopy.Length);
+        return new(bytes);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
