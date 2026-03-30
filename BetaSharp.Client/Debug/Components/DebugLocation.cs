@@ -140,7 +140,6 @@ public class DebugLocation : DebugComponent
 
     public override void readNBT(NBTTagCompound nbt)
     {
-        Console.WriteLine(nbt);
         ShowXYZ = nbt.GetBoolean("ShowXYZ");
         ShowBlockXYZ = nbt.GetBoolean("ShowBlockXYZ");
         ShowFacing = nbt.GetBoolean("ShowFacing");
