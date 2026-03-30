@@ -17,13 +17,6 @@ public readonly struct ChunkNibbleArray
         Bytes = bytes;
     }
 
-    public static ChunkNibbleArray MakeCopy(byte[] toCopy)
-    {
-        byte[] bytes = ArrayPool<byte>.Shared.Rent(toCopy.Length);
-        Buffer.BlockCopy(toCopy, 0, bytes, 0, toCopy.Length);
-        return new(bytes);
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetNibble(int x, int y, int z)
     {

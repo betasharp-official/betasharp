@@ -21,9 +21,9 @@ internal struct ChunkSnapshot : IDisposable
         _blocks = ArrayPool<byte>.Shared.Rent(32768);
         Buffer.BlockCopy(toSnapshot.Blocks, 0, _blocks, 0, toSnapshot.Blocks.Length);
 
-        _data = ChunkNibbleArray.MakeCopy(toSnapshot.Meta.Bytes);
-        _skylightMap = ChunkNibbleArray.MakeCopy(toSnapshot.SkyLight.Bytes);
-        _blocklightMap = ChunkNibbleArray.MakeCopy(toSnapshot.BlockLight.Bytes);
+        _data = MakeNibbleArray(toSnapshot.Meta.Bytes);
+        _skylightMap = MakeNibbleArray(toSnapshot.SkyLight.Bytes);
+        _blocklightMap = MakeNibbleArray(toSnapshot.BlockLight.Bytes);
 
         foreach ((BlockPos pos, BlockEntity entity) in toSnapshot.BlockEntities)
         {
@@ -39,6 +39,13 @@ internal struct ChunkSnapshot : IDisposable
             int index = localX << 11 | localZ << 7 | localY;
             _tileEntities[index] = nbt;
         }
+    }
+
+    private static ChunkNibbleArray MakeNibbleArray(byte[] toCopy)
+    {
+        byte[] bytes = ArrayPool<byte>.Shared.Rent(toCopy.Length);
+        Buffer.BlockCopy(toCopy, 0, bytes, 0, toCopy.Length);
+        return new(bytes);
     }
 
     public int getBlockID(int x, int y, int z)
