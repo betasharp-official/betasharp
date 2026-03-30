@@ -24,8 +24,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
     public WorldRegionSnapshot(IWorldContext world, int minX, int var3, int minZ, int maxX, int var6, int maxZ)
     {
-        //TODO: OPTIMIZE THIS
-        _biomeSource = new(world);
+        _biomeSource = world.Dimension.BiomeSource.Clone();
 
         _chunkX = minX >> 4;
         _chunkZ = minZ >> 4;

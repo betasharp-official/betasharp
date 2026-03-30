@@ -26,6 +26,13 @@ public class BiomeSource
         _weirdnessSampler = new OctaveSimplexNoiseSampler(new JavaRandom(world.Seed * 543321L), 2);
     }
 
+    public BiomeSource(BiomeSource other)
+    {
+        _temperatureSampler = other._temperatureSampler;
+        _downfallSampler = other._downfallSampler;
+        _weirdnessSampler = other._weirdnessSampler;
+    }
+
     public virtual Biome GetBiome(ChunkPos chunkPos)
     {
         return GetBiome(chunkPos.X << 4, chunkPos.Z << 4);
@@ -139,5 +146,10 @@ public class BiomeSource
         }
 
         return biomes;
+    }
+
+    public virtual BiomeSource Clone()
+    {
+        return new(this);
     }
 }
