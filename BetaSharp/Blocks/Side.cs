@@ -1,6 +1,6 @@
 namespace BetaSharp.Blocks;
 
-public enum Side
+public enum Side : byte
 {
     Down = 0,
     Up = 1,
@@ -12,10 +12,9 @@ public enum Side
 
 public static class SideExtensions
 {
-    public static bool IsValidSide(this Side v) => (uint)v <= 5u;
+    public static bool IsValidSide(this Side v) => (byte)v <= 5;
     public static Side ToSide(this int v) => ((Side)v).IsValidSide() ? (Side)v : throw new ArgumentException("Invalid side");
     public static int ToInt(this Side s) => (int)s;
-
     public static Side OppositeFace(Side side) => side switch
     {
         Side.Down => Side.Up,
