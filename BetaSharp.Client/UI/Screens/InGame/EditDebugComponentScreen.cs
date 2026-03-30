@@ -131,14 +131,10 @@ public class EditDebugComponentScreen(BetaSharp game, DebugEditorScreen parent, 
             btn.Style.Width = 60;
             btn.OnClick += (_) =>
             {
-                Console.WriteLine($"Toggling {prop.Name}");
                 bool current = (bool)(prop.GetValue(comp) ?? false);
-                Console.WriteLine($"Current value: {current}");
                 prop.SetValue(comp, !current);
                 btn.Text = (!current).ToString();
                 btn.TextColor = !current ? trueColor : falseColor;
-                bool news = (bool)(prop.GetValue(comp) ?? false);
-                Console.WriteLine($"New value: {news}");
             };
 
             row.AddChild(btn);
