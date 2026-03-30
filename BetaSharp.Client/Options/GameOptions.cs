@@ -101,8 +101,7 @@ public class GameOptions
         get => InvertMouseOption.Value;
         set => InvertMouseOption.Value = value;
     }
-
-    public int renderDistance => 4 + (int)(RenderDistanceOption.Value * 28.0f);
+    public int RenderDistance => 4 + (int)(RenderDistanceOption.Value * 60);
     public bool ViewBobbing => ViewBobbingOption.Value;
     public bool VSync => VSyncOption.Value;
     public int Difficulty => DifficultyOption.Value;
@@ -300,16 +299,15 @@ public class GameOptions
         };
         MenuMusicOption = new BoolOption("Menu Music", "menuMusic", true);
 
-        RenderDistanceOption = new FloatOption("options.renderDistance", "viewDistance", 0.2f)
+        RenderDistanceOption = new FloatOption("options.renderDistance", "viewDistance", 8 / 60f)
         {
             LabelOverride = "Render Distance",
-            Steps = 28,
-            Formatter = (v, t) => $"{4 + (int)(v * 28.0f)} Chunks",
-            OnChanged = _ =>
-            {
-                if (_game?.InternalServer != null)
+            Steps = 60,
+            Formatter = (v, t) => $"{4 + (int)(v * 60)} Chunks",
+            OnChanged = _ => {
+                if (_game.InternalServer != null)
                 {
-                    _game.InternalServer.SetViewDistance(renderDistance);
+                    _game.InternalServer.SetViewDistance(RenderDistance);
                 }
             }
         };

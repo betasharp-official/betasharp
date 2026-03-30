@@ -49,7 +49,7 @@ public class CameraController
         _prevCameraRollAmount = _cameraRollAmount;
 
         float luminance = _game.World.GetLuminance(MathHelper.Floor(_game.Camera.x), MathHelper.Floor(_game.Camera.y), MathHelper.Floor(_game.Camera.z));
-        float renderDistFactor = System.Math.Clamp((_game.Options.renderDistance - 4.0F) / 28.0F, 0.0F, 1.0F);
+        float renderDistFactor = System.Math.Clamp((_game.Options.RenderDistance - 4.0F) / 28.0F, 0.0F, 1.0F);
         float targetBob = luminance * (1.0F - renderDistFactor) + renderDistFactor;
         ViewBob += (targetBob - ViewBob) * 0.1F;
     }
