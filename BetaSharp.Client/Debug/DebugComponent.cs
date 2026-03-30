@@ -1,9 +1,11 @@
+using System.ComponentModel;
 using BetaSharp.NBT;
 
 namespace BetaSharp.Client.Debug;
 
 public abstract class DebugComponent
 {
+    [Description("Whether to show this component on the right side of the debug overlay instead of the left.")]
     public bool Right { get; set; }
     public abstract IEnumerable<DebugRowData> GetRows(DebugContext ctx);
     public abstract DebugComponent Duplicate();

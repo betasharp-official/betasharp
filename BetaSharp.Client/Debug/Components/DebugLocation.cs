@@ -12,10 +12,24 @@ public class DebugLocation : DebugComponent
     private static readonly string[] s_cardinalDirections = ["south", "west", "north", "east"];
     private static readonly string[] s_towards = ["positive Z", "negative X", "negative Z", "positive X"];
 
+    [DisplayName("Show XYZ")]
+    [Description("Whether to show the player's XYZ coordinates.")]
     public bool ShowXYZ { get; set; } = true;
+
+    [DisplayName("Show Block XYZ")]
+    [Description("Whether to show the player's flooredXYZ coordinates, thus the exact block position.")]
     public bool ShowBlockXYZ { get; set; } = true;
+
+    [DisplayName("Show Facing")]
+    [Description("Whether to show the direction the player is facing, along with pitch and yaw.")]
     public bool ShowFacing { get; set; } = true;
+
+    [DisplayName("Show Biome")]
+    [Description("Whether to show the biome the player is currently in.")]
     public bool ShowBiome { get; set; } = true;
+
+    [DisplayName("Show Light")]
+    [Description("Whether to show the light level at the player's current block position.")]
     public bool ShowLight { get; set; } = true;
 
     public DebugLocation() { }
@@ -105,7 +119,13 @@ public class DebugLocation : DebugComponent
     {
         return new DebugLocation()
         {
-            Right = Right
+            Right = Right,
+
+            ShowXYZ = ShowXYZ,
+            ShowBlockXYZ = ShowBlockXYZ,
+            ShowFacing = ShowFacing,
+            ShowBiome = ShowBiome,
+            ShowLight = ShowLight
         };
     }
 

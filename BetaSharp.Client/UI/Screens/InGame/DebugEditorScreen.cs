@@ -13,7 +13,7 @@ public class DebugEditorScreen : UIScreen
     private readonly List<DebugComponent> _components;
     private DebugComponent? _selectedComponent;
     private ScrollView _scroll = null!;
-    private Button _changeSideButton = null!;
+    private Button _customizeButton = null!;
     private Button _deleteButton = null!;
 
     public DebugEditorScreen(BetaSharp game, UIScreen? parentScreen) : base(game)
@@ -87,22 +87,22 @@ public class DebugEditorScreen : UIScreen
         };
         buttonContainer.AddChild(saveButton);
 
-        _changeSideButton = new Button
+        _customizeButton = new Button
         {
-            Text = "Change Side",
+            Text = "Customize",
             Enabled = false
         };
-        _changeSideButton.Style.Width = 100;
-        _changeSideButton.Style.SetMargin(2);
-        _changeSideButton.OnClick += (_) =>
+        _customizeButton.Style.Width = 100;
+        _customizeButton.Style.SetMargin(2);
+        _customizeButton.OnClick += (_) =>
         {
             if (_selectedComponent != null)
             {
-                _selectedComponent.Right = !_selectedComponent.Right;
+                EditComponent();
                 RefreshList();
             }
         };
-        buttonContainer.AddChild(_changeSideButton);
+        buttonContainer.AddChild(_customizeButton);
 
         _deleteButton = new Button
         {
@@ -172,7 +172,7 @@ public class DebugEditorScreen : UIScreen
 
     private void UpdateButtons()
     {
-        _changeSideButton.Enabled = _selectedComponent != null;
+        _customizeButton.Enabled = _selectedComponent != null;
         _deleteButton.Enabled = _selectedComponent != null;
     }
 
@@ -182,6 +182,23 @@ public class DebugEditorScreen : UIScreen
         _selectedComponent = comp;
         RefreshList();
         UpdateButtons();
+    }
+
+    public void UpdateComponent(DebugComponent orig, DebugComponent updated)
+    {
+        int index = _components.IndexOf(orig);
+        if (index >= 0)
+        {
+            _components[index] = updated;
+            _selectedComponent = updated;
+            RefreshList();
+            UpdateButtons();
+        }
+    }
+
+    public void EditComponent()
+    {
+        Game.displayGuiScreen(new EditDebugComponentScreen(Game, this, _selectedComponent!));
     }
 
     private void Close()

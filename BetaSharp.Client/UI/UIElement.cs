@@ -40,6 +40,8 @@ public class UIElement
 
     public bool ClipToBounds { get; set; } = false;
 
+    public object? Tag { get; set; } = null;
+
     public void AddChild(UIElement child)
     {
         child.Parent = this;
