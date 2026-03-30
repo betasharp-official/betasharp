@@ -1,4 +1,4 @@
-using BetaSharp.Blocks;
+﻿using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
@@ -24,14 +24,8 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
     public WorldRegionSnapshot(IWorldContext world, int minX, int var3, int minZ, int maxX, int var6, int maxZ)
     {
-        if (!BiomeSource.Pool.TryTake(out _biomeSource!))
-        {
-            _biomeSource = new(world);
-        }
-        else
-        {
-            _biomeSource.Restore(world);
-        }
+        //TODO: OPTIMIZE THIS
+        _biomeSource = new(world);
 
         _chunkX = minX >> 4;
         _chunkZ = minZ >> 4;
@@ -240,11 +234,6 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-
-        if (_biomeSource != null)
-        {
-            BiomeSource.Pool.Add(_biomeSource);
-        }
 
         foreach (var snapshot in _chunks)
         {

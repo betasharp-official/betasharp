@@ -3,9 +3,10 @@ namespace BetaSharp.Util.Maths.Noise;
 internal class SimplexNoiseSampler
 {
     private static readonly int[][] grads = [[1, 1, 0], [-1, 1, 0], [1, -1, 0], [-1, -1, 0], [1, 0, 1], [-1, 0, 1], [1, 0, -1], [-1, 0, -1], [0, 1, 1], [0, -1, 1], [0, 1, -1], [0, -1, -1]];
-    private int[] _permutations;
-    private double _xCoord;
-    private double _yCoord;
+    private readonly int[] _permutations;
+    private readonly double _xCoord;
+    private readonly double _yCoord;
+    private readonly double _zCoord;
     private static readonly double F2 = 0.5D * (Math.Sqrt(3.0D) - 1.0D);
     private static readonly double G2 = (3.0D - Math.Sqrt(3.0D)) / 6.0D;
 
@@ -16,15 +17,11 @@ internal class SimplexNoiseSampler
     public SimplexNoiseSampler(JavaRandom rand)
     {
         _permutations = new int[512];
-        Restore(rand);
-    }
-
-    public void Restore(JavaRandom rand)
-    {
         _xCoord = rand.NextDouble() * 256.0D;
         _yCoord = rand.NextDouble() * 256.0D;
-        rand.NextDouble();
+        _zCoord = rand.NextDouble() * 256.0D;
 
+        // Fill perm with values from 0 to 255 in random order, duplicating the first 256 values to the end of the array
         for (int i = 0; i < 256; i++)
         {
             _permutations[i] = i;
@@ -36,6 +33,7 @@ internal class SimplexNoiseSampler
             (_permutations[i], _permutations[j]) = (_permutations[j], _permutations[i]);
             _permutations[i + 256] = _permutations[i];
         }
+
     }
 
     private static int floor(double num)
