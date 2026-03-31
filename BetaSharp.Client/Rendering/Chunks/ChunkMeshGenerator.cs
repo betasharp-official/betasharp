@@ -157,7 +157,7 @@ internal class ChunkMeshGenerator : IDisposable
             if (!hasNextPass) break;
         }
 
-        result.IsLit = cache.getIsLit();
+        result.IsLit = cache.IsLit;
         result.VisibilityData = Occlusion.ChunkVisibilityComputer.Compute(cache, pos.X, pos.Y, pos.Z);
         return result;
     }

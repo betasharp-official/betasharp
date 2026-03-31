@@ -1,8 +1,6 @@
-﻿using BetaSharp.Blocks;
-using BetaSharp.Blocks.Entities;
+using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
-using BetaSharp.NBT;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Biomes.Source;
@@ -13,14 +11,14 @@ namespace BetaSharp.Worlds.Core;
 
 public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 {
+    public bool IsLit { get; private set; }
+
     private readonly BiomeSource _biomeSource;
     private readonly ChunkSnapshot[,] _chunks;
     private readonly int _chunkX;
     private readonly int _chunkZ;
     private readonly float[] _lightTable;
     private readonly int _skylightSubtracted;
-    private readonly Dictionary<BlockPos, BlockEntity> _tileEntityCache = [];
-    private bool _isLit;
 
     public WorldRegionSnapshot(IWorldContext world, int minX, int var3, int minZ, int maxX, int var6, int maxZ)
     {
@@ -62,44 +60,10 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         if (chunkIdxX >= 0 && chunkIdxX < _chunks.GetLength(0) &&
             chunkIdxZ >= 0 && chunkIdxZ < _chunks.GetLength(1))
         {
-            return _chunks[chunkIdxX, chunkIdxZ].getBlockID(x & 15, y, z & 15);
+            return _chunks[chunkIdxX, chunkIdxZ].GetBlockID(x & 15, y, z & 15);
         }
 
         return 0;
-    }
-
-    public BlockEntity? GetBlockEntity(int x, int y, int z)
-    {
-        if (y is < 0 or >= 128)
-        {
-            return null;
-        }
-
-        BlockPos pos = new(x, y, z);
-        if (_tileEntityCache.TryGetValue(pos, out BlockEntity? entity))
-        {
-            return entity;
-        }
-
-        int chunkIdxX = (x >> 4) - _chunkX;
-        int chunkIdxZ = (z >> 4) - _chunkZ;
-
-        if (chunkIdxX >= 0 && chunkIdxX < _chunks.GetLength(0) &&
-            chunkIdxZ >= 0 && chunkIdxZ < _chunks.GetLength(1))
-        {
-            NBTTagCompound? nbt = _chunks[chunkIdxX, chunkIdxZ].GetTileEntityNbt(x & 15, y, z & 15);
-            if (nbt != null)
-            {
-                BlockEntity? newEntity = BlockEntity.CreateFromNbt(nbt);
-                if (newEntity != null)
-                {
-                    _tileEntityCache[pos] = newEntity;
-                    return newEntity;
-                }
-            }
-        }
-
-        return null;
     }
 
     public BiomeSource GetBiomeSource() => _biomeSource;
@@ -116,10 +80,26 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         return block != null && block.isOpaque();
     }
 
-    public int GetBlockMeta(int x, int y, int z) => getBlockMeta(x, y, z);
-    public Material GetMaterial(int x, int y, int z) => getMaterial(x, y, z);
+    public int GetBlockMeta(int x, int y, int z)
+    {
+        if (y is < 0 or >= 128)
+        {
+            return 0;
+        }
+
+        int chunkIdxX = (x >> 4) - _chunkX;
+        int chunkIdxZ = (z >> 4) - _chunkZ;
+        return _chunks[chunkIdxX, chunkIdxZ].GetBlockMetadata(x & 15, y, z & 15);
+    }
+
+    public Material GetMaterial(int x, int y, int z)
+    {
+        int blockId = GetBlockId(x, y, z);
+        return blockId == 0 ? Material.Air : Block.Blocks[blockId].material;
+    }
+
     public bool IsAir(int x, int y, int z) => GetBlockId(x, y, z) == 0;
-    public int GetBrightness(int x, int y, int z) => getLightValue(x, y, z);
+    public int GetBrightness(int x, int y, int z) => GetLightValue(x, y, z);
     public bool IsTopY(int x, int y, int z) => throw new NotImplementedException();
     public int GetTopY(int x, int z) => throw new NotImplementedException();
     public int GetTopSolidBlockY(int x, int z) => throw new NotImplementedException();
@@ -132,31 +112,13 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
     public float GetNaturalBrightness(int x, int y, int z, int minLight)
     {
-        int light = getLightValue(x, y, z);
+        int light = GetLightValue(x, y, z);
         return _lightTable[Math.Max(light, minLight)];
     }
 
-    public float GetLuminance(int x, int y, int z) => _lightTable[getLightValue(x, y, z)];
+    public float GetLuminance(int x, int y, int z) => _lightTable[GetLightValue(x, y, z)];
 
-    public Material getMaterial(int x, int y, int z)
-    {
-        int blockId = GetBlockId(x, y, z);
-        return blockId == 0 ? Material.Air : Block.Blocks[blockId].material;
-    }
-
-    public int getBlockMeta(int x, int y, int z)
-    {
-        if (y is < 0 or >= 128)
-        {
-            return 0;
-        }
-
-        int chunkIdxX = (x >> 4) - _chunkX;
-        int chunkIdxZ = (z >> 4) - _chunkZ;
-        return _chunks[chunkIdxX, chunkIdxZ].getBlockMetadata(x & 15, y, z & 15);
-    }
-
-    public int getLightValue(int x, int y, int z) => GetLightValueExt(x, y, z, true);
+    public int GetLightValue(int x, int y, int z) => GetLightValueExt(x, y, z, true);
 
     public int GetLightValueExt(int x, int y, int z, bool checkStairs)
     {
@@ -195,26 +157,21 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
         ref ChunkSnapshot chunk = ref _chunks[chunkIdxX, chunkIdxZ];
 
-        int lightValue = chunk.getBlockLightValue(x & 15, y, z & 15, _skylightSubtracted);
+        int lightValue = chunk.GetBlockLightValue(x & 15, y, z & 15, _skylightSubtracted);
 
-        if (chunk.getIsLit())
+        if (chunk.IsLit)
         {
-            _isLit = true;
+            IsLit = true;
         }
 
         return lightValue;
-    }
-
-    public bool getIsLit()
-    {
-        return _isLit;
     }
 
     public void Dispose()
     {
         GC.SuppressFinalize(this);
 
-        foreach (var snapshot in _chunks)
+        foreach (ChunkSnapshot snapshot in _chunks)
         {
             snapshot.Dispose();
         }
