@@ -21,7 +21,7 @@ public class WorldRegionSnapshot : IBlockAccess, IDisposable
 
     public WorldRegionSnapshot(World world, int minX, int var3, int minZ, int maxX, int var6, int maxZ)
     {
-        _biomeSource = world.getBiomeSource().Clone();
+        _biomeSource = new(world);
 
         _chunkX = minX >> 4;
         _chunkZ = minZ >> 4;
