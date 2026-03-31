@@ -19,7 +19,7 @@ public class LivingEntityRenderer : EntityRenderer
     public LivingEntityRenderer(ModelBase mainModel, float shadowRadius)
     {
         this.mainModel = mainModel;
-        this.ShadowRadius = shadowRadius;
+        ShadowRadius = shadowRadius;
     }
 
     public void setRenderPassModel(ModelBase var1)
@@ -27,7 +27,7 @@ public class LivingEntityRenderer : EntityRenderer
         renderPassModel = var1;
     }
 
-    public virtual void doRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
+    public virtual void DoRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
     {
         GLManager.GL.PushMatrix();
         GLManager.GL.Disable(GLEnum.CullFace);
@@ -48,13 +48,13 @@ public class LivingEntityRenderer : EntityRenderer
             float var10 = var1.lastBodyYaw + (var1.bodyYaw - var1.lastBodyYaw) * var9;
             float var11 = var1.prevYaw + (var1.yaw - var1.prevYaw) * var9;
             float var12 = var1.prevPitch + (var1.pitch - var1.prevPitch) * var9;
-            func_22012_b(var1, var2, var4, var6);
+            Func_22012_b(var1, var2, var4, var6);
             float var13 = getAnimationProgress(var1, var9);
-            rotateCorpse(var1, var13, var10, var9);
+            RotateCorpse(var1, var13, var10, var9);
             float var14 = 1.0F / 16.0F;
             GLManager.GL.Enable(GLEnum.RescaleNormal);
             GLManager.GL.Scale(-1.0F, -1.0F, 1.0F);
-            preRenderCallback(var1, var9);
+            PreRenderCallback(var1, var9);
             GLManager.GL.Translate(0.0F, -24.0F * var14 - (1 / 128f), 0.0F);
             float var15 = var1.lastWalkAnimationSpeed + (var1.walkAnimationSpeed - var1.lastWalkAnimationSpeed) * var9;
             float var16 = var1.animationPhase - var1.walkAnimationSpeed * (1.0F - var9);
@@ -70,7 +70,7 @@ public class LivingEntityRenderer : EntityRenderer
 
             for (int var17 = 0; var17 < 4; ++var17)
             {
-                if (shouldRenderPass(var1, var17, var9))
+                if (ShouldRenderPass(var1, var17, var9))
                 {
                     renderPassModel.render(var16, var15, var13, var11 - var10, var12, var14);
                     GLManager.GL.Disable(GLEnum.Blend);
@@ -78,7 +78,7 @@ public class LivingEntityRenderer : EntityRenderer
                 }
             }
 
-            renderMore(var1, var9);
+            RenderMore(var1, var9);
             float var25 = var1.getBrightnessAtEyes(var9);
             int var18 = getColorMultiplier(var1, var25, var9);
             if ((var18 >> 24 & 255) > 0 || var1.hurtTime > 0 || var1.deathTime > 0)
@@ -135,17 +135,16 @@ public class LivingEntityRenderer : EntityRenderer
             _logger.LogError(e, e.Message);
         }
 
-        GLManager.GL.Enable(GLEnum.CullFace);
         GLManager.GL.PopMatrix();
-        passSpecialRender(var1, var2, var4, var6);
+        PassSpecialRender(var1, var2, var4, var6);
     }
 
-    protected virtual void func_22012_b(EntityLiving var1, double var2, double var4, double var6)
+    protected virtual void Func_22012_b(EntityLiving var1, double var2, double var4, double var6)
     {
         GLManager.GL.Translate((float)var2, (float)var4, (float)var6);
     }
 
-    protected virtual void rotateCorpse(EntityLiving var1, float var2, float var3, float var4)
+    protected virtual void RotateCorpse(EntityLiving var1, float var2, float var3, float var4)
     {
         GLManager.GL.Rotate(180.0F - var3, 0.0F, 1.0F, 0.0F);
         if (var1.deathTime > 0)
@@ -172,16 +171,16 @@ public class LivingEntityRenderer : EntityRenderer
         return var1.age + var2;
     }
 
-    protected virtual void renderMore(EntityLiving var1, float var2)
+    protected virtual void RenderMore(EntityLiving var1, float var2)
     {
     }
 
     protected virtual bool func_27005_b(EntityLiving var1, int var2, float var3)
     {
-        return shouldRenderPass(var1, var2, var3);
+        return ShouldRenderPass(var1, var2, var3);
     }
 
-    protected virtual bool shouldRenderPass(EntityLiving var1, int var2, float var3)
+    protected virtual bool ShouldRenderPass(EntityLiving var1, int var2, float var3)
     {
         return false;
     }
@@ -196,13 +195,13 @@ public class LivingEntityRenderer : EntityRenderer
         return 0;
     }
 
-    protected virtual void preRenderCallback(EntityLiving var1, float var2)
+    protected virtual void PreRenderCallback(EntityLiving var1, float var2)
     {
     }
 
-    protected virtual void passSpecialRender(EntityLiving var1, double var2, double var4, double var6)
+    protected virtual void PassSpecialRender(EntityLiving var1, double var2, double var4, double var6)
     {
-        if (BetaSharp.isDebugInfoEnabled())
+        if (Dispatcher.Options.ShowDebugInfo)
         {
             renderLivingLabel(var1, var1.id.ToString(), var2, var4, var6, 64);
         }
@@ -211,7 +210,7 @@ public class LivingEntityRenderer : EntityRenderer
 
     protected void renderLivingLabel(EntityLiving var1, string var2, double var3, double var5, double var7, int var9)
     {
-        float var10 = var1.getDistance(Dispatcher.cameraEntity);
+        float var10 = var1.getDistance(Dispatcher.CameraEntity);
         if (var10 <= var9)
         {
             TextRenderer var11 = TextRenderer;
@@ -220,8 +219,8 @@ public class LivingEntityRenderer : EntityRenderer
             GLManager.GL.PushMatrix();
             GLManager.GL.Translate((float)var3 + 0.0F, (float)var5 + 2.3F, (float)var7);
             GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(-Dispatcher.playerViewY, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(Dispatcher.playerViewX, 1.0F, 0.0F, 0.0F);
+            GLManager.GL.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
+            GLManager.GL.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
             GLManager.GL.Scale(-var13, -var13, var13);
             GLManager.GL.Disable(GLEnum.Lighting);
             GLManager.GL.DepthMask(false);
@@ -256,8 +255,8 @@ public class LivingEntityRenderer : EntityRenderer
         }
     }
 
-    public override void render(Entity target, double x, double y, double z, float yaw, float tickDelta)
+    public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
-        doRenderLiving((EntityLiving)target, x, y, z, yaw, tickDelta);
+        DoRenderLiving((EntityLiving)target, x, y, z, yaw, tickDelta);
     }
 }

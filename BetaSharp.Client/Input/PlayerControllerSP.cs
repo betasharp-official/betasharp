@@ -27,25 +27,25 @@ public class PlayerControllerSP : PlayerController
 
     public override bool sendBlockRemoved(int x, int y, int z, int direction)
     {
-        if (!Game.player.GameMode.CanBreak) return false;
+        if (!Game.Player.GameMode.CanBreak) return false;
 
-        int blockId = Game.world.Reader.GetBlockId(x, y, z);
+        int blockId = Game.World.Reader.GetBlockId(x, y, z);
         bool blockRemoved = base.sendBlockRemoved(x, y, z, direction);
-        ItemStack itemStackInHand = Game.player.getHand();
-        bool canHarvest = Game.player.canHarvest(Block.Blocks[blockId]);
+        ItemStack itemStackInHand = Game.Player.getHand();
+        bool canHarvest = Game.Player.canHarvest(Block.Blocks[blockId]);
         if (itemStackInHand != null)
         {
-            itemStackInHand.postMine(blockId, x, y, z, Game.player);
+            itemStackInHand.postMine(blockId, x, y, z, Game.Player);
             if (itemStackInHand.count == 0)
             {
-                itemStackInHand.onRemoved(Game.player);
-                Game.player.clearStackInHand();
+                itemStackInHand.onRemoved(Game.Player);
+                Game.Player.clearStackInHand();
             }
         }
 
         if (blockRemoved && canHarvest)
         {
-            Block.Blocks[blockId].onBreak(new OnBreakEvent(Game.world, Game.player, x, y, z));
+            Block.Blocks[blockId].onBreak(new OnBreakEvent(Game.World, Game.Player, x, y, z));
         }
 
         return blockRemoved;
@@ -53,18 +53,18 @@ public class PlayerControllerSP : PlayerController
 
     public override void clickBlock(int x, int y, int z, int direction)
     {
-        if (Game.player.GameMode.CanExhaustFire)
+        if (Game.Player.GameMode.CanExhaustFire)
         {
-            Game.world.ExtinguishFire(Game.player, x, y, z, direction);
+            Game.World.ExtinguishFire(Game.Player, x, y, z, direction);
         }
 
-        int blockId = Game.world.Reader.GetBlockId(x, y, z);
-        if (blockId > 0 && curBlockDamage == 0.0F && Game.player.GameMode.CanInteract)
+        int blockId = Game.World.Reader.GetBlockId(x, y, z);
+        if (blockId > 0 && curBlockDamage == 0.0F && Game.Player.GameMode.CanInteract)
         {
-            Block.Blocks[blockId].onBlockBreakStart(new OnBlockBreakStartEvent(Game.world, Game.player, x, y, z));
+            Block.Blocks[blockId].onBlockBreakStart(new OnBlockBreakStartEvent(Game.World, Game.Player, x, y, z));
         }
 
-        if (blockId > 0 && Game.player.GameMode.CanBreak && Block.Blocks[blockId].getHardness(Game.player) >= Game.player.GameMode.BrakeSpeed)
+        if (blockId > 0 && Game.Player.GameMode.CanBreak && Block.Blocks[blockId].getHardness(Game.Player) >= Game.Player.GameMode.BrakeSpeed)
         {
             sendBlockRemoved(x, y, z, direction);
         }
@@ -79,7 +79,7 @@ public class PlayerControllerSP : PlayerController
 
     public override void sendBlockRemoving(int x, int y, int z, int direction)
     {
-        if (!Game.player.GameMode.CanBreak) return;
+        if (!Game.Player.GameMode.CanBreak) return;
         if (blockHitWait > 0)
         {
             --blockHitWait;
@@ -88,21 +88,21 @@ public class PlayerControllerSP : PlayerController
         {
             if (x == _mineX && y == _mineY && z == _mineZ)
             {
-                int blockId = Game.world.Reader.GetBlockId(x, y, z);
+                int blockId = Game.World.Reader.GetBlockId(x, y, z);
                 if (blockId == 0)
                 {
                     return;
                 }
 
                 Block block = Block.Blocks[blockId];
-                curBlockDamage += block.getHardness(Game.player);
+                curBlockDamage += block.getHardness(Game.Player);
                 if (_mineSoundTimer % 4 == 0 && block != null)
                 {
-                    Game.sndManager.PlaySound(block.soundGroup.StepSound, x + 0.5F, y + 0.5F, z + 0.5F, (block.soundGroup.Volume + 1.0F) / 8.0F, block.soundGroup.Pitch * 0.5F);
+                    Game.SoundManager.PlaySound(block.soundGroup.StepSound, x + 0.5F, y + 0.5F, z + 0.5F, (block.soundGroup.Volume + 1.0F) / 8.0F, block.soundGroup.Pitch * 0.5F);
                 }
 
                 ++_mineSoundTimer;
-                if (curBlockDamage >= Game.player.GameMode.BrakeSpeed)
+                if (curBlockDamage >= Game.Player.GameMode.BrakeSpeed)
                 {
                     sendBlockRemoved(x, y, z, direction);
                     curBlockDamage = 0.0F;
@@ -128,14 +128,12 @@ public class PlayerControllerSP : PlayerController
     {
         if (curBlockDamage <= 0.0F)
         {
-            Game.ingameGUI._damageGuiPartialTime = 0.0F;
-            Game.terrainRenderer.damagePartialTime = 0.0F;
+            Game.WorldRenderer.DamagePartialTime = 0.0F;
         }
         else
         {
             float var2 = prevBlockDamage + (curBlockDamage - prevBlockDamage) * var1;
-            Game.ingameGUI._damageGuiPartialTime = var2;
-            Game.terrainRenderer.damagePartialTime = var2;
+            Game.WorldRenderer.DamagePartialTime = var2;
         }
 
     }
@@ -148,6 +146,6 @@ public class PlayerControllerSP : PlayerController
     public override void updateController()
     {
         prevBlockDamage = curBlockDamage;
-        Game.sndManager.PlayRandomMusicIfReady(DefaultMusicCategories.Game);
+        Game.SoundManager.PlayRandomMusicIfReady(DefaultMusicCategories.Game);
     }
 }

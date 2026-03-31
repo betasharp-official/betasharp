@@ -7,7 +7,7 @@ namespace BetaSharp.Client.Rendering.Entities;
 
 public class PaintingEntityRenderer : EntityRenderer
 {
-    public override void render(Entity target, double x, double y, double z, float yaw, float tickDelta)
+    public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
         RenderPainting((EntityPainting)target, x, y, z, yaw);
     }
@@ -121,7 +121,7 @@ public class PaintingEntityRenderer : EntityRenderer
             case 3: checkZ = MathHelper.Floor(painting.z + (offsetX / 16.0F)); break;
         }
 
-        float light = Dispatcher.world.GetLuminance(checkX, checkY, checkZ);
+        float light = Dispatcher.World.GetLuminance(checkX, checkY, checkZ);
         GLManager.GL.Color3(light, light, light);
     }
 

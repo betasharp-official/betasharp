@@ -331,7 +331,7 @@ public class TextRenderer
                     tessellator.addVertexWithUV(currentX + 0, currentY + 0, 0, glyph.U0, glyph.V0);
                 }
 
-                currentX += glyph.AdvanceWidth * DisplayScale;
+                currentX = MathF.Floor(currentX + glyph.AdvanceWidth * DisplayScale);
             }
         }
 

@@ -37,18 +37,18 @@ public class PlayerControllerMP : PlayerController
 
     public override bool sendBlockRemoved(int x, int y, int z, int direction)
     {
-        if (!Game.player.GameMode.CanBreak) return false;
+        if (!Game.Player.GameMode.CanBreak) return false;
 
-        int blockId = Game.world.Reader.GetBlockId(x, y, z);
+        int blockId = Game.World.Reader.GetBlockId(x, y, z);
         bool blockRemoved = base.sendBlockRemoved(x, y, z, direction);
-        ItemStack hand = Game.player.getHand();
+        ItemStack hand = Game.Player.getHand();
         if (hand != null)
         {
-            hand.postMine(blockId, x, y, z, Game.player);
+            hand.postMine(blockId, x, y, z, Game.Player);
             if (hand.count == 0)
             {
-                hand.onRemoved(Game.player);
-                Game.player.clearStackInHand();
+                hand.onRemoved(Game.Player);
+                Game.Player.clearStackInHand();
             }
         }
 
@@ -59,16 +59,16 @@ public class PlayerControllerMP : PlayerController
     {
         if (!isHittingBlock || x != currentBlockX || y != currentBlockY || z != currentblockZ)
         {
-            netClientHandler.addToSendQueue(PlayerActionC2SPacket.Get(0, x, y, z, direction));
-            int blockId = Game.world.Reader.GetBlockId(x, y, z);
-            if (blockId > 0 && curBlockDamageMP == 0.0F && Game.player.GameMode.CanInteract)
+            netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(0, x, y, z, direction));
+            int blockId = Game.World.Reader.GetBlockId(x, y, z);
+            if (blockId > 0 && curBlockDamageMP == 0.0F && Game.Player.GameMode.CanInteract)
             {
-                Block.Blocks[blockId].onBlockBreakStart(new OnBlockBreakStartEvent(Game.world, Game.player, x, y, z));
+                Block.Blocks[blockId].onBlockBreakStart(new OnBlockBreakStartEvent(Game.World, Game.Player, x, y, z));
             }
 
-            if (!Game.player.GameMode.CanBreak) return;
+            if (!Game.Player.GameMode.CanBreak) return;
 
-            if (blockId > 0 && Block.Blocks[blockId].getHardness(Game.player) >= Game.player.GameMode.BrakeSpeed)
+            if (blockId > 0 && Block.Blocks[blockId].getHardness(Game.Player) >= Game.Player.GameMode.BrakeSpeed)
             {
                 sendBlockRemoved(x, y, z, direction);
             }
@@ -93,7 +93,7 @@ public class PlayerControllerMP : PlayerController
 
     public override void sendBlockRemoving(int x, int y, int z, int direction)
     {
-        if (!Game.player.GameMode.CanBreak) return;
+        if (!Game.Player.GameMode.CanBreak) return;
         if (isHittingBlock)
         {
             syncCurrentPlayItem();
@@ -105,7 +105,7 @@ public class PlayerControllerMP : PlayerController
             {
                 if (x == currentBlockX && y == currentBlockY && z == currentblockZ)
                 {
-                    int var5 = Game.world.Reader.GetBlockId(x, y, z);
+                    int var5 = Game.World.Reader.GetBlockId(x, y, z);
                     if (var5 == 0)
                     {
                         isHittingBlock = false;
@@ -113,17 +113,17 @@ public class PlayerControllerMP : PlayerController
                     }
 
                     Block var6 = Block.Blocks[var5];
-                    curBlockDamageMP += var6.getHardness(Game.player);
+                    curBlockDamageMP += var6.getHardness(Game.Player);
                     if (_mineSoundTimer % 4 == 0 && var6 != null)
                     {
-                        Game.sndManager.PlaySound(var6.soundGroup.StepSound, (float)x + 0.5F, (float)y + 0.5F, (float)z + 0.5F, (var6.soundGroup.Volume + 1.0F) / 8.0F, var6.soundGroup.Pitch * 0.5F);
+                        Game.SoundManager.PlaySound(var6.soundGroup.StepSound, (float)x + 0.5F, (float)y + 0.5F, (float)z + 0.5F, (var6.soundGroup.Volume + 1.0F) / 8.0F, var6.soundGroup.Pitch * 0.5F);
                     }
 
                     ++_mineSoundTimer;
                     if (curBlockDamageMP >= 1.0F)
                     {
                         isHittingBlock = false;
-                        netClientHandler.addToSendQueue(PlayerActionC2SPacket.Get(2, x, y, z, direction));
+                        netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(2, x, y, z, direction));
                         sendBlockRemoved(x, y, z, direction);
                         curBlockDamageMP = 0.0F;
                         prevBlockDamageMP = 0.0F;
@@ -144,14 +144,12 @@ public class PlayerControllerMP : PlayerController
     {
         if (curBlockDamageMP <= 0.0F)
         {
-            Game.ingameGUI._damageGuiPartialTime = 0.0F;
-            Game.terrainRenderer.damagePartialTime = 0.0F;
+            Game.WorldRenderer.DamagePartialTime = 0.0F;
         }
         else
         {
             float var2 = prevBlockDamageMP + (curBlockDamageMP - prevBlockDamageMP) * var1;
-            Game.ingameGUI._damageGuiPartialTime = var2;
-            Game.terrainRenderer.damagePartialTime = var2;
+            Game.WorldRenderer.DamagePartialTime = var2;
         }
 
     }
@@ -165,16 +163,16 @@ public class PlayerControllerMP : PlayerController
     {
         syncCurrentPlayItem();
         prevBlockDamageMP = curBlockDamageMP;
-        Game.sndManager.PlayRandomMusicIfReady(DefaultMusicCategories.Game);
+        Game.SoundManager.PlayRandomMusicIfReady(DefaultMusicCategories.Game);
     }
 
     private void syncCurrentPlayItem()
     {
-        int var1 = Game.player.inventory.selectedSlot;
+        int var1 = Game.Player.inventory.selectedSlot;
         if (var1 != currentPlayerItem)
         {
             currentPlayerItem = var1;
-            netClientHandler.addToSendQueue(UpdateSelectedSlotC2SPacket.Get(currentPlayerItem));
+            netClientHandler.AddToSendQueue(UpdateSelectedSlotC2SPacket.Get(currentPlayerItem));
         }
 
     }
@@ -190,7 +188,7 @@ public class PlayerControllerMP : PlayerController
     )
     {
         syncCurrentPlayItem();
-        netClientHandler.addToSendQueue(PlayerInteractBlockC2SPacket.Get(blockX, blockY, blockZ, blockSide, player.inventory.getSelectedItem()));
+        netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(blockX, blockY, blockZ, blockSide, player.inventory.getSelectedItem()));
         bool placed = base.sendPlaceBlock(player, world, selectedItem, blockX, blockY, blockZ, blockSide);
         return placed;
     }
@@ -198,27 +196,27 @@ public class PlayerControllerMP : PlayerController
     public override bool sendUseItem(EntityPlayer var1, World var2, ItemStack var3)
     {
         syncCurrentPlayItem();
-        netClientHandler.addToSendQueue(PlayerInteractBlockC2SPacket.Get(-1, -1, -1, 255, var1.inventory.getSelectedItem()));
+        netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(-1, -1, -1, 255, var1.inventory.getSelectedItem()));
         bool var4 = base.sendUseItem(var1, var2, var3);
         return var4;
     }
 
     public override EntityPlayer createPlayer(World var1)
     {
-        return new EntityClientPlayerMP(Game, var1, Game.session, netClientHandler);
+        return new EntityClientPlayerMP(Game, var1, Game.Session, netClientHandler);
     }
 
     public override void attackEntity(EntityPlayer var1, Entity var2)
     {
         syncCurrentPlayItem();
-        netClientHandler.addToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.id, var2.id, 1));
+        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.id, var2.id, 1));
         var1.attack(var2);
     }
 
     public override void interactWithEntity(EntityPlayer var1, Entity var2)
     {
         syncCurrentPlayItem();
-        netClientHandler.addToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.id, var2.id, 0));
+        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.id, var2.id, 0));
         var1.interact(var2);
     }
 
@@ -226,7 +224,7 @@ public class PlayerControllerMP : PlayerController
     {
         short var6 = var5.currentScreenHandler.nextRevision(var5.inventory);
         ItemStack var7 = base.func_27174_a(var1, var2, var3, var4, var5);
-        netClientHandler.addToSendQueue(ClickSlotC2SPacket.Get(var1, var2, var3, var4, var7, var6));
+        netClientHandler.AddToSendQueue(ClickSlotC2SPacket.Get(var1, var2, var3, var4, var7, var6));
         return var7;
     }
 

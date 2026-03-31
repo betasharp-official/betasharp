@@ -199,8 +199,12 @@ public class TextureManager : IDisposable
         }
 
         string cleanPath = path;
-        if (path.StartsWith("%clamp%")) { _clamp = true; cleanPath = path[7..]; }
-        else if (path.StartsWith("%blur%")) { _blur = true; cleanPath = path[6..]; }
+        while (true)
+        {
+            if (cleanPath.StartsWith("%clamp%")) { _clamp = true; cleanPath = cleanPath[7..]; }
+            else if (cleanPath.StartsWith("%blur%")) { _blur = true; cleanPath = cleanPath[6..]; }
+            else break;
+        }
 
         using Stream? stream = pack.GetResourceAsStream(cleanPath);
         Image<Rgba32> img = stream == null ? _missingTextureImage.Clone() : Image.Load<Rgba32>(stream);

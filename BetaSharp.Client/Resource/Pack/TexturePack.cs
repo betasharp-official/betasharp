@@ -1,3 +1,5 @@
+using BetaSharp.Client.Rendering.Core.Textures;
+
 namespace BetaSharp.Client.Resource.Pack;
 
 public abstract class TexturePack
@@ -19,11 +21,11 @@ public abstract class TexturePack
     {
     }
 
-    public virtual void Unload(BetaSharp game)
+    public virtual void Unload(TextureManager textureManager)
     {
     }
 
-    public virtual void BindThumbnailTexture(BetaSharp game)
+    public virtual void BindThumbnailTexture(TextureManager textureManager)
     {
     }
 

@@ -34,7 +34,7 @@ public class LoadingScreenRenderer : LoadingDisplay
 
     public void func_597_c(string var1)
     {
-        if (!_game.running)
+        if (!_game.Running)
         {
             if (!field_1005_e)
             {
@@ -44,11 +44,11 @@ public class LoadingScreenRenderer : LoadingDisplay
         else
         {
             field_1007_c = var1;
-            ScaledResolution var2 = new(_game.options, _game.displayWidth, _game.displayHeight);
+            ScaledResolution var2 = new(_game.Options, _game.DisplayWidth, _game.DisplayHeight);
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
             GLManager.GL.MatrixMode(GLEnum.Projection);
             GLManager.GL.LoadIdentity();
-            GLManager.GL.Ortho(0.0D, var2.ScaledWidthDouble, var2.ScaledHeightDouble, 0.0D, 100.0D, 300.0D);
+            GLManager.GL.Ortho(0.0D, var2.ScaledWidth, var2.ScaledHeight, 0.0D, 100.0D, 300.0D);
             GLManager.GL.MatrixMode(GLEnum.Modelview);
             GLManager.GL.LoadIdentity();
             GLManager.GL.Translate(0.0F, 0.0F, -200.0F);
@@ -57,7 +57,7 @@ public class LoadingScreenRenderer : LoadingDisplay
 
     public void progressStage(string var1)
     {
-        if (!_game.running)
+        if (!_game.Running)
         {
             if (!field_1005_e)
             {
@@ -75,7 +75,7 @@ public class LoadingScreenRenderer : LoadingDisplay
 
     public void setLoadingProgress(int var1)
     {
-        if (!_game.running)
+        if (!_game.Running)
         {
             if (!field_1005_e)
             {
@@ -89,19 +89,19 @@ public class LoadingScreenRenderer : LoadingDisplay
             if (var2 - field_1006_d >= 20L)
             {
                 field_1006_d = var2;
-                ScaledResolution var4 = new(_game.options, _game.displayWidth, _game.displayHeight);
+                ScaledResolution var4 = new(_game.Options, _game.DisplayWidth, _game.DisplayHeight);
                 int var5 = var4.ScaledWidth;
                 int var6 = var4.ScaledHeight;
                 GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
                 GLManager.GL.MatrixMode(GLEnum.Projection);
                 GLManager.GL.LoadIdentity();
-                GLManager.GL.Ortho(0.0D, var4.ScaledWidthDouble, var4.ScaledHeightDouble, 0.0D, 100.0D, 300.0D);
+                GLManager.GL.Ortho(0.0D, var4.ScaledWidth, var4.ScaledHeight, 0.0D, 100.0D, 300.0D);
                 GLManager.GL.MatrixMode(GLEnum.Modelview);
                 GLManager.GL.LoadIdentity();
                 GLManager.GL.Translate(0.0F, 0.0F, -200.0F);
                 GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
                 Tessellator var7 = Tessellator.instance;
-                _game.textureManager.BindTexture(_game.textureManager.GetTextureId("/gui/background.png"));
+                _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/gui/background.png"));
                 float var9 = 32.0F;
                 var7.startDrawingQuads();
                 var7.setColorOpaque_I(0x404040);
@@ -132,8 +132,8 @@ public class LoadingScreenRenderer : LoadingDisplay
                     GLManager.GL.Enable(GLEnum.Texture2D);
                 }
 
-                _game.fontRenderer.DrawStringWithShadow(field_1007_c, (var5 - _game.fontRenderer.GetStringWidth(field_1007_c)) / 2, var6 / 2 - 4 - 16, Color.White);
-                _game.fontRenderer.DrawStringWithShadow(field_1004_a, (var5 - _game.fontRenderer.GetStringWidth(field_1004_a)) / 2, var6 / 2 - 4 + 8, Color.White);
+                _game.TextRenderer.DrawStringWithShadow(field_1007_c, (var5 - _game.TextRenderer.GetStringWidth(field_1007_c)) / 2, var6 / 2 - 4 - 16, Color.White);
+                _game.TextRenderer.DrawStringWithShadow(field_1004_a, (var5 - _game.TextRenderer.GetStringWidth(field_1004_a)) / 2, var6 / 2 - 4 + 8, Color.White);
                 Display.update();
 
                 try

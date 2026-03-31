@@ -5,10 +5,10 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Worlds.Chunks;
 
-internal class ChunkSnapshot : IDisposable
+internal struct ChunkSnapshot : IDisposable
 {
-    public ChunkNibbleArray SkylightMap { get; private set; }
-    public ChunkNibbleArray BlocklightMap { get; private set; }
+    private readonly ChunkNibbleArray _skylightMap;
+    private readonly ChunkNibbleArray _blocklightMap;
 
     private readonly byte[] _blocks;
     private readonly ChunkNibbleArray _data;
@@ -21,9 +21,9 @@ internal class ChunkSnapshot : IDisposable
         _blocks = ArrayPool<byte>.Shared.Rent(32768);
         Buffer.BlockCopy(toSnapshot.Blocks, 0, _blocks, 0, toSnapshot.Blocks.Length);
 
-        _data = createNibbleArray(toSnapshot.Meta.Bytes);
-        SkylightMap = createNibbleArray(toSnapshot.SkyLight.Bytes);
-        BlocklightMap = createNibbleArray(toSnapshot.BlockLight.Bytes);
+        _data = MakeNibbleArray(toSnapshot.Meta.Bytes);
+        _skylightMap = MakeNibbleArray(toSnapshot.SkyLight.Bytes);
+        _blocklightMap = MakeNibbleArray(toSnapshot.BlockLight.Bytes);
 
         foreach ((BlockPos pos, BlockEntity entity) in toSnapshot.BlockEntities)
         {
@@ -41,7 +41,7 @@ internal class ChunkSnapshot : IDisposable
         }
     }
 
-    private static ChunkNibbleArray createNibbleArray(byte[] toCopy)
+    private static ChunkNibbleArray MakeNibbleArray(byte[] toCopy)
     {
         byte[] bytes = ArrayPool<byte>.Shared.Rent(toCopy.Length);
         Buffer.BlockCopy(toCopy, 0, bytes, 0, toCopy.Length);
@@ -60,14 +60,14 @@ internal class ChunkSnapshot : IDisposable
 
     public int getBlockLightValue(int x, int y, int z, int ambientDarkness)
     {
-        int skyLight = SkylightMap.GetNibble(x, y, z);
+        int skyLight = _skylightMap.GetNibble(x, y, z);
         if (skyLight > 0)
         {
             _isLit = true;
         }
 
         skyLight -= ambientDarkness;
-        int blockLight = BlocklightMap.GetNibble(x, y, z);
+        int blockLight = _blocklightMap.GetNibble(x, y, z);
         if (blockLight > skyLight)
         {
             skyLight = blockLight;
@@ -94,11 +94,10 @@ internal class ChunkSnapshot : IDisposable
             return;
         }
 
-        GC.SuppressFinalize(this);
         ArrayPool<byte>.Shared.Return(_blocks);
         ArrayPool<byte>.Shared.Return(_data.Bytes);
-        ArrayPool<byte>.Shared.Return(SkylightMap.Bytes);
-        ArrayPool<byte>.Shared.Return(BlocklightMap.Bytes);
+        ArrayPool<byte>.Shared.Return(_skylightMap.Bytes);
+        ArrayPool<byte>.Shared.Return(_blocklightMap.Bytes);
         _disposed = true;
     }
 }

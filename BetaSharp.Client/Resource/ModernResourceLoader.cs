@@ -63,7 +63,7 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
 
                 if (localFile.Exists && localFile.Length == entry.Size)
                 {
-                    _game.installResource(outputKey, localFile);
+                    _game.InstallResource(outputKey, localFile);
                     continue;
                 }
 
@@ -76,7 +76,7 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
 
                 if (!_cancelled)
                 {
-                    _game.installResource(outputKey, localFile);
+                    _game.InstallResource(outputKey, localFile);
                 }
             }
         }

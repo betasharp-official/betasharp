@@ -105,6 +105,7 @@ public unsafe interface IGL
     void VertexAttribPointer(uint index, int size, GLEnum type, bool normalized, uint stride, void* pointer);
     void VertexPointer(int size, GLEnum type, uint stride, void* pointer);
     void Viewport(int x, int y, uint width, uint height);
+    void Scissor(int x, int y, uint width, uint height);
     uint GenFramebuffer();
     void BindFramebuffer(FramebufferTarget target, uint framebuffer);
     void FramebufferTexture2D(FramebufferTarget target, FramebufferAttachment attachment, TextureTarget textarget, uint texture, int level);

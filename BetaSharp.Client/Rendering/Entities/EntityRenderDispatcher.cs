@@ -8,29 +8,28 @@ using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Rendering.Entities;
 
 public class EntityRenderDispatcher
 {
-    private readonly Dictionary<Type, EntityRenderer> entityRenderMap = [];
-    public static EntityRenderDispatcher instance = new();
-    private TextRenderer fontRenderer;
-    public static double offsetX;
-    public static double offsetY;
-    public static double offsetZ;
-    public TextureManager textureManager;
-    public SkinManager skinManager;
-    public HeldItemRenderer heldItemRenderer;
-    public World world;
-    public EntityLiving cameraEntity;
-    public float playerViewY;
-    public float playerViewX;
-    public GameOptions options;
-    public double x;
-    public double y;
-    public double z;
+    private readonly Dictionary<Type, EntityRenderer> _entityRenderMap = [];
+    public static readonly EntityRenderDispatcher Instance = new();
+    private TextRenderer _fontRenderer;
+    public static double OffsetX { get; set; }
+    public static double OffsetY { get; set; }
+    public static double OffsetZ { get; set; }
+    public TextureManager TextureManager { get; private set; }
+    public SkinManager SkinManager { get; set; }
+    public HeldItemRenderer HeldItemRenderer { get; set; }
+    public World World { get; set; }
+    public EntityLiving CameraEntity { get; private set; }
+    public float PlayerViewY { get; set; }
+    public float PlayerViewX { get; private set; }
+    public GameOptions Options { get; private set; }
+    private double _x;
+    private double _y;
+    private double _z;
 
     private EntityRenderDispatcher()
     {
@@ -63,7 +62,7 @@ public class EntityRenderDispatcher
         RegisterRenderer(typeof(EntityFish), new FishingBobberEntityRenderer());
         RegisterRenderer(typeof(EntityLightningBolt), new LightningEntityRenderer());
 
-        foreach (var render in entityRenderMap.Values)
+        foreach (EntityRenderer render in _entityRenderMap.Values)
         {
             render.Dispatcher = this;
         }
@@ -71,12 +70,12 @@ public class EntityRenderDispatcher
 
     private void RegisterRenderer(Type type, EntityRenderer render)
     {
-        entityRenderMap[type] = render;
+        _entityRenderMap[type] = render;
     }
 
     public EntityRenderer GetEntityClassRenderObject(Type type)
     {
-        if (!entityRenderMap.TryGetValue(type, out EntityRenderer? entityRenderer) && type != typeof(Entity))
+        if (!_entityRenderMap.TryGetValue(type, out EntityRenderer? entityRenderer) && type != typeof(Entity))
         {
             entityRenderer = GetEntityClassRenderObject(type.BaseType);
             RegisterRenderer(type, entityRenderer);
@@ -90,36 +89,36 @@ public class EntityRenderDispatcher
         return GetEntityClassRenderObject(entity.GetType());
     }
 
-    public void cacheActiveRenderInfo(World world, TextureManager textureManager, TextRenderer textRenderer, EntityLiving camera, GameOptions options, float tickDelta)
+    public void CacheRenderInfo(World world, TextureManager textureManager, TextRenderer textRenderer, EntityLiving camera, GameOptions options, float tickDelta)
     {
-        this.world = world;
-        this.textureManager = textureManager;
-        this.options = options;
-        cameraEntity = camera;
-        fontRenderer = textRenderer;
+        World = world;
+        TextureManager = textureManager;
+        Options = options;
+        CameraEntity = camera;
+        _fontRenderer = textRenderer;
         if (camera.isSleeping())
         {
-            int var7 = world.Reader.GetBlockId(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
-            if (var7 == Block.Bed.id)
+            int blockId = world.Reader.GetBlockId(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
+            if (blockId == Block.Bed.id)
             {
                 int var8 = world.Reader.GetBlockMeta(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
                 int var9 = var8 & 3;
-                playerViewY = var9 * 90 + 180;
-                playerViewX = 0.0F;
+                PlayerViewY = var9 * 90 + 180;
+                PlayerViewX = 0.0F;
             }
         }
         else
         {
-            playerViewY = camera.prevYaw + (camera.yaw - camera.prevYaw) * tickDelta;
-            playerViewX = camera.prevPitch + (camera.pitch - camera.prevPitch) * tickDelta;
+            PlayerViewY = camera.prevYaw + (camera.yaw - camera.prevYaw) * tickDelta;
+            PlayerViewX = camera.prevPitch + (camera.pitch - camera.prevPitch) * tickDelta;
         }
 
-        x = camera.lastTickX + (camera.x - camera.lastTickX) * (double)tickDelta;
-        y = camera.lastTickY + (camera.y - camera.lastTickY) * (double)tickDelta;
-        z = camera.lastTickZ + (camera.z - camera.lastTickZ) * (double)tickDelta;
+        _x = camera.lastTickX + (camera.x - camera.lastTickX) * (double)tickDelta;
+        _y = camera.lastTickY + (camera.y - camera.lastTickY) * (double)tickDelta;
+        _z = camera.lastTickZ + (camera.z - camera.lastTickZ) * (double)tickDelta;
     }
 
-    public void renderEntity(Entity target, float tickDelta)
+    public void RenderEntity(Entity target, float tickDelta)
     {
         double x = target.lastTickX + (target.x - target.lastTickX) * (double)tickDelta;
         double y = target.lastTickY + (target.y - target.lastTickY) * (double)tickDelta;
@@ -127,34 +126,29 @@ public class EntityRenderDispatcher
         float yaw = target.prevYaw + (target.yaw - target.prevYaw) * tickDelta;
         float brightness = target.getBrightnessAtEyes(tickDelta);
         GLManager.GL.Color3(brightness, brightness, brightness);
-        renderEntityWithPosYaw(target, x - offsetX, y - offsetY, z - offsetZ, yaw, tickDelta);
+        RenderEntityWithPosYaw(target, x - OffsetX, y - OffsetY, z - OffsetZ, yaw, tickDelta);
     }
 
-    public void renderEntityWithPosYaw(Entity target, double x, double y, double z, float yaw, float tickDelta)
+    public void RenderEntityWithPosYaw(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
         EntityRenderer entityRenderer = GetEntityRenderObject(target);
         if (entityRenderer == null) return;
 
-        entityRenderer.render(target, x, y, z, yaw, tickDelta);
+        entityRenderer.Render(target, x, y, z, yaw, tickDelta);
         entityRenderer.PostRender(target, new Vec3D(x, y, z), yaw, tickDelta);
         entityRenderer.RenderBoundingBox(target, new Vec3D(x, y, z), yaw, tickDelta);
     }
 
-    public void SetWorld(World world)
-    {
-        this.world = world;
-    }
-
     public double GetSquareDistanceTo(double x, double y, double z)
     {
-        double xDelta = x - this.x;
-        double yDelta = y - this.y;
-        double zDelta = z - this.z;
+        double xDelta = x - _x;
+        double yDelta = y - _y;
+        double zDelta = z - _z;
         return xDelta * xDelta + yDelta * yDelta + zDelta * zDelta;
     }
 
     public TextRenderer getTextRenderer()
     {
-        return fontRenderer;
+        return _fontRenderer;
     }
 }

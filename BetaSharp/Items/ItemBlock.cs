@@ -101,12 +101,12 @@ internal class ItemBlock : Item
         }
     }
 
-    public override String getItemNameIS(ItemStack itemStack)
+    public override string getItemNameIS(ItemStack itemStack)
     {
         return Block.Blocks[blockID].getBlockName();
     }
 
-    public override String getItemName()
+    public override string getItemName()
     {
         return Block.Blocks[blockID].getBlockName();
     }

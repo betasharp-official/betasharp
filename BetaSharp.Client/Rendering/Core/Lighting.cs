@@ -15,7 +15,15 @@ public unsafe class Lighting
         GLManager.GL.Disable(GLEnum.ColorMaterial);
     }
 
-    public static void turnOn()
+    public static void turnOnGui()
+    {
+        GLManager.GL.PushMatrix();
+        GLManager.GL.Rotate(120.0F, 1.0F, 0.0F, 0.0F);
+        turnOn();
+        GLManager.GL.PopMatrix();
+    }
+
+    public static void turnOn(bool mirrored = false)
     {
         GLManager.GL.Enable(GLEnum.Lighting);
         GLManager.GL.Enable(GLEnum.Light0);
@@ -25,14 +33,15 @@ public unsafe class Lighting
         float var0 = 0.4F;
         float var1 = 0.6F;
         float var2 = 0.0F;
-        Vec3D var3 = new Vec3D((double)0.2F, 1.0D, (double)-0.7F).normalize();
+        float mx = mirrored ? -1.0f : 1.0f;
+        Vec3D var3 = new Vec3D((double)(0.2F * mx), 1.0D, (double)-0.7F).normalize();
         fixed (float* buf = s_buffer)
         {
             GLManager.GL.Light(GLEnum.Light0, GLEnum.Position, getBuffer(buf, var3.x, var3.y, var3.z, 0.0D));
             GLManager.GL.Light(GLEnum.Light0, GLEnum.Diffuse, getBuffer(buf, var1, var1, var1, 1.0F));
             GLManager.GL.Light(GLEnum.Light0, GLEnum.Ambient, getBuffer(buf, 0.0F, 0.0F, 0.0F, 1.0F));
             GLManager.GL.Light(GLEnum.Light0, GLEnum.Specular, getBuffer(buf, var2, var2, var2, 1.0F));
-            var3 = new Vec3D((double)-0.2F, 1.0D, (double)0.7F).normalize();
+            var3 = new Vec3D((double)(-0.2F * mx), 1.0D, (double)0.7F).normalize();
             GLManager.GL.Light(GLEnum.Light1, GLEnum.Position, getBuffer(buf, var3.x, var3.y, var3.z, 0.0D));
             GLManager.GL.Light(GLEnum.Light1, GLEnum.Diffuse, getBuffer(buf, var1, var1, var1, 1.0F));
             GLManager.GL.Light(GLEnum.Light1, GLEnum.Ambient, getBuffer(buf, 0.0F, 0.0F, 0.0F, 1.0F));

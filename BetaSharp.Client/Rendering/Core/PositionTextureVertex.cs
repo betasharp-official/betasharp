@@ -12,7 +12,7 @@ internal struct PositionTextureVertex
     {
     }
 
-    public PositionTextureVertex setTexturePosition(float var1, float var2)
+    public readonly PositionTextureVertex setTexturePosition(float var1, float var2)
     {
         return new PositionTextureVertex(this, var1, var2);
     }

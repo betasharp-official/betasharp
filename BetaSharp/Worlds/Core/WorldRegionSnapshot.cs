@@ -14,7 +14,7 @@ namespace BetaSharp.Worlds.Core;
 public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 {
     private readonly BiomeSource _biomeSource;
-    private readonly ChunkSnapshot[][] _chunks;
+    private readonly ChunkSnapshot[,] _chunks;
     private readonly int _chunkX;
     private readonly int _chunkZ;
     private readonly float[] _lightTable;
@@ -41,22 +41,18 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         int width = maxChunkX - _chunkX + 1;
         int depth = maxChunkZ - _chunkZ + 1;
 
-        _chunks = new ChunkSnapshot[width][];
-        for (int i = 0; i < _chunks.Length; i++)
-        {
-            _chunks[i] = new ChunkSnapshot[depth];
-        }
+        _chunks = new ChunkSnapshot[width, depth];
 
         for (int cx = _chunkX; cx <= maxChunkX; ++cx)
         {
             for (int cz = _chunkZ; cz <= maxChunkZ; ++cz)
             {
                 Chunk originalChunk = world.ChunkHost.GetChunk(cx, cz);
-                _chunks[cx - _chunkX][cz - _chunkZ] = new ChunkSnapshot(originalChunk);
+                _chunks[cx - _chunkX, cz - _chunkZ] = new ChunkSnapshot(originalChunk);
             }
         }
 
-        _lightTable = (float[])world.Dimension.LightLevelToLuminance.Clone();
+        _lightTable = world.Dimension.LightLevelToLuminance;
         _skylightSubtracted = world.Environment.AmbientDarkness;
     }
 
@@ -70,11 +66,11 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         int chunkIdxX = (x >> 4) - _chunkX;
         int chunkIdxZ = (z >> 4) - _chunkZ;
 
-        if (chunkIdxX >= 0 && chunkIdxX < _chunks.Length &&
-            chunkIdxZ >= 0 && chunkIdxZ < _chunks[chunkIdxX].Length)
+        if (chunkIdxX >= 0 && chunkIdxX < _chunks.GetLength(0) &&
+            chunkIdxZ >= 0 && chunkIdxZ < _chunks.GetLength(1))
         {
-            ChunkSnapshot chunk = _chunks[chunkIdxX][chunkIdxZ];
-            return chunk == null ? 0 : chunk.getBlockID(x & 15, y, z & 15);
+            ChunkSnapshot chunk = _chunks[chunkIdxX, chunkIdxZ];
+            return chunk.getBlockID(x & 15, y, z & 15);
         }
 
         return 0;
@@ -96,14 +92,10 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         int chunkIdxX = (x >> 4) - _chunkX;
         int chunkIdxZ = (z >> 4) - _chunkZ;
 
-        if (chunkIdxX >= 0 && chunkIdxX < _chunks.Length &&
-            chunkIdxZ >= 0 && chunkIdxZ < _chunks[chunkIdxX].Length)
+        if (chunkIdxX >= 0 && chunkIdxX < _chunks.GetLength(0) &&
+            chunkIdxZ >= 0 && chunkIdxZ < _chunks.GetLength(1))
         {
-            ChunkSnapshot chunk = _chunks[chunkIdxX][chunkIdxZ];
-            if (chunk == null)
-            {
-                return null;
-            }
+            ChunkSnapshot chunk = _chunks[chunkIdxX, chunkIdxZ];
 
             NBTTagCompound? nbt = chunk.GetTileEntityNbt(x & 15, y, z & 15);
             if (nbt != null)
@@ -113,7 +105,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
                 {
                     _tileEntityCache[pos] = newEntity;
                     return newEntity;
-        }
+                }
             }
         }
 
@@ -171,7 +163,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
         int chunkIdxX = (x >> 4) - _chunkX;
         int chunkIdxZ = (z >> 4) - _chunkZ;
-        return _chunks[chunkIdxX][chunkIdxZ].getBlockMetadata(x & 15, y, z & 15);
+        return _chunks[chunkIdxX, chunkIdxZ].getBlockMetadata(x & 15, y, z & 15);
     }
 
     public int getLightValue(int x, int y, int z) => GetLightValueExt(x, y, z, true);
@@ -211,7 +203,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         int chunkIdxX = (x >> 4) - _chunkX;
         int chunkIdxZ = (z >> 4) - _chunkZ;
 
-        ChunkSnapshot chunk = _chunks[chunkIdxX][chunkIdxZ];
+        ChunkSnapshot chunk = _chunks[chunkIdxX, chunkIdxZ];
 
         int lightValue = chunk.getBlockLightValue(x & 15, y, z & 15, _skylightSubtracted);
 
@@ -254,15 +246,15 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
             BiomeSource.Pool.Add(_biomeSource);
         }
 
-        foreach (ChunkSnapshot[] column in _chunks)
+        foreach (var snapshot in _chunks)
         {
-            if (column == null) continue;
-
-            foreach (ChunkSnapshot snapshot in column)
-            {
-                snapshot?.Dispose();
-            }
+            snapshot.Dispose();
         }
+    }
+
+    ~WorldRegionSnapshot()
+    {
+        Dispose();
     }
 
     public void MarkChunkDirty(int x, int z) => throw new NotImplementedException();

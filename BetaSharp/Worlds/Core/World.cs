@@ -68,7 +68,7 @@ public abstract class World : IWorldContext
 
 
 
-        Properties!.LevelName = levelName;
+
 
 
         if (Dimension is OverworldDimension && Properties.TerrainType == WorldType.Sky)
@@ -112,14 +112,14 @@ public abstract class World : IWorldContext
         {
             for (int i = 0; i < EventListeners.Count; ++i)
             {
-                EventListeners[i].notifyEntityAdded(ent);
+                EventListeners[i].NotifyEntityAdded(ent);
             }
         };
         Entities.OnEntityRemoved += ent =>
         {
             for (int i = 0; i < EventListeners.Count; ++i)
             {
-                EventListeners[i].notifyEntityRemoved(ent);
+                EventListeners[i].NotifyEntityRemoved(ent);
             }
         };
 
@@ -467,7 +467,7 @@ public abstract class World : IWorldContext
 
             for (int i = 0; i < EventListeners.Count; ++i)
             {
-                EventListeners[i].notifyAmbientDarknessChanged();
+                EventListeners[i].NotifyAmbientDarknessChanged();
             }
         }
 
@@ -682,7 +682,7 @@ public abstract class World : IWorldContext
     {
         for (int i = 0; i < EventListeners.Count; ++i)
         {
-            EventListeners[i].setBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ);
+            EventListeners[i].SetBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ);
         }
     }
 }

@@ -27,7 +27,7 @@ public class ScaledResolution
 
         ScaledWidthDouble = ScaledWidth / (double)ScaleFactor;
         ScaledHeightDouble = ScaledHeight / (double)ScaleFactor;
-        ScaledWidth = (int)Math.Ceiling(ScaledWidthDouble);
-        ScaledHeight = (int)Math.Ceiling(ScaledHeightDouble);
+        ScaledWidth = (int)ScaledWidthDouble;
+        ScaledHeight = (int)ScaledHeightDouble;
     }
 }

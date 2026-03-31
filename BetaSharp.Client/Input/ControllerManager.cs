@@ -1,5 +1,6 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
+using BetaSharp.Client.UI;
+using BetaSharp.Client.UI.Screens.InGame.Containers;
 using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.Input;
@@ -35,7 +36,7 @@ public static class ControllerManager
     private static bool IsActionDown(string actionKey)
     {
         if (s_game == null) return false;
-        foreach (ControllerBinding cb in s_game.options.ControllerBindings)
+        foreach (ControllerBinding cb in s_game.Options.ControllerBindings)
         {
             if (cb.ActionKey == actionKey)
             {
@@ -49,7 +50,7 @@ public static class ControllerManager
     public static bool IsZoomHeld()
     {
         if (s_game == null) return false;
-        if (s_game.currentScreen != null || !s_game.inGameHasFocus) return false;
+        if (s_game.CurrentScreen != null || !s_game.InGameHasFocus) return false;
         return IsActionDown("controller.zoom");
     }
 
@@ -72,7 +73,7 @@ public static class ControllerManager
 
     public static void UpdateInGame(float tickDelta)
     {
-        if (s_game == null || s_game.currentScreen != null || !s_game.inGameHasFocus)
+        if (s_game == null || s_game.CurrentScreen != null || !s_game.InGameHasFocus)
         {
             if (s_game != null) s_suppressInGameInput = true;
             SyncWasStates();
@@ -109,7 +110,7 @@ public static class ControllerManager
         // Jump
         if (jumpHeld != s_wasJumpDown)
         {
-            s_game.player.movementInput.checkKeyForMovementInput(s_game.options.KeyBindJump.keyCode, jumpHeld);
+            s_game.Player.movementInput.checkKeyForMovementInput(s_game.Options.KeyBindJump.keyCode, jumpHeld);
         }
 
         // Attack
@@ -139,19 +140,19 @@ public static class ControllerManager
         // Inventory
         if (inventoryHeld && !s_wasInventoryDown)
         {
-            s_game.displayGuiScreen(new GuiInventory(s_game.player));
+            s_game.Navigate(new InventoryScreen(s_game.UIContext, s_game.Player, s_game.PlayerController, () => s_game.CurrentScreen));
         }
 
         // Crafting
         if (craftingHeld && !s_wasCraftingDown)
         {
-            s_game.displayGuiScreen(new GuiInventory(s_game.player));
+            s_game.Navigate(new InventoryScreen(s_game.UIContext, s_game.Player, s_game.PlayerController, () => s_game.CurrentScreen));
         }
 
         // Drop
         if (dropHeld && !s_wasDropDown)
         {
-            s_game.player.DropSelectedItem();
+            s_game.Player.DropSelectedItem();
         }
 
         // Hotbar / Zoom adjust
@@ -161,7 +162,7 @@ public static class ControllerManager
 
             if (lbHeld && (!s_wasHotbarLeftDown || nowMs >= s_nextZoomInAdjustAtMs))
             {
-                s_game.options.ZoomScale = System.Math.Clamp(s_game.options.ZoomScale * 1.08F, 1.25F, 20.0F);
+                s_game.Options.ZoomScale = System.Math.Clamp(s_game.Options.ZoomScale * 1.08F, 1.25F, 20.0F);
                 s_nextZoomInAdjustAtMs = nowMs + (s_wasHotbarLeftDown ? 70L : 220L);
             }
             else if (!lbHeld)
@@ -171,7 +172,7 @@ public static class ControllerManager
 
             if (rbHeld && (!s_wasHotbarRightDown || nowMs >= s_nextZoomOutAdjustAtMs))
             {
-                s_game.options.ZoomScale = System.Math.Clamp(s_game.options.ZoomScale / 1.08F, 1.25F, 20.0F);
+                s_game.Options.ZoomScale = System.Math.Clamp(s_game.Options.ZoomScale / 1.08F, 1.25F, 20.0F);
                 s_nextZoomOutAdjustAtMs = nowMs + (s_wasHotbarRightDown ? 70L : 220L);
             }
             else if (!rbHeld)
@@ -181,8 +182,8 @@ public static class ControllerManager
         }
         else
         {
-            if (lbHeld && !s_wasHotbarLeftDown) s_game.player.inventory.changeCurrentItem(1);
-            if (rbHeld && !s_wasHotbarRightDown) s_game.player.inventory.changeCurrentItem(-1);
+            if (lbHeld && !s_wasHotbarLeftDown) s_game.Player.inventory.changeCurrentItem(1);
+            if (rbHeld && !s_wasHotbarRightDown) s_game.Player.inventory.changeCurrentItem(-1);
             s_nextZoomInAdjustAtMs = 0L;
             s_nextZoomOutAdjustAtMs = 0L;
         }
@@ -190,7 +191,7 @@ public static class ControllerManager
         // Camera
         if (cameraHeld && !s_wasCameraDown)
         {
-            s_game.options.CameraMode = (EnumCameraMode)((int)(s_game.options.CameraMode + 2) % 3);
+            s_game.Options.CameraMode = (EnumCameraMode)((int)(s_game.Options.CameraMode + 2) % 3);
         }
 
         // Sneak Toggle
@@ -202,7 +203,7 @@ public static class ControllerManager
         // Pause
         if (pauseHeld && !s_wasPauseDown)
         {
-            s_game.displayInGameMenu();
+            s_game.DisplayInGameMenu();
         }
 
         // Pick Block
@@ -213,13 +214,13 @@ public static class ControllerManager
 
         if (playerListHeld && !s_wasPlayerListDown)
         {
-            s_game.options.ShowDebugInfo = !s_game.options.ShowDebugInfo;
+            s_game.Options.ShowDebugInfo = !s_game.Options.ShowDebugInfo;
         }
 
         if (jumpHeld || attackHeld || interactHeld || inventoryHeld || dropHeld || lbHeld || rbHeld ||
             cameraHeld || pauseHeld || playerListHeld || pickBlockHeld || sneakHeld || craftingHeld || zoomHeld)
         {
-            s_game.isControllerMode = true;
+            s_game.IsControllerMode = true;
         }
 
         SyncWasStates();
@@ -227,21 +228,21 @@ public static class ControllerManager
         while (Controller.Next()) { }
     }
 
-    public static void UpdateGui(GuiScreen screen)
+    public static void UpdateGui(UIScreen? screen)
     {
         if (s_game == null || screen == null) return;
         s_suppressInGameInput = true;
 
         while (Controller.Next())
         {
-            s_game.isControllerMode = true;
+            s_game.IsControllerMode = true;
             screen.HandleControllerInput();
         }
     }
 
     public static void HandleMovement(ref float moveStrafe, ref float moveForward)
     {
-        if (Controller.IsActive() && s_game != null && s_game.currentScreen == null && !s_suppressInGameInput)
+        if (Controller.IsActive() && s_game != null && s_game.CurrentScreen == null && !s_suppressInGameInput)
         {
             float lx = Controller.LeftStickX;
             float ly = Controller.LeftStickY;
@@ -268,7 +269,7 @@ public static class ControllerManager
             {
                 const float mult = 120.0f;
 
-                float sensitivity = s_game.options.ControllerSensitivity * 0.6f + 0.2f;
+                float sensitivity = s_game.Options.ControllerSensitivity * 0.6f + 0.2f;
                 sensitivity = sensitivity * sensitivity * sensitivity * 8.0f;
 
                 float activeRx = (Math.Abs(rx) - deadzone) / (1.0f - deadzone);

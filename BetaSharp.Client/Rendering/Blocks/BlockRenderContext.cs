@@ -2,7 +2,6 @@ using System.Runtime.CompilerServices;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Rendering.Blocks;
@@ -20,13 +19,19 @@ public ref struct BlockRenderContext
     public bool EnableAo = true;
     public int AoBlendMode = 0;
 
-    // UV Rotations
     public int UvRotateTop;
     public int UvRotateBottom;
     public int UvRotateNorth;
     public int UvRotateSouth;
     public int UvRotateEast;
     public int UvRotateWest;
+
+    public int FlipTop;
+    public int FlipBottom;
+    public int FlipNorth;
+    public int FlipSouth;
+    public int FlipEast;
+    public int FlipWest;
 
     // Custom flag for Pistons (Expanded/Short arm)
     public bool CustomFlag;
@@ -39,12 +44,15 @@ public ref struct BlockRenderContext
         int uvTop = 0, int uvBottom = 0,
         int uvNorth = 0, int uvSouth = 0,
         int uvEast = 0, int uvWest = 0,
+        int flipTop = 0, int flipBottom = 0,
+        int flipNorth = 0, int flipSouth = 0,
+        int flipEast = 0, int flipWest = 0,
         bool customFlag = false, bool enableAo = true,
         int aoBlendMode = 0)
     {
         BlockReader = blockReader;
         Tess = tess;
-        Lighting =  lighting;
+        Lighting = lighting;
 
         OverrideTexture = overrideTexture;
         RenderAllFaces = renderAllFaces;
@@ -58,10 +66,36 @@ public ref struct BlockRenderContext
         UvRotateEast = uvEast;
         UvRotateWest = uvWest;
 
+        FlipTop = flipTop;
+        FlipBottom = flipBottom;
+        FlipNorth = flipNorth;
+        FlipSouth = flipSouth;
+        FlipEast = flipEast;
+        FlipWest = flipWest;
+
         AoBlendMode = aoBlendMode;
         EnableAo = enableAo;
 
         CustomFlag = customFlag;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static int ApplyVariance(int hash, TextureVariance variance, out int flipMask)
+    {
+        byte allowed = (byte)variance;
+        flipMask = (hash & allowed & 12) >> 2;
+        return hash & allowed & 3;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static int GetTextureVarianceHash(int x, int y, int z)
+    {
+        unchecked
+        {
+            long seed = (x * 3129871L) ^ (z * 116129781L) ^ y;
+            seed = (seed * seed * 42317861L) + (seed * 11L);
+            return (int)(seed >> 16);
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -83,10 +117,10 @@ public ref struct BlockRenderContext
         float bMinZ = Clamp(bbMinZ);
         float bMaxZ = Clamp(bbMaxZ);
 
-        CalculateUv(bMinX, bMaxZ, UvRotateBottom, texU, texV, out float u0, out float v0);
-        CalculateUv(bMinX, bMinZ, UvRotateBottom, texU, texV, out float u1, out float v1);
-        CalculateUv(bMaxX, bMinZ, UvRotateBottom, texU, texV, out float u2, out float v2);
-        CalculateUv(bMaxX, bMaxZ, UvRotateBottom, texU, texV, out float u3, out float v3);
+        CalculateUv(bMinX, bMaxZ, UvRotateBottom, FlipBottom, texU, texV, out float u0, out float v0);
+        CalculateUv(bMinX, bMinZ, UvRotateBottom, FlipBottom, texU, texV, out float u1, out float v1);
+        CalculateUv(bMaxX, bMinZ, UvRotateBottom, FlipBottom, texU, texV, out float u2, out float v2);
+        CalculateUv(bMaxX, bMaxZ, UvRotateBottom, FlipBottom, texU, texV, out float u3, out float v3);
 
         float pX = (float)pos.x;
         float pY = (float)pos.y;
@@ -148,10 +182,10 @@ public ref struct BlockRenderContext
         float bMinZ = Clamp(bbMinZ);
         float bMaxZ = Clamp(bbMaxZ);
 
-        CalculateUv(bMaxX, bMaxZ, UvRotateTop, texU, texV, out float u0, out float v0);
-        CalculateUv(bMaxX, bMinZ, UvRotateTop, texU, texV, out float u1, out float v1);
-        CalculateUv(bMinX, bMinZ, UvRotateTop, texU, texV, out float u2, out float v2);
-        CalculateUv(bMinX, bMaxZ, UvRotateTop, texU, texV, out float u3, out float v3);
+        CalculateUv(bMaxX, bMaxZ, UvRotateTop, FlipTop, texU, texV, out float u0, out float v0);
+        CalculateUv(bMaxX, bMinZ, UvRotateTop, FlipTop, texU, texV, out float u1, out float v1);
+        CalculateUv(bMinX, bMinZ, UvRotateTop, FlipTop, texU, texV, out float u2, out float v2);
+        CalculateUv(bMinX, bMaxZ, UvRotateTop, FlipTop, texU, texV, out float u3, out float v3);
 
         float pX = (float)pos.x;
         float pY = (float)pos.y;
@@ -208,10 +242,10 @@ public ref struct BlockRenderContext
         float bbMinZ = (float)bb.MinZ;
         float bbMaxZ = (float)bb.MaxZ;
 
-        CalculateUv(bbMinZ, 1.0f - bbMaxY, UvRotateNorth, texU, texV, out float uTl, out float vTl);
-        CalculateUv(bbMinZ, 1.0f - bbMinY, UvRotateNorth, texU, texV, out float uBl, out float vBl);
-        CalculateUv(bbMaxZ, 1.0f - bbMinY, UvRotateNorth, texU, texV, out float uBr, out float vBr);
-        CalculateUv(bbMaxZ, 1.0f - bbMaxY, UvRotateNorth, texU, texV, out float uTr, out float vTr);
+        CalculateUv(bbMinZ, 1.0f - bbMaxY, UvRotateNorth, FlipNorth, texU, texV, out float uTl, out float vTl);
+        CalculateUv(bbMinZ, 1.0f - bbMinY, UvRotateNorth, FlipNorth, texU, texV, out float uBl, out float vBl);
+        CalculateUv(bbMaxZ, 1.0f - bbMinY, UvRotateNorth, FlipNorth, texU, texV, out float uBr, out float vBr);
+        CalculateUv(bbMaxZ, 1.0f - bbMaxY, UvRotateNorth, FlipNorth, texU, texV, out float uTr, out float vTr);
 
         float pX = (float)pos.x;
         float pY = (float)pos.y;
@@ -273,10 +307,10 @@ public ref struct BlockRenderContext
         float bMinZ = Clamp(bbMinZ);
         float bMaxZ = Clamp(bbMaxZ);
 
-        CalculateUv(1.0f - bMaxZ, 1.0f - bMaxY, UvRotateSouth, texU, texV, out float uTl, out float vTl);
-        CalculateUv(1.0f - bMaxZ, 1.0f - bMinY, UvRotateSouth, texU, texV, out float uBl, out float vBl);
-        CalculateUv(1.0f - bMinZ, 1.0f - bMinY, UvRotateSouth, texU, texV, out float uBr, out float vBr);
-        CalculateUv(1.0f - bMinZ, 1.0f - bMaxY, UvRotateSouth, texU, texV, out float uTr, out float vTr);
+        CalculateUv(1.0f - bMaxZ, 1.0f - bMaxY, UvRotateSouth, FlipSouth, texU, texV, out float uTl, out float vTl);
+        CalculateUv(1.0f - bMaxZ, 1.0f - bMinY, UvRotateSouth, FlipSouth, texU, texV, out float uBl, out float vBl);
+        CalculateUv(1.0f - bMinZ, 1.0f - bMinY, UvRotateSouth, FlipSouth, texU, texV, out float uBr, out float vBr);
+        CalculateUv(1.0f - bMinZ, 1.0f - bMaxY, UvRotateSouth, FlipSouth, texU, texV, out float uTr, out float vTr);
 
         float pX = (float)pos.x;
         float pY = (float)pos.y;
@@ -338,10 +372,10 @@ public ref struct BlockRenderContext
         float bMinY = Clamp(bbMinY);
         float bMaxY = Clamp(bbMaxY);
 
-        CalculateUv(1.0f - bMaxX, 1.0f - bMaxY, UvRotateEast, texU, texV, out float uTl, out float vTl);
-        CalculateUv(1.0f - bMaxX, 1.0f - bMinY, UvRotateEast, texU, texV, out float uBl, out float vBl);
-        CalculateUv(1.0f - bMinX, 1.0f - bMinY, UvRotateEast, texU, texV, out float uBr, out float vBr);
-        CalculateUv(1.0f - bMinX, 1.0f - bMaxY, UvRotateEast, texU, texV, out float uTr, out float vTr);
+        CalculateUv(1.0f - bMaxX, 1.0f - bMaxY, UvRotateEast, FlipEast, texU, texV, out float uTl, out float vTl);
+        CalculateUv(1.0f - bMaxX, 1.0f - bMinY, UvRotateEast, FlipEast, texU, texV, out float uBl, out float vBl);
+        CalculateUv(1.0f - bMinX, 1.0f - bMinY, UvRotateEast, FlipEast, texU, texV, out float uBr, out float vBr);
+        CalculateUv(1.0f - bMinX, 1.0f - bMaxY, UvRotateEast, FlipEast, texU, texV, out float uTr, out float vTr);
 
         float pX = (float)pos.x;
         float pY = (float)pos.y;
@@ -403,10 +437,10 @@ public ref struct BlockRenderContext
         float bMinY = Clamp(bbMinY);
         float bMaxY = Clamp(bbMaxY);
 
-        CalculateUv(bMinX, 1.0f - bMaxY, UvRotateWest, texU, texV, out float uTl, out float vTl);
-        CalculateUv(bMinX, 1.0f - bMinY, UvRotateWest, texU, texV, out float uBl, out float vBl);
-        CalculateUv(bMaxX, 1.0f - bMinY, UvRotateWest, texU, texV, out float uBr, out float vBr);
-        CalculateUv(bMaxX, 1.0f - bMaxY, UvRotateWest, texU, texV, out float uTr, out float vTr);
+        CalculateUv(bMinX, 1.0f - bMaxY, UvRotateWest, FlipWest, texU, texV, out float uTl, out float vTl);
+        CalculateUv(bMinX, 1.0f - bMinY, UvRotateWest, FlipWest, texU, texV, out float uBl, out float vBl);
+        CalculateUv(bMaxX, 1.0f - bMinY, UvRotateWest, FlipWest, texU, texV, out float uBr, out float vBr);
+        CalculateUv(bMaxX, 1.0f - bMaxY, UvRotateWest, FlipWest, texU, texV, out float uTr, out float vTr);
 
         float pX = (float)pos.x;
         float pY = (float)pos.y;
@@ -789,10 +823,9 @@ public ref struct BlockRenderContext
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private readonly void CalculateUv(float h, float v, int rotation, int texU, int texV, out float u, out float outV)
+    private readonly void CalculateUv(float h, float v, int rotation, int flipMask, int texU, int texV, out float u, out float outV)
     {
-        //  0 and no flip are the most common states
-        if (rotation == 0 && !FlipTexture)
+        if (rotation == 0 && !FlipTexture && flipMask == 0)
         {
             u = texU * 0.00390625f + h * 0.0625f;
             outV = texV * 0.00390625f + v * 0.0625f;
@@ -801,7 +834,6 @@ public ref struct BlockRenderContext
 
         float fU, fV;
 
-        // Stripped down switch (pure assignment, no inline math)
         switch (rotation)
         {
             case 1:
@@ -839,6 +871,9 @@ public ref struct BlockRenderContext
         }
 
         fU = FlipTexture ? 1.0f - fU : fU;
+
+        if ((flipMask & 1) != 0) fU = 1.0f - fU;
+        if ((flipMask & 2) != 0) fV = 1.0f - fV;
 
         u = texU * 0.00390625f + fU * 0.0625f;
         outV = texV * 0.00390625f + fV * 0.0625f;

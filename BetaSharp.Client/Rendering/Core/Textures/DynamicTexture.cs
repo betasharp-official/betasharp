@@ -35,7 +35,7 @@ public class DynamicTexture(int iconIdx)
         CustomFrameIndex = 0;
         CustomFrameCount = 0;
 
-        using Stream? stream = game.texturePackList.SelectedTexturePack.GetResourceAsStream(resourceName);
+        using Stream? stream = game.TexturePackList.SelectedTexturePack.GetResourceAsStream(resourceName);
         if (stream == null)
         {
             if (Pixels.Length != 1024) Pixels = new byte[1024];
@@ -45,7 +45,7 @@ public class DynamicTexture(int iconIdx)
         try
         {
             string atlasPath = Atlas == FxImage.Terrain ? "/terrain.png" : "/gui/items.png";
-            int targetWidth = game.textureManager.GetTextureId(atlasPath).Texture?.Width ?? 256;
+            int targetWidth = game.TextureManager.GetTextureId(atlasPath).Texture?.Width ?? 256;
             int targetTileSize = targetWidth / 16;
 
             if (targetTileSize < 1) targetTileSize = 1;

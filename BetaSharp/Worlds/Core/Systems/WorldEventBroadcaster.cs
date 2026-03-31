@@ -16,7 +16,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     {
         foreach (IWorldEventListener t in eventListeners)
         {
-            t.playSound(sound, entity.x, entity.y - entity.standingEyeHeight, entity.z, volume, pitch);
+            t.PlaySound(sound, entity.x, entity.y - entity.standingEyeHeight, entity.z, volume, pitch);
         }
     }
 
@@ -24,7 +24,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     {
         foreach (IWorldEventListener t in eventListeners)
         {
-            t.playSound(sound, x, y, z, volume, pitch);
+            t.PlaySound(sound, x, y, z, volume, pitch);
         }
     }
 
@@ -32,7 +32,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     {
         foreach (IWorldEventListener t in eventListeners)
         {
-            t.playStreaming(music, x, y, z);
+            t.PlayStreaming(music, x, y, z);
         }
     }
 
@@ -40,7 +40,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     {
         foreach (IWorldEventListener t in eventListeners)
         {
-            t.spawnParticle(particle, x, y, z, velocityX, velocityY, velocityZ);
+            t.SpawnParticle(particle, x, y, z, velocityX, velocityY, velocityZ);
         }
     }
 
@@ -48,7 +48,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     {
         foreach (IWorldEventListener t in eventListeners)
         {
-            t.blockUpdate(x, y, z);
+            t.BlockUpdate(x, y, z);
         }
     }
 
@@ -58,7 +58,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     {
         for (int index = 0; index < eventListeners.Count; ++index)
         {
-            eventListeners[index].worldEvent(player, @event, x, y, z, data);
+            eventListeners[index].WorldEvent(player, @event, x, y, z, data);
         }
     }
 
@@ -110,7 +110,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
 
         for (int i = 0; i < eventListeners.Count; ++i)
         {
-            eventListeners[i].playNote(x, y, z, soundType, pitch);
+            eventListeners[i].PlayNote(x, y, z, soundType, pitch);
         }
     }
 
@@ -118,7 +118,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     {
         for (int i = 0; i < eventListeners.Count; ++i)
         {
-            eventListeners[i].setBlocksDirty(x, y, z, x, y, z);
+            eventListeners[i].SetBlocksDirty(x, y, z, x, y, z);
         }
     }
 
@@ -126,7 +126,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     {
         for (int i = 0; i < eventListeners.Count; ++i)
         {
-            eventListeners[i].broadcastEntityEvent(entity, @event);
+            eventListeners[i].BroadcastEntityEvent(entity, @event);
         }
     }
 
@@ -134,7 +134,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     {
         for (int i = 0; i < eventListeners.Count; ++i)
         {
-            eventListeners[i].setBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ);
+            eventListeners[i].SetBlocksDirty(minX, minY, minZ, maxX, maxY, maxZ);
         }
     }
 
@@ -143,7 +143,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
         worldContext.Reader.MarkChunkDirty(x, z);
         for (int i = 0; i < eventListeners.Count; ++i)
         {
-            eventListeners[i].updateBlockEntity(x, y, z, blockEntity);
+            eventListeners[i].UpdateBlockEntity(x, y, z, blockEntity);
         }
     }
 
@@ -151,7 +151,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     {
         for (int i = 0; i < eventListeners.Count; ++i)
         {
-            eventListeners[i].notifyAmbientDarknessChanged();
+            eventListeners[i].NotifyAmbientDarknessChanged();
         }
     }
 }

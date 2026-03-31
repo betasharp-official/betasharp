@@ -65,9 +65,9 @@ public class SubChunkRenderer : IDisposable
         vertexCounts[1] = 0;
     }
 
-    public bool IsVisible(Culler camera, Vector3D<double> viewPos, float renderDistance)
+    public bool IsVisible(ICuller camera, Vector3D<double> viewPos, float renderDistance)
     {
-        if (!camera.isBoundingBoxInFrustum(BoundingBox)) return false;
+        if (!camera.IsBoundingBoxInFrustum(BoundingBox)) return false;
 
         double dx = PositionPlus.X - viewPos.X;
         double dy = PositionPlus.Y - viewPos.Y;
