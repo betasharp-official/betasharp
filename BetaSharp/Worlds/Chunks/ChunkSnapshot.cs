@@ -5,10 +5,10 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Worlds.Chunks;
 
-internal struct ChunkSnapshot : IDisposable
+internal class ChunkSnapshot : IDisposable
 {
-    public ChunkNibbleArray SkylightMap { get; }
-    public ChunkNibbleArray BlocklightMap { get; }
+    public ChunkNibbleArray SkylightMap { get; private set; }
+    public ChunkNibbleArray BlocklightMap { get; private set; }
 
     private readonly byte[] _blocks;
     private readonly ChunkNibbleArray _data;
@@ -20,7 +20,7 @@ internal struct ChunkSnapshot : IDisposable
     {
         _blocks = ArrayPool<byte>.Shared.Rent(32768);
         Buffer.BlockCopy(toSnapshot.Blocks, 0, _blocks, 0, toSnapshot.Blocks.Length);
-
+        
         _data = createNibbleArray(toSnapshot.Meta.Bytes);
         SkylightMap = createNibbleArray(toSnapshot.SkyLight.Bytes);
         BlocklightMap = createNibbleArray(toSnapshot.BlockLight.Bytes);
@@ -97,6 +97,7 @@ internal struct ChunkSnapshot : IDisposable
             return;
         }
 
+        GC.SuppressFinalize(this);
         ArrayPool<byte>.Shared.Return(_blocks);
         ArrayPool<byte>.Shared.Return(_data.Bytes);
         ArrayPool<byte>.Shared.Return(SkylightMap.Bytes);
