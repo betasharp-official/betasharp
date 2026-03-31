@@ -234,7 +234,7 @@ public class GameRenderer
             float var4 = _client.MouseHelper.DeltaX * var3;
             float var5 = _client.MouseHelper.DeltaY * var3;
 
-            bool zoomHeldForSensitivity = _client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.keyCode);
+            bool zoomHeldForSensitivity = _client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.scanCode);
             if (zoomHeldForSensitivity)
             {
                 float zoomProgress = 1.0F / System.Math.Clamp(_client.Options.ZoomScale, 1.25F, 20.0F);
@@ -259,7 +259,7 @@ public class GameRenderer
             _client.Player.changeLookDirection(var4, var5 * var6);
         }
 
-        bool zoomHeld = (_client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.keyCode)) || ControllerManager.IsZoomHeld();
+        bool zoomHeld = (_client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.scanCode)) || ControllerManager.IsZoomHeld();
         cameraController.SetZoomState(zoomHeld, _client.Options.ZoomScale);
 
         if (!_client.SkipRenderWorld)
