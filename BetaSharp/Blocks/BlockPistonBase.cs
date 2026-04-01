@@ -106,20 +106,17 @@ public class BlockPistonBase : Block
         }
     }
 
-    private static bool ShouldExtend(IWorldContext ctx, int x, int y, int z, int facing) =>
-        facing != 0 &&
-        ctx.Redstone.IsPoweringSide(x, y - 1, z, 0) || facing != 1 &&
-        ctx.Redstone.IsPoweringSide(x, y + 1, z, 1) || facing != 2 &&
-        ctx.Redstone.IsPoweringSide(x, y, z - 1, 2) || facing != 3 &&
-        ctx.Redstone.IsPoweringSide(x, y, z + 1, 3) || facing != 5 &&
-        ctx.Redstone.IsPoweringSide(x + 1, y, z, 5) || facing != 4 &&
-        ctx.Redstone.IsPoweringSide(x - 1, y, z, 4) ||
-        ctx.Redstone.IsPoweringSide(x, y, z, 0) ||
-        ctx.Redstone.IsPoweringSide(x, y + 2, z, 1) ||
-        ctx.Redstone.IsPoweringSide(x, y + 1, z - 1, 2) ||
-        ctx.Redstone.IsPoweringSide(x, y + 1, z + 1, 3) ||
-        ctx.Redstone.IsPoweringSide(x - 1, y + 1, z, 4) ||
-        ctx.Redstone.IsPoweringSide(x + 1, y + 1, z, 5);
+    private static bool ShouldExtend(IWorldContext ctx, int x, int y, int z, int facing)
+    {
+        return facing != 0 && ctx.Redstone.IsPoweringSide(x, y - 1, z, 0) ||
+               facing != 1 && ctx.Redstone.IsPoweringSide(x, y + 1, z, 1) ||
+               facing != 2 && ctx.Redstone.IsPoweringSide(x, y, z - 1, 2) ||
+               facing != 3 && ctx.Redstone.IsPoweringSide(x, y, z + 1, 3) ||
+               facing != 5 && ctx.Redstone.IsPoweringSide(x + 1, y, z, 5) ||
+               facing != 4 && ctx.Redstone.IsPoweringSide(x - 1, y, z, 4) ||
+               ctx.Redstone.IsPowered(x, y, z) ||
+               ctx.Redstone.IsPowered(x, y + 1, z);
+    }
 
     public override void onBlockAction(OnBlockActionEvent @event)
     {
