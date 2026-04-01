@@ -64,6 +64,7 @@ public partial class BetaSharp :
     public static string Version { get; private set; } = UnknownVersion;
     public static string BetaSharpDir => PathHelper.GetAppDir(nameof(BetaSharp));
     public static long HasPaidCheckTime { get; private set; }
+    public static bool RainbowEnabled = false;
 
     private const string UnknownVersion = "unknown version";
     private static readonly bool s_isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
@@ -214,6 +215,7 @@ public partial class BetaSharp :
         {
             Navigate(CreateMainMenuScreen());
         }
+        RainbowEnabled = true;
     }
 
     private unsafe void SetupDisplay()
@@ -411,22 +413,7 @@ public partial class BetaSharp :
 
     private void LoadVersion()
     {
-        try
-        {
-            if (File.Exists("version.txt"))
-            {
-                Version = File.ReadAllText("version.txt").Trim().ToLower();
-            }
-            else
-            {
-                Version = "development build";
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning("Failed to load version: {}", ex.Message);
-            Version = UnknownVersion;
-        }
+        Version = "1.0 kma (real)";
     }
 
     public void Shutdown()
@@ -773,9 +760,39 @@ public partial class BetaSharp :
 
     #region Tick Logic
 
+    private int _cinemaTimer = 0;
+
     public void RunTick(float partialTicks)
     {
         Profiler.PushGroup("runTick");
+
+        if (Player != null)
+        {
+            _cinemaTimer++;
+            if (_cinemaTimer >= 200)
+            {
+                _cinemaTimer = 0;
+                HUD?.AddChatMessage("absolute cinema");
+            }
+
+            if (ParticleManager != null)
+            {
+                var rng = new Random();
+                for (int i = 0; i < 40; i++)
+                {
+                    double px = Player.x + (rng.NextDouble() - 0.5) * 20.0;
+                    double py = Player.y + (rng.NextDouble() - 0.5) * 20.0;
+                    double pz = Player.z + (rng.NextDouble() - 0.5) * 20.0;
+
+                    float t = Environment.TickCount / 1000.0f + i * 0.1f;
+                    float r = (float)(Math.Sin(t + 0) * 0.5 + 0.5);
+                    float g = (float)(Math.Sin(t + 2.094) * 0.5 + 0.5);
+                    float b = (float)(Math.Sin(t + 4.188) * 0.5 + 0.5);
+
+                    ParticleManager.AddReddust(px, py, pz, r, g, b);
+                }
+            }
+        }
 
         Profiler.Start("statFileWriter.SyncStatsIfReady");
         StatFileWriter.SyncStatsIfReady();
@@ -1722,6 +1739,13 @@ public partial class BetaSharp :
 
     private void LoadScreen()
     {
+        if (Options != null)
+        {
+            Options.MenuMusicOption.Value = true;
+            Options.MusicVolume = 1.0f;
+        }
+        SoundManager?.PlayRandomMusicIfReady(DefaultMusicCategories.Menu);
+
         ScaledResolution var1 = new(Options, DisplayWidth, DisplayHeight);
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
         GLManager.GL.MatrixMode(GLEnum.Projection);
@@ -1731,25 +1755,20 @@ public partial class BetaSharp :
         GLManager.GL.LoadIdentity();
         GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
         GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
-        GLManager.GL.ClearColor(0.0F, 0.0F, 0.0F, 0.0F);
+        GLManager.GL.ClearColor(0.0F, 0.0F, 0.66F, 1.0F);
         Tessellator tessellator = Tessellator.instance;
         GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Enable(GLEnum.Texture2D);
+        GLManager.GL.Disable(GLEnum.Texture2D);
         GLManager.GL.Disable(GLEnum.Fog);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        TextureManager.BindTexture(TextureManager.GetTextureId("/title/mojang.png"));
-        tessellator.startDrawingQuads();
-        tessellator.setColorOpaque_I(0xFFFFFF);
-        tessellator.addVertexWithUV(0.0D, (double)DisplayHeight, 0.0D, 0.0D, 0.0D);
-        tessellator.addVertexWithUV((double)DisplayWidth, (double)DisplayHeight, 0.0D, 0.0D, 0.0D);
-        tessellator.addVertexWithUV((double)DisplayWidth, 0.0D, 0.0D, 0.0D, 0.0D);
-        tessellator.addVertexWithUV(0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
-        tessellator.draw();
-        short var3 = 256;
-        short var4 = 256;
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        tessellator.setColorOpaque_I(0xFFFFFF);
-        DrawTextureRegion((var1.ScaledWidth - var3) / 2, (var1.ScaledHeight - var4) / 2, 0, 0, var3, var4);
+
+        int bsodX = 50;
+        int bsodY = 50;
+        TextRenderer?.DrawStringWithShadow("A fatal exception 0E has occurred at 028:C0011E36 in VXD VMM(01) + 00010E36.", bsodX, bsodY, global::BetaSharp.Client.Guis.Color.White);
+        TextRenderer?.DrawStringWithShadow("The current application will be terminated.", bsodX, bsodY + 16, global::BetaSharp.Client.Guis.Color.White);
+        TextRenderer?.DrawStringWithShadow("* Press any key to terminate the current application.", bsodX, bsodY + 48, global::BetaSharp.Client.Guis.Color.White);
+        TextRenderer?.DrawStringWithShadow("* Press CTRL+ALT+DEL again to restart your computer.", bsodX, bsodY + 64, global::BetaSharp.Client.Guis.Color.White);
+        TextRenderer?.DrawStringWithShadow("Press any key to continue _", bsodX, bsodY + 96, global::BetaSharp.Client.Guis.Color.White);
+
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.Fog);
         GLManager.GL.Enable(GLEnum.AlphaTest);
@@ -1815,7 +1834,8 @@ public partial class BetaSharp :
 
         if (playerName != null && sessionToken != null)
         {
-            game.Session = new Session(playerName, sessionToken);
+            //game.Session = new Session(playerName, sessionToken);
+            game.Session = new("Max_Verstappen", "yoo");
 
             if (sessionToken == "-")
             {

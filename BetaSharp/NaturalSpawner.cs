@@ -58,7 +58,7 @@ internal static class NaturalSpawner
         {
             if (((!creatureKind.Peaceful && spawnHostile) || (creatureKind.Peaceful && spawnPeaceful)) &&
                 world.Entities.CountEntitiesOfType(creatureKind.EntityType) <=
-                creatureKind.MobCap * ChunksForSpawning.Count / 256)
+                (creatureKind.MobCap * 3) * ChunksForSpawning.Count / 256)
             {
                 foreach (var chunk in ChunksForSpawning)
                 {
@@ -74,13 +74,13 @@ internal static class NaturalSpawner
                     int spawnedCount = 0;
                     bool breakToNextChunk = false;
 
-                    for (int i = 0; i < 3 && !breakToNextChunk; ++i)
+                    for (int i = 0; i < 9 && !breakToNextChunk; ++i)
                     {
                         int x = spawnPos.x;
                         int y = spawnPos.y;
                         int z = spawnPos.z;
 
-                        for (int j = 0; j < 4 && !breakToNextChunk; ++j)
+                        for (int j = 0; j < 12 && !breakToNextChunk; ++j)
                         {
                             x += world.Random.NextInt(SpawnCloseness) - world.Random.NextInt(SpawnCloseness);
                             y += world.Random.NextInt(1) - world.Random.NextInt(1);

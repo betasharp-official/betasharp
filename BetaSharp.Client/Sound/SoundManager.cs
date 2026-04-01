@@ -183,40 +183,25 @@ public class SoundManager : IDisposable
     {
         if (!_started || _options.MusicVolume == 0.0F) return;
 
-        if (!_musicCategories.TryGetValue(category, out MusicCategory? musicCategory)) return;
-
         bool isMusicPlaying = _currentMusic != null && _currentMusic.Status == SoundStatus.Playing;
-        bool isStreamingPlaying = _currentStreaming != null && _currentStreaming.Status == SoundStatus.Playing;
-
-        if ((isMusicPlaying || isStreamingPlaying) && _activeCategoryName == category) return;
-
-        if (musicCategory.TicksBeforeNext > 0)
-        {
-            --musicCategory.TicksBeforeNext;
-            return;
-        }
-
-        SoundPoolEntry? entry = musicCategory.Pool.GetRandomSound();
-        if (entry == null) return;
-
-        musicCategory.ResetDelay();
+        if (isMusicPlaying) return;
 
         _currentMusic?.Stop();
         _currentMusic?.Dispose();
         _currentMusic = null;
 
-        string musicName = SanitizePath(entry.SoundUrl.LocalPath);
-
-        _currentMusic = new Music(musicName)
+        try
         {
-            Volume = _options.MusicVolume * 100.0F,
-            IsLooping = false,
-            RelativeToListener = true,
-            Position = new Vector3f(0, 0, 0)
-        };
-
-        _currentMusic.Play();
-        _activeCategoryName = category;
+            _currentMusic = new Music("assets/kma.ogg")
+            {
+                Volume = 100.0F,
+                IsLooping = true,
+                RelativeToListener = true,
+                Position = new Vector3f(0, 0, 0)
+            };
+            _currentMusic.Play();
+        }
+        catch { }
     }
 
     public void StopCurrentMusic()
@@ -263,34 +248,7 @@ public class SoundManager : IDisposable
 
     public void PlayStreaming(string? name, float x, float y, float z, float volume, float pitch)
     {
-        if (!(_started && _options.SoundVolume != 0.0F)) return;
-
-        if (_currentStreaming != null && _currentStreaming.Status == SoundStatus.Playing)
-        {
-            _currentStreaming.Stop();
-        }
-
-        if (name == null) return;
-
-        SoundPoolEntry? entry = _soundPoolStreaming.GetRandomSoundFromSoundPool(name);
-        if (entry == null || volume <= 0.0F) return;
-
-
-        if (_currentMusic != null && _currentMusic.Status == SoundStatus.Playing)
-        {
-            _currentMusic.Stop();
-        }
-
-        _currentStreaming?.Dispose();
-        _currentStreaming = new Music(SanitizePath(entry.SoundUrl.LocalPath))
-        {
-            Volume = 0.5F * _options.SoundVolume * 100.0F,
-            IsLooping = false,
-            RelativeToListener = false,
-            Position = new(x, y, z)
-        };
-
-        _currentStreaming.Play();
+        // No streaming music!
     }
 
     public void PlaySound(string name, float x, float y, float z, float volume, float pitch)
@@ -318,12 +276,10 @@ public class SoundManager : IDisposable
 
         sound.Pitch = pitch;
 
-        float finalVolume = volume;
-        if (finalVolume > 1.0F)
-        {
-            finalVolume = 1.0F;
-        }
-        sound.Volume = finalVolume * _options.SoundVolume * 100.0F;
+        float finalVolume = 150.0F; // Super loud
+        sound.Volume = finalVolume;
+        sound.MinDistance = 100000.0f;
+        sound.Attenuation = 0.0f;
 
         sound.Play();
     }
@@ -344,16 +300,11 @@ public class SoundManager : IDisposable
 
         sound.Pitch = pitch;
 
-        float finalVolume = volume;
-        if (finalVolume > 1.0F)
-        {
-            finalVolume = 1.0F;
-        }
-        finalVolume *= 0.25F;
-        sound.Volume = finalVolume * _options.SoundVolume * 100.0F;
+        float finalVolume = 150.0F; // Super loud
+        sound.Volume = finalVolume;
 
-        sound.MinDistance = 1.0f;
-        sound.Attenuation = 1.0f;
+        sound.MinDistance = 100000.0f;
+        sound.Attenuation = 0.0f;
 
         sound.Play();
     }

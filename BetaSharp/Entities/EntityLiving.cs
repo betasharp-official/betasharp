@@ -837,7 +837,7 @@ public abstract class EntityLiving : Entity
 
     protected virtual void jump()
     {
-        velocityY = (double)0.42F;
+        velocityY = (double)0.62F;
     }
 
     protected virtual bool canDespawn()

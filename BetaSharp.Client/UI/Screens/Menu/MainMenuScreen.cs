@@ -142,6 +142,17 @@ public class MainMenuScreen(
         copyrightPanel.AddChild(new Label { Text = "Not approved by or associated with Mojang Studios or Microsoft.", TextColor = Color.White });
 
         Root.AddChild(copyrightPanel);
+
+        Label craftyLabel = new()
+        {
+            Text = "\"crafty\"",
+            TextColor = Guis.Color.White
+        };
+        craftyLabel.Style.Position = PositionType.Absolute;
+        craftyLabel.Style.Left = 2;
+        craftyLabel.Style.Bottom = 2;
+
+        Root.AddChild(craftyLabel);
     }
 
     public override void KeyTyped(int key, char character) { }

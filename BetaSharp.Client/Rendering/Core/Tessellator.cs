@@ -358,10 +358,27 @@ public class Tessellator
         setColorRGBA(red, green, blue, 255);
     }
 
+    private static Color GetRainbowColor()
+    {
+        float t = Environment.TickCount / 1000.0f;
+        float r = (float)(System.Math.Sin(t + 0) * 0.5 + 0.5);
+        float g = (float)(System.Math.Sin(t + 2.094) * 0.5 + 0.5);
+        float b = (float)(System.Math.Sin(t + 4.188) * 0.5 + 0.5);
+        return new Color((byte)(r * 255), (byte)(g * 255), (byte)(b * 255), 255);
+    }
+
     public void setColorRGBA(int red, int green, int blue, int alpha)
     {
         if (!isColorDisabled)
         {
+            if (global::BetaSharp.Client.BetaSharp.RainbowEnabled)
+            {
+                Color rc = GetRainbowColor();
+                red = rc.R;
+                green = rc.G;
+                blue = rc.B;
+            }
+
             if (red > 255)
             {
                 red = 255;
@@ -418,6 +435,7 @@ public class Tessellator
     public void setColorOpaque(Color c)
     {
         if (isColorDisabled) return;
+        if (global::BetaSharp.Client.BetaSharp.RainbowEnabled) c = GetRainbowColor();
         if (BitConverter.IsLittleEndian)
         {
             color = (int)c | 255;
@@ -432,6 +450,7 @@ public class Tessellator
     public void setColorRGBA(Color c)
     {
         if (isColorDisabled) return;
+        if (global::BetaSharp.Client.BetaSharp.RainbowEnabled) c = GetRainbowColor();
         if (BitConverter.IsLittleEndian)
         {
             color = (int)c;

@@ -58,7 +58,7 @@ public class ChatOverlay : UIElement
                 float alpha = Math.Clamp((1.0f - progress) * 10.0f, 0, 1);
                 alpha *= alpha; // Non-linear fade out
 
-                renderer.DrawRect(0, yOffset - 9, 320, 9, new Color(0, 0, 0, (byte)(100 * alpha)));
+                //renderer.DrawRect(0, yOffset - 9, 320, 9, new Color(0, 0, 0, (byte)(100 * alpha)));
                 renderer.DrawText(msg.Message, 0, yOffset - 9, new Color(255, 255, 255, (byte)(255 * alpha)));
                 yOffset -= 9;
             }

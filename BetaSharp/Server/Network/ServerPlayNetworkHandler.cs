@@ -164,15 +164,15 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 double var13 = packet.eyeHeight - packet.y;
                 if (!player.isSleeping() && (var13 > 1.65 || var13 < 0.1))
                 {
-                    disconnect("Illegal stance");
+                    //disconnect("Illegal stance");
                     _logger.LogWarning($"{player.name} had an illegal stance: {var13}");
-                    return;
+                    //return;
                 }
 
                 if (Math.Abs(packet.x) > 3.2E7 || Math.Abs(packet.z) > 3.2E7)
                 {
-                    disconnect("Illegal position");
-                    return;
+                    //disconnect("Illegal position");
+                    //return;
                 }
             }
 
@@ -197,8 +197,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             if (var19 > 100.0)
             {
                 _logger.LogWarning($"{player.name} moved too quickly!");
-                disconnect("You moved too quickly :( (Hacking?)");
-                return;
+                //disconnect("You moved too quickly :( (Hacking?)");
+                //return;
             }
 
             float var21 = (1 / 16f);
@@ -226,8 +226,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             bool var24 = sWorld.Entities.GetEntityCollisionsScratch(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
             if (var22 && (var23 || !var24) && !player.isSleeping())
             {
-                teleport(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
-                return;
+                //teleport(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
+                //return;
             }
 
             Box var25 = player.boundingBox.Expand(var21, var21, var21).Stretch(0.0, -0.55, 0.0);
@@ -241,8 +241,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 if (floatingTime > 80)
                 {
                     _logger.LogWarning($"{player.name} was kicked for floating too long!");
-                    disconnect("Flying is not enabled on this server");
-                    return;
+                    //disconnect("Flying is not enabled on this server");
+                    //return;
                 }
             }
 

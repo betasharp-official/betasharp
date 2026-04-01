@@ -511,17 +511,18 @@ public abstract class Entity
             fall(y, onGround);
             if (var11 != x)
             {
-                velocityX = 0.0D;
+                velocityX = -velocityX * 1.2D;
             }
 
             if (var13 != y)
             {
-                velocityY = 0.0D;
+                if (isSneaking()) velocityY = -velocityY * 1.2D;
+                else velocityY = 0.0D;
             }
 
             if (var15 != z)
             {
-                velocityZ = 0.0D;
+                velocityZ = -velocityZ * 1.2D;
             }
 
             var37 = this.x - var7;

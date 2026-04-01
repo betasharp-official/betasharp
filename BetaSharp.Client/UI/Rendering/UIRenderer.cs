@@ -32,7 +32,12 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.DepthTest);
         GLManager.GL.Disable(GLEnum.CullFace);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        if (global::BetaSharp.Client.BetaSharp.RainbowEnabled) {
+            Color rc = GetRainbowColor();
+            GLManager.GL.Color4(rc.R / 255.0f, rc.G / 255.0f, rc.B / 255.0f, 1.0F);
+        } else {
+            GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        }
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
         GLManager.GL.PushMatrix();
@@ -45,17 +50,33 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
     public void End()
     {
         GLManager.GL.PopMatrix();
-        GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+        if (global::BetaSharp.Client.BetaSharp.RainbowEnabled) {
+            Color rc = GetRainbowColor();
+            GLManager.GL.Color4(rc.R / 255.0f, rc.G / 255.0f, rc.B / 255.0f, 1.0f);
+        } else {
+            GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+        }
     }
 
+    private static Color GetRainbowColor() { float t = Environment.TickCount / 1000.0f; float r = (float)(Math.Sin(t + 0) * 0.5 + 0.5); float g = (float)(Math.Sin(t + 2.094) * 0.5 + 0.5); float b = (float)(Math.Sin(t + 4.188) * 0.5 + 0.5); return new Color((byte)(r * 255), (byte)(g * 255), (byte)(b * 255), 255); }
     public void PushColor(Color color)
     {
-        GLManager.GL.Color4(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, color.A / 255.0f);
+        if (global::BetaSharp.Client.BetaSharp.RainbowEnabled) {
+            Color rc = GetRainbowColor();
+            GLManager.GL.Color4(rc.R / 255.0f, rc.G / 255.0f, rc.B / 255.0f, color.A / 255.0f);
+        } else {
+            GLManager.GL.Color4(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, color.A / 255.0f);
+        }
     }
 
     public void PopColor()
     {
-        GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+        if (global::BetaSharp.Client.BetaSharp.RainbowEnabled) {
+            Color rc = GetRainbowColor();
+            GLManager.GL.Color4(rc.R / 255.0f, rc.G / 255.0f, rc.B / 255.0f, 1.0f);
+        } else {
+            GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+        }
     }
 
     public void SetDepthMask(bool flag) => GLManager.GL.DepthMask(flag);
@@ -386,7 +407,8 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
 
         tess.startDrawingQuads();
-        tess.setColorRGBA(color);
+        if (global::BetaSharp.Client.BetaSharp.RainbowEnabled) tess.setColorRGBA(GetRainbowColor());
+        else tess.setColorRGBA(color);
         tess.addVertex(x1, y2, 0.0D);
         tess.addVertex(x2, y2, 0.0D);
         tess.addVertex(x2, y1, 0.0D);

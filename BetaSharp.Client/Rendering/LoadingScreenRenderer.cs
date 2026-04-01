@@ -90,17 +90,15 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
 
         Tessellator tessellator = Tessellator.instance;
-        TextureHandle backgroundHandle = game.TextureManager.GetTextureId("/gui/background.png");
-        game.TextureManager.BindTexture(backgroundHandle);
-
-        float textureScale = 32.0f;
+        GLManager.GL.Disable(GLEnum.Texture2D);
         tessellator.startDrawingQuads();
-        tessellator.setColorOpaque_I(0x404040);
-        tessellator.addVertexWithUV(0.0, height, 0.0, 0.0, height / textureScale);
-        tessellator.addVertexWithUV(width, height, 0.0, width / textureScale, height / textureScale);
-        tessellator.addVertexWithUV(width, 0.0, 0.0, width / textureScale, 0.0);
-        tessellator.addVertexWithUV(0.0, 0.0, 0.0, 0.0, 0.0);
+        tessellator.setColorOpaque_I(0x0000AA);
+        tessellator.addVertex(0.0, height, 0.0);
+        tessellator.addVertex(width, height, 0.0);
+        tessellator.addVertex(width, 0.0, 0.0);
+        tessellator.addVertex(0.0, 0.0, 0.0);
         tessellator.draw();
+        GLManager.GL.Enable(GLEnum.Texture2D);
 
         if (progress >= 0)
         {
@@ -126,13 +124,16 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
             GLManager.GL.Enable(GLEnum.Texture2D);
         }
 
-        int titleX = (width - game.TextRenderer.GetStringWidth(_titleText)) / 2;
-        int titleY = height / 2 - 4 - 16;
-        game.TextRenderer.DrawStringWithShadow(_titleText, titleX, titleY, Color.White);
+        int bsodX = 50;
+        int bsodY = 50;
+        game.TextRenderer.DrawStringWithShadow("A fatal exception 0E has occurred at 028:C0011E36 in VXD VMM(01) + 00010E36.", bsodX, bsodY, Color.White);
+        game.TextRenderer.DrawStringWithShadow("The current application will be terminated.", bsodX, bsodY + 16, Color.White);
+        game.TextRenderer.DrawStringWithShadow("* Press any key to terminate the current application.", bsodX, bsodY + 48, Color.White);
+        game.TextRenderer.DrawStringWithShadow("* Press CTRL+ALT+DEL again to restart your computer.", bsodX, bsodY + 64, Color.White);
+        game.TextRenderer.DrawStringWithShadow("Press any key to continue _", bsodX, bsodY + 96, Color.White);
 
-        int stageX = (width - game.TextRenderer.GetStringWidth(_currentStage)) / 2;
-        int stageY = height / 2 - 4 + 8;
-        game.TextRenderer.DrawStringWithShadow(_currentStage, stageX, stageY, Color.White);
+        game.TextRenderer.DrawStringWithShadow("Background Task: " + _titleText, bsodX, height - 70, Color.White);
+        game.TextRenderer.DrawStringWithShadow("Current Stage: " + _currentStage, bsodX, height - 50, Color.White);
 
         Display.update();
         Thread.Yield();
