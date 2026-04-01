@@ -163,7 +163,20 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public void PlayerTick(bool shouldSendChunkUpdates)
     {
         GenericTick();
+        PlayerTickPostGeneric(shouldSendChunkUpdates);
+    }
 
+    public void IdleTick()
+    {
+        base.baseTick();
+        AfterLivingTickCosmetics();
+        PickupAndInventorySubtick();
+        CollideWithPickupEntities();
+        PlayerTickPostGeneric(false);
+    }
+
+    private void PlayerTickPostGeneric(bool shouldSendChunkUpdates)
+    {
         for (int slotIndex = 0; slotIndex < inventory.size(); slotIndex++)
         {
             ItemStack itemStack = inventory.getStack(slotIndex);

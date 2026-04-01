@@ -1,4 +1,5 @@
 using BetaSharp.Client.Input;
+using BetaSharp.Client.UI;
 using Microsoft.Extensions.Logging;
 using Silk.NET.GLFW;
 using File = System.IO.File;
@@ -154,6 +155,9 @@ public class GameOptions
 
     private Dictionary<string, GameOption> _allOptions;
 
+    public event Action ReloadTextures;
+    public event Action ReloadChunks;
+
     public GameOptions(BetaSharp game, string gameDataDir)
     {
         _game = game;
@@ -206,12 +210,12 @@ public class GameOptions
         MusicVolumeOption = new FloatOption("options.music", "music", 1.0F)
         {
             Steps = 100,
-            OnChanged = _ => _game?.sndManager.OnSoundOptionsChanged()
+            OnChanged = _ => _game?.SoundManager.OnSoundOptionsChanged()
         };
         SoundVolumeOption = new FloatOption("options.sound", "sound", 1.0F)
         {
             Steps = 100,
-            OnChanged = _ => _game?.sndManager.OnSoundOptionsChanged()
+            OnChanged = _ => _game?.SoundManager.OnSoundOptionsChanged()
         };
         MouseSensitivityOption = new FloatOption("options.sensitivity", "mouseSensitivity", 0.5F)
         {
@@ -233,9 +237,9 @@ public class GameOptions
         ControllerTypeOption = new CycleOption("Controller Type", "controllerType", _ctlTypeLabels, 1)
         {
             Formatter = (v, _) => _ctlTypeLabels[v],
-            OnChanged = v => Guis.ControlTooltip.ControllerType = ControllerType.ControllerTypes[v]
+            OnChanged = v => ControlTooltip.ControllerType = ControllerType.ControllerTypes[v]
         };
-        Guis.ControlTooltip.ControllerType = ControllerType.ControllerTypes[ControllerTypeOption.Value];
+        ControlTooltip.ControllerType = ControllerType.ControllerTypes[ControllerTypeOption.Value];
 
         FramerateLimitOption = new FloatOption("options.framerateLimit", "fpsLimit", 0.42857143f)
         {
@@ -272,8 +276,7 @@ public class GameOptions
         {
             OnChanged = _ =>
             {
-                if (BetaSharp.Instance?.textureManager != null)
-                    BetaSharp.Instance.textureManager.Reload();
+                ReloadTextures();
             }
         };
         DebugModeOption = new BoolOption("Debug Mode", "debugMode")
@@ -293,7 +296,7 @@ public class GameOptions
         AlternateBlocksOption = new BoolOption("Alternate Blocks", "alternateBlocks", true)
         {
             LabelOverride = "Alternate Blocks",
-            OnChanged = _ => BetaSharp.Instance?.terrainRenderer?.chunkRenderer?.MarkAllVisibleChunksDirty()
+            OnChanged = _ => ReloadChunks.Invoke()
         };
         MenuMusicOption = new BoolOption("Menu Music", "menuMusic", true);
 
@@ -304,9 +307,9 @@ public class GameOptions
             Formatter = (v, t) => $"{4 + (int)(v * 28.0f)} Chunks",
             OnChanged = _ =>
             {
-                if (_game?.internalServer != null)
+                if (_game?.InternalServer != null)
                 {
-                    _game.internalServer.SetViewDistance(renderDistance);
+                    _game.InternalServer.SetViewDistance(renderDistance);
                 }
             }
         };
@@ -317,14 +320,13 @@ public class GameOptions
             Formatter = (v, t) => v == 0 ? t.TranslateKey("options.off") : AnisoLabels[v],
             OnChanged = v =>
             {
-                int anisoValue = v == 0 ? 0 : (int)System.Math.Pow(2, v);
+                int anisoValue = v == 0 ? 0 : (int)Math.Pow(2, v);
                 if (anisoValue > MaxAnisotropy)
                 {
                     AnisotropicOption.Value = 0;
                 }
 
-                if (BetaSharp.Instance?.textureManager != null)
-                    BetaSharp.Instance.textureManager.Reload();
+                ReloadTextures();
             }
         };
         MsaaOption = new CycleOption("MSAA", "msaaLevel", MSAALabels)
@@ -512,6 +514,6 @@ public class GameOptions
 
     public void OnSoundOptionsChanged()
     {
-        _game?.sndManager.OnSoundOptionsChanged();
+        _game?.SoundManager.OnSoundOptionsChanged();
     }
 }

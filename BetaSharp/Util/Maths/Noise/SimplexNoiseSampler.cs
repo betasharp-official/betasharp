@@ -2,12 +2,13 @@ namespace BetaSharp.Util.Maths.Noise;
 
 internal class SimplexNoiseSampler
 {
-    private static readonly int[][] grads = [[1, 1, 0], [-1, 1, 0], [1, -1, 0], [-1, -1, 0], [1, 0, 1], [-1, 0, 1], [1, 0, -1], [-1, 0, -1], [0, 1, 1], [0, -1, 1], [0, 1, -1], [0, -1, -1]];
-    private int[] _permutations;
-    private double _xCoord;
-    private double _yCoord;
+    private static readonly (int, int)[] s_grads = [(1, 1), (-1, 1), (1, -1), (-1, -1), (1, 0), (-1, 0), (1, 0), (-1, 0), (0, 1), (0, -1), (0, 1), (0, -1)];
     private static readonly double F2 = 0.5D * (Math.Sqrt(3.0D) - 1.0D);
     private static readonly double G2 = (3.0D - Math.Sqrt(3.0D)) / 6.0D;
+
+    private readonly int[] _permutations;
+    private readonly double _xCoord;
+    private readonly double _yCoord;
 
     public SimplexNoiseSampler() : this(new())
     {
@@ -16,15 +17,11 @@ internal class SimplexNoiseSampler
     public SimplexNoiseSampler(JavaRandom rand)
     {
         _permutations = new int[512];
-        Restore(rand);
-    }
-
-    public void Restore(JavaRandom rand)
-    {
         _xCoord = rand.NextDouble() * 256.0D;
         _yCoord = rand.NextDouble() * 256.0D;
-        rand.NextDouble();
+        _ = rand.NextDouble();
 
+        // Fill perm with values from 0 to 255 in random order, duplicating the first 256 values to the end of the array
         for (int i = 0; i < 256; i++)
         {
             _permutations[i] = i;
@@ -36,16 +33,12 @@ internal class SimplexNoiseSampler
             (_permutations[i], _permutations[j]) = (_permutations[j], _permutations[i]);
             _permutations[i + 256] = _permutations[i];
         }
+
     }
 
-    private static int floor(double num)
+    private static double Dot((int x, int y) grad, double dx, double dy)
     {
-        return num > 0.0D ? (int)num : (int)num - 1;
-    }
-
-    private static double dot(int[] gradient, double dx, double dy)
-    {
-        return gradient[0] * dx + gradient[1] * dy;
+        return grad.x * dx + grad.y * dy;
     }
 
     public void sample(double[] buffer, double x, double z, int width, int depth, double xFrequency, double zFrequency, double amplitude)
@@ -60,8 +53,8 @@ internal class SimplexNoiseSampler
             {
                 double z2 = (z + z1) * zFrequency + _yCoord;
                 double s = (x2 + z2) * F2;
-                int i = floor(x2 + s);
-                int j = floor(z2 + s);
+                int i = MathHelper.Floor(x2 + s);
+                int j = MathHelper.Floor(z2 + s);
                 double t = (i + j) * G2;
                 double x3 = i - t;
                 double z3 = j - t;
@@ -98,7 +91,7 @@ internal class SimplexNoiseSampler
                 else
                 {
                     t0 *= t0;
-                    n0 = t0 * t0 * dot(grads[gi0], x4, z4);
+                    n0 = t0 * t0 * Dot(s_grads[gi0], x4, z4);
                 }
 
                 double t1 = 0.5D - x5 * x5 - z5 * z5;
@@ -110,7 +103,7 @@ internal class SimplexNoiseSampler
                 else
                 {
                     t1 *= t1;
-                    n1 = t1 * t1 * dot(grads[gi1], x5, z5);
+                    n1 = t1 * t1 * Dot(s_grads[gi1], x5, z5);
                 }
 
                 double t2 = 0.5D - x6 * x6 - z6 * z6;
@@ -122,7 +115,7 @@ internal class SimplexNoiseSampler
                 else
                 {
                     t2 *= t2;
-                    n2 = t2 * t2 * dot(grads[gi2], x6, z6);
+                    n2 = t2 * t2 * Dot(s_grads[gi2], x6, z6);
                 }
 
                 buffer[counter++] += 70.0D * (n0 + n1 + n2) * amplitude;

@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using BetaSharp.Util.Maths;
 using BetaSharp.Util.Maths.Noise;
 using BetaSharp.Worlds.Core.Systems;
@@ -8,7 +7,6 @@ namespace BetaSharp.Worlds.Biomes.Source;
 
 public class BiomeSource
 {
-    public static readonly ConcurrentBag<BiomeSource> Pool = [];
     private readonly OctaveSimplexNoiseSampler _temperatureSampler;
     private readonly OctaveSimplexNoiseSampler _downfallSampler;
     private readonly OctaveSimplexNoiseSampler _weirdnessSampler;
@@ -28,11 +26,11 @@ public class BiomeSource
         _weirdnessSampler = new OctaveSimplexNoiseSampler(new JavaRandom(world.Seed * 543321L), 2);
     }
 
-    public void Restore(IWorldContext world)
+    public BiomeSource(BiomeSource other)
     {
-        _temperatureSampler.Restore(new JavaRandom(world.Seed * 9871L));
-        _downfallSampler.Restore(new JavaRandom(world.Seed * 39811L));
-        _weirdnessSampler.Restore(new JavaRandom(world.Seed * 543321L));
+        _temperatureSampler = other._temperatureSampler;
+        _downfallSampler = other._downfallSampler;
+        _weirdnessSampler = other._weirdnessSampler;
     }
 
     public virtual Biome GetBiome(ChunkPos chunkPos)
@@ -148,5 +146,10 @@ public class BiomeSource
         }
 
         return biomes;
+    }
+
+    public virtual BiomeSource Clone()
+    {
+        return new(this);
     }
 }

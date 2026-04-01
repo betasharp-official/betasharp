@@ -124,7 +124,7 @@ public class ItemRenderer : EntityRenderer
                     GLManager.GL.Translate(var24, var25, var26);
                 }
 
-                GLManager.GL.Rotate(180.0F - Dispatcher.playerViewY, 0.0F, 1.0F, 0.0F);
+                GLManager.GL.Rotate(180.0F - Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
                 var15.startDrawingQuads();
                 var15.setNormal(0.0F, 1.0F, 0.0F);
                 var15.addVertexWithUV((double)(0.0F - var21), (double)(0.0F - var22), 0.0D, (double)var16, (double)var19);
@@ -189,10 +189,7 @@ public class ItemRenderer : EntityRenderer
             }
 
             renderTexturedQuad(var6, var7, var5 % 16 * 16, var5 / 16 * 16, 16, 16);
-            GLManager.GL.Enable(GLEnum.Lighting);
         }
- 
-        GLManager.GL.Enable(GLEnum.CullFace);
     }
 
     public void renderItemIntoGUI(TextRenderer var1, TextureManager var2, ItemStack var3, int var4, int var5)
@@ -213,8 +210,6 @@ public class ItemRenderer : EntityRenderer
                 GLManager.GL.Disable(GLEnum.Lighting);
                 GLManager.GL.Disable(GLEnum.DepthTest);
                 var1.DrawStringWithShadow(var6, var4 + 19 - 2 - var1.GetStringWidth(var6), var5 + 6 + 3, Color.White);
-                GLManager.GL.Enable(GLEnum.Lighting);
-                GLManager.GL.Enable(GLEnum.DepthTest);
             }
 
             if (var3.isDamaged())
@@ -231,8 +226,6 @@ public class ItemRenderer : EntityRenderer
                 renderQuad(var8, var4 + 2, var5 + 13, 12, 1, var10);
                 renderQuad(var8, var4 + 2, var5 + 13, var11, 1, var9);
                 GLManager.GL.Enable(GLEnum.Texture2D);
-                GLManager.GL.Enable(GLEnum.Lighting);
-                GLManager.GL.Enable(GLEnum.DepthTest);
                 GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             }
 
@@ -264,7 +257,7 @@ public class ItemRenderer : EntityRenderer
         var10.draw();
     }
 
-    public override void render(Entity target, double x, double y, double z, float yaw, float tickDelta)
+    public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
         doRenderItem((EntityItem)target, x, y, z, yaw, tickDelta);
     }

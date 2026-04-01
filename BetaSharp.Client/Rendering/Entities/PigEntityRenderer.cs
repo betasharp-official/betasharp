@@ -17,7 +17,7 @@ public class PigEntityRenderer : LivingEntityRenderer
         return var2 == 0 && var1.Saddled.Value;
     }
 
-    protected override bool shouldRenderPass(EntityLiving var1, int var2, float var3)
+    protected override bool ShouldRenderPass(EntityLiving var1, int var2, float var3)
     {
         return renderSaddledPig((EntityPig)var1, var2, var3);
     }

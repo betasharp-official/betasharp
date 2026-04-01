@@ -1,18 +1,22 @@
-using BetaSharp.Client.Guis;
+using System.Net.Sockets;
 using BetaSharp.Client.Network;
+using BetaSharp.Client.UI.Screens.Menu.Net;
 using BetaSharp.Network.Packets;
 using Microsoft.Extensions.Logging;
-using System.Net.Sockets;
 
 namespace BetaSharp.Client.Threading;
 
-public class ThreadConnectToServer(GuiConnecting connectingGui, BetaSharp game, string hostName, int port)
+public class ThreadConnectToServer(
+    ConnectingScreen connectingScreen,
+    ClientNetworkContext context,
+    string hostName,
+    int port)
 {
     private readonly ILogger<ThreadConnectToServer> _logger = Log.Instance.For<ThreadConnectToServer>();
 
     public void Start()
     {
-        Thread thread = new Thread(Run)
+        Thread thread = new(Run)
         {
             IsBackground = true,
             Name = $"Server Connector ({hostName}:{port})"
@@ -24,44 +28,42 @@ public class ThreadConnectToServer(GuiConnecting connectingGui, BetaSharp game, 
     {
         try
         {
-            GuiConnecting.setNetClientHandler(connectingGui, new ClientNetworkHandler(game, hostName, port));
+            connectingScreen.ClientHandler = new ClientNetworkHandler(context, hostName, port);
 
-            if (GuiConnecting.isCancelled(connectingGui))
+            if (connectingScreen.IsCancelled)
             {
                 return;
             }
 
-            GuiConnecting.getNetClientHandler(connectingGui).addToSendQueue(new HandshakePacket(game.session.username));
+            connectingScreen.ClientHandler.AddToSendQueue(new HandshakePacket(context.Session.username));
         }
         catch (SocketException ex) when (ex.SocketErrorCode == SocketError.HostNotFound)
         {
-        
-            if (GuiConnecting.isCancelled(connectingGui))
+            if (connectingScreen.IsCancelled)
             {
                 return;
             }
 
-            game.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", "Unknown host \'" + hostName + "\'"));
+            context.Navigator.Navigate(context.Factory.CreateFailedScreen("connect.failed", "disconnect.genericReason", [$"Unknown host '{hostName}'"]));
         }
         catch (SocketException ex)
         {
-        
-            if (GuiConnecting.isCancelled(connectingGui))
+            if (connectingScreen.IsCancelled)
             {
                 return;
             }
-        
-            game.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", ex.Message));
+
+            context.Navigator.Navigate(context.Factory.CreateFailedScreen("connect.failed", "disconnect.genericReason", [ex.Message]));
         }
         catch (Exception e)
         {
-            if (GuiConnecting.isCancelled(connectingGui))
+            if (connectingScreen.IsCancelled)
             {
                 return;
             }
 
             _logger.LogError(e, e.Message);
-            game.displayGuiScreen(new GuiConnectFailed("connect.failed", "disconnect.genericReason", e.ToString()));
+            context.Navigator.Navigate(context.Factory.CreateFailedScreen("connect.failed", "disconnect.genericReason", [e.ToString()]));
         }
     }
 }

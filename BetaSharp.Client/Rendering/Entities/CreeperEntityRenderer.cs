@@ -105,7 +105,7 @@ public class CreeperEntityRenderer : LivingEntityRenderer
         return false;
     }
 
-    protected override void preRenderCallback(EntityLiving ent, float partialTick)
+    protected override void PreRenderCallback(EntityLiving ent, float partialTick)
     {
         UpdateCreeperScale((EntityCreeper)ent, partialTick);
     }
@@ -115,7 +115,7 @@ public class CreeperEntityRenderer : LivingEntityRenderer
         return UpdateCreeperColorMultiplier((EntityCreeper)ent, var2, partialTick);
     }
 
-    protected override bool shouldRenderPass(EntityLiving ent, int var2, float var3)
+    protected override bool ShouldRenderPass(EntityLiving ent, int var2, float var3)
     {
         return func_27006_a((EntityCreeper)ent, var2, var3);
     }

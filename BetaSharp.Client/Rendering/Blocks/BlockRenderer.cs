@@ -29,13 +29,11 @@ public class BlockRenderer
     private static readonly PistonExtensionRenderer s_pistonExt = new();
 
 
-    public static bool RenderBlockByRenderType(IBlockReader world, ILightProvider lighting, Block block, BlockPos pos, Tessellator tess, int overrideTexture = -1, bool renderAllFaces = false)
+    public static bool RenderBlockByRenderType(IBlockReader world, ILightProvider lighting, Block block, BlockPos pos, Tessellator tess, int overrideTexture = -1, bool renderAllFaces = false, bool doVariance = false)
     {
         BlockRendererType type = block.GetRenderType();
 
         block.UpdateBoundingBox(world, pos.x, pos.y, pos.z);
-
-        bool doVariance = BetaSharp.Instance?.options?.AlternateBlocksEnabled == true;
 
         TextureVariance topRule = doVariance ? block.TopVariance : TextureVariance.None;
         TextureVariance botRule = doVariance ? block.BottomVariance : TextureVariance.None;
@@ -185,7 +183,7 @@ public class BlockRenderer
                 1.0F);
             GLManager.GL.Translate(-0.5F, -0.5F, -0.5F);
             var itemWorld = new ItemRenderBlockAccess(block.Id, metadata, brightness);
-            BlockPos itemPos = new BlockPos(0, 0, 0);
+            BlockPos itemPos = new(0, 0, 0);
             tess.startDrawingQuads();
             tess.setNormal(0.0F, 1.0F, 0.0F);
             RenderBlockByRenderType(itemWorld, itemWorld, block, itemPos, tess, uiCtx.OverrideTexture, true);

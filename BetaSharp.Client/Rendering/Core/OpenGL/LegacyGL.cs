@@ -403,6 +403,11 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL.Viewport(x, y, width, height);
     }
 
+    public void Scissor(int x, int y, uint width, uint height)
+    {
+        SilkGL.Scissor(x, y, width, height);
+    }
+
     public uint GenFramebuffer() => SilkGL.GenFramebuffer();
     public void BindFramebuffer(FramebufferTarget target, uint framebuffer) => SilkGL.BindFramebuffer(target, framebuffer);
     public void FramebufferTexture2D(FramebufferTarget target, FramebufferAttachment attachment, TextureTarget textarget, uint texture, int level) => SilkGL.FramebufferTexture2D(target, attachment, textarget, texture, level);

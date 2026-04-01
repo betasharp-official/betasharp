@@ -38,7 +38,7 @@ internal struct Quad
         _vertexPositions = reversed;
     }
 
-    public void draw(Tessellator tessellator, float scale)
+    public readonly void draw(Tessellator tessellator, float scale)
     {
         Vector3D<double> edge1 = _vertexPositions[1].vector3D - _vertexPositions[0].vector3D;
         Vector3D<double> edge2 = _vertexPositions[1].vector3D - _vertexPositions[2].vector3D;

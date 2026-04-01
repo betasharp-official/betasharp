@@ -1,65 +1,64 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Entities.FX;
+using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Blocks;
-using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Client.Rendering.Blocks.Entities;
 using BetaSharp.Client.Rendering.Chunks;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.OpenGL;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
-using BetaSharp.Client.Options;
+using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Profiling;
+using BetaSharp.Util;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
-using Silk.NET.Maths;
-using BetaSharp.Util;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Worlds.Core;
+using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering;
 
 public class WorldRenderer : IWorldEventListener
 {
-    private World world;
-    private readonly TextureManager renderEngine;
+    public int CountEntitiesTotal { get; private set; }
+    public int CountEntitiesRendered { get; private set; }
+    public int CountEntitiesHidden { get; private set; }
+    public ChunkRenderer ChunkRenderer { get; private set; }
+    public float DamagePartialTime { get; set; }
+
+    private World _world;
+    private readonly TextureManager _textureManager;
     private readonly BetaSharp _game;
-    private BlockRenderer globalRenderBlocks;
-    private int cloudOffsetX;
-    private readonly int starGLCallList;
-    private readonly int glSkyList;
-    private readonly int glSkyList2;
-    private int glCloudsList = -1;
-    private int renderDistance = -1;
-    private int renderEntitiesStartupCounter = 2;
-    public int countEntitiesTotal;
-    public int countEntitiesRendered;
-    public int countEntitiesHidden;
-    public ChunkRenderer chunkRenderer;
-    public float damagePartialTime;
+    private int _cloudOffsetX;
+    private readonly int _starGLCallList;
+    private readonly int _glSkyList;
+    private readonly int _glSkyList2;
+    private int _glCloudsList = -1;
+    private int _renderDistance = -1;
+    private int _renderEntitiesStartupCounter = 2;
 
     public WorldRenderer(BetaSharp gameInstance, TextureManager textureManager)
     {
         _game = gameInstance;
-        renderEngine = textureManager;
-        byte var3 = 64;
+        _textureManager = textureManager;
 
-        starGLCallList = GLAllocation.generateDisplayLists(3);
+        _starGLCallList = GLAllocation.generateDisplayLists(3);
         GLManager.GL.PushMatrix();
-        GLManager.GL.NewList((uint)starGLCallList, GLEnum.Compile);
-        renderStars();
+        GLManager.GL.NewList((uint)_starGLCallList, GLEnum.Compile);
+        RenderStars();
         GLManager.GL.EndList();
         GLManager.GL.PopMatrix();
         Tessellator var4 = Tessellator.instance;
-        glSkyList = starGLCallList + 1;
-        GLManager.GL.NewList((uint)glSkyList, GLEnum.Compile);
+        _glSkyList = _starGLCallList + 1;
+        GLManager.GL.NewList((uint)_glSkyList, GLEnum.Compile);
         byte var6 = 64;
         int var7 = 256 / var6 + 2;
         float var5 = 16.0F;
 
-        chunkRenderer = new(gameInstance.world);
+        ChunkRenderer = new(gameInstance.World, () => _game.Options.AlternateBlocksEnabled);
 
         int var8;
         int var9;
@@ -77,8 +76,8 @@ public class WorldRenderer : IWorldEventListener
         }
 
         GLManager.GL.EndList();
-        glSkyList2 = starGLCallList + 2;
-        GLManager.GL.NewList((uint)glSkyList2, GLEnum.Compile);
+        _glSkyList2 = _starGLCallList + 2;
+        GLManager.GL.NewList((uint)_glSkyList2, GLEnum.Compile);
         var5 = -16.0F;
         var4.startDrawingQuads();
 
@@ -95,13 +94,13 @@ public class WorldRenderer : IWorldEventListener
 
         var4.draw();
         GLManager.GL.EndList();
-        buildCloudDisplayLists();
+        BuildCloudDisplayLists();
     }
 
-    private void renderStars()
+    private static void RenderStars()
     {
         Random random = new(10842);
-        var tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.instance;
         tessellator.startDrawingQuads();
 
         for (int var3 = 0; var3 < 1500; ++var3)
@@ -149,22 +148,21 @@ public class WorldRenderer : IWorldEventListener
         tessellator.draw();
     }
 
-    public void changeWorld(World world)
+    public void ChangeWorld(World world)
     {
-        this.world?.EventListeners.Remove(this);
+        _world?.EventListeners.Remove(this);
 
-        EntityRenderDispatcher.instance.SetWorld(world);
-        this.world = world;
-        globalRenderBlocks = new BlockRenderer();
+        EntityRenderDispatcher.Instance.World = world;
+        _world = world;
         if (world != null)
         {
             world.EventListeners.Add(this);
-            loadRenderers();
+            LoadRenderers();
         }
 
     }
 
-    public void tick(Entity view, float var3)
+    public void Tick(Entity view, float var3)
     {
         if (view == null)
         {
@@ -174,53 +172,53 @@ public class WorldRenderer : IWorldEventListener
         double var33 = view.lastTickX + (view.x - view.lastTickX) * var3;
         double var7 = view.lastTickY + (view.y - view.lastTickY) * var3;
         double var9 = view.lastTickZ + (view.z - view.lastTickZ) * var3;
-        chunkRenderer.Tick(new(var33, var7, var9));
+        ChunkRenderer.Tick(new(var33, var7, var9));
     }
 
-    public void loadRenderers()
+    public void LoadRenderers()
     {
         Block.Leaves.SetGraphicsLevel(true);
-        renderDistance = _game.options.renderDistance;
+        _renderDistance = _game.Options.renderDistance;
 
-        chunkRenderer?.Dispose();
-        chunkRenderer = new(world);
+        ChunkRenderer?.Dispose();
+        ChunkRenderer = new(_world, () => _game.Options.AlternateBlocksEnabled);
         ChunkMeshVersion.ClearPool();
 
-        renderEntitiesStartupCounter = 2;
+        _renderEntitiesStartupCounter = 2;
     }
 
-    public void renderEntities(Vec3D var1, Culler culler, float var3)
+    public void RenderEntities(Vec3D var1, ICuller culler, float var3)
     {
-        if (renderEntitiesStartupCounter > 0)
+        if (_renderEntitiesStartupCounter > 0)
         {
-            --renderEntitiesStartupCounter;
+            --_renderEntitiesStartupCounter;
         }
         else
         {
-            BlockEntityRenderer.Instance.CacheActiveRenderInfo(world, renderEngine, _game.fontRenderer, _game.camera, var3);
-            EntityRenderDispatcher.instance.cacheActiveRenderInfo(world, renderEngine, _game.fontRenderer, _game.camera, _game.options, var3);
-            countEntitiesTotal = 0;
-            countEntitiesRendered = 0;
-            countEntitiesHidden = 0;
-            EntityLiving var4 = _game.camera;
-            EntityRenderDispatcher.offsetX = var4.lastTickX + (var4.x - var4.lastTickX) * (double)var3;
-            EntityRenderDispatcher.offsetY = var4.lastTickY + (var4.y - var4.lastTickY) * (double)var3;
-            EntityRenderDispatcher.offsetZ = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)var3;
+            BlockEntityRenderer.Instance.CacheActiveRenderInfo(_world, _textureManager, _game.TextRenderer, _game.Camera, var3);
+            EntityRenderDispatcher.Instance.CacheRenderInfo(_world, _textureManager, _game.TextRenderer, _game.Camera, _game.Options, var3);
+            CountEntitiesTotal = 0;
+            CountEntitiesRendered = 0;
+            CountEntitiesHidden = 0;
+            EntityLiving var4 = _game.Camera;
+            EntityRenderDispatcher.OffsetX = var4.lastTickX + (var4.x - var4.lastTickX) * (double)var3;
+            EntityRenderDispatcher.OffsetY = var4.lastTickY + (var4.y - var4.lastTickY) * (double)var3;
+            EntityRenderDispatcher.OffsetZ = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)var3;
             BlockEntityRenderer.StaticPlayerX = var4.lastTickX + (var4.x - var4.lastTickX) * (double)var3;
             BlockEntityRenderer.StaticPlayerY = var4.lastTickY + (var4.y - var4.lastTickY) * (double)var3;
             BlockEntityRenderer.StaticPlayerZ = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)var3;
-            List<Entity> var5 = world.Entities.Entities;
-            countEntitiesTotal = var5.Count;
+            List<Entity> var5 = _world.Entities.Entities;
+            CountEntitiesTotal = var5.Count;
 
             int var6;
             Entity var7;
-            for (var6 = 0; var6 < world.Entities.GlobalEntities.Count; ++var6)
+            for (var6 = 0; var6 < _world.Entities.GlobalEntities.Count; ++var6)
             {
-                var7 = world.Entities.GlobalEntities[var6];
-                ++countEntitiesRendered;
+                var7 = _world.Entities.GlobalEntities[var6];
+                ++CountEntitiesRendered;
                 if (var7.shouldRender(var1))
                 {
-                    EntityRenderDispatcher.instance.renderEntity(var7, var3);
+                    EntityRenderDispatcher.Instance.RenderEntity(var7, var3);
                 }
             }
 
@@ -243,7 +241,7 @@ public class WorldRenderer : IWorldEventListener
                         continue;
                     }
                 }
-                if (var7.shouldRender(var1) && (var7.ignoreFrustumCheck || culler.isBoundingBoxInFrustum(var7.boundingBox)) && (var7 != _game.camera || _game.options.CameraMode != EnumCameraMode.FirstPerson || _game.camera.isSleeping()))
+                if (var7.shouldRender(var1) && (var7.ignoreFrustumCheck || culler.IsBoundingBoxInFrustum(var7.boundingBox)) && (var7 != _game.Camera || _game.Options.CameraMode != EnumCameraMode.FirstPerson || _game.Camera.isSleeping()))
                 {
                     int var8 = MathHelper.Floor(var7.y);
                     if (var8 < 0)
@@ -256,18 +254,18 @@ public class WorldRenderer : IWorldEventListener
                         var8 = 127;
                     }
 
-                    if (world.Reader.IsPosLoaded(MathHelper.Floor(var7.x), var8, MathHelper.Floor(var7.z)))
+                    if (_world.Reader.IsPosLoaded(MathHelper.Floor(var7.x), var8, MathHelper.Floor(var7.z)))
                     {
-                        ++countEntitiesRendered;
-                        EntityRenderDispatcher.instance.renderEntity(var7, var3);
+                        ++CountEntitiesRendered;
+                        EntityRenderDispatcher.Instance.RenderEntity(var7, var3);
                     }
                 }
             }
 
-            for (var6 = 0; var6 < world.Entities.BlockEntities.Count; ++var6)
+            for (var6 = 0; var6 < _world.Entities.BlockEntities.Count; ++var6)
             {
-                BlockEntity entity = world.Entities.BlockEntities[var6];
-                if (!entity.IsRemoved() && culler.isBoundingBoxInFrustum(new Box(entity.X, entity.Y, entity.Z, entity.X + 1, entity.Y + 1, entity.Z + 1)))
+                BlockEntity entity = _world.Entities.BlockEntities[var6];
+                if (!entity.IsRemoved() && culler.IsBoundingBoxInFrustum(new Box(entity.X, entity.Y, entity.Z, entity.X + 1, entity.Y + 1, entity.Z + 1)))
                 {
                     BlockEntityRenderer.Instance.RenderTileEntity(entity, var3);
                 }
@@ -275,16 +273,11 @@ public class WorldRenderer : IWorldEventListener
         }
     }
 
-    public string getDebugInfoEntities()
+    public int SortAndRender(EntityLiving var1, int pass, double var3, ICuller cam)
     {
-        return "Rendered: " + countEntitiesRendered + " out of " + countEntitiesTotal + ". \nHidden: " + countEntitiesHidden + ", Not in view: " + (countEntitiesTotal - countEntitiesHidden - countEntitiesRendered);
-    }
-
-    public int sortAndRender(EntityLiving var1, int pass, double var3, Culler cam)
-    {
-        if (_game.options.renderDistance != renderDistance)
+        if (_game.Options.renderDistance != _renderDistance)
         {
-            loadRenderers();
+            LoadRenderers();
         }
 
         double var33 = var1.lastTickX + (var1.x - var1.lastTickX) * var3;
@@ -297,38 +290,38 @@ public class WorldRenderer : IWorldEventListener
         {
             Camera = cam,
             ViewPos = new Vector3D<double>(var33, var7, var9),
-            RenderDistance = renderDistance,
-            Ticks = world.GetTime(),
+            RenderDistance = _renderDistance,
+            Ticks = _world.GetTime(),
             PartialTicks = (float)var3,
             DeltaTime = _game.Timer.DeltaTime,
-            EnvironmentAnimation = _game.options.EnvironmentAnimation,
-            ChunkFade = _game.options.ChunkFade,
-            RenderOccluded = _game.options.RenderOccluded
+            EnvironmentAnimation = _game.Options.EnvironmentAnimation,
+            ChunkFade = _game.Options.ChunkFade,
+            RenderOccluded = _game.Options.RenderOccluded
         };
 
         if (pass == 0)
         {
-            chunkRenderer.Render(renderParams);
+            ChunkRenderer.Render(renderParams);
         }
         else
         {
-            chunkRenderer.RenderTransparent(renderParams);
+            ChunkRenderer.RenderTransparent(renderParams);
         }
 
         return 0;
     }
 
-    public void updateClouds()
+    public void UpdateClouds()
     {
-        ++cloudOffsetX;
+        ++_cloudOffsetX;
     }
 
-    public void renderSky(float var1)
+    public void RenderSky(float var1)
     {
-        if (!_game.world.Dimension.IsNether)
+        if (!_game.World.Dimension.IsNether)
         {
             GLManager.GL.Disable(GLEnum.Texture2D);
-            Vector3D<double> var2 = world.Environment.GetSkyColor(_game.camera, var1);
+            Vector3D<double> var2 = _world.Environment.GetSkyColor(_game.Camera, var1);
             float var3 = (float)var2.X;
             float var4 = (float)var2.Y;
             float var5 = (float)var2.Z;
@@ -340,13 +333,13 @@ public class WorldRenderer : IWorldEventListener
             GLManager.GL.DepthMask(false);
             GLManager.GL.Enable(GLEnum.Fog);
             GLManager.GL.Color3(var3, var4, var5);
-            GLManager.GL.CallList((uint)glSkyList);
+            GLManager.GL.CallList((uint)_glSkyList);
             GLManager.GL.Disable(GLEnum.Fog);
             GLManager.GL.Disable(GLEnum.AlphaTest);
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
             Lighting.turnOff();
-            float[] var18 = world.Dimension.GetBackgroundColor(world.GetTime(var1), var1);
+            float[] var18 = _world.Dimension.GetBackgroundColor(_world.GetTime(var1), var1);
             float var9;
             float var10;
             float var11;
@@ -357,7 +350,7 @@ public class WorldRenderer : IWorldEventListener
                 GLManager.GL.ShadeModel(GLEnum.Smooth);
                 GLManager.GL.PushMatrix();
                 GLManager.GL.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
-                var8 = world.GetTime(var1);
+                var8 = _world.GetTime(var1);
                 GLManager.GL.Rotate(var8 > 0.5F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
                 var9 = var18[0];
                 var10 = var18[1];
@@ -386,16 +379,16 @@ public class WorldRenderer : IWorldEventListener
             GLManager.GL.Enable(GLEnum.Texture2D);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.One);
             GLManager.GL.PushMatrix();
-            var7 = 1.0F - world.Environment.GetRainGradient(var1);
+            var7 = 1.0F - _world.Environment.GetRainGradient(var1);
             var8 = 0.0F;
             var9 = 0.0F;
             var10 = 0.0F;
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, var7);
             GLManager.GL.Translate(var8, var9, var10);
             GLManager.GL.Rotate(0.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Rotate(world.GetTime(var1) * 360.0F, 1.0F, 0.0F, 0.0F);
+            GLManager.GL.Rotate(_world.GetTime(var1) * 360.0F, 1.0F, 0.0F, 0.0F);
             var11 = 30.0F;
-            renderEngine.BindTexture(renderEngine.GetTextureId("/terrain/sun.png"));
+            _textureManager.BindTexture(_textureManager.GetTextureId("/terrain/sun.png"));
             var17.startDrawingQuads();
             var17.addVertexWithUV((double)-var11, 100.0D, (double)-var11, 0.0D, 0.0D);
             var17.addVertexWithUV((double)var11, 100.0D, (double)-var11, 1.0D, 0.0D);
@@ -403,7 +396,7 @@ public class WorldRenderer : IWorldEventListener
             var17.addVertexWithUV((double)-var11, 100.0D, (double)var11, 0.0D, 1.0D);
             var17.draw();
             var11 = 20.0F;
-            renderEngine.BindTexture(renderEngine.GetTextureId("/terrain/moon.png"));
+            _textureManager.BindTexture(_textureManager.GetTextureId("/terrain/moon.png"));
             var17.startDrawingQuads();
             var17.addVertexWithUV((double)-var11, -100.0D, (double)var11, 1.0D, 1.0D);
             var17.addVertexWithUV((double)var11, -100.0D, (double)var11, 0.0D, 1.0D);
@@ -411,11 +404,11 @@ public class WorldRenderer : IWorldEventListener
             var17.addVertexWithUV((double)-var11, -100.0D, (double)-var11, 1.0D, 0.0D);
             var17.draw();
             GLManager.GL.Disable(GLEnum.Texture2D);
-            var12 = world.CalculateSkyLightIntensity(var1) * var7;
+            var12 = _world.CalculateSkyLightIntensity(var1) * var7;
             if (var12 > 0.0F)
             {
                 GLManager.GL.Color4(var12, var12, var12, var12);
-                GLManager.GL.CallList((uint)starGLCallList);
+                GLManager.GL.CallList((uint)_starGLCallList);
             }
 
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
@@ -423,7 +416,7 @@ public class WorldRenderer : IWorldEventListener
             GLManager.GL.Enable(GLEnum.AlphaTest);
             GLManager.GL.Enable(GLEnum.Fog);
             GLManager.GL.PopMatrix();
-            if (world.Dimension.HasGround)
+            if (_world.Dimension.HasGround)
             {
                 GLManager.GL.Color3(var3 * 0.2F + 0.04F, var4 * 0.2F + 0.04F, var5 * 0.6F + 0.1F);
             }
@@ -433,30 +426,30 @@ public class WorldRenderer : IWorldEventListener
             }
 
             GLManager.GL.Disable(GLEnum.Texture2D);
-            GLManager.GL.CallList((uint)glSkyList2);
+            GLManager.GL.CallList((uint)_glSkyList2);
             GLManager.GL.Enable(GLEnum.Texture2D);
             GLManager.GL.DepthMask(true);
         }
     }
 
-    public void renderClouds(float var1)
+    public void RenderClouds(float var1)
     {
         Profiler.Start("renderClouds");
-        if (!_game.world.Dimension.IsNether)
+        if (!_game.World.Dimension.IsNether)
         {
-            renderCloudsFancy(var1);
+            RenderCloudsFancy(var1);
         }
         Profiler.Stop("renderClouds");
     }
 
-    private void buildCloudDisplayLists()
+    private void BuildCloudDisplayLists()
     {
-        glCloudsList = GLAllocation.generateDisplayLists(4);
+        _glCloudsList = GLAllocation.generateDisplayLists(4);
         Tessellator tessellator = Tessellator.instance;
 
         for (int i = 0; i < 4; ++i)
         {
-            GLManager.GL.NewList((uint)(glCloudsList + i), GLEnum.Compile);
+            GLManager.GL.NewList((uint)(_glCloudsList + i), GLEnum.Compile);
             tessellator.startDrawingQuads();
             float cloudHeight = 4.0F;
             float uvScale = 1.0F / 256.0F;
@@ -549,23 +542,23 @@ public class WorldRenderer : IWorldEventListener
         }
     }
 
-    private void renderCloudsFancy(float var1)
+    private void RenderCloudsFancy(float var1)
     {
         GLManager.GL.Disable(GLEnum.CullFace);
-        float var2 = (float)(_game.camera.lastTickY + (_game.camera.y - _game.camera.lastTickY) * (double)var1);
+        float var2 = (float)(_game.Camera.lastTickY + (_game.Camera.y - _game.Camera.lastTickY) * (double)var1);
         float var4 = 12.0F;
         float var5 = 4.0F;
-        double var6 = (_game.camera.prevX + (_game.camera.x - _game.camera.prevX) * (double)var1 + (double)((cloudOffsetX + var1) * 0.03F)) / (double)var4;
-        double var8 = (_game.camera.prevZ + (_game.camera.z - _game.camera.prevZ) * (double)var1) / (double)var4 + (double)0.33F;
-        float var10 = world.Dimension.CloudHeight - var2 + 0.33F;
+        double var6 = (_game.Camera.prevX + (_game.Camera.x - _game.Camera.prevX) * (double)var1 + (double)((_cloudOffsetX + var1) * 0.03F)) / (double)var4;
+        double var8 = (_game.Camera.prevZ + (_game.Camera.z - _game.Camera.prevZ) * (double)var1) / (double)var4 + (double)0.33F;
+        float var10 = _world.Dimension.CloudHeight - var2 + 0.33F;
         int var11 = MathHelper.Floor(var6 / 2048.0D);
         int var12 = MathHelper.Floor(var8 / 2048.0D);
         var6 -= var11 * 2048;
         var8 -= var12 * 2048;
-        renderEngine.BindTexture(renderEngine.GetTextureId("/environment/clouds.png"));
+        _textureManager.BindTexture(_textureManager.GetTextureId("/environment/clouds.png"));
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-        Vector3D<double> var13 = world.Environment.GetCloudColor(var1);
+        Vector3D<double> var13 = _world.Environment.GetCloudColor(var1);
         float var14 = (float)var13.X;
         float var15 = (float)var13.Y;
         float var16 = (float)var13.Z;
@@ -600,20 +593,20 @@ public class WorldRenderer : IWorldEventListener
             if (var10 > -var5 - 1.0F)
             {
                 GLManager.GL.Color4(var14 * 0.7F, var15 * 0.7F, var16 * 0.7F, 0.8F);
-                GLManager.GL.CallList((uint)(glCloudsList + 0)); // Bottom
+                GLManager.GL.CallList((uint)(_glCloudsList + 0)); // Bottom
             }
 
             if (var10 <= var5 + 1.0F)
             {
                 GLManager.GL.Color4(var14, var15, var16, 0.8F);
-                GLManager.GL.CallList((uint)(glCloudsList + 1)); // Top
+                GLManager.GL.CallList((uint)(_glCloudsList + 1)); // Top
             }
 
             GLManager.GL.Color4(var14 * 0.9F, var15 * 0.9F, var16 * 0.9F, 0.8F);
-            GLManager.GL.CallList((uint)(glCloudsList + 2)); // Side X
+            GLManager.GL.CallList((uint)(_glCloudsList + 2)); // Side X
 
             GLManager.GL.Color4(var14 * 0.8F, var15 * 0.8F, var16 * 0.8F, 0.8F);
-            GLManager.GL.CallList((uint)(glCloudsList + 3)); // Side Z
+            GLManager.GL.CallList((uint)(_glCloudsList + 3)); // Side Z
 
             GLManager.GL.MatrixMode(GLEnum.Texture);
             GLManager.GL.PopMatrix();
@@ -627,9 +620,9 @@ public class WorldRenderer : IWorldEventListener
         GLManager.GL.Enable(GLEnum.CullFace);
     }
 
-    public void drawBlockBreaking(EntityPlayer entityPlayer, HitResult hit, ItemStack itemStack, float tickDelta)
+    public void DrawBlockBreaking(EntityPlayer entityPlayer, HitResult hit, ItemStack itemStack, float tickDelta)
     {
-        if (damagePartialTime <= 0.0F) return;
+        if (DamagePartialTime <= 0.0F) return;
 
         Tessellator tessellator = Tessellator.instance;
 
@@ -642,9 +635,9 @@ public class WorldRenderer : IWorldEventListener
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 0.5F);
         GLManager.GL.PolygonOffset(-3.0F, -50.0F);
 
-        renderEngine.BindTexture(renderEngine.GetTextureId("/terrain.png"));
+        _textureManager.BindTexture(_textureManager.GetTextureId("/terrain.png"));
 
-        int targetBlockId = world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
+        int targetBlockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
         Block targetBlock = targetBlockId > 0 ? Block.Blocks[targetBlockId] : Block.Stone;
 
         double renderX = entityPlayer.lastTickX + (entityPlayer.x - entityPlayer.lastTickX) * (double)tickDelta;
@@ -655,7 +648,7 @@ public class WorldRenderer : IWorldEventListener
         tessellator.setTranslationD(-renderX, -renderY, -renderZ);
         tessellator.disableColor();
 
-        BlockRenderer.RenderBlockByRenderType(world.Reader, world.Lighting, targetBlock, new BlockPos(hit.BlockX, hit.BlockY, hit.BlockZ), tessellator, 240 + (int)(damagePartialTime * 10.0F), true);
+        BlockRenderer.RenderBlockByRenderType(_world.Reader, _world.Lighting, targetBlock, new BlockPos(hit.BlockX, hit.BlockY, hit.BlockZ), tessellator, 240 + (int)(DamagePartialTime * 10.0F), true, _game.Options.AlternateBlocksEnabled);
         tessellator.draw();
 
         tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
@@ -669,7 +662,7 @@ public class WorldRenderer : IWorldEventListener
         GLManager.GL.PopMatrix();
     }
 
-    public void drawSelectionBox(EntityPlayer var1, HitResult var2, int var3, ItemStack var4, float var5)
+    public void DrawSelectionBox(EntityPlayer var1, HitResult var2, int var3, ItemStack var4, float var5)
     {
         if (var3 == 0 && var2.Type == HitResultType.TILE)
         {
@@ -680,14 +673,14 @@ public class WorldRenderer : IWorldEventListener
             GLManager.GL.Disable(GLEnum.Texture2D);
             GLManager.GL.DepthMask(false);
             float var6 = 0.002F;
-            int var7 = world.Reader.GetBlockId(var2.BlockX, var2.BlockY, var2.BlockZ);
+            int var7 = _world.Reader.GetBlockId(var2.BlockX, var2.BlockY, var2.BlockZ);
             if (var7 > 0)
             {
-                Block.Blocks[var7].UpdateBoundingBox(world.Reader, var2.BlockX, var2.BlockY, var2.BlockZ);
+                Block.Blocks[var7].UpdateBoundingBox(_world.Reader, var2.BlockX, var2.BlockY, var2.BlockZ);
                 double var8 = var1.lastTickX + (var1.x - var1.lastTickX) * (double)var5;
                 double var10 = var1.lastTickY + (var1.y - var1.lastTickY) * (double)var5;
                 double var12 = var1.lastTickZ + (var1.z - var1.lastTickZ) * (double)var5;
-                drawOutlinedBoundingBox(Block.Blocks[var7].GetBoundingBox(world.Reader, world.Entities, var2.BlockX, var2.BlockY, var2.BlockZ).Expand((double)var6, (double)var6, (double)var6).Offset(-var8, -var10, -var12));
+                DrawOutlinedBoundingBox(Block.Blocks[var7].GetBoundingBox(_world.Reader, _world.Entities, var2.BlockX, var2.BlockY, var2.BlockZ).Expand((double)var6, (double)var6, (double)var6).Offset(-var8, -var10, -var12));
             }
 
             GLManager.GL.DepthMask(true);
@@ -697,82 +690,82 @@ public class WorldRenderer : IWorldEventListener
 
     }
 
-    private void drawOutlinedBoundingBox(Box var1)
+    private static void DrawOutlinedBoundingBox(Box box)
     {
         Tessellator var2 = Tessellator.instance;
         var2.startDrawing(3);
-        var2.addVertex(var1.MinX, var1.MinY, var1.MinZ);
-        var2.addVertex(var1.MaxX, var1.MinY, var1.MinZ);
-        var2.addVertex(var1.MaxX, var1.MinY, var1.MaxZ);
-        var2.addVertex(var1.MinX, var1.MinY, var1.MaxZ);
-        var2.addVertex(var1.MinX, var1.MinY, var1.MinZ);
+        var2.addVertex(box.MinX, box.MinY, box.MinZ);
+        var2.addVertex(box.MaxX, box.MinY, box.MinZ);
+        var2.addVertex(box.MaxX, box.MinY, box.MaxZ);
+        var2.addVertex(box.MinX, box.MinY, box.MaxZ);
+        var2.addVertex(box.MinX, box.MinY, box.MinZ);
         var2.draw();
         var2.startDrawing(3);
-        var2.addVertex(var1.MinX, var1.MaxY, var1.MinZ);
-        var2.addVertex(var1.MaxX, var1.MaxY, var1.MinZ);
-        var2.addVertex(var1.MaxX, var1.MaxY, var1.MaxZ);
-        var2.addVertex(var1.MinX, var1.MaxY, var1.MaxZ);
-        var2.addVertex(var1.MinX, var1.MaxY, var1.MinZ);
+        var2.addVertex(box.MinX, box.MaxY, box.MinZ);
+        var2.addVertex(box.MaxX, box.MaxY, box.MinZ);
+        var2.addVertex(box.MaxX, box.MaxY, box.MaxZ);
+        var2.addVertex(box.MinX, box.MaxY, box.MaxZ);
+        var2.addVertex(box.MinX, box.MaxY, box.MinZ);
         var2.draw();
         var2.startDrawing(1);
-        var2.addVertex(var1.MinX, var1.MinY, var1.MinZ);
-        var2.addVertex(var1.MinX, var1.MaxY, var1.MinZ);
-        var2.addVertex(var1.MaxX, var1.MinY, var1.MinZ);
-        var2.addVertex(var1.MaxX, var1.MaxY, var1.MinZ);
-        var2.addVertex(var1.MaxX, var1.MinY, var1.MaxZ);
-        var2.addVertex(var1.MaxX, var1.MaxY, var1.MaxZ);
-        var2.addVertex(var1.MinX, var1.MinY, var1.MaxZ);
-        var2.addVertex(var1.MinX, var1.MaxY, var1.MaxZ);
+        var2.addVertex(box.MinX, box.MinY, box.MinZ);
+        var2.addVertex(box.MinX, box.MaxY, box.MinZ);
+        var2.addVertex(box.MaxX, box.MinY, box.MinZ);
+        var2.addVertex(box.MaxX, box.MaxY, box.MinZ);
+        var2.addVertex(box.MaxX, box.MinY, box.MaxZ);
+        var2.addVertex(box.MaxX, box.MaxY, box.MaxZ);
+        var2.addVertex(box.MinX, box.MinY, box.MaxZ);
+        var2.addVertex(box.MinX, box.MaxY, box.MaxZ);
         var2.draw();
     }
 
-    public void MarkBlocksDirty(int var1, int var2, int var3, int var4, int var5, int var6)
+    public void MarkBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
-        int var7 = MathHelper.FloorDiv(var1, SubChunkRenderer.Size);
-        int var8 = MathHelper.FloorDiv(var2, SubChunkRenderer.Size);
-        int var9 = MathHelper.FloorDiv(var3, SubChunkRenderer.Size);
-        int var10 = MathHelper.FloorDiv(var4, SubChunkRenderer.Size);
-        int var11 = MathHelper.FloorDiv(var5, SubChunkRenderer.Size);
-        int var12 = MathHelper.FloorDiv(var6, SubChunkRenderer.Size);
+        int xStart = (int)Math.Floor((double)minX / SubChunkRenderer.Size);
+        int yStart = (int)Math.Floor((double)minY / SubChunkRenderer.Size);
+        int zStart = (int)Math.Floor((double)minZ / SubChunkRenderer.Size);
+        int xEnd = (int)Math.Ceiling((double)maxX / SubChunkRenderer.Size);
+        int yEnd = (int)Math.Ceiling((double)maxY / SubChunkRenderer.Size);
+        int zEnd = (int)Math.Ceiling((double)maxZ / SubChunkRenderer.Size);
 
-        for (int var13 = var7; var13 <= var10; ++var13)
+        for (int x = xStart; x <= xEnd; x++)
         {
-            for (int var15 = var8; var15 <= var11; ++var15)
+            for (int y = yStart; y <= yEnd; y++)
             {
-                for (int var17 = var9; var17 <= var12; ++var17)
+                for (int z = zStart; z <= zEnd; z++)
                 {
-                    chunkRenderer.MarkDirty(new Vector3D<int>(var13, var15, var17) * SubChunkRenderer.Size, true);
+                    ChunkRenderer.MarkDirty(new Vector3D<int>(x, y, z) * SubChunkRenderer.Size, true);
                 }
             }
         }
     }
 
-    public void blockUpdate(int var1, int var2, int var3)
+    public void BlockUpdate(int x, int y, int z)
     {
-        MarkBlocksDirty(var1 - 1, var2 - 1, var3 - 1, var1 + 1, var2 + 1, var3 + 1);
+        MarkBlocksDirty(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
     }
 
-    public void setBlocksDirty(int var1, int var2, int var3, int var4, int var5, int var6)
+    public void SetBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
-        if (!world.BlockHost.IsRegionLoaded(var1, var2, var3, var4, var5, var6))
+        if (!_world.BlockHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
         {
             return;
         }
 
-        MarkBlocksDirty(var1 - 1, var2 - 1, var3 - 1, var4 + 1, var5 + 1, var6 + 1);
+        MarkBlocksDirty(minX - 1, minY - 1, minZ - 1, maxX + 1, maxY + 1, maxZ + 1);
     }
 
-    public void playStreaming(string var1, int var2, int var3, int var4)
+    public void PlayStreaming(string var1, int var2, int var3, int var4)
     {
         if (var1 != null)
         {
-            _game.ingameGUI.SetRecordPlayingMessage("C418 - " + var1);
+            _game.HUD.Chat.SetRecordPlaying(var1);
         }
 
-        _game.sndManager.PlayStreaming(var1, var2, var3, var4, 1.0F, 1.0F);
+        _game.SoundManager.PlayStreaming(var1, var2, var3, var4, 1.0F, 1.0F);
     }
 
-    public void playSound(string var1, double var2, double var4, double var6, float var8, float var9)
+    public void PlaySound(string var1, double var2, double var4, double var6, float var8, float var9)
     {
         float var10 = 16.0F;
         if (var8 > 1.0F)
@@ -780,24 +773,24 @@ public class WorldRenderer : IWorldEventListener
             var10 *= var8;
         }
 
-        if (_game.camera.getSquaredDistance(var2, var4, var6) < (double)(var10 * var10))
+        if (_game.Camera.getSquaredDistance(var2, var4, var6) < (double)(var10 * var10))
         {
-            _game.sndManager.PlaySound(var1, (float)var2, (float)var4, (float)var6, var8, var9);
+            _game.SoundManager.PlaySound(var1, (float)var2, (float)var4, (float)var6, var8, var9);
         }
 
     }
 
-    public void spawnParticle(string var1, double var2, double var4, double var6, double var8, double var10, double var12)
+    public void SpawnParticle(string var1, double var2, double var4, double var6, double var8, double var10, double var12)
     {
-        if (_game != null && _game.camera != null && _game.particleManager != null)
+        if (_game != null && _game.Camera != null && _game.ParticleManager != null)
         {
-            double var14 = _game.camera.x - var2;
-            double var16 = _game.camera.y - var4;
-            double var18 = _game.camera.z - var6;
+            double var14 = _game.Camera.x - var2;
+            double var16 = _game.Camera.y - var4;
+            double var18 = _game.Camera.z - var6;
             double var20 = 16.0D;
             if (var14 * var14 + var16 * var16 + var18 * var18 <= var20 * var20)
             {
-                var pm = _game.particleManager;
+                ParticleManager pm = _game.ParticleManager;
                 switch (var1)
                 {
                     case "bubble": pm.AddBubble(var2, var4, var6, var8, var10, var12); break;
@@ -807,7 +800,7 @@ public class WorldRenderer : IWorldEventListener
                     case "explode": pm.AddExplode(var2, var4, var6, var8, var10, var12); break;
                     case "flame": pm.AddFlame(var2, var4, var6, var8, var10, var12); break;
                     case "lava": pm.AddLava(var2, var4, var6); break;
-                    case "footstep": pm.AddSpecialParticle(new LegacyParticleAdapter(new EntityFootStepFX(renderEngine, world, var2, var4, var6))); break;
+                    case "footstep": pm.AddSpecialParticle(new LegacyParticleAdapter(new EntityFootStepFX(_textureManager, _world, var2, var4, var6))); break;
                     case "splash": pm.AddSplash(var2, var4, var6, var8, var10, var12); break;
                     case "largesmoke": pm.AddSmoke(var2, var4, var6, var8, var10, var12, 2.5f); break;
                     case "reddust": pm.AddReddust(var2, var4, var6, (float)var8, (float)var10, (float)var12); break;
@@ -821,61 +814,61 @@ public class WorldRenderer : IWorldEventListener
         }
     }
 
-    public void notifyEntityAdded(Entity var1)
+    public void NotifyEntityAdded(Entity var1)
     {
         var1.updateCloak();
-        EntityRenderDispatcher.instance.skinManager.RequestDownload((var1 as EntityPlayer)?.name);
+        EntityRenderDispatcher.Instance.SkinManager.RequestDownload((var1 as EntityPlayer)?.name);
     }
 
-    public void notifyEntityRemoved(Entity var1)
+    public void NotifyEntityRemoved(Entity var1)
     {
     }
 
-    public void notifyAmbientDarknessChanged()
+    public void NotifyAmbientDarknessChanged()
     {
-        chunkRenderer.UpdateAllRenderers();
+        ChunkRenderer.UpdateAllRenderers();
     }
 
-    public void updateBlockEntity(int var1, int var2, int var3, BlockEntity var4)
+    public void UpdateBlockEntity(int var1, int var2, int var3, BlockEntity var4)
     {
     }
 
-    public void worldEvent(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6)
+    public void WorldEvent(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6)
     {
-        JavaRandom var7 = world.Random;
+        JavaRandom var7 = _world.Random;
         int var16;
         switch (var2)
         {
             case 1000:
-                _game.sndManager.PlaySound("random.click", var3, var4, var5, 1.0F, 1.0F);
+                _game.SoundManager.PlaySound("random.click", var3, var4, var5, 1.0F, 1.0F);
                 break;
             case 1001:
-                _game.sndManager.PlaySound("random.click", var3, var4, var5, 1.0F, 1.2F);
+                _game.SoundManager.PlaySound("random.click", var3, var4, var5, 1.0F, 1.2F);
                 break;
             case 1002:
-                _game.sndManager.PlaySound("random.bow", var3, var4, var5, 1.0F, 1.2F);
+                _game.SoundManager.PlaySound("random.bow", var3, var4, var5, 1.0F, 1.2F);
                 break;
             case 1003:
                 if (Random.Shared.NextDouble() < 0.5D)
                 {
-                    _game.sndManager.PlaySound("random.door_open", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 1.0F, world.Random.NextFloat() * 0.1F + 0.9F);
+                    _game.SoundManager.PlaySound("random.door_open", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 1.0F, _world.Random.NextFloat() * 0.1F + 0.9F);
                 }
                 else
                 {
-                    _game.sndManager.PlaySound("random.door_close", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 1.0F, world.Random.NextFloat() * 0.1F + 0.9F);
+                    _game.SoundManager.PlaySound("random.door_close", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 1.0F, _world.Random.NextFloat() * 0.1F + 0.9F);
                 }
                 break;
             case 1004:
-                _game.sndManager.PlaySound("random.fizz", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 0.5F, 2.6F + (var7.NextFloat() - var7.NextFloat()) * 0.8F);
+                _game.SoundManager.PlaySound("random.fizz", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 0.5F, 2.6F + (var7.NextFloat() - var7.NextFloat()) * 0.8F);
                 break;
             case 1005:
                 if (Item.ITEMS[var6] is ItemRecord)
                 {
-                    _game.sndManager.PlayStreaming(((ItemRecord)Item.ITEMS[var6]).recordName, var3, var4, var5, 1.0F, 1.0F);
+                    _game.SoundManager.PlayStreaming(((ItemRecord)Item.ITEMS[var6]).recordName, var3, var4, var5, 1.0F, 1.0F);
                 }
                 else
                 {
-                    _game.sndManager.PlayStreaming(null, var3, var4, var5, 1.0F, 1.0F);
+                    _game.SoundManager.PlayStreaming(null, var3, var4, var5, 1.0F, 1.0F);
                 }
                 break;
             case 2000:
@@ -894,7 +887,7 @@ public class WorldRenderer : IWorldEventListener
                     double var25 = var8 * var31 + var7.NextGaussian() * 0.01D;
                     double var27 = -0.03D + var7.NextGaussian() * 0.01D;
                     double var29 = var9 * var31 + var7.NextGaussian() * 0.01D;
-                    spawnParticle("smoke", var19, var21, var23, var25, var27, var29);
+                    SpawnParticle("smoke", var19, var21, var23, var25, var27, var29);
                 }
 
                 return;
@@ -903,15 +896,15 @@ public class WorldRenderer : IWorldEventListener
                 if (var16 > 0)
                 {
                     Block blockId = Block.Blocks[var16];
-                    _game.sndManager.PlaySound(blockId.SoundGroup.BreakSound, var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, (blockId.SoundGroup.Volume + 1.0F) / 2.0F, blockId.SoundGroup.Pitch * 0.8F);
+                    _game.SoundManager.PlaySound(blockId.SoundGroup.BreakSound, var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, (blockId.SoundGroup.Volume + 1.0F) / 2.0F, blockId.SoundGroup.Pitch * 0.8F);
                 }
 
-                _game.particleManager.addBlockDestroyEffects(var3, var4, var5, var6 & 255, var6 >> 8 & 255);
+                _game.ParticleManager.addBlockDestroyEffects(var3, var4, var5, var6 & 255, var6 >> 8 & 255);
                 break;
         }
 
     }
 
-    public void playNote(int x, int y, int z, int soundType, int pitch) { }
-    public void broadcastEntityEvent(Entity entity, byte @event) { }
+    public void PlayNote(int x, int y, int z, int soundType, int pitch) { }
+    public void BroadcastEntityEvent(Entity entity, byte @event) { }
 }

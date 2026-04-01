@@ -27,7 +27,7 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
     public override void Setup(BetaSharp game)
     {
         _game = game;
-        TextureManager tm = game.textureManager;
+        TextureManager tm = game.TextureManager;
         string atlasPath = "/gui/items.png";
 
         TextureHandle handle = tm.GetTextureId(atlasPath);
@@ -50,7 +50,7 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
 
         try
         {
-            using Stream? stream = game.texturePackList.SelectedTexturePack.GetResourceAsStream("gui/items.png");
+            using Stream? stream = game.TexturePackList.SelectedTexturePack.GetResourceAsStream("gui/items.png");
             if (stream != null)
             {
                 using Image<Rgba32> atlasImage = Image.Load<Rgba32>(stream);
@@ -71,7 +71,7 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
                 }
             }
 
-            using Stream? dialStream = game.texturePackList.SelectedTexturePack.GetResourceAsStream("misc/dial.png");
+            using Stream? dialStream = game.TexturePackList.SelectedTexturePack.GetResourceAsStream("misc/dial.png");
             if (dialStream != null)
             {
                 using Image<Rgba32> dialImage = Image.Load<Rgba32>(dialStream);
@@ -102,11 +102,11 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
     public override void tick()
     {
         double targetAngle = 0.0D;
-        if (_game.world != null && _game.player != null)
+        if (_game.World != null && _game.Player != null)
         {
-            float worldTime = _game.world.GetTime(1.0F);
+            float worldTime = _game.World.GetTime(1.0F);
             targetAngle = -worldTime * (float)Math.PI * 2.0F;
-            if (_game.world.Dimension.IsNether)
+            if (_game.World.Dimension.IsNether)
             {
                 targetAngle = Random.Shared.NextDouble() * (float)Math.PI * 2.0D;
             }

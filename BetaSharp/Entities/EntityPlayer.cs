@@ -123,7 +123,14 @@ public abstract class EntityPlayer : EntityLiving
     protected void GenericTick()
     {
         base.tick();
+        AfterLivingTickCosmetics();
+    }
 
+    /// <summary>
+    /// Cape, play time stat, and minecart state — runs after <see cref="EntityLiving.tick"/> (or after <see cref="EntityLiving.baseTick"/> on idle server ticks).
+    /// </summary>
+    protected void AfterLivingTickCosmetics()
+    {
         prevCapeX = capeX;
         prevCapeY = capeY;
         prevCapeZ = capeZ;
@@ -168,6 +175,31 @@ public abstract class EntityPlayer : EntityLiving
         if (vehicle == null)
         {
             startMinecartRidingCoordinate = null;
+        }
+    }
+
+    protected void PickupAndInventorySubtick()
+    {
+        if (world.Difficulty == 0 && health < 20 && age % 20 * 12 == 0)
+        {
+            heal(1);
+        }
+
+        inventory.inventoryTick();
+    }
+
+    protected void CollideWithPickupEntities()
+    {
+        if (health <= 0) return;
+
+        var entities = world.Entities.GetEntities(this, boundingBox.Expand(1.0D, 0.0D, 1.0D));
+
+        foreach (var entity in entities)
+        {
+            if (!entity.dead)
+            {
+                collideWithEntity(entity);
+            }
         }
     }
 
@@ -233,12 +265,7 @@ public abstract class EntityPlayer : EntityLiving
 
     public override void tickMovement()
     {
-        if (world.Difficulty == 0 && health < 20 && age % 20 * 12 == 0)
-        {
-            heal(1);
-        }
-
-        inventory.inventoryTick();
+        PickupAndInventorySubtick();
         prevStepBobbingAmount = stepBobbingAmount;
         base.tickMovement();
         float var1 = MathHelper.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
@@ -260,21 +287,7 @@ public abstract class EntityPlayer : EntityLiving
 
         stepBobbingAmount += (var1 - stepBobbingAmount) * 0.4F;
         tilt += (var2 - tilt) * 0.8F;
-        if (health > 0)
-        {
-            var var3 = world.Entities.GetEntities(this, boundingBox.Expand(1.0D, 0.0D, 1.0D));
-            if (var3 != null)
-            {
-                for (int var4 = 0; var4 < var3.Count; ++var4)
-                {
-                    Entity var5 = var3[var4];
-                    if (!var5.dead)
-                    {
-                        collideWithEntity(var5);
-                    }
-                }
-            }
-        }
+        CollideWithPickupEntities();
     }
 
     private void collideWithEntity(Entity entity)

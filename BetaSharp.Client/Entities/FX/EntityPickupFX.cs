@@ -44,7 +44,7 @@ public class EntityPickupFX : EntityFX
         renderY -= interpPosY;
         renderZ -= interpPosZ;
         GLManager.GL.Color4(luminance, luminance, luminance, 1.0F);
-        EntityRenderDispatcher.instance.renderEntityWithPosYaw(target, (double)((float)renderX), (double)((float)renderY), (double)((float)renderZ), target.yaw, partialTick);
+        EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(target, (double)((float)renderX), (double)((float)renderY), (double)((float)renderZ), target.yaw, partialTick);
     }
 
     public override void tick()

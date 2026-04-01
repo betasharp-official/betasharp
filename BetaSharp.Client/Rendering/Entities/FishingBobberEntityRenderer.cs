@@ -26,8 +26,8 @@ public class FishingBobberEntityRenderer : EntityRenderer
         float var17 = 1.0F;
         float var18 = 0.5F;
         float var19 = 0.5F;
-        GLManager.GL.Rotate(180.0F - Dispatcher.playerViewY, 0.0F, 1.0F, 0.0F);
-        GLManager.GL.Rotate(-Dispatcher.playerViewX, 1.0F, 0.0F, 0.0F);
+        GLManager.GL.Rotate(180.0F - Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
+        GLManager.GL.Rotate(-Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
         var12.startDrawingQuads();
         var12.setNormal(0.0F, 1.0F, 0.0F);
         var12.addVertexWithUV((double)(0.0F - var18), (double)(0.0F - var19), 0.0D, (double)var13, (double)var16);
@@ -52,7 +52,7 @@ public class FishingBobberEntityRenderer : EntityRenderer
             double var28 = var1.angler.prevX + (var1.angler.x - var1.angler.prevX) * (double)tickDelta + var27.x;
             double var30 = var1.angler.prevY + (var1.angler.y - var1.angler.prevY) * (double)tickDelta + var27.y;
             double var32 = var1.angler.prevZ + (var1.angler.z - var1.angler.prevZ) * (double)tickDelta + var27.z;
-            if (Dispatcher.options.CameraMode != EnumCameraMode.FirstPerson)
+            if (Dispatcher.Options.CameraMode != EnumCameraMode.FirstPerson)
             {
                 var20 = (var1.angler.lastBodyYaw + (var1.angler.bodyYaw - var1.angler.lastBodyYaw) * tickDelta) * (float)Math.PI / 180.0F;
                 var21 = (double)MathHelper.Sin(var20);
@@ -87,7 +87,7 @@ public class FishingBobberEntityRenderer : EntityRenderer
 
     }
 
-    public override void render(Entity target, double x, double y, double z, float yaw, float tickDelta)
+    public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
         render((EntityFish)target, x, y, z, yaw, tickDelta);
     }

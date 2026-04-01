@@ -14,27 +14,26 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class PlayerEntityRenderer : LivingEntityRenderer
 {
 
-    private readonly ModelBiped modelBipedMain;
-    private readonly ModelBiped modelArmorChestplate = new(1.0F);
-    private readonly ModelBiped modelArmor = new(0.5F);
-    private static readonly string[] armorFilenamePrefix = ["cloth", "chain", "iron", "diamond", "gold"];
+    private readonly ModelBiped _modelBipedMain;
+    private readonly ModelBiped _modelArmorChestplate = new(1.0F);
+    private readonly ModelBiped _modelArmor = new(0.5F);
+    private static readonly string[] s_armorFilenamePrefix = ["cloth", "chain", "iron", "diamond", "gold"];
 
     public PlayerEntityRenderer() : base(new ModelBiped(0.0F), 0.5F)
     {
-        modelBipedMain = (ModelBiped)mainModel;
+        _modelBipedMain = (ModelBiped)mainModel;
     }
 
-    protected bool setArmorModel(EntityPlayer var1, int var2, float var3)
+    protected bool SetArmorModel(EntityPlayer player, int var2, float var3)
     {
-        ItemStack var4 = var1.inventory.armorItemInSlot(3 - var2);
+        ItemStack var4 = player.inventory.armorItemInSlot(3 - var2);
         if (var4 != null)
         {
             Item var5 = var4.getItem();
-            if (var5 is ItemArmor)
+            if (var5 is ItemArmor var6)
             {
-                ItemArmor var6 = (ItemArmor)var5;
-                loadTexture("/armor/" + armorFilenamePrefix[var6.renderIndex] + "_" + (var2 == 2 ? 2 : 1) + ".png");
-                ModelBiped var7 = var2 == 2 ? modelArmor : modelArmorChestplate;
+                loadTexture("/armor/" + s_armorFilenamePrefix[var6.renderIndex] + "_" + (var2 == 2 ? 2 : 1) + ".png");
+                ModelBiped var7 = var2 == 2 ? _modelArmor : _modelArmorChestplate;
                 var7.bipedHead.visible = var2 == 0;
                 var7.bipedHeadwear.visible = var2 == 0;
                 var7.bipedBody.visible = var2 == 1 || var2 == 2;
@@ -50,29 +49,29 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         return false;
     }
 
-    public void renderPlayer(EntityPlayer var1, double var2, double var4, double var6, float var8, float var9)
+    public void RenderPlayer(EntityPlayer var1, double var2, double var4, double var6, float var8, float var9)
     {
         ItemStack var10 = var1.inventory.getSelectedItem();
-        modelArmorChestplate.field_1278_i = modelArmor.field_1278_i = modelBipedMain.field_1278_i = var10 != null;
-        modelArmorChestplate.isSneak = modelArmor.isSneak = modelBipedMain.isSneak = var1.isSneaking();
+        _modelArmorChestplate.field_1278_i = _modelArmor.field_1278_i = _modelBipedMain.field_1278_i = var10 != null;
+        _modelArmorChestplate.isSneak = _modelArmor.isSneak = _modelBipedMain.isSneak = var1.isSneaking();
         double var11 = var4 - var1.standingEyeHeight;
         if (var1.isSneaking() && var1 is not ClientPlayerEntity)
         {
             var11 -= 0.125D;
         }
 
-        base.doRenderLiving(var1, var2, var11, var6, var8, var9);
-        modelArmorChestplate.isSneak = modelArmor.isSneak = modelBipedMain.isSneak = false;
-        modelArmorChestplate.field_1278_i = modelArmor.field_1278_i = modelBipedMain.field_1278_i = false;
+        base.DoRenderLiving(var1, var2, var11, var6, var8, var9);
+        _modelArmorChestplate.isSneak = _modelArmor.isSneak = _modelBipedMain.isSneak = false;
+        _modelArmorChestplate.field_1278_i = _modelArmor.field_1278_i = _modelBipedMain.field_1278_i = false;
     }
 
-    protected void renderName(EntityPlayer var1, double var2, double var4, double var6)
+    protected void RenderName(EntityPlayer var1, double var2, double var4, double var6)
     {
-        if (BetaSharp.isGuiEnabled() && var1 != Dispatcher.cameraEntity)
+        if (Dispatcher.Options.HideGUI && var1 != Dispatcher.CameraEntity)
         {
             float var8 = 1.6F;
             float var9 = (float)(1.0D / 60.0D) * var8;
-            float var10 = var1.getDistance(Dispatcher.cameraEntity);
+            float var10 = var1.getDistance(Dispatcher.CameraEntity);
             float var11 = var1.isSneaking() ? 32.0F : 64.0F;
             if (var10 < var11)
             {
@@ -94,8 +93,8 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                     GLManager.GL.PushMatrix();
                     GLManager.GL.Translate((float)var2 + 0.0F, (float)var4 + 2.3F, (float)var6);
                     GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
-                    GLManager.GL.Rotate(-Dispatcher.playerViewY, 0.0F, 1.0F, 0.0F);
-                    GLManager.GL.Rotate(Dispatcher.playerViewX, 1.0F, 0.0F, 0.0F);
+                    GLManager.GL.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
+                    GLManager.GL.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
                     GLManager.GL.Scale(-var9, -var9, var9);
                     GLManager.GL.Disable(GLEnum.Lighting);
                     GLManager.GL.Translate(0.0F, 0.25F / var9, 0.0F);
@@ -125,14 +124,14 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     }
 
-    protected void renderSpecials(EntityPlayer var1, float var2)
+    protected void RenderSpecials(EntityPlayer var1, float var2)
     {
         ItemStack var3 = var1.inventory.armorItemInSlot(3);
         if (var3 != null && var3.getItem().id < 256)
         {
             GLManager.GL.PushMatrix();
-            modelBipedMain.bipedHead.transform(1.0F / 16.0F);
-            if (BlockRenderer.IsSideLit(Block.Blocks[var3.itemId].GetRenderType()))
+            _modelBipedMain.bipedHead.transform(1.0F / 16.0F);
+            if (BlockRenderer.IsSideLit(Block.Blocks[var3.itemId].getRenderType()))
             {
                 float var4 = 10.0F / 16.0F;
                 GLManager.GL.Translate(0.0F, -0.25F, 0.0F);
@@ -140,7 +139,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 GLManager.GL.Scale(var4, -var4, var4);
             }
 
-            Dispatcher.heldItemRenderer.renderItem(var1, var3);
+            Dispatcher.HeldItemRenderer.renderItem(var1, var3);
             GLManager.GL.PopMatrix();
         }
 
@@ -160,7 +159,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 GLManager.GL.Rotate(-var5, 0.0F, 1.0F, 0.0F);
                 float var7 = 4.0F / 3.0F;
                 GLManager.GL.Scale(var7, var7, var7);
-                modelBipedMain.renderEars(1.0F / 16.0F);
+                _modelBipedMain.renderEars(1.0F / 16.0F);
                 GLManager.GL.PopMatrix();
             }
         }
@@ -204,7 +203,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             GLManager.GL.Rotate(var17 / 2.0F, 0.0F, 0.0F, 1.0F);
             GLManager.GL.Rotate(-var17 / 2.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
-            modelBipedMain.renderCloak(1.0F / 16.0F);
+            _modelBipedMain.renderCloak(1.0F / 16.0F);
             GLManager.GL.PopMatrix();
         }
 
@@ -212,7 +211,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         if (var21 != null)
         {
             GLManager.GL.PushMatrix();
-            modelBipedMain.bipedRightArm.transform(1.0F / 16.0F);
+            _modelBipedMain.bipedRightArm.transform(1.0F / 16.0F);
             GLManager.GL.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
             if (var1.fishHook != null)
             {
@@ -252,7 +251,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 GLManager.GL.Rotate(20.0F, 0.0F, 0.0F, 1.0F);
             }
 
-            Dispatcher.heldItemRenderer.renderItem(var1, var21);
+            Dispatcher.HeldItemRenderer.renderItem(var1, var21);
             GLManager.GL.PopMatrix();
         }
 
@@ -264,22 +263,22 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         GLManager.GL.Scale(var3, var3, var3);
     }
 
-    public void drawFirstPersonHand()
+    public void DrawFirstPersonHand()
     {
-        modelBipedMain.onGround = 0.0F;
-        modelBipedMain.setRotationAngles(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F / 16.0F);
-        modelBipedMain.bipedRightArm.render(1.0F / 16.0F);
+        _modelBipedMain.onGround = 0.0F;
+        _modelBipedMain.setRotationAngles(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F / 16.0F);
+        _modelBipedMain.bipedRightArm.render(1.0F / 16.0F);
     }
 
     protected void func_22016_b(EntityPlayer var1, double var2, double var4, double var6)
     {
         if (var1.isAlive() && var1.isSleeping())
         {
-            base.func_22012_b(var1, var2 + var1.sleepOffsetX, var4 + var1.sleepOffsetY, var6 + var1.sleepOffsetZ);
+            base.Func_22012_b(var1, var2 + var1.sleepOffsetX, var4 + var1.sleepOffsetY, var6 + var1.sleepOffsetZ);
         }
         else
         {
-            base.func_22012_b(var1, var2, var4, var6);
+            base.Func_22012_b(var1, var2, var4, var6);
         }
 
     }
@@ -294,48 +293,48 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         }
         else
         {
-            base.rotateCorpse(var1, var2, var3, var4);
+            base.RotateCorpse(var1, var2, var3, var4);
         }
 
     }
 
-    protected override void passSpecialRender(EntityLiving var1, double var2, double var4, double var6)
+    protected override void PassSpecialRender(EntityLiving var1, double var2, double var4, double var6)
     {
-        renderName((EntityPlayer)var1, var2, var4, var6);
+        RenderName((EntityPlayer)var1, var2, var4, var6);
     }
 
-    protected override void preRenderCallback(EntityLiving var1, float var2)
+    protected override void PreRenderCallback(EntityLiving var1, float var2)
     {
         func_186_b((EntityPlayer)var1, var2);
     }
 
-    protected override bool shouldRenderPass(EntityLiving var1, int var2, float var3)
+    protected override bool ShouldRenderPass(EntityLiving var1, int var2, float var3)
     {
-        return setArmorModel((EntityPlayer)var1, var2, var3);
+        return SetArmorModel((EntityPlayer)var1, var2, var3);
     }
 
-    protected override void renderMore(EntityLiving var1, float var2)
+    protected override void RenderMore(EntityLiving var1, float var2)
     {
-        renderSpecials((EntityPlayer)var1, var2);
+        RenderSpecials((EntityPlayer)var1, var2);
     }
 
-    protected override void rotateCorpse(EntityLiving var1, float var2, float var3, float var4)
+    protected override void RotateCorpse(EntityLiving var1, float var2, float var3, float var4)
     {
         func_22017_a((EntityPlayer)var1, var2, var3, var4);
     }
 
-    protected override void func_22012_b(EntityLiving var1, double var2, double var4, double var6)
+    protected override void Func_22012_b(EntityLiving var1, double var2, double var4, double var6)
     {
         func_22016_b((EntityPlayer)var1, var2, var4, var6);
     }
 
-    public override void doRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
+    public override void DoRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
     {
-        renderPlayer((EntityPlayer)var1, var2, var4, var6, var8, var9);
+        RenderPlayer((EntityPlayer)var1, var2, var4, var6, var8, var9);
     }
 
-    public override void render(Entity target, double x, double y, double z, float yaw, float tickDelta)
+    public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
-        renderPlayer((EntityPlayer)target, x, y, z, yaw, tickDelta);
+        RenderPlayer((EntityPlayer)target, x, y, z, yaw, tickDelta);
     }
 }

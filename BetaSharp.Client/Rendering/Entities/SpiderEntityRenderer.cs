@@ -45,7 +45,7 @@ public class SpiderEntityRenderer : LivingEntityRenderer
         return setSpiderDeathMaxRotation((EntitySpider)var1);
     }
 
-    protected override bool shouldRenderPass(EntityLiving var1, int var2, float var3)
+    protected override bool ShouldRenderPass(EntityLiving var1, int var2, float var3)
     {
         return setSpiderEyeBrightness((EntitySpider)var1, var2, var3);
     }

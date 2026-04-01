@@ -26,7 +26,7 @@ public class GhastEntityRenderer : LivingEntityRenderer
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    protected override void preRenderCallback(EntityLiving var1, float var2)
+    protected override void PreRenderCallback(EntityLiving var1, float var2)
     {
         render((EntityGhast)var1, var2);
     }

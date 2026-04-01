@@ -47,7 +47,7 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
                 if (File.Exists(localFile))
                 {
                     loaded++;
-                    _game.installResource(line, new FileInfo(localFile));
+                    _game.InstallResource(line, new FileInfo(localFile));
                 }
             }
 
@@ -160,7 +160,7 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
 
             if (localFile.Exists && localFile.Length == size)
             {
-                _game.installResource(path, new FileInfo(localFile.FullName));
+                _game.InstallResource(path, new FileInfo(localFile.FullName));
                 return;
             }
 
@@ -173,7 +173,7 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
 
             if (!_cancelled)
             {
-                _game.installResource(path, new FileInfo(localFile.FullName));
+                _game.InstallResource(path, new FileInfo(localFile.FullName));
             }
         }
         catch (Exception ex)

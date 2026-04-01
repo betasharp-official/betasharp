@@ -1,8 +1,9 @@
+using System.Buffers;
 using System.Runtime.CompilerServices;
 
 namespace BetaSharp.Worlds.Chunks;
 
-public class ChunkNibbleArray
+public readonly struct ChunkNibbleArray
 {
     public readonly byte[] Bytes;
 

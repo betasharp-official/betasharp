@@ -80,20 +80,11 @@ public ref struct BlockRenderContext
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static int ApplyVariance(int hash, TextureVariance allowed, out int flipMask)
+    internal static int ApplyVariance(int hash, TextureVariance variance, out int flipMask)
     {
-        flipMask = 0;
-
-        if (allowed.HasFlag(TextureVariance.FlipU) && (hash & 4) != 0) flipMask |= 1;
-        if (allowed.HasFlag(TextureVariance.FlipV) && (hash & 8) != 0) flipMask |= 2;
-
-        return (hash & 3) switch
-        {
-            1 when allowed.HasFlag(TextureVariance.Rotate90) => 1,
-            2 when allowed.HasFlag(TextureVariance.Rotate180) => 2,
-            3 when allowed.HasFlag(TextureVariance.Rotate270) => 3,
-            _ => 0
-        };
+        byte allowed = (byte)variance;
+        flipMask = (hash & allowed & 12) >> 2;
+        return hash & allowed & 3;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -101,17 +92,9 @@ public ref struct BlockRenderContext
     {
         unchecked
         {
-            uint h = (uint)x ^ 0x9E3779B9;
-            h = (h ^ (uint)y) * 0x85ebca6b;
-            h = (h ^ (uint)z) * 0xc2b2ae35;
-
-            h ^= h >> 16;
-            h *= 0x85ebca6b;
-            h ^= h >> 13;
-            h *= 0xc2b2ae35;
-            h ^= h >> 16;
-
-            return (int)h;
+            long seed = (x * 3129871L) ^ (z * 116129781L) ^ y;
+            seed = (seed * seed * 42317861L) + (seed * 11L);
+            return (int)(seed >> 16);
         }
     }
 
