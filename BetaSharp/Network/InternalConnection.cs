@@ -28,6 +28,9 @@ public class InternalConnection : Connection
         if (!closed)
         {
             packet.ProcessForInternal();
+            int pSize = packet.Size();
+            BytesWritten += pSize;
+            PacketsWritten++;
 
             if (RemoteConnection != null && !RemoteConnection.closed)
             {
@@ -39,6 +42,8 @@ public class InternalConnection : Connection
 
     protected void ReceivePacket(Packet packet)
     {
+        BytesRead += packet.Size();
+        PacketsRead++;
         readQueue.Enqueue(packet);
     }
 

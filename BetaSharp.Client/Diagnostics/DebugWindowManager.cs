@@ -15,8 +15,8 @@ internal sealed class DebugWindowManager
     public DebugWindowManager(ImGuiController imGuiController, BetaSharp game)
     {
         _imGuiController = imGuiController;
-        _frameTimeGraph = new FrameGraph("", 240);
-        _msptGraph = new FrameGraph("", 240);
+        _frameTimeGraph = new FrameGraph("Frame Time (ms)", 240);
+        _msptGraph = new FrameGraph("MSPT", 240);
 
         _windows =
         [
@@ -24,6 +24,7 @@ internal sealed class DebugWindowManager
             new RenderInfoWindow(game),
             new ServerInfoWindow(_msptGraph),
             new ClientInfoWindow(game, _frameTimeGraph),
+            new NetworkInfoWindow(),
             new LocalPlayerInfoWindow(game),
             new SystemWindow(game),
         ];

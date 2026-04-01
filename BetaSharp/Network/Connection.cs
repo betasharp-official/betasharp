@@ -21,6 +21,11 @@ public class Connection
     protected string disconnectedReason = "";
     protected object[]? disconnectReasonArgs;
 
+    public long BytesRead { get; protected set; }
+    public long BytesWritten { get; protected set; }
+    public int PacketsRead { get; protected set; }
+    public int PacketsWritten { get; protected set; }
+
     private int _timeout;
     private readonly ConcurrentQueue<Packet> _sendQueue = [];
     private readonly ConcurrentQueue<Packet> _delayedSendQueue = [];
@@ -172,6 +177,8 @@ public class Connection
 
                 if (packet is not null)
                 {
+                    BytesRead += packet.Size();
+                    PacketsRead++;
                     readQueue.Enqueue(packet);
                 }
                 else
@@ -201,8 +208,11 @@ public class Connection
                 while (_sendQueue.TryDequeue(out packet))
                 {
                     Interlocked.Increment(ref packet.UseCount);
+                    int pSize = packet.Size();
                     Packet.Write(packet, _networkStream);
                     packet.Return();
+                    BytesWritten += pSize;
+                    PacketsWritten++;
                     wrotePacket = true;
                 }
 
@@ -215,8 +225,11 @@ public class Connection
 
                     Interlocked.Increment(ref packet.UseCount);
                     _delay = 0;
+                    int pSize = packet.Size();
                     Packet.Write(packet, _networkStream);
                     packet.Return();
+                    BytesWritten += pSize;
+                    PacketsWritten++;
                     wrotePacket = true;
                 }
 

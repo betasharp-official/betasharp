@@ -8,6 +8,10 @@ public sealed class FrameGraph(string label, int capacity = 100)
     private readonly float[] _values = new float[capacity];
     private int _index;
 
+    private float _customMax;
+    private bool _autoScale = true;
+    private bool _initializedMax;
+
     public void Push(float value)
     {
         _values[_index] = value;
@@ -16,8 +20,33 @@ public sealed class FrameGraph(string label, int capacity = 100)
 
     public void Draw(float height = 50.0f, float? manualMax = null)
     {
+        if (!_initializedMax)
+        {
+            if (manualMax.HasValue)
+            {
+                _customMax = manualMax.Value;
+                _autoScale = false;
+            }
+            else
+            {
+                _customMax = 100.0f;
+                _autoScale = true;
+            }
+            _initializedMax = true;
+        }
+
         if (!string.IsNullOrEmpty(label))
+        {
             ImGui.Text(label);
+            ImGui.SameLine();
+            ImGui.Checkbox($"Auto##auto_{label}", ref _autoScale);
+            if (!_autoScale)
+            {
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(150);
+                ImGui.DragFloat($"##max_{label}", ref _customMax, _customMax * 0.05f + 1.0f, 0.1f, float.MaxValue, "Max: %.1f");
+            }
+        }
 
         ImDrawListPtr drawList = ImGui.GetWindowDrawList();
         Vector2 p = ImGui.GetCursorScreenPos();
@@ -29,7 +58,7 @@ public sealed class FrameGraph(string label, int capacity = 100)
 
         drawList.AddRectFilled(p, p + new Vector2(width, height), ImGui.GetColorU32(new Vector4(0, 0, 0, 0.4f)));
 
-        float maxValue = manualMax ?? GetMax();
+        float maxValue = _autoScale ? GetMax() : _customMax;
         if (maxValue <= 0) maxValue = 1.0f;
 
         float scaleY = height / maxValue;
