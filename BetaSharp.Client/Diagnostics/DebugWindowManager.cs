@@ -1,4 +1,5 @@
 using BetaSharp.Client.Diagnostics.Windows;
+using BetaSharp.Diagnostics;
 using ImGuiNET;
 using Silk.NET.OpenGL.Extensions.ImGui;
 
@@ -8,16 +9,21 @@ internal sealed class DebugWindowManager
 {
     private readonly ImGuiController _imGuiController;
     private readonly List<DebugWindow> _windows;
+    private readonly FrameGraph _frameTimeGraph;
+    private readonly FrameGraph _msptGraph;
 
     public DebugWindowManager(ImGuiController imGuiController, BetaSharp game)
     {
         _imGuiController = imGuiController;
+        _frameTimeGraph = new FrameGraph("", 240);
+        _msptGraph = new FrameGraph("", 240);
+
         _windows =
         [
             new ProfilerWindow(),
             new RenderInfoWindow(game),
-            new ServerInfoWindow(),
-            new ClientInfoWindow(game),
+            new ServerInfoWindow(_msptGraph),
+            new ClientInfoWindow(game, _frameTimeGraph),
             new LocalPlayerInfoWindow(game),
             new SystemWindow(game),
         ];
@@ -25,6 +31,13 @@ internal sealed class DebugWindowManager
 
     public void Render(float deltaTime)
     {
+        _frameTimeGraph.Push(MetricRegistry.Get(ClientMetrics.FrameTimeMs));
+
+        if (!MetricRegistry.IsStale(ServerMetrics.Mspt))
+            _msptGraph.Push(MetricRegistry.Get(ServerMetrics.Mspt));
+        else
+            _msptGraph.Push(0);
+
         _imGuiController.Update(deltaTime);
         DrawDashboard();
         foreach (DebugWindow window in _windows)
@@ -32,9 +45,6 @@ internal sealed class DebugWindowManager
         _imGuiController.Render();
     }
 
-    /// <summary>
-    /// Small dashboard window with a checkbox per debug window to toggle visibility.
-    /// </summary>
     private void DrawDashboard()
     {
         if (ImGui.Begin("Debug"))
@@ -49,10 +59,6 @@ internal sealed class DebugWindowManager
         ImGui.End();
     }
 
-    /// <summary>
-    /// Toggles all windows off if any are visible, or all on if none are.
-    /// Useful for a single hotkey to hide/show the entire debug suite.
-    /// </summary>
     public void ToggleAll()
     {
         bool anyVisible = _windows.Exists(w => w.IsVisible);

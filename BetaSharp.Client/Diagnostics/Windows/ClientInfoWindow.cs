@@ -1,10 +1,9 @@
-using BetaSharp.Client.Diagnostics;
 using BetaSharp.Diagnostics;
 using ImGuiNET;
 
 namespace BetaSharp.Client.Diagnostics.Windows;
 
-internal sealed class ClientInfoWindow(BetaSharp game) : DebugWindow
+internal sealed class ClientInfoWindow(BetaSharp game, FrameGraph frameTimeGraph) : DebugWindow
 {
     public override string Title => "Client Info";
 
@@ -14,11 +13,13 @@ internal sealed class ClientInfoWindow(BetaSharp game) : DebugWindow
         {
             ImGui.Text($"FPS:        {MetricRegistry.Get(ClientMetrics.Fps)}");
             ImGui.Text($"Frame Time: {MetricRegistry.Get(ClientMetrics.FrameTimeMs):F2} ms");
+            ImGui.Spacing();
+            frameTimeGraph.Draw(40f, 0.33f);
         }
 
         if (ImGui.CollapsingHeader("Memory", ImGuiTreeNodeFlags.DefaultOpen))
         {
-            long maxMem  = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
+            long maxMem = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
             long usedMem = Environment.WorkingSet;
             long heapMem = GC.GetTotalMemory(false);
 

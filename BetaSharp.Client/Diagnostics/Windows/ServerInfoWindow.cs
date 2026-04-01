@@ -3,7 +3,7 @@ using ImGuiNET;
 
 namespace BetaSharp.Client.Diagnostics.Windows;
 
-internal sealed class ServerInfoWindow : DebugWindow
+internal sealed class ServerInfoWindow(FrameGraph msptGraph) : DebugWindow
 {
     public override string Title => "Server Info";
 
@@ -27,6 +27,9 @@ internal sealed class ServerInfoWindow : DebugWindow
             ImGui.Text($"MSPT:     {MetricRegistry.Get(ServerMetrics.Mspt):F2} ms");
             ImGui.Text($"Entities: {MetricRegistry.Get(ServerMetrics.EntityCount)}");
             ImGui.Text($"Players:  {MetricRegistry.Get(ServerMetrics.PlayerCount)}");
+
+            ImGui.Spacing();
+            msptGraph.Draw(40f, 50.0f);
         }
     }
 }
