@@ -1,7 +1,7 @@
 using BetaSharp.Blocks.Entities;
+using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Rules;
-using BetaSharp.Worlds.Biomes;
 using BetaSharp.Worlds.Generation.Biomes;
 
 namespace BetaSharp.Registries;
@@ -26,6 +26,8 @@ public static class DefaultRegistries
         EntityTypes.Bootstrap(typeof(EntityRegistry));
         Biomes.Bootstrap(typeof(Biome));
         BlockEntityTypes.Bootstrap(typeof(BlockEntity));
+
+        MetricRegistry.Bootstrap(typeof(ServerMetrics));
 
         FreezeAll();
     }

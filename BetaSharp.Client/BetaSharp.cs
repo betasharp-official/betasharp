@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Runtime;
 using System.Runtime.InteropServices;
-using System.Text.Json;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Achievements;
 using BetaSharp.Client.Debug;
@@ -27,6 +26,7 @@ using BetaSharp.Client.UI.Screens.InGame;
 using BetaSharp.Client.UI.Screens.InGame.Containers;
 using BetaSharp.Client.UI.Screens.Menu;
 using BetaSharp.Client.UI.Screens.Menu.Net;
+using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Profiling;
@@ -40,7 +40,6 @@ using BetaSharp.Worlds.Colors;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
-using ImGuiNET;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Input;
 using Silk.NET.Maths;
@@ -154,6 +153,7 @@ public partial class BetaSharp :
     private readonly bool _hideQuitButton;
 
     private ImGuiController _imGuiController;
+    private DebugWindowManager? _debugWindowManager;
     private GLErrorHandler _glErrorHandler;
     private string _gameDataDir;
 
@@ -191,6 +191,8 @@ public partial class BetaSharp :
         LoadVersion();
 
         Bootstrap.Initialize();
+        MetricRegistry.Bootstrap(typeof(ClientMetrics));
+        MetricRegistry.Bootstrap(typeof(RenderMetrics));
         DebugComponents.RegisterComponents();
 
         InitializeTimer();
@@ -338,6 +340,7 @@ public partial class BetaSharp :
             IInputContext input = window.CreateInput();
             _imGuiController = new(((LegacyGL)GLManager.GL).SilkGL, window, input);
             _imGuiController.MakeCurrent();
+            _debugWindowManager = new DebugWindowManager(_imGuiController, this);
         }
         catch (Exception e)
         {
@@ -603,12 +606,13 @@ public partial class BetaSharp :
                         {
                             TextureStats.EndFrame();
                             Profiler.PopGroup();
+                            PushRenderMetrics();
                         }
                     }
 
-                    if (_imGuiController != null && Timer.DeltaTime > 0.0f && Options.ShowDebugInfo && Options.DebugMode)
+                    if (_debugWindowManager != null && Timer.DeltaTime > 0.0f && Options.ShowDebugInfo && Options.DebugMode)
                     {
-                        RenderDebugUI();
+                        _debugWindowManager.Render(Timer.DeltaTime);
                     }
 
                     if (!Display.isActive())
@@ -643,6 +647,7 @@ public partial class BetaSharp :
                     for (; DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() >= lastFpsCheckTime + 1000L; frameCounter = 0)
                     {
                         DebugText = frameCounter + " fps";
+                        MetricRegistry.Set(ClientMetrics.Fps, frameCounter);
                         lastFpsCheckTime += 1000L;
                     }
                 }
@@ -671,66 +676,22 @@ public partial class BetaSharp :
         }
     }
 
-    private void RenderDebugUI()
+    private void PushRenderMetrics()
     {
-        _imGuiController.Update(Timer.DeltaTime);
-        ProfilerRenderer.Draw();
-        ProfilerRenderer.DrawGraph();
-
-        ImGui.Begin("Render Info");
-        ImGui.Text($"Chunks Total: {WorldRenderer.ChunkRenderer.TotalChunks}");
-        ImGui.Text($"Chunks Frustum: {WorldRenderer.ChunkRenderer.ChunksInFrustum}");
-        ImGui.Text($"Chunks Occluded: {WorldRenderer.ChunkRenderer.ChunksOccluded}");
-        ImGui.Text($"Chunks Rendered: {WorldRenderer.ChunkRenderer.ChunksRendered}");
-        ImGui.Separator();
-        ImGui.Text($"Chunk Vertex Buffer Allocated MB: {VertexBuffer<ChunkVertex>.Allocated / 1000000.0}");
-        ImGui.Text($"ChunkMeshVersion Allocated: {ChunkMeshVersion.TotalAllocated}");
-        ImGui.Text($"ChunkMeshVersion Released: {ChunkMeshVersion.TotalReleased}");
-
-        WorldRenderer.ChunkRenderer.GetMeshSizeStats(out int minSize, out int maxSize, out int avgSize, out Dictionary<int, int> buckets);
-        ImGui.Separator();
-        int activeMeshes = 0;
-        foreach (int v in buckets.Values) activeMeshes += v;
-        ImGui.Text($"Active Meshes: {activeMeshes}");
-        ImGui.Text($"Min Mesh Size: {minSize} bytes");
-        ImGui.Text($"Max Mesh Size: {maxSize} bytes");
-        ImGui.Text($"Avg Mesh Size: {avgSize} bytes");
-
-        if (ImGui.TreeNode("Mesh Size Buckets (KB)"))
-        {
-            var sortedBuckets = buckets.Keys.ToList();
-            sortedBuckets.Sort();
-            foreach (int po2 in sortedBuckets)
-            {
-                ImGui.Text($"{po2}KB: {buckets[po2]} meshes");
-            }
-            ImGui.TreePop();
-        }
-
-        if (ImGui.Button("Export Mesh Stats to JSON"))
-        {
-            var exportData = new
-            {
-                minSize,
-                maxSize,
-                avgSize,
-                totalMeshes = activeMeshes,
-                buckets = buckets.ToDictionary(k => k.Key.ToString(), v => v.Value)
-            };
-            string json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
-            File.WriteAllText(Path.Combine(BetaSharpDir, "mesh_stats.json"), json);
-            _logger.LogInformation($"Exported mesh stats to {Path.Combine(BetaSharpDir, "mesh_stats.json")}");
-        }
-
-        ImGui.Separator();
-        ImGui.Text($"Texture Binds: {TextureStats.BindsLastFrame} (Avg: {TextureStats.AverageBindsPerFrame:F1}/f)");
-        ImGui.Text($"Active Textures: {GLTexture.ActiveTextureCount}");
-        ImGui.End();
-
-        _imGuiController.Render();
+        if (WorldRenderer?.ChunkRenderer is not { } cr) return;
+        MetricRegistry.Set(RenderMetrics.ChunksTotal, cr.TotalChunks);
+        MetricRegistry.Set(RenderMetrics.ChunksFrustum, cr.ChunksInFrustum);
+        MetricRegistry.Set(RenderMetrics.ChunksOccluded, cr.ChunksOccluded);
+        MetricRegistry.Set(RenderMetrics.ChunksRendered, cr.ChunksRendered);
+        MetricRegistry.Set(RenderMetrics.VboAllocatedMb, (float)(VertexBuffer<ChunkVertex>.Allocated / 1_000_000.0));
+        MetricRegistry.Set(RenderMetrics.MeshVersionAllocated, ChunkMeshVersion.TotalAllocated);
+        MetricRegistry.Set(RenderMetrics.MeshVersionReleased, ChunkMeshVersion.TotalReleased);
+        MetricRegistry.Set(RenderMetrics.TextureBindsLastFrame, TextureStats.BindsLastFrame);
+        MetricRegistry.Set(RenderMetrics.TextureAvgBinds, (float)TextureStats.AverageBindsPerFrame);
+        MetricRegistry.Set(RenderMetrics.TextureActive, GLTexture.ActiveTextureCount);
+        MetricRegistry.Set(RenderMetrics.EntitiesRendered, WorldRenderer.CountEntitiesRendered);
+        MetricRegistry.Set(RenderMetrics.EntitiesHidden, WorldRenderer.CountEntitiesHidden);
+        MetricRegistry.Set(RenderMetrics.EntitiesTotal, WorldRenderer.CountEntitiesTotal);
     }
 
     private void ReportFrameTelemetry(long frameStartNano, int startGcGen0, int startGcGen1, int startGcGen2)
@@ -738,6 +699,7 @@ public partial class BetaSharp :
         long frameEndNano = Stopwatch.GetTimestamp();
         double thisFrameTimeMs = (frameEndNano - frameStartNano) / 1000000.0;
         _debugTelemetry.RecordFrameTime(thisFrameTimeMs);
+        MetricRegistry.Set(ClientMetrics.FrameTimeMs, (float)thisFrameTimeMs);
 
         if (Options.DebugMode)
         {
