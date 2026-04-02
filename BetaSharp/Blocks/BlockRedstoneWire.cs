@@ -11,9 +11,9 @@ public class BlockRedstoneWire : Block
 
     public BlockRedstoneWire(int id, int textureId) : base(id, textureId, Material.PistonBreakable) => setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F / 16.0F, 1.0F);
 
-    public override int getTexture(int var1, int var2) => textureId;
+    public override int getTexture(int side, int metaD) => textureId;
 
-    public override Box? getCollisionShape(IBlockReader var1, EntityManager entities, int x, int y, int z) => null;
+    public override Box? getCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z) => null;
 
     public override bool isOpaque() => false;
 
@@ -63,6 +63,13 @@ public class BlockRedstoneWire : Block
             level.Broadcaster.SetBlocksDirty(pos.x, pos.y, pos.z, pos.x, pos.y, pos.z);
 
             NotifyWireNeighborsOfNeighborChange(level, pos.x, pos.y, pos.z);
+
+            level.Broadcaster.NotifyNeighbors(pos.x - 1, pos.y, pos.z, id);
+            level.Broadcaster.NotifyNeighbors(pos.x + 1, pos.y, pos.z, id);
+            level.Broadcaster.NotifyNeighbors(pos.x, pos.y - 1, pos.z, id);
+            level.Broadcaster.NotifyNeighbors(pos.x, pos.y + 1, pos.z, id);
+            level.Broadcaster.NotifyNeighbors(pos.x, pos.y, pos.z - 1, id);
+            level.Broadcaster.NotifyNeighbors(pos.x, pos.y, pos.z + 1, id);
         }
     }
 
@@ -271,8 +278,8 @@ public class BlockRedstoneWire : Block
         if (@event.World.IsRemote) return;
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        bool var7 = canPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z));
-        if (!var7)
+        bool placeAt = canPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z));
+        if (!placeAt)
         {
             dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, meta));
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -285,7 +292,7 @@ public class BlockRedstoneWire : Block
         base.neighborUpdate(@event);
     }
 
-    public override int getDroppedItemId(int var1) => Item.Redstone.id;
+    public override int getDroppedItemId(int blockMeta) => Item.Redstone.id;
 
     public override bool isStrongPoweringSide(IBlockReader reader, int x, int y, int z, int side) => s_wiresProvidePower.Value && isPoweringSide(reader, x, y, z, side);
 
@@ -295,44 +302,45 @@ public class BlockRedstoneWire : Block
         if (reader.GetBlockMeta(x, y, z) == 0) return false;
         if (side == 1) return true;
 
-        bool var6 = isPowerProviderOrWire(reader, x - 1, y, z, 1) || (!reader.ShouldSuffocate(x - 1, y, z) && isPowerProviderOrWire(reader, x - 1, y - 1, z, -1));
-        bool var7 = isPowerProviderOrWire(reader, x + 1, y, z, 3) || (!reader.ShouldSuffocate(x + 1, y, z) && isPowerProviderOrWire(reader, x + 1, y - 1, z, -1));
-        bool var8 = isPowerProviderOrWire(reader, x, y, z - 1, 2) || (!reader.ShouldSuffocate(x, y, z - 1) && isPowerProviderOrWire(reader, x, y - 1, z - 1, -1));
-        bool var9 = isPowerProviderOrWire(reader, x, y, z + 1, 0) || (!reader.ShouldSuffocate(x, y, z + 1) && isPowerProviderOrWire(reader, x, y - 1, z + 1, -1));
+        bool connectsMinusX = isPowerProviderOrWire(reader, x - 1, y, z, 1) || (!reader.ShouldSuffocate(x - 1, y, z) && isPowerProviderOrWire(reader, x - 1, y - 1, z, -1));
+        bool connectsPlusX = isPowerProviderOrWire(reader, x + 1, y, z, 3) || (!reader.ShouldSuffocate(x + 1, y, z) && isPowerProviderOrWire(reader, x + 1, y - 1, z, -1));
+        bool connectsMinusZ = isPowerProviderOrWire(reader, x, y, z - 1, 2) || (!reader.ShouldSuffocate(x, y, z - 1) && isPowerProviderOrWire(reader, x, y - 1, z - 1, -1));
+        bool connectsPlusZ = isPowerProviderOrWire(reader, x, y, z + 1, 0) || (!reader.ShouldSuffocate(x, y, z + 1) && isPowerProviderOrWire(reader, x, y - 1, z + 1, -1));
+
         if (reader.ShouldSuffocate(x, y + 1, z))
         {
-            return !var8 && !var7 && !var6 && !var9 && side is >= 2 and <= 5 ||
-                   side == 2 && var8 && !var6 && !var7 ||
-                   side == 3 && var9 && !var6 && !var7 ||
-                   side == 4 && var6 && !var8 && !var9 ||
-                   side == 5 && var7 && !var8 && !var9;
+            return !connectsMinusZ && !connectsPlusX && !connectsMinusX && !connectsPlusZ && side is >= 2 and <= 5 ||
+                   side == 2 && connectsMinusZ && !connectsMinusX && !connectsPlusX ||
+                   side == 3 && connectsPlusZ && !connectsMinusX && !connectsPlusX ||
+                   side == 4 && connectsMinusX && !connectsMinusZ && !connectsPlusZ ||
+                   side == 5 && connectsPlusX && !connectsMinusZ && !connectsPlusZ;
         }
 
         if (reader.ShouldSuffocate(x - 1, y, z) && isPowerProviderOrWire(reader, x - 1, y + 1, z, -1))
         {
-            var6 = true;
+            connectsMinusX = true;
         }
 
         if (reader.ShouldSuffocate(x + 1, y, z) && isPowerProviderOrWire(reader, x + 1, y + 1, z, -1))
         {
-            var7 = true;
+            connectsPlusX = true;
         }
 
         if (reader.ShouldSuffocate(x, y, z - 1) && isPowerProviderOrWire(reader, x, y + 1, z - 1, -1))
         {
-            var8 = true;
+            connectsMinusZ = true;
         }
 
         if (reader.ShouldSuffocate(x, y, z + 1) && isPowerProviderOrWire(reader, x, y + 1, z + 1, -1))
         {
-            var9 = true;
+            connectsPlusZ = true;
         }
 
-        return !var8 && !var7 && !var6 && !var9 && side is >= 2 and <= 5 ||
-               side == 2 && var8 && !var6 && !var7 ||
-               side == 3 && var9 && !var6 && !var7 ||
-               side == 4 && var6 && !var8 && !var9 ||
-               side == 5 && var7 && !var8 && !var9;
+        return !connectsMinusZ && !connectsPlusX && !connectsMinusX && !connectsPlusZ && side is >= 2 and <= 5 ||
+               side == 2 && connectsMinusZ && !connectsMinusX && !connectsPlusX ||
+               side == 3 && connectsPlusZ && !connectsMinusX && !connectsPlusX ||
+               side == 4 && connectsMinusX && !connectsMinusZ && !connectsPlusZ ||
+               side == 5 && connectsPlusX && !connectsMinusZ && !connectsPlusZ;
     }
 
     public override bool canEmitRedstonePower() => s_wiresProvidePower.Value;
@@ -345,15 +353,11 @@ public class BlockRedstoneWire : Block
         double x = @event.X + 0.5D + (@event.World.Random.NextFloat() - 0.5D) * 0.2D;
         double y = @event.Y + 1.0F / 16.0F;
         double z = @event.Z + 0.5D + (@event.World.Random.NextFloat() - 0.5D) * 0.2D;
-        float var13 = meta / 15.0F;
-        float xVel = var13 * 0.6F + 0.4F;
-        if (meta == 0)
-        {
-            xVel = 0.0F;
-        }
+        float powerRatio = meta / 15.0F;
+        float xVel = powerRatio * 0.6F + 0.4F;
 
-        float yVle = var13 * var13 * 0.7F - 0.5F;
-        float zVel = var13 * var13 * 0.6F - 0.7F;
+        float yVle = powerRatio * powerRatio * 0.7F - 0.5F;
+        float zVel = powerRatio * powerRatio * 0.6F - 0.7F;
         if (yVle < 0.0F)
         {
             yVle = 0.0F;
@@ -367,15 +371,19 @@ public class BlockRedstoneWire : Block
         @event.World.Broadcaster.AddParticle("reddust", x, y, z, xVel, yVle, zVel);
     }
 
-    public static bool isPowerProviderOrWire(IBlockReader reader, int x, int y, int z, int var4)
+    public static bool isPowerProviderOrWire(IBlockReader reader, int x, int y, int z, int direction)
     {
         int blockId = reader.GetBlockId(x, y, z);
-        if (blockId == RedstoneWire.id) return true;
         if (blockId == 0) return false;
-        if (Blocks[blockId].canEmitRedstonePower()) return true;
-        if (blockId != Repeater.id && blockId != PoweredRepeater.id) return false;
+        if (blockId == RedstoneWire.id) return true;
+
+        if (blockId != Repeater.id && blockId != PoweredRepeater.id) return Blocks[blockId].canEmitRedstonePower();
+
+        if (direction < 0) return false;
 
         int meta = reader.GetBlockMeta(x, y, z);
-        return var4 == Facings.OPPOSITE[meta & 3];
+
+        return (meta & 1) == (direction & 1);
+
     }
 }
