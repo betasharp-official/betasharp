@@ -213,9 +213,9 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
         return JsonSerializer.SerializeToElement(merged, s_jsonOptions);
     }
 
-    public bool TryGet(string name, [NotNullWhen(true)] out T? gameMode, bool shortName = false)
+    public bool TryGet(string name, [NotNullWhen(true)] out T? asset, bool shortName = false)
     {
-        gameMode = null;
+        asset = null;
         int split = name.IndexOf(':');
 
         if (split != -1)
@@ -226,14 +226,14 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
             int namespaceId = AssetNamespace.FindIndex(namespaceName, shortName);
             if (namespaceId == -1) return false;
 
-            return TryGet(namespaceId, name, out gameMode, shortName);
+            return TryGet(namespaceId, name, out asset, shortName);
         }
 
         foreach (var gm in Assets)
         {
             if (gm.Key.Name != name) continue;
 
-            gameMode = gm.Value;
+            asset = gm.Value;
             return true;
         }
 
@@ -245,7 +245,7 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
                 foreach (var gm in Assets)
                 {
                     if (gm.Key.Name[0] != name[0]) continue;
-                    gameMode = gm.Value;
+                    asset = gm.Value;
                     return true;
                 }
             }
@@ -255,7 +255,7 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
                 {
                     if (gm.Key.Name.Length <= nameLen || gm.Key.Name.Substring(0, nameLen) != name) continue;
 
-                    gameMode = gm.Value;
+                    asset = gm.Value;
                     return true;
                 }
             }
@@ -264,14 +264,14 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
         return false;
     }
 
-    public bool TryGet(int namespaceId, string name, [NotNullWhen(true)] out T? gameMode, bool shortName = false)
+    public bool TryGet(int namespaceId, string name, [NotNullWhen(true)] out T? asset, bool shortName = false)
     {
         foreach (var gm in Assets)
         {
             if (gm.Key.NamespaceId != namespaceId) continue;
             if (gm.Key.Name != name) continue;
 
-            gameMode = gm.Value;
+            asset = gm.Value;
             return true;
         }
 
@@ -284,7 +284,7 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
                 {
                     if (gm.Key.Name[0] != name[0]) continue;
                     if (gm.Key.NamespaceId != namespaceId) continue;
-                    gameMode = gm.Value;
+                    asset = gm.Value;
                     return true;
                 }
             }
@@ -295,13 +295,13 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
                     if (gm.Key.NamespaceId != namespaceId) continue;
                     if (gm.Key.Name.Length <= nameLen || gm.Key.Name.Substring(0, nameLen) != name) continue;
 
-                    gameMode = gm.Value;
+                    asset = gm.Value;
                     return true;
                 }
             }
         }
 
-        gameMode = null;
+        asset = null;
         return false;
     }
 }
