@@ -286,8 +286,7 @@ public class GameOptions
                 string result = v ? t.TranslateKey("options.on") : t.TranslateKey("options.off");
                 if (v != initialDebugMode) result += " [!]";
                 return result;
-            },
-            OnChanged = v => Profiling.Profiler.Enabled = v
+            }
         };
         RenderOccludedOption = new BoolOption("Render Occluded", "renderOccluded");
         ShowDebugGraphOption = new BoolOption("Show Debug Graph", "showDebugGraph");

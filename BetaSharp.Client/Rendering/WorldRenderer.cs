@@ -434,12 +434,13 @@ public class WorldRenderer : IWorldEventListener
 
     public void RenderClouds(float var1)
     {
-        Profiler.Start("renderClouds");
-        if (!_game.World.Dimension.IsNether)
+        using (Profiler.Begin("RenderClouds"))
         {
-            RenderCloudsFancy(var1);
+            if (!_game.World.Dimension.IsNether)
+            {
+                RenderCloudsFancy(var1);
+            }
         }
-        Profiler.Stop("renderClouds");
     }
 
     private void BuildCloudDisplayLists()

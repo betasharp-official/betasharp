@@ -579,70 +579,70 @@ public class Chunk
         int sizeZ = maxZ - minZ;
         bool isFullChunk = sizeX == 16 && sizeY == 128 && sizeZ == 16;
 
-        Profiler.Start(isFullChunk ? "loadFromPacketFull" : "loadFromPacketSmall");
-
-        for (int x = minX; x < maxX; ++x)
+        using (Profiler.Begin(isFullChunk ? "LoadChunkFull" : "LoadChunkPartial"))
         {
-            for (int z = minZ; z < maxZ; ++z)
+            for (int x = minX; x < maxX; ++x)
             {
-                int index = x << 11 | z << 7 | minY;
-                Buffer.BlockCopy(bytes, offset, Blocks, index, sizeY);
-                offset += sizeY;
-            }
-        }
-
-        PopulateHeightMapOnly();
-
-        int halfSizeY = sizeY / 2;
-
-        for (int x = minX; x < maxX; ++x)
-        {
-            for (int z = minZ; z < maxZ; ++z)
-            {
-                int index = (x << 11 | z << 7 | minY) >> 1;
-                Buffer.BlockCopy(bytes, offset, Meta.Bytes, index, halfSizeY);
-                offset += halfSizeY;
-            }
-        }
-
-        for (int x = minX; x < maxX; ++x)
-        {
-            for (int z = minZ; z < maxZ; ++z)
-            {
-                int index = (x << 11 | z << 7 | minY) >> 1;
-                Buffer.BlockCopy(bytes, offset, BlockLight.Bytes, index, halfSizeY);
-                offset += halfSizeY;
-            }
-        }
-
-        for (int x = minX; x < maxX; ++x)
-        {
-            for (int z = minZ; z < maxZ; ++z)
-            {
-                int index = (x << 11 | z << 7 | minY) >> 1;
-                Buffer.BlockCopy(bytes, offset, SkyLight.Bytes, index, halfSizeY);
-                offset += halfSizeY;
-            }
-        }
-
-        for (int x = minX; x < maxX; ++x)
-        {
-            for (int z = minZ; z < maxZ; ++z)
-            {
-                for (int y = minY; y < maxY; y++)
+                for (int z = minZ; z < maxZ; ++z)
                 {
-                    int id = GetBlockId(x, y, z);
-                    if (id > 0 && Block.BlocksWithEntity[id])
+                    int index = x << 11 | z << 7 | minY;
+                    Buffer.BlockCopy(bytes, offset, Blocks, index, sizeY);
+                    offset += sizeY;
+                }
+            }
+
+            PopulateHeightMapOnly();
+
+            int halfSizeY = sizeY / 2;
+
+            for (int x = minX; x < maxX; ++x)
+            {
+                for (int z = minZ; z < maxZ; ++z)
+                {
+                    int index = (x << 11 | z << 7 | minY) >> 1;
+                    Buffer.BlockCopy(bytes, offset, Meta.Bytes, index, halfSizeY);
+                    offset += halfSizeY;
+                }
+            }
+
+            for (int x = minX; x < maxX; ++x)
+            {
+                for (int z = minZ; z < maxZ; ++z)
+                {
+                    int index = (x << 11 | z << 7 | minY) >> 1;
+                    Buffer.BlockCopy(bytes, offset, BlockLight.Bytes, index, halfSizeY);
+                    offset += halfSizeY;
+                }
+            }
+
+            for (int x = minX; x < maxX; ++x)
+            {
+                for (int z = minZ; z < maxZ; ++z)
+                {
+                    int index = (x << 11 | z << 7 | minY) >> 1;
+                    Buffer.BlockCopy(bytes, offset, SkyLight.Bytes, index, halfSizeY);
+                    offset += halfSizeY;
+                }
+            }
+
+            for (int x = minX; x < maxX; ++x)
+            {
+                for (int z = minZ; z < maxZ; ++z)
+                {
+                    for (int y = minY; y < maxY; y++)
                     {
-                        GetBlockEntity(x, y, z);
+                        int id = GetBlockId(x, y, z);
+                        if (id > 0 && Block.BlocksWithEntity[id])
+                        {
+                            GetBlockEntity(x, y, z);
+                        }
                     }
                 }
             }
-        }
 
-        Profiler.Stop(isFullChunk ? "loadFromPacketFull" : "loadFromPacketSmall");
-        Loaded = true;
-        return offset;
+            Loaded = true;
+            return offset;
+        }
     }
 
     public int ToPacket(byte[] bytes, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, int offset)

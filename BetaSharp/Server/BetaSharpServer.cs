@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using BetaSharp.Diagnostics;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Profiling;
 using BetaSharp.Server.Command;
 using BetaSharp.Server.Entities;
 using BetaSharp.Server.Internal;
@@ -280,6 +281,7 @@ public abstract class BetaSharpServer : ICommandOutput
 
     private void run()
     {
+        Profiler.RegisterServerThread();
         try
         {
             if (Init())

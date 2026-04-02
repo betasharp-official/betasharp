@@ -247,9 +247,7 @@ public partial class BetaSharp :
         Options.ReloadChunks += () => { WorldRenderer.ChunkRenderer.MarkAllVisibleChunksDirty(); };
 
         DebugComponentsStorage = new DebugComponentsStorage(this, _gameDataDir);
-        Profiler.Enabled = Options.DebugMode;
-        Profiler.EnableLagSpikeDetection = Options.DebugMode;
-        Profiler.LagSpikeDirectory = Path.Combine(_gameDataDir, "logs", "lag_spikes");
+        Profiler.RegisterMainThread();
 
         try
         {
@@ -518,11 +516,7 @@ public partial class BetaSharp :
                 int startGcGen1 = GC.CollectionCount(1);
                 int startGcGen2 = GC.CollectionCount(2);
 
-                if (Options.DebugMode)
-                {
-                    Profiler.Update(Timer.DeltaTime);
-                    Profiler.PushGroup("run");
-                }
+                Profiler.Update(Timer.DeltaTime);
 
                 try
                 {
@@ -555,15 +549,15 @@ public partial class BetaSharp :
                     }
 
                     long tickStartTime = Stopwatch.GetTimestamp();
-                    if (Options.DebugMode) Profiler.PushGroup("runTicks");
 
-                    for (int tickIndex = 0; tickIndex < Timer.elapsedTicks; ++tickIndex)
+                    using (Profiler.Begin("Ticks"))
                     {
-                        ++TicksRan;
-                        RunTick(Timer.renderPartialTicks);
+                        for (int tickIndex = 0; tickIndex < Timer.elapsedTicks; ++tickIndex)
+                        {
+                            ++TicksRan;
+                            RunTick(Timer.renderPartialTicks);
+                        }
                     }
-
-                    if (Options.DebugMode) Profiler.PopGroup();
 
                     long tickElapsedTime = Stopwatch.GetTimestamp() - tickStartTime;
                     CheckGLError("Pre render");
@@ -573,16 +567,18 @@ public partial class BetaSharp :
 
                     if (World != null)
                     {
-                        if (Options.DebugMode) Profiler.Start("updateLighting");
-                        World.Lighting.DoLightingUpdates();
-                        if (Options.DebugMode) Profiler.Stop("updateLighting");
+                        using (Profiler.Begin("UpdateLighting"))
+                        {
+                            World.Lighting.DoLightingUpdates();
+                        }
                     }
 
                     if (!Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
-                        if (Options.DebugMode) Profiler.Start("wait");
-                        Display.update();
-                        if (Options.DebugMode) Profiler.Stop("wait");
+                        using (Profiler.Begin("DisplayPresent"))
+                        {
+                            Display.update();
+                        }
                     }
 
                     if (Player != null && Player.isInsideWall())
@@ -594,18 +590,16 @@ public partial class BetaSharp :
                     {
                         PlayerController?.setPartialTime(Timer.renderPartialTicks);
 
-                        if (Options.DebugMode)
-                        {
-                            Profiler.PushGroup("render");
-                            TextureStats.StartFrame();
-                        }
+                        if (Options.DebugMode) TextureStats.StartFrame();
 
-                        GameRenderer.onFrameUpdate(Timer.renderPartialTicks);
+                        using (Profiler.Begin("Render"))
+                        {
+                            GameRenderer.onFrameUpdate(Timer.renderPartialTicks);
+                        }
 
                         if (Options.DebugMode)
                         {
                             TextureStats.EndFrame();
-                            Profiler.PopGroup();
                             PushRenderMetrics();
                         }
                     }
@@ -701,34 +695,8 @@ public partial class BetaSharp :
         _debugTelemetry.RecordFrameTime(thisFrameTimeMs);
         MetricRegistry.Set(ClientMetrics.FrameTimeMs, (float)thisFrameTimeMs);
 
-        if (Options.DebugMode)
-        {
-            Profiler.Record("frame Time", thisFrameTimeMs);
-            Profiler.CaptureFrame();
-            Profiler.PopGroup();
-
-            if (Display.isActive())
-            {
-                int endGcGen0 = GC.CollectionCount(0);
-                int endGcGen1 = GC.CollectionCount(1);
-                int endGcGen2 = GC.CollectionCount(2);
-
-                int gc0Diff = endGcGen0 - startGcGen0;
-                int gc1Diff = endGcGen1 - startGcGen1;
-                int gc2Diff = endGcGen2 - startGcGen2;
-
-                string gcContext = "";
-                if (gc0Diff > 0 || gc1Diff > 0 || gc2Diff > 0)
-                {
-                    gcContext = $"GC Collections this frame: Gen0[{gc0Diff}] Gen1[{gc1Diff}] Gen2[{gc2Diff}]";
-                }
-
-                int fpsLimit = 30 + (int)(Options.LimitFramerate * 210.0f);
-                double msPerFrameTarget = fpsLimit == 240 ? 16.666 : (1000.0 / fpsLimit);
-                Profiler.LagSpikeThresholdMs = msPerFrameTarget * 2.0;
-                Profiler.DetectLagSpike(thisFrameTimeMs, string.IsNullOrEmpty(gcContext) ? DebugText : $"{DebugText} - {gcContext}", true);
-            }
-        }
+        Profiler.Record("FrameTime", thisFrameTimeMs);
+        Profiler.CaptureFrame();
     }
 
     #endregion
@@ -737,11 +705,12 @@ public partial class BetaSharp :
 
     public void RunTick(float partialTicks)
     {
-        Profiler.PushGroup("runTick");
+        using var _tick = Profiler.Begin("Tick");
 
-        Profiler.Start("statFileWriter.SyncStatsIfReady");
-        StatFileWriter.SyncStatsIfReady();
-        Profiler.Stop("statFileWriter.SyncStatsIfReady");
+        using (Profiler.Begin("SyncStats"))
+        {
+            StatFileWriter.SyncStatsIfReady();
+        }
 
         bool f11Down = Keyboard.isKeyDown(Keyboard.KEY_F11);
         if (f11Down && !_prevF11Down)
@@ -762,30 +731,30 @@ public partial class BetaSharp :
             }
         }
 
-        Profiler.Start("HUD.update");
-        HUD.Update(1.0f);
-        Profiler.Stop("HUD.update");
+        using (Profiler.Begin("UpdateHud"))
+        {
+            HUD.Update(1.0f);
+        }
 
         GameRenderer.UpdateTargetedEntity(1.0F);
         GameRenderer.tick(partialTicks);
 
-        Profiler.Start("chunkProviderLoadOrGenerateSetCurrentChunkOver");
-        Profiler.Stop("chunkProviderLoadOrGenerateSetCurrentChunkOver");
-
-        Profiler.Start("playerControllerUpdate");
-        if (!IsGamePaused && World != null)
+        using (Profiler.Begin("UpdatePlayerController"))
         {
-            PlayerController.updateController();
+            if (!IsGamePaused && World != null)
+            {
+                PlayerController.updateController();
+            }
         }
-        Profiler.Stop("playerControllerUpdate");
 
-        Profiler.Start("updateDynamicTextures");
-        TextureManager.BindTexture(TextureManager.GetTextureId("/terrain.png"));
-        if (!IsGamePaused)
+        using (Profiler.Begin("UpdateDynamicTextures"))
         {
-            TextureManager.Tick();
+            TextureManager.BindTexture(TextureManager.GetTextureId("/terrain.png"));
+            if (!IsGamePaused)
+            {
+                TextureManager.Tick();
+            }
         }
-        Profiler.Stop("updateDynamicTextures");
 
         if (CurrentScreen == null && Player != null)
         {
@@ -840,36 +809,39 @@ public partial class BetaSharp :
                 World.SetDifficulty(3);
             }
 
-            Profiler.Start("entityRendererUpdate");
-            if (!IsGamePaused)
+            using (Profiler.Begin("UpdateEntityRenderer"))
             {
-                GameRenderer.updateCamera();
+                if (!IsGamePaused)
+                {
+                    GameRenderer.updateCamera();
+                }
             }
-            Profiler.Stop("entityRendererUpdate");
 
             if (!IsGamePaused)
             {
                 WorldRenderer.UpdateClouds();
             }
 
-            Profiler.PushGroup("theWorldUpdateEntities");
-            if (!IsGamePaused)
+            using (Profiler.Begin("TickEntities"))
             {
-                if (World.Environment.LightningTicksLeft > 0)
+                if (!IsGamePaused)
                 {
-                    --World.Environment.LightningTicksLeft;
+                    if (World.Environment.LightningTicksLeft > 0)
+                    {
+                        --World.Environment.LightningTicksLeft;
+                    }
+                    World.Entities.TickEntities();
                 }
-                World.Entities.TickEntities();
             }
-            Profiler.PopGroup();
 
-            Profiler.PushGroup("theWorld.tick");
-            if (!IsGamePaused || (IsMultiplayerWorld() && InternalServer == null))
+            using (Profiler.Begin("TickWorld"))
             {
-                World.allowSpawning(Options.Difficulty > 0, true);
-                World.Tick();
+                if (!IsGamePaused || (IsMultiplayerWorld() && InternalServer == null))
+                {
+                    World.allowSpawning(Options.Difficulty > 0, true);
+                    World.Tick();
+                }
             }
-            Profiler.PopGroup();
 
             if (!IsGamePaused && World != null)
             {
@@ -883,7 +855,6 @@ public partial class BetaSharp :
         }
 
         _systemTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        Profiler.PopGroup();
     }
 
     #endregion
