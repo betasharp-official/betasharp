@@ -44,7 +44,6 @@ using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Backends.GLFW;
 using Hexa.NET.ImGui.Backends.OpenGL3;
 using Microsoft.Extensions.Logging;
-using Silk.NET.GLFW;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
@@ -458,7 +457,8 @@ public partial class BetaSharp :
             try { ChangeWorld(null); } catch (Exception) { }
             try { GLAllocation.deleteTexturesAndDisplayLists(); } catch (Exception) { }
 
-            try { ImGuiImplOpenGL3.Shutdown(); ImGuiImplGLFW.Shutdown(); ImGui.DestroyContext(); } catch (Exception) { }
+            // don't bother trying to shutdown imgui because it keeps hanging/crashing
+
             SkinManager.Dispose();
             TextureManager.Dispose();
             SoundManager.Dispose();
