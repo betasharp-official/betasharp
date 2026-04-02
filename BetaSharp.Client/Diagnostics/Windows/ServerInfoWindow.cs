@@ -3,9 +3,13 @@ using ImGuiNET;
 
 namespace BetaSharp.Client.Diagnostics.Windows;
 
-internal sealed class ServerInfoWindow(FrameGraph msptGraph) : DebugWindow
+internal sealed class ServerInfoWindow(DebugWindowContext ctx) : DebugWindow
 {
+    private readonly FrameGraph _msptGraph = new("MSPT", 240);
+
     public override string Title => "Server Info";
+
+    public void PushMspt(float mspt) => _msptGraph.Push(mspt);
 
     protected override void OnDraw()
     {
@@ -29,7 +33,7 @@ internal sealed class ServerInfoWindow(FrameGraph msptGraph) : DebugWindow
             ImGui.Text($"Players:  {MetricRegistry.Get(ServerMetrics.PlayerCount)}");
 
             ImGui.Spacing();
-            msptGraph.Draw(40f, 50.0f);
+            _msptGraph.Draw(40f, 50.0f);
         }
     }
 }

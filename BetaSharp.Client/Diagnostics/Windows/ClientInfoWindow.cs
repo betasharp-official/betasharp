@@ -3,9 +3,13 @@ using ImGuiNET;
 
 namespace BetaSharp.Client.Diagnostics.Windows;
 
-internal sealed class ClientInfoWindow(BetaSharp game, FrameGraph frameTimeGraph) : DebugWindow
+internal sealed class ClientInfoWindow(DebugWindowContext ctx) : DebugWindow
 {
+    private readonly FrameGraph _frameTimeGraph = new("Frame Time (ms)", 240);
+
     public override string Title => "Client Info";
+
+    public void PushFrameTime(float ms) => _frameTimeGraph.Push(ms);
 
     protected override void OnDraw()
     {
@@ -14,7 +18,7 @@ internal sealed class ClientInfoWindow(BetaSharp game, FrameGraph frameTimeGraph
             ImGui.Text($"FPS:        {MetricRegistry.Get(ClientMetrics.Fps)}");
             ImGui.Text($"Frame Time: {MetricRegistry.Get(ClientMetrics.FrameTimeMs):F2} ms");
             ImGui.Spacing();
-            frameTimeGraph.Draw(40f, 0.33f);
+            _frameTimeGraph.Draw(40f, 0.33f);
         }
 
         if (ImGui.CollapsingHeader("Memory", ImGuiTreeNodeFlags.DefaultOpen))
@@ -29,7 +33,7 @@ internal sealed class ClientInfoWindow(BetaSharp game, FrameGraph frameTimeGraph
 
         if (ImGui.CollapsingHeader("World", ImGuiTreeNodeFlags.DefaultOpen))
         {
-            string chunkInfo = game.World?.GetDebugInfo() ?? "No world loaded.";
+            string chunkInfo = ctx.World?.GetDebugInfo() ?? "No world loaded.";
             ImGui.Text(chunkInfo);
         }
     }

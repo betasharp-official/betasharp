@@ -340,7 +340,7 @@ public partial class BetaSharp :
             IInputContext input = window.CreateInput();
             _imGuiController = new(((LegacyGL)GLManager.GL).SilkGL, window, input);
             _imGuiController.MakeCurrent();
-            _debugWindowManager = new DebugWindowManager(_imGuiController, this);
+            _debugWindowManager = new DebugWindowManager(_imGuiController, this, () => InGameHasFocus);
         }
         catch (Exception e)
         {

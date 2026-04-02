@@ -2,13 +2,13 @@ using ImGuiNET;
 
 namespace BetaSharp.Client.Diagnostics.Windows;
 
-internal sealed class SystemWindow(BetaSharp game) : DebugWindow
+internal sealed class SystemWindow(DebugWindowContext ctx) : DebugWindow
 {
     public override string Title => "System";
 
     protected override void OnDraw()
     {
-        DebugSystemSnapshot s = game.DebugSystemSnapshot;
+        DebugSystemSnapshot s = ctx.DebugSystemSnapshot;
 
         ImGui.Text("Build: " + BetaSharp.Version);
         ImGui.Text($"OS:     {s.OsDescription}");
