@@ -343,7 +343,7 @@ public partial class BetaSharp :
             ImGuiImplOpenGL3.SetCurrentContext(ImGui.GetCurrentContext());
 
             ImGuiIO* io = ImGui.GetIO();
-            io->ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
+            io->ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard | ImGuiConfigFlags.DockingEnable;
 
             ImGuiImplGLFW.InitForOpenGL((GLFWwindow*)Display.getWindowHandle(), true);
             ImGuiImplOpenGL3.Init("#version 330 core");
