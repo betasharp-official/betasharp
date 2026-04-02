@@ -1,4 +1,4 @@
-﻿namespace BetaSharp.Launcher.Features.Home;
+namespace BetaSharp.Launcher.Features.Home;
 
 internal sealed class BetaSharpRelease(string name, string date, string url)
 {

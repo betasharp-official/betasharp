@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Mojang.Entitlements;
 using BetaSharp.Launcher.Features.Mojang.Profile;

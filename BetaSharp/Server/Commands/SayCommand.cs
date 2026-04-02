@@ -1,4 +1,4 @@
-﻿using BetaSharp.Network.Packets.Play;
+using BetaSharp.Network.Packets.Play;
 using BetaSharp.Server.Command;
 using Microsoft.Extensions.Logging;
 

@@ -1,4 +1,4 @@
-﻿namespace BetaSharp;
+namespace BetaSharp;
 
 [Serializable]
 public class GameMode

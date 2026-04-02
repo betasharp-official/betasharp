@@ -1,7 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
-using ImGuiNET;
+using Hexa.NET.ImGui;
 
 namespace BetaSharp.Client.Diagnostics.Windows;
 

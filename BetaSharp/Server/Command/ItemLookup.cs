@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using BetaSharp.Blocks;
 using BetaSharp.Items;
 

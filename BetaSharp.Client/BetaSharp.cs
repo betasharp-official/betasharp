@@ -40,12 +40,13 @@ using BetaSharp.Worlds.Colors;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
+using Hexa.NET.ImGui;
+using Hexa.NET.ImGui.Backends.GLFW;
+using Hexa.NET.ImGui.Backends.OpenGL3;
 using Microsoft.Extensions.Logging;
-using Silk.NET.Input;
+using Silk.NET.GLFW;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
-using Silk.NET.OpenGL.Extensions.ImGui;
-using Silk.NET.Windowing;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client;
@@ -152,7 +153,7 @@ public partial class BetaSharp :
     private readonly int _serverPort;
     private readonly bool _hideQuitButton;
 
-    private ImGuiController _imGuiController;
+
     private DebugWindowManager? _debugWindowManager;
     private GLErrorHandler _glErrorHandler;
     private string _gameDataDir;
@@ -334,16 +335,25 @@ public partial class BetaSharp :
 
         try
         {
-            IWindow window = Display.getWindow();
-            IInputContext input = window.CreateInput();
-            _imGuiController = new(((LegacyGL)GLManager.GL).SilkGL, window, input);
-            _imGuiController.MakeCurrent();
-            _debugWindowManager = new DebugWindowManager(_imGuiController, this, () => InGameHasFocus);
+            ImGui.CreateContext();
+
+            // ImGuiImplGLFW and ImGuiImplOpenGL3 are compiled into separate native DLLs,
+            // each with their own GImGui context pointer. We must share the context created
+            // by cimgui.dll with both backend DLLs before calling their Init functions.
+            ImGuiImplGLFW.SetCurrentContext(ImGui.GetCurrentContext());
+            ImGuiImplOpenGL3.SetCurrentContext(ImGui.GetCurrentContext());
+
+            ImGuiIO* io = ImGui.GetIO();
+            io->ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
+
+            ImGuiImplGLFW.InitForOpenGL((GLFWwindow*)Display.getWindowHandle(), true);
+            ImGuiImplOpenGL3.Init("#version 330 core");
+
+            _debugWindowManager = new DebugWindowManager(this, () => InGameHasFocus);
         }
         catch (Exception e)
         {
             _logger.LogError($"Failed to initialize ImGui: {e}");
-            _imGuiController = null;
         }
 
         Keyboard.create(Display.getGlfw(), Display.getWindowHandle());
@@ -448,6 +458,7 @@ public partial class BetaSharp :
             try { ChangeWorld(null); } catch (Exception) { }
             try { GLAllocation.deleteTexturesAndDisplayLists(); } catch (Exception) { }
 
+            try { ImGuiImplOpenGL3.Shutdown(); ImGuiImplGLFW.Shutdown(); ImGui.DestroyContext(); } catch (Exception) { }
             SkinManager.Dispose();
             TextureManager.Dispose();
             SoundManager.Dispose();
@@ -606,7 +617,14 @@ public partial class BetaSharp :
 
                     if (_debugWindowManager != null && Timer.DeltaTime > 0.0f && Options.ShowDebugInfo && Options.DebugMode)
                     {
+                        ImGuiImplOpenGL3.NewFrame();
+                        ImGuiImplGLFW.NewFrame();
+                        ImGui.NewFrame();
+
                         _debugWindowManager.Render(Timer.DeltaTime);
+
+                        ImGui.Render();
+                        ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
                     }
 
                     if (!Display.isActive())

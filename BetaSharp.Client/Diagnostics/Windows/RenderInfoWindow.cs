@@ -1,5 +1,5 @@
 using BetaSharp.Diagnostics;
-using ImGuiNET;
+using Hexa.NET.ImGui;
 
 namespace BetaSharp.Client.Diagnostics.Windows;
 

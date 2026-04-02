@@ -1,4 +1,4 @@
-﻿namespace BetaSharp.Tests;
+namespace BetaSharp.Tests;
 
 public class UnitTest1
 {
