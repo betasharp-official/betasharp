@@ -7,11 +7,6 @@ internal abstract class DebugWindow
     public abstract string Title { get; }
     public bool IsVisible { get; set; } = true;
 
-    /// <summary>
-    /// Called by <see cref="DebugWindowManager"/> each frame. The default implementation wraps
-    /// <see cref="OnDraw"/> in an <c>ImGui.Begin/End</c> pair and handles the close button.
-    /// Override entirely for windows that manage their own ImGui windows (e.g. the profiler).
-    /// </summary>
     public virtual void Draw()
     {
         if (!IsVisible) return;
@@ -24,4 +19,15 @@ internal abstract class DebugWindow
     }
 
     protected virtual void OnDraw() { }
+
+    /// <summary>
+    /// Renders this window's content inline (no ImGui Begin/End), wrapped in a collapsing header.
+    /// Used when composing multiple windows into a single panel.
+    /// </summary>
+    internal void DrawSection()
+    {
+        if (!IsVisible) return;
+        if (ImGui.CollapsingHeader(Title, ImGuiTreeNodeFlags.DefaultOpen))
+            OnDraw();
+    }
 }

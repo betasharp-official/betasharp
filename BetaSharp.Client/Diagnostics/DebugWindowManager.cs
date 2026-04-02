@@ -8,6 +8,8 @@ internal sealed class DebugWindowManager
 {
     private readonly Func<bool> _inGameHasFocus;
     private readonly List<DebugWindow> _windows;
+    private readonly List<DebugWindow> _liveStatsWindows;
+    private readonly List<DebugWindow> _systemsWindows;
     private readonly ClientInfoWindow _clientInfoWindow;
     private readonly ServerInfoWindow _serverInfoWindow;
     private bool _dockInitialized;
@@ -20,16 +22,22 @@ internal sealed class DebugWindowManager
         _clientInfoWindow = new ClientInfoWindow(ctx);
         _serverInfoWindow = new ServerInfoWindow(ctx);
 
-        _windows =
+        _liveStatsWindows =
         [
-            new ProfilerWindow(),
-            new RenderInfoWindow(ctx),
-            _serverInfoWindow,
-            _clientInfoWindow,
             new NetworkInfoWindow(),
+            _clientInfoWindow,
             new LocalPlayerInfoWindow(ctx),
-            new SystemWindow(ctx),
+            _serverInfoWindow,
         ];
+
+        _systemsWindows =
+        [
+            new SystemWindow(ctx),
+            new RenderInfoWindow(ctx),
+            new ProfilerWindow(),
+        ];
+
+        _windows = [.. _liveStatsWindows, .. _systemsWindows];
     }
 
     public unsafe void Render(float deltaTime)
@@ -59,15 +67,13 @@ internal sealed class DebugWindowManager
             ImGuiP.DockBuilderSplitNode(dockMainId, ImGuiDir.Left, 0.2f, &dockIdLeft, &dockMainId);
             ImGuiP.DockBuilderSplitNode(dockMainId, ImGuiDir.Right, 0.2f, &dockIdRight, &dockMainId);
 
-            ImGuiP.DockBuilderDockWindow("Debug Dashboard", dockIdLeft);
-            ImGuiP.DockBuilderDockWindow("Client Info", dockIdLeft);
-            ImGuiP.DockBuilderDockWindow("Server Info", dockIdLeft);
-            ImGuiP.DockBuilderDockWindow("Local Player", dockIdLeft);
+            // Left — live stats
+            ImGuiP.DockBuilderDockWindow("Live Stats", dockIdLeft);
 
-            ImGuiP.DockBuilderDockWindow("Profiler", dockIdRight);
-            ImGuiP.DockBuilderDockWindow("Network Info", dockIdRight);
-            ImGuiP.DockBuilderDockWindow("Render Info", dockIdRight);
+            // Right — systems / deep insight
             ImGuiP.DockBuilderDockWindow("System", dockIdRight);
+            ImGuiP.DockBuilderDockWindow("Render Info", dockIdRight);
+            ImGuiP.DockBuilderDockWindow("Profiler", dockIdRight);
 
             ImGuiP.DockBuilderDockWindow("Game Viewport", dockMainId);
 
@@ -75,14 +81,25 @@ internal sealed class DebugWindowManager
         }
 
         DrawDashboard();
+        DrawLiveStatsPanel();
 
         ImGui.SetNextWindowBgAlpha(0.0f);
         ImGuiWindowFlags gwFlags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoBackground;
         if (ImGui.Begin("Game Viewport", gwFlags)) { }
         ImGui.End();
 
-        foreach (DebugWindow window in _windows)
+        foreach (DebugWindow window in _systemsWindows)
             window.Draw();
+    }
+
+    private void DrawLiveStatsPanel()
+    {
+        if (ImGui.Begin("Live Stats"))
+        {
+            foreach (DebugWindow window in _liveStatsWindows)
+                window.DrawSection();
+        }
+        ImGui.End();
     }
 
     private void DrawDashboard()

@@ -153,7 +153,7 @@ public partial class BetaSharp :
     private readonly bool _hideQuitButton;
 
 
-    private DebugWindowManager? _debugWindowManager;
+    private DebugWindowManager _debugWindowManager;
     private GLErrorHandler _glErrorHandler;
     private string _gameDataDir;
 
@@ -332,32 +332,27 @@ public partial class BetaSharp :
             GameOptions.MaxAnisotropy = 1.0f;
         }
 
-        try
-        {
-            ImGui.CreateContext();
+        ImGui.CreateContext();
 
-            // ImGuiImplGLFW and ImGuiImplOpenGL3 are compiled into separate native DLLs,
-            // each with their own GImGui context pointer. We must share the context created
-            // by cimgui.dll with both backend DLLs before calling their Init functions.
-            ImGuiImplGLFW.SetCurrentContext(ImGui.GetCurrentContext());
-            ImGuiImplOpenGL3.SetCurrentContext(ImGui.GetCurrentContext());
+        // ImGuiImplGLFW and ImGuiImplOpenGL3 are compiled into separate native DLLs,
+        // each with their own GImGui context pointer. We must share the context created
+        // by cimgui.dll with both backend DLLs before calling their Init functions.
+        ImGuiImplGLFW.SetCurrentContext(ImGui.GetCurrentContext());
+        ImGuiImplOpenGL3.SetCurrentContext(ImGui.GetCurrentContext());
 
-            ImGuiIO* io = ImGui.GetIO();
-            io->ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard | ImGuiConfigFlags.DockingEnable;
+        ImGuiIO* io = ImGui.GetIO();
+        io->ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard | ImGuiConfigFlags.DockingEnable;
 
-            ImGuiImplGLFW.InitForOpenGL((GLFWwindow*)Display.getWindowHandle(), true);
-            ImGuiImplOpenGL3.Init("#version 330 core");
-
-            _debugWindowManager = new DebugWindowManager(this, () => InGameHasFocus);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError($"Failed to initialize ImGui: {e}");
-        }
-
+        // Install game input callbacks first so the ImGui GLFW backend can chain to them.
         Keyboard.create(Display.getGlfw(), Display.getWindowHandle());
         Mouse.create(Display.getGlfw(), Display.getWindowHandle(), Display.getWidth(), Display.getHeight());
         Controller.Create(Display.getGlfw(), Display.getWindowHandle());
+
+        ImGuiImplGLFW.InitForOpenGL((GLFWwindow*)Display.getWindowHandle(), true);
+        ImGuiImplOpenGL3.Init("#version 330 core");
+
+        _debugWindowManager = new DebugWindowManager(this, () => InGameHasFocus);
+
         ControllerManager.Initialize(this);
         MouseHelper = new MouseHelper();
 
