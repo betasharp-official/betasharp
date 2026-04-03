@@ -12,7 +12,11 @@ internal sealed class DebugWindowManager
     private readonly List<DebugWindow> _systemsWindows;
     private readonly ClientInfoWindow _clientInfoWindow;
     private readonly ServerInfoWindow _serverInfoWindow;
+    private readonly ConsoleWindow _consoleWindow;
     private bool _dockInitialized;
+
+    /// <summary>True when the "Game Viewport" ImGui window is the focused window (i.e. the user last clicked the game area).</summary>
+    public bool GameViewportFocused { get; private set; }
 
     public DebugWindowManager(BetaSharp game, Func<bool> inGameHasFocus)
     {
@@ -21,6 +25,7 @@ internal sealed class DebugWindowManager
         var ctx = new DebugWindowContext(game);
         _clientInfoWindow = new ClientInfoWindow(ctx);
         _serverInfoWindow = new ServerInfoWindow(ctx);
+        _consoleWindow = new ConsoleWindow(ctx);
 
         _liveStatsWindows =
         [
@@ -37,7 +42,7 @@ internal sealed class DebugWindowManager
             new ProfilerWindow(),
         ];
 
-        _windows = [.. _liveStatsWindows, .. _systemsWindows];
+        _windows = [.. _liveStatsWindows, .. _systemsWindows, _consoleWindow];
     }
 
     public unsafe void Render(float deltaTime)
@@ -47,9 +52,13 @@ internal sealed class DebugWindowManager
 
         ImGuiIO* io = ImGui.GetIO();
         if (_inGameHasFocus())
+        {
             io->ConfigFlags |= ImGuiConfigFlags.NoMouse;
+        }
         else
+        {
             io->ConfigFlags &= ~ImGuiConfigFlags.NoMouse;
+        }
 
         ImGui.PushStyleColor(ImGuiCol.WindowBg, new System.Numerics.Vector4(0, 0, 0, 0));
         uint dockspaceId = ImGui.DockSpaceOverViewport(ImGui.GetMainViewport(), ImGuiDockNodeFlags.PassthruCentralNode);
@@ -63,9 +72,10 @@ internal sealed class DebugWindowManager
             ImGuiP.DockBuilderSetNodeSize(dockspaceId, ImGui.GetMainViewport().Size);
 
             uint dockMainId = dockspaceId;
-            uint dockIdLeft = 0, dockIdRight = 0;
+            uint dockIdLeft = 0, dockIdRight = 0, dockIdBottom = 0;
             ImGuiP.DockBuilderSplitNode(dockMainId, ImGuiDir.Left, 0.2f, &dockIdLeft, &dockMainId);
             ImGuiP.DockBuilderSplitNode(dockMainId, ImGuiDir.Right, 0.2f, &dockIdRight, &dockMainId);
+            ImGuiP.DockBuilderSplitNode(dockMainId, ImGuiDir.Down, 0.28f, &dockIdBottom, &dockMainId);
 
             // Left — live stats
             ImGuiP.DockBuilderDockWindow("Live Stats", dockIdLeft);
@@ -74,6 +84,9 @@ internal sealed class DebugWindowManager
             ImGuiP.DockBuilderDockWindow("System", dockIdRight);
             ImGuiP.DockBuilderDockWindow("Render Info", dockIdRight);
             ImGuiP.DockBuilderDockWindow("Profiler", dockIdRight);
+
+            // Bottom — console
+            ImGuiP.DockBuilderDockWindow("Console", dockIdBottom);
 
             ImGuiP.DockBuilderDockWindow("Game Viewport", dockMainId);
 
@@ -84,12 +97,23 @@ internal sealed class DebugWindowManager
         DrawLiveStatsPanel();
 
         ImGui.SetNextWindowBgAlpha(0.0f);
-        ImGuiWindowFlags gwFlags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoBackground;
-        if (ImGui.Begin("Game Viewport", gwFlags)) { }
+        ImGuiWindowFlags gwFlags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoBackground;
+        if (ImGui.Begin("Game Viewport", gwFlags))
+        {
+            GameViewportFocused = ImGui.IsWindowFocused();
+        }
+        else
+        {
+            GameViewportFocused = false;
+        }
         ImGui.End();
 
         foreach (DebugWindow window in _systemsWindows)
+        {
             window.Draw();
+        }
+
+        _consoleWindow.Draw();
     }
 
     private void DrawLiveStatsPanel()
@@ -114,13 +138,5 @@ internal sealed class DebugWindowManager
             }
         }
         ImGui.End();
-    }
-
-    public void ToggleAll()
-    {
-        bool anyVisible = _windows.Exists(w => w.IsVisible);
-        bool next = !anyVisible;
-        foreach (DebugWindow window in _windows)
-            window.IsVisible = next;
     }
 }

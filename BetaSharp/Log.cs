@@ -3,11 +3,14 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp;
 
+public readonly record struct LogEntry(DateTime Timestamp, LogLevel Level, string Category, string Message, Exception? Exception);
+
 public sealed class Log
 {
     public static Log Instance { get; } = new();
 
     private readonly ILoggerFactory _factory;
+    private readonly MemoryLoggerProvider _memoryProvider = new();
 
     private bool _initialized;
     private string? _directory;
@@ -16,6 +19,7 @@ public sealed class Log
     {
         _factory = LoggerFactory.Create(builder => builder
             .SetMinimumLevel(LogLevel.Debug)
+            .AddProvider(_memoryProvider)
             .AddSimpleConsole(options => options.TimestampFormat = "yyyy-MM-dd HH:mm:ss "));
     }
 
@@ -53,6 +57,10 @@ public sealed class Log
         return _factory.CreateLogger(name);
     }
 
+    public LogEntry[] GetRecentEntries() => _memoryProvider.GetEntries();
+
+    public void ClearLog() => _memoryProvider.Clear();
+
     private void UnhandledException(Exception exception)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(_directory);
@@ -67,6 +75,52 @@ public sealed class Log
 
         File.WriteAllText(path, exception.ToString());
     }
+}
+
+internal sealed class MemoryLoggerProvider : ILoggerProvider
+{
+    private const int Capacity = 500;
+    private readonly Queue<LogEntry> _entries = new(Capacity);
+    private readonly Lock _lock = new();
+
+    private sealed class MemoryLogger(string category, MemoryLoggerProvider provider) : ILogger
+    {
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            string message = formatter(state, exception);
+            provider.Add(new LogEntry(DateTime.Now, logLevel, category, message, exception));
+        }
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+    }
+
+    public void Add(LogEntry entry)
+    {
+        lock (_lock)
+        {
+            if (_entries.Count >= Capacity)
+                _entries.Dequeue();
+            _entries.Enqueue(entry);
+        }
+    }
+
+    public LogEntry[] GetEntries()
+    {
+        lock (_lock)
+            return [.. _entries];
+    }
+
+    public void Clear()
+    {
+        lock (_lock)
+            _entries.Clear();
+    }
+
+    public ILogger CreateLogger(string categoryName) => new MemoryLogger(categoryName, this);
+
+    public void Dispose() { }
 }
 
 internal sealed class FileLoggerProvider(string path) : ILoggerProvider

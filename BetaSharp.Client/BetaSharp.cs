@@ -554,6 +554,19 @@ public partial class BetaSharp :
                         Timer.UpdateTimer();
                     }
 
+                    bool imguiThisFrame = Options.ShowDebugInfo;
+                    if (imguiThisFrame)
+                    {
+                        ImGuiImplOpenGL3.NewFrame();
+                        ImGuiImplGLFW.NewFrame();
+                        ImGui.NewFrame();
+                        ImGuiInput.CapturingKeyboard = ImGui.GetIO().WantCaptureKeyboard && !_debugWindowManager.GameViewportFocused;
+                    }
+                    else
+                    {
+                        ImGuiInput.CapturingKeyboard = false;
+                    }
+
                     long tickStartTime = Stopwatch.GetTimestamp();
 
                     using (Profiler.Begin("Ticks"))
@@ -610,12 +623,8 @@ public partial class BetaSharp :
                         }
                     }
 
-                    if (_debugWindowManager != null && Timer.DeltaTime > 0.0f && Options.ShowDebugInfo && Options.DebugMode)
+                    if (imguiThisFrame)
                     {
-                        ImGuiImplOpenGL3.NewFrame();
-                        ImGuiImplGLFW.NewFrame();
-                        ImGui.NewFrame();
-
                         _debugWindowManager.Render(Timer.DeltaTime);
 
                         ImGui.Render();
@@ -961,6 +970,12 @@ public partial class BetaSharp :
 
         while (Keyboard.Next())
         {
+            // Block key-down events when ImGui has keyboard focus.
+            if (ImGuiInput.CapturingKeyboard)
+            {
+                continue;
+            }
+
             Player?.handleKeyPress(Keyboard.getEventKey(), Keyboard.getEventKeyState());
 
             if (Keyboard.getEventKeyState())

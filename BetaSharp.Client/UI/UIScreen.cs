@@ -171,6 +171,12 @@ public abstract class UIScreen
         while (Keyboard.Next())
         {
             Context.ControllerState.IsControllerMode = false;
+
+            if (ImGuiInput.CapturingKeyboard)
+            {
+                continue;
+            }
+
             HandleKeyboardInput();
         }
         ControllerManager.UpdateGui(this);
