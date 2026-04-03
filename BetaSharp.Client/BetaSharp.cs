@@ -350,6 +350,7 @@ public partial class BetaSharp :
 
         ImGuiImplGLFW.InitForOpenGL((GLFWwindow*)Display.getWindowHandle(), true);
         ImGuiImplOpenGL3.Init("#version 330 core");
+        DebugWindowManager.ApplyStyle();
 
         _debugWindowManager = new DebugWindowManager(this, () => InGameHasFocus);
 
