@@ -6,9 +6,43 @@ namespace BetaSharp.DataAsset;
 
 public class AssetLoader<T> : AssetLoader where T : class, IAsset
 {
-    private string _path;
-    public SortedDictionary<(int NamespaceId, string Name), AssetRef<T>> Assets { get; } = new();
-    public static implicit operator SortedDictionary<(int NamespaceId, string Name), AssetRef<T>>(AssetLoader<T> loader) => loader.Assets;
+    private readonly string _path;
+    private Task? _loadTask = null;
+    private readonly Dictionary<(Namespace Namespace, string Name), AssetRef<T>> _assets = new();
+
+    public Dictionary<(Namespace Namespace, string Name), AssetRef<T>> Assets
+    {
+        get
+        {
+            if (_loadTask != null) Wait();
+            return _assets;
+        }
+    }
+
+    private protected override void Wait()
+    {
+        if (_loadTask == null) return;
+
+        if (_loadTask.IsFaulted)
+        {
+            throw _loadTask.Exception;
+        }
+        if (_loadTask.IsCompleted)
+        {
+            _loadTask = null;
+        }
+        else
+        {
+            _loadTask.Wait();
+            if (_loadTask.IsFaulted)
+            {
+                throw _loadTask.Exception;
+            }
+            _loadTask = null;
+        }
+    }
+
+    public static implicit operator Dictionary<(Namespace Namespace, string Name), AssetRef<T>>(AssetLoader<T> loader) => loader.Assets;
 
     public AssetLoader(string path, LoadLocations locations) : base(locations)
     {
@@ -17,23 +51,23 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
 
     private protected override void Clear() => Assets.Clear();
 
-    private protected override async Task OnLoadAssets(string path, bool namespaced, LoadLocations location)
+    private protected override void OnLoadAssets(string path, bool namespaced, LoadLocations location)
     {
-        if (namespaced)
+        // Complete pending loading before the next one.
+        Wait();
+        _loadTask = namespaced ? LoadAssetsFromFolders(path, location) : LoadAssets(Namespace.BetaSharp, path, location);
+    }
+
+    private async Task LoadAssetsFromFolders(string path, LoadLocations location)
+    {
+        foreach (string dir in Directory.GetDirectories(path, "*", SearchOption.TopDirectoryOnly))
         {
-            foreach (string dir in Directory.GetDirectories(path, "*", SearchOption.TopDirectoryOnly))
-            {
-                string dirName = Path.GetFileName(dir);
-                await LoadAssets(AssetNamespace.GetIndex(dirName), dir, location);
-            }
-        }
-        else
-        {
-            await LoadAssets(0, path, location);
+            string dirName = Path.GetFileName(dir);
+            await LoadAssets(Namespace.Get(dirName), dir, location);
         }
     }
 
-    private async Task LoadAssets(int namespaceId, string path, LoadLocations location)
+    private async Task LoadAssets(Namespace @namespace, string path, LoadLocations location)
     {
         path = Path.Join(path, _path);
         if (!Directory.Exists(path))
@@ -59,8 +93,7 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
                         continue;
                     }
 
-
-                    if (Assets.TryGetValue((namespaceId, key), out AssetRef<T>? assetRef))
+                    if (_assets.TryGetValue((@namespace, key), out AssetRef<T>? assetRef))
                     {
                         LoadedAssetsModify |= location;
                         if (GetReplace(item))
@@ -77,14 +110,14 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
                         continue;
                     }
 
-                    asset.NamespaceId = namespaceId;
-                    Assets.Add((asset.NamespaceId, asset.Name), new AssetRef<T>(asset));
+                    asset.Namespace = @namespace;
+                    _assets.Add((asset.Namespace, asset.Name), new AssetRef<T>(asset));
                 }
             }
             else if (obj.ValueKind == JsonValueKind.Object)
             {
                 string key = GetName(obj, file)!;
-                if (Assets.TryGetValue((namespaceId, key), out AssetRef<T>? assetRef))
+                if (_assets.TryGetValue((@namespace, key), out AssetRef<T>? assetRef))
                 {
                     LoadedAssetsModify |= location;
                     if (GetReplace(obj))
@@ -102,8 +135,8 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
                 }
 
                 asset.Name = key;
-                asset.NamespaceId = namespaceId;
-                Assets.Add((asset.NamespaceId, asset.Name), new AssetRef<T>(asset));
+                asset.Namespace = @namespace;
+                _assets.Add((asset.Namespace, asset.Name), new AssetRef<T>(asset));
             }
         }
     }
@@ -223,17 +256,17 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
             string namespaceName = name.Substring(0, split);
             name = name.Substring(split + 1);
 
-            int namespaceId = AssetNamespace.FindIndex(namespaceName, shortName);
-            if (namespaceId == -1) return false;
+            Namespace? ns = Namespace.FindIndex(namespaceName.ToLower(), shortName);
+            if (ns == null) return false;
 
-            return TryGet(namespaceId, name, out asset, shortName);
+            return TryGet(ns, name, out asset, shortName);
         }
 
-        foreach (var gm in Assets)
+        foreach (var a in Assets)
         {
-            if (gm.Key.Name != name) continue;
+            if (a.Key.Name != name) continue;
 
-            asset = gm.Value;
+            asset = a.Value;
             return true;
         }
 
@@ -242,20 +275,20 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
             int nameLen = name.Length;
             if (nameLen == 1)
             {
-                foreach (var gm in Assets)
+                foreach (var a in Assets)
                 {
-                    if (gm.Key.Name[0] != name[0]) continue;
-                    asset = gm.Value;
+                    if (a.Key.Name[0] != name[0]) continue;
+                    asset = a.Value;
                     return true;
                 }
             }
             else
             {
-                foreach (var gm in Assets)
+                foreach (var a in Assets)
                 {
-                    if (gm.Key.Name.Length <= nameLen || gm.Key.Name.Substring(0, nameLen) != name) continue;
+                    if (a.Key.Name.Length <= nameLen || a.Key.Name.Substring(0, nameLen) != name) continue;
 
-                    asset = gm.Value;
+                    asset = a.Value;
                     return true;
                 }
             }
@@ -264,14 +297,14 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
         return false;
     }
 
-    public bool TryGet(int namespaceId, string name, [NotNullWhen(true)] out T? asset, bool shortName = false)
+    public bool TryGet(Namespace ns, string name, [NotNullWhen(true)] out T? asset, bool shortName = false)
     {
-        foreach (var gm in Assets)
+        foreach (var a in Assets)
         {
-            if (gm.Key.NamespaceId != namespaceId) continue;
-            if (gm.Key.Name != name) continue;
+            if (!a.Key.Namespace.Equals(ns)) continue;
+            if (a.Key.Name != name) continue;
 
-            asset = gm.Value;
+            asset = a.Value;
             return true;
         }
 
@@ -280,22 +313,22 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
             int nameLen = name.Length;
             if (nameLen == 1)
             {
-                foreach (var gm in Assets)
+                foreach (var a in Assets)
                 {
-                    if (gm.Key.Name[0] != name[0]) continue;
-                    if (gm.Key.NamespaceId != namespaceId) continue;
-                    asset = gm.Value;
+                    if (a.Key.Name[0] != name[0]) continue;
+                    if (!a.Key.Namespace.Equals(ns)) continue;
+                    asset = a.Value;
                     return true;
                 }
             }
             else
             {
-                foreach (var gm in Assets)
+                foreach (var a in Assets)
                 {
-                    if (gm.Key.NamespaceId != namespaceId) continue;
-                    if (gm.Key.Name.Length <= nameLen || gm.Key.Name.Substring(0, nameLen) != name) continue;
+                    if (!a.Key.Namespace.Equals(ns)) continue;
+                    if (a.Key.Name.Length <= nameLen || a.Key.Name.Substring(0, nameLen) != name) continue;
 
-                    asset = gm.Value;
+                    asset = a.Value;
                     return true;
                 }
             }

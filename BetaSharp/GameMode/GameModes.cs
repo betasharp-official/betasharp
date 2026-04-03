@@ -57,41 +57,4 @@ public static class GameModes
 
     public static bool TryGet(string name, [NotNullWhen(true)] out GameMode? gameMode, bool shortName = false) =>
         GameModesLoader.TryGet(name, out gameMode, shortName);
-
-    private static GameMode NewSurvivalGameMode() => new()
-    {
-        Name = "survival",
-    };
-
-    private static GameMode NewCreativeGameMode() => new()
-    {
-        Name = "creative",
-        BrakeSpeed = 0f,
-        CanReceiveDamage = false,
-        FiniteResources = false,
-        CanBeTargeted = false,
-        BlockDrops = false,
-    };
-
-    private static GameMode NewAdventureGameMode() => new()
-    {
-        Name = "adventure",
-        CanBreak = false,
-        CanPlace = false,
-    };
-
-    private static GameMode NewSpectatorGameMode() => new()
-    {
-        Name = "spectator",
-        CanBreak = false,
-        CanPlace = false,
-        CanInteract = false,
-        CanReceiveDamage = false,
-        CanInflictDamage = false,
-        CanBeTargeted = false,
-        CanExhaustFire = false,
-        CanPickup =  false,
-        CanDrop =  false,
-        VisibleToWorld = false,
-    };
 }

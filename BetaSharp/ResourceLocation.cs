@@ -39,7 +39,7 @@ public sealed partial class ResourceLocation : IEquatable<ResourceLocation>, ICo
     private static readonly System.Text.RegularExpressions.Regex s_validPattern =
         Reg();
 
-    private static void Validate(string part, string paramName)
+    internal static void Validate(string part, string paramName)
     {
         if (string.IsNullOrEmpty(part))
             throw new ArgumentException("Must not be null or empty.", paramName);

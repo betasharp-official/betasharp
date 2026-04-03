@@ -55,7 +55,7 @@ public class GameModeCommand : ICommand
     {
         foreach (var assetRef in GameModes.GameModesLoader.Assets)
         {
-            c.Output.SendMessage(AssetNamespace.GetName(assetRef.Key.NamespaceId) + ':' + assetRef.Key.Name);
+            c.Output.SendMessage(assetRef.Value.ToString()!);
         }
     }
 

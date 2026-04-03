@@ -31,9 +31,9 @@ public abstract class AssetLoader
         Locations = locations;
     }
 
-    public static Task LoadBaseAssets() => LoadBaseAssets(LoadLocations.None);
+    public static void LoadBaseAssets() => LoadBaseAssets(LoadLocations.None);
 
-    private static async Task LoadBaseAssets(LoadLocations filter)
+    private static void LoadBaseAssets(LoadLocations filter)
     {
         RegisteredLoaders.Init();
 
@@ -48,13 +48,13 @@ public abstract class AssetLoader
             if (!loader.Locations.HasFlag(LoadLocations.Assets)) continue;
             if (!loader.LoadedAssetsModify.HasFlag(filter)) continue;
 
-            await loader.OnLoadAssets(p, false, LoadLocations.Assets);
+            loader.OnLoadAssets(p, false, LoadLocations.Assets);
         }
     }
 
-    public static Task LoadDatapackAssets(string? path) => LoadDatapackAssets(path, LoadLocations.None);
+    public static void LoadDatapackAssets(string? path) => LoadDatapackAssets(path, LoadLocations.None);
 
-    private static async Task LoadDatapackAssets(string? path, LoadLocations filter)
+    private static void LoadDatapackAssets(string? path, LoadLocations filter)
     {
         s_lastDataPath = path;
         string p = path != null ? Path.Combine(path, "datapacks") : "datapacks";
@@ -73,14 +73,14 @@ public abstract class AssetLoader
                 if (!loader.Locations.HasFlag(LoadLocations.GameDatapack)) continue;
                 if (!loader.LoadedAssetsModify.HasFlag(filter)) continue;
 
-                await loader.OnLoadAssets(assets, true, LoadLocations.GameDatapack);
+                loader.OnLoadAssets(assets, true, LoadLocations.GameDatapack);
             }
         }
     }
 
-    public static Task LoadWorldAssets(string path) => LoadWorldAssets(path, LoadLocations.None);
+    public static void LoadWorldAssets(string path) => LoadWorldAssets(path, LoadLocations.None);
 
-    private static async Task LoadWorldAssets(string path, LoadLocations filter)
+    private static void LoadWorldAssets(string path, LoadLocations filter)
     {
         s_lastWorldDataPath = path;
         s_worldAssetsLoaded = true;
@@ -101,14 +101,14 @@ public abstract class AssetLoader
                 if (!loader.Locations.HasFlag(LoadLocations.WorldDatapack)) continue;
                 if (!loader.LoadedAssetsModify.HasFlag(filter)) continue;
 
-                await loader.OnLoadAssets(assets, true, LoadLocations.WorldDatapack);
+                loader.OnLoadAssets(assets, true, LoadLocations.WorldDatapack);
             }
         }
     }
 
-    public static Task LoadResourcepackAssets(string path) => LoadResourcepackAssets(path, LoadLocations.None);
+    public static void LoadResourcepackAssets(string path) => LoadResourcepackAssets(path, LoadLocations.None);
 
-    private static async Task LoadResourcepackAssets(string path, LoadLocations filter)
+    private static void LoadResourcepackAssets(string path, LoadLocations filter)
     {
         s_lastResourcePath = path;
         string p = Path.Combine(path, "resourcepacks");
@@ -128,12 +128,12 @@ public abstract class AssetLoader
                 if (!loader.Locations.HasFlag(LoadLocations.Resourcepack)) continue;
                 if (!loader.LoadedAssetsModify.HasFlag(filter)) continue;
 
-                await loader.OnLoadAssets(assets, true, LoadLocations.Resourcepack);
+                loader.OnLoadAssets(assets, true, LoadLocations.Resourcepack);
             }
         }
     }
 
-    public static async Task UnloadWorldAssets()
+    public static void UnloadWorldAssets(bool wait = false)
     {
         if (!s_worldAssetsLoaded) return;
 
@@ -144,13 +144,15 @@ public abstract class AssetLoader
             loader.Clear();
         }
 
-        await LoadBaseAssets(LoadLocations.WorldDatapack);
-        await LoadDatapackAssets(s_lastDataPath, LoadLocations.WorldDatapack);
-        await LoadWorldAssets(s_lastWorldDataPath, LoadLocations.WorldDatapack);
-        await LoadResourcepackAssets(s_lastResourcePath, LoadLocations.WorldDatapack);
+        LoadBaseAssets(LoadLocations.WorldDatapack);
+        LoadDatapackAssets(s_lastDataPath, LoadLocations.WorldDatapack);
+        LoadWorldAssets(s_lastWorldDataPath, LoadLocations.WorldDatapack);
+        LoadResourcepackAssets(s_lastResourcePath, LoadLocations.WorldDatapack);
+
+        if (wait) foreach (var loader in s_assetLoaders) loader.Wait();
     }
 
-    public static async Task ResetResourcepackAssets()
+    public static void ResetResourcepackAssets(bool wait = false)
     {
         foreach (var loader in s_assetLoaders)
         {
@@ -159,12 +161,15 @@ public abstract class AssetLoader
             loader.Clear();
         }
 
-        await LoadBaseAssets(LoadLocations.Resourcepack);
-        await LoadDatapackAssets(s_lastDataPath, LoadLocations.Resourcepack);
-        await LoadWorldAssets(s_lastWorldDataPath, LoadLocations.Resourcepack);
-        await LoadResourcepackAssets(s_lastResourcePath, LoadLocations.Resourcepack);
+        LoadBaseAssets(LoadLocations.Resourcepack);
+        LoadDatapackAssets(s_lastDataPath, LoadLocations.Resourcepack);
+        LoadWorldAssets(s_lastWorldDataPath, LoadLocations.Resourcepack);
+        LoadResourcepackAssets(s_lastResourcePath, LoadLocations.Resourcepack);
+
+        if (wait) foreach (var loader in s_assetLoaders) loader.Wait();
     }
 
-    private protected abstract Task OnLoadAssets(string path, bool namespaced, LoadLocations location);
+    private protected abstract void OnLoadAssets(string path, bool namespaced, LoadLocations location);
     private protected abstract void Clear();
+    private protected abstract void Wait();
 }

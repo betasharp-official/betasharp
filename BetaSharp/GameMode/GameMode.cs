@@ -2,11 +2,8 @@
 
 namespace BetaSharp.GameMode;
 
-public class GameMode : IAsset
+public class GameMode : BaseDataAsset
 {
-    public string Name { get; set; } = "unnamed";
-    public int NamespaceId { get; set; } = 0;
-
     public float BrakeSpeed { get; set; } = 1f;
     public bool CanBreak { get; set; } = true;
     public bool CanPlace { get; set; } = true;

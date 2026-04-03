@@ -261,7 +261,8 @@ public partial class BetaSharp
             _logger.LogError(ex, "Exception");
         }
 
-        var AssetLoaderTask = AssetLoader.LoadBaseAssets();
+        // Start loading base data assets
+        AssetLoader.LoadBaseAssets();
         texturePackList = new TexturePacks(this, new DirectoryInfo(gameDataDir));
         textureManager = new TextureManager(this, texturePackList, options);
         fontRenderer = new TextRenderer(options, textureManager);
@@ -352,9 +353,8 @@ public partial class BetaSharp
                 "minecraft/sounds/music/menu/beginning_2.ogg",
             ])).LoadAllAsync();
 
-        if (!AssetLoaderTask.IsCompleted)
-            AssetLoaderTask.Wait();
-        AssetLoader.LoadDatapackAssets(gameDataDir).Wait();
+        // placed further down to give AssetLoader.LoadBaseAssets() a head start to reduce possible blocking waiting that have to be done.
+        AssetLoader.LoadDatapackAssets(gameDataDir);
 
         checkGLError("Post startup");
         ingameGUI = new GuiIngame(this);

@@ -7,5 +7,19 @@ public interface IAsset
     public string Name { get; internal set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public int NamespaceId { get; internal set; }
+    public Namespace Namespace { get; internal set; }
+
+    int GetHashCode() => HashCode.Combine(Name.GetHashCode(), Namespace.GetHashCode());
+    string? ToString() => Namespace + ':' + Name;
+}
+
+public abstract class BaseDataAsset : IAsset
+{
+    public string Name { get; set; } = "";
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public Namespace Namespace { get; set; } = Namespace.BetaSharp;
+
+    public override int GetHashCode() => HashCode.Combine(Name.GetHashCode(), Namespace.GetHashCode());
+    public override string ToString() => Namespace + ':' + Name;
 }

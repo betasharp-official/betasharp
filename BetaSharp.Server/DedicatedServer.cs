@@ -31,6 +31,9 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
             s_logger.LogWarning("To start the server ensure that a minimum of 512MB of RAM is available.");
         }
 
+        AssetLoader.LoadBaseAssets();
+        AssetLoader.LoadDatapackAssets(null);
+
         s_logger.LogInformation("Loading properties");
 
         string addressInput = config.GetServerIp("");
@@ -67,8 +70,6 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
             s_logger.LogWarning("To change this, set \"online-mode\" to \"true\" in the server.settings file.");
         }
 
-        AssetLoader.LoadBaseAssets().Wait();
-        AssetLoader.LoadDatapackAssets(null).Wait();
         return base.Init();
     }
 

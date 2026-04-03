@@ -127,7 +127,7 @@ public abstract class BetaSharpServer : ICommandOutput
         worlds = new ServerWorld[2];
         var dir = new DirectoryInfo(Path.Combine(GetFile(".").FullName, worldDir));
         RegionWorldStorage worldStorage = new(dir, true);
-        var LoadWorldAssetsTask = AssetLoader.LoadWorldAssets(dir.FullName);
+        AssetLoader.LoadWorldAssets(dir.FullName);
 
         for (int i = 0; i < worlds.Length; i++)
         {
@@ -218,9 +218,6 @@ public abstract class BetaSharpServer : ICommandOutput
                 _logger.LogInformation("  Level {Level} lighting: {ElapsedMs}ms", i, sw3.ElapsedMilliseconds);
             }
         }
-
-        if (!LoadWorldAssetsTask.IsCompleted)
-            LoadWorldAssetsTask.Wait();
 
         clearProgress();
     }
