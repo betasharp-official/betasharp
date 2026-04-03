@@ -296,7 +296,7 @@ public class WorldRenderer : IWorldEventListener
             DeltaTime = _game.Timer.DeltaTime,
             EnvironmentAnimation = _game.Options.EnvironmentAnimation,
             ChunkFade = _game.Options.ChunkFade,
-            RenderOccluded = _game.Options.RenderOccluded
+            RenderOccluded = false
         };
 
         if (pass == 0)

@@ -265,7 +265,6 @@ public partial class BetaSharp :
         {
             int[] msaaValues = [0, 2, 4, 8];
             Display.MSAA_Samples = msaaValues[Options.MSAALevel];
-            Display.DebugMode = Options.DebugMode;
 
             Display.create();
             Display.getGlfw().SetWindowSizeLimits(Display.getWindowHandle(), 850, 480, maximumWidth, maximumHeight);
@@ -282,10 +281,9 @@ public partial class BetaSharp :
 
             Display.getGlfw().SwapInterval(Options.VSync ? 1 : 0);
 
-            if (Options.DebugMode)
-            {
+#if DEBUG
                 _glErrorHandler = new();
-            }
+#endif
         }
         catch (Exception ex)
         {
@@ -682,18 +680,15 @@ public partial class BetaSharp :
                     {
                         PlayerController?.setPartialTime(Timer.renderPartialTicks);
 
-                        if (Options.DebugMode) TextureStats.StartFrame();
+                        TextureStats.StartFrame();
 
                         using (Profiler.Begin("Render"))
                         {
                             GameRenderer.onFrameUpdate(Timer.renderPartialTicks);
                         }
 
-                        if (Options.DebugMode)
-                        {
-                            TextureStats.EndFrame();
-                            PushRenderMetrics();
-                        }
+                        TextureStats.EndFrame();
+                        PushRenderMetrics();
                     }
 
                     DisplayWidth = savedWidth;
