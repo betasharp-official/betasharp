@@ -3,7 +3,6 @@ using System.Runtime;
 using System.Runtime.InteropServices;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Achievements;
-using BetaSharp.Client.Debug;
 using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.DynamicTexture;
 using BetaSharp.Client.Entities;
@@ -136,7 +135,6 @@ public partial class BetaSharp :
 
     public SoundManager SoundManager { get; private set; } = new();
     public StatFileWriter StatFileWriter { get; private set; }
-    public DebugComponentsStorage DebugComponentsStorage { get; private set; }
 
     #endregion
 
@@ -193,7 +191,6 @@ public partial class BetaSharp :
         Bootstrap.Initialize();
         MetricRegistry.Bootstrap(typeof(ClientMetrics));
         MetricRegistry.Bootstrap(typeof(RenderMetrics));
-        DebugComponents.RegisterComponents();
 
         InitializeTimer();
 
@@ -246,7 +243,6 @@ public partial class BetaSharp :
         Options.ReloadTextures += () => { TextureManager.Reload(); };
         Options.ReloadChunks += () => { WorldRenderer.ChunkRenderer.MarkAllVisibleChunksDirty(); };
 
-        DebugComponentsStorage = new DebugComponentsStorage(this, _gameDataDir);
         Profiler.RegisterMainThread();
 
         try
@@ -405,7 +401,6 @@ public partial class BetaSharp :
             () => Player,
             () => PlayerController,
             () => World,
-            DebugComponentsStorage,
             () => CurrentScreen == null && Player != null && World != null
                 ? new InGameTipContext(ObjectMouseOver, World.Reader, Player.inventory.getSelectedItem())
                 : null,
@@ -1014,14 +1009,7 @@ public partial class BetaSharp :
 
                     if (Keyboard.getEventKey() == Keyboard.KEY_F3)
                     {
-                        if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
-                        {
-                            Navigate(new DebugEditorScreen(UIContext, null, DebugComponentsStorage));
-                        }
-                        else
-                        {
-                            Options.ShowDebugInfo = !Options.ShowDebugInfo;
-                        }
+                        Options.ShowDebugInfo = !Options.ShowDebugInfo;
                     }
 
                     if (Keyboard.getEventKey() == Keyboard.KEY_F5)
@@ -1472,7 +1460,7 @@ public partial class BetaSharp :
             bool isMP = IsMultiplayerWorld() && InternalServer == null;
             string quitText = isMP ? "Disconnect" : "Save and quit to title";
             int saveStep = 0;
-            Navigate(new IngameMenuScreen(UIContext, StatFileWriter, DebugComponentsStorage, SetIngameFocus, quitText, () =>
+            Navigate(new IngameMenuScreen(UIContext, StatFileWriter, SetIngameFocus, quitText, () =>
             {
                 if (IsMultiplayerWorld()) World.Disconnect();
                 StopInternalServer();
@@ -1510,7 +1498,7 @@ public partial class BetaSharp :
         }
     }
 
-    private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, _hideQuitButton, this, CreateNetworkContext(), TexturePackList, DebugComponentsStorage, Shutdown);
+    private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, _hideQuitButton, this, CreateNetworkContext(), TexturePackList, Shutdown);
     private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, HUD.AddChatMessage, this);
 
     #endregion

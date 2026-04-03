@@ -1,4 +1,3 @@
-using BetaSharp.Client.Debug;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Resource.Pack;
@@ -17,7 +16,6 @@ public class MainMenuScreen(
     ISingleplayerHost singleplayerHost,
     ClientNetworkContext networkContext,
     TexturePacks texturePackList,
-    DebugComponentsStorage debugStorage,
     Action shutdown) : UIScreen(context)
 {
     private const float LogoTopPadding = 30f;
@@ -85,7 +83,7 @@ public class MainMenuScreen(
         Button btnOptions = CreateButton();
         btnOptions.Text = translator.TranslateKey("menu.options");
         btnOptions.Style.Width = 98;
-        btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this, debugStorage));
+        btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this));
 
         Button btnQuit = CreateButton();
         btnQuit.Text = translator.TranslateKey("menu.quit");
