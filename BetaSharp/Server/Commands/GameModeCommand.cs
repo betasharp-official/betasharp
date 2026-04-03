@@ -1,5 +1,4 @@
-﻿using BetaSharp.DataAsset;
-using BetaSharp.Entities;
+﻿using BetaSharp.Entities;
 using BetaSharp.GameMode;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Server.Command;
@@ -66,6 +65,7 @@ public class GameModeCommand : ICommand
             SetGameMode(p, gameMode, c);
             return;
         }
+
         c.Output.SendMessage("Gamemode not found.");
     }
 

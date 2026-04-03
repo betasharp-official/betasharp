@@ -12,7 +12,7 @@ public abstract class AssetLoader
 
     private static bool s_worldAssetsLoaded = false;
 
-    private protected static JsonSerializerOptions s_jsonOptions = new()
+    private protected static readonly JsonSerializerOptions s_jsonOptions = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenReading
     };
@@ -149,7 +149,9 @@ public abstract class AssetLoader
         LoadWorldAssets(s_lastWorldDataPath, LoadLocations.WorldDatapack);
         LoadResourcepackAssets(s_lastResourcePath, LoadLocations.WorldDatapack);
 
-        if (wait) foreach (var loader in s_assetLoaders) loader.Wait();
+        if (wait)
+            foreach (var loader in s_assetLoaders)
+                loader.Wait();
     }
 
     public static void ResetResourcepackAssets(bool wait = false)
@@ -166,7 +168,9 @@ public abstract class AssetLoader
         LoadWorldAssets(s_lastWorldDataPath, LoadLocations.Resourcepack);
         LoadResourcepackAssets(s_lastResourcePath, LoadLocations.Resourcepack);
 
-        if (wait) foreach (var loader in s_assetLoaders) loader.Wait();
+        if (wait)
+            foreach (var loader in s_assetLoaders)
+                loader.Wait();
     }
 
     private protected abstract void OnLoadAssets(string path, bool namespaced, LoadLocations location);

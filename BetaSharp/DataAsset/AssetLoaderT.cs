@@ -27,6 +27,7 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
         {
             throw _loadTask.Exception;
         }
+
         if (_loadTask.IsCompleted)
         {
             _loadTask = null;
@@ -38,6 +39,7 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
             {
                 throw _loadTask.Exception;
             }
+
             _loadTask = null;
         }
     }

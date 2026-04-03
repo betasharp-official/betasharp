@@ -6,7 +6,11 @@ public partial class Namespace
 {
     public static readonly Namespace BetaSharp = new(0, "betasharp");
     private static readonly List<Namespace> s_idToName = [BetaSharp];
-    private static readonly Dictionary<string, int> s_nameToId = new() { [BetaSharp._name] = 0 };
+
+    private static readonly Dictionary<string, int> s_nameToId = new()
+    {
+        [BetaSharp._name] = 0
+    };
 
     public static Namespace Get(string name)
     {
