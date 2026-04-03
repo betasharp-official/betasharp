@@ -262,7 +262,7 @@ public partial class BetaSharp
         }
 
         // Start loading base data assets
-        AssetLoader.LoadBaseAssets();
+        DataAssetLoader.LoadBaseAssets();
         texturePackList = new TexturePacks(this, new DirectoryInfo(gameDataDir));
         textureManager = new TextureManager(this, texturePackList, options);
         fontRenderer = new TextRenderer(options, textureManager);
@@ -354,7 +354,7 @@ public partial class BetaSharp
             ])).LoadAllAsync();
 
         // placed further down to give AssetLoader.LoadBaseAssets() a head start to reduce possible blocking waiting that have to be done.
-        AssetLoader.LoadDatapackAssets(gameDataDir);
+        DataAssetLoader.LoadDatapackAssets(gameDataDir);
 
         checkGLError("Post startup");
         ingameGUI = new GuiIngame(this);

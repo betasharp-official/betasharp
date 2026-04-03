@@ -4,14 +4,14 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.DataAsset;
 
-public class AssetLoader<T> : AssetLoader where T : class, IAsset
+public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
 {
     private readonly string _path;
     private readonly bool _allowUnhandled;
     private Task? _loadTask = null;
-    private readonly Dictionary<(Namespace Namespace, string Name), AssetRef<T>> _assets = new();
+    private readonly Dictionary<(Namespace Namespace, string Name), DataAssetRef<T>> _assets = new();
 
-    public Dictionary<(Namespace Namespace, string Name), AssetRef<T>> Assets
+    public Dictionary<(Namespace Namespace, string Name), DataAssetRef<T>> Assets
     {
         get
         {
@@ -45,9 +45,9 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
         }
     }
 
-    public static implicit operator Dictionary<(Namespace Namespace, string Name), AssetRef<T>>(AssetLoader<T> loader) => loader.Assets;
+    public static implicit operator Dictionary<(Namespace Namespace, string Name), DataAssetRef<T>>(DataAssetLoader<T> loader) => loader.Assets;
 
-    public AssetLoader(string path, LoadLocations locations, bool allowUnhandled = true) : base(locations)
+    public DataAssetLoader(string path, LoadLocations locations, bool allowUnhandled = true) : base(locations)
     {
         _path = path;
         _allowUnhandled = allowUnhandled;
@@ -86,7 +86,7 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
             json.Close();
 
             string key = GetName(obj, file)!;
-            if (_assets.TryGetValue((@namespace, key), out AssetRef<T>? assetRef))
+            if (_assets.TryGetValue((@namespace, key), out DataAssetRef<T>? assetRef))
             {
                 LoadedAssetsModify |= location;
                 if (GetReplace(obj))
@@ -102,7 +102,7 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
             }
             else if (_allowUnhandled)
             {
-                _assets.Add((@namespace, key), new AssetRef<T>(this, path, @namespace, key));
+                _assets.Add((@namespace, key), new DataAssetRef<T>(this, path, @namespace, key));
                 continue;
             }
 
@@ -115,7 +115,7 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
 
             asset.Name = key;
             asset.Namespace = @namespace;
-            _assets.Add((asset.Namespace, asset.Name), new AssetRef<T>(asset));
+            _assets.Add((asset.Namespace, asset.Name), new DataAssetRef<T>(asset));
         }
     }
 
@@ -158,7 +158,7 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
         return asset;
     }
 
-    private void FromJsonUpdate(JsonElement json, string path, AssetRef<T> target)
+    private void FromJsonUpdate(JsonElement json, string path, DataAssetRef<T> target)
     {
         // Serialize the default value to JSON
         JsonElement defaultElement = JsonSerializer.SerializeToElement(target.Asset);
@@ -178,7 +178,7 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
         target.Asset = asset;
     }
 
-    internal void FromJsonReplace(string path, AssetRef<T> target)
+    internal void FromJsonReplace(string path, DataAssetRef<T> target)
     {
         var json = File.OpenRead(Path.Join(path, target.Name + ".json"));
         JsonElement obj = JsonSerializer.Deserialize<JsonElement>(json, s_jsonOptions);
@@ -186,7 +186,7 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
         FromJsonReplace(obj, path, target);
     }
 
-    private void FromJsonReplace(JsonElement json, string path, AssetRef<T> target)
+    private void FromJsonReplace(JsonElement json, string path, DataAssetRef<T> target)
     {
         T? v = FromJson(json, path);
         if (v == null)

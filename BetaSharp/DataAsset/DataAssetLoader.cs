@@ -4,11 +4,11 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.DataAsset;
 
-public abstract class AssetLoader
+public abstract class DataAssetLoader
 {
-    private protected static readonly ILogger s_logger = Log.Instance.For(typeof(AssetLoader).FullName ?? nameof(AssetLoader));
+    private protected static readonly ILogger s_logger = Log.Instance.For(typeof(DataAssetLoader).FullName ?? nameof(DataAssetLoader));
 
-    private static readonly List<AssetLoader> s_assetLoaders =
+    private static readonly List<DataAssetLoader> s_assetLoaders =
     [
         GameMode.GameModes.GameModesLoader
     ];
@@ -28,7 +28,7 @@ public abstract class AssetLoader
     private static string s_lastWorldDataPath = null!;
     private static string s_lastResourcePath = null!;
 
-    private protected AssetLoader(LoadLocations locations)
+    private protected DataAssetLoader(LoadLocations locations)
     {
         //s_assetLoaders.Add(this);
         Locations = locations;

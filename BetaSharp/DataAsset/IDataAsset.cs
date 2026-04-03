@@ -2,7 +2,7 @@
 
 namespace BetaSharp.DataAsset;
 
-public interface IAsset
+public interface IDataAsset
 {
     public string Name { get; internal set; }
 
@@ -13,7 +13,7 @@ public interface IAsset
     string? ToString() => Namespace + ':' + Name;
 }
 
-public class BaseDataAsset : IAsset
+public class BaseDataDataAsset : IDataAsset
 {
     public string Name { get; set; } = "";
 

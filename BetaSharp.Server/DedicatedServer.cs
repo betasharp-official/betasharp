@@ -31,8 +31,8 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
             s_logger.LogWarning("To start the server ensure that a minimum of 512MB of RAM is available.");
         }
 
-        AssetLoader.LoadBaseAssets();
-        AssetLoader.LoadDatapackAssets(null);
+        DataAssetLoader.LoadBaseAssets();
+        DataAssetLoader.LoadDatapackAssets(null);
 
         s_logger.LogInformation("Loading properties");
 

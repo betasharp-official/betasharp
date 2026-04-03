@@ -10,7 +10,7 @@ public static class GameModes
 
     private static readonly ILogger s_logger = Log.Instance.For(nameof(GameModes));
 
-    public static AssetLoader<GameMode> GameModesLoader { get; } = new("gamemode", LoadLocations.AllData);
+    public static DataAssetLoader<GameMode> GameModesLoader { get; } = new("gamemode", LoadLocations.AllData);
 
 
     public static void SetDefaultGameMode(string name)

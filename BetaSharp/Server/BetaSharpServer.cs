@@ -127,7 +127,7 @@ public abstract class BetaSharpServer : ICommandOutput
         worlds = new ServerWorld[2];
         var dir = new DirectoryInfo(Path.Combine(GetFile(".").FullName, worldDir));
         RegionWorldStorage worldStorage = new(dir, true);
-        AssetLoader.LoadWorldAssets(dir.FullName);
+        DataAssetLoader.LoadWorldAssets(dir.FullName);
 
         for (int i = 0; i < worlds.Length; i++)
         {

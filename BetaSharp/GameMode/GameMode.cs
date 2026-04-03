@@ -2,7 +2,7 @@
 
 namespace BetaSharp.GameMode;
 
-public class GameMode : BaseDataAsset
+public class GameMode : BaseDataDataAsset
 {
     public float BrakeSpeed { get; set; } = 1f;
     public bool CanBreak { get; set; } = true;
