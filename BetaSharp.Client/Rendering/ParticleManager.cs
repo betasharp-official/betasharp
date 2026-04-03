@@ -82,10 +82,7 @@ public class ParticleManager
         _specialParticles.Clear();
     }
 
-    public string getStatistics()
-    {
-        return (_layers[0].Count + _layers[1].Count + _layers[2].Count).ToString();
-    }
+    public int ActiveParticleCount => _layers[0].Count + _layers[1].Count + _layers[2].Count;
 
     public void AddSpecialParticle(ISpecialParticle particle)
     {

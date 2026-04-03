@@ -784,6 +784,7 @@ public partial class BetaSharp :
         MetricRegistry.Set(RenderMetrics.EntitiesRendered, WorldRenderer.CountEntitiesRendered);
         MetricRegistry.Set(RenderMetrics.EntitiesHidden, WorldRenderer.CountEntitiesHidden);
         MetricRegistry.Set(RenderMetrics.EntitiesTotal, WorldRenderer.CountEntitiesTotal);
+        MetricRegistry.Set(RenderMetrics.ParticlesActive, ParticleManager.ActiveParticleCount);
     }
 
     private void ReportFrameTelemetry(long frameStartNano)
@@ -1740,8 +1741,6 @@ public partial class BetaSharp :
         }
     }
 
-    public string WorldDebugInfo => World.GetDebugInfo();
-    public string ParticleDebugInfo => "Particles: " + ParticleManager.getStatistics();
     internal DebugSystemSnapshot DebugSystemSnapshot => _debugTelemetry.SystemSnapshot;
 
     [Conditional("DEBUG")]

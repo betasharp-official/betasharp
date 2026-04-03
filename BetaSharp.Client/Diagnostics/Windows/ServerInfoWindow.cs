@@ -3,13 +3,11 @@ using Hexa.NET.ImGui;
 
 namespace BetaSharp.Client.Diagnostics.Windows;
 
-internal sealed class ServerInfoWindow(DebugWindowContext ctx) : DebugWindow
+internal sealed class ServerInfoWindow : DebugWindow
 {
     private readonly FrameGraph _msptGraph = new("MSPT", 240);
 
     public override string Title => "Server Info";
-
-    public void PushMspt(float mspt) => _msptGraph.Push(mspt);
 
     protected override void OnDraw()
     {
@@ -27,8 +25,11 @@ internal sealed class ServerInfoWindow(DebugWindowContext ctx) : DebugWindow
         }
         else
         {
+            float mspt = MetricRegistry.Get(ServerMetrics.Mspt);
+            _msptGraph.Push(mspt);
+
             ImGui.Text($"TPS:      {MetricRegistry.Get(ServerMetrics.Tps):F1}");
-            ImGui.Text($"MSPT:     {MetricRegistry.Get(ServerMetrics.Mspt):F2} ms");
+            ImGui.Text($"MSPT:     {mspt:F2} ms");
             ImGui.Text($"Entities: {MetricRegistry.Get(ServerMetrics.EntityCount)}");
             ImGui.Text($"Players:  {MetricRegistry.Get(ServerMetrics.PlayerCount)}");
 

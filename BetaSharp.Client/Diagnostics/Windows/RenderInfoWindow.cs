@@ -3,14 +3,14 @@ using Hexa.NET.ImGui;
 
 namespace BetaSharp.Client.Diagnostics.Windows;
 
-internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
+internal sealed class RenderInfoWindow : DebugWindow
 {
     public override string Title => "Render Info";
     public override DebugDock DefaultDock => DebugDock.Right;
 
     protected override void OnDraw()
     {
-        if (ctx.WorldRenderer?.ChunkRenderer is null)
+        if (MetricRegistry.IsStale(RenderMetrics.ChunksTotal))
         {
             ImGui.TextDisabled("No world loaded.");
             return;
@@ -45,13 +45,12 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
         ImGui.Text($"Mesh Version Free:  {MetricRegistry.Get(RenderMetrics.MeshVersionReleased)}");
     }
 
-    private void DrawEntitiesSection()
+    private static void DrawEntitiesSection()
     {
-        ImGui.Text($"Rendered: {MetricRegistry.Get(RenderMetrics.EntitiesRendered)}");
-        ImGui.Text($"Hidden:   {MetricRegistry.Get(RenderMetrics.EntitiesHidden)}");
-        ImGui.Text($"Total:    {MetricRegistry.Get(RenderMetrics.EntitiesTotal)}");
-        ImGui.Spacing();
-        ImGui.Text($"Particles: {ctx.ParticleManager.getStatistics()}");
+        ImGui.Text($"Rendered:  {MetricRegistry.Get(RenderMetrics.EntitiesRendered)}");
+        ImGui.Text($"Hidden:    {MetricRegistry.Get(RenderMetrics.EntitiesHidden)}");
+        ImGui.Text($"Total:     {MetricRegistry.Get(RenderMetrics.EntitiesTotal)}");
+        ImGui.Text($"Particles: {MetricRegistry.Get(RenderMetrics.ParticlesActive)}");
     }
 
     private static void DrawTextureSection()

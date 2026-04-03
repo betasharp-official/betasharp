@@ -1,6 +1,5 @@
 using System.Numerics;
 using BetaSharp.Client.Diagnostics.Windows;
-using BetaSharp.Diagnostics;
 using Hexa.NET.ImGui;
 
 namespace BetaSharp.Client.Diagnostics;
@@ -10,8 +9,6 @@ internal sealed class DebugWindowManager
     private readonly Func<bool> _inGameHasFocus;
     private readonly List<DebugWindow> _windows;
     private readonly LiveStatsWindow _liveStatsWindow;
-    private readonly ClientInfoWindow _clientInfoWindow;
-    private readonly ServerInfoWindow _serverInfoWindow;
     private readonly ConsoleWindow _consoleWindow;
     private bool _dockInitialized;
 
@@ -32,16 +29,14 @@ internal sealed class DebugWindowManager
         _inGameHasFocus = inGameHasFocus;
 
         var ctx = new DebugWindowContext(game);
-        _clientInfoWindow = new ClientInfoWindow(ctx);
-        _serverInfoWindow = new ServerInfoWindow(ctx);
         _consoleWindow = new ConsoleWindow(ctx);
 
         var liveStatsSections = new DebugWindow[]
         {
             new NetworkInfoWindow(),
-            _clientInfoWindow,
+            new ClientInfoWindow(ctx),
             new LocalPlayerInfoWindow(ctx),
-            _serverInfoWindow,
+            new ServerInfoWindow(),
         };
 
         _liveStatsWindow = new LiveStatsWindow(liveStatsSections);
@@ -50,7 +45,8 @@ internal sealed class DebugWindowManager
         [
             _liveStatsWindow,
             new SystemWindow(ctx),
-            new RenderInfoWindow(ctx),
+            new RenderInfoWindow(),
+            new AudioDebugWindow(ctx),
             new ProfilerWindow(),
             _consoleWindow,
             new UIInspectorWindow(ctx)
@@ -59,9 +55,6 @@ internal sealed class DebugWindowManager
 
     public unsafe void Render(float deltaTime)
     {
-        _clientInfoWindow.PushFrameTime(MetricRegistry.Get(ClientMetrics.FrameTimeMs));
-        _serverInfoWindow.PushMspt(MetricRegistry.IsStale(ServerMetrics.Mspt) ? 0 : MetricRegistry.Get(ServerMetrics.Mspt));
-
         ImGuiIO* io = ImGui.GetIO();
         if (_inGameHasFocus())
         {

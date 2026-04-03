@@ -9,14 +9,15 @@ internal sealed class ClientInfoWindow(DebugWindowContext ctx) : DebugWindow
 
     public override string Title => "Client Info";
 
-    public void PushFrameTime(float ms) => _frameTimeGraph.Push(ms);
-
     protected override void OnDraw()
     {
         if (ImGui.CollapsingHeader("Performance", ImGuiTreeNodeFlags.DefaultOpen))
         {
+            float frameTimeMs = MetricRegistry.Get(ClientMetrics.FrameTimeMs);
+            _frameTimeGraph.Push(frameTimeMs);
+
             ImGui.Text($"FPS:        {MetricRegistry.Get(ClientMetrics.Fps)}");
-            ImGui.Text($"Frame Time: {MetricRegistry.Get(ClientMetrics.FrameTimeMs):F2} ms");
+            ImGui.Text($"Frame Time: {frameTimeMs:F2} ms");
             ImGui.Spacing();
             _frameTimeGraph.Draw(40f, 0.33f);
         }
