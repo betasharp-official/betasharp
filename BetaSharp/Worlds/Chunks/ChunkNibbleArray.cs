@@ -20,7 +20,7 @@ public readonly struct ChunkNibbleArray
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetNibble(int x, int y, int z)
     {
-        int index = (x << 11) | (z << 7) | y;
+        int index = (x << 12) | (z << 8) | y;
         int byteIndex = index >> 1;
 
         return (index & 1) == 0
@@ -31,7 +31,7 @@ public readonly struct ChunkNibbleArray
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetNibble(int x, int y, int z, int value)
     {
-        int index = (x << 11) | (z << 7) | y;
+        int index = (x << 12) | (z << 8) | y;
         int byteIndex = index >> 1;
 
         if ((index & 1) == 0)

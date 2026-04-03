@@ -59,7 +59,7 @@ internal class NetherChunkGenerator : IChunkSource
     public Chunk GetChunk(int chunkX, int chunkZ)
     {
         random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
-        byte[] blocks = new byte[-short.MinValue];
+        byte[] blocks = new byte[65536];
         BuildTerrain(chunkX, chunkZ, blocks);
         BuildSurfaces(chunkX, chunkZ, blocks);
         _cave.carve(this, _world, chunkX, chunkZ, blocks);
@@ -185,8 +185,8 @@ internal class NetherChunkGenerator : IChunkSource
 
                         for (int subX = 0; subX < 4; ++subX)
                         {
-                            int blockIndex = ((subX + sampleX * 4) << 11) | ((0 + sampleZ * 4) << 7) | (sampleY * 8 + subY);
-                            short chunkHeight = 128;
+                            int blockIndex = ((subX + sampleX * 4) << 12) | ((0 + sampleZ * 4) << 8) | (sampleY * 8 + subY);
+                            short chunkHeight = 256;
                             double horizontalLerpStepZ = 0.25D;
                             double terrainDensity = terrainX0;
                             double densityStepZ = (terrainX1 - terrainX0) * horizontalLerpStepZ;

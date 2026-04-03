@@ -121,7 +121,7 @@ internal class PortalForcer
             {
                 double dz = z + 0.5D - entity.z;
 
-                for (int y = 127; y >= 0; --y)
+                for (int y = 255; y >= 0; --y)
                 {
                     if (world.Reader.IsAir(x, y, z))
                     {
@@ -189,7 +189,7 @@ internal class PortalForcer
                 {
                     double dz = z + 0.5D - entity.z;
 
-                    for (int y = 127; y >= 0; --y)
+                    for (int y = 255; y >= 0; --y)
                     {
                         if (world.Reader.IsAir(x, y, z))
                         {

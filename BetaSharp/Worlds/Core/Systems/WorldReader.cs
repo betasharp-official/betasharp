@@ -22,11 +22,11 @@ public class WorldReader : IBlockReader
 
     public int AmbientDarkness => _context.Environment?.AmbientDarkness ?? 0;
 
-    public bool IsPosLoaded(int x, int y, int z) => y >= 0 && y < 128 && _context.ChunkHost.HasChunk(x >> 4, z >> 4);
+    public bool IsPosLoaded(int x, int y, int z) => y >= 0 && y < 256 && _context.ChunkHost.HasChunk(x >> 4, z >> 4);
 
     public int GetBlockId(int x, int y, int z)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 256)
         {
             return 0;
         }
@@ -36,7 +36,7 @@ public class WorldReader : IBlockReader
 
     public int GetBlockMeta(int x, int y, int z)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 256)
         {
             return 0;
         }
@@ -78,7 +78,7 @@ public class WorldReader : IBlockReader
             return 0;
         }
 
-        if (y >= 128)
+        if (y >= 256)
         {
             return !_dimension.HasCeiling ? 15 : 0;
         }
@@ -94,7 +94,7 @@ public class WorldReader : IBlockReader
         {
             case < 0:
                 return false;
-            case >= 128:
+            case >= 256:
                 return true;
         }
 
@@ -127,7 +127,7 @@ public class WorldReader : IBlockReader
     public int GetTopSolidBlockY(int x, int z)
     {
         Chunk chunk = _context.ChunkHost.GetChunkFromPos(x, z);
-        int currentY = 127;
+        int currentY = 255;
         int localX = x & 15;
         int localZ = z & 15;
 
@@ -148,7 +148,7 @@ public class WorldReader : IBlockReader
     public int GetSpawnPositionValidityY(int x, int z)
     {
         Chunk chunk = _context.ChunkHost.GetChunkFromPos(x, z);
-        int currentY = 127;
+        int currentY = 255;
         int localX = x & 15;
         int localZ = z & 15;
 

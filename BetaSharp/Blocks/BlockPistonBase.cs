@@ -312,7 +312,7 @@ public class BlockPistonBase : Block
         {
             if (pushCount < 13)
             {
-                if (checkY <= 0 || checkY >= 127)
+                if (checkY <= 0 || checkY >= 255)
                 {
                     return false;
                 }
@@ -357,7 +357,7 @@ public class BlockPistonBase : Block
             int blockId;
             if (pushCount < 13)
             {
-                if (nextY <= 0 || nextY >= 127)
+                if (nextY <= 0 || nextY >= 255)
                 {
                     return false;
                 }

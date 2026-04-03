@@ -737,8 +737,8 @@ public abstract class Entity
         int maxY = MathHelper.Floor(boundingBox.MaxY);
         int maxZ = MathHelper.Floor(boundingBox.MaxZ);
 
-        minY = Math.Min(127, Math.Max(0, minY));
-        maxY = Math.Min(127, Math.Max(0, maxY));
+        minY = Math.Min(255, Math.Max(0, minY));
+        maxY = Math.Min(255, Math.Max(0, maxY));
 
         if (world.ChunkHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
         {

@@ -451,7 +451,7 @@ public class EntityManager
         int blockZ = MathHelper.Floor(vehicle.z);
         const byte loadRadius = 32;
 
-        if (!requireLoaded || _world.ChunkHost.IsRegionLoaded(blockX - loadRadius, 0, blockZ - loadRadius, blockX + loadRadius, 128, blockZ + loadRadius))
+        if (!requireLoaded || _world.ChunkHost.IsRegionLoaded(blockX - loadRadius, 0, blockZ - loadRadius, blockX + loadRadius, 256, blockZ + loadRadius))
         {
             vehicle.lastTickX = vehicle.x;
             vehicle.lastTickY = vehicle.y;

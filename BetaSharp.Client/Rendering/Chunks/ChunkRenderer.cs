@@ -530,7 +530,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
             Vector3D<int> chunkPos = (currentChunk + offset) * SubChunkRenderer.Size;
 
-            if (chunkPos.Y < 0 || chunkPos.Y >= 128)
+            if (chunkPos.Y < 0 || chunkPos.Y >= 256)
                 continue;
 
             if (_renderers.ContainsKey(chunkPos) || _chunkVersions.ContainsKey(chunkPos))

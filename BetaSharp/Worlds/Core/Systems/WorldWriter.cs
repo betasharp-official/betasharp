@@ -67,7 +67,7 @@ public sealed class WorldWriter : IBlockWriter
 
     public bool SetBlockInternal(int x, int y, int z, int id, int meta = 0)
     {
-        if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000 && y is >= 0 and < 128)
+        if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000 && y is >= 0 and < 256)
         {
             return _host.GetChunk(x >> 4, z >> 4).SetBlock(x & 15, y, z & 15, id, meta);
         }
@@ -100,7 +100,7 @@ public sealed class WorldWriter : IBlockWriter
 
     public bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, int meta, bool notifyBlockPlaced)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 256)
         {
             return false;
         }
@@ -125,7 +125,7 @@ public sealed class WorldWriter : IBlockWriter
 
     public bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, bool notifyBlockPlaced)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y is < 0 or >= 128) return false;
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y is < 0 or >= 256) return false;
 
         int chunkX = x >> 4;
         int chunkZ = z >> 4;
@@ -146,7 +146,7 @@ public sealed class WorldWriter : IBlockWriter
 
     public bool SetBlockMetaWithoutNotifyingNeighbors(int x, int y, int z, int meta)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y is < 0 or >= 128) return false;
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y is < 0 or >= 256) return false;
 
         _host.GetChunk(x >> 4, z >> 4).SetBlockMeta(x & 15, y, z & 15, meta);
         return true;
