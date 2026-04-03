@@ -279,26 +279,26 @@ public class WorldRenderer : IWorldAccess
         return "E: " + countEntitiesRendered + "/" + countEntitiesTotal + ". B: " + countEntitiesHidden + ", I: " + (countEntitiesTotal - countEntitiesHidden - countEntitiesRendered);
     }
 
-    public void RenderChunks(EntityLiving camera, double partialTick, Culler culler, bool transparent)
+    public int sortAndRender(EntityLiving var1, int pass, double var3, Culler cam)
     {
         if (_game.options.renderDistance != renderDistance)
         {
             loadRenderers();
         }
 
-        double x = camera.lastTickX + (camera.x - camera.lastTickX) * partialTick;
-        double y = camera.lastTickY + (camera.y - camera.lastTickY) * partialTick;
-        double z = camera.lastTickZ + (camera.z - camera.lastTickZ) * partialTick;
+        double var33 = var1.lastTickX + (var1.x - var1.lastTickX) * var3;
+        double var7 = var1.lastTickY + (var1.y - var1.lastTickY) * var3;
+        double var9 = var1.lastTickZ + (var1.z - var1.lastTickZ) * var3;
 
         Lighting.turnOff();
 
         var renderParams = new ChunkRenderParams
         {
-            Camera = culler,
-            ViewPos = new Vector3D<double>(x, y, z),
+            Camera = cam,
+            ViewPos = new Vector3D<double>(var33, var7, var9),
             RenderDistance = renderDistance,
             Ticks = world.getTime(),
-            PartialTicks = (float)partialTick,
+            PartialTicks = (float)var3,
             DeltaTime = _game.Timer.DeltaTime,
             EnvironmentAnimation = _game.options.EnvironmentAnimation,
             ChunkFade = _game.options.ChunkFade,
@@ -306,7 +306,7 @@ public class WorldRenderer : IWorldAccess
             DebugMode = _game.options.DebugMode
         };
 
-        if (!transparent)
+        if (pass == 0)
         {
             chunkRenderer.Render(renderParams);
         }
@@ -314,6 +314,8 @@ public class WorldRenderer : IWorldAccess
         {
             chunkRenderer.RenderTransparent(renderParams);
         }
+
+        return 0;
     }
 
     public void updateClouds()
