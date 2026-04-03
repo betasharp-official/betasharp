@@ -33,6 +33,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="assets\**\*" CopyToOutputDirectory="Always" />
   </ItemGroup>
 </Project>
