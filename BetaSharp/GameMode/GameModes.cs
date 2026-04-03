@@ -12,13 +12,6 @@ public static class GameModes
 
     public static AssetLoader<GameMode> GameModesLoader { get; } = new("gamemode", LoadLocations.AllData);
 
-    // used to call constructor of our AssetLoader
-    internal static void Init()
-    {
-        // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
-        GameModesLoader.GetHashCode();
-    }
-
 
     public static void SetDefaultGameMode(string name)
     {

@@ -8,7 +8,10 @@ public abstract class AssetLoader
 {
     private protected static readonly ILogger s_logger = Log.Instance.For(typeof(AssetLoader).FullName ?? nameof(AssetLoader));
 
-    private static readonly List<AssetLoader> s_assetLoaders = new();
+    private static readonly List<AssetLoader> s_assetLoaders =
+    [
+        GameMode.GameModes.GameModesLoader
+    ];
 
     private static bool s_worldAssetsLoaded = false;
 
@@ -27,7 +30,7 @@ public abstract class AssetLoader
 
     private protected AssetLoader(LoadLocations locations)
     {
-        s_assetLoaders.Add(this);
+        //s_assetLoaders.Add(this);
         Locations = locations;
     }
 
@@ -35,8 +38,6 @@ public abstract class AssetLoader
 
     private static void LoadBaseAssets(LoadLocations filter)
     {
-        RegisteredLoaders.Init();
-
         const string p = "assets";
         if (!Directory.Exists(p))
         {
