@@ -2,10 +2,22 @@ using Hexa.NET.ImGui;
 
 namespace BetaSharp.Client.Diagnostics;
 
+internal enum DebugDock
+{
+    None,
+    Center,
+    Left,
+    Right,
+    Bottom
+}
+
 internal abstract class DebugWindow
 {
     public abstract string Title { get; }
     public bool IsVisible { get; set; } = true;
+
+    /// <summary>The window's preferred docking position in the debug dockspace.</summary>
+    public virtual DebugDock DefaultDock => DebugDock.None;
 
     public virtual void Draw()
     {

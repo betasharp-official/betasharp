@@ -34,6 +34,7 @@ internal sealed class ConsoleWindow(DebugWindowContext ctx) : DebugWindow
     };
 
     public override string Title => "Console";
+    public override DebugDock DefaultDock => DebugDock.Bottom;
 
     protected override void OnDraw()
     {

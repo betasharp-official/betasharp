@@ -6,6 +6,7 @@ namespace BetaSharp.Client.Diagnostics.Windows;
 internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
 {
     public override string Title => "Render Info";
+    public override DebugDock DefaultDock => DebugDock.Right;
 
     protected override void OnDraw()
     {

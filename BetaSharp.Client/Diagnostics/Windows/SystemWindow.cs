@@ -5,6 +5,7 @@ namespace BetaSharp.Client.Diagnostics.Windows;
 internal sealed class SystemWindow(DebugWindowContext ctx) : DebugWindow
 {
     public override string Title => "System";
+    public override DebugDock DefaultDock => DebugDock.Right;
 
     protected override void OnDraw()
     {
