@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime;
 using System.Runtime.InteropServices;
 using BetaSharp.Blocks;
@@ -15,7 +16,6 @@ using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Items;
-using BetaSharp.Client.Rendering.PostProcessing;
 using BetaSharp.Client.Resource;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.Sound;
@@ -101,6 +101,19 @@ public partial class BetaSharp :
 
     public int DisplayWidth { get; private set; }
     public int DisplayHeight { get; private set; }
+
+    /// <summary>
+    /// When the debug viewport is active, the top-left pixel offset of the game viewport
+    /// within the window.
+    /// </summary>
+    public Vector2 DebugViewportOffset { get; private set; }
+
+    /// <summary>
+    /// The top-left screen position of the game viewport in ImGui/window pixels.
+    /// Zero when the debug menu is closed.
+    /// </summary>
+    public Vector2 DebugViewportScreenPos => _debugWindowManager?.ViewportPos ?? Vector2.Zero;
+
     public bool ShowChunkBorders { get; private set; }
     public bool SkipRenderWorld { get; private set; }
     public string DebugText { get; private set; } = "";
@@ -108,7 +121,7 @@ public partial class BetaSharp :
 
     public GameRenderer GameRenderer { get; private set; }
     public WorldRenderer WorldRenderer { get; private set; }
-    public PostProcessManager PostProcessManager { get; private set; }
+    public FramebufferManager FramebufferManager { get; private set; }
     public TextureManager TextureManager { get; private set; }
     public SkinManager SkinManager { get; private set; }
     public TextRenderer TextRenderer { get; private set; }
@@ -158,6 +171,8 @@ public partial class BetaSharp :
     private bool _fullscreen;
     private bool _prevF11Down;
     private bool _prevF3Down;
+    private Vector2 _lastViewportSize;
+
     private bool _hasCrashed;
     private bool _isTakingScreenshot;
 
@@ -290,11 +305,22 @@ public partial class BetaSharp :
             TextureManager,
             playClickSound: () => SoundManager.PlaySoundFX("random.click", 1.0f, 1.0f),
             displaySize: () => new Vector2D<int>(DisplayWidth, DisplayHeight),
+            inputDisplaySize: () =>
+            {
+                if (Options.ShowDebugInfo && _debugWindowManager != null)
+                {
+                    Vector2 vs = _debugWindowManager.ViewportSize;
+                    if (vs.X > 0 && vs.Y > 0)
+                        return new Vector2D<int>((int)vs.X, (int)vs.Y);
+                }
+                return new Vector2D<int>(DisplayWidth, DisplayHeight);
+            },
             controllerState: this,
             VirtualCursor,
             Timer,
             navigator: this,
-            hasWorld: () => World != null
+            hasWorld: () => World != null,
+            mouseOffset: () => new Vector2D<int>((int)DebugViewportOffset.X, (int)DebugViewportOffset.Y)
         );
 
         SkinManager = new SkinManager(TextureManager);
@@ -352,7 +378,22 @@ public partial class BetaSharp :
         _debugWindowManager = new DebugWindowManager(this, () => InGameHasFocus);
 
         ControllerManager.Initialize(this);
-        MouseHelper = new MouseHelper();
+        MouseHelper = new MouseHelper
+        {
+            GetUngrabCenter = () =>
+            {
+                if (Options.ShowDebugInfo && _debugWindowManager != null)
+                {
+                    Vector2 vp = _debugWindowManager.ViewportPos;
+                    Vector2 vs = _debugWindowManager.ViewportSize;
+                    if (vs.X > 0 && vs.Y > 0)
+                    {
+                        return new((int)(vp.X + vs.X / 2), (int)(vp.Y + vs.Y / 2));
+                    }
+                }
+                return new(Display.getWidth() / 2, Display.getHeight() / 2);
+            }
+        };
 
         CheckGLError("Pre startup");
         GLManager.GL.Enable(GLEnum.Texture2D);
@@ -408,7 +449,7 @@ public partial class BetaSharp :
             () => _isMainMenuOpen
         ));
 
-        PostProcessManager = new PostProcessManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
+        FramebufferManager = new FramebufferManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
     }
 
     private void LoadVersion()
@@ -515,10 +556,6 @@ public partial class BetaSharp :
             {
                 long frameStartNano = Stopwatch.GetTimestamp();
 
-                int startGcGen0 = GC.CollectionCount(0);
-                int startGcGen1 = GC.CollectionCount(1);
-                int startGcGen2 = GC.CollectionCount(2);
-
                 Profiler.Update(Timer.DeltaTime);
 
                 try
@@ -537,7 +574,8 @@ public partial class BetaSharp :
 
                     if (IsControllerMode && CurrentScreen != null)
                     {
-                        VirtualCursor.Update(CurrentScreen, Options, DisplayWidth, DisplayHeight, Timer.DeltaTime);
+                        Vector2D<int> inputSize = UIContext.InputDisplaySize;
+                        VirtualCursor.Update(CurrentScreen, Options, inputSize.X, inputSize.Y, Timer.DeltaTime);
                     }
 
                     if (IsGamePaused && World != null)
@@ -602,6 +640,44 @@ public partial class BetaSharp :
                         Options.CameraMode = EnumCameraMode.FirstPerson;
                     }
 
+                    int savedWidth = DisplayWidth, savedHeight = DisplayHeight;
+                    if (imguiThisFrame)
+                    {
+                        Vector2 vpSize = _debugWindowManager.ViewportSize;
+                        if (vpSize.X > 0 && vpSize.Y > 0)
+                        {
+                            int vpW = (int)vpSize.X, vpH = (int)vpSize.Y;
+                            if (_lastViewportSize != vpSize)
+                            {
+                                FramebufferManager.Resize(vpW, vpH);
+                                _lastViewportSize = vpSize;
+                            }
+                            DisplayWidth = vpW;
+                            DisplayHeight = vpH;
+
+                            DebugViewportOffset = new Vector2(
+                                _debugWindowManager.ViewportPos.X,
+                                Display.getHeight() - vpH - _debugWindowManager.ViewportPos.Y);
+                            FramebufferManager.SkipBlit = true;
+                        }
+                        else
+                        {
+                            DebugViewportOffset = Vector2.Zero;
+                            FramebufferManager.SkipBlit = false;
+                        }
+                    }
+                    else
+                    {
+                        DebugViewportOffset = Vector2.Zero;
+                        FramebufferManager.SkipBlit = false;
+                        if (_lastViewportSize != Vector2.Zero)
+                        {
+                            FramebufferManager.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+                            _lastViewportSize = Vector2.Zero;
+                            _debugWindowManager.ViewportTextureId = 0;
+                        }
+                    }
+
                     if (!SkipRenderWorld)
                     {
                         PlayerController?.setPartialTime(Timer.renderPartialTicks);
@@ -620,8 +696,16 @@ public partial class BetaSharp :
                         }
                     }
 
+                    DisplayWidth = savedWidth;
+                    DisplayHeight = savedHeight;
+
                     if (imguiThisFrame)
                     {
+                        if (FramebufferManager.SkipBlit)
+                        {
+                            _debugWindowManager.ViewportTextureId = FramebufferManager.TextureId;
+                        }
+
                         _debugWindowManager.Render(Timer.DeltaTime);
 
                         ImGui.Render();
@@ -671,7 +755,7 @@ public partial class BetaSharp :
                 }
                 finally
                 {
-                    ReportFrameTelemetry(frameStartNano, startGcGen0, startGcGen1, startGcGen2);
+                    ReportFrameTelemetry(frameStartNano);
                 }
             }
         }
@@ -707,7 +791,7 @@ public partial class BetaSharp :
         MetricRegistry.Set(RenderMetrics.EntitiesTotal, WorldRenderer.CountEntitiesTotal);
     }
 
-    private void ReportFrameTelemetry(long frameStartNano, int startGcGen0, int startGcGen1, int startGcGen2)
+    private void ReportFrameTelemetry(long frameStartNano)
     {
         long frameEndNano = Stopwatch.GetTimestamp();
         double thisFrameTimeMs = (frameEndNano - frameStartNano) / 1000000.0;
@@ -724,7 +808,7 @@ public partial class BetaSharp :
 
     public void RunTick(float partialTicks)
     {
-        using var _tick = Profiler.Begin("Tick");
+        using Profiler.ProfilerScope _tick = Profiler.Begin("Tick");
 
         using (Profiler.Begin("SyncStats"))
         {
@@ -1061,7 +1145,8 @@ public partial class BetaSharp :
             }
         }
 
-        ControllerManager.UpdateGui(CurrentScreen);
+        ControllerManager.UpdateGlobal();
+        ControllerManager.UpdateUI(CurrentScreen);
         ControllerManager.UpdateInGame(Timer.renderPartialTicks);
 
         if (CurrentScreen == null)
@@ -1436,7 +1521,8 @@ public partial class BetaSharp :
 
         if (CurrentScreen != null)
         {
-            VirtualCursor.Reset(DisplayWidth, DisplayHeight);
+            Vector2D<int> inputSizeForReset = UIContext.InputDisplaySize;
+            VirtualCursor.Reset(inputSizeForReset.X, inputSizeForReset.Y);
         }
 
         if (InternalServer != null)
@@ -1482,7 +1568,7 @@ public partial class BetaSharp :
             {
                 GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
                 InGameHasFocus = true;
-                MouseHelper.grabMouseCursor();
+                MouseHelper.GrabMouseCursor();
                 Navigate(null);
                 _leftClickCounter = 10000;
                 MouseTicksRan = TicksRan + 10000;
@@ -1497,7 +1583,7 @@ public partial class BetaSharp :
             Player?.resetPlayerKeyState();
             InGameHasFocus = false;
             GCSettings.LatencyMode = GCLatencyMode.Batch;
-            MouseHelper.ungrabMouseCursor();
+            MouseHelper.UngrabMouseCursor();
             Mouse.setCursorVisible(!IsControllerMode);
         }
     }
@@ -1571,7 +1657,7 @@ public partial class BetaSharp :
         DisplayHeight = newHeight;
         Mouse.setDisplayDimensions(DisplayWidth, DisplayHeight);
 
-        PostProcessManager.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+        FramebufferManager.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
     }
 
     private void ScreenshotListener()

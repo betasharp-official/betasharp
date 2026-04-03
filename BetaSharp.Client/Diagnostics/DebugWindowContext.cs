@@ -22,4 +22,11 @@ internal sealed class DebugWindowContext(BetaSharp game)
     public UIScreen? CurrentScreen => game.CurrentScreen;
     public HUD HUD => game.HUD;
     public UIContext UIContext => game.UIContext;
+
+    /// <summary>
+    /// The top-left screen position (in ImGui/window pixels) of the game viewport when the
+    /// debug menu is open, or <see cref="System.Numerics.Vector2.Zero"/> otherwise.
+    /// Used by overlays that draw into the foreground draw list.
+    /// </summary>
+    public System.Numerics.Vector2 DebugViewportScreenPos => game.DebugViewportScreenPos;
 }

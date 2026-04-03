@@ -3,6 +3,7 @@ using BetaSharp.Client.UI;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Screens.InGame;
 using Hexa.NET.ImGui;
+using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Diagnostics.Windows;
 
@@ -153,23 +154,24 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
     private unsafe void DrawOverlays()
     {
         int scaleFactor = GetScaleFactor();
+        Vector2 vpOffset = ctx.DebugViewportScreenPos;
         ImDrawList* drawList = ImGui.GetForegroundDrawList();
 
         if (_hoveredElement != null && _hoveredElement != _selectedElement)
         {
-            DrawElementHighlight(drawList, _hoveredElement, scaleFactor, isSelected: false);
+            DrawElementHighlight(drawList, _hoveredElement, scaleFactor, vpOffset, isSelected: false);
         }
 
         if (_selectedElement != null)
         {
-            DrawElementHighlight(drawList, _selectedElement, scaleFactor, isSelected: true);
+            DrawElementHighlight(drawList, _selectedElement, scaleFactor, vpOffset, isSelected: true);
         }
     }
 
-    private static unsafe void DrawElementHighlight(ImDrawList* drawList, UIElement el, int scaleFactor, bool isSelected)
+    private static unsafe void DrawElementHighlight(ImDrawList* drawList, UIElement el, int scaleFactor, System.Numerics.Vector2 vpOffset, bool isSelected)
     {
-        float x = el.ScreenX * scaleFactor;
-        float y = el.ScreenY * scaleFactor;
+        float x = el.ScreenX * scaleFactor + vpOffset.X;
+        float y = el.ScreenY * scaleFactor + vpOffset.Y;
         float w = el.ComputedWidth * scaleFactor;
         float h = el.ComputedHeight * scaleFactor;
 
@@ -222,7 +224,8 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
     private int GetScaleFactor()
     {
         UIContext uiCtx = ctx.UIContext;
-        var res = new ScaledResolution(uiCtx.Options, uiCtx.DisplayWidth, uiCtx.DisplayHeight);
+        Vector2D<int> inputSize = uiCtx.InputDisplaySize;
+        var res = new ScaledResolution(uiCtx.Options, inputSize.X, inputSize.Y);
         return res.ScaleFactor;
     }
 

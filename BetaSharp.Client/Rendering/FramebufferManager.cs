@@ -5,9 +5,9 @@ using Framebuffer = BetaSharp.Client.Rendering.Core.Framebuffer;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 using Shader = BetaSharp.Client.Rendering.Core.Shader;
 
-namespace BetaSharp.Client.Rendering.PostProcessing;
+namespace BetaSharp.Client.Rendering;
 
-public class PostProcessManager
+public class FramebufferManager
 {
     private readonly Framebuffer _mainFbo;
     private readonly Shader _gammaShader;
@@ -15,7 +15,7 @@ public class PostProcessManager
     private readonly uint _vbo;
     private readonly GameOptions _options;
 
-    public PostProcessManager(int w, int h, GameOptions options)
+    public FramebufferManager(int w, int h, GameOptions options)
     {
         _options = options;
         _mainFbo = new Framebuffer(w, h);
@@ -82,6 +82,18 @@ public class PostProcessManager
         gl.BindVertexArray(0);
     }
 
+    /// <summary>The OpenGL texture ID of the rendered frame. Valid after <see cref="End"/> is called.</summary>
+    public uint TextureId => _mainFbo.TextureId;
+
+    public int FramebufferWidth => _mainFbo.Width;
+    public int FramebufferHeight => _mainFbo.Height;
+
+    /// <summary>
+    /// When true, <see cref="End"/> clears the screen but skips blitting the FBO to it.
+    /// The rendered frame is available via <see cref="TextureId"/> for ImGui display.
+    /// </summary>
+    public bool SkipBlit { get; set; }
+
     public void Begin()
     {
         _mainFbo.Bind();
@@ -99,22 +111,25 @@ public class PostProcessManager
         gl.Disable(GLEnum.DepthTest);
         gl.Clear(ClearBufferMask.ColorBufferBit);
 
-        // TODO: make indivdual post processing passes control their shaders.
-        _gammaShader.Bind();
+        if (!SkipBlit)
+        {
+            // TODO: make indivdual post processing passes control their shaders.
+            _gammaShader.Bind();
 
-        float slider = _options.Gamma / 100.0f;
-        float gammaValue = 0.25f + (slider * 1.5f);
+            float slider = _options.Gamma / 100.0f;
+            float gammaValue = 0.25f + (slider * 1.5f);
 
-        _gammaShader.SetUniform1("gamma", gammaValue);
-        _gammaShader.SetUniform1("screenTexture", 0);
+            _gammaShader.SetUniform1("gamma", gammaValue);
+            _gammaShader.SetUniform1("screenTexture", 0);
 
-        gl.ActiveTexture(GLEnum.Texture0);
-        gl.BindTexture(GLEnum.Texture2D, _mainFbo.TextureId);
+            gl.ActiveTexture(GLEnum.Texture0);
+            gl.BindTexture(GLEnum.Texture2D, _mainFbo.TextureId);
 
-        gl.BindVertexArray(_vao);
-        gl.DrawArrays(GLEnum.Triangles, 0, 6);
-        gl.BindVertexArray(0);
-        gl.UseProgram(0);
+            gl.BindVertexArray(_vao);
+            gl.DrawArrays(GLEnum.Triangles, 0, 6);
+            gl.BindVertexArray(0);
+            gl.UseProgram(0);
+        }
 
         gl.Enable(GLEnum.DepthTest);
     }

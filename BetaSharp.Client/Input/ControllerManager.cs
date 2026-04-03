@@ -71,6 +71,21 @@ public static class ControllerManager
         s_wasJumpDown = IsActionDown("controller.jump");
     }
 
+    /// <summary>
+    /// Handles controller bindings that should fire regardless of whether the player is
+    /// in-game, on a menu, or on the main screen (e.g. the debug overlay toggle).
+    /// </summary>
+    public static void UpdateGlobal()
+    {
+        if (s_game == null) return;
+
+        bool playerListHeld = Controller.IsButtonDown(GamepadButton.Back);
+        if (playerListHeld && !s_wasPlayerListDown)
+        {
+            s_game.Options.ShowDebugInfo = !s_game.Options.ShowDebugInfo;
+        }
+    }
+
     public static void UpdateInGame(float tickDelta)
     {
         if (s_game == null || s_game.CurrentScreen != null || !s_game.InGameHasFocus)
@@ -212,11 +227,6 @@ public static class ControllerManager
             s_game.ClickMiddleMouseButton();
         }
 
-        if (playerListHeld && !s_wasPlayerListDown)
-        {
-            s_game.Options.ShowDebugInfo = !s_game.Options.ShowDebugInfo;
-        }
-
         if (jumpHeld || attackHeld || interactHeld || inventoryHeld || dropHeld || lbHeld || rbHeld ||
             cameraHeld || pauseHeld || playerListHeld || pickBlockHeld || sneakHeld || craftingHeld || zoomHeld)
         {
@@ -228,7 +238,7 @@ public static class ControllerManager
         while (Controller.Next()) { }
     }
 
-    public static void UpdateGui(UIScreen? screen)
+    public static void UpdateUI(UIScreen? screen)
     {
         if (s_game == null || screen == null) return;
         s_suppressInGameInput = true;
