@@ -265,6 +265,11 @@ public abstract class BetaSharpServer : ICommandOutput
                 break;
             }
         }
+
+        if (this is InternalServer)
+        {
+            DataAssetLoader.UnloadWorldAssets();
+        }
     }
 
     public void Stop()

@@ -25,8 +25,8 @@ public abstract class DataAssetLoader
     private protected LoadLocations LoadedAssetsModify;
 
     private static string? s_lastDataPath = null;
-    private static string s_lastWorldDataPath = null!;
-    private static string s_lastResourcePath = null!;
+    private static string? s_lastWorldDataPath = null;
+    private static string? s_lastResourcePath = null;
 
     private protected DataAssetLoader(LoadLocations locations)
     {
@@ -146,9 +146,9 @@ public abstract class DataAssetLoader
         }
 
         LoadBaseAssets(LoadLocations.WorldDatapack);
-        LoadDatapackAssets(s_lastDataPath, LoadLocations.WorldDatapack);
-        LoadWorldAssets(s_lastWorldDataPath, LoadLocations.WorldDatapack);
-        LoadResourcepackAssets(s_lastResourcePath, LoadLocations.WorldDatapack);
+        if (s_lastDataPath != null) LoadDatapackAssets(s_lastDataPath, LoadLocations.WorldDatapack);
+        if (s_lastWorldDataPath != null) LoadWorldAssets(s_lastWorldDataPath, LoadLocations.WorldDatapack);
+        if (s_lastResourcePath != null) LoadResourcepackAssets(s_lastResourcePath, LoadLocations.WorldDatapack);
 
         if (wait)
             foreach (var loader in s_assetLoaders)
@@ -165,9 +165,9 @@ public abstract class DataAssetLoader
         }
 
         LoadBaseAssets(LoadLocations.Resourcepack);
-        LoadDatapackAssets(s_lastDataPath, LoadLocations.Resourcepack);
-        LoadWorldAssets(s_lastWorldDataPath, LoadLocations.Resourcepack);
-        LoadResourcepackAssets(s_lastResourcePath, LoadLocations.Resourcepack);
+        if (s_lastDataPath != null) LoadDatapackAssets(s_lastDataPath, LoadLocations.Resourcepack);
+        if (s_lastWorldDataPath != null) LoadWorldAssets(s_lastWorldDataPath, LoadLocations.Resourcepack);
+        if (s_lastResourcePath != null) LoadResourcepackAssets(s_lastResourcePath, LoadLocations.Resourcepack);
 
         if (wait)
             foreach (var loader in s_assetLoaders)
