@@ -58,11 +58,11 @@ public class ZippedTexturePack : TexturePack
         }
     }
 
-    public override void Unload(BetaSharp game)
+    public override void Unload(TextureManager textureManager)
     {
         if (_texturePackThumbnail != null && _texturePackName != null)
         {
-            game.textureManager.Delete(_texturePackName);
+            textureManager.Delete(_texturePackName);
             _texturePackThumbnail.Dispose();
 
         }
@@ -70,20 +70,20 @@ public class ZippedTexturePack : TexturePack
         CloseTexturePackFile();
     }
 
-    public override void BindThumbnailTexture(BetaSharp game)
+    public override void BindThumbnailTexture(TextureManager textureManager)
     {
         if (_texturePackThumbnail != null && _texturePackName == null)
         {
-            _texturePackName = game.textureManager.Load(_texturePackThumbnail);
+            _texturePackName = textureManager.Load(_texturePackThumbnail);
         }
 
         if (_texturePackThumbnail != null && _texturePackName != null)
         {
-            game.textureManager.BindTexture(_texturePackName);
+            textureManager.BindTexture(_texturePackName);
         }
         else
         {
-            game.textureManager.BindTexture(game.textureManager.GetTextureId("/gui/unknown_pack.png"));
+            textureManager.BindTexture(textureManager.GetTextureId("/gui/unknown_pack.png"));
         }
 
     }

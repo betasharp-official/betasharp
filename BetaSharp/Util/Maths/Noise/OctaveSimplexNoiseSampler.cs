@@ -14,14 +14,7 @@ internal class OctaveSimplexNoiseSampler : NoiseSampler
         {
             _octaves[i] = new SimplexNoiseSampler(rand);
         }
-    }
 
-    public void Restore(JavaRandom rand)
-    {
-        for (int i = 0; i < _octaveCount; ++i)
-        {
-            _octaves[i].Restore(rand);
-        }
     }
 
     public double[] sample(double[] buffer, double x, double z, int width, int depth, double xFrequency, double zFrequency, double frequencyScaler)

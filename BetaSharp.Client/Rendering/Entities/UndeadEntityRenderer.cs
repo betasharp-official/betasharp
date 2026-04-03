@@ -17,7 +17,7 @@ public class UndeadEntityRenderer : LivingEntityRenderer
         modelBipedMain = mainModel;
     }
 
-    protected override void renderMore(EntityLiving var1, float var2)
+    protected override void RenderMore(EntityLiving var1, float var2)
     {
         ItemStack var3 = var1.getHeldItem();
         if (var3 != null)
@@ -53,7 +53,7 @@ public class UndeadEntityRenderer : LivingEntityRenderer
                 GLManager.GL.Rotate(20.0F, 0.0F, 0.0F, 1.0F);
             }
 
-            Dispatcher.heldItemRenderer.renderItem(var1, var3);
+            Dispatcher.HeldItemRenderer.renderItem(var1, var3);
             GLManager.GL.PopMatrix();
         }
 

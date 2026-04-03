@@ -1,4 +1,4 @@
-﻿using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using Microsoft.Extensions.Logging;
@@ -25,7 +25,7 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
     public override void Setup(BetaSharp game)
     {
         _game = game;
-        TextureManager tm = game.textureManager;
+        TextureManager tm = game.TextureManager;
         string atlasPath = "/gui/items.png";
 
         TextureHandle handle = tm.GetTextureId(atlasPath);
@@ -47,7 +47,7 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
 
         try
         {
-            using Stream? stream = game.texturePackList.SelectedTexturePack.GetResourceAsStream("gui/items.png");
+            using Stream? stream = game.TexturePackList.SelectedTexturePack.GetResourceAsStream("gui/items.png");
             if (stream != null)
             {
                 using Image<Rgba32> atlasImage = Image.Load<Rgba32>(stream);
@@ -91,15 +91,15 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
         }
 
         double targetAngle = 0.0D;
-        if (_game.world != null && _game.player != null)
+        if (_game.World != null && _game.Player != null)
         {
-            Vec3i spawnPos = _game.world.Properties.GetSpawnPos();
-            double deltaX = spawnPos.X - _game.player.x;
-            double deltaZ = spawnPos.Z - _game.player.z;
+            Vec3i spawnPos = _game.World.Properties.GetSpawnPos();
+            double deltaX = spawnPos.X - _game.Player.x;
+            double deltaZ = spawnPos.Z - _game.Player.z;
 
-            targetAngle = (_game.player.yaw - 90.0F) * Math.PI / 180.0D - Math.Atan2(deltaZ, deltaX);
+            targetAngle = (_game.Player.yaw - 90.0F) * Math.PI / 180.0D - Math.Atan2(deltaZ, deltaX);
 
-            if (_game.world.Dimension.IsNether)
+            if (_game.World.Dimension.IsNether)
             {
                 targetAngle = Random.Shared.NextDouble() * (float)Math.PI * 2.0D;
             }

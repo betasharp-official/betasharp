@@ -20,13 +20,13 @@ public class PlayerController
 
     public virtual void clickBlock(int x, int y, int z, int direction)
     {
-        Game.world.ExtinguishFire(Game.player, x, y, z, direction);
+        Game.World.ExtinguishFire(Game.Player, x, y, z, direction);
         sendBlockRemoved(x, y, z, direction);
     }
 
     public virtual bool sendBlockRemoved(int x, int y, int z, int direction)
     {
-        World world = Game.world;
+        World world = Game.World;
         Block block = Block.Blocks[world.Reader.GetBlockId(x, y, z)];
         world.Broadcaster.NotifyNeighbors(x, y, z, world.Reader.GetBlockId(x, y, z));
         int blockMeta = world.Reader.GetBlockMeta(x, y, z);
@@ -119,7 +119,7 @@ public class PlayerController
 
     public virtual EntityPlayer createPlayer(World var1)
     {
-        return new ClientPlayerEntity(Game, var1, Game.session, var1.Dimension.Id);
+        return new ClientPlayerEntity(Game, var1, Game.Session, var1.Dimension.Id);
     }
 
     public virtual void interactWithEntity(EntityPlayer var1, Entity var2)

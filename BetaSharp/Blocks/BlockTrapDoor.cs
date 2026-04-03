@@ -7,17 +7,14 @@ namespace BetaSharp.Blocks;
 
 internal class BlockTrapDoor : Block
 {
+    private const float HalfWidth = 0.5F;
+    private const float FullHeight = 1.0F;
+    private const float Thickness = 3.0F / 16.0F;
     public BlockTrapDoor(int id, Material material) : base(id, material)
     {
         textureId = 84;
-        if (material == Material.Metal)
-        {
-            ++textureId;
-        }
-
-        float halfWidth = 0.5F;
-        float fullHeight = 1.0F;
-        setBoundingBox(0.5F - halfWidth, 0.0F, 0.5F - halfWidth, 0.5F + halfWidth, fullHeight, 0.5F + halfWidth);
+        if (material == Material.Metal) ++textureId;
+        setBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, FullHeight, 0.5F + HalfWidth);
     }
 
     public override bool isOpaque() => false;
@@ -46,104 +43,84 @@ internal class BlockTrapDoor : Block
         setBoundingBox(0.0F, 0.5F - height / 2.0F, 0.0F, 1.0F, 0.5F + height / 2.0F, 1.0F);
     }
 
-    public void updateBoundingBox(int meta)
+    private void updateBoundingBox(int meta)
     {
-        float height = 3.0F / 16.0F;
-        setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, height, 1.0F);
-        if (isOpen(meta))
-        {
-            if ((meta & 3) == 0)
-            {
-                setBoundingBox(0.0F, 0.0F, 1.0F - height, 1.0F, 1.0F, 1.0F);
-            }
+        setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, Thickness, 1.0F);
 
-            if ((meta & 3) == 1)
-            {
-                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, height);
-            }
+        if (!IsOpen(meta)) return;
 
-            if ((meta & 3) == 2)
-            {
-                setBoundingBox(1.0F - height, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-            }
-
-            if ((meta & 3) == 3)
-            {
-                setBoundingBox(0.0F, 0.0F, 0.0F, height, 1.0F, 1.0F);
-            }
-        }
+        if ((meta & 3) == 0) setBoundingBox(0.0F, 0.0F, 1.0F - Thickness, 1.0F, 1.0F, 1.0F);
+        if ((meta & 3) == 1) setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, Thickness);
+        if ((meta & 3) == 2) setBoundingBox(1.0F - Thickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+        if ((meta & 3) == 3) setBoundingBox(0.0F, 0.0F, 0.0F, Thickness, 1.0F, 1.0F);
     }
 
-    private bool UpdateState(IBlockReader worldRead, IBlockWriter worldWriter, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    private bool UpdateState(IWorldContext world, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        if (material == Material.Metal)
-        {
-            return true;
-        }
+        if (world.IsRemote) return true;
+        if (material == Material.Metal) return true;
 
-        int meta = worldRead.GetBlockMeta(x, y, z);
-        worldWriter.SetBlockMeta(x, y, z, meta ^ 4);
+        int meta = world.Reader.GetBlockMeta(x, y, z);
+        world.Writer.SetBlockMeta(x, y, z, meta ^ 4);
         broadcaster.WorldEvent(1003, x, y, z, 0);
         return true;
     }
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvent ctx) => UpdateState(ctx.World.Reader, ctx.World.Writer, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
+    public override void onBlockBreakStart(OnBlockBreakStartEvent ctx) => UpdateState(ctx.World, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
 
 
-    public override bool onUse(OnUseEvent ctx) => UpdateState(ctx.World.Reader, ctx.World.Writer, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
+    public override bool onUse(OnUseEvent ctx) => UpdateState(ctx.World, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
 
-    public void setOpen(OnTickEvent ctx, bool open)
+    private static void SetOpen(OnTickEvent ctx, bool open)
     {
-        int x = ctx.X;
-        int y = ctx.Y;
-        int z = ctx.Z;
+        if (ctx.World.IsRemote) return;
+
+        (int x, int y, int z) = (ctx.X, ctx.Y, ctx.Z);
         int meta = ctx.World.Reader.GetBlockMeta(x, y, z);
+
         bool isOpen = (meta & 4) > 0;
-        if (isOpen != open)
-        {
-            ctx.World.Writer.SetBlockMeta(x, y, z, meta ^ 4);
-            ctx.World.Broadcaster.WorldEvent(1003, x, y, z, 0);
-        }
+        if (isOpen == open) return;
+
+        ctx.World.Writer.SetBlockMeta(x, y, z, meta ^ 4);
+        ctx.World.Broadcaster.WorldEvent(1003, x, y, z, 0);
     }
 
     public override void neighborUpdate(OnTickEvent ctx)
     {
-        if (!ctx.World.IsRemote)
+        if (ctx.World.IsRemote) return;
+
+        int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        int xPos = ctx.X;
+        int zPos = ctx.Z;
+        if ((meta & 3) == 0)
         {
-            int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
-            int xPos = ctx.X;
-            int zPos = ctx.Z;
-            if ((meta & 3) == 0)
-            {
-                zPos = ctx.Z + 1;
-            }
+            zPos = ctx.Z + 1;
+        }
 
-            if ((meta & 3) == 1)
-            {
-                --zPos;
-            }
+        if ((meta & 3) == 1)
+        {
+            --zPos;
+        }
 
-            if ((meta & 3) == 2)
-            {
-                xPos = ctx.X + 1;
-            }
+        if ((meta & 3) == 2)
+        {
+            xPos = ctx.X + 1;
+        }
 
-            if ((meta & 3) == 3)
-            {
-                --xPos;
-            }
+        if ((meta & 3) == 3)
+        {
+            --xPos;
+        }
 
-            if (!ctx.World.Reader.ShouldSuffocate(xPos, ctx.Y, zPos))
-            {
-                ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
-                dropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, meta));
-            }
-
-            if (id > 0 && Blocks[id].canEmitRedstonePower())
-            {
-                bool isPowered = ctx.World.Redstone.IsPowered(ctx.X, ctx.Y, ctx.Z);
-                setOpen(ctx, isPowered);
-            }
+        if (!ctx.World.Reader.ShouldSuffocate(xPos, ctx.Y, zPos))
+        {
+            ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+            dropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, meta));
+        }
+        else
+        {
+            bool isPowered = ctx.World.Redstone.IsPowered(ctx.X, ctx.Y, ctx.Z);
+            SetOpen(ctx, isPowered);
         }
     }
 
@@ -155,68 +132,43 @@ internal class BlockTrapDoor : Block
 
     public override void onPlaced(OnPlacedEvent ctx)
     {
-        sbyte meta = 0;
-        if (ctx.Direction == 2)
+        sbyte meta = ctx.Direction switch
         {
-            meta = 0;
-        }
-
-        if (ctx.Direction == 3)
-        {
-            meta = 1;
-        }
-
-        if (ctx.Direction == 4)
-        {
-            meta = 2;
-        }
-
-        if (ctx.Direction == 5)
-        {
-            meta = 3;
-        }
+            2 => 0,
+            3 => 1,
+            4 => 2,
+            5 => 3,
+            _ => 0
+        };
 
         ctx.World.Writer.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, meta);
     }
 
-    public override bool canPlaceAt(CanPlaceAtContext context)
+    public override bool canPlaceAt(CanPlaceAtContext ctx)
     {
-        int x = context.X;
-        int y = context.Y;
-        int z = context.Z;
+        (int x, int y, int z) = (ctx.X, ctx.Y, ctx.Z);
 
-        if (context.Direction == 0)
+        switch (ctx.Direction)
         {
-            return false;
+            case 0:
+            case 1:
+                return false;
+            case 2:
+                ++z;
+                break;
+            case 3:
+                --z;
+                break;
+            case 4:
+                ++x;
+                break;
+            case 5:
+                --x;
+                break;
         }
 
-        if (context.Direction == 1)
-        {
-            return false;
-        }
-
-        if (context.Direction == 2)
-        {
-            ++z;
-        }
-
-        if (context.Direction == 3)
-        {
-            --z;
-        }
-
-        if (context.Direction == 4)
-        {
-            ++x;
-        }
-
-        if (context.Direction == 5)
-        {
-            --x;
-        }
-
-        return context.World.Reader.ShouldSuffocate(x, y, z);
+        return ctx.World.Reader.ShouldSuffocate(x, y, z);
     }
 
-    public static bool isOpen(int meta) => (meta & 4) != 0;
+    public static bool IsOpen(int meta) => (meta & 4) != 0;
 }

@@ -1,11 +1,14 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Entities.FX;
-using BetaSharp.Client.Guis;
-using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Client.Input;
+using BetaSharp.Client.Network;
+using BetaSharp.Client.Rendering.Particles;
+using BetaSharp.Client.UI.Screens.InGame;
+using BetaSharp.Client.UI.Screens.InGame.Containers;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.NBT;
+using BetaSharp.Network.Packets.Play;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
@@ -17,13 +20,10 @@ public class ClientPlayerEntity : EntityPlayer
     public override EntityType Type => EntityRegistry.Player;
     public MovementInput movementInput;
     protected BetaSharp Game;
-    private readonly MouseFilter field_21903_bJ = new();
-    private readonly MouseFilter field_21904_bK = new();
-    private readonly MouseFilter field_21902_bL = new();
 
     public ClientPlayerEntity(BetaSharp game, IWorldContext world, Session session, int dimensionId) : base(world)
     {
-        this.Game = game;
+        Game = game;
         base.dimensionId = dimensionId;
         name = session.username;
     }
@@ -43,9 +43,9 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void tickMovement()
     {
-        if (!Game.statFileWriter.HasAchievementUnlocked(global::BetaSharp.Achievements.OpenInventory))
+        if (!Game.StatFileWriter.HasAchievementUnlocked(global::BetaSharp.Achievements.OpenInventory))
         {
-            Game.guiAchievement.QueueAchievementInformation(global::BetaSharp.Achievements.OpenInventory);
+            Game.HUD.AchievementToast.QueueInfo(global::BetaSharp.Achievements.OpenInventory);
         }
 
         lastScreenDistortion = changeDimensionCooldown;
@@ -56,14 +56,14 @@ public class ClientPlayerEntity : EntityPlayer
                 setVehicle((Entity)null);
             }
 
-            if (Game.currentScreen != null)
+            if (Game.CurrentScreen != null)
             {
-                Game.displayGuiScreen((GuiScreen)null);
+                Game.Navigate(null);
             }
 
             if (changeDimensionCooldown == 0.0F)
             {
-                Game.sndManager.PlaySoundFX("portal.trigger", 1.0F, random.NextFloat() * 0.4F + 0.8F);
+                Game.SoundManager.PlaySoundFX("portal.trigger", 1.0F, random.NextFloat() * 0.4F + 0.8F);
             }
 
             changeDimensionCooldown += 0.0125F;
@@ -130,37 +130,42 @@ public class ClientPlayerEntity : EntityPlayer
     public override void closeHandledScreen()
     {
         base.closeHandledScreen();
-        Game.displayGuiScreen(null);
+        Game.Navigate(null);
     }
 
     public override void openEditSignScreen(BlockEntitySign sign)
     {
-        Game.displayGuiScreen(new GuiEditSign(sign));
+        Action? sendUpdate = null;
+        if (this is EntityClientPlayerMP mp && (Game.World?.IsRemote ?? false))
+        {
+            sendUpdate = () => mp.sendQueue.AddToSendQueue(UpdateSignPacket.Get(sign.X, sign.Y, sign.Z, sign.Texts));
+        }
+        Game.Navigate(new SignEditScreen(Game.UIContext, sign, sendUpdate));
     }
 
     public override void openChestScreen(IInventory inventory)
     {
-        Game.displayGuiScreen(new GuiChest(base.inventory, inventory));
+        Game.Navigate(new ChestScreen(Game.UIContext, this, Game.PlayerController, base.inventory, inventory));
     }
 
     public override void openCraftingScreen(int x, int y, int z)
     {
-        Game.displayGuiScreen(new GuiCrafting(inventory, world, x, y, z));
+        Game.Navigate(new CraftingScreen(Game.UIContext, this, Game.PlayerController, inventory, (IWorldContext)world, x, y, z));
     }
 
     public override void openFurnaceScreen(BlockEntityFurnace furnace)
     {
-        Game.displayGuiScreen(new GuiFurnace(inventory, furnace));
+        Game.Navigate(new FurnaceScreen(Game.UIContext, this, Game.PlayerController, inventory, furnace));
     }
 
     public override void openDispenserScreen(BlockEntityDispenser dispenser)
     {
-        Game.displayGuiScreen(new GuiDispenser(inventory, dispenser));
+        Game.Navigate(new DispenserScreen(Game.UIContext, this, Game.PlayerController, inventory, dispenser));
     }
 
     public override void sendPickup(Entity entity, int count)
     {
-        Game.particleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(Game.world, entity, this, -0.5F)));
+        Game.ParticleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(Game.World, entity, this, -0.5F)));
     }
 
     public int getPlayerArmorValue()
@@ -170,7 +175,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public virtual void sendChatMessage(string message)
     {
-        Game.ingameGUI.AddChatMessage($"<{name}> {message}");
+        Game.HUD.AddChatMessage($"<{name}> {message}");
     }
 
     public override bool isSneaking()
@@ -201,7 +206,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void respawn()
     {
-        Game.respawn(false, 0);
+        Game.Respawn(false, 0);
     }
 
     public override void spawn()
@@ -210,7 +215,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void sendMessage(string message)
     {
-        Game.ingameGUI.AddChatMessageTranslate(message);
+        Game.HUD.AddChatMessage(message);
     }
 
     public override void increaseStat(StatBase stat, int value)
@@ -220,22 +225,22 @@ public class ClientPlayerEntity : EntityPlayer
             if (stat.IsAchievement())
             {
                 Achievement achievement = (Achievement)stat;
-                bool parentUnlocked = achievement.parent == null || Game.statFileWriter.HasAchievementUnlocked(achievement.parent);
-                bool alreadyUnlocked = Game.statFileWriter.HasAchievementUnlocked(achievement);
+                bool parentUnlocked = achievement.parent == null || Game.StatFileWriter.HasAchievementUnlocked(achievement.parent);
+                bool alreadyUnlocked = Game.StatFileWriter.HasAchievementUnlocked(achievement);
 
                 if (parentUnlocked)
                 {
                     if (!alreadyUnlocked)
                     {
-                        Game.guiAchievement.QueueTakenAchievement(achievement);
+                        Game.HUD.AchievementToast.QueueAchievement(achievement);
                     }
 
-                    Game.statFileWriter.ReadStat(stat, value);
+                    Game.StatFileWriter.ReadStat(stat, value);
                 }
             }
             else
             {
-                Game.statFileWriter.ReadStat(stat, value);
+                Game.StatFileWriter.ReadStat(stat, value);
             }
         }
     }

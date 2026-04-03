@@ -12,7 +12,7 @@ public class WolfEntityRenderer : LivingEntityRenderer
 
     public void renderWolf(EntityWolf var1, double var2, double var4, double var6, float var8, float var9)
     {
-        base.doRenderLiving(var1, var2, var4, var6, var8, var9);
+        base.DoRenderLiving(var1, var2, var4, var6, var8, var9);
     }
 
     protected float func_25004_a(EntityWolf var1, float var2)
@@ -24,7 +24,7 @@ public class WolfEntityRenderer : LivingEntityRenderer
     {
     }
 
-    protected override void preRenderCallback(EntityLiving var1, float var2)
+    protected override void PreRenderCallback(EntityLiving var1, float var2)
     {
         func_25006_b((EntityWolf)var1, var2);
     }
@@ -34,12 +34,12 @@ public class WolfEntityRenderer : LivingEntityRenderer
         return func_25004_a((EntityWolf)var1, var2);
     }
 
-    public override void doRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
+    public override void DoRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
     {
         renderWolf((EntityWolf)var1, var2, var4, var6, var8, var9);
     }
 
-    public override void render(Entity target, double x, double y, double z, float yaw, float tickDelta)
+    public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
         renderWolf((EntityWolf)target, x, y, z, yaw, tickDelta);
     }

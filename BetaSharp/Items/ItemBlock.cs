@@ -7,7 +7,6 @@ namespace BetaSharp.Items;
 
 internal class ItemBlock : Item
 {
-
     private int blockID;
 
     public ItemBlock(int id) : base(id)
@@ -83,7 +82,7 @@ internal class ItemBlock : Item
             }
         }
 
-        if (block.canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
+        if (block.canPlaceAt(new CanPlaceAtContext(world, meta, x, y, z)))
         {
             int placementMeta = getPlacementMetadata(itemStack.getDamage());
             if (world.Writer.SetBlockWithoutCallingOnPlaced(x, y, z, blockID, placementMeta))
@@ -95,18 +94,16 @@ internal class ItemBlock : Item
 
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
-    public override String getItemNameIS(ItemStack itemStack)
+    public override string getItemNameIS(ItemStack itemStack)
     {
         return Block.Blocks[blockID].getBlockName();
     }
 
-    public override String getItemName()
+    public override string getItemName()
     {
         return Block.Blocks[blockID].getBlockName();
     }

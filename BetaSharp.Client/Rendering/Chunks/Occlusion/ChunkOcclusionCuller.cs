@@ -49,7 +49,7 @@ public class ChunkOcclusionCuller
         IChunkVisibilityVisitor visitor,
         SubChunkRenderer? startNode,
         Vector3D<double> viewPos,
-        Culler culler,
+        ICuller culler,
         float renderDistance,
         bool useOcclusionCulling,
         int frame)

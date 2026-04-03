@@ -1,4 +1,4 @@
-﻿using BetaSharp.Client.Entities;
+using BetaSharp.Client.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
@@ -60,11 +60,11 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         {
             if (isSneaking)
             {
-                sendQueue.addToSendQueue(ClientCommandC2SPacket.Get(this, 1));
+                sendQueue.AddToSendQueue(ClientCommandC2SPacket.Get(this, 1));
             }
             else
             {
-                sendQueue.addToSendQueue(ClientCommandC2SPacket.Get(this, 2));
+                sendQueue.AddToSendQueue(ClientCommandC2SPacket.Get(this, 2));
             }
 
             wasSneaking = isSneaking;
@@ -82,30 +82,30 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         {
             if (rotationChanged)
             {
-                sendQueue.addToSendQueue(PlayerMovePositionAndOnGroundPacket.Get(velocityX, -999.0D, -999.0D, velocityZ, onGround));
+                sendQueue.AddToSendQueue(PlayerMovePositionAndOnGroundPacket.Get(velocityX, -999.0D, -999.0D, velocityZ, onGround));
             }
             else
             {
-                sendQueue.addToSendQueue(PlayerMoveFullPacket.Get(velocityX, -999.0D, -999.0D, velocityZ, yaw, pitch, onGround));
+                sendQueue.AddToSendQueue(PlayerMoveFullPacket.Get(velocityX, -999.0D, -999.0D, velocityZ, yaw, pitch, onGround));
             }
 
             positionChanged = false;
         }
         else if (positionChanged && rotationChanged)
         {
-            sendQueue.addToSendQueue(PlayerMoveFullPacket.Get(x, boundingBox.MinY, y, z, yaw, pitch, onGround));
+            sendQueue.AddToSendQueue(PlayerMoveFullPacket.Get(x, boundingBox.MinY, y, z, yaw, pitch, onGround));
         }
         else if (positionChanged)
         {
-            sendQueue.addToSendQueue(PlayerMovePositionAndOnGroundPacket.Get(x, boundingBox.MinY, y, z, onGround));
+            sendQueue.AddToSendQueue(PlayerMovePositionAndOnGroundPacket.Get(x, boundingBox.MinY, y, z, onGround));
         }
         else if (rotationChanged)
         {
-            sendQueue.addToSendQueue(PlayerMoveLookAndOnGroundPacket.Get(yaw, pitch, onGround));
+            sendQueue.AddToSendQueue(PlayerMoveLookAndOnGroundPacket.Get(yaw, pitch, onGround));
         }
         else if (lastOnGround != onGround)
         {
-            sendQueue.addToSendQueue(PlayerMovePacket.Get(onGround));
+            sendQueue.AddToSendQueue(PlayerMovePacket.Get(onGround));
         }
 
         lastOnGround = onGround;
@@ -127,14 +127,14 @@ public class EntityClientPlayerMP : ClientPlayerEntity
 
     public override void DropSelectedItem()
     {
-        if (!Game.player.GameMode.CanDrop) return;
+        if (!Game.Player.GameMode.CanDrop) return;
 
         var selected = getHand();
         if (selected != null && selected.count > 0)
         {
             increaseStat(Stats.Stats.DropStat, 1);
         }
-        sendQueue.addToSendQueue(PlayerActionC2SPacket.Get(4, 0, 0, 0, 0));
+        sendQueue.AddToSendQueue(PlayerActionC2SPacket.Get(4, 0, 0, 0, 0));
     }
 
     private void sendInventoryChanged()
@@ -147,19 +147,19 @@ public class EntityClientPlayerMP : ClientPlayerEntity
 
     public override void sendChatMessage(string message)
     {
-        sendQueue.addToSendQueue(ChatMessagePacket.Get(message));
+        sendQueue.AddToSendQueue(ChatMessagePacket.Get(message));
     }
 
     public override void swingHand()
     {
         base.swingHand();
-        sendQueue.addToSendQueue(EntityAnimationPacket.Get(this, EntityAnimationPacket.EntityAnimation.SwingHand));
+        sendQueue.AddToSendQueue(EntityAnimationPacket.Get(this, EntityAnimationPacket.EntityAnimation.SwingHand));
     }
 
     public override void respawn()
     {
         sendInventoryChanged();
-        sendQueue.addToSendQueue(PlayerRespawnPacket.Get((sbyte)dimensionId));
+        sendQueue.AddToSendQueue(PlayerRespawnPacket.Get((sbyte)dimensionId));
     }
 
     protected override void applyDamage(int amount)
@@ -169,7 +169,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
 
     public override void closeHandledScreen()
     {
-        sendQueue.addToSendQueue(CloseScreenS2CPacket.Get(currentScreenHandler.SyncId));
+        sendQueue.AddToSendQueue(CloseScreenS2CPacket.Get(currentScreenHandler.SyncId));
         inventory.setItemStack(null);
         base.closeHandledScreen();
     }
@@ -200,7 +200,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         }
     }
 
-    public void func_27027_b(StatBase stat, int amount)
+    public void IncreaseRemoteStat(StatBase stat, int amount)
     {
         if (stat != null && !stat.LocalOnly)
         {

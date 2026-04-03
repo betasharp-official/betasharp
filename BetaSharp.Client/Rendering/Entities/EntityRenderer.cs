@@ -5,7 +5,6 @@ using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Rendering.Entities;
 
@@ -15,14 +14,14 @@ public abstract class EntityRenderer
     protected float ShadowRadius = 0.0F;
     protected float ShadowStrength = 1.0F;
 
-    protected World World => Dispatcher.world;
+    protected World World => Dispatcher.World;
     public TextRenderer TextRenderer => Dispatcher.getTextRenderer();
 
-    public abstract void render(Entity target, double x, double y, double z, float yaw, float tickDelta);
+    public abstract void Render(Entity target, double x, double y, double z, float yaw, float tickDelta);
 
     protected void loadTexture(string path)
     {
-        TextureManager? textureManager = Dispatcher.textureManager;
+        TextureManager? textureManager = Dispatcher.TextureManager;
         textureManager?.BindTexture(textureManager.GetTextureId(path));
     }
 
@@ -30,7 +29,7 @@ public abstract class EntityRenderer
     {
         if (!string.IsNullOrEmpty(url))
         {
-            TextureHandle? skinHandle = Dispatcher.skinManager?.GetTextureHandle(url);
+            TextureHandle? skinHandle = Dispatcher.SkinManager?.GetTextureHandle(url);
             if (skinHandle != null)
             {
                 skinHandle.Bind();
@@ -71,7 +70,7 @@ public abstract class EntityRenderer
         float heightRatio = ent.height / scale;
         float yOffset = (float)(ent.y - ent.boundingBox.MinY);
 
-        GLManager.GL.Rotate(-Dispatcher.playerViewY, 0.0F, 1.0F, 0.0F);
+        GLManager.GL.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
         GLManager.GL.Translate(0.0F, 0.0F, -0.3F + (int)heightRatio * 0.02F);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
 
@@ -124,7 +123,7 @@ public abstract class EntityRenderer
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
 
-        TextureManager textureManager = Dispatcher.textureManager;
+        TextureManager textureManager = Dispatcher.TextureManager;
         textureManager.BindTexture(textureManager.GetTextureId("%clamp%/misc/shadow.png"));
 
         GLManager.GL.DepthMask(false);
@@ -192,7 +191,7 @@ public abstract class EntityRenderer
 
         double minX = blockX + block.BoundingBox.MinX + offset.x;
         double maxX = blockX + block.BoundingBox.MaxX + offset.x;
-        double minY = blockY + block.BoundingBox.MinY + offset.y+ 1.0D / 64.0D;
+        double minY = blockY + block.BoundingBox.MinY + offset.y + 1.0D / 64.0D;
         double minZ = blockZ + block.BoundingBox.MinZ + offset.z;
         double maxZ = blockZ + block.BoundingBox.MaxZ + offset.z;
 
@@ -317,7 +316,7 @@ public abstract class EntityRenderer
 
     public void RenderBoundingBox(Entity target, Vec3D pos, float yaw, float tickDelta)
     {
-        if (!BetaSharp.isDebugInfoEnabled()) return;
+        if (!Dispatcher.Options.ShowDebugInfo) return;
 
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.Texture2D);

@@ -23,7 +23,7 @@ public class TexturePacks
             _texturePackDir.Create();
         }
 
-        _currentTexturePack = game.options.Skin;
+        _currentTexturePack = game.Options.Skin;
         updateAvaliableTexturePacks();
         SelectedTexturePack.func_6482_a();
     }
@@ -39,8 +39,8 @@ public class TexturePacks
         _currentTexturePack = texturePack.TexturePackFileName;
         SelectedTexturePack = texturePack;
 
-        _game.options.Skin = _currentTexturePack;
-        _game.options.SaveOptions();
+        _game.Options.Skin = _currentTexturePack;
+        _game.Options.SaveOptions();
 
         SelectedTexturePack.func_6482_a();
         return true;
@@ -93,7 +93,7 @@ public class TexturePacks
         {
             if (!availablePacks.Contains(oldPack))
             {
-                oldPack.Unload(_game);
+                oldPack.Unload(_game.TextureManager);
                 if (oldPack.Signature != null)
                 {
                     _texturePacks.Remove(oldPack.Signature);

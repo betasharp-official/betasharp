@@ -120,7 +120,7 @@ public class LightningEntityRenderer : EntityRenderer
         GLManager.GL.Enable(GLEnum.Texture2D);
     }
 
-    public override void render(Entity target, double x, double y, double z, float yaw, float tickDelta)
+    public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
         render((EntityLightningBolt)target, x, y, z, yaw, tickDelta);
     }

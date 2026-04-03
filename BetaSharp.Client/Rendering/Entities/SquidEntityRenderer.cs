@@ -13,7 +13,7 @@ public class SquidEntityRenderer : LivingEntityRenderer
 
     public void func_21008_a(EntitySquid var1, double var2, double var4, double var6, float var8, float var9)
     {
-        base.doRenderLiving(var1, var2, var4, var6, var8, var9);
+        base.DoRenderLiving(var1, var2, var4, var6, var8, var9);
     }
 
     protected void func_21007_a(EntitySquid var1, float var2, float var3, float var4)
@@ -37,7 +37,7 @@ public class SquidEntityRenderer : LivingEntityRenderer
         return var3;
     }
 
-    protected override void preRenderCallback(EntityLiving var1, float var2)
+    protected override void PreRenderCallback(EntityLiving var1, float var2)
     {
         func_21005_a((EntitySquid)var1, var2);
     }
@@ -47,17 +47,17 @@ public class SquidEntityRenderer : LivingEntityRenderer
         return func_21006_b((EntitySquid)var1, var2);
     }
 
-    protected override void rotateCorpse(EntityLiving var1, float var2, float var3, float var4)
+    protected override void RotateCorpse(EntityLiving var1, float var2, float var3, float var4)
     {
         func_21007_a((EntitySquid)var1, var2, var3, var4);
     }
 
-    public override void doRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
+    public override void DoRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
     {
         func_21008_a((EntitySquid)var1, var2, var4, var6, var8, var9);
     }
 
-    public override void render(Entity target, double x, double y, double z, float yaw, float tickDelta)
+    public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
         func_21008_a((EntitySquid)target, x, y, z, yaw, tickDelta);
     }

@@ -71,7 +71,7 @@ public class ArrowEntityRenderer : EntityRenderer
         }
     }
 
-    public override void render(Entity target, double x, double y, double z, float yaw, float tickDelta)
+    public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
         renderArrow((EntityArrow)target, x, y, z, yaw, tickDelta);
     }

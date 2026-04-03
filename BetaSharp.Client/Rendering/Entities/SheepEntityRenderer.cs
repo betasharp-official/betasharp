@@ -28,7 +28,7 @@ public class SheepEntityRenderer : LivingEntityRenderer
         }
     }
 
-    protected override bool shouldRenderPass(EntityLiving var1, int var2, float var3)
+    protected override bool ShouldRenderPass(EntityLiving var1, int var2, float var3)
     {
         return setWoolColorAndRender((EntitySheep)var1, var2, var3);
     }

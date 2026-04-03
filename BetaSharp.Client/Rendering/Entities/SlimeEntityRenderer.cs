@@ -46,12 +46,12 @@ public class SlimeEntityRenderer : LivingEntityRenderer
         GLManager.GL.Scale(var5 * var6, 1.0F / var5 * var6, var5 * var6);
     }
 
-    protected override void preRenderCallback(EntityLiving var1, float var2)
+    protected override void PreRenderCallback(EntityLiving var1, float var2)
     {
         scaleSlime((EntitySlime)var1, var2);
     }
 
-    protected override bool shouldRenderPass(EntityLiving var1, int var2, float var3)
+    protected override bool ShouldRenderPass(EntityLiving var1, int var2, float var3)
     {
         return renderSlimePassModel((EntitySlime)var1, var2, var3);
     }

@@ -148,7 +148,7 @@ public class Tessellator
     private int scratchBufferIndex;
     private TesselatorCaptureVertexFormat vertexFormat;
 
-    private unsafe Tessellator(int var1)
+    private Tessellator(int var1)
     {
         bufferSize = var1;
         rawBuffer = new int[var1];

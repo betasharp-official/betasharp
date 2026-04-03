@@ -29,7 +29,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.Disable(GLEnum.CullFace);
 
-            GLManager.GL.ShadeModel(BetaSharp.isAmbientOcclusionEnabled() ? GLEnum.Smooth : GLEnum.Flat);
+            GLManager.GL.ShadeModel(GLEnum.Smooth);
 
             tess.startDrawingQuads();
             tess.setTranslationD(
@@ -45,7 +45,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
                 lighting: piston.World.Lighting,
                 tess: tess,
                 renderAllFaces: true,
-                aoBlendMode: BetaSharp.isAmbientOcclusionEnabled() ? 1 : 0
+                aoBlendMode: 1
             );
 
             BlockPos pos = new(piston.X, piston.Y, piston.Z);

@@ -5,7 +5,7 @@ namespace BetaSharp.Client.Rendering.Chunks;
 
 public struct ChunkRenderParams
 {
-    public Culler Camera;
+    public ICuller Camera;
     public Vector3D<double> ViewPos;
     public int RenderDistance;
     public long Ticks;

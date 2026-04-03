@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Rendering.Blocks;
+using BetaSharp.Client.Rendering.Chunks.Occlusion;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
@@ -9,12 +11,12 @@ using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering.Chunks;
 
-internal struct MeshBuildResult
+internal struct MeshBuildResult : IDisposable
 {
     public PooledList<ChunkVertex> Solid;
     public PooledList<ChunkVertex> Translucent;
     public bool IsLit;
-    public Occlusion.ChunkVisibilityStore VisibilityData;
+    public ChunkVisibilityStore VisibilityData;
     public Vector3D<int> Pos;
     public long Version;
 
@@ -27,46 +29,42 @@ internal struct MeshBuildResult
 
 internal class ChunkMeshGenerator : IDisposable
 {
-    private readonly PooledQueue<MeshBuildResult> results = new();
-    private readonly ObjectPool<PooledList<ChunkVertex>> listPool =
+    private readonly ILogger<ChunkMeshGenerator> _logger = Log.Instance.For<ChunkMeshGenerator>();
+
+    private readonly ConcurrentQueue<MeshBuildResult> _results = new();
+    private readonly ObjectPool<PooledList<ChunkVertex>> _listPool =
         new(() => new PooledList<ChunkVertex>(), 64);
 
-    private ushort maxConcurrentTasks;
-    private SemaphoreSlim? concurrencySemaphore;
+    private SemaphoreSlim? _concurrencySemaphore;
 
     public ChunkMeshGenerator(ushort maxConcurrentTasks = 0)
     {
         MaxConcurrentTasks = maxConcurrentTasks;
     }
 
-    public MeshBuildResult? Mesh
+    public bool TryDequeueMesh(out MeshBuildResult result)
     {
-        get
-        {
-            lock (results)
-            {
-                if (results.IsEmpty) return null;
-                return results.Dequeue();
-            }
-        }
+        return _results.TryDequeue(out result);
     }
 
     public ushort MaxConcurrentTasks
     {
-        get => maxConcurrentTasks;
+        get;
         set
         {
-            maxConcurrentTasks = value;
+            field = value;
 
-            concurrencySemaphore?.Dispose();
-            concurrencySemaphore = maxConcurrentTasks > 0
-                ? new SemaphoreSlim(maxConcurrentTasks, maxConcurrentTasks)
+            _concurrencySemaphore?.Dispose();
+            _concurrencySemaphore = field > 0
+                ? new SemaphoreSlim(field, field)
                 : null;
         }
     }
 
-    public void MeshChunk(World world, Vector3D<int> pos, long version)
+    //TODO: Make a chunk mesh config struct for alternateBlocks and other flags
+    public void MeshChunk(World world, Vector3D<int> pos, long version, bool alternateBlocks)
     {
+        //TODO: OPTIMIZE THIS
         WorldRegionSnapshot cache = new(
             world,
             pos.X - 1, pos.Y - 1, pos.Z - 1,
@@ -77,24 +75,27 @@ internal class ChunkMeshGenerator : IDisposable
 
         Task.Run(async () =>
         {
-            if (concurrencySemaphore != null)
-                await concurrencySemaphore.WaitAsync();
+            if (_concurrencySemaphore != null)
+                await _concurrencySemaphore.WaitAsync();
 
             try
             {
-                MeshBuildResult mesh = GenerateMesh(pos, version, cache);
-                lock (results)
-                    results.Enqueue(mesh);
+                MeshBuildResult mesh = GenerateMesh(pos, version, cache, alternateBlocks);
+                _results.Enqueue(mesh);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating chunk mesh at {Pos}", pos);
             }
             finally
             {
                 cache.Dispose();
-                concurrencySemaphore?.Release();
+                _concurrencySemaphore?.Release();
             }
         });
     }
 
-    private MeshBuildResult GenerateMesh(Vector3D<int> pos, long version, WorldRegionSnapshot cache)
+    private MeshBuildResult GenerateMesh(Vector3D<int> pos, long version, WorldRegionSnapshot cache, bool alternateBlocks)
     {
         int minX = pos.X;
         int minY = pos.Y;
@@ -132,9 +133,13 @@ internal class ChunkMeshGenerator : IDisposable
                         int blockPass = b.getRenderLayer();
 
                         if (blockPass != pass)
+                        {
                             hasNextPass = true;
+                        }
                         else
-                            BlockRenderer.RenderBlockByRenderType(cache, cache, b, new BlockPos(x, y, z), tess);
+                        {
+                            BlockRenderer.RenderBlockByRenderType(cache, cache, b, new BlockPos(x, y, z), tess, doVariance: alternateBlocks);
+                        }
                     }
                 }
             }
@@ -145,26 +150,29 @@ internal class ChunkMeshGenerator : IDisposable
             PooledList<ChunkVertex> verts = tess.endCaptureChunkVertices();
             if (verts.Count > 0)
             {
-                PooledList<ChunkVertex> list = listPool.Get();
+                PooledList<ChunkVertex> list = _listPool.Get();
                 list.AddRange(verts.Span);
 
                 if (pass == 0)
+                {
                     result.Solid = list;
+                }
                 else
+                {
                     result.Translucent = list;
+                }
             }
 
             if (!hasNextPass) break;
         }
 
-        result.IsLit = cache.getIsLit();
-        result.VisibilityData = Occlusion.ChunkVisibilityComputer.Compute(cache, pos.X, pos.Y, pos.Z);
+        result.IsLit = cache.IsLit;
+        result.VisibilityData = ChunkVisibilityComputer.Compute(cache, pos.X, pos.Y, pos.Z);
         return result;
     }
 
     public void Dispose()
     {
-        results.Dispose();
-        listPool.Dispose();
+        _listPool.Dispose();
     }
 }

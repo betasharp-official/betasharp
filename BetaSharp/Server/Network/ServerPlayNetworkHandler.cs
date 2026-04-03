@@ -10,7 +10,6 @@ using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Screens.Slots;
 using BetaSharp.Server.Command;
-using BetaSharp.Server.Commands;
 using BetaSharp.Server.Internal;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
@@ -50,12 +49,10 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     {
         moved = false;
         connection.tick();
-        player.PlayerTick(false);
 
-        if (ticks++ - lastKeepAliveTime > 20)
-        {
-            sendPacket(KeepAlivePacket.Get());
-        }
+        if (!moved) player.IdleTick();
+
+        if (ticks++ - lastKeepAliveTime > 20) sendPacket(KeepAlivePacket.Get());
     }
 
     public void disconnect(string reason)
@@ -114,6 +111,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 }
 
                 player.onGround = packet.onGround;
+                player.PlayerTick(false);
                 player.move(var31, 0.0, var34);
                 player.setPositionAndAngles(var28, var29, var30, var27, var4);
                 player.velocityX = var31;
@@ -138,6 +136,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
             if (player.isSleeping())
             {
+                player.PlayerTick(false);
                 player.setPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, player.yaw, player.pitch);
                 sWorld.Entities.UpdateEntity(player, true);
                 return;
@@ -183,6 +182,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 var12 = packet.pitch;
             }
 
+            player.PlayerTick(false);
             player.cameraOffset = 0.0F;
             player.setPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
             if (!teleported)
