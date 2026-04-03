@@ -4,6 +4,7 @@ namespace BetaSharp.DataAsset;
 
 public interface IDataAsset
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string Name { get; internal set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
@@ -15,6 +16,7 @@ public interface IDataAsset
 
 public class BaseDataDataAsset : IDataAsset
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string Name { get; set; } = "";
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
