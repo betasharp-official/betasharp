@@ -89,12 +89,20 @@ public abstract class UIScreen
 
     public bool IsEditingSlider => _editingSlider != null;
 
-    private ScaledResolution CurrentScaledResolution =>
-        new(Context.Options, Context.DisplayWidth, Context.DisplayHeight);
+    private ScaledResolution CurrentScaledResolution
+    {
+        get
+        {
+            Vector2D<int> s = Context.InputDisplaySize;
+            return new(Context.Options, s.X, s.Y);
+        }
+    }
 
-    private Vector2D<float> ToScaledCoords(float x, float y, ScaledResolution res) =>
-        new(x * res.ScaledWidth / Context.DisplayWidth,
-            y * res.ScaledHeight / Context.DisplayHeight);
+    private Vector2D<float> ToScaledCoords(float x, float y, ScaledResolution res)
+    {
+        Vector2D<int> s = Context.InputDisplaySize;
+        return new(x * res.ScaledWidth / s.X, y * res.ScaledHeight / s.Y);
+    }
 
     public UIScreen(UIContext context)
     {
@@ -171,9 +179,15 @@ public abstract class UIScreen
         while (Keyboard.Next())
         {
             Context.ControllerState.IsControllerMode = false;
+
+            if (ImGuiInput.CapturingKeyboard)
+            {
+                continue;
+            }
+
             HandleKeyboardInput();
         }
-        ControllerManager.UpdateGui(this);
+        ControllerManager.UpdateUI(this);
         HandleControllerScroll();
         if (_editingSlider != null) HandleSliderEditTick();
     }
@@ -319,8 +333,9 @@ public abstract class UIScreen
 
         float bestCx = best.ScreenX + best.ComputedWidth / 2f;
         float bestCy = best.ScreenY + best.ComputedHeight / 2f;
-        cursorX = bestCx * Context.DisplayWidth / res.ScaledWidth;
-        cursorY = bestCy * Context.DisplayHeight / res.ScaledHeight;
+        Vector2D<int> inputSize = Context.InputDisplaySize;
+        cursorX = bestCx * inputSize.X / res.ScaledWidth;
+        cursorY = bestCy * inputSize.Y / res.ScaledHeight;
         return true;
     }
 
@@ -437,14 +452,20 @@ public abstract class UIScreen
 
     public void HandleMouseInput()
     {
-        ScaledResolution res = CurrentScaledResolution;
-        float scaledX = Mouse.getEventX() * res.ScaledWidth / (float)Context.DisplayWidth;
-        float scaledY = res.ScaledHeight - Mouse.getEventY() * res.ScaledHeight / (float)Context.DisplayHeight - 1f;
+        Vector2D<int> inputSize = Context.InputDisplaySize;
+        ScaledResolution res = new(Context.Options, inputSize.X, inputSize.Y);
+        Vector2D<int> offset = Context.MouseOffset;
+        float scaledX = (Mouse.getEventX() - offset.X) * res.ScaledWidth / (float)inputSize.X;
+        float scaledY = res.ScaledHeight - (Mouse.getEventY() - offset.Y) * res.ScaledHeight / (float)inputSize.Y - 1f;
 
         if (Mouse.getEventButtonState())
+        {
             HandleMouseButtonDown(scaledX, scaledY);
+        }
         else
+        {
             HandleMouseButtonUpOrMove(scaledX, scaledY);
+        }
 
         HandleMouseScroll(scaledX, scaledY);
     }

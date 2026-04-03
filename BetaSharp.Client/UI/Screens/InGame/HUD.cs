@@ -1,4 +1,3 @@
-using BetaSharp.Client.Debug;
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls;
@@ -13,7 +12,6 @@ public sealed record HUDContext(
     Func<ClientPlayerEntity?> GetPlayer,
     Func<PlayerController?> GetPlayerController,
     Func<World?> GetWorld,
-    DebugComponentsStorage DebugStorage,
     Func<InGameTipContext?> InGameTipSource,
     Func<bool> IsMainMenuOpen
 );
@@ -85,11 +83,6 @@ public class HUD : UIScreen
         crosshair.Style.Position = PositionType.Absolute;
         crosshair.Style.Top = crosshair.Style.Left = crosshair.Style.Right = crosshair.Style.Bottom = 0;
         Root.AddChild(crosshair);
-
-        var debugMenu = new DebugMenu(Context.Options, _hudContext.GetPlayer, _hudContext.GetWorld, _hudContext.DebugStorage);
-        debugMenu.Style.Position = PositionType.Absolute;
-        debugMenu.Style.Top = debugMenu.Style.Left = debugMenu.Style.Right = debugMenu.Style.Bottom = 0;
-        Root.AddChild(debugMenu);
 
         var tooltipBar = new ControlTooltipBar(Context, _hudContext.InGameTipSource);
         tooltipBar.Style.Position = PositionType.Absolute;

@@ -1,4 +1,3 @@
-using BetaSharp.Client.Debug;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
@@ -11,7 +10,6 @@ namespace BetaSharp.Client.UI.Screens.InGame;
 public class IngameMenuScreen(
     UIContext context,
     StatFileWriter statFileWriter,
-    DebugComponentsStorage debugStorage,
     Action onResume,
     string quitButtonText,
     Action quit,
@@ -65,7 +63,7 @@ public class IngameMenuScreen(
 
         Button btnOptions = CreateButton();
         btnOptions.Text = translator.TranslateKey("menu.options");
-        btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this, debugStorage));
+        btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this));
         btnOptions.Style.MarginBottom = 4;
         Root.AddChild(btnOptions);
 

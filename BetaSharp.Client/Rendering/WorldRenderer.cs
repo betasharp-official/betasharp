@@ -296,7 +296,7 @@ public class WorldRenderer : IWorldEventListener
             DeltaTime = _game.Timer.DeltaTime,
             EnvironmentAnimation = _game.Options.EnvironmentAnimation,
             ChunkFade = _game.Options.ChunkFade,
-            RenderOccluded = _game.Options.RenderOccluded
+            RenderOccluded = false
         };
 
         if (pass == 0)
@@ -434,12 +434,13 @@ public class WorldRenderer : IWorldEventListener
 
     public void RenderClouds(float var1)
     {
-        Profiler.Start("renderClouds");
-        if (!_game.World.Dimension.IsNether)
+        using (Profiler.Begin("RenderClouds"))
         {
-            RenderCloudsFancy(var1);
+            if (!_game.World.Dimension.IsNether)
+            {
+                RenderCloudsFancy(var1);
+            }
         }
-        Profiler.Stop("renderClouds");
     }
 
     private void BuildCloudDisplayLists()

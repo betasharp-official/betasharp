@@ -2,14 +2,13 @@ using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
+using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Entities.FX;
-using BetaSharp.Client.Guis;
-using BetaSharp.Client.Input;
-using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Client.Worlds;
+using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
@@ -68,6 +67,13 @@ public class ClientNetworkHandler : NetHandler
         if (!Disconnected)
         {
             _netManager.tick();
+
+            MetricRegistry.Set(ClientMetrics.UploadBytes, _netManager.BytesWritten);
+            MetricRegistry.Set(ClientMetrics.DownloadBytes, _netManager.BytesRead);
+            MetricRegistry.Set(ClientMetrics.UploadPackets, _netManager.PacketsWritten);
+            MetricRegistry.Set(ClientMetrics.DownloadPackets, _netManager.PacketsRead);
+            MetricRegistry.Set(ClientMetrics.IsInternal, _netManager is InternalConnection);
+            MetricRegistry.Set(ClientMetrics.ServerAddress, _netManager.getAddress()?.ToString() ?? "Unknown");
 
             if (_ticks++ - _lastKeepAliveTime > 200)
             {

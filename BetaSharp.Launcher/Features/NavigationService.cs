@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using BetaSharp.Launcher.Features.Shell;
 using Microsoft.Extensions.DependencyInjection;

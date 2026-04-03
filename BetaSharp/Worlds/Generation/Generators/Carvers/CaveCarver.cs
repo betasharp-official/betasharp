@@ -124,7 +124,7 @@ internal class CaveCarver : Carver
                                 int blockIndex = (blockX * 16 + blockZ) * 128 + blockY;
                                 if (blockY >= 0 && blockY < 128)
                                 {
-                                    if (blocks[blockZ] == Block.FlowingWater.id || blocks[blockZ] == Block.Water.id)
+                                    if (blocks[blockIndex] == Block.FlowingWater.id || blocks[blockIndex] == Block.Water.id)
                                     {
                                         waterIsPresent = true;
                                     }

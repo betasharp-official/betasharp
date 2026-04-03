@@ -217,125 +217,125 @@ public class EntityManager
 
     public void TickEntities()
     {
-        Profiler.Start("updateEntites.updateWeatherEffects");
-        for (int i = 0; i < GlobalEntities.Count; ++i)
+        using (Profiler.Begin("WeatherEffects"))
         {
-            Entity globalEntity = GlobalEntities[i];
-            globalEntity.tick();
-            if (globalEntity.dead)
+            for (int i = 0; i < GlobalEntities.Count; ++i)
             {
-                GlobalEntities.RemoveAt(i--);
-            }
-        }
-
-        Profiler.Stop("updateEntites.updateWeatherEffects");
-
-        Profiler.Start("updateEntites.clearUnloadedEntities");
-        for (int i = 0; i < _entitiesToUnload.Count; ++i)
-        {
-            Entity entityToUnload = _entitiesToUnload[i];
-            int chunkX = entityToUnload.chunkX;
-            int chunkZ = entityToUnload.chunkZ;
-
-            if (entityToUnload.isPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
-            {
-                _world.ChunkHost.GetChunk(chunkX, chunkZ).RemoveEntity(entityToUnload);
-            }
-        }
-
-        for (int i = 0; i < _entitiesToUnload.Count; ++i)
-        {
-            NotifyEntityRemoved(_entitiesToUnload[i]);
-        }
-
-        _entitiesToUnload.Clear();
-        Profiler.Stop("updateEntites.clearUnloadedEntities");
-
-        Profiler.Start("updateEntites.updateLoadedEntities");
-        for (int i = 0; i < Entities.Count; ++i)
-        {
-            Entity entity = Entities[i];
-
-            if (entity.vehicle != null)
-            {
-                if (!entity.vehicle.dead && Equals(entity.vehicle.passenger, entity))
+                Entity globalEntity = GlobalEntities[i];
+                globalEntity.tick();
+                if (globalEntity.dead)
                 {
-                    continue;
+                    GlobalEntities.RemoveAt(i--);
                 }
-
-                entity.vehicle.passenger = null;
-                entity.vehicle = null;
-            }
-
-            if (!entity.dead)
-            {
-                UpdateEntity(entity, true);
-            }
-
-            if (entity.dead)
-            {
-                int chunkX = entity.chunkX;
-                int chunkZ = entity.chunkZ;
-
-                if (entity.isPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
-                {
-                    _world.ChunkHost.GetChunk(chunkX, chunkZ).RemoveEntity(entity);
-                }
-
-                Entities.RemoveAt(i--);
-                if (_entitiesById.TryGetValue(entity.id, out Entity? current) && ReferenceEquals(current, entity))
-                {
-                    _entitiesById.Remove(entity.id);
-                }
-
-                NotifyEntityRemoved(entity);
             }
         }
 
-        Profiler.Stop("updateEntites.updateLoadedEntities");
-
-        _processingDeferred = true;
-        Profiler.Start("updateEntites.updateLoadedTileEntities");
-
-        for (int i = BlockEntities.Count - 1; i >= 0; i--)
+        using (Profiler.Begin("ClearUnloadedEntities"))
         {
-            BlockEntity blockEntity = BlockEntities[i];
-            if (!blockEntity.isRemoved())
+            for (int i = 0; i < _entitiesToUnload.Count; ++i)
             {
-                blockEntity.tick(this);
+                Entity entityToUnload = _entitiesToUnload[i];
+                int chunkX = entityToUnload.chunkX;
+                int chunkZ = entityToUnload.chunkZ;
+
+                if (entityToUnload.isPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
+                {
+                    _world.ChunkHost.GetChunk(chunkX, chunkZ).RemoveEntity(entityToUnload);
+                }
             }
 
-            if (blockEntity.isRemoved())
+            for (int i = 0; i < _entitiesToUnload.Count; ++i)
             {
-                BlockEntities.RemoveAt(i);
-                Chunk chunk = _world.ChunkHost.GetChunk(blockEntity.X >> 4, blockEntity.Z >> 4);
-                chunk?.RemoveBlockEntityAt(blockEntity.X & 15, blockEntity.Y, blockEntity.Z & 15);
+                NotifyEntityRemoved(_entitiesToUnload[i]);
             }
+
+            _entitiesToUnload.Clear();
         }
 
-        _processingDeferred = false;
-
-        if (_blockEntityUpdateQueue.Count > 0)
+        using (Profiler.Begin("UpdateEntities"))
         {
-            foreach (BlockEntity queuedBlockEntity in _blockEntityUpdateQueue)
+            for (int i = 0; i < Entities.Count; ++i)
             {
-                if (!queuedBlockEntity.isRemoved())
+                Entity entity = Entities[i];
+
+                if (entity.vehicle != null)
                 {
-                    if (!BlockEntities.Contains(queuedBlockEntity))
+                    if (!entity.vehicle.dead && Equals(entity.vehicle.passenger, entity))
                     {
-                        BlockEntities.Add(queuedBlockEntity);
+                        continue;
                     }
 
-                    Chunk chunk = _world.ChunkHost.GetChunk(queuedBlockEntity.X >> 4, queuedBlockEntity.Z >> 4);
-                    chunk?.SetBlockEntity(queuedBlockEntity.X & 15, queuedBlockEntity.Y, queuedBlockEntity.Z & 15, queuedBlockEntity);
-                    OnBlockUpdateRequired?.Invoke(queuedBlockEntity.X, queuedBlockEntity.Y, queuedBlockEntity.Z);
+                    entity.vehicle.passenger = null;
+                    entity.vehicle = null;
+                }
+
+                if (!entity.dead)
+                {
+                    UpdateEntity(entity, true);
+                }
+
+                if (entity.dead)
+                {
+                    int chunkX = entity.chunkX;
+                    int chunkZ = entity.chunkZ;
+
+                    if (entity.isPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
+                    {
+                        _world.ChunkHost.GetChunk(chunkX, chunkZ).RemoveEntity(entity);
+                    }
+
+                    Entities.RemoveAt(i--);
+                    if (_entitiesById.TryGetValue(entity.id, out Entity? current) && ReferenceEquals(current, entity))
+                    {
+                        _entitiesById.Remove(entity.id);
+                    }
+
+                    NotifyEntityRemoved(entity);
+                }
+            }
+        }
+
+        _processingDeferred = true;
+        using (Profiler.Begin("UpdateBlockEntities"))
+        {
+            for (int i = BlockEntities.Count - 1; i >= 0; i--)
+            {
+                BlockEntity blockEntity = BlockEntities[i];
+                if (!blockEntity.isRemoved())
+                {
+                    blockEntity.tick(this);
+                }
+
+                if (blockEntity.isRemoved())
+                {
+                    BlockEntities.RemoveAt(i);
+                    Chunk chunk = _world.ChunkHost.GetChunk(blockEntity.X >> 4, blockEntity.Z >> 4);
+                    chunk?.RemoveBlockEntityAt(blockEntity.X & 15, blockEntity.Y, blockEntity.Z & 15);
                 }
             }
 
-            _blockEntityUpdateQueue.Clear();
-        }
+            _processingDeferred = false;
 
-        Profiler.Stop("updateEntites.updateLoadedTileEntities");
+            if (_blockEntityUpdateQueue.Count > 0)
+            {
+                foreach (BlockEntity queuedBlockEntity in _blockEntityUpdateQueue)
+                {
+                    if (!queuedBlockEntity.isRemoved())
+                    {
+                        if (!BlockEntities.Contains(queuedBlockEntity))
+                        {
+                            BlockEntities.Add(queuedBlockEntity);
+                        }
+
+                        Chunk chunk = _world.ChunkHost.GetChunk(queuedBlockEntity.X >> 4, queuedBlockEntity.Z >> 4);
+                        chunk?.SetBlockEntity(queuedBlockEntity.X & 15, queuedBlockEntity.Y, queuedBlockEntity.Z & 15, queuedBlockEntity);
+                        OnBlockUpdateRequired?.Invoke(queuedBlockEntity.X, queuedBlockEntity.Y, queuedBlockEntity.Z);
+                    }
+                }
+
+                _blockEntityUpdateQueue.Clear();
+            }
+        }
     }
 
     public void UpdateEntity(Entity entity, bool requireLoaded)

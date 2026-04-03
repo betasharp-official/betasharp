@@ -47,9 +47,6 @@ public class GameOptions
     public BoolOption ViewBobbingOption { get; private set; }
     public BoolOption VSyncOption { get; private set; }
     public BoolOption MipmapsOption { get; private set; }
-    public BoolOption DebugModeOption { get; private set; }
-    public BoolOption RenderOccludedOption { get; private set; }
-    public BoolOption ShowDebugGraphOption { get; private set; }
     public BoolOption EnvironmentAnimationOption { get; private set; }
     public BoolOption ChunkFadeOption { get; private set; }
     public BoolOption AlternateBlocksOption { get; private set; }
@@ -74,9 +71,6 @@ public class GameOptions
         MipmapsOption, MsaaOption, EnvironmentAnimationOption, ChunkFadeOption,
         AlternateBlocksOption, ShowWTHITOption, GammaOption
     ];
-
-    public GameOption[] DebugScreenOptions => [DebugModeOption, RenderOccludedOption, ShowDebugGraphOption];
-
 
     public float MusicVolume
     {
@@ -112,8 +106,6 @@ public class GameOptions
     public int INITIAL_MSAA;
     public bool ShowWTHIT => ShowWTHITOption.Value;
     public bool UseMipmaps => MipmapsOption.Value;
-    public bool DebugMode => DebugModeOption.Value;
-    public bool RenderOccluded => RenderOccludedOption.Value;
     public bool EnvironmentAnimation => EnvironmentAnimationOption.Value;
     public bool ChunkFade => ChunkFadeOption.Value;
     public bool AlternateBlocksEnabled => AlternateBlocksOption.Value;
@@ -149,7 +141,6 @@ public class GameOptions
     public float AmountScrolled = 1.0F;
     public float field_22271_G = 1.0F;
     public float ZoomScale = 2.0F;
-    private bool initialDebugMode;
     public float Brightness = 0.5F;
 
 
@@ -196,7 +187,6 @@ public class GameOptions
 
         LoadOptions();
         INITIAL_MSAA = MSAALevel;
-        initialDebugMode = DebugMode;
     }
 
     public GameOptions()
@@ -279,18 +269,7 @@ public class GameOptions
                 ReloadTextures();
             }
         };
-        DebugModeOption = new BoolOption("Debug Mode", "debugMode")
-        {
-            Formatter = (v, t) =>
-            {
-                string result = v ? t.TranslateKey("options.on") : t.TranslateKey("options.off");
-                if (v != initialDebugMode) result += " [!]";
-                return result;
-            },
-            OnChanged = v => Profiling.Profiler.Enabled = v
-        };
-        RenderOccludedOption = new BoolOption("Render Occluded", "renderOccluded");
-        ShowDebugGraphOption = new BoolOption("Show Debug Graph", "showDebugGraph");
+
         EnvironmentAnimationOption = new BoolOption("Environment Anim", "envAnimation", true);
         ChunkFadeOption = new BoolOption("Chunk Fade", "chunkFade", true);
         AlternateBlocksOption = new BoolOption("Alternate Blocks", "alternateBlocks", true)
@@ -360,8 +339,6 @@ public class GameOptions
         yield return ViewBobbingOption;
         yield return VSyncOption;
         yield return MipmapsOption;
-        yield return DebugModeOption;
-        yield return RenderOccludedOption;
         yield return EnvironmentAnimationOption;
         yield return ChunkFadeOption;
         yield return AlternateBlocksOption;

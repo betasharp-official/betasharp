@@ -1,231 +1,235 @@
-using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace BetaSharp.Profiling;
 
+/// <summary>
+/// Lightweight hierarchical profiler supporting two explicit threads: Main and Server.
+///
+/// Scope naming convention: use PascalCase for all scope names. Do not use dots, underscores,
+/// spaces, or any other separators within a scope name. Express hierarchy purely through nesting
+/// of <see cref="Begin"/> calls — each level adds a "/" separator to the stored path.
+///
+/// Correct:   using (Profiler.Begin("Render")) { using (Profiler.Begin("Entities")) { ... } }
+/// Incorrect: Profiler.Begin("render.entities") or Profiler.Begin("Render/Entities")
+/// </summary>
 public static class Profiler
 {
     public const int HistoryLength = 300;
-    public static bool Enabled = false;
 
-    public static bool EnableLagSpikeDetection = false;
-    public static double LagSpikeThresholdMs = 50.0;
-    public static string LagSpikeDirectory = "";
-    public static double LagSpikeCooldownSeconds = 5.0;
-
-    private static DateTime s_lastSpikeTime = DateTime.MinValue;
-
-    private class ProfilerData
+    private sealed class ScopeData(string name)
     {
-        public required string Name;
-        public double LastExecutionTime;
-        public double AverageExecutionTime;
-
+        public readonly string Name = name;
+        public double Last;
+        public double Avg;
         public double CurrentPeriodMax;
         public double PreviousPeriodMax;
+        public readonly double[] History = new double[HistoryLength];
+        public int HistoryHead;
 
-        public double[] History = new double[HistoryLength];
-        public int HistoryIndex;
-
-        public Stopwatch Stopwatch = new();
-
-        public void Update(double time)
+        public void Update(double ms)
         {
-            LastExecutionTime = time;
-
-            if (AverageExecutionTime == 0) AverageExecutionTime = time;
-            else AverageExecutionTime = AverageExecutionTime * 0.95 + time * 0.05;
-
-            if (time > CurrentPeriodMax) CurrentPeriodMax = time;
+            Last = ms;
+            Avg = Avg == 0 ? ms : (Avg * 0.95) + (ms * 0.05);
+            if (ms > CurrentPeriodMax) CurrentPeriodMax = ms;
         }
     }
 
-    private class ThreadProfiler(string name)
+    internal sealed class ThreadContext(string displayName)
     {
-        public readonly string ThreadName = name;
-        public readonly ConcurrentDictionary<string, ProfilerData> Sections = new();
-        public readonly Stack<string> GroupStack = new();
+        public readonly string DisplayName = displayName;
+
+        private readonly Dictionary<string, ScopeData> _scopes = [];
+        private readonly Stack<string> _pathStack = new();
+        private double _periodTimer;
+        private SnapshotEntry[]? _snapshot;
 
         public string GetCurrentPath(string name)
-        {
-            if (GroupStack.Count == 0) return name;
+            => _pathStack.Count == 0 ? name : _pathStack.Peek() + "/" + name;
 
-            string[] arr = [.. GroupStack];
-            Array.Reverse(arr);
-            return string.Join("/", arr) + "/" + name;
+        internal ProfilerScope BeginScope(string name)
+        {
+            string path = GetCurrentPath(name);
+            _pathStack.Push(path);
+            return new ProfilerScope(path, this);
+        }
+
+        internal void EndScope(string path, double ms)
+        {
+            _pathStack.TryPop(out _);
+            if (!_scopes.TryGetValue(path, out ScopeData? data))
+            {
+                data = new ScopeData(path);
+                _scopes[path] = data;
+            }
+            data.Update(ms);
+        }
+
+        internal void RecordDirect(string path, double ms)
+        {
+            if (!_scopes.TryGetValue(path, out ScopeData? data))
+            {
+                data = new ScopeData(path);
+                _scopes[path] = data;
+            }
+            data.Update(ms);
+        }
+
+        public void RollPeriodMax(double dt)
+        {
+            _periodTimer += dt;
+            if (_periodTimer < 1.0) return;
+            _periodTimer = 0;
+            foreach (ScopeData scope in _scopes.Values)
+            {
+                scope.PreviousPeriodMax = scope.CurrentPeriodMax;
+                scope.CurrentPeriodMax = 0;
+            }
+        }
+
+        public void CaptureFrame()
+        {
+            foreach (ScopeData scope in _scopes.Values)
+            {
+                scope.History[scope.HistoryHead] = scope.Last;
+                scope.HistoryHead = (scope.HistoryHead + 1) % HistoryLength;
+            }
+
+            var snap = new SnapshotEntry[_scopes.Count];
+            int i = 0;
+            foreach (ScopeData data in _scopes.Values)
+            {
+                snap[i++] = new SnapshotEntry(
+                    data.Name,
+                    data.Last,
+                    data.Avg,
+                    Math.Max(data.CurrentPeriodMax, data.PreviousPeriodMax),
+                    data.History,
+                    data.HistoryHead);
+            }
+            Volatile.Write(ref _snapshot, snap);
+        }
+
+        public SnapshotEntry[]? GetSnapshot() => Volatile.Read(ref _snapshot);
+    }
+
+    /// <summary>
+    /// A point-in-time snapshot of a single profiler scope.
+    /// </summary>
+    public readonly record struct SnapshotEntry(
+        string Name,
+        double Last,
+        double Avg,
+        double Max,
+        double[] History,
+        int HistoryHead);
+
+    /// <summary>
+    /// A zero-allocation profiling scope. Dispose via <c>using</c> to stop the timer.
+    /// </summary>
+    public readonly ref struct ProfilerScope
+    {
+        private readonly long _startTicks;
+        private readonly string? _path;
+        private readonly ThreadContext? _context;
+
+        internal ProfilerScope(string path, ThreadContext context)
+        {
+            _startTicks = Stopwatch.GetTimestamp();
+            _path = path;
+            _context = context;
+        }
+
+        public readonly void Dispose()
+        {
+            if (_context == null) return;
+            double ms = (Stopwatch.GetTimestamp() - _startTicks) * 1000.0 / Stopwatch.Frequency;
+            _context.EndScope(_path!, ms);
         }
     }
 
-    private static readonly ConcurrentBag<ThreadProfiler> s_allProfilers = [];
+    private static ThreadContext? s_mainContext;
+    private static ThreadContext? s_serverContext;
 
-    private static readonly ThreadLocal<ThreadProfiler> s_localProfiler = new(() =>
+    [ThreadStatic]
+    private static ThreadContext? s_currentContext;
+
+    /// <summary>
+    /// Call once from the main client thread before the game loop starts.
+    /// </summary>
+    public static void RegisterMainThread()
     {
-        Thread thread = Thread.CurrentThread;
-        string name = !string.IsNullOrEmpty(thread.Name) ? thread.Name
-                 : $"Thread-{thread.ManagedThreadId}";
-        var p = new ThreadProfiler(name);
-        s_allProfilers.Add(p);
-        return p;
-    });
-
-    private static double s_maxResetTimer;
-
-    public static void PushGroup(string name)
-    {
-        if (!Enabled) return;
-        s_localProfiler.Value!.GroupStack.Push(name);
+        s_mainContext = new ThreadContext("Main");
+        s_currentContext = s_mainContext;
     }
 
-    public static void PopGroup()
+    /// <summary>
+    /// Call once from the server thread at the start of its run method.
+    /// </summary>
+    public static void RegisterServerThread()
     {
-        Stack<string> stack = s_localProfiler.Value!.GroupStack;
-        if (stack.Count > 0)
-        {
-            stack.Pop();
-        }
+        s_serverContext = new ThreadContext("Server");
+        s_currentContext = s_serverContext;
     }
 
-    public static void Start(string name)
+    /// <summary>
+    /// Begins a profiling scope. Must be disposed via <c>using</c> to record the measurement.
+    /// Returns a no-op default when the profiler is disabled or called from an unregistered thread.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ProfilerScope Begin(string name)
     {
-        if (!Enabled) return;
-        ThreadProfiler profiler = s_localProfiler.Value!;
-        string fullName = profiler.GetCurrentPath(name);
-        ProfilerData data = profiler.Sections.GetOrAdd(fullName, n => new ProfilerData { Name = n });
-        data.Stopwatch.Restart();
+        if (s_currentContext == null)
+            return default;
+        return s_currentContext.BeginScope(name);
     }
 
-    public static void Stop(string name)
-    {
-        if (!Enabled) return;
-        ThreadProfiler profiler = s_localProfiler.Value!;
-        string fullName = profiler.GetCurrentPath(name);
-        if (profiler.Sections.TryGetValue(fullName, out ProfilerData? data))
-        {
-            data.Stopwatch.Stop();
-            data.Update(data.Stopwatch.Elapsed.TotalMilliseconds);
-        }
-    }
-
+    /// <summary>
+    /// Records a pre-measured value (in milliseconds) under the given name at the current scope level.
+    /// </summary>
     public static void Record(string name, double milliseconds)
     {
-        if (!Enabled) return;
-        ThreadProfiler profiler = s_localProfiler.Value!;
-        string fullName = profiler.GetCurrentPath(name);
-        ProfilerData data = profiler.Sections.GetOrAdd(fullName, n => new ProfilerData { Name = n });
-        data.Update(milliseconds);
+        if (s_currentContext == null) return;
+        string path = s_currentContext.GetCurrentPath(name);
+        s_currentContext.RecordDirect(path, milliseconds);
     }
 
+    /// <summary>
+    /// Advances the one-second period-max timer. Call once per frame from the main thread.
+    /// </summary>
     public static void Update(double dt)
     {
-        if (!Enabled) return;
-        s_maxResetTimer += dt;
-        if (s_maxResetTimer >= 1.0)
-        {
-            s_maxResetTimer = 0;
-
-            foreach (ThreadProfiler profiler in s_allProfilers)
-            {
-                foreach (ProfilerData section in profiler.Sections.Values)
-                {
-                    section.PreviousPeriodMax = section.CurrentPeriodMax;
-                    section.CurrentPeriodMax = 0;
-                }
-            }
-        }
+        s_mainContext?.RollPeriodMax(dt);
+        s_serverContext?.RollPeriodMax(dt);
     }
 
+    /// <summary>
+    /// Call once per frame from the main thread.
+    /// </summary>
     public static void CaptureFrame()
     {
-        if (!Enabled) return;
-
-        foreach (ThreadProfiler profiler in s_allProfilers)
-        {
-            foreach (ProfilerData section in profiler.Sections.Values)
-            {
-                section.History[section.HistoryIndex] = section.LastExecutionTime;
-                section.HistoryIndex = (section.HistoryIndex + 1) % HistoryLength;
-            }
-        }
+        s_mainContext?.CaptureFrame();
+        s_serverContext?.CaptureFrame();
     }
 
-    public static IEnumerable<(string Name, double Last, double Avg, double Max, double[] History, int HistoryIndex)> GetStats()
+    /// <summary>
+    /// Returns the latest snapshot entries from all registered threads, sorted by name.
+    /// </summary>
+    public static IEnumerable<(string Name, double Last, double Avg, double Max, double[] History, int HistoryHead)> GetStats()
     {
-        var allStats = new List<(string Name, double Last, double Avg, double Max, double[] History, int HistoryIndex)>();
-
-        foreach (ThreadProfiler profiler in s_allProfilers)
-        {
-            foreach (ProfilerData x in profiler.Sections.Values)
-            {
-                string displayName = $"[{profiler.ThreadName}] {x.Name}";
-
-                allStats.Add((displayName, x.LastExecutionTime, x.AverageExecutionTime, Math.Max(x.CurrentPeriodMax, x.PreviousPeriodMax), x.History, x.HistoryIndex));
-            }
-        }
-
-        return allStats.OrderBy(x => x.Name);
+        var result = new List<(string, double, double, double, double[], int)>();
+        AppendContext(s_mainContext, "Main", result);
+        AppendContext(s_serverContext, "Server", result);
+        return result.OrderBy(x => x.Item1);
     }
 
-    public static void DetectLagSpike(double frameTimeMs, string additionalContext = "", bool currentThreadOnly = false)
+    private static void AppendContext(
+        ThreadContext? ctx,
+        string prefix,
+        List<(string, double, double, double, double[], int)> result)
     {
-        if (!Enabled || !EnableLagSpikeDetection) return;
-
-        if (frameTimeMs >= LagSpikeThresholdMs && (DateTime.Now - s_lastSpikeTime).TotalSeconds >= LagSpikeCooldownSeconds)
-        {
-            s_lastSpikeTime = DateTime.Now;
-
-            List<(string Name, double Last, double Avg, double Max, double[] History, int HistoryIndex)> stats = currentThreadOnly
-                ? [.. s_localProfiler.Value!.Sections.Values.Select(x => (Name: $"[{s_localProfiler.Value.ThreadName}] {x.Name}", Last: x.LastExecutionTime, Avg: x.AverageExecutionTime, Max: Math.Max(x.CurrentPeriodMax, x.PreviousPeriodMax), History: x.History, HistoryIndex: x.HistoryIndex)).OrderBy(x => x.Name)]
-                : [.. GetStats()];
-            long memoryData = Process.GetCurrentProcess().WorkingSet64 / 1024 / 1024;
-            int threadData = Process.GetCurrentProcess().Threads.Count;
-            DateTime timeCaptured = DateTime.Now;
-
-            Task.Run(() =>
-            {
-                try
-                {
-                    if (!Directory.Exists(LagSpikeDirectory))
-                    {
-                        Directory.CreateDirectory(LagSpikeDirectory);
-                    }
-
-                    string timestamp = timeCaptured.ToString("yyyy-MM-dd_HH-mm-ss-fff");
-                    string safeContext = string.IsNullOrWhiteSpace(additionalContext) ? "" : "_" + string.Join("_", additionalContext.Split(Path.GetInvalidFileNameChars()));
-                    string filePath = Path.Combine(LagSpikeDirectory, $"{timestamp}_{frameTimeMs:F1}ms{safeContext}.log");
-
-                    using StreamWriter writer = new(filePath);
-                    writer.WriteLine($"=== Lag Spike Detected ===");
-                    writer.WriteLine($"Timestamp:      {timeCaptured:O}");
-                    writer.WriteLine($"Frame Time:     {frameTimeMs:F2} ms");
-                    writer.WriteLine($"Threshold:      {LagSpikeThresholdMs:F2} ms");
-                    if (!string.IsNullOrWhiteSpace(additionalContext))
-                    {
-                        writer.WriteLine($"Context:        {additionalContext}");
-                    }
-
-                    writer.WriteLine($"Memory Usage:   {memoryData} MB");
-                    writer.WriteLine($"Thread Count:   {threadData}");
-
-                    writer.WriteLine();
-                    writer.WriteLine("=== Profiler Stats at time of spike ===");
-                    writer.WriteLine(string.Format("{0,-50} | {1,-12} | {2,-12} | {3,-12}", "Section Name", "Last (ms)", "Avg (ms)", "Max (ms)"));
-                    writer.WriteLine(new string('-', 95));
-
-                    foreach ((string Name, double Last, double Avg, double Max, double[] History, int HistoryIndex) stat in stats)
-                    {
-                        string marker = stat.Last > Math.Max(1.0, stat.Avg * 2.0) ? "*" : " ";
-                        writer.WriteLine(string.Format("{0,-50} | {1,-12:F4} | {2,-12:F4} | {3,-12:F4} {4}",
-                            stat.Name, stat.Last, stat.Avg, stat.Max, marker));
-                    }
-
-                    writer.WriteLine();
-                    writer.WriteLine($"=========================");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[Profiler] Failed to write lag spike log: {ex.Message}");
-                }
-            });
-        }
+        if (ctx?.GetSnapshot() is not { } snap) return;
+        foreach (SnapshotEntry e in snap)
+            result.Add(($"[{prefix}] {e.Name}", e.Last, e.Avg, e.Max, e.History, e.HistoryHead));
     }
 }

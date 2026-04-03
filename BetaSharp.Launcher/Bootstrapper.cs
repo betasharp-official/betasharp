@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using BetaSharp.Launcher.Features;
 using BetaSharp.Launcher.Features.Alert;

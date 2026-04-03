@@ -38,6 +38,14 @@ public class Button : UIElement
         };
     }
 
+    public override List<string> GetInspectorProperties()
+    {
+        List<string> props = base.GetInspectorProperties();
+        props.Add($"Text:     \"{Text}\"");
+        props.Add($"Color:    #{TextColor}   Hover: #{HoverTextColor}");
+        return props;
+    }
+
     public override void Render(UIRenderer renderer)
     {
         int hoverState = !Enabled ? 0 : (IsHovered ? 2 : 1);

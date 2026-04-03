@@ -12,6 +12,24 @@ public class Image : UIElement
     public float? UWidth { get; set; }
     public float? VHeight { get; set; }
 
+    public override List<string> GetInspectorProperties()
+    {
+        List<string> props = base.GetInspectorProperties();
+        if (Texture != null)
+        {
+            props.Add($"Texture:  Id={Texture.Id}  {Texture.Texture?.Source ?? "null"}");
+            if (U.HasValue && V.HasValue && UWidth.HasValue && VHeight.HasValue)
+            {
+                props.Add($"UV:       ({U:F1}, {V:F1})  {UWidth:F1}×{VHeight:F1}");
+            }
+        }
+        else
+        {
+            props.Add("Texture:  null");
+        }
+        return props;
+    }
+
     public override void Render(UIRenderer renderer)
     {
         if (Texture != null)

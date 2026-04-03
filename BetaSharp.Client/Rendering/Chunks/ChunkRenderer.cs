@@ -160,19 +160,18 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         float renderDistWorld = renderParams.RenderDistance * SubChunkRenderer.Size;
 
-        Profiler.Start("FindVisible");
-
-        _occlusionCuller.FindVisible(
-            this,
-            cameraState?.Renderer,
-            renderParams.ViewPos,
-            renderParams.Camera,
-            renderDistWorld,
-            UseOcclusionCulling,
-            _frameIndex
-        );
-
-        Profiler.Stop("FindVisible");
+        using (Profiler.Begin("FindVisible"))
+        {
+            _occlusionCuller.FindVisible(
+                this,
+                cameraState?.Renderer,
+                renderParams.ViewPos,
+                renderParams.Camera,
+                renderDistWorld,
+                UseOcclusionCulling,
+                _frameIndex
+            );
+        }
 
         AddNearbySections(cameraChunkPos, _frameIndex, renderParams.Camera);
 
@@ -502,7 +501,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     public void Tick(Vector3D<double> viewPos)
     {
-        Profiler.Start("WorldRenderer.Tick");
+        using var _chunkTick = Profiler.Begin("ChunkTick");
 
         _lastViewPos = viewPos;
 
@@ -577,25 +576,24 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             }
         }
 
-        Profiler.Start("WorldRenderer.Tick.RemoveVersions");
-        foreach (KeyValuePair<Vector3D<int>, ChunkMeshVersion> version in _chunkVersions)
+        using (Profiler.Begin("RemoveVersions"))
         {
-            if (!IsChunkInRenderDistance(version.Key, _lastViewPos))
+            foreach (KeyValuePair<Vector3D<int>, ChunkMeshVersion> version in _chunkVersions)
             {
-                _chunkVersionsToRemove.Add(version.Key);
+                if (!IsChunkInRenderDistance(version.Key, _lastViewPos))
+                {
+                    _chunkVersionsToRemove.Add(version.Key);
+                }
             }
+
+            foreach (Vector3D<int> pos in _chunkVersionsToRemove)
+            {
+                _chunkVersions[pos].Release();
+                _chunkVersions.Remove(pos);
+            }
+
+            _chunkVersionsToRemove.Clear();
         }
-
-        foreach (Vector3D<int> pos in _chunkVersionsToRemove)
-        {
-            _chunkVersions[pos].Release();
-            _chunkVersions.Remove(pos);
-        }
-
-        _chunkVersionsToRemove.Clear();
-        Profiler.Stop("WorldRenderer.Tick.RemoveVersions");
-
-        Profiler.Stop("WorldRenderer.Tick");
     }
 
     public void MarkAllVisibleChunksDirty()

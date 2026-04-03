@@ -1,4 +1,4 @@
-﻿using BetaSharp.Server.Command;
+using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 

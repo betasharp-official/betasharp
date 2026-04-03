@@ -311,34 +311,34 @@ public abstract class World : IWorldContext
             loadingDisplay.BeginLoadingPersistent("Saving level");
         }
 
-        Profiler.PushGroup("saveLevel");
-        Save();
-        Profiler.PopGroup();
+        using (Profiler.Begin("SaveLevel"))
+        {
+            Save();
+        }
         if (loadingDisplay != null)
         {
             loadingDisplay.SetStage("Saving chunks");
         }
 
-        Profiler.Start("saveChunks");
-        BlockHost.ChunkSource.Save(saveEntities, loadingDisplay);
-        Profiler.Stop("saveChunks");
+        using (Profiler.Begin("SaveChunks"))
+        {
+            BlockHost.ChunkSource.Save(saveEntities, loadingDisplay);
+        }
     }
 
     private void Save()
     {
-        Profiler.Start("checkSessionLock");
-        Profiler.Stop("checkSessionLock");
-        Profiler.Start("saveWorldInfoAndPlayer");
+        using (Profiler.Begin("SaveWorldInfo"))
+        {
+            Properties.RulesTag = new NBTTagCompound();
+            Rules.WriteToNBT(Properties.RulesTag);
+            Storage.Save(Properties, Entities.Players.ToList());
+        }
 
-        Properties.RulesTag = new NBTTagCompound();
-        Rules.WriteToNBT(Properties.RulesTag);
-
-        Storage.Save(Properties, Entities.Players.ToList());
-        Profiler.Stop("saveWorldInfoAndPlayer");
-
-        Profiler.Start("saveAllData");
-        StateManager.SaveAllData();
-        Profiler.Stop("saveAllData");
+        using (Profiler.Begin("SaveAllData"))
+        {
+            StateManager.SaveAllData();
+        }
     }
 
     public bool AttemptSaving(int i)
@@ -451,41 +451,45 @@ public abstract class World : IWorldContext
             }
         }
 
-        Profiler.Start("performSpawning");
-        NaturalSpawner.DoSpawning(this, Pathing, _spawnHostileMobs, _spawnPeacefulMobs);
-        Profiler.Stop("performSpawning");
-
-        Profiler.Start("unload100OldestChunks");
-        BlockHost.ChunkSource.Tick();
-        Profiler.Stop("unload100OldestChunks");
-
-        Profiler.Start("updateSkylightSubtracted");
-        int currentAmbientDarkness = Environment.GetAmbientDarkness(1.0F);
-        if (currentAmbientDarkness != Environment.AmbientDarkness)
+        using (Profiler.Begin("PerformSpawning"))
         {
-            Environment.AmbientDarkness = currentAmbientDarkness;
-
-            for (int i = 0; i < EventListeners.Count; ++i)
-            {
-                EventListeners[i].NotifyAmbientDarknessChanged();
-            }
+            NaturalSpawner.DoSpawning(this, Pathing, _spawnHostileMobs, _spawnPeacefulMobs);
         }
 
-        Profiler.Stop("updateSkylightSubtracted");
+        using (Profiler.Begin("UnloadOldChunks"))
+        {
+            BlockHost.ChunkSource.Tick();
+        }
+
+        using (Profiler.Begin("UpdateSkylight"))
+        {
+            int currentAmbientDarkness = Environment.GetAmbientDarkness(1.0F);
+            if (currentAmbientDarkness != Environment.AmbientDarkness)
+            {
+                Environment.AmbientDarkness = currentAmbientDarkness;
+
+                for (int i = 0; i < EventListeners.Count; ++i)
+                {
+                    EventListeners[i].NotifyAmbientDarknessChanged();
+                }
+            }
+        }
 
         nextWorldTime = Properties.WorldTime + 1L;
         if (nextWorldTime % AutosavePeriod == 0L)
         {
-            Profiler.PushGroup("autosave");
-            SaveWithLoadingDisplay(false, null);
-            Profiler.PopGroup();
+            using (Profiler.Begin("Autosave"))
+            {
+                SaveWithLoadingDisplay(false, null);
+            }
         }
 
         Properties.WorldTime = nextWorldTime;
 
-        Profiler.Start("tickUpdates");
-        TickScheduler.Tick();
-        Profiler.Stop("tickUpdates");
+        using (Profiler.Begin("TickScheduler"))
+        {
+            TickScheduler.Tick();
+        }
 
         ManageChunkUpdatesAndEvents();
     }

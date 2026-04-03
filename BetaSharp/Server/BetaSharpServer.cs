@@ -1,20 +1,22 @@
 using System.Diagnostics;
+using BetaSharp.Diagnostics;
 using BetaSharp.DataAsset;
 using BetaSharp.GameMode;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Profiling;
 using BetaSharp.Server.Command;
 using BetaSharp.Server.Entities;
 using BetaSharp.Server.Internal;
 using BetaSharp.Server.Network;
 using BetaSharp.Server.Worlds;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
+using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
-using BetaSharp.Worlds;
 using ServerWorld = BetaSharp.Worlds.Core.ServerWorld;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Server;
 
@@ -288,6 +290,7 @@ public abstract class BetaSharpServer : ICommandOutput
 
     private void run()
     {
+        Profiler.RegisterServerThread();
         try
         {
             if (Init())
@@ -296,6 +299,7 @@ public abstract class BetaSharpServer : ICommandOutput
                 long accumulatedTime = 0L;
                 _lastTpsTime = lastTime;
                 _ticksThisSecond = 0;
+                var tickStopwatch = new Stopwatch();
 
                 while (running)
                 {
@@ -323,6 +327,7 @@ public abstract class BetaSharpServer : ICommandOutput
                         {
                             _currentTps = 0.0f;
                         }
+                        MetricRegistry.Set(ServerMetrics.Tps, 0.0f);
                         Thread.Sleep(50);
                         continue;
                     }
@@ -330,7 +335,10 @@ public abstract class BetaSharpServer : ICommandOutput
                     while (accumulatedTime >= 50L && running)
                     {
                         accumulatedTime -= 50L;
+                        tickStopwatch.Restart();
                         tick();
+                        tickStopwatch.Stop();
+                        MetricRegistry.Set(ServerMetrics.Mspt, (float)tickStopwatch.Elapsed.TotalMilliseconds);
                         _ticksThisSecond++;
                     }
 
@@ -344,6 +352,9 @@ public abstract class BetaSharpServer : ICommandOutput
                         }
                         _ticksThisSecond = 0;
                         _lastTpsTime = tpsNow;
+                        MetricRegistry.Set(ServerMetrics.Tps, _currentTps);
+                        MetricRegistry.Set(ServerMetrics.PlayerCount, playerManager.players.Count);
+                        MetricRegistry.Set(ServerMetrics.EntityCount, worlds[0].Entities.Entities.Count);
                     }
 
                     Thread.Sleep(1);

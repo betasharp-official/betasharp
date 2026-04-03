@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace BetaSharp.Launcher.Features.Home.GitHub;

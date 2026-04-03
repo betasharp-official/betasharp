@@ -10,7 +10,6 @@ using BetaSharp.Entities;
 using BetaSharp.Profiling;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Generation.Biomes;
 using Silk.NET.Maths;
@@ -229,7 +228,7 @@ public class GameRenderer
 
         if (_client.InGameHasFocus)
         {
-            _client.MouseHelper.mouseXYChange();
+            _client.MouseHelper.MouseXYChange();
             float var2 = _client.Options.MouseSensitivity * 0.6F + 0.2F;
             float var3 = var2 * var2 * var2 * 8.0F;
             float var4 = _client.MouseHelper.DeltaX * var3;
@@ -270,6 +269,8 @@ public class GameRenderer
             int scaledHeight = var13.ScaledHeight;
             int scaledMouseX;
             int scaledMouseY;
+            int vpOffsetX = (int)_client.DebugViewportOffset.X;
+            int vpOffsetY = (int)_client.DebugViewportOffset.Y;
             if (_client.IsControllerMode)
             {
                 scaledMouseX = (int)(_client.VirtualCursor.X * scaledWidth / _client.DisplayWidth);
@@ -277,8 +278,8 @@ public class GameRenderer
             }
             else
             {
-                scaledMouseX = Mouse.getX() * scaledWidth / _client.DisplayWidth;
-                scaledMouseY = scaledHeight - Mouse.getY() * scaledHeight / _client.DisplayHeight - 1;
+                scaledMouseX = (Mouse.getX() - vpOffsetX) * scaledWidth / _client.DisplayWidth;
+                scaledMouseY = scaledHeight - (Mouse.getY() - vpOffsetY) * scaledHeight / _client.DisplayHeight - 1;
             }
             int var7 = 30 + (int)(_client.Options.LimitFramerate * 210.0f);
             bool desiredVSync = _client.Options.VSync && var7 >= 240;
@@ -289,25 +290,27 @@ public class GameRenderer
                 _appliedVSyncState = desiredVSync;
             }
 
-            _client.PostProcessManager.Begin();
+            _client.FramebufferManager.Begin();
 
             if (_client.World != null)
             {
-                Profiler.PushGroup("renderWorld");
-                renderFrame(tickDelta, 0L);
-                Profiler.PopGroup();
-                Profiler.Start("renderGameOverlay");
-                if (!_client.Options.HideGUI || _client.CurrentScreen != null)
+                using (Profiler.Begin("RenderWorld"))
                 {
-                    setupHudRender();
-                    _client.HUD.Render(scaledMouseX, scaledMouseY, tickDelta);
+                    renderFrame(tickDelta, 0L);
                 }
 
-                Profiler.Stop("renderGameOverlay");
+                using (Profiler.Begin("RenderGameOverlay"))
+                {
+                    if (!_client.Options.HideGUI || _client.CurrentScreen != null)
+                    {
+                        setupHudRender();
+                        _client.HUD.Render(scaledMouseX, scaledMouseY, tickDelta);
+                    }
+                }
             }
             else
             {
-                GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
+                GLManager.GL.Viewport(0, 0, (uint)_client.FramebufferManager.FramebufferWidth, (uint)_client.FramebufferManager.FramebufferHeight);
                 GLManager.GL.MatrixMode(GLEnum.Projection);
                 GLManager.GL.LoadIdentity();
                 GLManager.GL.MatrixMode(GLEnum.Modelview);
@@ -328,7 +331,7 @@ public class GameRenderer
             }
 
 
-            _client.PostProcessManager.End();
+            _client.FramebufferManager.End();
 
 
             if (var7 < 240)
@@ -370,9 +373,10 @@ public class GameRenderer
         GLManager.GL.Enable(GLEnum.CullFace);
         GLManager.GL.Enable(GLEnum.DepthTest);
 
-        Profiler.Start("getMouseOver");
-        UpdateTargetedEntity(tickDelta);
-        Profiler.Stop("getMouseOver");
+        using (Profiler.Begin("GetMouseOver"))
+        {
+            UpdateTargetedEntity(tickDelta);
+        }
 
         EntityLiving entity = _client.Camera;
         WorldRenderer worldRenderer = _client.WorldRenderer;
@@ -381,10 +385,11 @@ public class GameRenderer
         double entY = entity.lastTickY + (entity.y - entity.lastTickY) * (double)tickDelta;
         double entZ = entity.lastTickZ + (entity.z - entity.lastTickZ) * (double)tickDelta;
 
-        Profiler.Start("updateFog");
-        GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
-        updateSkyAndFogColors(tickDelta);
-        Profiler.Stop("updateFog");
+        using (Profiler.Begin("UpdateFog"))
+        {
+            GLManager.GL.Viewport(0, 0, (uint)_client.FramebufferManager.FramebufferWidth, (uint)_client.FramebufferManager.FramebufferHeight);
+            updateSkyAndFogColors(tickDelta);
+        }
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
         GLManager.GL.Enable(GLEnum.CullFace);
         renderWorld(tickDelta);
@@ -406,25 +411,28 @@ public class GameRenderer
         _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/terrain.png"));
         Lighting.turnOff();
 
-        Profiler.Start("sortAndRender");
-        worldRenderer.SortAndRender(entity, 0, (double)tickDelta, frustrumCuller);
-        Profiler.Stop("sortAndRender");
+        using (Profiler.Begin("SortAndRender"))
+        {
+            worldRenderer.SortAndRender(entity, 0, (double)tickDelta, frustrumCuller);
+        }
 
         GLManager.GL.ShadeModel(GLEnum.Flat);
         Lighting.turnOn();
 
-        Profiler.Start("renderEntities");
-        worldRenderer.RenderEntities(entity.getPosition(tickDelta), frustrumCuller, tickDelta);
-        Profiler.Stop("renderEntities");
+        using (Profiler.Begin("RenderEntities"))
+        {
+            worldRenderer.RenderEntities(entity.getPosition(tickDelta), frustrumCuller, tickDelta);
+        }
 
         particleManager.renderSpecialParticles(entity, tickDelta);
 
         Lighting.turnOff();
         applyFog(0);
 
-        Profiler.Start("renderParticles");
-        particleManager.renderParticles(entity, tickDelta);
-        Profiler.Stop("renderParticles");
+        using (Profiler.Begin("RenderParticles"))
+        {
+            particleManager.renderParticles(entity, tickDelta);
+        }
 
         EntityPlayer entityPlayer = default;
         if (_client.ObjectMouseOver.Type != HitResultType.MISS && entity.isInFluid(Material.Water) && entity is EntityPlayer)
@@ -442,13 +450,12 @@ public class GameRenderer
         GLManager.GL.Disable(GLEnum.CullFace);
         _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/terrain.png"));
 
-        Profiler.Start("sortAndRender2");
+        using (Profiler.Begin("SortAndRenderTranslucent"))
+        {
+            worldRenderer.SortAndRender(entity, 1, tickDelta, frustrumCuller);
 
-        worldRenderer.SortAndRender(entity, 1, tickDelta, frustrumCuller);
-
-        GLManager.GL.ShadeModel(GLEnum.Flat);
-
-        Profiler.Stop("sortAndRender2");
+            GLManager.GL.ShadeModel(GLEnum.Flat);
+        }
 
         //TODO: SELCTION BOX/BLOCK BREAKING VISUALIZATON DON'T APPEAR PROPERLY MOST OF THE TIME, SAME WITH ENTITY SHADOWS. VIEW BOBBING MAKES ENTITES BOB UP AND DOWN
 

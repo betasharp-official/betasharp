@@ -325,10 +325,14 @@ public class Keyboard
         return c;
     }
 
+    public static event Action<Keys, InputAction, KeyModifiers>? OnGlfwKey;
+
     private static unsafe void OnKey(WindowHandle* window, Keys key, int scancode, InputAction action,
         KeyModifiers mods)
     {
         if (!created) return;
+
+        OnGlfwKey?.Invoke(key, action, mods);
 
         if (!keyMap.TryGetValue(key, out int lwjglKey)) lwjglKey = KEY_NONE;
 

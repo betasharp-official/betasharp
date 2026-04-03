@@ -1,0 +1,99 @@
+using BetaSharp.Blocks;
+using BetaSharp.Util.Hit;
+using BetaSharp.Util.Maths;
+using Hexa.NET.ImGui;
+
+namespace BetaSharp.Client.Diagnostics.Windows;
+
+internal sealed class LocalPlayerInfoWindow(DebugWindowContext ctx) : DebugWindow
+{
+    private static readonly string[] s_cardinalDirections = ["south", "west", "north", "east"];
+    private static readonly string[] s_towards = ["positive Z", "negative X", "negative Z", "positive X"];
+    private static readonly string[] s_blockSides = ["Down", "Up", "North", "South", "West", "East"];
+
+    public override string Title => "Local Player";
+
+    protected override void OnDraw()
+    {
+        if (ctx.Player == null || ctx.World == null)
+        {
+            ImGui.TextDisabled("No player in world.");
+            return;
+        }
+
+        if (ImGui.CollapsingHeader("Position", ImGuiTreeNodeFlags.DefaultOpen))
+        {
+            DrawPositionSection();
+        }
+
+        if (ImGui.CollapsingHeader("Targeted Block", ImGuiTreeNodeFlags.DefaultOpen))
+        {
+            DrawTargetedBlockSection();
+        }
+    }
+
+    private void DrawPositionSection()
+    {
+        double x = Math.Floor(ctx.Player.x * 1000) / 1000;
+        double y = Math.Floor(ctx.Player.y * 100000) / 100000;
+        double z = Math.Floor(ctx.Player.z * 1000) / 1000;
+
+        int bx = (int)Math.Floor(ctx.Player.x);
+        int by = (int)Math.Floor(ctx.Player.y);
+        int bz = (int)Math.Floor(ctx.Player.z);
+
+        int facingIndex = MathHelper.Floor((double)(ctx.Player.yaw * 4.0F / 360.0F) + 0.5D) & 3;
+        string cardinal = facingIndex is >= 0 and < 4 ? s_cardinalDirections[facingIndex] : "N/A";
+        string towards = facingIndex is >= 0 and < 4 ? s_towards[facingIndex] : "N/A";
+        string vertical = ctx.Player.pitch <= -45f ? "up" : ctx.Player.pitch >= 45f ? "down" : "level";
+
+        float yaw = ctx.Player.yaw % 360f;
+        if (yaw >= 180f) yaw -= 360f;
+        if (yaw < -180f) yaw += 360f;
+        float pitch = ctx.Player.pitch;
+
+        string biome = ctx.World.Dimension.BiomeSource.GetBiome(bx, bz).Name;
+        int light = ctx.World.Lighting.GetLightLevel(bx, by, bz);
+
+        ImGui.Text($"XYZ:    {x:F3} / {y:F5} / {z:F3}");
+        ImGui.Text($"Block:  {bx} {by} {bz}");
+        ImGui.Text($"Facing: {cardinal} {vertical} (towards {towards})");
+        ImGui.Text($"Yaw / Pitch: {yaw:F1} / {pitch:F1}");
+        ImGui.Text($"Biome:  {biome}");
+        ImGui.Text($"Light:  {light}");
+    }
+
+    private void DrawTargetedBlockSection()
+    {
+        if (ctx.ObjectMouseOver.Type != HitResultType.TILE)
+        {
+            ImGui.TextDisabled("Nothing targeted.");
+            return;
+        }
+
+        int bx = ctx.ObjectMouseOver.BlockX;
+        int by = ctx.ObjectMouseOver.BlockY;
+        int bz = ctx.ObjectMouseOver.BlockZ;
+        int id = ctx.World.Reader.GetBlockId(bx, by, bz);
+        int meta = ctx.World.Reader.GetBlockMeta(bx, by, bz);
+        int side = ctx.ObjectMouseOver.Side;
+
+        string name = "Unknown";
+        if (id == 0)
+        {
+            name = "Air";
+        }
+        else if (id > 0 && id < Block.Blocks.Length && Block.Blocks[id] != null)
+        {
+            Block block = Block.Blocks[id];
+            string t = block.translateBlockName();
+            name = !string.IsNullOrWhiteSpace(t) ? t : block.getBlockName();
+        }
+
+        string sideName = side is >= 0 and < 6 ? s_blockSides[side] : side.ToString();
+
+        ImGui.Text($"{name} ({id}:{meta})");
+        ImGui.Text($"XYZ:  {bx} / {by} / {bz}");
+        ImGui.Text($"Face: {sideName}");
+    }
+}

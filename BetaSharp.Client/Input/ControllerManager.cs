@@ -17,7 +17,7 @@ public static class ControllerManager
     private static bool s_wasHotbarRightDown;
     private static bool s_wasCameraDown;
     private static bool s_wasPauseDown;
-    private static bool s_wasPlayerListDown;
+    private static bool s_wasToggleDebugDown;
     private static bool s_wasPickBlockDown;
     private static bool s_wasCraftingDown;
     private static bool s_wasSneakDown;
@@ -64,11 +64,27 @@ public static class ControllerManager
         s_wasHotbarRightDown = IsActionDown("controller.hotbarRight");
         s_wasCameraDown = IsActionDown("controller.camera");
         s_wasPauseDown = IsActionDown("controller.pause");
-        s_wasPlayerListDown = Controller.IsButtonDown(GamepadButton.Back);
+        s_wasToggleDebugDown = Controller.IsButtonDown(GamepadButton.Back);
         s_wasPickBlockDown = IsActionDown("controller.pickBlock");
         s_wasSneakDown = IsActionDown("controller.sneak");
         s_wasCraftingDown = IsActionDown("controller.crafting");
         s_wasJumpDown = IsActionDown("controller.jump");
+    }
+
+    /// <summary>
+    /// Handles controller bindings that should fire regardless of whether the player is
+    /// in-game, on a menu, or on the main screen (e.g. the debug overlay toggle).
+    /// </summary>
+    public static void UpdateGlobal()
+    {
+        if (s_game == null) return;
+
+        bool toggleDebug = Controller.IsButtonDown(GamepadButton.Back);
+        if (toggleDebug && !s_wasToggleDebugDown)
+        {
+            s_game.Options.ShowDebugInfo = !s_game.Options.ShowDebugInfo;
+        }
+        s_wasToggleDebugDown = toggleDebug;
     }
 
     public static void UpdateInGame(float tickDelta)
@@ -212,11 +228,6 @@ public static class ControllerManager
             s_game.ClickMiddleMouseButton();
         }
 
-        if (playerListHeld && !s_wasPlayerListDown)
-        {
-            s_game.Options.ShowDebugInfo = !s_game.Options.ShowDebugInfo;
-        }
-
         if (jumpHeld || attackHeld || interactHeld || inventoryHeld || dropHeld || lbHeld || rbHeld ||
             cameraHeld || pauseHeld || playerListHeld || pickBlockHeld || sneakHeld || craftingHeld || zoomHeld)
         {
@@ -228,7 +239,7 @@ public static class ControllerManager
         while (Controller.Next()) { }
     }
 
-    public static void UpdateGui(UIScreen? screen)
+    public static void UpdateUI(UIScreen? screen)
     {
         if (s_game == null || screen == null) return;
         s_suppressInGameInput = true;

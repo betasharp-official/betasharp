@@ -17,6 +17,15 @@ public class Label : UIElement
     } = 1.0f;
     public bool HasShadow { get; set; } = true;
 
+    public override List<string> GetInspectorProperties()
+    {
+        List<string> props = base.GetInspectorProperties();
+        props.Add($"Text:     \"{Text}\"");
+        props.Add($"Color:    #{TextColor}");
+        props.Add($"Scale:    {Scale}   Shadow: {HasShadow}   Centered: {Centered}");
+        return props;
+    }
+
     public override void Measure(MeasureContext context)
     {
         ComputedWidth = (Style.Width ?? context.MeasureString(Text)) * Scale;

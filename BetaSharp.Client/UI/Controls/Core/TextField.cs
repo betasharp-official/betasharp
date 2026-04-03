@@ -24,6 +24,15 @@ public class TextField : UIElement
     public Action<string>? OnTextChanged;
     public Action? OnSubmit;
 
+    public override List<string> GetInspectorProperties()
+    {
+        List<string> props = base.GetInspectorProperties();
+        props.Add($"Text:     \"{_text}\"");
+        props.Add($"Placeholder: \"{Placeholder}\"");
+        props.Add($"MaxLength: {MaxLength}   Cursor: {CursorPosition}");
+        return props;
+    }
+
     private int _cursorCounter = 0;
 
     public TextField()

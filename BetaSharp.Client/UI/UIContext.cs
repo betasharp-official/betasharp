@@ -13,11 +13,14 @@ public sealed class UIContext(
     TextureManager textureManager,
     Action playClickSound,
     Func<Vector2D<int>> displaySize,
+    Func<Vector2D<int>> inputDisplaySize,
     IControllerState controllerState,
     VirtualCursor virtualCursor,
     Timer timer,
     IScreenNavigator navigator,
-    Func<bool> hasWorld)
+    Func<bool> hasWorld,
+    Func<Vector2D<int>> mouseOffset
+    )
 {
 
     public GameOptions Options => options;
@@ -33,6 +36,15 @@ public sealed class UIContext(
     public int DisplayHeight => displaySize().Y;
 
     public Func<Vector2D<int>> DisplaySize => displaySize;
+
+    /// <summary>Pixel offset to subtract from raw mouse event coordinates.</summary>
+    public Vector2D<int> MouseOffset => mouseOffset?.Invoke() ?? Vector2D<int>.Zero;
+
+    /// <summary>
+    /// The display dimensions used for input scaling. Normally equals <see cref="DisplayWidth"/>/<see cref="DisplayHeight"/>,
+    /// but in debug viewport mode returns the viewport size so that click coordinates match the render coordinate space.
+    /// </summary>
+    public Vector2D<int> InputDisplaySize => inputDisplaySize?.Invoke() ?? displaySize();
 
     public IControllerState ControllerState => controllerState;
 }

@@ -132,6 +132,21 @@ public class UIElement
         return null;
     }
 
+    public virtual List<string> GetInspectorProperties()
+    {
+        return
+        [
+            $"Type:     {GetType().FullName}",
+            $"Screen:   ({ScreenX:F1}, {ScreenY:F1})",
+            $"Size:     {ComputedWidth:F1} × {ComputedHeight:F1}",
+            $"Local:    ({ComputedX:F1}, {ComputedY:F1})",
+            $"Visible:  {Visible}   Enabled: {Enabled}",
+            $"Focused:  {IsFocused}   Hovered: {IsHovered}",
+            $"HitTest:  {IsHitTestVisible}   Clip: {ClipToBounds}",
+            $"Children: {Children.Count}",
+        ];
+    }
+
     public bool ContainsPoint(float screenX, float screenY)
     {
         float sx = ScreenX;

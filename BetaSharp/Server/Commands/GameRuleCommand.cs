@@ -1,4 +1,4 @@
-﻿using BetaSharp.Entities;
+using BetaSharp.Entities;
 using BetaSharp.Rules;
 using BetaSharp.Server.Command;
 using BetaSharp.Worlds.Core;

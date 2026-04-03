@@ -1,3 +1,5 @@
+using Silk.NET.Maths;
+
 namespace BetaSharp.Client.Input;
 
 public class MouseHelper
@@ -5,24 +7,26 @@ public class MouseHelper
     public int DeltaX { get; private set; }
     public int DeltaY { get; private set; }
 
-    public MouseHelper()
-    {
-    }
+    /// <summary>
+    /// Returns the window pixel position the cursor should warp to when ungrabbed.
+    /// </summary>
+    public required Func<Vector2D<int>> GetUngrabCenter { get; set; }
 
-    public void grabMouseCursor()
+    public void GrabMouseCursor()
     {
         Mouse.setGrabbed(true);
         DeltaX = 0;
         DeltaY = 0;
     }
 
-    public void ungrabMouseCursor()
+    public void UngrabMouseCursor()
     {
         Mouse.setGrabbed(false);
-        Mouse.setCursorPosition(Display.getWidth() / 2, Display.getHeight() / 2);
+        Vector2D<int> center = GetUngrabCenter();
+        Mouse.setCursorPosition(center.X, center.Y);
     }
 
-    public void mouseXYChange()
+    public void MouseXYChange()
     {
         DeltaX = Mouse.getDX();
         DeltaY = Mouse.getDY();

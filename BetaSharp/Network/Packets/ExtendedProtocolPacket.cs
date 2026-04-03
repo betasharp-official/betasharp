@@ -1,4 +1,4 @@
-﻿namespace BetaSharp.Network.Packets;
+namespace BetaSharp.Network.Packets;
 
 public abstract class ExtendedProtocolPacket : Packet
 {

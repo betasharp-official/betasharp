@@ -28,9 +28,11 @@ internal class PathFinder
 
     internal PathEntity? findPath(Entity entity, Entity target, float range)
     {
-        Profiler.Start("AI.PathFinding.FindPathToTarget");
-        PathEntity? result = CreateEntityPathTo(entity, target.x, target.boundingBox.MinY, target.z, range);
-        Profiler.Stop("AI.PathFinding.FindPathToTarget");
+        PathEntity? result;
+        using (Profiler.Begin("FindPathToTarget"))
+        {
+            result = CreateEntityPathTo(entity, target.x, target.boundingBox.MinY, target.z, range);
+        }
         return result;
     }
 
@@ -38,9 +40,11 @@ internal class PathFinder
 
     internal PathEntity? findPath(Entity entity, int x, int y, int z, float range)
     {
-        Profiler.Start("AI.PathFinding.FindPathToPosition");
-        PathEntity? result = CreateEntityPathTo(entity, x + 0.5f, y + 0.5f, z + 0.5f, range);
-        Profiler.Stop("AI.PathFinding.FindPathToPosition");
+        PathEntity? result;
+        using (Profiler.Begin("FindPathToPosition"))
+        {
+            result = CreateEntityPathTo(entity, x + 0.5f, y + 0.5f, z + 0.5f, range);
+        }
         return result;
     }
 
