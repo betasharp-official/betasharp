@@ -11,8 +11,13 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
     public override string Title => "UI Inspector";
     public override DebugDock DefaultDock => DebugDock.Right;
 
+    private UIElement? _hoveredElement;
+    private UIElement? _selectedElement;
+
     protected override void OnDraw()
     {
+        _hoveredElement = null;
+
         UIScreen? screen = ctx.CurrentScreen;
 
         ImGui.SeparatorText("Current Screen");
@@ -45,25 +50,68 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
         {
             ImGui.TextDisabled("no HUD");
         }
+
+        if (_selectedElement != null)
+        {
+            ImGui.Spacing();
+            ImGui.SeparatorText("Selected");
+            if (ImGui.SmallButton("Clear selection"))
+            {
+                _selectedElement = null;
+            }
+            else
+            {
+                DrawProperties(_selectedElement);
+            }
+        }
+
+        DrawOverlays();
     }
 
-    private static void DrawElementNode(UIElement element, int depth)
+    private void DrawElementNode(UIElement element, int depth)
     {
         ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags.SpanAvailWidth;
         if (depth == 0)
-        {
             nodeFlags |= ImGuiTreeNodeFlags.DefaultOpen;
-        }
 
         bool dim = !element.Visible || !element.Enabled;
+        bool isSelected = element == _selectedElement;
 
-        if (dim) ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.5f, 0.5f, 0.5f, 1f));
+        int colorPushCount = 0;
+        if (isSelected)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.35f, 0.75f, 1f, 1f));
+            colorPushCount++;
+        }
+        else if (dim)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.5f, 0.5f, 0.5f, 1f));
+            colorPushCount++;
+        }
 
         bool open = ImGui.TreeNodeEx("##n", nodeFlags);
+
+        if (ImGui.IsItemHovered())
+        {
+            _hoveredElement = element;
+        }
+        if (ImGui.IsItemClicked())
+        {
+            _selectedElement = isSelected ? null : element;
+        }
+
         ImGui.SameLine();
         ImGui.Text(BuildLabel(element));
 
-        if (dim) ImGui.PopStyleColor();
+        if (ImGui.IsItemHovered())
+        {
+            _hoveredElement = element;
+        }
+
+        if (colorPushCount > 0)
+        {
+            ImGui.PopStyleColor(colorPushCount);
+        }
 
         if (open)
         {
@@ -93,6 +141,82 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
 
             ImGui.TreePop();
         }
+    }
+
+    private unsafe void DrawOverlays()
+    {
+        int scaleFactor = GetScaleFactor();
+        ImDrawList* drawList = ImGui.GetForegroundDrawList();
+
+        if (_hoveredElement != null && _hoveredElement != _selectedElement)
+        {
+            DrawElementHighlight(drawList, _hoveredElement, scaleFactor, isSelected: false);
+        }
+
+        if (_selectedElement != null)
+        {
+            DrawElementHighlight(drawList, _selectedElement, scaleFactor, isSelected: true);
+        }
+    }
+
+    private static unsafe void DrawElementHighlight(ImDrawList* drawList, UIElement el, int scaleFactor, bool isSelected)
+    {
+        float x = el.ScreenX * scaleFactor;
+        float y = el.ScreenY * scaleFactor;
+        float w = el.ComputedWidth * scaleFactor;
+        float h = el.ComputedHeight * scaleFactor;
+
+        if (w <= 0 || h <= 0) return;
+
+        var min = new Vector2(x, y);
+        var max = new Vector2(x + w, y + h);
+
+        uint fillColor = isSelected
+            ? ImGui.ColorConvertFloat4ToU32(new Vector4(0.25f, 0.60f, 1.0f, 0.30f))
+            : ImGui.ColorConvertFloat4ToU32(new Vector4(0.25f, 0.60f, 1.0f, 0.14f));
+
+        uint borderColor = isSelected
+            ? ImGui.ColorConvertFloat4ToU32(new Vector4(0.20f, 0.55f, 1.0f, 1.0f))
+            : ImGui.ColorConvertFloat4ToU32(new Vector4(0.20f, 0.55f, 1.0f, 0.65f));
+
+        float borderThickness = isSelected ? 2f : 1f;
+
+        drawList->AddRectFilled(min, max, fillColor);
+        drawList->AddRect(min, max, borderColor, 0f, 0, borderThickness);
+
+        string typeName = el.GetType().Name;
+        string sizeStr = $"  {el.ComputedWidth:F0}×{el.ComputedHeight:F0}";
+
+        Vector2 typeSize = ImGui.CalcTextSize(typeName);
+        Vector2 sizeTextSize = ImGui.CalcTextSize(sizeStr);
+        float padX = 5f;
+        float padY = 2f;
+        float chipW = typeSize.X + sizeTextSize.X + padX * 2;
+        float chipH = typeSize.Y + padY * 2;
+
+        float chipX = x;
+        float chipY = y - chipH - 1f;
+        if (chipY < 0) chipY = y + 1f;
+
+        var chipMin = new Vector2(chipX, chipY);
+        var chipMax = new Vector2(chipX + chipW, chipY + chipH);
+
+        uint chipBg = ImGui.ColorConvertFloat4ToU32(new Vector4(0.08f, 0.08f, 0.08f, 0.90f));
+        uint typeColor = isSelected
+            ? ImGui.ColorConvertFloat4ToU32(new Vector4(0.35f, 0.75f, 1.0f, 1.0f))
+            : ImGui.ColorConvertFloat4ToU32(new Vector4(0.55f, 0.80f, 1.0f, 1.0f));
+        uint dimColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.70f, 0.70f, 0.70f, 1.0f));
+
+        drawList->AddRectFilled(chipMin, chipMax, chipBg, 3f);
+        drawList->AddText(new Vector2(chipX + padX, chipY + padY), typeColor, typeName);
+        drawList->AddText(new Vector2(chipX + padX + typeSize.X, chipY + padY), dimColor, sizeStr);
+    }
+
+    private int GetScaleFactor()
+    {
+        UIContext uiCtx = ctx.UIContext;
+        var res = new ScaledResolution(uiCtx.Options, uiCtx.DisplayWidth, uiCtx.DisplayHeight);
+        return res.ScaleFactor;
     }
 
     private static void DrawProperties(UIElement el)

@@ -21,4 +21,5 @@ internal sealed class DebugWindowContext(BetaSharp game)
     public DebugSystemSnapshot DebugSystemSnapshot => game.DebugSystemSnapshot;
     public UIScreen? CurrentScreen => game.CurrentScreen;
     public HUD HUD => game.HUD;
+    public UIContext UIContext => game.UIContext;
 }
