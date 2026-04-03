@@ -271,7 +271,7 @@ public class TextureManager : IDisposable
 
     public void Reload()
     {
-        DataAssetLoader.LoadResourcepackAssets(BetaSharp.getBetaSharpDir());
+        DataAssetLoader.LoadResourcepackAssets(BetaSharp.BetaSharpDir);
 
         _atlasTileSizes.Clear();
         foreach (KeyValuePair<string, TextureHandle> entry in _textures)

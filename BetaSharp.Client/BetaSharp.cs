@@ -284,9 +284,6 @@ public partial class BetaSharp :
 
     private void SetupCoreSystems()
     {
-        // Start loading base data assets
-        DataAssetLoader.LoadBaseAssets();
-
         TexturePackList = new TexturePacks(this, new DirectoryInfo(_gameDataDir));
         TextureManager = new TextureManager(this, TexturePackList, Options);
         TextRenderer = new TextRenderer(Options, TextureManager);
@@ -372,6 +369,9 @@ public partial class BetaSharp :
 
     private void SetupResourcesAndPostProcessing()
     {
+        // Start loading base data assets
+        DataAssetLoader.LoadBaseAssets();
+
         SoundManager.LoadSoundSettings(Options);
         DefaultMusicCategories.Register(SoundManager);
 
@@ -399,9 +399,6 @@ public partial class BetaSharp :
                 "minecraft/sounds/music/menu/beginning_2.ogg",
             ])).LoadAllAsync();
 
-        // placed further down to give AssetLoader.LoadBaseAssets() a head start to reduce possible blocking waiting that have to be done.
-        DataAssetLoader.LoadDatapackAssets(gameDataDir);
-
         HUD = new HUD(UIContext, new HUDContext(
             () => Player,
             () => PlayerController,
@@ -414,6 +411,9 @@ public partial class BetaSharp :
         ));
 
         PostProcessManager = new PostProcessManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
+
+        // placed further down to give AssetLoader.LoadBaseAssets() a head start to reduce possible blocking waiting that have to be done.
+        DataAssetLoader.LoadDatapackAssets(_gameDataDir);
     }
 
     private void LoadVersion()
