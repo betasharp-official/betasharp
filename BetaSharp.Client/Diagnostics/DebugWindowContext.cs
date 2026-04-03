@@ -1,5 +1,7 @@
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Rendering;
+using BetaSharp.Client.UI;
+using BetaSharp.Client.UI.Screens.InGame;
 using BetaSharp.Util.Hit;
 using BetaSharp.Worlds.Core;
 
@@ -9,16 +11,14 @@ namespace BetaSharp.Client.Diagnostics;
 /// Aggregates the inputs required by the debug window system so that individual windows
 /// are not coupled directly to <see cref="BetaSharp"/>.
 /// </summary>
-internal sealed class DebugWindowContext
+internal sealed class DebugWindowContext(BetaSharp game)
 {
-    private readonly BetaSharp _game;
-
-    public World? World => _game.World;
-    public ClientPlayerEntity? Player => _game.Player;
-    public HitResult ObjectMouseOver => _game.ObjectMouseOver;
-    public WorldRenderer? WorldRenderer => _game.WorldRenderer;
-    public ParticleManager ParticleManager => _game.ParticleManager;
-    public DebugSystemSnapshot DebugSystemSnapshot => _game.DebugSystemSnapshot;
-
-    public DebugWindowContext(BetaSharp game) => _game = game;
+    public World? World => game.World;
+    public ClientPlayerEntity? Player => game.Player;
+    public HitResult ObjectMouseOver => game.ObjectMouseOver;
+    public WorldRenderer? WorldRenderer => game.WorldRenderer;
+    public ParticleManager ParticleManager => game.ParticleManager;
+    public DebugSystemSnapshot DebugSystemSnapshot => game.DebugSystemSnapshot;
+    public UIScreen? CurrentScreen => game.CurrentScreen;
+    public HUD HUD => game.HUD;
 }

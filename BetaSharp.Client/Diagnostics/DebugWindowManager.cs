@@ -43,7 +43,8 @@ internal sealed class DebugWindowManager
             new SystemWindow(ctx),
             new RenderInfoWindow(ctx),
             new ProfilerWindow(),
-            _consoleWindow
+            _consoleWindow,
+            new UIInspectorWindow(ctx)
         ];
     }
 

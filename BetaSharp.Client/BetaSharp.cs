@@ -157,6 +157,7 @@ public partial class BetaSharp :
 
     private bool _fullscreen;
     private bool _prevF11Down;
+    private bool _prevF3Down;
     private bool _hasCrashed;
     private bool _isTakingScreenshot;
 
@@ -737,6 +738,15 @@ public partial class BetaSharp :
         }
         _prevF11Down = f11Down;
 
+        // F3 uses edge detection so it works even when
+        // CurrentScreen.HandleInput() has already consumed all keyboard events.
+        bool f3Down = Keyboard.isKeyDown(Keyboard.KEY_F3);
+        if (f3Down && !_prevF3Down && !ImGuiInput.CapturingKeyboard)
+        {
+            Options.ShowDebugInfo = !Options.ShowDebugInfo;
+        }
+        _prevF3Down = f3Down;
+
         if (!InGameHasFocus && World == null && InternalServer == null)
         {
             if (Options.MenuMusic)
@@ -1006,11 +1016,6 @@ public partial class BetaSharp :
                     }
 
                     if (Keyboard.getEventKey() == Keyboard.KEY_F1) Options.HideGUI = !Options.HideGUI;
-
-                    if (Keyboard.getEventKey() == Keyboard.KEY_F3)
-                    {
-                        Options.ShowDebugInfo = !Options.ShowDebugInfo;
-                    }
 
                     if (Keyboard.getEventKey() == Keyboard.KEY_F5)
                     {
@@ -1465,7 +1470,6 @@ public partial class BetaSharp :
                 if (IsMultiplayerWorld()) World.Disconnect();
                 StopInternalServer();
                 ChangeWorld(null);
-                Options.ShowDebugInfo = false;
             }, () => World?.AttemptSaving(saveStep++) ?? false));
         }
     }
