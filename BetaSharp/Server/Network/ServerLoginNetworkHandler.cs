@@ -124,6 +124,17 @@ public class ServerLoginNetworkHandler : NetHandler
 
     public void accept(LoginHelloPacket packet)
     {
+        try
+        {
+            PlayerNameValidator.Validate(packet.username);
+        }
+        catch (InvalidPlayerNameException ex)
+        {
+            _logger.LogWarning("Rejected login from {Remote}: Kicked: {Reason}", getConnectionInfo(), ex.Message);
+            disconnect($"Kicked: {ex.Message}");
+            return;
+        }
+
         ServerPlayerEntity ent = server.playerManager.connectPlayer(this, packet.username);
         if (ent != null)
         {

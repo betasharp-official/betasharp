@@ -109,48 +109,55 @@ public class PlayerManager
         GetChunkMap(player.dimensionId).removePlayer(player);
     }
 
-    public ServerPlayerEntity connectPlayer(ServerLoginNetworkHandler loginNetworkHandler, string name)
+    public ServerPlayerEntity? connectPlayer(ServerLoginNetworkHandler loginNetworkHandler, string name)
     {
+        try
+        {
+            PlayerNameValidator.Validate(name);
+        }
+        catch (InvalidPlayerNameException ex)
+        {
+            loginNetworkHandler.disconnect($"Kicked: {ex.Message}");
+            return null;
+        }
+
         if (bannedPlayers.Contains(name.Trim().ToLower()))
         {
             loginNetworkHandler.disconnect("You are banned from this server!");
             return null;
         }
-        else if (!isWhitelisted(name))
+
+        if (!isWhitelisted(name))
         {
             loginNetworkHandler.disconnect("You are not white-listed on this server!");
             return null;
         }
-        else
-        {
-            // TODO: This does not work with IPEndpoint's ToString
-            string var3 = loginNetworkHandler.connection.getAddress().ToString();
-            var3 = var3.Substring(var3.IndexOf("/") + 1);
-            var3 = var3.Substring(0, var3.IndexOf(":"));
-            if (bannedIps.Contains(var3))
-            {
-                loginNetworkHandler.disconnect("Your IP address is banned from this server!");
-                return null;
-            }
-            else if (players.Count >= _maxPlayerCount)
-            {
-                loginNetworkHandler.disconnect("The server is full!");
-                return null;
-            }
-            else
-            {
-                for (int var4 = 0; var4 < players.Count; var4++)
-                {
-                    ServerPlayerEntity var5 = players[var4];
-                    if (var5.name.EqualsIgnoreCase(name))
-                    {
-                        var5.networkHandler.disconnect("You logged in from another location");
-                    }
-                }
 
-                return new ServerPlayerEntity(_server, _server.getWorld(0), name, new ServerPlayerInteractionManager(_server.getWorld(0)));
+        // TODO: This does not work with IPEndpoint's ToString
+        string address = loginNetworkHandler.connection.getAddress().ToString();
+        address = address.Substring(address.IndexOf("/") + 1);
+        address = address.Substring(0, address.IndexOf(":"));
+        if (bannedIps.Contains(address))
+        {
+            loginNetworkHandler.disconnect("Your IP address is banned from this server!");
+            return null;
+        }
+
+        if (players.Count >= _maxPlayerCount)
+        {
+            loginNetworkHandler.disconnect("The server is full!");
+            return null;
+        }
+
+        foreach (var playerEntity in players)
+        {
+            if (playerEntity.name.EqualsIgnoreCase(name))
+            {
+                playerEntity.networkHandler.disconnect("You logged in from another location");
             }
         }
+
+        return new ServerPlayerEntity(_server, _server.getWorld(0), name, new ServerPlayerInteractionManager(_server.getWorld(0)));
     }
 
     public ServerPlayerEntity respawnPlayer(ServerPlayerEntity player, int dimensionId)
