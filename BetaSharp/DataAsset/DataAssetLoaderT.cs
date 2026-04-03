@@ -85,6 +85,12 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
             JsonElement obj = await JsonSerializer.DeserializeAsync<JsonElement>(json, s_jsonOptions);
             json.Close();
 
+            if (obj.ValueKind != JsonValueKind.Object)
+            {
+                s_logger.LogError($"Unexpected Json format in file '{file}'. Expected Object, found {obj.ValueKind}.");
+                continue;
+            }
+
             string key = GetName(obj, file)!;
             if (_assets.TryGetValue((@namespace, key), out DataAssetRef<T>? assetRef))
             {
