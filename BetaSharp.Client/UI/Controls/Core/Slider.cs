@@ -37,6 +37,14 @@ public class Slider : UIElement
         };
     }
 
+    public override List<string> GetInspectorProperties()
+    {
+        List<string> props = base.GetInspectorProperties();
+        props.Add($"Text:     \"{Text}\"");
+        props.Add($"Value:    {Value:F3}   Step: {Step:F4}");
+        return props;
+    }
+
     public void AdjustValue(float delta)
     {
         Value = Math.Clamp(Value + delta, 0f, 1f);

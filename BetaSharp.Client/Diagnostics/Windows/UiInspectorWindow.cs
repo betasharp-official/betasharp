@@ -13,12 +13,19 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
 
     private UIElement? _hoveredElement;
     private UIElement? _selectedElement;
+    private UIScreen? _lastScreen;
 
     protected override void OnDraw()
     {
         _hoveredElement = null;
 
         UIScreen? screen = ctx.CurrentScreen;
+
+        if (screen != _lastScreen)
+        {
+            _selectedElement = null;
+            _lastScreen = screen;
+        }
 
         ImGui.SeparatorText("Current Screen");
 
@@ -221,14 +228,10 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
 
     private static void DrawProperties(UIElement el)
     {
-        ImGui.Text($"Type:     {el.GetType().FullName}");
-        ImGui.Text($"Screen:   ({el.ScreenX:F1}, {el.ScreenY:F1})");
-        ImGui.Text($"Size:     {el.ComputedWidth:F1} × {el.ComputedHeight:F1}");
-        ImGui.Text($"Local:    ({el.ComputedX:F1}, {el.ComputedY:F1})");
-        ImGui.Text($"Visible:  {el.Visible}   Enabled: {el.Enabled}");
-        ImGui.Text($"Focused:  {el.IsFocused}   Hovered: {el.IsHovered}");
-        ImGui.Text($"HitTest:  {el.IsHitTestVisible}   Clip: {el.ClipToBounds}");
-        ImGui.Text($"Children: {el.Children.Count}");
+        foreach (string prop in el.GetInspectorProperties())
+        {
+            ImGui.Text(prop);
+        }
     }
 
     private static string BuildLabel(UIElement el)
