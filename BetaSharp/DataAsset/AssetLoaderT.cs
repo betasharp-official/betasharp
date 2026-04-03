@@ -7,6 +7,7 @@ namespace BetaSharp.DataAsset;
 public class AssetLoader<T> : AssetLoader where T : class, IAsset
 {
     private readonly string _path;
+    private readonly bool _allowUnhandled;
     private Task? _loadTask = null;
     private readonly Dictionary<(Namespace Namespace, string Name), AssetRef<T>> _assets = new();
 
@@ -46,9 +47,10 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
 
     public static implicit operator Dictionary<(Namespace Namespace, string Name), AssetRef<T>>(AssetLoader<T> loader) => loader.Assets;
 
-    public AssetLoader(string path, LoadLocations locations) : base(locations)
+    public AssetLoader(string path, LoadLocations locations, bool allowUnhandled = true) : base(locations)
     {
         _path = path;
+        _allowUnhandled = allowUnhandled;
     }
 
     private protected override void Clear() => Assets.Clear();
@@ -83,63 +85,37 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
             JsonElement obj = await JsonSerializer.DeserializeAsync<JsonElement>(json, s_jsonOptions);
             json.Close();
 
-            if (obj.ValueKind == JsonValueKind.Array)
+            string key = GetName(obj, file)!;
+            if (_assets.TryGetValue((@namespace, key), out AssetRef<T>? assetRef))
             {
-                // Handle as list
-                foreach (var item in obj.EnumerateArray())
+                LoadedAssetsModify |= location;
+                if (GetReplace(obj))
                 {
-                    string? key = GetName(item, file);
-                    if (key == null)
-                    {
-                        s_logger.LogError($"Asset missing name in file '{file}'");
-                        continue;
-                    }
-
-                    if (_assets.TryGetValue((@namespace, key), out AssetRef<T>? assetRef))
-                    {
-                        LoadedAssetsModify |= location;
-                        if (GetReplace(item))
-                        {
-                            FromJson(item, file, true, assetRef);
-                            continue;
-                        }
-                    }
-
-                    T? asset = FromJson(item, file, true);
-                    if (asset == null)
-                    {
-                        s_logger.LogError($"Asset failed to load from file '{file}'");
-                        continue;
-                    }
-
-                    asset.Namespace = @namespace;
-                    _assets.Add((asset.Namespace, asset.Name), new AssetRef<T>(asset));
-                }
-            }
-            else if (obj.ValueKind == JsonValueKind.Object)
-            {
-                string key = GetName(obj, file)!;
-                if (_assets.TryGetValue((@namespace, key), out AssetRef<T>? assetRef))
-                {
-                    LoadedAssetsModify |= location;
-                    if (GetReplace(obj))
-                    {
-                        FromJson(obj, file, true, assetRef);
-                        continue;
-                    }
-                }
-
-                T? asset = FromJson(obj, file, false);
-                if (asset == null)
-                {
-                    s_logger.LogError($"Asset failed to load from file '{file}'");
+                    FromJsonReplace(obj, file, assetRef);
                     continue;
                 }
-
-                asset.Name = key;
-                asset.Namespace = @namespace;
-                _assets.Add((asset.Namespace, asset.Name), new AssetRef<T>(asset));
+                else
+                {
+                    FromJsonUpdate(obj, file, assetRef);
+                    continue;
+                }
             }
+            else if (_allowUnhandled)
+            {
+                _assets.Add((@namespace, key), new AssetRef<T>(this, path, @namespace, key));
+                continue;
+            }
+
+            T? asset = FromJson(obj, file);
+            if (asset == null)
+            {
+                s_logger.LogError($"Asset failed to load from file '{file}'");
+                continue;
+            }
+
+            asset.Name = key;
+            asset.Namespace = @namespace;
+            _assets.Add((asset.Namespace, asset.Name), new AssetRef<T>(asset));
         }
     }
 
@@ -168,7 +144,7 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
         return false;
     }
 
-    private T? FromJson(JsonElement json, string path, bool isList)
+    private T? FromJson(JsonElement json, string path)
     {
         T? asset = json.Deserialize<T>(s_jsonOptions);
         if (asset == null) return null;
@@ -176,19 +152,13 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
         // Use filename if name is not defined
         if (string.IsNullOrEmpty(asset.Name))
         {
-            if (isList)
-            {
-                s_logger.LogError($"Asset missing name in file '{path}'");
-                return null;
-            }
-
             asset.Name = Path.GetFileNameWithoutExtension(path);
         }
 
         return asset;
     }
 
-    private void FromJson(JsonElement json, string path, bool isList, AssetRef<T> target)
+    private void FromJsonUpdate(JsonElement json, string path, AssetRef<T> target)
     {
         // Serialize the default value to JSON
         JsonElement defaultElement = JsonSerializer.SerializeToElement(target.Asset);
@@ -202,16 +172,33 @@ public class AssetLoader<T> : AssetLoader where T : class, IAsset
         // Use filename if name is not defined
         if (string.IsNullOrEmpty(asset.Name))
         {
-            if (isList)
-            {
-                s_logger.LogError($"Asset missing name in file '{path}'");
-                return;
-            }
-
             asset.Name = Path.GetFileNameWithoutExtension(path);
         }
 
         target.Asset = asset;
+    }
+
+    internal void FromJsonReplace(string path, AssetRef<T> target)
+    {
+        var json = File.OpenRead(Path.Join(path, target.Name + ".json"));
+        JsonElement obj = JsonSerializer.Deserialize<JsonElement>(json, s_jsonOptions);
+        json.Close();
+        FromJsonReplace(obj, path, target);
+    }
+
+    private void FromJsonReplace(JsonElement json, string path, AssetRef<T> target)
+    {
+        T? v = FromJson(json, path);
+        if (v == null)
+        {
+            s_logger.LogError($"Asset failed to load from file '{path}'");
+            return;
+        }
+
+        v.Name = target.Name;
+        v.Namespace = target.Namespace;
+
+        target.Asset = v;
     }
 
     private static JsonElement MergeJson(JsonElement defaultObj, JsonElement overrideObj)

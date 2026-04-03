@@ -13,7 +13,7 @@ public interface IAsset
     string? ToString() => Namespace + ':' + Name;
 }
 
-public abstract class BaseDataAsset : IAsset
+public class BaseDataAsset : IAsset
 {
     public string Name { get; set; } = "";
 
