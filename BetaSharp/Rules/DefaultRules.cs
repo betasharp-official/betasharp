@@ -14,7 +14,7 @@ internal sealed class DefaultRules : IRulesProvider
 
     public void RegisterAll(RuleRegistry registry)
     {
-        RuleRegistrar r = registry.For(ResourceLocation.DefaultNamespace);
+        RuleRegistrar r = registry.For(Namespace.BetaSharp);
 
         DoFireTick = r.Bool("do_fire_tick", true, description: "Whether fire should spread and naturally extinguish.");
         DoTileDrops = r.Bool("do_tile_drops", true, description: "Whether blocks should have drops.");

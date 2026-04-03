@@ -22,7 +22,7 @@ public sealed class RuleRegistry
         return rule;
     }
 
-    public RuleRegistrar For(string @namespace) => new(this, @namespace);
+    public RuleRegistrar For(Namespace @namespace) => new(this, @namespace);
 
     public bool TryGet(ResourceLocation key, out IGameRule rule) =>
         _rules.TryGetValue(key, out rule!);
@@ -40,7 +40,7 @@ public sealed class RuleRegistry
         _rules.Values.Select(r => r.Category).Distinct().Order();
 }
 
-public sealed class RuleRegistrar(RuleRegistry registry, string ns)
+public sealed class RuleRegistrar(RuleRegistry registry, Namespace ns)
 {
     public BoolRule Bool(string name, bool defaultValue,
         string category = "general", string description = "") =>

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace BetaSharp.DataAsset;
+namespace BetaSharp;
 
 public partial class Namespace
 {
