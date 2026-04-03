@@ -70,6 +70,16 @@ public class WorldTickScheduler
         }
     }
 
+    public void ClearFullQueue()
+    {
+        lock (_queueLock)
+        {
+            _scheduledUpdates.Clear();
+            _pendingScheduledKeys.Clear();
+            Console.WriteLine("[Scheduler] Logic Reset: All pending keys and updates have been purged.");
+        }
+    }
+
     private void ProcessScheduledTicks(bool forceFlush)
     {
         if (_context.IsRemote) return;
@@ -93,6 +103,16 @@ public class WorldTickScheduler
                 var key = new ScheduledBlockTick(blockUpdate.X, blockUpdate.Y, blockUpdate.Z, blockUpdate.BlockId);
                 _pendingScheduledKeys.Remove(key);
 
+                if (!_context.Reader.IsPosLoaded(blockUpdate.X, blockUpdate.Y, blockUpdate.Z))
+                {
+                    deferredTicks.Add(blockUpdate);
+                    continue;
+                }
+
+                int currentBlockId = _context.Reader.GetBlockId(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
+                if (currentBlockId != blockUpdate.BlockId || currentBlockId <= 0)
+                    continue;
+
                 const byte loadRadius = 8;
                 int minY = Math.Max(0, blockUpdate.Y - loadRadius);
                 int maxY = Math.Min(127, blockUpdate.Y + loadRadius);
@@ -105,9 +125,6 @@ public class WorldTickScheduler
                     deferredTicks.Add(blockUpdate);
                     continue;
                 }
-
-                int currentBlockId = _context.Reader.GetBlockId(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
-                if (currentBlockId != blockUpdate.BlockId || currentBlockId <= 0) continue;
 
                 readyToExecute.Add(blockUpdate);
             }
