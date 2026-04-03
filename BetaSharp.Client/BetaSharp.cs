@@ -831,6 +831,8 @@ public partial class BetaSharp :
         }
         _prevF3Down = f3Down;
 
+        ControllerManager.UpdateGlobal();
+
         if (!InGameHasFocus && World == null && InternalServer == null)
         {
             if (Options.MenuMusic)
@@ -1145,7 +1147,7 @@ public partial class BetaSharp :
             }
         }
 
-        ControllerManager.UpdateGlobal();
+
         ControllerManager.UpdateUI(CurrentScreen);
         ControllerManager.UpdateInGame(Timer.renderPartialTicks);
 

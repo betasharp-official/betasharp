@@ -17,7 +17,7 @@ public static class ControllerManager
     private static bool s_wasHotbarRightDown;
     private static bool s_wasCameraDown;
     private static bool s_wasPauseDown;
-    private static bool s_wasPlayerListDown;
+    private static bool s_wasToggleDebugDown;
     private static bool s_wasPickBlockDown;
     private static bool s_wasCraftingDown;
     private static bool s_wasSneakDown;
@@ -64,7 +64,7 @@ public static class ControllerManager
         s_wasHotbarRightDown = IsActionDown("controller.hotbarRight");
         s_wasCameraDown = IsActionDown("controller.camera");
         s_wasPauseDown = IsActionDown("controller.pause");
-        s_wasPlayerListDown = Controller.IsButtonDown(GamepadButton.Back);
+        s_wasToggleDebugDown = Controller.IsButtonDown(GamepadButton.Back);
         s_wasPickBlockDown = IsActionDown("controller.pickBlock");
         s_wasSneakDown = IsActionDown("controller.sneak");
         s_wasCraftingDown = IsActionDown("controller.crafting");
@@ -79,11 +79,12 @@ public static class ControllerManager
     {
         if (s_game == null) return;
 
-        bool playerListHeld = Controller.IsButtonDown(GamepadButton.Back);
-        if (playerListHeld && !s_wasPlayerListDown)
+        bool toggleDebug = Controller.IsButtonDown(GamepadButton.Back);
+        if (toggleDebug && !s_wasToggleDebugDown)
         {
             s_game.Options.ShowDebugInfo = !s_game.Options.ShowDebugInfo;
         }
+        s_wasToggleDebugDown = toggleDebug;
     }
 
     public static void UpdateInGame(float tickDelta)
