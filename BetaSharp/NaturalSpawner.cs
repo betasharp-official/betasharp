@@ -133,9 +133,9 @@ internal static class NaturalSpawner
                 {
                     spawnY = 1;
                 }
-                else if (spawnY > 128)
+                else if (spawnY > 256)
                 {
-                    spawnY = 128;
+                    spawnY = 256;
                 }
 
                 int r = world.Random.NextInt(Monsters.Length);
@@ -147,12 +147,12 @@ internal static class NaturalSpawner
                 }
 
                 while (!CreatureKind.Monster.CanSpawnAtLocation(world.Reader, spawnX, newSpawnY, spawnZ) &&
-                       newSpawnY < spawnY + 16 && newSpawnY < 128)
+                       newSpawnY < spawnY + 16 && newSpawnY < 256)
                 {
                     ++newSpawnY;
                 }
 
-                if (newSpawnY < spawnY + 16 && newSpawnY < 128)
+                if (newSpawnY < spawnY + 16 && newSpawnY < 256)
                 {
                     EntityLiving entity = Monsters[r](world);
 

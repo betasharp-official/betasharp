@@ -42,7 +42,7 @@ public class ChunkOcclusionCuller
         public bool IsEmpty => _read == _write;
     }
 
-    private readonly ChunkQueue[] _queues = [new(32768), new(32768)];
+    private readonly ChunkQueue[] _queues = [new(65536), new(65536)];
     private int _currentQueue = 0;
 
     public void FindVisible(
@@ -69,7 +69,7 @@ public class ChunkOcclusionCuller
         startNode.IncomingDirections = ChunkDirectionMask.None;
         visitor.Visit(startNode);
 
-        ChunkDirectionMask initialOutgoing = useOcclusionCulling 
+        ChunkDirectionMask initialOutgoing = useOcclusionCulling
             ? startNode.VisibilityData.GetVisibleFrom(ChunkDirectionMask.None, viewPos, startNode)
             : ChunkDirectionMask.All;
 

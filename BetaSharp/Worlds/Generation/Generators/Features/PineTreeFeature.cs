@@ -15,7 +15,7 @@ internal class PineTreeFeature : Feature
 
         bool canPlace = true;
 
-        if (!(y >= 1 && y + treeHeight + 1 <= 128))
+        if (!(y >= 1 && y + treeHeight + 1 <= 256))
         {
             return false;
         }

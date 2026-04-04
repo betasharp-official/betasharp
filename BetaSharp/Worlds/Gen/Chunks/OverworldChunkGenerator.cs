@@ -117,7 +117,7 @@ internal class OverworldChunkGenerator : IChunkSource
     public Chunk GetChunk(int chunkX, int chunkZ)
     {
         _random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
-        byte[] blocks = new byte[-short.MinValue];
+        byte[] blocks = new byte[65536];
         Chunk chunk = new(_level, blocks, chunkX, chunkZ);
         _biomes = _biomeSource.GetBiomesInArea(_biomes, chunkX * 16, chunkZ * 16, 16, 16);
         double[] temperatureMap = _biomeSource.TemperatureMap;
@@ -494,7 +494,7 @@ internal class OverworldChunkGenerator : IChunkSource
                 int offsetZ = z - (blockZ + 8);
                 int var22 = _level.Reader.GetTopSolidBlockY(x, z);
                 double temperatureSample = _temperatures[offsetX * 16 + offsetZ] - (var22 - 64) / 64.0D * 0.3D;
-                if (temperatureSample < 0.5D && var22 > 0 && var22 < 128 && _level.Reader.IsAir(x, var22, z) && _level.Reader.GetMaterial(x, var22 - 1, z).BlocksMovement &&
+                if (temperatureSample < 0.5D && var22 > 0 && var22 < 256 && _level.Reader.IsAir(x, var22, z) && _level.Reader.GetMaterial(x, var22 - 1, z).BlocksMovement &&
                     _level.Reader.GetMaterial(x, var22 - 1, z) != Material.Ice)
                 {
                     _level.Writer.SetBlock(x, var22, z, Block.Snow.id, 0, doUpdate: false);
@@ -592,8 +592,8 @@ internal class OverworldChunkGenerator : IChunkSource
 
                         for (int subX = 0; subX < 4; ++subX)
                         {
-                            int blockIndex = ((subX + sampleX * 4) << 11) | ((sampleZ * 4) << 7) | (sampleY * 8 + subY);
-                            const short chunkHeight = 128; // Chunk Height
+                            int blockIndex = ((subX + sampleX * 4) << 12) | ((sampleZ * 4) << 8) | (sampleY * 8 + subY);
+                            const short chunkHeight = 256; // Chunk Height
                             double terrainDensity = terrainX0;
                             double densityStepZ = (terrainX1 - terrainX0) * horizontalLerpStep;
 

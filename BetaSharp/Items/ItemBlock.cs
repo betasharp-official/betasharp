@@ -65,7 +65,7 @@ internal class ItemBlock : Item
             return false;
         }
 
-        if (y == 127 && Block.Blocks[blockID].material.IsSolid)
+        if (y == 255 && Block.Blocks[blockID].material.IsSolid)
         {
             return false;
         }

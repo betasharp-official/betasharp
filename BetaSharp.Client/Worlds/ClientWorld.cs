@@ -114,7 +114,7 @@ public class ClientWorld : World
 
         if (!load)
         {
-            setBlocksDirty(chunkX * 16, 0, chunkZ * 16, chunkX * 16 + 15, 128, chunkZ * 16 + 15);
+            setBlocksDirty(chunkX * 16, 0, chunkZ * 16, chunkX * 16 + 15, 256, chunkZ * 16 + 15);
         }
     }
 

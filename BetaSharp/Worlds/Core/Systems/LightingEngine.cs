@@ -42,7 +42,7 @@ public class LightingEngine : ILightProvider
         return y switch
         {
             < 0 => 0,
-            >= 128 => !_world.Dimension.HasCeiling ? 15 : 0,
+            >= 256 => !_world.Dimension.HasCeiling ? 15 : 0,
             _ => _world.ChunkHost.GetChunk(x >> 4, z >> 4).GetLight(x & 15, y, z & 15, 0)
         };
     }
@@ -96,7 +96,7 @@ public class LightingEngine : ILightProvider
         {
             case < 0:
                 return 0;
-            case >= 128:
+            case >= 256:
                 return !_world.Dimension.HasCeiling ? 15 - _world.Environment.AmbientDarkness : 0;
             default:
                 {
@@ -147,9 +147,9 @@ public class LightingEngine : ILightProvider
 
         switch (y)
         {
-            case >= 128:
+            case >= 256:
                 return type.lightValue;
-            case >= 0 and < 128 when x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000:
+            case >= 0 and < 256 when x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000:
                 {
                     int chunkX = x >> 4;
                     int chunkZ = z >> 4;
@@ -170,7 +170,7 @@ public class LightingEngine : ILightProvider
     {
         if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000)
         {
-            if (y >= 0 && y < 128)
+            if (y >= 0 && y < 256)
             {
                 if (_world.ChunkHost.HasChunk(x >> 4, z >> 4))
                 {

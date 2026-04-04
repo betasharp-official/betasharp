@@ -575,7 +575,7 @@ public abstract class World : IWorldContext
                 int worldZ = localZ + worldZBase;
                 int worldY = Reader.GetTopSolidBlockY(worldX, worldZ);
 
-                if (GetBiomeSource().GetBiome(worldX, worldZ).GetEnableSnow() && worldY >= 0 && worldY < 128 &&
+                if (GetBiomeSource().GetBiome(worldX, worldZ).GetEnableSnow() && worldY >= 0 && worldY < 256 &&
                     currentChunk.GetLight(LightType.Block, localX, worldY, localZ) < 10)
                 {
                     int blockBelowId = currentChunk.GetBlockId(localX, worldY - 1, localZ);
@@ -603,7 +603,7 @@ public abstract class World : IWorldContext
                 int localZ = (randomTickVal >> 8) & 15;
                 int localY = (randomTickVal >> 16) & 127;
 
-                int blockId = currentChunk.Blocks[(localX << 11) | (localZ << 7) | localY] & 255;
+                int blockId = currentChunk.Blocks[(localX << 12) | (localZ << 8) | localY] & 255;
                 if (Block.BlocksRandomTick[blockId])
                 {
                     Block.Blocks[blockId].onTick(new OnTickEvent(this, localX + worldXBase, localY, localZ + worldZBase, currentChunk.GetBlockMeta(localX, localY, localZ), blockId));
@@ -647,7 +647,7 @@ public abstract class World : IWorldContext
 
         int currentBufferOffset = 0;
         int minY = Math.Max(0, y);
-        int maxY = Math.Min(128, y + sizeY);
+        int maxY = Math.Min(256, y + sizeY);
 
         for (int chunkX = startChunkX; chunkX <= endChunkX; ++chunkX)
         {

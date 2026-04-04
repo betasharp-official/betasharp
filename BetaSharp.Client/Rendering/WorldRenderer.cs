@@ -249,9 +249,9 @@ public class WorldRenderer : IWorldEventListener
                         var8 = 0;
                     }
 
-                    if (var8 >= 128)
+                    if (var8 >= 256)
                     {
-                        var8 = 127;
+                        var8 = 255;
                     }
 
                     if (_world.Reader.IsPosLoaded(MathHelper.Floor(var7.x), var8, MathHelper.Floor(var7.z)))

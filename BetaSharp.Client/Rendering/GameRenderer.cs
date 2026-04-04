@@ -532,19 +532,19 @@ public class GameRenderer
             double z = minZ + i;
 
             tess.addVertex(x, 0.0, minZ);
-            tess.addVertex(x, 128.0, minZ);
+            tess.addVertex(x, 256.0, minZ);
 
             tess.addVertex(x, 0.0, maxZ);
-            tess.addVertex(x, 128.0, maxZ);
+            tess.addVertex(x, 256.0, maxZ);
 
             tess.addVertex(minX, 0.0, z);
-            tess.addVertex(minX, 128.0, z);
+            tess.addVertex(minX, 256.0, z);
 
             tess.addVertex(maxX, 0.0, z);
-            tess.addVertex(maxX, 128.0, z);
+            tess.addVertex(maxX, 256.0, z);
         }
 
-        for (int y = 0; y <= 128; y += 4)
+        for (int y = 0; y <= 256; y += 4)
         {
             if (y % 16 == 0) tess.setColorRGBA_F(0.0F, 0.0F, 1.0F, 1.0F);
             tess.addVertex(minX, y, minZ);
@@ -574,16 +574,16 @@ public class GameRenderer
             double z = minZ + (i * 16);
 
             tess.addVertex(x, 0.0, minZ);
-            tess.addVertex(x, 128.0, minZ);
+            tess.addVertex(x, 256.0, minZ);
 
             tess.addVertex(x, 0.0, maxZ);
-            tess.addVertex(x, 128.0, maxZ);
+            tess.addVertex(x, 256.0, maxZ);
 
             tess.addVertex(minX, 0.0, z);
-            tess.addVertex(minX, 128.0, z);
+            tess.addVertex(minX, 256.0, z);
 
             tess.addVertex(maxX, 0.0, z);
-            tess.addVertex(maxX, 128.0, z);
+            tess.addVertex(maxX, 256.0, z);
         }
 
         tess.draw();
@@ -784,7 +784,7 @@ public class GameRenderer
                             double var39 = (double)(var20 + 0.5F) - var3.z;
                             float var40 = MathHelper.Sqrt(var38 * var38 + var39 * var39) / var16;
                             var8.startDrawingQuads();
-                            float var32 = var4.GetLuminance(var19, 128, var20) * 0.85F + 0.15F;
+                            float var32 = var4.GetLuminance(var19, 256, var20) * 0.85F + 0.15F;
                             GLManager.GL.Color4(var32, var32, var32, ((1.0F - var40 * var40) * 0.5F + 0.5F) * var2);
                             var8.setTranslationD(-var9 * 1.0D, -var11 * 1.0D, -var13 * 1.0D);
                             var8.addVertexWithUV(var19 + 0, var23, var20 + 0.5D, (double)(0.0F * var37), (double)(var23 * var37 / 4.0F + var26 * var37));

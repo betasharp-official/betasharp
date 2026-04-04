@@ -153,17 +153,10 @@ internal class RegionChunkStorage : IChunkStorage
 
     public static Chunk LoadChunkFromNbt(IWorldContext world, NBTTagCompound nbt)
     {
-        int chunkX = nbt.GetInteger("xPos");
-        int chunkZ = nbt.GetInteger("zPos");
-        Chunk chunk = new(world, chunkX, chunkZ)
-        {
-            Blocks = nbt.GetByteArray("Blocks"),
-            Meta = new ChunkNibbleArray(nbt.GetByteArray("Data")),
-            SkyLight = new ChunkNibbleArray(nbt.GetByteArray("SkyLight")),
-            BlockLight = new ChunkNibbleArray(nbt.GetByteArray("BlockLight")),
-            HeightMap = nbt.GetByteArray("HeightMap"),
-            TerrainPopulated = nbt.GetBoolean("TerrainPopulated")
-        };
+        Chunk chunk = new(world, nbt);
+        int chunkX = chunk.X;
+        int chunkZ = chunk.Z;
+
         if (!chunk.Meta.IsInitialized)
         {
             chunk.Meta = new ChunkNibbleArray(chunk.Blocks.Length);
@@ -179,7 +172,7 @@ internal class RegionChunkStorage : IChunkStorage
         {
             for (int i = 0; i < 256; i++)
             {
-                if (chunk.HeightMap[i] > 127)
+                if (chunk.HeightMap[i] > 255)
                 {
                     chunk.PopulateHeightMapOnly();
                     break;
@@ -253,7 +246,7 @@ internal class RegionChunkStorage : IChunkStorage
                 int x = tickTag.GetInteger("x");
                 int y = tickTag.GetInteger("y");
                 int z = tickTag.GetInteger("z");
-                if (y < 0 || y > 127 || x < minWx || x > maxWx || z < minWz || z > maxWz)
+                if (y < 0 || y > 255 || x < minWx || x > maxWx || z < minWz || z > maxWz)
                 {
                     Log.Instance.For<RegionChunkStorage>().LogDebug("Skipping TileTicks entry with out-of-range coordinates ({X},{Y},{Z}) for chunk {ChunkX},{ChunkZ}", x, y, z, chunkX, chunkZ);
                     continue;

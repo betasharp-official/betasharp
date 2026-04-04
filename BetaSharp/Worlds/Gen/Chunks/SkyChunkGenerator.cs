@@ -123,8 +123,8 @@ internal class SkyChunkGenerator : IChunkSource
 
                         for (int subX = 0; subX < 8; ++subX)
                         {
-                            int blockIndex = subX + sampleX * 8 << 11 | 0 + sampleZ * 8 << 7 | sampleY * 4 + subY;
-                            short chunkHeight = 128;
+                            int blockIndex = subX + sampleX * 8 << 12 | 0 + sampleZ * 8 << 8 | sampleY * 4 + subY;
+                            short chunkHeight = 256;
                             double horizontalLerpStepZ = 0.125D;
                             double terrainDensity = terrainX0;
                             double densityStepZ = (terrainX1 - terrainX0) * horizontalLerpStepZ;
@@ -223,7 +223,7 @@ internal class SkyChunkGenerator : IChunkSource
     public Chunk GetChunk(int chunkX, int chunkZ)
     {
         _random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
-        byte[] blocks = new byte[32768];
+        byte[] blocks = new byte[65536];
         Chunk chunk = new(_world, blocks, chunkX, chunkZ);
         _biomes = _biomeSource.GetBiomesInArea(_biomes, chunkX * 16, chunkZ * 16, 16, 16);
         BuildTerrain(chunkX, chunkZ, blocks);

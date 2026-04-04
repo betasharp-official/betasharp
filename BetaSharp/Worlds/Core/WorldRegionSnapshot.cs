@@ -49,7 +49,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
     public int GetBlockId(int x, int y, int z)
     {
-        if (y is < 0 or >= 128)
+        if (y is < 0 or >= 256)
         {
             return 0;
         }
@@ -82,7 +82,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
     public int GetBlockMeta(int x, int y, int z)
     {
-        if (y is < 0 or >= 128)
+        if (y is < 0 or >= 256)
         {
             return 0;
         }
@@ -147,7 +147,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
             return 0;
         }
 
-        if (y >= 128)
+        if (y >= 256)
         {
             return Math.Max(0, 15 - _skylightSubtracted);
         }
