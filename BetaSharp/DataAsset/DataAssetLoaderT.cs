@@ -90,6 +90,7 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
                 continue;
             }
 
+            string key = Path.GetFileNameWithoutExtension(file);
             if (_assets.TryGetValue((@namespace, key), out DataAssetRef<T>? assetRef))
             {
                 LoadedAssetsModify |= location;
