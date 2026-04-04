@@ -1,0 +1,16 @@
+{
+  "Name": "spectator",
+  "BrakeSpeed": 1,
+  "CanBreak": false,
+  "CanPlace": false,
+  "CanInteract": false,
+  "CanReceiveDamage": false,
+  "CanInflictDamage": false,
+  "CanBeTargeted": false,
+  "CanExhaustFire": false,
+  "CanPickup": false,
+  "CanDrop": false,
+  "FiniteResources": true,
+  "VisibleToWorld": false,
+  "BlockDrops": true
+}

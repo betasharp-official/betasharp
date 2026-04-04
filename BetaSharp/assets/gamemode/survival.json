@@ -1,0 +1,16 @@
+{
+  "Name": "survival",
+  "BrakeSpeed": 1,
+  "CanBreak": true,
+  "CanPlace": true,
+  "CanInteract": true,
+  "CanReceiveDamage": true,
+  "CanInflictDamage": true,
+  "CanBeTargeted": true,
+  "CanExhaustFire": true,
+  "CanPickup": true,
+  "CanDrop": true,
+  "FiniteResources": true,
+  "VisibleToWorld": true,
+  "BlockDrops": true
+}

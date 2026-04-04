@@ -1,0 +1,16 @@
+{
+  "Name": "creative",
+  "BrakeSpeed": 0,
+  "CanBreak": true,
+  "CanPlace": true,
+  "CanInteract": true,
+  "CanReceiveDamage": false,
+  "CanInflictDamage": true,
+  "CanBeTargeted": false,
+  "CanExhaustFire": true,
+  "CanPickup": true,
+  "CanDrop": true,
+  "FiniteResources": false,
+  "VisibleToWorld": true,
+  "BlockDrops": false
+}
