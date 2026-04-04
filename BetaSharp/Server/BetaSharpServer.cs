@@ -86,8 +86,6 @@ public abstract class BetaSharpServer : ICommandOutput
 
         var startupSw = Stopwatch.StartNew();
 
-        GameModes.SetDefaultGameMode(config.GetDefaultGamemode(""));
-
         string worldName = config.GetLevelName("world");
         string seedString = config.GetLevelSeed("");
         long seed = Random.Shared.NextInt64();
@@ -113,6 +111,8 @@ public abstract class BetaSharpServer : ICommandOutput
 
         _logger.LogInformation("Preparing level \"{WorldName}\"", worldName);
         loadWorld(worldName, new WorldSettings(seed, worldType, optionsString));
+
+        GameModes.SetDefaultGameMode(config.GetDefaultGamemode("survival"));
 
         if (logHelp)
         {

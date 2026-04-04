@@ -90,18 +90,17 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
                 continue;
             }
 
-            string key = DataAssetLoader<T>.GetName(obj, file)!;
             if (_assets.TryGetValue((@namespace, key), out DataAssetRef<T>? assetRef))
             {
                 LoadedAssetsModify |= location;
-                if (DataAssetLoader<T>.GetReplace(obj))
+                if (GetReplace(obj))
                 {
-                    DataAssetLoader<T>.FromJsonReplace(obj, file, assetRef);
+                    FromJsonReplace(obj, file, assetRef);
                     continue;
                 }
                 else
                 {
-                    DataAssetLoader<T>.FromJsonUpdate(obj, file, assetRef);
+                    FromJsonUpdate(obj, assetRef);
                     continue;
                 }
             }
@@ -111,7 +110,7 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
                 continue;
             }
 
-            T? asset = DataAssetLoader<T>.FromJson(obj, file);
+            T? asset = FromJson(obj);
             if (asset == null)
             {
                 s_logger.LogError($"Asset failed to load from file '{file}'");
@@ -124,21 +123,6 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
         }
     }
 
-    private static string? GetName(JsonElement json, string path)
-    {
-        if (json.TryGetProperty("Name", out JsonElement nameElement))
-        {
-            return nameElement.GetString();
-        }
-
-        if (path.Length != 0)
-        {
-            return Path.GetFileNameWithoutExtension(path);
-        }
-
-        return null;
-    }
-
     private static bool GetReplace(JsonElement json)
     {
         if (json.TryGetProperty("Replace", out JsonElement nameElement))
@@ -149,21 +133,14 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
         return false;
     }
 
-    private static T? FromJson(JsonElement json, string path)
+    private static T? FromJson(JsonElement json)
     {
         T? asset = json.Deserialize<T>(s_jsonOptions);
         if (asset == null) return null;
-
-        // Use filename if name is not defined
-        if (string.IsNullOrEmpty(asset.Name))
-        {
-            asset.Name = Path.GetFileNameWithoutExtension(path);
-        }
-
         return asset;
     }
 
-    private static void FromJsonUpdate(JsonElement json, string path, DataAssetRef<T> target)
+    private static void FromJsonUpdate(JsonElement json, DataAssetRef<T> target)
     {
         // Serialize the default value to JSON
         JsonElement defaultElement = JsonSerializer.SerializeToElement(target.Asset);
@@ -172,27 +149,27 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
         JsonElement merged = MergeJson(defaultElement, json);
 
         T? asset = merged.Deserialize<T>(s_jsonOptions);
-        if (asset == null) return;
-
-        // Use filename if name is not defined
-        if (string.IsNullOrEmpty(asset.Name))
+        if (asset == null)
         {
-            asset.Name = Path.GetFileNameWithoutExtension(path);
+            s_logger.LogError($"Asset failed to deserialize into class '{target}'");
+            return;
         }
 
+        asset.Name = target.Name;
         target.Asset = asset;
     }
 
     internal static void FromJsonReplace(string path, DataAssetRef<T> target)
     {
-        using FileStream json = File.OpenRead(Path.Join(path, target.Name + ".json"));
+        path = Path.Join(path, target.Name + ".json");
+        using FileStream json = File.OpenRead(path);
         JsonElement obj = JsonSerializer.Deserialize<JsonElement>(json, s_jsonOptions);
-        DataAssetLoader<T>.FromJsonReplace(obj, path, target);
+        FromJsonReplace(obj, path, target);
     }
 
     private static void FromJsonReplace(JsonElement json, string path, DataAssetRef<T> target)
     {
-        T? v = DataAssetLoader<T>.FromJson(json, path);
+        T? v = FromJson(json);
         if (v == null)
         {
             s_logger.LogError($"Asset failed to load from file '{path}'");
