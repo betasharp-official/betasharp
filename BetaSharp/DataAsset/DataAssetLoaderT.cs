@@ -90,10 +90,11 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
                 continue;
             }
 
+            LoadedAssetsModify |= location;
+
             string key = Path.GetFileNameWithoutExtension(file);
             if (_assets.TryGetValue((@namespace, key), out DataAssetRef<T>? assetRef))
             {
-                LoadedAssetsModify |= location;
                 if (GetReplace(obj))
                 {
                     FromJsonReplace(obj, file, assetRef);

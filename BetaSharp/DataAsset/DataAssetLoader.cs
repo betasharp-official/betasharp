@@ -13,8 +13,6 @@ public abstract class DataAssetLoader
         GameMode.GameModes.GameModesLoader
     ];
 
-    private static bool s_worldAssetsLoaded = false;
-
     private protected static readonly JsonSerializerOptions s_jsonOptions = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenReading
@@ -84,7 +82,6 @@ public abstract class DataAssetLoader
     private static void LoadWorldAssets(string path, LoadLocations filter)
     {
         s_lastWorldDataPath = path;
-        s_worldAssetsLoaded = true;
         string p = Path.Combine(path, "datapacks");
         if (!Directory.Exists(p))
         {
@@ -136,7 +133,8 @@ public abstract class DataAssetLoader
 
     public static void UnloadWorldAssets(bool wait = false)
     {
-        if (!s_worldAssetsLoaded) return;
+        if (s_lastWorldDataPath == null) return;
+        s_lastWorldDataPath = null;
 
         foreach (DataAssetLoader loader in s_assetLoaders)
         {
@@ -147,7 +145,6 @@ public abstract class DataAssetLoader
 
         LoadBaseAssets(LoadLocations.WorldDatapack);
         if (s_lastDataPath != null) LoadDatapackAssets(s_lastDataPath, LoadLocations.WorldDatapack);
-        if (s_lastWorldDataPath != null) LoadWorldAssets(s_lastWorldDataPath, LoadLocations.WorldDatapack);
         if (s_lastResourcePath != null) LoadResourcepackAssets(s_lastResourcePath, LoadLocations.WorldDatapack);
 
         if (wait)
