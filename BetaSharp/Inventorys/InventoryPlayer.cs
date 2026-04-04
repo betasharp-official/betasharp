@@ -7,7 +7,6 @@ namespace BetaSharp.Inventorys;
 
 public class InventoryPlayer : IInventory
 {
-
     public ItemStack?[] main = new ItemStack[36];
     public ItemStack?[] armor = new ItemStack[4];
     public int selectedSlot;
@@ -86,13 +85,11 @@ public class InventoryPlayer : IInventory
         int slotIndex = FindSlotByItemId(itemId);
         if (slotIndex < 0)
         {
-            if (backupId > 0)
+            if (player.GameMode.FiniteResources)
             {
-                SetCurrentItem(backupId);
+                if (backupId > 0) SetCurrentItem(backupId);
                 return;
             }
-
-            if (player.GameMode.FiniteResources) return;
 
             // move cursor to the next free so that item appears in hand.
             if (main[selectedSlot] != null)
@@ -121,15 +118,12 @@ public class InventoryPlayer : IInventory
             scrollDirection = -1;
         }
 
-        for (selectedSlot -= scrollDirection; selectedSlot < 0; selectedSlot += HotbarSize)
-        {
-        }
+        for (selectedSlot -= scrollDirection; selectedSlot < 0; selectedSlot += HotbarSize) { }
 
         while (selectedSlot >= HotbarSize)
         {
             selectedSlot -= HotbarSize;
         }
-
     }
 
     private int storePartialItemStack(ItemStack itemStack)
@@ -146,36 +140,29 @@ public class InventoryPlayer : IInventory
         {
             return remainingCount;
         }
-        else
+
+        main[slotIndex] ??= new ItemStack(itemId, 0, itemStack.getDamage());
+
+        int spaceAvailable = remainingCount;
+        if (remainingCount > main[slotIndex].getMaxCount() - main[slotIndex].count)
         {
-            if (main[slotIndex] == null)
-            {
-                main[slotIndex] = new ItemStack(itemId, 0, itemStack.getDamage());
-            }
-
-            int spaceAvailable = remainingCount;
-            if (remainingCount > main[slotIndex].getMaxCount() - main[slotIndex].count)
-            {
-                spaceAvailable = main[slotIndex].getMaxCount() - main[slotIndex].count;
-            }
-
-            if (spaceAvailable > getMaxCountPerStack() - main[slotIndex].count)
-            {
-                spaceAvailable = getMaxCountPerStack() - main[slotIndex].count;
-            }
-
-            if (spaceAvailable == 0)
-            {
-                return remainingCount;
-            }
-            else
-            {
-                remainingCount -= spaceAvailable;
-                main[slotIndex].count += spaceAvailable;
-                main[slotIndex].bobbingAnimationTime = 5;
-                return remainingCount;
-            }
+            spaceAvailable = main[slotIndex].getMaxCount() - main[slotIndex].count;
         }
+
+        if (spaceAvailable > getMaxCountPerStack() - main[slotIndex].count)
+        {
+            spaceAvailable = getMaxCountPerStack() - main[slotIndex].count;
+        }
+
+        if (spaceAvailable == 0)
+        {
+            return remainingCount;
+        }
+
+        remainingCount -= spaceAvailable;
+        main[slotIndex].count += spaceAvailable;
+        main[slotIndex].bobbingAnimationTime = 5;
+        return remainingCount;
     }
 
     public void inventoryTick()
@@ -187,7 +174,6 @@ public class InventoryPlayer : IInventory
                 main[slotIndex].inventoryTick(player.world, player, slotIndex, selectedSlot == slotIndex);
             }
         }
-
     }
 
     public bool consumeInventoryItem(int itemId)
@@ -354,7 +340,6 @@ public class InventoryPlayer : IInventory
                 }
             }
         }
-
     }
 
     public int size()
@@ -452,7 +437,6 @@ public class InventoryPlayer : IInventory
                 }
             }
         }
-
     }
 
     public void DropInventory()
@@ -475,7 +459,6 @@ public class InventoryPlayer : IInventory
                 armor[slotIndex] = null;
             }
         }
-
     }
 
     public void markDirty()
