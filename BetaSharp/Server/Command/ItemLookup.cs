@@ -24,6 +24,9 @@ internal static class ItemLookup
         return s_itemNameToId.TryGetValue(input.ToLower(), out itemId);
     }
 
+    internal static string ResolveItemName(ItemStack item) =>
+        s_itemNameToId.FirstOrDefault(kvp => kvp.Value == item.itemId).Key ?? item.getItemName();
+
     /// <summary>
     /// Gets all available item names that start with the given prefix (with underscores)
     /// </summary>

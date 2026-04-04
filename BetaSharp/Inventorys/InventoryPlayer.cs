@@ -20,17 +20,12 @@ public class InventoryPlayer : IInventory
         this.player = player;
     }
 
-    public static int getHotbarSize()
-    {
-        return 9;
-    }
+    public static int HotbarSize => 9;
 
-    public ItemStack getSelectedItem()
-    {
-        return selectedSlot < 9 && selectedSlot >= 0 ? main[selectedSlot] : null;
-    }
+    public ItemStack? GetItemInHand() =>
+        selectedSlot < HotbarSize && selectedSlot >= 0 ? main[selectedSlot] : null;
 
-    private int getInventorySlotContainItem(int itemId)
+    private int FindSlotByItemId(int itemId)
     {
         for (int slotIndex = 0; slotIndex < main.Length; ++slotIndex)
         {
@@ -43,7 +38,7 @@ public class InventoryPlayer : IInventory
         return -1;
     }
 
-    private int storeItemStack(ItemStack itemStack)
+    private int StoreItemStack(ItemStack itemStack)
     {
         for (int slotIndex = 0; slotIndex < main.Length; ++slotIndex)
         {
@@ -56,8 +51,10 @@ public class InventoryPlayer : IInventory
         return -1;
     }
 
-    private int getFirstEmptyStack()
+    private int GetFreeSlot(bool preferHandSlot = true)
     {
+        if (preferHandSlot && main[selectedSlot] == null) return selectedSlot;
+
         for (int slotIndex = 0; slotIndex < main.Length; ++slotIndex)
         {
             if (main[slotIndex] == null)
@@ -69,10 +66,44 @@ public class InventoryPlayer : IInventory
         return -1;
     }
 
-    public void setCurrentItem(int itemId, bool var2)
+    private int GetFreeHotbarSlot(bool preferHandSlot = true)
     {
-        int slotIndex = getInventorySlotContainItem(itemId);
-        if (slotIndex >= 0 && slotIndex < 9)
+        if (preferHandSlot && main[selectedSlot] == null) return selectedSlot;
+
+        for (int slotIndex = 0; slotIndex < HotbarSize; ++slotIndex)
+        {
+            if (main[slotIndex] == null)
+            {
+                return slotIndex;
+            }
+        }
+
+        return -1;
+    }
+
+    public void SetCurrentItem(int itemId, int backupId = 0)
+    {
+        int slotIndex = FindSlotByItemId(itemId);
+        if (slotIndex < 0)
+        {
+            if (backupId > 0)
+            {
+                SetCurrentItem(backupId);
+                return;
+            }
+
+            if (player.GameMode.FiniteResources) return;
+
+            // move cursor to the next free so that item appears in hand.
+            if (main[selectedSlot] != null)
+            {
+                int h = GetFreeHotbarSlot();
+                if (h >= 0) selectedSlot = h;
+            }
+
+            player.sendChatMessage("/give " + itemId);
+        }
+        else if (slotIndex < HotbarSize)
         {
             selectedSlot = slotIndex;
         }
@@ -90,13 +121,13 @@ public class InventoryPlayer : IInventory
             scrollDirection = -1;
         }
 
-        for (selectedSlot -= scrollDirection; selectedSlot < 0; selectedSlot += 9)
+        for (selectedSlot -= scrollDirection; selectedSlot < 0; selectedSlot += HotbarSize)
         {
         }
 
-        while (selectedSlot >= 9)
+        while (selectedSlot >= HotbarSize)
         {
-            selectedSlot -= 9;
+            selectedSlot -= HotbarSize;
         }
 
     }
@@ -105,10 +136,10 @@ public class InventoryPlayer : IInventory
     {
         int itemId = itemStack.itemId;
         int remainingCount = itemStack.count;
-        int slotIndex = storeItemStack(itemStack);
+        int slotIndex = StoreItemStack(itemStack);
         if (slotIndex < 0)
         {
-            slotIndex = getFirstEmptyStack();
+            slotIndex = GetFreeSlot();
         }
 
         if (slotIndex < 0)
@@ -161,7 +192,7 @@ public class InventoryPlayer : IInventory
 
     public bool consumeInventoryItem(int itemId)
     {
-        int slotIndex = getInventorySlotContainItem(itemId);
+        int slotIndex = FindSlotByItemId(itemId);
         if (slotIndex < 0)
         {
             return false;
@@ -182,7 +213,7 @@ public class InventoryPlayer : IInventory
         int slotIndex;
         if (itemStack.isDamaged())
         {
-            slotIndex = getFirstEmptyStack();
+            slotIndex = GetFreeSlot();
             if (slotIndex >= 0)
             {
                 main[slotIndex] = ItemStack.clone(itemStack);
@@ -353,13 +384,13 @@ public class InventoryPlayer : IInventory
         return 64;
     }
 
-    public int getDamageVsEntity(Entity entity)
+    public int GetDamageVsEntity(Entity entity)
     {
         ItemStack itemStack = getStack(selectedSlot);
         return itemStack != null ? itemStack.getAttackDamage(entity) : 1;
     }
 
-    public bool canHarvestBlock(Block block)
+    public bool CanHarvestBlock(Block block)
     {
         if (block.material.IsHandHarvestable)
         {
@@ -372,12 +403,12 @@ public class InventoryPlayer : IInventory
         }
     }
 
-    public ItemStack armorItemInSlot(int slotIndex)
+    public ItemStack? ArmorItemBySlot(int slotIndex)
     {
         return armor[slotIndex];
     }
 
-    public int getTotalArmorValue()
+    public int GetTotalArmorValue()
     {
         int totalArmor = 0;
         int durabilitySum = 0;
@@ -407,7 +438,7 @@ public class InventoryPlayer : IInventory
         }
     }
 
-    public void damageArmor(int durabilityLoss)
+    public void DamageArmor(int durabilityLoss)
     {
         for (int slotIndex = 0; slotIndex < armor.Length; ++slotIndex)
         {
@@ -424,7 +455,7 @@ public class InventoryPlayer : IInventory
 
     }
 
-    public void dropInventory()
+    public void DropInventory()
     {
         int slotIndex;
         for (slotIndex = 0; slotIndex < main.Length; ++slotIndex)
@@ -452,23 +483,23 @@ public class InventoryPlayer : IInventory
         dirty = true;
     }
 
-    public void setItemStack(ItemStack? itemStack)
+    public void SetCursorStack(ItemStack? itemStack)
     {
         cursorStack = itemStack;
         player.onCursorStackChanged(itemStack);
     }
 
-    public ItemStack getCursorStack()
+    public ItemStack? GetCursorStack()
     {
         return cursorStack;
     }
 
     public bool canPlayerUse(EntityPlayer entityPlayer)
     {
-        return player.dead ? false : entityPlayer.getSquaredDistance(player) <= 64.0D;
+        return !player.dead && entityPlayer.getSquaredDistance(player) <= 64.0D;
     }
 
-    public bool contains(ItemStack itemStack)
+    public bool Contains(ItemStack itemStack)
     {
         int slotIndex;
         for (slotIndex = 0; slotIndex < armor.Length; ++slotIndex)

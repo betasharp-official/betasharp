@@ -42,7 +42,7 @@ public class EntitySheep : EntityAnimal
 
     public override bool interact(EntityPlayer player)
     {
-        ItemStack heldItem = player.inventory.getSelectedItem();
+        ItemStack heldItem = player.inventory.GetItemInHand();
         if (heldItem != null && heldItem.itemId == Item.Shears.id && !getSheared())
         {
             if (!world.IsRemote)

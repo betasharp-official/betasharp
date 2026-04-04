@@ -40,7 +40,7 @@ public class EntityCow : EntityAnimal
 
     public override bool interact(EntityPlayer player)
     {
-        ItemStack heldBucket = player.inventory.getSelectedItem();
+        ItemStack heldBucket = player.inventory.GetItemInHand();
         if (heldBucket != null && heldBucket.itemId == Item.Bucket.id)
         {
             player.inventory.setStack(player.inventory.selectedSlot, new ItemStack(Item.MilkBucket));

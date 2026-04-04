@@ -1064,7 +1064,7 @@ public class EntityMinecart : Entity, IInventory
         }
         else if (type == 2)
         {
-            ItemStack heldItem = player.inventory.getSelectedItem();
+            ItemStack heldItem = player.inventory.GetItemInHand();
             if (heldItem != null && heldItem.itemId == Item.Coal.id)
             {
                 if (--heldItem.count == 0)

@@ -35,6 +35,9 @@ public class PlayerGameModeUpdateS2CPacket() : ExtendedProtocolPacket(PacketId.P
             VisibleToWorld = Bits(9, bits),
             BlockDrops = Bits(10, bits),
             CanDrop = Bits(11, bits),
+            CanWalk =  Bits(12, bits),
+            DisallowFlying =  Bits(13, bits),
+            NeedsAir =  Bits(14, bits),
         };
     }
 
@@ -53,6 +56,9 @@ public class PlayerGameModeUpdateS2CPacket() : ExtendedProtocolPacket(PacketId.P
         bits |= Bits(9, GameMode.VisibleToWorld);
         bits |= Bits(10, GameMode.BlockDrops);
         bits |= Bits(11, GameMode.CanDrop);
+        bits |= Bits(12, GameMode.CanWalk);
+        bits |= Bits(13, GameMode.DisallowFlying);
+        bits |= Bits(14, GameMode.NeedsAir);
 
         stream.WriteFloat(GameMode.BrakeSpeed);
         stream.WriteInt(bits);

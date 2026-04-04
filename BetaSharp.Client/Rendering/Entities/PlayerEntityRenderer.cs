@@ -26,7 +26,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     protected bool SetArmorModel(EntityPlayer player, int var2, float var3)
     {
-        ItemStack var4 = player.inventory.armorItemInSlot(3 - var2);
+        ItemStack var4 = player.inventory.ArmorItemBySlot(3 - var2);
         if (var4 != null)
         {
             Item var5 = var4.getItem();
@@ -51,7 +51,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     public void RenderPlayer(EntityPlayer var1, double var2, double var4, double var6, float var8, float var9)
     {
-        ItemStack var10 = var1.inventory.getSelectedItem();
+        ItemStack var10 = var1.inventory.GetItemInHand();
         _modelArmorChestplate.field_1278_i = _modelArmor.field_1278_i = _modelBipedMain.field_1278_i = var10 != null;
         _modelArmorChestplate.isSneak = _modelArmor.isSneak = _modelBipedMain.isSneak = var1.isSneaking();
         double var11 = var4 - var1.standingEyeHeight;
@@ -126,7 +126,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     protected void RenderSpecials(EntityPlayer var1, float var2)
     {
-        ItemStack var3 = var1.inventory.armorItemInSlot(3);
+        ItemStack var3 = var1.inventory.ArmorItemBySlot(3);
         if (var3 != null && var3.getItem().id < 256)
         {
             GLManager.GL.PushMatrix();
@@ -207,7 +207,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             GLManager.GL.PopMatrix();
         }
 
-        ItemStack var21 = var1.inventory.getSelectedItem();
+        ItemStack var21 = var1.inventory.GetItemInHand();
         if (var21 != null)
         {
             GLManager.GL.PushMatrix();

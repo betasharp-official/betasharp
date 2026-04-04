@@ -454,7 +454,7 @@ public class HeldItemRenderer
     {
         prevEquippedProgress = equippedProgress;
         ClientPlayerEntity var1 = _game.Player;
-        ItemStack var2 = var1.inventory.getSelectedItem();
+        ItemStack var2 = var1.inventory.GetItemInHand();
         bool var4 = field_20099_f == var1.inventory.selectedSlot && var2 == itemToRender;
         if (itemToRender == null && var2 == null)
         {

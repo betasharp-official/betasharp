@@ -65,6 +65,8 @@ public abstract class EntityPlayer : EntityLiving
         GameMode = GameModes.DefaultGameMode;
     }
 
+    public override bool canBreatheUnderwater() => !GameMode.NeedsAir;
+
     protected void TickSleep()
     {
         if (isSleeping())
@@ -312,7 +314,7 @@ public abstract class EntityPlayer : EntityLiving
             DropItem(new ItemStack(Item.Apple, 1), true);
         }
 
-        inventory.dropInventory();
+        inventory.DropInventory();
         if (adversary != null)
         {
             velocityX = (double)(-MathHelper.Cos((attackedAtYaw + yaw) * (float)System.Math.PI / 180.0F) * 0.1F);
@@ -412,7 +414,7 @@ public abstract class EntityPlayer : EntityLiving
 
     public bool canHarvest(Block block)
     {
-        return inventory.canHarvestBlock(block);
+        return inventory.CanHarvestBlock(block);
     }
 
     public override void readNbt(NBTTagCompound nbt)
@@ -556,9 +558,9 @@ public abstract class EntityPlayer : EntityLiving
 
     protected override void applyDamage(int amount)
     {
-        int var2 = 25 - inventory.getTotalArmorValue();
+        int var2 = 25 - inventory.GetTotalArmorValue();
         int var3 = amount * var2 + damageSpill;
-        inventory.damageArmor(amount);
+        inventory.DamageArmor(amount);
         amount = var3 / 25;
         damageSpill = var3 % 25;
         base.applyDamage(amount);
@@ -596,7 +598,7 @@ public abstract class EntityPlayer : EntityLiving
 
     public ItemStack getHand()
     {
-        return inventory.getSelectedItem();
+        return inventory.GetItemInHand();
     }
 
     public void clearStackInHand()
@@ -618,7 +620,7 @@ public abstract class EntityPlayer : EntityLiving
     public void attack(Entity target)
     {
         if (!GameMode.CanInflictDamage) return;
-        int var2 = inventory.getDamageVsEntity(target);
+        int var2 = inventory.GetDamageVsEntity(target);
         if (var2 > 0)
         {
             if (velocityY < 0.0D)
@@ -1033,4 +1035,9 @@ public abstract class EntityPlayer : EntityLiving
             inTeleportationState = true;
         }
     }
+
+    public virtual void sendChatMessage(string message) { }
+
+    protected internal const float AirFlySpeedMult = 5f;
+    protected override float AirSpeed() => GameMode.DisallowFlying ? 0.02f : AirFlySpeedMult * 0.02f;
 }

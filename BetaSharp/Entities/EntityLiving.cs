@@ -553,6 +553,8 @@ public abstract class EntityLiving : Entity
 
     }
 
+    protected virtual float AirSpeed() => 0.02f;
+
     public virtual void travel(float strafe, float forward)
     {
         double previousY;
@@ -598,7 +600,7 @@ public abstract class EntityLiving : Entity
             }
 
             float movementFactor = 0.16277136F / (friction * friction * friction);
-            moveNonSolid(strafe, forward, onGround ? 0.1F * movementFactor : 0.02F);
+            moveNonSolid(strafe, forward, onGround ? 0.1F * movementFactor : AirSpeed());
             friction = 0.91F;
             if (onGround)
             {

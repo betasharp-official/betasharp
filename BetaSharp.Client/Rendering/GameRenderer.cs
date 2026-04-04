@@ -439,8 +439,8 @@ public class GameRenderer
         {
             entityPlayer = (EntityPlayer)entity;
             GLManager.GL.Disable(GLEnum.AlphaTest);
-            worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.inventory.getSelectedItem(), tickDelta);
-            worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.inventory.getSelectedItem(), tickDelta);
+            worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.inventory.GetItemInHand(), tickDelta);
+            worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.inventory.GetItemInHand(), tickDelta);
             GLManager.GL.Enable(GLEnum.AlphaTest);
         }
 
@@ -466,8 +466,8 @@ public class GameRenderer
         {
             entityPlayer = (EntityPlayer)entity;
             GLManager.GL.Disable(GLEnum.AlphaTest);
-            worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.inventory.getSelectedItem(), tickDelta);
-            worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.inventory.getSelectedItem(), tickDelta);
+            worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.inventory.GetItemInHand(), tickDelta);
+            worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.inventory.GetItemInHand(), tickDelta);
             GLManager.GL.Enable(GLEnum.AlphaTest);
         }
 

@@ -188,7 +188,7 @@ public class PlayerControllerMP : PlayerController
     )
     {
         syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(blockX, blockY, blockZ, blockSide, player.inventory.getSelectedItem()));
+        netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(blockX, blockY, blockZ, blockSide, player.inventory.GetItemInHand()));
         bool placed = base.sendPlaceBlock(player, world, selectedItem, blockX, blockY, blockZ, blockSide);
         return placed;
     }
@@ -196,7 +196,7 @@ public class PlayerControllerMP : PlayerController
     public override bool sendUseItem(EntityPlayer var1, World var2, ItemStack var3)
     {
         syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(-1, -1, -1, 255, var1.inventory.getSelectedItem()));
+        netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(-1, -1, -1, 255, var1.inventory.GetItemInHand()));
         bool var4 = base.sendUseItem(var1, var2, var3);
         return var4;
     }

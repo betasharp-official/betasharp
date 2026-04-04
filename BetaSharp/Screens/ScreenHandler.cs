@@ -103,22 +103,22 @@ public abstract class ScreenHandler
             InventoryPlayer playerInventory = player.inventory;
             if (index == -999)
             {
-                if (playerInventory.getCursorStack() is not null && index == -999)
+                if (playerInventory.GetCursorStack() is not null && index == -999)
                 {
                     if (button == 0)
                     {
-                        if (player.DropItem(playerInventory.getCursorStack()))
+                        if (player.DropItem(playerInventory.GetCursorStack()))
                         {
-                            playerInventory.setItemStack(null);
+                            playerInventory.SetCursorStack(null);
                         }
                     }
 
                     if (button == 1 && player.GameMode.CanDrop)
                     {
-                        player.DropItem(playerInventory.getCursorStack().split(1));
-                        if (playerInventory.getCursorStack().count == 0)
+                        player.DropItem(playerInventory.GetCursorStack().split(1));
+                        if (playerInventory.GetCursorStack().count == 0)
                         {
-                            playerInventory.setItemStack(null);
+                            playerInventory.SetCursorStack(null);
                         }
                     }
                 }
@@ -151,7 +151,7 @@ public abstract class ScreenHandler
                     {
                         slot.markDirty();
                         ItemStack slotStack = slot.getStack();
-                        ItemStack cursorStack = playerInventory.getCursorStack();
+                        ItemStack cursorStack = playerInventory.GetCursorStack();
                         if (slotStack is not null)
                         {
                             returnStack = slotStack.copy();
@@ -170,7 +170,7 @@ public abstract class ScreenHandler
                                 slot.setStack(cursorStack.split(slotItemStackSize));
                                 if (cursorStack.count == 0)
                                 {
-                                    playerInventory.setItemStack(null);
+                                    playerInventory.SetCursorStack(null);
                                 }
                             }
                         }
@@ -178,13 +178,13 @@ public abstract class ScreenHandler
                         {
                             slotItemStackSize = button == 0 ? slotStack.count : (slotStack.count + 1) / 2;
                             ItemStack takenStack = slot.takeStack(slotItemStackSize);
-                            playerInventory.setItemStack(takenStack);
+                            playerInventory.SetCursorStack(takenStack);
                             if (slotStack.count == 0)
                             {
                                 slot.setStack(null);
                             }
 
-                            slot.onTakeItem(playerInventory.getCursorStack());
+                            slot.onTakeItem(playerInventory.GetCursorStack());
                         }
                         else if (slot.canInsert(cursorStack))
                         {
@@ -193,7 +193,7 @@ public abstract class ScreenHandler
                                 if (cursorStack.count <= slot.getMaxItemCount())
                                 {
                                     slot.setStack(cursorStack);
-                                    playerInventory.setItemStack(slotStack);
+                                    playerInventory.SetCursorStack(slotStack);
                                 }
                             }
                             else
@@ -212,7 +212,7 @@ public abstract class ScreenHandler
                                 cursorStack.split(slotItemStackSize);
                                 if (cursorStack.count == 0)
                                 {
-                                    playerInventory.setItemStack(null);
+                                    playerInventory.SetCursorStack(null);
                                 }
 
                                 slotStack.count += slotItemStackSize;
@@ -230,7 +230,7 @@ public abstract class ScreenHandler
                                     slot.setStack(null);
                                 }
 
-                                slot.onTakeItem(playerInventory.getCursorStack());
+                                slot.onTakeItem(playerInventory.GetCursorStack());
                             }
                         }
                     }
@@ -243,18 +243,18 @@ public abstract class ScreenHandler
     public virtual void onClosed(EntityPlayer player)
     {
         InventoryPlayer playerInventory = player.inventory;
-        if (playerInventory.getCursorStack() is not null)
+        if (playerInventory.GetCursorStack() is not null)
         {
             if (player.GameMode.CanDrop)
             {
-                if (player.DropItem(playerInventory.getCursorStack()))
+                if (player.DropItem(playerInventory.GetCursorStack()))
                 {
-                    playerInventory.setItemStack(null);
+                    playerInventory.SetCursorStack(null);
                 }
             }
             else
             {
-                player.inventory.AddItemStackToInventoryOrDrop(playerInventory.getCursorStack());
+                player.inventory.AddItemStackToInventoryOrDrop(playerInventory.GetCursorStack());
             }
         }
 

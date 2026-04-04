@@ -87,6 +87,8 @@ public class Hotbar : UIElement
             }
 
             // --- Health ---
+            if (!player.GameMode.CanReceiveDamage) continue;
+
             int healthX = i * 8;
             int healthY = statY;
             if (health <= 4) healthY += _rand.NextInt(2);
@@ -106,7 +108,7 @@ public class Hotbar : UIElement
         }
 
         // --- Air ---
-        if (player.isInFluid(Material.Water))
+        if (player.isInFluid(Material.Water) && player.GameMode.NeedsAir)
         {
             int air = player.air;
             int fullBubbles = (int)Math.Ceiling((air - 2) * 10.0D / 300.0D);

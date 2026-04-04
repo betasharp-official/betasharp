@@ -20,6 +20,8 @@ public class ClientPlayerEntity : EntityPlayer
     public override EntityType Type => EntityRegistry.Player;
     public MovementInput movementInput;
     protected BetaSharp Game;
+    private byte _lastJump;
+    private bool _isFlying;
 
     public ClientPlayerEntity(BetaSharp game, IWorldContext world, Session session, int dimensionId) : base(world)
     {
@@ -28,17 +30,42 @@ public class ClientPlayerEntity : EntityPlayer
         name = session.username;
     }
 
-    public override void move(double x, double y, double z)
-    {
-        base.move(x, y, z);
-    }
-
     public override void tickLiving()
     {
         base.tickLiving();
-        sidewaysSpeed = movementInput.moveStrafe;
-        forwardSpeed = movementInput.moveForward;
-        jumping = movementInput.jump;
+        if (GameMode is { CanWalk: false, DisallowFlying: true })
+        {
+            sidewaysSpeed = 0;
+            forwardSpeed = 0;
+        }
+        else if (!GameMode.DisallowFlying)
+        {
+            sidewaysSpeed = movementInput.moveStrafe * AirFlySpeedMult;
+            forwardSpeed = movementInput.moveForward * AirFlySpeedMult;
+        }
+        else
+        {
+            sidewaysSpeed = movementInput.moveStrafe;
+            forwardSpeed = movementInput.moveForward;
+        }
+
+        if (jumping != movementInput.jump)
+        {
+            jumping = movementInput.jump;
+            if (jumping)
+            {
+                // double jump
+                if (!GameMode.DisallowFlying && _lastJump <= 2)
+                {
+                    _isFlying = !_isFlying;
+                }
+                _lastJump = 0;
+            }
+        }
+        else
+        {
+            _lastJump = (byte)((_lastJump + 1) & 127);
+        }
     }
 
     public override void tickMovement()
@@ -93,6 +120,38 @@ public class ClientPlayerEntity : EntityPlayer
         }
 
         movementInput.updatePlayerMoveState(this);
+
+        if (!GameMode.DisallowFlying && (_isFlying || !GameMode.CanWalk))
+        {
+            _isFlying &= !onGround;
+
+            if (!movementInput.sneak)
+            {
+                if (movementInput.jump)
+                {
+                    // flying up
+                    velocityY += 0.1;
+                }
+                else
+                {
+                    // hold height, but smoothly
+                    velocityY = velocityY < -0.15 ? velocityY + 0.15 : Math.Max(0, velocityY);
+                }
+
+            }
+            else if (movementInput.jump)
+            {
+                // shift + space = hold height
+                velocityY = 0;
+            }
+            else
+            {
+                // limit flying decent speed
+                velocityY = Math.Max(velocityY, -0.5);
+            }
+
+        }
+
         if (movementInput.sneak && cameraOffset < 0.2F)
         {
             cameraOffset = 0.2F;
@@ -170,10 +229,10 @@ public class ClientPlayerEntity : EntityPlayer
 
     public int getPlayerArmorValue()
     {
-        return inventory.getTotalArmorValue();
+        return inventory.GetTotalArmorValue();
     }
 
-    public virtual void sendChatMessage(string message)
+    public override void sendChatMessage(string message)
     {
         Game.HUD.AddChatMessage($"<{name}> {message}");
     }
@@ -313,4 +372,12 @@ public class ClientPlayerEntity : EntityPlayer
 
         return false;
     }
+
+    public override void markDead()
+    {
+        _isFlying = false;
+        base.markDead();
+    }
+
+    protected override float AirSpeed() => GameMode.DisallowFlying || !_isFlying ? 0.02f : AirFlySpeedMult * 0.02f;
 }

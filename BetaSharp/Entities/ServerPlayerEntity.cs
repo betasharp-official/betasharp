@@ -89,7 +89,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public void onContentsUpdate(ScreenHandler handler, List<ItemStack> stacks)
     {
         networkHandler.sendPacket(InventoryS2CPacket.Get(handler.SyncId, stacks));
-        networkHandler.sendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(-1, -1, inventory.getCursorStack()));
+        networkHandler.sendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(-1, -1, inventory.GetCursorStack()));
     }
 
     public void onPropertyUpdate(ScreenHandler handler, int syncId, int trackedValue) => networkHandler.sendPacket(ScreenHandlerPropertyUpdateS2CPacket.Get(handler.SyncId, syncId, trackedValue));
@@ -130,7 +130,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         }
     }
 
-    public ItemStack getEquipment(int slot) => slot == 0 ? inventory.getSelectedItem() : inventory.armor[slot - 1];
+    public ItemStack getEquipment(int slot) => slot == 0 ? inventory.GetItemInHand() : inventory.armor[slot - 1];
 
     public override bool damage(Entity damageSource, int amount)
     {
@@ -480,7 +480,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         if (!skipPacketSlotUpdates)
         {
-            networkHandler.sendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(-1, -1, inventory.getCursorStack()));
+            networkHandler.sendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(-1, -1, inventory.GetCursorStack()));
         }
     }
 
@@ -502,8 +502,17 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void updateInput(PlayerInputC2SPacket packet)
     {
-        sidewaysSpeed = packet.getSideways();
-        forwardSpeed = packet.getForward();
+        if (GameMode is { CanWalk: false, DisallowFlying: true })
+        {
+            sidewaysSpeed = packet.getSideways();
+            forwardSpeed = packet.getForward();
+        }
+        else
+        {
+            sidewaysSpeed = 0;
+            forwardSpeed = 0;
+        }
+
         jumping = packet.isJumping();
         setSneaking(packet.isSneaking());
         pitch = packet.getPitch();

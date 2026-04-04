@@ -76,7 +76,7 @@ public abstract class ContainerScreen(
         base.Render(mouseX, mouseY, partialTicks);
 
         // Render held item on top of everything
-        ItemStack cursorStack = player.inventory.getCursorStack();
+        ItemStack cursorStack = player.inventory.GetCursorStack();
         if (cursorStack != null)
         {
             Renderer.Begin();
@@ -110,7 +110,7 @@ public abstract class ContainerScreen(
 
     public override void GetTooltips(List<ActionTip> tips)
     {
-        ItemStack cursorStack = player.inventory.getCursorStack();
+        ItemStack cursorStack = player.inventory.GetCursorStack();
 
         if (Root.HitTest(MouseX, MouseY) is UISlot hoveredSlot)
         {

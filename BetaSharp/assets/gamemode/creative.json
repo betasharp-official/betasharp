@@ -1,15 +1,18 @@
 {
     "BrakeSpeed": 0,
-    "CanBreak": true,
-    "CanPlace": true,
-    "CanInteract": true,
-    "CanReceiveDamage": false,
-    "CanInflictDamage": true,
+    "BlockDrops": false,
     "CanBeTargeted": false,
-    "CanExhaustFire": true,
-    "CanPickup": true,
+    "CanBreak": true,
     "CanDrop": true,
+    "CanExhaustFire": true,
+    "CanInflictDamage": true,
+    "CanInteract": true,
+    "CanPickup": true,
+    "CanPlace": true,
+    "CanReceiveDamage": false,
+    "CanWalk": true,
+    "DisallowFlying": false,
     "FiniteResources": false,
-    "VisibleToWorld": true,
-    "BlockDrops": false
+    "NeedsAir": false,
+    "VisibleToWorld": true
 }

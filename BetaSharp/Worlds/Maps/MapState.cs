@@ -87,7 +87,7 @@ public class MapState(string id) : PersistentState(id)
 
         foreach (MapUpdateTracker mapInfo in _updateTrackers.Values.ToList())
         {
-            if (!mapInfo.Player.dead && mapInfo.Player.inventory.contains(mapItem))
+            if (!mapInfo.Player.dead && mapInfo.Player.inventory.Contains(mapItem))
             {
                 float relX = (float)(mapInfo.Player.x - CenterX) / (1 << Scale);
                 float relZ = (float)(mapInfo.Player.z - CenterZ) / (1 << Scale);

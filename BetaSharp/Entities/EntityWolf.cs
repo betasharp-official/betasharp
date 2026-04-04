@@ -153,7 +153,7 @@ public class EntityWolf : EntityAnimal
             if (currentTarget is EntityPlayer)
             {
                 EntityPlayer targetPlayer = (EntityPlayer)currentTarget;
-                ItemStack heldItem = targetPlayer.inventory.getSelectedItem();
+                ItemStack heldItem = targetPlayer.inventory.GetItemInHand();
                 if (heldItem != null)
                 {
                     if (!isWolfTamed() && heldItem.itemId == Item.Bone.id)
@@ -403,7 +403,7 @@ public class EntityWolf : EntityAnimal
 
     public override bool interact(EntityPlayer player)
     {
-        ItemStack heldItem = player.inventory.getSelectedItem();
+        ItemStack heldItem = player.inventory.GetItemInHand();
         if (!isWolfTamed())
         {
             if (heldItem != null && heldItem.itemId == Item.Bone.id && !isWolfAngry())

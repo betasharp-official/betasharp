@@ -643,7 +643,7 @@ public class ClientNetworkHandler : NetHandler
         ClientPlayerEntity player = _context.PlayerHost.Player;
         if (packet.syncId == -1)
         {
-            player.inventory.setItemStack(packet.stack);
+            player.inventory.SetCursorStack(packet.stack);
         }
         else if (packet.syncId == 0 && packet.slot >= 36 && packet.slot < 45)
         {

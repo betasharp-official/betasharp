@@ -446,7 +446,7 @@ public partial class BetaSharp :
             () => PlayerController,
             () => World,
             () => CurrentScreen == null && Player != null && World != null
-                ? new InGameTipContext(ObjectMouseOver, World.Reader, Player.inventory.getSelectedItem())
+                ? new InGameTipContext(ObjectMouseOver, World.Reader, Player.inventory.GetItemInHand())
                 : null,
             () => _isMainMenuOpen
         ));
@@ -1219,7 +1219,7 @@ public partial class BetaSharp :
                 }
                 else
                 {
-                    ItemStack selectedItem = Player.inventory.getSelectedItem();
+                    ItemStack selectedItem = Player.inventory.GetItemInHand();
                     int itemCountBefore = selectedItem != null ? selectedItem.count : 0;
                     if (PlayerController.sendPlaceBlock(Player, World, selectedItem, blockX, blockY, blockZ, blockSide))
                     {
@@ -1245,7 +1245,7 @@ public partial class BetaSharp :
 
             if (shouldPerformSecondaryAction && mouseButton == 1)
             {
-                ItemStack selectedItem = Player.inventory.getSelectedItem();
+                ItemStack selectedItem = Player.inventory.GetItemInHand();
                 if (selectedItem != null && PlayerController.sendUseItem(Player, World, selectedItem))
                 {
                     GameRenderer.itemRenderer.ResetEquippedProgress();
@@ -1259,12 +1259,14 @@ public partial class BetaSharp :
         if (ObjectMouseOver.Type != HitResultType.MISS)
         {
             int blockId = World.Reader.GetBlockId(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
+            int backupId = 0;
 
-            if (blockId == Block.GrassBlock.id) blockId = Block.Dirt.id;
-            if (blockId == Block.DoubleSlab.id) blockId = Block.Slab.id;
-            if (blockId == Block.Bedrock.id) blockId = Block.Stone.id;
+            if (blockId == Block.GrassBlock.id) backupId = Block.Dirt.id;
+            else if (blockId == Block.Bedrock.id) backupId = Block.Stone.id;
+            else if (blockId == Block.Leaves.id) backupId = Block.Sapling.id;
+            else if (blockId == Block.DoubleSlab.id) blockId = Block.Slab.id;
 
-            Player.inventory.setCurrentItem(blockId, false);
+            Player.inventory.SetCurrentItem(blockId, backupId);
         }
     }
 
