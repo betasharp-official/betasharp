@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 using BetaSharp.DataAsset;
+using BetaSharp.Registries;
 
 namespace BetaSharp.Tests;
 
@@ -25,16 +26,10 @@ public class DataAssetBugTests : IDisposable
     }
 
     // -------------------------------------------------------------------------
-    // Bug 1: infinite recursion when lazy asset's JSON deserializes to null
+    // Bug 1: InvalidOperationException when lazy asset's JSON deserializes to null
     //
-    // Root cause: UnresolvedDataAsset.Asset called _loader.FromJsonReplace then
-    // unconditionally returned _parent.Asset. When the JSON file contains "null",
-    // FromJson returns null, the static FromJsonReplace overload returns early
-    // without calling target.Asset = v, leaving _dataAssetProvider unchanged.
-    // The recursive _parent.Asset call re-entered this getter → StackOverflowException.
-    //
-    // Fix: after FromJsonReplace returns, check if _dataAssetProvider was replaced.
-    // If not, throw InvalidOperationException instead of recursing.
+    // Root cause: when the JSON file contains "null", FromJson returns null and
+    // the lazy resolver throws InvalidOperationException instead of succeeding.
     // -------------------------------------------------------------------------
 
     [Fact]
@@ -42,42 +37,34 @@ public class DataAssetBugTests : IDisposable
     {
         File.WriteAllText(Path.Combine(_tempDir, "test.json"), "null");
 
-        var loader = new DataAssetLoader<GameMode.GameMode>("gamemode", LoadLocations.Assets);
-        var assetRef = new DataAssetRef<GameMode.GameMode>(loader, _tempDir, Namespace.BetaSharp, "test");
+        var id = new ResourceLocation(Namespace.BetaSharp, "test");
+        var holder = DataAssetLoader<GameMode.GameMode>.CreateLazyHolder(_tempDir, id);
 
-        // FromJson returns null for a null JSON element, so FromJsonReplace returns
-        // without setting target.Asset. The fix detects that _dataAssetProvider was
-        // not replaced and throws instead of recursing infinitely.
-        Assert.Throws<InvalidOperationException>(() => _ = assetRef.Asset);
+        Assert.Throws<InvalidOperationException>(() => _ = holder.Value);
     }
 
     // -------------------------------------------------------------------------
-    // Bug 2: File handle leak when JsonSerializer.Deserialize throws during lazy load
+    // Bug 2: File handle not leaked when JsonSerializer.Deserialize throws
     //
-    // Root cause: the internal FromJsonReplace(string, DataAssetRef<T>) method
-    // opens a FileStream with File.OpenRead but does not use a using block.
-    // If JsonSerializer.Deserialize throws (e.g., malformed JSON), json.Close()
-    // is never reached and the file handle is leaked.
+    // The lazy resolver uses a `using` block around FileStream, ensuring the
+    // handle is closed even if deserialization throws.
     // -------------------------------------------------------------------------
 
     [Fact]
-    public void File_handle_is_leaked_when_json_deserialization_throws_during_lazy_load()
+    public void File_handle_is_not_leaked_when_json_deserialization_throws_during_lazy_load()
     {
         string jsonPath = Path.Combine(_tempDir, "test.json");
         File.WriteAllText(jsonPath, "{not valid json");
 
-        var loader = new DataAssetLoader<GameMode.GameMode>("gamemode", LoadLocations.Assets);
-        var assetRef = new DataAssetRef<GameMode.GameMode>(loader, _tempDir, Namespace.BetaSharp, "test");
+        var id = new ResourceLocation(Namespace.BetaSharp, "test");
+        var holder = DataAssetLoader<GameMode.GameMode>.CreateLazyHolder(_tempDir, id);
 
-        // Triggers the lazy load path: File.OpenRead succeeds, Deserialize throws JsonException,
-        // json.Close() is never called because there is no using block.
-        Assert.Throws<JsonException>(() => _ = assetRef.Asset);
+        // The lazy resolver reads the file with a `using` block, so even when
+        // JsonSerializer throws, the file handle is properly released.
+        Assert.Throws<JsonException>(() => _ = holder.Value);
 
         // On Windows, File.Delete fails with IOException if any open handle does not
-        // have FILE_SHARE_DELETE set. File.OpenRead does not set that flag, so a leaked
-        // handle will cause this to throw.
-        // Bug:  no using block → handle is still open → IOException
-        // Fix:  using block   → handle is closed  → succeeds
+        // have FILE_SHARE_DELETE set. If the handle were leaked this would throw.
         File.Delete(jsonPath);
     }
 
