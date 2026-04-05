@@ -573,27 +573,39 @@ public abstract class BetaSharpServer : ICommandOutput
         _logger.LogInformation("Reloading datapacks...");
         playerManager.sendToAll(ChatMessagePacket.Get("§eReloading datapacks..."));
 
-        RegistryAccess = RegistryAccess.Rebuild();
-
-        foreach (IRegistryReloadListener listener in _reloadListeners)
+        try
         {
-            listener.OnRegistriesRebuilt(RegistryAccess);
-        }
+            RegistryAccess = RegistryAccess.Rebuild();
 
-        SendConfigurationTo(playerManager.sendToAll);
-
-        DataAssetLoader<GameMode> gameModes = RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader();
-        foreach (ServerPlayerEntity player in playerManager.players)
-        {
-            if (gameModes.TryGet(player.GameMode.Name, out GameMode? updated))
+            foreach (IRegistryReloadListener listener in _reloadListeners)
             {
-                player.GameMode = updated;
+                listener.OnRegistriesRebuilt(RegistryAccess);
             }
 
-            player.networkHandler.sendPacket(PlayerGameModeUpdateS2CPacket.Get(player.GameMode));
-        }
+            SendConfigurationTo(playerManager.sendToAll);
 
-        _logger.LogInformation("Datapacks reloaded.");
-        playerManager.sendToAll(ChatMessagePacket.Get("§aDatapacks reloaded."));
+            DataAssetLoader<GameMode> gameModes = RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader();
+            foreach (ServerPlayerEntity player in playerManager.players)
+            {
+                if (gameModes.TryGet(player.GameMode.Name, out GameMode? updated))
+                {
+                    player.GameMode = updated;
+                }
+
+                player.networkHandler.sendPacket(PlayerGameModeUpdateS2CPacket.Get(player.GameMode));
+            }
+
+            _logger.LogInformation("Datapacks reloaded.");
+            playerManager.sendToAll(ChatMessagePacket.Get("§aDatapacks reloaded."));
+        }
+        catch (AssetLoadException ex)
+        {
+            _logger.LogError("Datapack reload failed: {Message}.", ex.Message);
+
+            if (this is InternalServer)
+            {
+                playerManager.sendToAll(ChatMessagePacket.Get($"§cReload failed! See console for details."));
+            }
+        }
     }
 }

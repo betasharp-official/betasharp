@@ -8,9 +8,6 @@ public abstract class DataAssetLoader
 {
     private protected static readonly ILogger s_logger = Log.Instance.For(typeof(DataAssetLoader).FullName ?? nameof(DataAssetLoader));
 
-    // Loaders registered here are driven by the static Load* methods below.
-    // Data-driven registries managed by RegistryAccess are NOT in this list;
-    // they load themselves via LoadFromPaths.
     private static readonly List<DataAssetLoader> s_assetLoaders = [];
 
     private protected static readonly JsonSerializerOptions s_jsonOptions = new()
@@ -23,6 +20,8 @@ public abstract class DataAssetLoader
     private protected LoadLocations LoadedAssetsModify;
 
     public bool IsFrozen { get; private set; }
+    public bool HasErrors { get; protected set; }
+    public string? FirstErrorMessage { get; protected set; }
 
     private static string? s_lastDataPath = null;
     private static string? s_lastWorldDataPath = null;

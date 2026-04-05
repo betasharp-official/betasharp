@@ -23,7 +23,7 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
         new ConsoleInputThread(this).Run();
 
         s_logger.LogInformation("Starting BetaSharp server version Beta 1.7.3");
-        // This instruction is container safe
+
         long availableMb = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / (1024L * 1024L);
         if (availableMb < 512)
         {
@@ -31,7 +31,7 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
             s_logger.LogWarning("To start the server ensure that a minimum of 512MB of RAM is available.");
         }
 
-        this.RegistryAccess = RegistryAccess.Build();
+        RegistryAccess = RegistryAccess.Build(datapackPath: ".");
 
         s_logger.LogInformation("Loading properties");
 

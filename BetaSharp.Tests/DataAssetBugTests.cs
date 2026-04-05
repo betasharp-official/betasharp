@@ -60,7 +60,8 @@ public class DataAssetBugTests : IDisposable
 
         // The lazy resolver reads the file with a `using` block, so even when
         // JsonSerializer throws, the file handle is properly released.
-        Assert.Throws<JsonException>(() => _ = holder.Value);
+        // We wrap lazy load errors in InvalidOperationException to provide file path context.
+        Assert.Throws<InvalidOperationException>(() => _ = holder.Value);
 
         // On Windows, File.Delete fails with IOException if any open handle does not
         // have FILE_SHARE_DELETE set. If the handle were leaked this would throw.

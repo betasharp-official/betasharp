@@ -104,49 +104,65 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
 
         foreach (string file in Directory.EnumerateFiles(path, "*.json"))
         {
-            await using FileStream json = File.OpenRead(file);
-            JsonElement obj = await JsonSerializer.DeserializeAsync<JsonElement>(json, s_jsonOptions);
-
-            if (obj.ValueKind != JsonValueKind.Object)
+            try
             {
-                s_logger.LogError($"Unexpected Json format in file '{file}'. Expected Object, found {obj.ValueKind}.");
-                continue;
-            }
+                await using FileStream json = File.OpenRead(file);
+                JsonElement obj = await JsonSerializer.DeserializeAsync<JsonElement>(json, s_jsonOptions);
 
-            LoadedAssetsModify |= location;
-
-            string key = Path.GetFileNameWithoutExtension(file);
-            var id = new ResourceLocation(@namespace, key);
-
-            if (_assets.TryGetValue(id, out Holder<T>? assetRef))
-            {
-                if (GetReplace(obj))
+                if (obj.ValueKind != JsonValueKind.Object)
                 {
-                    ReplaceHolder(obj, file, id, assetRef);
+                    s_logger.LogError($"Unexpected Json format in file '{file}'. Expected Object, found {obj.ValueKind}.");
+                    HasErrors = true;
                     continue;
                 }
-                else
+
+                LoadedAssetsModify |= location;
+
+                string key = Path.GetFileNameWithoutExtension(file);
+                var id = new ResourceLocation(@namespace, key);
+
+                if (_assets.TryGetValue(id, out Holder<T>? assetRef))
                 {
-                    UpdateHolder(obj, assetRef);
+                    if (GetReplace(obj))
+                    {
+                        ReplaceHolder(obj, file, id, assetRef);
+                        continue;
+                    }
+                    else
+                    {
+                        UpdateHolder(obj, assetRef);
+                        continue;
+                    }
+                }
+                else if (_allowUnhandled)
+                {
+                    _assets.Add(id, CreateLazyHolder(path, id));
                     continue;
                 }
-            }
-            else if (_allowUnhandled)
-            {
-                _assets.Add(id, CreateLazyHolder(path, id));
-                continue;
-            }
 
-            T? asset = FromJson(obj);
-            if (asset == null)
-            {
-                s_logger.LogError($"Asset failed to load from file '{file}'");
-                continue;
-            }
+                T? asset = FromJson(obj);
+                if (asset == null)
+                {
+                    s_logger.LogError($"Asset failed to load from file '{file}'");
+                    HasErrors = true;
+                    continue;
+                }
 
-            asset.Name = key;
-            asset.Namespace = @namespace;
-            _assets.Add(id, new Holder<T>(asset));
+                asset.Name = key;
+                asset.Namespace = @namespace;
+                _assets.Add(id, new Holder<T>(asset));
+            }
+            catch (JsonException ex)
+            {
+                string msg = $"Syntax error in '{file}' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
+                HasErrors = true;
+                FirstErrorMessage ??= msg;
+            }
+            catch (Exception ex)
+            {
+                HasErrors = true;
+                FirstErrorMessage ??= $"Unexpected error in {Path.GetFileName(file)}";
+            }
         }
     }
 
@@ -167,23 +183,38 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         return asset;
     }
 
-    private static void UpdateHolder(JsonElement json, Holder<T> target)
+    private void UpdateHolder(JsonElement json, Holder<T> target)
     {
-        // Serialize the default value to JSON
-        JsonElement defaultElement = JsonSerializer.SerializeToElement(target.Value);
-
-        // Merge the JSON with the default, preferring values from json
-        JsonElement merged = MergeJson(defaultElement, json);
-
-        T? asset = merged.Deserialize<T>(s_jsonOptions);
-        if (asset == null)
+        try
         {
-            s_logger.LogError($"Asset failed to deserialize into class '{target}'");
-            return;
-        }
+            // Serialize the default value to JSON
+            JsonElement defaultElement = JsonSerializer.SerializeToElement(target.Value);
 
-        asset.Name = target.Value.Name;
-        target.Value = asset;
+            // Merge the JSON with the default, preferring values from json
+            JsonElement merged = MergeJson(defaultElement, json);
+
+            T? asset = merged.Deserialize<T>(s_jsonOptions);
+            if (asset == null)
+            {
+                s_logger.LogError($"Asset failed to deserialize into class '{target}'");
+                HasErrors = true;
+                return;
+            }
+
+            asset.Name = target.Value.Name;
+            target.Value = asset;
+        }
+        catch (JsonException ex)
+        {
+            string msg = $"Syntax error updating '{target}' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
+            HasErrors = true;
+            FirstErrorMessage ??= msg;
+        }
+        catch (Exception ex)
+        {
+            HasErrors = true;
+            FirstErrorMessage ??= $"Unexpected error updating {target}";
+        }
     }
 
     /// <summary>
@@ -195,29 +226,56 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         return Holder<T>.Reference(() =>
         {
             string filePath = Path.Join(dirPath, id.Path + ".json");
-            using FileStream json = File.OpenRead(filePath);
-            JsonElement obj = JsonSerializer.Deserialize<JsonElement>(json, s_jsonOptions);
-            T? asset = FromJson(obj);
-            if (asset == null)
-                throw new InvalidOperationException($"Asset '{id}' failed to load from '{filePath}'.");
-            asset.Name = id.Path;
-            asset.Namespace = id.Namespace;
-            return asset;
+            try
+            {
+                using FileStream json = File.OpenRead(filePath);
+                JsonElement obj = JsonSerializer.Deserialize<JsonElement>(json, s_jsonOptions);
+                T? asset = FromJson(obj) ?? throw new InvalidOperationException($"Asset '{id}' failed to load from '{filePath}'.");
+                asset.Name = id.Path;
+                asset.Namespace = id.Namespace;
+                return asset;
+            }
+            catch (JsonException ex)
+            {
+                string msg = $"Syntax error in lazy-loaded JSON file '{filePath}' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
+
+                throw new InvalidOperationException(msg, ex);
+            }
+            catch (Exception ex)
+            {
+                string msg = $"Unexpected error lazy-loading JSON file '{filePath}': {ex.Message}";
+                throw new InvalidOperationException(msg, ex);
+            }
         });
     }
 
-    private static void ReplaceHolder(JsonElement json, string path, ResourceLocation id, Holder<T> target)
+    private void ReplaceHolder(JsonElement json, string path, ResourceLocation id, Holder<T> target)
     {
-        T? v = FromJson(json);
-        if (v == null)
+        try
         {
-            s_logger.LogError($"Asset failed to load from file '{path}'");
-            return;
-        }
+            T? v = FromJson(json);
+            if (v == null)
+            {
+                s_logger.LogError($"Asset failed to load from file '{path}'");
+                HasErrors = true;
+                return;
+            }
 
-        v.Name = id.Path;
-        v.Namespace = id.Namespace;
-        target.Value = v;
+            v.Name = id.Path;
+            v.Namespace = id.Namespace;
+            target.Value = v;
+        }
+        catch (JsonException ex)
+        {
+            string msg = $"Syntax error in '{path}' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
+            HasErrors = true;
+            FirstErrorMessage ??= msg;
+        }
+        catch (Exception ex)
+        {
+            HasErrors = true;
+            FirstErrorMessage ??= $"Unexpected error in {Path.GetFileName(path)}";
+        }
     }
 
     private static JsonElement MergeJson(JsonElement defaultObj, JsonElement overrideObj)

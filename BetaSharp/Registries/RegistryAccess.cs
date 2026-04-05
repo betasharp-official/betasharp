@@ -125,6 +125,9 @@ public sealed class RegistryAccess
         string? datapackPath = null,
         string? worldDatapackPath = null)
     {
+        bool hadAnyErrors = false;
+        string? error = null;
+
         // Built-in static registries
         var builtIns = new Dictionary<ResourceLocation, object>
         {
@@ -141,6 +144,9 @@ public sealed class RegistryAccess
             DataAssetLoader loader = entry.CreateLoader();
             loader.LoadFromPaths(basePath, datapackPath, null);  // no world datapacks here
             loader.WaitForLoad();
+
+            if (loader.HasErrors) hadAnyErrors = true;
+
             serverLoaders[entry.Key] = loader;
         }
 
@@ -151,7 +157,11 @@ public sealed class RegistryAccess
             activeLoaders = [];
             foreach (IDynamicRegistryEntry entry in s_dynamicEntries)
             {
-                activeLoaders[entry.Key] = entry.CloneForWorld(serverLoaders[entry.Key], worldDatapackPath);
+                DataAssetLoader worldLoader = entry.CloneForWorld(serverLoaders[entry.Key], worldDatapackPath);
+
+                if (worldLoader.HasErrors) hadAnyErrors = true;
+
+                activeLoaders[entry.Key] = worldLoader;
             }
         }
         else
@@ -170,6 +180,24 @@ public sealed class RegistryAccess
             {
                 loader.Freeze();
             }
+        }
+
+        if (hadAnyErrors)
+        {
+            foreach (DataAssetLoader loader in serverLoaders.Values)
+            {
+                error ??= loader.FirstErrorMessage;
+            }
+
+            if (worldDatapackPath != null)
+            {
+                foreach (DataAssetLoader loader in activeLoaders.Values)
+                {
+                    error ??= loader.FirstErrorMessage;
+                }
+            }
+
+            throw new AssetLoadException(error ?? "One or more registries failed to load.");
         }
 
         return new RegistryAccess(builtIns, serverLoaders, activeLoaders, basePath, datapackPath, worldDatapackPath);
@@ -226,6 +254,8 @@ public sealed class RegistryAccess
     /// </summary>
     public RegistryAccess Rebuild()
     {
+        bool hadAnyErrors = false;
+
         // Server loaders: fresh load for reloadable entries, reuse frozen loader for the rest.
         var serverLoaders = new Dictionary<ResourceLocation, DataAssetLoader>();
         foreach (IDynamicRegistryEntry entry in s_dynamicEntries)
@@ -235,6 +265,9 @@ public sealed class RegistryAccess
                 DataAssetLoader loader = entry.CreateLoader();
                 loader.LoadFromPaths(_basePath, _datapackPath, null);
                 loader.WaitForLoad();
+
+                if (loader.HasErrors) hadAnyErrors = true;
+
                 loader.Freeze();
                 serverLoaders[entry.Key] = loader;
             }
@@ -256,6 +289,9 @@ public sealed class RegistryAccess
                 {
                     DataAssetLoader worldLoader = entry.CloneForWorld(serverLoader, _worldDatapackPath);
                     worldLoader.Freeze();
+
+                    if (worldLoader.HasErrors) hadAnyErrors = true;
+
                     activeLoaders[entry.Key] = worldLoader;
                 }
                 else if (_activeLoaders.TryGetValue(entry.Key, out DataAssetLoader? existing))
@@ -267,6 +303,22 @@ public sealed class RegistryAccess
         else
         {
             activeLoaders = serverLoaders;
+        }
+
+        if (hadAnyErrors)
+        {
+            string? firstError = null;
+            foreach (DataAssetLoader loader in serverLoaders.Values)
+            {
+                firstError ??= loader.FirstErrorMessage;
+            }
+
+            foreach (DataAssetLoader loader in activeLoaders.Values)
+            {
+                firstError ??= loader.FirstErrorMessage;
+            }
+
+            throw new AssetLoadException(firstError ?? "One or more registries failed to reload.");
         }
 
         return new RegistryAccess(_builtIns, serverLoaders, activeLoaders, _basePath, _datapackPath, _worldDatapackPath);
