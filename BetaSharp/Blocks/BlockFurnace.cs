@@ -35,7 +35,7 @@ internal class BlockFurnace : BlockWithEntity
         {
             int direction = MathHelper.Floor(@event.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
             int meta = 2;
-            
+
             if (direction == 0) meta = 2;
             else if (direction == 1) meta = 5;
             else if (direction == 2) meta = 3;
@@ -43,14 +43,14 @@ internal class BlockFurnace : BlockWithEntity
 
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
 
-            if (!@event.World.IsRemote) 
+            if (!@event.World.IsRemote)
             {
                 @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
             }
         }
         else
         {
-            updateDirection(@event); 
+            updateDirection(@event);
         }
     }
 
@@ -60,7 +60,7 @@ internal class BlockFurnace : BlockWithEntity
 
         var reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
-        
+
         bool isNorthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z - 1)];
         bool isSouthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z + 1)];
         bool isWestOpaque = BlocksOpaque[reader.GetBlockId(x - 1, y, z)];

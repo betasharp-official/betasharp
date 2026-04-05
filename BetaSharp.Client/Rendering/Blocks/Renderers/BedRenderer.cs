@@ -34,7 +34,7 @@ public class BedRenderer : IBlockRenderer
 
         float minX = (float)(pos.x + bounds.MinX);
         float maxX = (float)(pos.x + bounds.MaxX);
-        float bedBottomY =(float)(pos.y + bounds.MinY + 0.1875f); // Bed legs are 3 pixels tall (3/16 = 0.1875)
+        float bedBottomY = (float)(pos.y + bounds.MinY + 0.1875f); // Bed legs are 3 pixels tall (3/16 = 0.1875)
         float minZ = (float)(pos.z + bounds.MinZ);
         float maxZ = (float)(pos.z + bounds.MaxZ);
 

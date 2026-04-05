@@ -1,8 +1,8 @@
+using System.Runtime.InteropServices;
 using Silk.NET.GLFW;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
-using System.Runtime.InteropServices;
 
 namespace BetaSharp.Client;
 

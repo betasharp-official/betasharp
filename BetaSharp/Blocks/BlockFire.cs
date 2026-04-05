@@ -63,8 +63,8 @@ internal class BlockFire : Block
 
     public override void onTick(OnTickEvent @event)
     {
-        if (!@event.World.Rules.GetBool(DefaultRules.DoFireTick))    return;
-        
+        if (!@event.World.Rules.GetBool(DefaultRules.DoFireTick)) return;
+
 
         bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == Netherrack.id;
         if (!canPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z)))

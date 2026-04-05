@@ -152,7 +152,7 @@ internal class RegionFile
                 if (var7 == CompressionType.ZLibDeflate)
                 {
                     var8 = new byte[var6 - 1];
-                    dataFile.Read(var8);
+                    dataFile.ReadExactly(var8);
                     var9 = new ZLibStream(new MemoryStream(var8), CompressionMode.Decompress);
                     return new ChunkDataStream(var9, var7);
                 }

@@ -85,6 +85,9 @@ internal class ServerCommandHandler
         Register(new SayCommand());
         Register(new TellCommand());
 
+        // Data commands
+        Register(new ReloadCommand());
+
         // Admin commands
         Register(new StopCommand());
         Register(new SaveAllCommand());

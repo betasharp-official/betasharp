@@ -1,4 +1,4 @@
-﻿namespace BetaSharp;
+namespace BetaSharp;
 
 public partial class Namespace
 {

@@ -1,9 +1,12 @@
 using System.Diagnostics;
-using BetaSharp.Diagnostics;
 using BetaSharp.DataAsset;
-using BetaSharp.GameMode;
+using BetaSharp.Diagnostics;
+using BetaSharp.Entities;
+using BetaSharp.Network.Packets;
+using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Profiling;
+using BetaSharp.Registries;
 using BetaSharp.Server.Command;
 using BetaSharp.Server.Entities;
 using BetaSharp.Server.Internal;
@@ -22,6 +25,12 @@ namespace BetaSharp.Server;
 
 public abstract class BetaSharpServer : ICommandOutput
 {
+    public RegistryAccess RegistryAccess { get; set; } = RegistryAccess.Empty;
+
+    public GameMode DefaultGameMode { get; set; } = new();
+
+    private readonly List<IRegistryReloadListener> _reloadListeners = [];
+
     public Dictionary<string, int> GIVE_COMMANDS_COOLDOWNS = [];
     public ConnectionListener connections;
     public IServerConfiguration config;
@@ -75,6 +84,8 @@ public abstract class BetaSharpServer : ICommandOutput
     {
         _commandHandler = new ServerCommandHandler(this);
 
+        RegisterReloadListener(new DefaultGameModeListener(this));
+
         onlineMode = config.GetOnlineMode(true);
         spawnAnimals = config.GetSpawnAnimals(true);
         pvpEnabled = config.GetPvpEnabled(true);
@@ -112,7 +123,10 @@ public abstract class BetaSharpServer : ICommandOutput
         _logger.LogInformation("Preparing level \"{WorldName}\"", worldName);
         loadWorld(worldName, new WorldSettings(seed, worldType, optionsString));
 
-        GameModes.SetDefaultGameMode(config.GetDefaultGamemode("survival"));
+        foreach (IRegistryReloadListener listener in _reloadListeners)
+        {
+            listener.OnRegistriesRebuilt(RegistryAccess);
+        }
 
         if (logHelp)
         {
@@ -129,7 +143,7 @@ public abstract class BetaSharpServer : ICommandOutput
         worlds = new ServerWorld[2];
         var dir = new DirectoryInfo(Path.Combine(GetFile(".").FullName, worldDir));
         RegionWorldStorage worldStorage = new(dir, true);
-        DataAssetLoader.LoadWorldAssets(dir.FullName);
+        RegistryAccess = RegistryAccess.WithWorldDatapacks(dir.FullName);
 
         for (int i = 0; i < worlds.Length; i++)
         {
@@ -270,7 +284,7 @@ public abstract class BetaSharpServer : ICommandOutput
 
         if (this is InternalServer)
         {
-            DataAssetLoader.UnloadWorldAssets();
+            RegistryAccess = RegistryAccess.WithoutWorldDatapacks();
         }
     }
 
@@ -528,5 +542,70 @@ public abstract class BetaSharpServer : ICommandOutput
     protected virtual PlayerManager CreatePlayerManager()
     {
         return new PlayerManager(this);
+    }
+
+    /// <summary>
+    /// Registers a listener that will be notified whenever datapacks are reloaded.
+    /// Use this to refresh any data cached from registry lookups.
+    /// </summary>
+    public void RegisterReloadListener(IRegistryReloadListener listener)
+        => _reloadListeners.Add(listener);
+
+    /// <summary>
+    /// Sends all reloadable registry data packets followed by <see cref="FinishConfigurationS2CPacket"/>
+    /// </summary>
+    public void SendConfigurationTo(Action<Packet> send)
+    {
+        foreach (RegistryDataS2CPacket packet in RegistryAccess.BuildSyncPackets())
+        {
+            send(packet);
+        }
+
+        send(Packet.Get<FinishConfigurationS2CPacket>(PacketId.FinishConfigurationS2C));
+    }
+
+    /// <summary>
+    /// Reloads all data-driven content from disk. Re-reads base assets, global datapacks, and
+    /// world datapacks, then broadcasts a status message to all connected players.
+    /// </summary>
+    public void ReloadDatapacks()
+    {
+        _logger.LogInformation("Reloading datapacks...");
+        playerManager.sendToAll(ChatMessagePacket.Get("§eReloading datapacks..."));
+
+        try
+        {
+            RegistryAccess = RegistryAccess.Rebuild();
+
+            foreach (IRegistryReloadListener listener in _reloadListeners)
+            {
+                listener.OnRegistriesRebuilt(RegistryAccess);
+            }
+
+            SendConfigurationTo(playerManager.sendToAll);
+
+            DataAssetLoader<GameMode> gameModes = RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader();
+            foreach (ServerPlayerEntity player in playerManager.players)
+            {
+                if (gameModes.TryGet(player.GameMode.Name, out GameMode? updated))
+                {
+                    player.GameMode = updated;
+                }
+
+                player.networkHandler.sendPacket(PlayerGameModeUpdateS2CPacket.Get(player.GameMode));
+            }
+
+            _logger.LogInformation("Datapacks reloaded.");
+            playerManager.sendToAll(ChatMessagePacket.Get("§aDatapacks reloaded."));
+        }
+        catch (AssetLoadException ex)
+        {
+            _logger.LogError("Datapack reload failed: {Message}.", ex.Message);
+
+            if (this is InternalServer)
+            {
+                playerManager.sendToAll(ChatMessagePacket.Get($"§cReload failed! See console for details."));
+            }
+        }
     }
 }

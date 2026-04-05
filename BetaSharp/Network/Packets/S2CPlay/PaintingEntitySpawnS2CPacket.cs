@@ -27,7 +27,7 @@ public class PaintingEntitySpawnS2CPacket() : Packet(PacketId.PaintingEntitySpaw
     public override void Read(NetworkStream stream)
     {
         entityId = stream.ReadInt();
-        title = stream.ReadLongString((ushort) EnumArt.MaxArtTitleLength);
+        title = stream.ReadLongString((ushort)EnumArt.MaxArtTitleLength);
         xPosition = stream.ReadInt();
         yPosition = stream.ReadInt();
         zPosition = stream.ReadInt();

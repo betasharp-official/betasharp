@@ -5,7 +5,7 @@ public class PlayerNameValidatorTests
     [Fact]
     public void Validate_accepts_sixteen_chars_without_whitespace()
     {
-        string name = new ('a', PlayerNameValidator.MaxLength);
+        string name = new('a', PlayerNameValidator.MaxLength);
         PlayerNameValidator.Validate(name);
     }
 
@@ -18,7 +18,7 @@ public class PlayerNameValidatorTests
     [Fact]
     public void Validate_throws_when_longer_than_max()
     {
-        string name = new ('a', PlayerNameValidator.MaxLength + 1);
+        string name = new('a', PlayerNameValidator.MaxLength + 1);
         InvalidPlayerNameException ex = Assert.Throws<InvalidPlayerNameException>(() => PlayerNameValidator.Validate(name));
         Assert.Contains("16", ex.Message, StringComparison.Ordinal);
     }

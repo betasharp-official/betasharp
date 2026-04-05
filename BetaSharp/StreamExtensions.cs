@@ -10,7 +10,7 @@ internal static class StreamExtensions
     {
         public void WriteBoolean(bool value)
         {
-            stream.WriteByte((byte) (value ? 1 : 0));
+            stream.WriteByte((byte)(value ? 1 : 0));
         }
 
         public void WriteShort(short value)

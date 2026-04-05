@@ -6,7 +6,7 @@ namespace BetaSharp.Server;
 internal class DedicatedServerConfiguration : IServerConfiguration
 {
     private static ILogger<DedicatedServerConfiguration> logger = Log.Instance.For<DedicatedServerConfiguration>();
-    private readonly  Properties _properties = new();
+    private readonly Properties _properties = new();
     private readonly FileInfo _propertiesFile;
 
     public DedicatedServerConfiguration(FileInfo file)

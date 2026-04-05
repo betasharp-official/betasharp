@@ -1,6 +1,6 @@
 using BetaSharp.Entities;
-using BetaSharp.GameMode;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Registries;
 using BetaSharp.Server.Command;
 using Microsoft.Extensions.Logging;
 
@@ -50,17 +50,18 @@ public class GameModeCommand : ICommand
         }
     }
 
-    private void ListGameModes(ICommand.CommandContext c)
+    private static void ListGameModes(ICommand.CommandContext c)
     {
-        foreach (var assetRef in GameModes.GameModesLoader.Assets)
+        var registry = c.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes);
+        foreach (GameMode mode in registry)
         {
-            c.Output.SendMessage(assetRef.Value.ToString()!);
+            c.Output.SendMessage(mode.ToString()!);
         }
     }
 
-    private void SetGameMode(ServerPlayerEntity p, string arg, ICommand.CommandContext c)
+    private static void SetGameMode(ServerPlayerEntity p, string arg, ICommand.CommandContext c)
     {
-        if (GameModes.TryGet(arg, out var gameMode, true))
+        if (c.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader().TryGetByPrefix(arg, out var gameMode))
         {
             SetGameMode(p, gameMode, c);
             return;
@@ -69,7 +70,7 @@ public class GameModeCommand : ICommand
         c.Output.SendMessage("Gamemode not found.");
     }
 
-    private void SetGameMode(ServerPlayerEntity p, GameMode.GameMode gameMode, ICommand.CommandContext c)
+    private static void SetGameMode(ServerPlayerEntity p, GameMode gameMode, ICommand.CommandContext c)
     {
         p.networkHandler.sendPacket(PlayerGameModeUpdateS2CPacket.Get(gameMode));
         p.GameMode = gameMode;

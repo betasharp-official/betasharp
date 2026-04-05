@@ -70,7 +70,7 @@ public class BlockEntityPiston : BlockEntity
 
     public float getRenderOffsetZ(float tickDelta) => _extending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HEAD_OFFSET_Z[_facing] : (1.0F - getProgress(tickDelta)) * PistonConstants.HEAD_OFFSET_Z[_facing];
 
-    private void pushEntities( EntityManager entities,float collisionShapeSizeMultiplier, float entityMoveMultiplier)
+    private void pushEntities(EntityManager entities, float collisionShapeSizeMultiplier, float entityMoveMultiplier)
     {
         if (!_extending)
         {
@@ -117,7 +117,7 @@ public class BlockEntityPiston : BlockEntity
         }
     }
 
-    public override void tick( EntityManager entities)
+    public override void tick(EntityManager entities)
     {
         _progress = _lastProgess;
         if (_progress >= 1.0F)

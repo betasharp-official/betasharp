@@ -1,15 +1,14 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
-using BetaSharp.GameMode;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Screens;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Chunks;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
@@ -47,7 +46,7 @@ public abstract class EntityPlayer : EntityLiving
     public float lastScreenDistortion;
     private int damageSpill;
     public EntityFish fishHook = null;
-    public GameMode.GameMode GameMode;
+    public GameMode GameMode;
 
     public EntityPlayer(IWorldContext world) : base(world)
     {
@@ -62,7 +61,7 @@ public abstract class EntityPlayer : EntityLiving
         rotationOffset = 180.0F;
         fireImmunityTicks = 20;
         texture = "/mob/char.png";
-        GameMode = GameModes.DefaultGameMode;
+        GameMode = new GameMode();
     }
 
     public override bool canBreatheUnderwater() => !GameMode.NeedsAir;

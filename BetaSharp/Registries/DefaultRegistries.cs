@@ -29,6 +29,8 @@ public static class DefaultRegistries
 
         MetricRegistry.Bootstrap(typeof(ServerMetrics));
 
+        RegistryAccess.AddDynamic(RegistryDefinitions.GameModes);
+
         FreezeAll();
     }
 

@@ -190,7 +190,7 @@ internal class BlockDoor : Block
                 bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
                                  @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
 
-                SetOpen(@event.World, @event.X, @event.Y, @event.Z ,isPowered);
+                SetOpen(@event.World, @event.X, @event.Y, @event.Z, isPowered);
             }
         }
     }

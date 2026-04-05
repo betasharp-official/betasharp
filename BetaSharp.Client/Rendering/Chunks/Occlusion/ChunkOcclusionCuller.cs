@@ -69,7 +69,7 @@ public class ChunkOcclusionCuller
         startNode.IncomingDirections = ChunkDirectionMask.None;
         visitor.Visit(startNode);
 
-        ChunkDirectionMask initialOutgoing = useOcclusionCulling 
+        ChunkDirectionMask initialOutgoing = useOcclusionCulling
             ? startNode.VisibilityData.GetVisibleFrom(ChunkDirectionMask.None, viewPos, startNode)
             : ChunkDirectionMask.All;
 

@@ -1,3 +1,4 @@
+using System.Linq;
 using BetaSharp.Entities;
 using BetaSharp.NBT;
 using BetaSharp.Server.Worlds;
@@ -6,7 +7,6 @@ using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Dimensions;
 using BetaSharp.Worlds.Storage.RegionFormat;
 using Microsoft.Extensions.Logging;
-using System.Linq;
 
 namespace BetaSharp.Worlds.Storage;
 
@@ -21,7 +21,8 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
     private readonly ILogger<RegionWorldStorage> _logger = Log.Instance.For<RegionWorldStorage>();
 
     public RegionWorldStorage(string baseDir, string worldName, bool createPlayersDir) :
-        this( new DirectoryInfo(Path.Combine(baseDir, worldName)), createPlayersDir) { }
+        this(new DirectoryInfo(Path.Combine(baseDir, worldName)), createPlayersDir)
+    { }
 
     public RegionWorldStorage(DirectoryInfo saveDirectory, bool createPlayersDir)
     {

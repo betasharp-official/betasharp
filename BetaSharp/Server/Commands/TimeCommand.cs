@@ -42,7 +42,7 @@ public class TimeCommand : ICommand
 
             string message = mode == "add" ? $"Added {timeValue} to time" : $"Set time to {timeValue}";
             c.Output.SendMessage(message);
-            c.LogOp( message);
+            c.LogOp(message);
             return;
         }
 
@@ -54,7 +54,7 @@ public class TimeCommand : ICommand
             }
 
             c.Output.SendMessage($"Time set to {c.Args[0]} ({namedTime})");
-            c.LogOp( $"Set time to {namedTime}");
+            c.LogOp($"Set time to {namedTime}");
             return;
         }
 
