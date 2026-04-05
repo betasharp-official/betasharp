@@ -8,7 +8,7 @@ public class PlayerGameModeUpdateS2CPacket() : ExtendedProtocolPacket(PacketId.P
 
     public static PlayerGameModeUpdateS2CPacket Get(GameMode mode)
     {
-        var p = Get<PlayerGameModeUpdateS2CPacket>(PacketId.PlayerGameModeUpdateS2C);
+        PlayerGameModeUpdateS2CPacket p = Get<PlayerGameModeUpdateS2CPacket>(PacketId.PlayerGameModeUpdateS2C);
         p.GameModeName = mode.Name;
         return p;
     }

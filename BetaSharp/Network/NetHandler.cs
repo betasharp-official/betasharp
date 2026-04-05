@@ -246,6 +246,11 @@ public abstract class NetHandler
         handle(packet);
     }
 
+    public virtual void onFinishConfiguration(FinishConfigurationS2CPacket packet)
+    {
+        handle(packet);
+    }
+
     public virtual void onIncreaseStat(IncreaseStatS2CPacket var1)
     {
         handle(var1);

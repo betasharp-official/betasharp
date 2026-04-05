@@ -215,6 +215,7 @@ public abstract class Packet
             New(PacketId.PlayerConnectionUpdateS2C, true, false, false, () => new PlayerConnectionUpdateS2CPacket()),
             New(PacketId.PlayerGameModeUpdateS2C, true, false, false, () => new PlayerGameModeUpdateS2CPacket()),
             New(PacketId.RegistryDataS2C, true, false, false, () => new RegistryDataS2CPacket()),
+            New(PacketId.FinishConfigurationS2C, true, false, false, () => new FinishConfigurationS2CPacket()),
             New(PacketId.IncreaseStatS2C, true, false, false, () => new IncreaseStatS2CPacket()),
             New(PacketId.Disconnect, true, true, false, () => new DisconnectPacket())
         ]);

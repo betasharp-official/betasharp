@@ -43,10 +43,7 @@ public class ClientNetworkHandler : NetHandler
     private int _ticks;
     private int _lastKeepAliveTime;
 
-    private readonly Dictionary<ResourceLocation, IClientRegistryProcessor> _registryProcessors = new()
-    {
-        [RegistryKeys.GameModes.Location] = new ClientRegistryProcessor<GameMode>(),
-    };
+    private readonly ClientRegistryAccess _clientRegistries = new();
 
     public ClientNetworkHandler(ClientNetworkContext context, string address, int port)
     {
@@ -828,16 +825,17 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onRegistryData(RegistryDataS2CPacket packet)
     {
-        if (_registryProcessors.TryGetValue(packet.RegistryId, out IClientRegistryProcessor? processor))
-        {
-            processor.Process(packet.Entries);
-        }
+        _clientRegistries.Accumulate(packet);
+    }
+
+    public override void onFinishConfiguration(FinishConfigurationS2CPacket packet)
+    {
+        _logger.LogInformation("Configuration finished");
     }
 
     public override void onPlayerGameModeUpdate(PlayerGameModeUpdateS2CPacket packet)
     {
-        var modes = (ClientRegistryProcessor<GameMode>)_registryProcessors[RegistryKeys.GameModes.Location];
-        GameMode? mode = modes.Get(packet.GameModeName);
+        GameMode? mode = _clientRegistries.Get(RegistryKeys.GameModes, packet.GameModeName);
         if (mode is not null)
         {
             _context.PlayerHost.Player?.GameMode = mode;

@@ -1,4 +1,5 @@
 using BetaSharp.DataAsset;
+using BetaSharp.Network.Packets.S2CPlay;
 
 namespace BetaSharp.Registries;
 
@@ -33,6 +34,7 @@ public sealed class RegistryAccess
         bool IsReloadable { get; }
         DataAssetLoader CreateLoader();
         DataAssetLoader CloneForWorld(DataAssetLoader loader, string worldDatapackPath);
+        RegistryDataS2CPacket? BuildSyncPacket(RegistryAccess registryAccess);
     }
 
     private sealed class DynamicRegistryEntry<T>(RegistryDefinition<T> definition) : IDynamicRegistryEntry
@@ -43,6 +45,11 @@ public sealed class RegistryAccess
         public DataAssetLoader CreateLoader() => definition.CreateLoader();
         public DataAssetLoader CloneForWorld(DataAssetLoader loader, string worldDatapackPath)
             => ((DataAssetLoader<T>)loader).CloneForWorldDatapacks(worldDatapackPath);
+        public RegistryDataS2CPacket? BuildSyncPacket(RegistryAccess registryAccess)
+        {
+            IReadableRegistry<T>? registry = registryAccess.Get(definition.Key);
+            return registry is null ? null : RegistryDataS2CPacket.Get(definition.Key, registry);
+        }
     }
 
     public static void AddDynamic<T>(RegistryDefinition<T> definition) where T : class, IDataAsset
@@ -180,7 +187,9 @@ public sealed class RegistryAccess
         foreach (IDynamicRegistryEntry entry in s_dynamicEntries)
         {
             if (_serverLoaders.TryGetValue(entry.Key, out DataAssetLoader? serverLoader))
+            {
                 activeLoaders[entry.Key] = entry.CloneForWorld(serverLoader, worldDatapackPath);
+            }
         }
 
         foreach (DataAssetLoader loader in activeLoaders.Values)
@@ -193,10 +202,23 @@ public sealed class RegistryAccess
 
     /// <summary>
     /// Returns a new <see cref="RegistryAccess"/> using only the server-level (base + global
-    /// datapack) state — discarding any world-specific datapack layer without any disk I/O.
+    /// datapack) state
     /// </summary>
     public RegistryAccess WithoutWorldDatapacks()
         => new(_builtIns, _serverLoaders, _serverLoaders, _basePath, _datapackPath);
+
+    /// <summary>
+    /// Builds a <see cref="RegistryDataS2CPacket"/> for each reloadable dynamic registry.
+    /// </summary>
+    public IEnumerable<RegistryDataS2CPacket> BuildSyncPackets()
+    {
+        foreach (IDynamicRegistryEntry entry in s_dynamicEntries)
+        {
+            if (!entry.IsReloadable) continue;
+            RegistryDataS2CPacket? packet = entry.BuildSyncPacket(this);
+            if (packet is not null) yield return packet;
+        }
+    }
 
     /// <summary>
     /// Rebuilds this <see cref="RegistryAccess"/> from disk, reloading only registries whose

@@ -147,7 +147,7 @@ public class ServerLoginNetworkHandler : NetHandler
             Vec3i var4 = var3.Properties.GetSpawnPos();
             ServerPlayNetworkHandler handler = new ServerPlayNetworkHandler(server, connection, ent);
             handler.sendPacket(new LoginHelloPacket("", ent.id, var3.Seed, (sbyte)var3.Dimension.Id));
-            handler.sendPacket(RegistryDataS2CPacket.Get(RegistryKeys.GameModes, server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes)));
+            server.SendConfigurationTo(handler.sendPacket);
             handler.sendPacket(PlayerGameModeUpdateS2CPacket.Get(ent.GameMode));
             handler.sendPacket(PlayerSpawnPositionS2CPacket.Get(var4.X, var4.Y, var4.Z));
             server.playerManager.sendWorldInfo(ent, var3);

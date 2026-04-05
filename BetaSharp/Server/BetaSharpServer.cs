@@ -1,11 +1,13 @@
 using System.Diagnostics;
+using BetaSharp.DataAsset;
 using BetaSharp.Diagnostics;
+using BetaSharp.Entities;
+using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Profiling;
 using BetaSharp.Registries;
 using BetaSharp.Server.Command;
-using BetaSharp.Entities;
 using BetaSharp.Server.Entities;
 using BetaSharp.Server.Internal;
 using BetaSharp.Server.Network;
@@ -550,6 +552,19 @@ public abstract class BetaSharpServer : ICommandOutput
         => _reloadListeners.Add(listener);
 
     /// <summary>
+    /// Sends all reloadable registry data packets followed by <see cref="FinishConfigurationS2CPacket"/>
+    /// </summary>
+    public void SendConfigurationTo(Action<Packet> send)
+    {
+        foreach (RegistryDataS2CPacket packet in RegistryAccess.BuildSyncPackets())
+        {
+            send(packet);
+        }
+
+        send(Packet.Get<FinishConfigurationS2CPacket>(PacketId.FinishConfigurationS2C));
+    }
+
+    /// <summary>
     /// Reloads all data-driven content from disk. Re-reads base assets, global datapacks, and
     /// world datapacks, then broadcasts a status message to all connected players.
     /// </summary>
@@ -561,15 +576,20 @@ public abstract class BetaSharpServer : ICommandOutput
         RegistryAccess = RegistryAccess.Rebuild();
 
         foreach (IRegistryReloadListener listener in _reloadListeners)
+        {
             listener.OnRegistriesRebuilt(RegistryAccess);
+        }
 
-        // Sync updated registries then re-push each player's game mode so they use the new data
-        playerManager.sendToAll(RegistryDataS2CPacket.Get(RegistryKeys.GameModes, RegistryAccess.GetOrThrow(RegistryKeys.GameModes)));
-        var gameModes = RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader();
+        SendConfigurationTo(playerManager.sendToAll);
+
+        DataAssetLoader<GameMode> gameModes = RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader();
         foreach (ServerPlayerEntity player in playerManager.players)
         {
             if (gameModes.TryGet(player.GameMode.Name, out GameMode? updated))
-                player.GameMode = updated!;
+            {
+                player.GameMode = updated;
+            }
+
             player.networkHandler.sendPacket(PlayerGameModeUpdateS2CPacket.Get(player.GameMode));
         }
 
