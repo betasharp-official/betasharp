@@ -2,17 +2,19 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Blocks.Entities;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using Silk.NET.Maths;
+using Silk.NET.OpenGL;
+using SixLabors.Fonts;
+using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
+using TextRenderer = BetaSharp.Client.Rendering.TextRenderer;
 
 namespace BetaSharp.Client.UI.Rendering;
 
@@ -77,7 +79,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void ClearDepth()
     {
-        GLManager.GL.Clear((Silk.NET.OpenGL.ClearBufferMask)GLEnum.DepthBufferBit);
+        GLManager.GL.Clear((ClearBufferMask)GLEnum.DepthBufferBit);
     }
 
     public void PushTranslate(float x, float y)
@@ -190,7 +192,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
             }
             else
             {
-                TextRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color, SixLabors.Fonts.HorizontalAlignment.Center);
+                TextRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color, HorizontalAlignment.Center);
             }
             return;
         }
@@ -206,7 +208,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         }
         else
         {
-            TextRenderer.DrawString(text, 0, 0, color, SixLabors.Fonts.HorizontalAlignment.Center);
+            TextRenderer.DrawString(text, 0, 0, color, HorizontalAlignment.Center);
         }
 
         GLManager.GL.PopMatrix();
@@ -437,13 +439,13 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         Block signBlock = sign.getBlock();
         if (signBlock == Block.Sign)
         {
-            float rotation = sign.getPushedBlockData() * 360 / 16.0F;
+            float rotation = sign.PushedBlockData * 360 / 16.0F;
             GLManager.GL.Rotate(rotation, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Translate(0.0F, -1.0625F, 0.0F);
         }
         else
         {
-            int rotationIndex = sign.getPushedBlockData();
+            int rotationIndex = sign.PushedBlockData;
             float angle = 0.0F;
             if (rotationIndex == 2) angle = 180.0F;
             if (rotationIndex == 4) angle = 90.0F;

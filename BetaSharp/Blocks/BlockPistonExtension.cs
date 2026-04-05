@@ -6,7 +6,7 @@ namespace BetaSharp.Blocks;
 
 public class BlockPistonExtension : Block
 {
-    private int pistonHeadSprite = -1;
+    private int _pistonHeadSprite = -1;
 
     public BlockPistonExtension(int id, int textureId) : base(id, textureId, Material.Piston)
     {
@@ -14,37 +14,33 @@ public class BlockPistonExtension : Block
         setHardness(0.5F);
     }
 
-    public void setSprite(int sprite) => pistonHeadSprite = sprite;
-
-    public void clearSprite() => pistonHeadSprite = -1;
-
     public override void onBreak(OnBreakEvent @event)
     {
         base.onBreak(@event);
         int x = @event.X;
         int y = @event.Y;
         int z = @event.Z;
-        int var5 = @event.World.Reader.GetBlockMeta(x, y, z);
-        int var6 = PistonConstants.field_31057_a[getFacing(var5)];
-        x += PistonConstants.HEAD_OFFSET_X[var6];
-        y += PistonConstants.HEAD_OFFSET_Y[var6];
-        z += PistonConstants.HEAD_OFFSET_Z[var6];
-        int var7 = @event.World.Reader.GetBlockId(x, y, z);
-        if (var7 == Piston.id || var7 == StickyPiston.id)
-        {
-            var5 = @event.World.Reader.GetBlockMeta(x, y, z);
-            if (BlockPistonBase.isExtended(var5))
-            {
-                Blocks[var7].dropStacks(new OnDropEvent(@event.World, x, y, z, var5));
-                @event.World.Writer.SetBlock(x, y, z, 0);
-            }
-        }
+        int blockMeta = @event.World.Reader.GetBlockMeta(x, y, z);
+        int var6 = PistonConstants.OppositeFace[getFacing(blockMeta)];
+
+        x += PistonConstants.HeadOffsetX[var6];
+        y += PistonConstants.HeadOffsetY[var6];
+        z += PistonConstants.HeadOffsetZ[var6];
+
+        int blockId = @event.World.Reader.GetBlockId(x, y, z);
+        if (blockId != Piston.id && blockId != StickyPiston.id) return;
+
+        int meta = @event.World.Reader.GetBlockMeta(x, y, z);
+        if (!BlockPistonBase.IsExtended(meta)) return;
+
+        Blocks[blockId].dropStacks(new OnDropEvent(@event.World, x, y, z, meta));
+        @event.World.Writer.SetBlock(x, y, z, 0);
     }
 
     public override int getTexture(int side, int meta)
     {
-        int var3 = getFacing(meta);
-        return side == var3 ? pistonHeadSprite >= 0 ? pistonHeadSprite : (meta & 8) != 0 ? textureId - 1 : textureId : side == PistonConstants.field_31057_a[var3] ? 107 : 108;
+        int facing = getFacing(meta);
+        return side == facing ? _pistonHeadSprite >= 0 ? _pistonHeadSprite : (meta & 8) != 0 ? textureId - 1 : textureId : side == PistonConstants.OppositeFace[facing] ? 107 : 108;
     }
 
     public override BlockRendererType getRenderType() => BlockRendererType.PistonExtension;
@@ -132,15 +128,15 @@ public class BlockPistonExtension : Block
     public override void neighborUpdate(OnTickEvent @event)
     {
         int facing = getFacing(@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z));
-        int var7 = @event.World.Reader.GetBlockId(@event.X - PistonConstants.HEAD_OFFSET_X[facing], @event.Y - PistonConstants.HEAD_OFFSET_Y[facing], @event.Z - PistonConstants.HEAD_OFFSET_Z[facing]);
-        if (var7 != Piston.id && var7 != StickyPiston.id)
+        int blockId = @event.World.Reader.GetBlockId(@event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing]);
+        if (blockId != Piston.id && blockId != StickyPiston.id)
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
         else
         {
-            Blocks[var7].neighborUpdate(new OnTickEvent(@event.World, @event.X - PistonConstants.HEAD_OFFSET_X[facing], @event.Y - PistonConstants.HEAD_OFFSET_Y[facing], @event.Z - PistonConstants.HEAD_OFFSET_Z[facing],
-                @event.World.Reader.GetBlockMeta(@event.X - PistonConstants.HEAD_OFFSET_X[facing], @event.Y - PistonConstants.HEAD_OFFSET_Y[facing], @event.Z - PistonConstants.HEAD_OFFSET_Z[facing]), id));
+            Blocks[blockId].neighborUpdate(new OnTickEvent(@event.World, @event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing],
+                @event.World.Reader.GetBlockMeta(@event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing]), id));
         }
     }
 
