@@ -1,6 +1,5 @@
 using BetaSharp.Registries;
 using BetaSharp.Server;
-using GameModeClass = BetaSharp.GameMode.GameMode;
 
 namespace BetaSharp.Tests;
 
@@ -19,7 +18,7 @@ public class GameModesTests : IDisposable
         Directory.CreateDirectory(_tempDir);
 
         RegistryAccess.ClearDynamicEntries();
-        RegistryAccess.AddDynamic(RegistryKeys.GameModesDefinition);
+        RegistryAccess.AddDynamic(RegistryDefinitions.GameModes);
     }
 
     public void Dispose()
@@ -40,7 +39,7 @@ public class GameModesTests : IDisposable
         return RegistryAccess.Build(basePath: _tempDir);
     }
 
-    private static IReadableRegistry<GameModeClass> Reg(RegistryAccess ra) =>
+    private static IReadableRegistry<GameMode> Reg(RegistryAccess ra) =>
         ra.GetOrThrow(RegistryKeys.GameModes);
 
     // ---- Configured name ----
@@ -50,7 +49,7 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("survival", "creative");
 
-        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "creative");
+        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "creative");
 
         Assert.NotNull(result);
         Assert.Equal("creative", result.Name);
@@ -61,7 +60,7 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("survival", "creative");
 
-        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "adventure");
+        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "adventure");
 
         Assert.NotNull(result);
         Assert.Equal("survival", result.Name);
@@ -74,7 +73,7 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("survival", "creative");
 
-        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "");
+        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "");
 
         Assert.NotNull(result);
         Assert.Equal("survival", result.Name);
@@ -85,7 +84,7 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("default", "creative");
 
-        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "");
+        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "");
 
         Assert.NotNull(result);
         Assert.Equal("default", result.Name);
@@ -96,7 +95,7 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("adventure");
 
-        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "");
+        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "");
 
         Assert.NotNull(result);
         Assert.Equal("adventure", result.Name);
@@ -107,7 +106,7 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes();
 
-        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "survival");
+        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "survival");
 
         Assert.Null(result);
     }
@@ -122,7 +121,7 @@ public class GameModesTests : IDisposable
         File.WriteAllText(Path.Combine(dir, "creative.json"), "{\"DisallowFlying\":false}");
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
 
-        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "creative");
+        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "creative");
 
         Assert.NotNull(result);
         Assert.False(result.DisallowFlying);
@@ -134,7 +133,7 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("survival");
 
-        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "survival");
+        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "survival");
 
         Assert.NotNull(result);
         Assert.Equal(Namespace.BetaSharp, result.Namespace);
@@ -147,7 +146,7 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("survival", "creative");
 
-        bool found = Reg(ra).AsAssetLoader().TryGet("survival", out GameModeClass? mode);
+        bool found = Reg(ra).AsAssetLoader().TryGet("survival", out GameMode? mode);
 
         Assert.True(found);
         Assert.Equal("survival", mode!.Name);
@@ -168,7 +167,7 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("survival", "creative");
 
-        bool found = Reg(ra).AsAssetLoader().TryGetByPrefix("surv", out GameModeClass? mode);
+        bool found = Reg(ra).AsAssetLoader().TryGetByPrefix("surv", out GameMode? mode);
 
         Assert.True(found);
         Assert.Equal("survival", mode!.Name);
@@ -179,7 +178,7 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("survival", "creative");
 
-        bool found = Reg(ra).AsAssetLoader().TryGetByPrefix("s", out GameModeClass? mode);
+        bool found = Reg(ra).AsAssetLoader().TryGetByPrefix("s", out GameMode? mode);
 
         Assert.True(found);
         Assert.StartsWith("s", mode!.Name);

@@ -53,7 +53,7 @@ public class GameModeCommand : ICommand
     private static void ListGameModes(ICommand.CommandContext c)
     {
         var registry = c.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes);
-        foreach (GameMode.GameMode mode in registry)
+        foreach (GameMode mode in registry)
         {
             c.Output.SendMessage(mode.ToString()!);
         }
@@ -70,7 +70,7 @@ public class GameModeCommand : ICommand
         c.Output.SendMessage("Gamemode not found.");
     }
 
-    private static void SetGameMode(ServerPlayerEntity p, GameMode.GameMode gameMode, ICommand.CommandContext c)
+    private static void SetGameMode(ServerPlayerEntity p, GameMode gameMode, ICommand.CommandContext c)
     {
         p.networkHandler.sendPacket(PlayerGameModeUpdateS2CPacket.Get(gameMode));
         p.GameMode = gameMode;

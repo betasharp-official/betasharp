@@ -16,6 +16,7 @@ using BetaSharp.Network;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Registries;
 using BetaSharp.Screens;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
@@ -41,6 +42,11 @@ public class ClientNetworkHandler : NetHandler
 
     private int _ticks;
     private int _lastKeepAliveTime;
+
+    private readonly Dictionary<ResourceLocation, IClientRegistryProcessor> _registryProcessors = new()
+    {
+        [RegistryKeys.GameModes.Location] = new ClientRegistryProcessor<GameMode>(),
+    };
 
     public ClientNetworkHandler(ClientNetworkContext context, string address, int port)
     {
@@ -820,9 +826,26 @@ public class ClientNetworkHandler : NetHandler
         }
     }
 
+    public override void onRegistryData(RegistryDataS2CPacket packet)
+    {
+        if (_registryProcessors.TryGetValue(packet.RegistryId, out IClientRegistryProcessor? processor))
+        {
+            processor.Process(packet.Entries);
+        }
+    }
+
     public override void onPlayerGameModeUpdate(PlayerGameModeUpdateS2CPacket packet)
     {
-        _context.PlayerHost.Player.GameMode = packet.GameMode;
+        var modes = (ClientRegistryProcessor<GameMode>)_registryProcessors[RegistryKeys.GameModes.Location];
+        GameMode? mode = modes.Get(packet.GameModeName);
+        if (mode is not null)
+        {
+            _context.PlayerHost.Player?.GameMode = mode;
+        }
+        else
+        {
+            _logger.LogWarning("Received unknown game mode name '{Name}'", packet.GameModeName);
+        }
     }
 
     public override bool isServerSide()

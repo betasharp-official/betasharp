@@ -1,6 +1,4 @@
-using BetaSharp.GameMode;
 using BetaSharp.Registries;
-using BetaSharp.Server;
 
 namespace BetaSharp.Tests;
 
@@ -158,14 +156,14 @@ public class RegistryRegressionTests : IDisposable
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, "adventure.json"), "{}");
 
-        RegistryAccess.AddDynamic(RegistryKeys.GameModesDefinition);
+        RegistryAccess.AddDynamic(RegistryDefinitions.GameModes);
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
         var registry = ra.GetOrThrow(RegistryKeys.GameModes);
 
         // Before the fix: this threw InvalidOperationException because
         // no GameMode holder had been resolved yet and First() yielded nothing.
-        BetaSharp.GameMode.GameMode? result = null;
-        var ex = Record.Exception(() => result = BetaSharpServer.ResolveDefaultGameMode(registry, ""));
+        BetaSharp.GameMode? result = null;
+        var ex = Record.Exception(() => result = DefaultGameModeListener.ResolveDefaultGameMode(registry, ""));
 
         Assert.Null(ex);
         Assert.Equal("adventure", result!.Name);

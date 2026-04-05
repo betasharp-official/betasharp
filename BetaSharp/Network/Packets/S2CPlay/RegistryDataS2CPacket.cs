@@ -1,0 +1,78 @@
+using System.Net.Sockets;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using BetaSharp.DataAsset;
+using BetaSharp.Registries;
+
+namespace BetaSharp.Network.Packets.S2CPlay;
+
+/// <summary>
+/// Sent by the server to synchronize the contents of a single data-driven registry to the
+/// client. The client accumulates packets for each registry during login, then uses the
+/// data for lookups (e.g. resolving a game mode name to its full data).
+/// </summary>
+public class RegistryDataS2CPacket() : ExtendedProtocolPacket(PacketId.RegistryDataS2C)
+{
+    public readonly record struct Entry(string Name, string? JsonData);
+
+    public ResourceLocation RegistryId { get; private set; }
+    public IReadOnlyList<Entry> Entries { get; private set; } = [];
+
+    private static readonly JsonSerializerOptions s_writeOptions = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
+    };
+
+    public static RegistryDataS2CPacket Get<T>(RegistryKey<T> key, IReadableRegistry<T> registry)
+        where T : class, IDataAsset
+    {
+        var p = Get<RegistryDataS2CPacket>(PacketId.RegistryDataS2C);
+        p.RegistryId = key.Location;
+        var entries = new List<Entry>();
+        foreach (ResourceLocation entryKey in registry.Keys)
+        {
+            T? value = registry.Get(entryKey);
+            if (value is null) continue;
+            entries.Add(new Entry(entryKey.Path, JsonSerializer.Serialize(value, s_writeOptions)));
+        }
+        p.Entries = entries;
+        return p;
+    }
+
+    public override void Read(NetworkStream stream)
+    {
+        RegistryId = ResourceLocation.Parse(stream.ReadString());
+        int count = stream.ReadShort();
+        var entries = new List<Entry>(count);
+        for (int i = 0; i < count; i++)
+        {
+            string name = stream.ReadString();
+            string? json = stream.ReadBoolean() ? stream.ReadString() : null;
+            entries.Add(new Entry(name, json));
+        }
+        Entries = entries;
+    }
+
+    public override void Write(NetworkStream stream)
+    {
+        stream.WriteString(RegistryId.ToString());
+        stream.WriteShort((short)Entries.Count);
+        foreach (Entry entry in Entries)
+        {
+            stream.WriteString(entry.Name);
+            stream.WriteBoolean(entry.JsonData is not null);
+            if (entry.JsonData is not null)
+                stream.WriteString(entry.JsonData);
+        }
+    }
+
+    public override void Apply(NetHandler handler) => handler.onRegistryData(this);
+
+    public override int Size()
+    {
+        int size = 2 + RegistryId.ToString().Length + 2; // registry ID string + count
+        foreach (Entry entry in Entries)
+            size += 2 + entry.Name.Length + 1 + (entry.JsonData is not null ? 2 + entry.JsonData.Length : 0);
+        return size;
+    }
+}

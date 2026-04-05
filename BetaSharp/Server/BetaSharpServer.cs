@@ -1,10 +1,11 @@
 using System.Diagnostics;
-using BetaSharp.DataAsset;
 using BetaSharp.Diagnostics;
+using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Profiling;
 using BetaSharp.Registries;
 using BetaSharp.Server.Command;
+using BetaSharp.Entities;
 using BetaSharp.Server.Entities;
 using BetaSharp.Server.Internal;
 using BetaSharp.Server.Network;
@@ -16,7 +17,6 @@ using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
-using GameModeClass = BetaSharp.GameMode.GameMode;
 using ServerWorld = BetaSharp.Worlds.Core.ServerWorld;
 
 namespace BetaSharp.Server;
@@ -25,7 +25,9 @@ public abstract class BetaSharpServer : ICommandOutput
 {
     public RegistryAccess RegistryAccess { get; set; } = RegistryAccess.Empty;
 
-    public GameModeClass DefaultGameMode { get; private set; } = new();
+    public GameMode DefaultGameMode { get; set; } = new();
+
+    private readonly List<IRegistryReloadListener> _reloadListeners = [];
 
     public Dictionary<string, int> GIVE_COMMANDS_COOLDOWNS = [];
     public ConnectionListener connections;
@@ -80,6 +82,8 @@ public abstract class BetaSharpServer : ICommandOutput
     {
         _commandHandler = new ServerCommandHandler(this);
 
+        RegisterReloadListener(new DefaultGameModeListener(this));
+
         onlineMode = config.GetOnlineMode(true);
         spawnAnimals = config.GetSpawnAnimals(true);
         pvpEnabled = config.GetPvpEnabled(true);
@@ -117,16 +121,9 @@ public abstract class BetaSharpServer : ICommandOutput
         _logger.LogInformation("Preparing level \"{WorldName}\"", worldName);
         loadWorld(worldName, new WorldSettings(seed, worldType, optionsString));
 
-        GameModeClass? resolved = ResolveDefaultGameMode(
-            RegistryAccess.GetOrThrow(RegistryKeys.GameModes),
-            config.GetDefaultGamemode("survival"));
-        if (resolved == null)
+        foreach (IRegistryReloadListener listener in _reloadListeners)
         {
-            _logger.LogError("No game modes are registered.");
-        }
-        else
-        {
-            DefaultGameMode = resolved;
+            listener.OnRegistriesRebuilt(RegistryAccess);
         }
 
         if (logHelp)
@@ -546,25 +543,37 @@ public abstract class BetaSharpServer : ICommandOutput
     }
 
     /// <summary>
-    /// Resolves which game mode should be the server default.
-    /// Tries <paramref name="configuredName"/> first, then "survival", then "default",
-    /// then the first registered entry. Returns <c>null</c> if no game modes exist.
+    /// Registers a listener that will be notified whenever datapacks are reloaded.
+    /// Use this to refresh any data cached from registry lookups.
     /// </summary>
-    internal static GameModeClass? ResolveDefaultGameMode(
-        IReadableRegistry<GameModeClass> registry, string configuredName)
+    public void RegisterReloadListener(IRegistryReloadListener listener)
+        => _reloadListeners.Add(listener);
+
+    /// <summary>
+    /// Reloads all data-driven content from disk. Re-reads base assets, global datapacks, and
+    /// world datapacks, then broadcasts a status message to all connected players.
+    /// </summary>
+    public void ReloadDatapacks()
     {
-        DataAssetLoader<GameModeClass> loader = registry.AsAssetLoader();
+        _logger.LogInformation("Reloading datapacks...");
+        playerManager.sendToAll(ChatMessagePacket.Get("§eReloading datapacks..."));
 
-        if (!string.IsNullOrEmpty(configuredName) && loader.TryGet(configuredName, out GameModeClass? named))
-            return named;
+        RegistryAccess = RegistryAccess.Rebuild();
 
-        if (loader.TryGet("survival", out GameModeClass? survival))
-            return survival;
+        foreach (IRegistryReloadListener listener in _reloadListeners)
+            listener.OnRegistriesRebuilt(RegistryAccess);
 
-        if (loader.TryGet("default", out GameModeClass? defaultMode))
-            return defaultMode;
+        // Sync updated registries then re-push each player's game mode so they use the new data
+        playerManager.sendToAll(RegistryDataS2CPacket.Get(RegistryKeys.GameModes, RegistryAccess.GetOrThrow(RegistryKeys.GameModes)));
+        var gameModes = RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader();
+        foreach (ServerPlayerEntity player in playerManager.players)
+        {
+            if (gameModes.TryGet(player.GameMode.Name, out GameMode? updated))
+                player.GameMode = updated!;
+            player.networkHandler.sendPacket(PlayerGameModeUpdateS2CPacket.Get(player.GameMode));
+        }
 
-        ResourceLocation? firstKey = registry.Keys.FirstOrDefault();
-        return firstKey != null ? registry.Get(firstKey) : null;
+        _logger.LogInformation("Datapacks reloaded.");
+        playerManager.sendToAll(ChatMessagePacket.Get("§aDatapacks reloaded."));
     }
 }

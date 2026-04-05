@@ -1,6 +1,6 @@
 using BetaSharp.DataAsset;
 
-namespace BetaSharp.GameMode;
+namespace BetaSharp;
 
 public class GameMode : BaseDataAsset
 {

@@ -25,7 +25,6 @@ using BetaSharp.Client.UI.Screens.InGame;
 using BetaSharp.Client.UI.Screens.InGame.Containers;
 using BetaSharp.Client.UI.Screens.Menu;
 using BetaSharp.Client.UI.Screens.Menu.Net;
-using BetaSharp.DataAsset;
 using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Items;
@@ -81,7 +80,7 @@ public partial class BetaSharp :
     public GameOptions Options { get; private set; }
     public IWorldStorageSource SaveLoader { get; private set; }
     public InternalServer? InternalServer { get; private set; }
-    public global::BetaSharp.Registries.RegistryAccess RegistryAccess { get; private set; } = global::BetaSharp.Registries.RegistryAccess.Empty;
+    public RegistryAccess RegistryAccess { get; private set; } = RegistryAccess.Empty;
 
     #endregion
 
@@ -413,8 +412,7 @@ public partial class BetaSharp :
 
     private void SetupResourcesAndPostProcessing()
     {
-        // Build the registry access, loading all data-driven registries
-        RegistryAccess = global::BetaSharp.Registries.RegistryAccess.Build(null, _gameDataDir);
+        RegistryAccess = RegistryAccess.Build(null, _gameDataDir);
 
         SoundManager.LoadSoundSettings(Options);
         DefaultMusicCategories.Register(SoundManager);

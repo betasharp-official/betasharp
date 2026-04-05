@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Text.Json;
 using BetaSharp.DataAsset;
-using BetaSharp.Registries;
 
 namespace BetaSharp.Tests;
 
@@ -38,7 +37,7 @@ public class DataAssetBugTests : IDisposable
         File.WriteAllText(Path.Combine(_tempDir, "test.json"), "null");
 
         var id = new ResourceLocation(Namespace.BetaSharp, "test");
-        var holder = DataAssetLoader<GameMode.GameMode>.CreateLazyHolder(_tempDir, id);
+        var holder = DataAssetLoader<GameMode>.CreateLazyHolder(_tempDir, id);
 
         Assert.Throws<InvalidOperationException>(() => _ = holder.Value);
     }
@@ -57,7 +56,7 @@ public class DataAssetBugTests : IDisposable
         File.WriteAllText(jsonPath, "{not valid json");
 
         var id = new ResourceLocation(Namespace.BetaSharp, "test");
-        var holder = DataAssetLoader<GameMode.GameMode>.CreateLazyHolder(_tempDir, id);
+        var holder = DataAssetLoader<GameMode>.CreateLazyHolder(_tempDir, id);
 
         // The lazy resolver reads the file with a `using` block, so even when
         // JsonSerializer throws, the file handle is properly released.
@@ -86,7 +85,7 @@ public class DataAssetBugTests : IDisposable
         string packDir = Path.Combine(_tempDir, "datapacks", "mypack");
         Directory.CreateDirectory(packDir);
 
-        var testLoader = new DataAssetLoader<GameMode.GameMode>("gamemode", LoadLocations.GameDatapack);
+        var testLoader = new DataAssetLoader<GameMode>("gamemode", LoadLocations.GameDatapack);
 
         // Replace s_assetLoaders temporarily so only testLoader is processed,
         // leaving the global GameModesLoader unaffected.

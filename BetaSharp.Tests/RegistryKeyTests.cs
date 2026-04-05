@@ -1,6 +1,5 @@
 using BetaSharp.DataAsset;
 using BetaSharp.Registries;
-using GameModeClass = BetaSharp.GameMode.GameMode;
 
 namespace BetaSharp.Tests;
 
@@ -12,7 +11,7 @@ public class RegistryKeyTests
     public void RegistryKey_exposes_location()
     {
         var loc = ResourceLocation.Parse("betasharp:game_mode");
-        var key = new RegistryKey<GameModeClass>(loc);
+        var key = new RegistryKey<GameMode>(loc);
 
         Assert.Equal(loc, key.Location);
     }
@@ -20,7 +19,7 @@ public class RegistryKeyTests
     [Fact]
     public void RegistryKey_ToString_returns_location_string()
     {
-        var key = new RegistryKey<GameModeClass>(ResourceLocation.Parse("betasharp:game_mode"));
+        var key = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
 
         Assert.Equal("betasharp:game_mode", key.ToString());
     }
@@ -28,8 +27,8 @@ public class RegistryKeyTests
     [Fact]
     public void RegistryKey_equals_another_with_same_location_and_type()
     {
-        var k1 = new RegistryKey<GameModeClass>(ResourceLocation.Parse("betasharp:game_mode"));
-        var k2 = new RegistryKey<GameModeClass>(ResourceLocation.Parse("betasharp:game_mode"));
+        var k1 = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
+        var k2 = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
 
         Assert.Equal(k1, k2);
         Assert.Equal(k1.GetHashCode(), k2.GetHashCode());
@@ -38,8 +37,8 @@ public class RegistryKeyTests
     [Fact]
     public void RegistryKey_not_equal_for_different_location()
     {
-        var k1 = new RegistryKey<GameModeClass>(ResourceLocation.Parse("betasharp:game_mode"));
-        var k2 = new RegistryKey<GameModeClass>(ResourceLocation.Parse("betasharp:enchantment"));
+        var k1 = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
+        var k2 = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:enchantment"));
 
         Assert.NotEqual(k1, k2);
     }
@@ -49,8 +48,8 @@ public class RegistryKeyTests
     [Fact]
     public void RegistryDefinition_exposes_key_and_asset_path()
     {
-        var key = new RegistryKey<GameModeClass>(ResourceLocation.Parse("betasharp:game_mode"));
-        var def = new RegistryDefinition<GameModeClass>(key, "gamemode");
+        var key = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
+        var def = new RegistryDefinition<GameMode>(key, "gamemode");
 
         Assert.Equal(key, def.Key);
         Assert.Equal("gamemode", def.AssetPath);
@@ -59,10 +58,10 @@ public class RegistryKeyTests
     [Fact]
     public void RegistryDefinition_creates_loader_with_alldata_locations_by_default()
     {
-        var key = new RegistryKey<GameModeClass>(ResourceLocation.Parse("betasharp:game_mode"));
-        var def = new RegistryDefinition<GameModeClass>(key, "gamemode");
+        var key = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
+        var def = new RegistryDefinition<GameMode>(key, "gamemode");
 
-        DataAssetLoader<GameModeClass> loader = def.CreateLoader();
+        DataAssetLoader<GameMode> loader = def.CreateLoader();
 
         // Loader should load from all data locations (Assets | GameDatapack | WorldDatapack)
         Assert.NotNull(loader);
@@ -71,10 +70,10 @@ public class RegistryKeyTests
     [Fact]
     public void RegistryDefinition_respects_explicit_locations()
     {
-        var key = new RegistryKey<GameModeClass>(ResourceLocation.Parse("betasharp:game_mode"));
-        var def = new RegistryDefinition<GameModeClass>(key, "gamemode", LoadLocations.Assets);
+        var key = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
+        var def = new RegistryDefinition<GameMode>(key, "gamemode", LoadLocations.Assets);
 
-        DataAssetLoader<GameModeClass> loader = def.CreateLoader();
+        DataAssetLoader<GameMode> loader = def.CreateLoader();
 
         Assert.NotNull(loader);
     }
@@ -90,6 +89,6 @@ public class RegistryKeyTests
     [Fact]
     public void RegistryKeys_GameModesDefinition_matches_GameModes_key()
     {
-        Assert.Equal(RegistryKeys.GameModes, RegistryKeys.GameModesDefinition.Key);
+        Assert.Equal(RegistryKeys.GameModes, RegistryDefinitions.GameModes.Key);
     }
 }

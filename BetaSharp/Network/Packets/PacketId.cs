@@ -59,6 +59,7 @@ public enum PacketId : byte
     MapUpdateS2C = 131,
     PlayerConnectionUpdateS2C = 132,
     PlayerGameModeUpdateS2C = 133,
+    RegistryDataS2C = 134,
     IncreaseStatS2C = 200,
     Disconnect = 255,
 }

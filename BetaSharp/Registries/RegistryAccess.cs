@@ -21,6 +21,7 @@ public sealed class RegistryAccess
 
     private readonly string? _basePath;
     private readonly string? _datapackPath;
+    private readonly string? _worldDatapackPath;
 
     // ---- Static factory registration (called during bootstrap) ----
 
@@ -29,6 +30,7 @@ public sealed class RegistryAccess
     private interface IDynamicRegistryEntry
     {
         ResourceLocation Key { get; }
+        bool IsReloadable { get; }
         DataAssetLoader CreateLoader();
         DataAssetLoader CloneForWorld(DataAssetLoader loader, string worldDatapackPath);
     }
@@ -37,6 +39,7 @@ public sealed class RegistryAccess
         where T : class, IDataAsset
     {
         public ResourceLocation Key => definition.Key.Location;
+        public bool IsReloadable => definition.IsReloadable;
         public DataAssetLoader CreateLoader() => definition.CreateLoader();
         public DataAssetLoader CloneForWorld(DataAssetLoader loader, string worldDatapackPath)
             => ((DataAssetLoader<T>)loader).CloneForWorldDatapacks(worldDatapackPath);
@@ -57,13 +60,15 @@ public sealed class RegistryAccess
         Dictionary<ResourceLocation, DataAssetLoader> serverLoaders,
         Dictionary<ResourceLocation, DataAssetLoader> activeLoaders,
         string? basePath,
-        string? datapackPath)
+        string? datapackPath,
+        string? worldDatapackPath = null)
     {
         _builtIns = builtIns;
         _serverLoaders = serverLoaders;
         _activeLoaders = activeLoaders;
         _basePath = basePath;
         _datapackPath = datapackPath;
+        _worldDatapackPath = worldDatapackPath;
     }
 
     /// <summary>An empty <see cref="RegistryAccess"/> with no registries. Safe to use as a null-object.</summary>
@@ -147,7 +152,20 @@ public sealed class RegistryAccess
             activeLoaders = serverLoaders;
         }
 
-        return new RegistryAccess(builtIns, serverLoaders, activeLoaders, basePath, datapackPath);
+        foreach (DataAssetLoader loader in serverLoaders.Values)
+        {
+            loader.Freeze();
+        }
+
+        if (activeLoaders != serverLoaders)
+        {
+            foreach (DataAssetLoader loader in activeLoaders.Values)
+            {
+                loader.Freeze();
+            }
+        }
+
+        return new RegistryAccess(builtIns, serverLoaders, activeLoaders, basePath, datapackPath, worldDatapackPath);
     }
 
     /// <summary>
@@ -164,7 +182,13 @@ public sealed class RegistryAccess
             if (_serverLoaders.TryGetValue(entry.Key, out DataAssetLoader? serverLoader))
                 activeLoaders[entry.Key] = entry.CloneForWorld(serverLoader, worldDatapackPath);
         }
-        return new RegistryAccess(_builtIns, _serverLoaders, activeLoaders, _basePath, _datapackPath);
+
+        foreach (DataAssetLoader loader in activeLoaders.Values)
+        {
+            loader.Freeze();
+        }
+
+        return new RegistryAccess(_builtIns, _serverLoaders, activeLoaders, _basePath, _datapackPath, worldDatapackPath);
     }
 
     /// <summary>
@@ -173,4 +197,56 @@ public sealed class RegistryAccess
     /// </summary>
     public RegistryAccess WithoutWorldDatapacks()
         => new(_builtIns, _serverLoaders, _serverLoaders, _basePath, _datapackPath);
+
+    /// <summary>
+    /// Rebuilds this <see cref="RegistryAccess"/> from disk, reloading only registries whose
+    /// <see cref="RegistryDefinition{T}.IsReloadable"/> is <c>true</c>.
+    /// </summary>
+    public RegistryAccess Rebuild()
+    {
+        // Server loaders: fresh load for reloadable entries, reuse frozen loader for the rest.
+        var serverLoaders = new Dictionary<ResourceLocation, DataAssetLoader>();
+        foreach (IDynamicRegistryEntry entry in s_dynamicEntries)
+        {
+            if (entry.IsReloadable)
+            {
+                DataAssetLoader loader = entry.CreateLoader();
+                loader.LoadFromPaths(_basePath, _datapackPath, null);
+                loader.WaitForLoad();
+                loader.Freeze();
+                serverLoaders[entry.Key] = loader;
+            }
+            else if (_serverLoaders.TryGetValue(entry.Key, out DataAssetLoader? existing))
+            {
+                serverLoaders[entry.Key] = existing;
+            }
+        }
+
+        // Active loaders: reloadable entries get a fresh world-datapack clone;
+        // non-reloadable entries carry forward whatever was already active (world datapacks included).
+        Dictionary<ResourceLocation, DataAssetLoader> activeLoaders;
+        if (_worldDatapackPath != null)
+        {
+            activeLoaders = [];
+            foreach (IDynamicRegistryEntry entry in s_dynamicEntries)
+            {
+                if (entry.IsReloadable && serverLoaders.TryGetValue(entry.Key, out DataAssetLoader? serverLoader))
+                {
+                    DataAssetLoader worldLoader = entry.CloneForWorld(serverLoader, _worldDatapackPath);
+                    worldLoader.Freeze();
+                    activeLoaders[entry.Key] = worldLoader;
+                }
+                else if (_activeLoaders.TryGetValue(entry.Key, out DataAssetLoader? existing))
+                {
+                    activeLoaders[entry.Key] = existing;
+                }
+            }
+        }
+        else
+        {
+            activeLoaders = serverLoaders;
+        }
+
+        return new RegistryAccess(_builtIns, serverLoaders, activeLoaders, _basePath, _datapackPath, _worldDatapackPath);
+    }
 }

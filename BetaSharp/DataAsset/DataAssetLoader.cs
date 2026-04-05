@@ -22,6 +22,8 @@ public abstract class DataAssetLoader
 
     private protected LoadLocations LoadedAssetsModify;
 
+    public bool IsFrozen { get; private set; }
+
     private static string? s_lastDataPath = null;
     private static string? s_lastWorldDataPath = null;
     private static string? s_lastResourcePath = null;
@@ -31,7 +33,7 @@ public abstract class DataAssetLoader
         Locations = locations;
     }
 
-    public static void LoadBaseAssets() => LoadBaseAssets(LoadLocations.None);
+    internal void Freeze() => IsFrozen = true;
 
     private static void LoadBaseAssets(LoadLocations filter)
     {
@@ -75,8 +77,6 @@ public abstract class DataAssetLoader
             }
         }
     }
-
-    public static void LoadWorldAssets(string path) => LoadWorldAssets(path, LoadLocations.None);
 
     private static void LoadWorldAssets(string path, LoadLocations filter)
     {
@@ -130,31 +130,6 @@ public abstract class DataAssetLoader
         }
     }
 
-    public static void UnloadWorldAssets(bool wait = false)
-    {
-        if (s_lastWorldDataPath == null) return;
-        s_lastWorldDataPath = null;
-
-        foreach (DataAssetLoader loader in s_assetLoaders)
-        {
-            if (!loader.Locations.HasFlag(LoadLocations.WorldDatapack)) continue;
-            if (!loader.LoadedAssetsModify.HasFlag(LoadLocations.WorldDatapack)) continue;
-            loader.Clear();
-        }
-
-        LoadBaseAssets(LoadLocations.WorldDatapack);
-        if (s_lastDataPath != null) LoadDatapackAssets(s_lastDataPath, LoadLocations.WorldDatapack);
-        if (s_lastResourcePath != null) LoadResourcepackAssets(s_lastResourcePath, LoadLocations.WorldDatapack);
-
-        if (wait)
-        {
-            foreach (DataAssetLoader loader in s_assetLoaders)
-            {
-                loader.Wait();
-            }
-        }
-    }
-
     public static void ResetResourcepackAssets(bool wait = false)
     {
         foreach (DataAssetLoader loader in s_assetLoaders)
@@ -184,6 +159,9 @@ public abstract class DataAssetLoader
     /// </summary>
     internal void LoadFromPaths(string? basePath, string? datapackPath, string? worldDatapackPath)
     {
+        if (IsFrozen)
+            throw new InvalidOperationException("Cannot load into a frozen registry.");
+
         if (Locations.HasFlag(LoadLocations.Assets))
         {
             string assetsPath = basePath != null ? Path.Combine(basePath, "assets") : "assets";
@@ -201,6 +179,8 @@ public abstract class DataAssetLoader
 
     private protected void LoadPacksFrom(string basePath, LoadLocations location)
     {
+        if (IsFrozen)
+            throw new InvalidOperationException("Cannot load into a frozen registry.");
         string packsDir = Path.Combine(basePath, "datapacks");
         if (!Directory.Exists(packsDir))
         {
