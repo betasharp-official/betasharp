@@ -835,7 +835,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onPlayerGameModeUpdate(PlayerGameModeUpdateS2CPacket packet)
     {
-        GameMode? mode = _clientRegistries.Get(RegistryKeys.GameModes, packet.GameModeName);
+        GameMode? mode = _clientRegistries.Get(RegistryKeys.GameModes, new ResourceLocation(packet.Namespace, packet.GameModeName));
         if (mode is not null)
         {
             _context.PlayerHost.Player?.GameMode = mode;

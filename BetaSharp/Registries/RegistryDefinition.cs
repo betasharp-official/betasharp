@@ -11,7 +11,7 @@ public sealed class RegistryDefinition<T>(
     RegistryKey<T> key,
     string assetPath,
     LoadLocations locations = LoadLocations.AllData,
-    bool isReloadable = true) where T : class, IDataAsset
+    bool isReloadable = true, bool serversideOnly = false) where T : class, IDataAsset
 {
     public RegistryKey<T> Key { get; } = key;
     internal string AssetPath { get; } = assetPath;
@@ -24,5 +24,11 @@ public sealed class RegistryDefinition<T>(
     /// </summary>
     public bool IsReloadable { get; } = isReloadable;
 
-    internal DataAssetLoader<T> CreateLoader() => new(AssetPath, Locations, allowUnhandled: false);
+    /// <summary>
+    /// Data that is serverside don't need to be synced.
+    /// Resource packs are client side only, and don't need to be synced either.
+    /// </summary>
+    public bool CanSync { get; } = !(serversideOnly || locations == LoadLocations.Resourcepack);
+
+    internal DataAssetLoader<T> CreateLoader() => new(AssetPath, Locations , !CanSync);
 }

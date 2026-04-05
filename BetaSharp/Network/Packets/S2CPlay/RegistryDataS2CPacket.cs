@@ -12,7 +12,7 @@ namespace BetaSharp.Network.Packets.S2CPlay;
 /// </summary>
 public class RegistryDataS2CPacket() : ExtendedProtocolPacket(PacketId.RegistryDataS2C)
 {
-    public readonly record struct Entry(string Name, string? JsonData);
+    public readonly record struct Entry(ResourceLocation key, string? JsonData);
 
     public ResourceLocation? RegistryId { get; private set; }
     public IReadOnlyList<Entry> Entries { get; private set; } = [];
@@ -32,7 +32,7 @@ public class RegistryDataS2CPacket() : ExtendedProtocolPacket(PacketId.RegistryD
         {
             T? value = registry.Get(entryKey);
             if (value is null) continue;
-            entries.Add(new Entry(entryKey.Path, JsonSerializer.Serialize(value, s_writeOptions)));
+            entries.Add(new Entry(entryKey, JsonSerializer.Serialize(value, s_writeOptions)));
         }
         p.Entries = entries;
         return p;
@@ -40,12 +40,12 @@ public class RegistryDataS2CPacket() : ExtendedProtocolPacket(PacketId.RegistryD
 
     public override void Read(NetworkStream stream)
     {
-        RegistryId = ResourceLocation.Parse(stream.ReadString());
-        int count = stream.ReadShort();
+        RegistryId = stream.ReadResourceLocation();
+        int count = stream.ReadUShort();
         var entries = new List<Entry>(count);
         for (int i = 0; i < count; i++)
         {
-            string name = stream.ReadString();
+            ResourceLocation name = stream.ReadResourceLocation();
             string? json = stream.ReadBoolean() ? stream.ReadString() : null;
             entries.Add(new Entry(name, json));
         }
@@ -54,11 +54,11 @@ public class RegistryDataS2CPacket() : ExtendedProtocolPacket(PacketId.RegistryD
 
     public override void Write(NetworkStream stream)
     {
-        stream.WriteString(RegistryId!.ToString());
-        stream.WriteShort((short)Entries.Count);
+        stream.WriteResourceLocation(RegistryId!);
+        stream.WriteUShort((ushort)Entries.Count);
         foreach (Entry entry in Entries)
         {
-            stream.WriteString(entry.Name);
+            stream.WriteResourceLocation(entry.key);
             stream.WriteBoolean(entry.JsonData is not null);
             if (entry.JsonData is not null)
             {
@@ -71,10 +71,10 @@ public class RegistryDataS2CPacket() : ExtendedProtocolPacket(PacketId.RegistryD
 
     public override int Size()
     {
-        int size = 2 + RegistryId!.ToString().Length + 2; // registry ID string + count
+        int size = (RegistryId!.Namespace.GetHashCode() == 0 ? 1 : 1 + RegistryId!.Namespace.ToString().Length) + RegistryId!.Path.Length + 3; // registry ID string + count
         foreach (Entry entry in Entries)
         {
-            size += 2 + entry.Name.Length + 1 + (entry.JsonData is not null ? 2 + entry.JsonData.Length : 0);
+            size += (entry.key.Namespace.GetHashCode() == 0 ? 1 : 1 + entry.key.Namespace.ToString().Length) + entry.key.Path.Length + 1 + (entry.JsonData is not null ? 2 + entry.JsonData.Length : 0);
         }
         return size;
     }

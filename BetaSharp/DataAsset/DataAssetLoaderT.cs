@@ -63,6 +63,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
     /// </summary>
     internal DataAssetLoader<T> CloneForWorldDatapacks(string worldDatapackPath)
     {
+        if (!Locations.HasFlag(LoadLocations.WorldDatapack)) return null;
         var clone = new DataAssetLoader<T>(_path, Locations, _allowUnhandled);
         foreach (KeyValuePair<ResourceLocation, Holder<T>> pair in Assets)
         {
@@ -106,23 +107,22 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         {
             try
             {
-                await using FileStream json = File.OpenRead(file);
-                JsonElement obj = await JsonSerializer.DeserializeAsync<JsonElement>(json, s_jsonOptions);
-
-                if (obj.ValueKind != JsonValueKind.Object)
-                {
-                    s_logger.LogError($"Unexpected Json format in file '{file}'. Expected Object, found {obj.ValueKind}.");
-                    HasErrors = true;
-                    continue;
-                }
-
                 LoadedAssetsModify |= location;
 
-                string key = Path.GetFileNameWithoutExtension(file);
-                var id = new ResourceLocation(@namespace, key);
+                var id = new ResourceLocation(@namespace, Path.GetFileNameWithoutExtension(file));
 
                 if (_assets.TryGetValue(id, out Holder<T>? assetRef))
                 {
+                    await using FileStream json = File.OpenRead(file);
+                    JsonElement obj = await JsonSerializer.DeserializeAsync<JsonElement>(json, s_jsonOptions);
+
+                    if (obj.ValueKind != JsonValueKind.Object)
+                    {
+                        s_logger.LogError($"Unexpected Json format in file '{file}'. Expected Object, found {obj.ValueKind}.");
+                        HasErrors = true;
+                        continue;
+                    }
+
                     if (GetReplace(obj))
                     {
                         ReplaceHolder(obj, file, id, assetRef);
@@ -140,7 +140,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
                     continue;
                 }
 
-                T? asset = FromJson(obj);
+                T? asset = await FromPath(file);
                 if (asset == null)
                 {
                     s_logger.LogError($"Asset failed to load from file '{file}'");
@@ -148,8 +148,8 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
                     continue;
                 }
 
-                asset.Name = key;
-                asset.Namespace = @namespace;
+                asset.Name = id.Path;
+                asset.Namespace = id.Namespace;
                 _assets.Add(id, new Holder<T>(asset));
             }
             catch (JsonException ex)
@@ -176,12 +176,15 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         return false;
     }
 
-    private static T? FromJson(JsonElement json)
+    private static async Task<T?> FromPath(string path)
     {
-        T? asset = json.Deserialize<T>(s_jsonOptions);
-        if (asset == null) return null;
+        await using FileStream json = File.OpenRead(path);
+        T? asset = await JsonSerializer.DeserializeAsync<T>(json, s_jsonOptions);
+        json.Close();
         return asset;
     }
+
+    private static T? FromJson(JsonElement json) => json.Deserialize<T>(s_jsonOptions);
 
     private void UpdateHolder(JsonElement json, Holder<T> target)
     {
@@ -228,9 +231,9 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             string filePath = Path.Join(dirPath, id.Path + ".json");
             try
             {
-                using FileStream json = File.OpenRead(filePath);
-                JsonElement obj = JsonSerializer.Deserialize<JsonElement>(json, s_jsonOptions);
-                T? asset = FromJson(obj) ?? throw new InvalidOperationException($"Asset '{id}' failed to load from '{filePath}'.");
+                Task<T?> t = FromPath(filePath);
+                t.Wait();
+                T asset = t.Result ?? throw new InvalidOperationException($"Asset '{id}' failed to load from '{filePath}'.");
                 asset.Name = id.Path;
                 asset.Namespace = id.Namespace;
                 return asset;
@@ -338,10 +341,15 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             string namespaceName = name.Substring(0, split);
             name = name.Substring(split + 1);
 
-            Namespace? ns = Namespace.FindIndex(namespaceName.ToLower(), prefix);
-            if (ns == null) return false;
+            List<Namespace> nss = Namespace.FindNamespaces(namespaceName.ToLower(), prefix);
 
-            return TryGetInNamespace(ns, name, out asset, prefix);
+            if (nss.Count == 0) return false;
+
+            foreach (Namespace ns in nss)
+            {
+                if (TryGetInNamespace(ns, name, out asset, prefix)) return true;
+            }
+            return false;
         }
 
         foreach (KeyValuePair<ResourceLocation, Holder<T>> a in Assets)

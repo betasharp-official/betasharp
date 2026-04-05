@@ -7,14 +7,14 @@ public sealed partial class ResourceLocation : IEquatable<ResourceLocation>, ICo
 
     public ResourceLocation(string @namespace, string path)
     {
-        Validate(path, nameof(path));
+        Validate256(path, nameof(path));
         Namespace = Namespace.Get(@namespace);
         Path = path;
     }
 
     public ResourceLocation(Namespace @namespace, string path)
     {
-        Validate(path, nameof(path));
+        Validate256(path, nameof(path));
         Namespace = @namespace;
         Path = path;
     }
@@ -42,6 +42,13 @@ public sealed partial class ResourceLocation : IEquatable<ResourceLocation>, ICo
 
     private static readonly System.Text.RegularExpressions.Regex s_validPattern =
         Reg();
+
+    internal static void Validate256(string part, string paramName)
+    {
+        if (part.Length > 256)
+            throw new ArgumentException("Must not exceed 256 characters", paramName);
+        Validate(part, paramName);
+    }
 
     internal static void Validate(string part, string paramName)
     {

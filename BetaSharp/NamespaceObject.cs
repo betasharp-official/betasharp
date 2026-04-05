@@ -7,6 +7,7 @@ public partial class Namespace
 
     private Namespace(int id, string name)
     {
+        if (name.Length > 64) throw new ArgumentException("namespace cant be longer than 64 characters");
         ResourceLocation.Validate(name, "namespace");
         _id = id;
         _name = name;

@@ -116,7 +116,7 @@ public sealed class RegistrySyncTests : IDisposable
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
 
         RegistryDataS2CPacket packet = ra.BuildSyncPackets().Single();
-        IEnumerable<string> names = packet.Entries.Select(e => e.Name).OrderBy(n => n);
+        IEnumerable<string> names = packet.Entries.Select(e => e.key.Path).OrderBy(n => n);
         Assert.Equal(["fortune", "sharpness"], names);
     }
 
@@ -153,7 +153,7 @@ public sealed class RegistrySyncTests : IDisposable
         RegistryAccess rebuilt = first.Rebuild();
 
         RegistryDataS2CPacket packet = rebuilt.BuildSyncPackets().Single();
-        IEnumerable<string> names = packet.Entries.Select(e => e.Name).OrderBy(n => n);
+        IEnumerable<string> names = packet.Entries.Select(e => e.key.Path).OrderBy(n => n);
         Assert.Equal(["fortune", "sharpness"], names);
     }
 }
@@ -253,7 +253,7 @@ public sealed class PacketSerializationTests
 
             Assert.Equal(key.Location, received.RegistryId);
             Assert.Single(received.Entries);
-            Assert.Equal("sharpness", received.Entries[0].Name);
+            Assert.Equal("sharpness", received.Entries[0].key.Path);
             Assert.NotNull(received.Entries[0].JsonData);
         }
         finally
@@ -271,17 +271,17 @@ public sealed class PacketSerializationTests
         try
         {
             // Manually write the packet wire format: registryId, count=1, name, hasData=false
-            writeStream.WriteString("test:enchantment");
+            writeStream.WriteResourceLocation("test:enchantment");
             writeStream.WriteShort(1);
-            writeStream.WriteString("silk_touch");
+            writeStream.WriteResourceLocation("test:silk_touch");
             writeStream.WriteBoolean(false); // no JSON data
 
             var received = new RegistryDataS2CPacket();
             received.Read(readStream);
 
-            Assert.Equal(ResourceLocation.Parse("test:enchantment"), received.RegistryId);
+            Assert.Equal("test:enchantment", received.RegistryId);
             Assert.Single(received.Entries);
-            Assert.Equal("silk_touch", received.Entries[0].Name);
+            Assert.Equal("test:silk_touch", received.Entries[0].key);
             Assert.Null(received.Entries[0].JsonData);
         }
         finally
@@ -346,7 +346,7 @@ public sealed class ClientRegistryAccessTests
         var access = new ClientRegistryAccess();
         access.Accumulate(BuildPacket(survival, creative));
 
-        IReadOnlyDictionary<string, GameMode> all = access.GetAll(s_gameModeKey);
+        IReadOnlyDictionary<ResourceLocation, GameMode> all = access.GetAll(s_gameModeKey);
         Assert.Equal(2, all.Count);
         Assert.True(all.ContainsKey("survival"));
         Assert.True(all.ContainsKey("creative"));
@@ -381,7 +381,7 @@ public sealed class ClientRegistryAccessTests
         var access = new ClientRegistryAccess();
         // Accumulate nothing for this registry.
 
-        IReadOnlyDictionary<string, GameMode> all = access.GetAll(s_gameModeKey);
+        IReadOnlyDictionary<ResourceLocation, GameMode> all = access.GetAll(s_gameModeKey);
         Assert.Empty(all);
     }
 

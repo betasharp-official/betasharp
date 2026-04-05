@@ -53,9 +53,9 @@ public class GameModeCommand : ICommand
     private static void ListGameModes(ICommand.CommandContext c)
     {
         var registry = c.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes);
-        foreach (GameMode mode in registry)
+        foreach (var key in registry.Keys)
         {
-            c.Output.SendMessage(mode.ToString()!);
+            c.Output.SendMessage(key.ToString());
         }
     }
 

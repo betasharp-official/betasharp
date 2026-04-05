@@ -32,6 +32,7 @@ public sealed class RegistryAccess
     {
         ResourceLocation Key { get; }
         bool IsReloadable { get; }
+        bool CanSync { get; }
         DataAssetLoader CreateLoader();
         DataAssetLoader CloneForWorld(DataAssetLoader loader, string worldDatapackPath);
         RegistryDataS2CPacket? BuildSyncPacket(RegistryAccess registryAccess);
@@ -42,6 +43,7 @@ public sealed class RegistryAccess
     {
         public ResourceLocation Key => definition.Key.Location;
         public bool IsReloadable => definition.IsReloadable;
+        public bool CanSync => definition.CanSync;
         public DataAssetLoader CreateLoader() => definition.CreateLoader();
         public DataAssetLoader CloneForWorld(DataAssetLoader loader, string worldDatapackPath)
             => ((DataAssetLoader<T>)loader).CloneForWorldDatapacks(worldDatapackPath);
@@ -242,7 +244,7 @@ public sealed class RegistryAccess
     {
         foreach (IDynamicRegistryEntry entry in s_dynamicEntries)
         {
-            if (!entry.IsReloadable) continue;
+            if (!entry.IsReloadable || !entry.CanSync) continue;
             RegistryDataS2CPacket? packet = entry.BuildSyncPacket(this);
             if (packet is not null) yield return packet;
         }

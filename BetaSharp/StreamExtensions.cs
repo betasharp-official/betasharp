@@ -159,6 +159,47 @@ internal static class StreamExtensions
             return Encoding.BigEndianUnicode.GetString(buffer);
         }
 
+        public string ReadAscii256()
+        {
+            int length = stream.ReadByte();
+            byte[] buffer = new byte[length];
+            stream.ReadExactly(buffer);
+            return Encoding.ASCII.GetString(buffer);
+        }
+
+        public void WriteAscii256(string value)
+        {
+            byte[] buffer = Encoding.ASCII.GetBytes(value);
+            stream.WriteByte((byte)buffer.Length);
+            stream.Write(buffer);
+        }
+
+        public Namespace ReadNamespace()
+        {
+            int length = stream.ReadByte();
+            if (length == 128) return Namespace.BetaSharp;
+            byte[] buffer = new byte[length];
+            stream.ReadExactly(buffer);
+            return Namespace.Get(Encoding.ASCII.GetString(buffer));
+        }
+
+        public void WriteNamespace(Namespace ns)
+        {
+            if (ns.GetHashCode() == 0) stream.WriteByte(128);
+            else stream.WriteAscii256(ns.ToString());
+        }
+
+        public ResourceLocation ReadResourceLocation()
+        {
+            return new ResourceLocation(ReadNamespace(stream), stream.ReadAscii256());
+        }
+
+        public void WriteResourceLocation(ResourceLocation resourceLocation)
+        {
+            stream.WriteNamespace(resourceLocation.Namespace);
+            stream.WriteAscii256(resourceLocation.Path);
+        }
+
         public byte[] ReadUntil(byte terminator)
         {
             List<byte> buffer = new();
