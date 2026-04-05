@@ -53,7 +53,7 @@ public class MultiplayerChunkCache(World world) : IChunkSource
 
     public bool CanSave() => false;
 
-    public void DecorateTerrain(IChunkSource source, int x, int y){ }
+    public void DecorateTerrain(IChunkSource source, int x, int y) { }
 
     public void markChunksForUnload(int _) { }
 

@@ -108,10 +108,10 @@ public class EntityArrow : Entity
         }
 
         int blockId = world.Reader.GetBlockId(xTile, yTile, zTile);
-            if (blockId > 0)
-            {
-                Block.Blocks[blockId].updateBoundingBox(world.Reader, xTile, yTile, zTile);
-                Box? box = Block.Blocks[blockId].getCollisionShape(world.Reader, world.Entities, xTile, yTile, zTile);
+        if (blockId > 0)
+        {
+            Block.Blocks[blockId].updateBoundingBox(world.Reader, xTile, yTile, zTile);
+            Box? box = Block.Blocks[blockId].getCollisionShape(world.Reader, world.Entities, xTile, yTile, zTile);
             if (box != null && box.Value.Contains(new Vec3D(x, y, z)))
             {
                 inGround = true;

@@ -122,10 +122,10 @@ internal class CraftingManager
 
             ItemStack? value = input switch
             {
-                Item item       => new ItemStack(item),
-                Block block     => new ItemStack(block, 1, -1),
+                Item item => new ItemStack(item),
+                Block block => new ItemStack(block, 1, -1),
                 ItemStack stack => stack,
-                _               => null // Thowing some Exception here would be ideal, but the original game does not do this
+                _ => null // Thowing some Exception here would be ideal, but the original game does not do this
             };
 
             ingredients[key] = value;

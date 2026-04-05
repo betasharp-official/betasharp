@@ -88,7 +88,7 @@ public class WorldReader : IBlockReader
 
     public bool IsTopY(int x, int y, int z)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000)            return false;
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000) return false;
 
         switch (y)
         {

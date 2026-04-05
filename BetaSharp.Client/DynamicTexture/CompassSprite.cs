@@ -70,7 +70,7 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,"Error loading compass sprite");
+            _logger.LogError(ex, "Error loading compass sprite");
         }
     }
 

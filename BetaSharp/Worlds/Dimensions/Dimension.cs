@@ -46,7 +46,8 @@ public abstract class Dimension
 
     public virtual IChunkSource CreateChunkGenerator() => new OverworldChunkGenerator(World, World.Seed);
 
-    public virtual bool IsValidSpawnPoint(int x, int z) {
+    public virtual bool IsValidSpawnPoint(int x, int z)
+    {
         int y = World.Reader.GetTopY(x, z);
         int topBlockId = World.Reader.GetBlockId(x, y, z);
 

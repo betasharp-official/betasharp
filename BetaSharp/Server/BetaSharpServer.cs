@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using BetaSharp.Diagnostics;
-using BetaSharp.DataAsset;
 using BetaSharp.GameMode;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Profiling;
+using BetaSharp.Registries;
 using BetaSharp.Server.Command;
 using BetaSharp.Server.Entities;
 using BetaSharp.Server.Internal;
@@ -22,6 +22,8 @@ namespace BetaSharp.Server;
 
 public abstract class BetaSharpServer : ICommandOutput
 {
+    public BetaSharp.Registries.RegistryAccess RegistryAccess { get; set; } = BetaSharp.Registries.RegistryAccess.Empty;
+
     public Dictionary<string, int> GIVE_COMMANDS_COOLDOWNS = [];
     public ConnectionListener connections;
     public IServerConfiguration config;
@@ -112,7 +114,7 @@ public abstract class BetaSharpServer : ICommandOutput
         _logger.LogInformation("Preparing level \"{WorldName}\"", worldName);
         loadWorld(worldName, new WorldSettings(seed, worldType, optionsString));
 
-        GameModes.SetDefaultGameMode(config.GetDefaultGamemode("survival"));
+        GameModes.SetDefaultGameMode(RegistryAccess, config.GetDefaultGamemode("survival"));
 
         if (logHelp)
         {
@@ -129,7 +131,7 @@ public abstract class BetaSharpServer : ICommandOutput
         worlds = new ServerWorld[2];
         var dir = new DirectoryInfo(Path.Combine(GetFile(".").FullName, worldDir));
         RegionWorldStorage worldStorage = new(dir, true);
-        DataAssetLoader.LoadWorldAssets(dir.FullName);
+        RegistryAccess = RegistryAccess.WithWorldDatapacks(dir.FullName);
 
         for (int i = 0; i < worlds.Length; i++)
         {
@@ -270,7 +272,7 @@ public abstract class BetaSharpServer : ICommandOutput
 
         if (this is InternalServer)
         {
-            DataAssetLoader.UnloadWorldAssets();
+            RegistryAccess = RegistryAccess.WithoutWorldDatapacks();
         }
     }
 

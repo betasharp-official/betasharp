@@ -1,4 +1,4 @@
-﻿namespace BetaSharp.DataAsset;
+namespace BetaSharp.DataAsset;
 
 [Flags]
 public enum LoadLocations : byte

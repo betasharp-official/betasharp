@@ -1,6 +1,7 @@
 using BetaSharp.Entities;
 using BetaSharp.GameMode;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Registries;
 using BetaSharp.Server.Command;
 using Microsoft.Extensions.Logging;
 
@@ -52,15 +53,16 @@ public class GameModeCommand : ICommand
 
     private void ListGameModes(ICommand.CommandContext c)
     {
-        foreach (var assetRef in GameModes.GameModesLoader.Assets)
+        var registry = c.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes);
+        foreach (GameMode.GameMode mode in registry)
         {
-            c.Output.SendMessage(assetRef.Value.ToString()!);
+            c.Output.SendMessage(mode.ToString()!);
         }
     }
 
     private void SetGameMode(ServerPlayerEntity p, string arg, ICommand.CommandContext c)
     {
-        if (GameModes.TryGet(arg, out var gameMode, true))
+        if (GameModes.TryGet(c.Server.RegistryAccess, arg, out var gameMode, true))
         {
             SetGameMode(p, gameMode, c);
             return;

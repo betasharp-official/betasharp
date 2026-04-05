@@ -174,7 +174,7 @@ internal static class NaturalSpawner
                                         MathHelper.Floor(player.y), MathHelper.Floor(player.z), 1) ??
                                     new Vec3i(spawnX, newSpawnY + 1, spawnZ);
 
-                                entity.setPositionAndAnglesKeepPrevAngles(wakeUpPos.X + 0.5F,wakeUpPos.Y, wakeUpPos.Z + 0.5F, 0.0F, 0.0F);
+                                entity.setPositionAndAnglesKeepPrevAngles(wakeUpPos.X + 0.5F, wakeUpPos.Y, wakeUpPos.Z + 0.5F, 0.0F, 0.0F);
                                 world.Entities.SpawnEntity(entity);
                                 entity.PostSpawn();
                                 player.wakeUp(true, false, false);

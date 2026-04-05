@@ -15,12 +15,12 @@ internal sealed class NBTTagByte : NBTBase
 
     public override void WriteTagContents(Stream output)
     {
-        output.WriteByte((byte) Value);
+        output.WriteByte((byte)Value);
     }
 
     public override void ReadTagContents(Stream input)
     {
-        Value = (sbyte) input.ReadByte();
+        Value = (sbyte)input.ReadByte();
     }
 
     public override byte GetTagType()

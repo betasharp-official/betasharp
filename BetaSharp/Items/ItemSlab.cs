@@ -23,7 +23,7 @@ internal class ItemSlab : ItemBlock
 
     public override String getItemNameIS(ItemStack itemStack)
     {
-        if(BlockSlab.names.Length > itemStack.getDamage())
+        if (BlockSlab.names.Length > itemStack.getDamage())
             return base.getItemName() + "." + BlockSlab.names[itemStack.getDamage()];
 
         return "";

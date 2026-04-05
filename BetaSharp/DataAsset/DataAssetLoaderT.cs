@@ -57,6 +57,27 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
 
     private protected override void Clear() => Assets.Clear();
 
+    /// <summary>
+    /// Creates a copy of this loader with all currently-loaded assets, then applies
+    /// <paramref name="worldDatapackPath"/> on top. The original loader is unaffected.
+    /// </summary>
+    internal DataAssetLoader<T> CloneForWorldDatapacks(string worldDatapackPath)
+    {
+        var clone = new DataAssetLoader<T>(_path, Locations, _allowUnhandled);
+        foreach (KeyValuePair<ResourceLocation, Holder<T>> pair in Assets)
+        {
+            // Create an independent holder so world-datapack mutations cannot
+            // corrupt the server-level registry that owns the original holders.
+            Holder<T> original = pair.Value;
+            clone._assets[pair.Key] = original.IsResolved
+                ? new Holder<T>(original.Value)
+                : Holder<T>.Reference(() => original.Value);
+        }
+        clone.LoadPacksFrom(worldDatapackPath, LoadLocations.WorldDatapack);
+        clone.WaitForLoad();
+        return clone;
+    }
+
     private protected override void OnLoadAssets(string path, bool namespaced, LoadLocations location)
     {
         // Complete pending loading before the next one.
@@ -373,7 +394,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
     {
         foreach (Holder<T> h in Assets.Values)
         {
-            if (h.IsResolved) yield return h.Value;
+            yield return h.Value;
         }
     }
 

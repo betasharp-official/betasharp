@@ -1,5 +1,5 @@
 using System.Net;
-using BetaSharp.DataAsset;
+using BetaSharp.Registries;
 using BetaSharp.Server.Network;
 using BetaSharp.Server.Threading;
 using Microsoft.Extensions.Logging;
@@ -31,8 +31,7 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
             s_logger.LogWarning("To start the server ensure that a minimum of 512MB of RAM is available.");
         }
 
-        DataAssetLoader.LoadBaseAssets();
-        DataAssetLoader.LoadDatapackAssets(null);
+        this.RegistryAccess = RegistryAccess.Build();
 
         s_logger.LogInformation("Loading properties");
 

@@ -19,17 +19,18 @@ using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Client.Resource;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.Sound;
-using BetaSharp.DataAsset;
 using BetaSharp.Client.UI;
 using BetaSharp.Client.UI.Screens;
 using BetaSharp.Client.UI.Screens.InGame;
 using BetaSharp.Client.UI.Screens.InGame.Containers;
 using BetaSharp.Client.UI.Screens.Menu;
 using BetaSharp.Client.UI.Screens.Menu.Net;
+using BetaSharp.DataAsset;
 using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Profiling;
+using BetaSharp.Registries;
 using BetaSharp.Server.Internal;
 using BetaSharp.Stats;
 using BetaSharp.Util;
@@ -80,6 +81,7 @@ public partial class BetaSharp :
     public GameOptions Options { get; private set; }
     public IWorldStorageSource SaveLoader { get; private set; }
     public InternalServer? InternalServer { get; private set; }
+    public global::BetaSharp.Registries.RegistryAccess RegistryAccess { get; private set; } = global::BetaSharp.Registries.RegistryAccess.Empty;
 
     #endregion
 
@@ -283,7 +285,7 @@ public partial class BetaSharp :
             Display.getGlfw().SwapInterval(Options.VSync ? 1 : 0);
 
 #if DEBUG
-                _glErrorHandler = new();
+            _glErrorHandler = new();
 #endif
         }
         catch (Exception ex)
@@ -411,8 +413,8 @@ public partial class BetaSharp :
 
     private void SetupResourcesAndPostProcessing()
     {
-        // Start loading base data assets
-        DataAssetLoader.LoadBaseAssets();
+        // Build the registry access, loading all data-driven registries
+        RegistryAccess = global::BetaSharp.Registries.RegistryAccess.Build(null, _gameDataDir);
 
         SoundManager.LoadSoundSettings(Options);
         DefaultMusicCategories.Register(SoundManager);
@@ -452,9 +454,6 @@ public partial class BetaSharp :
         ));
 
         FramebufferManager = new FramebufferManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
-
-        // placed further down to give AssetLoader.LoadBaseAssets() a head start to reduce possible blocking waiting that have to be done.
-        DataAssetLoader.LoadDatapackAssets(_gameDataDir);
     }
 
     private void LoadVersion()
@@ -1440,6 +1439,7 @@ public partial class BetaSharp :
     public void StartInternalServer(string worldDir, WorldSettings worldSettings)
     {
         InternalServer = new InternalServer(Path.Combine(BetaSharpDir, "saves"), worldDir, worldSettings, Options.renderDistance, Options.Difficulty);
+        InternalServer.RegistryAccess = RegistryAccess;
         InternalServer.RunThreaded("Internal Server");
     }
 

@@ -8,10 +8,10 @@ public abstract class DataAssetLoader
 {
     private protected static readonly ILogger s_logger = Log.Instance.For(typeof(DataAssetLoader).FullName ?? nameof(DataAssetLoader));
 
-    private static readonly List<DataAssetLoader> s_assetLoaders =
-    [
-        GameMode.GameModes.GameModesLoader
-    ];
+    // Loaders registered here are driven by the static Load* methods below.
+    // Data-driven registries managed by RegistryAccess are NOT in this list;
+    // they load themselves via LoadFromPaths.
+    private static readonly List<DataAssetLoader> s_assetLoaders = [];
 
     private protected static readonly JsonSerializerOptions s_jsonOptions = new()
     {
@@ -28,7 +28,6 @@ public abstract class DataAssetLoader
 
     private protected DataAssetLoader(LoadLocations locations)
     {
-        //s_assetLoaders.Add(this);
         Locations = locations;
     }
 
@@ -178,6 +177,48 @@ public abstract class DataAssetLoader
             }
         }
     }
+
+    /// <summary>
+    /// Runs the full load pipeline for this loader instance independently of the static
+    /// <see cref="s_assetLoaders"/> list. Used by <see cref="Registries.RegistryAccess.Build"/>.
+    /// </summary>
+    internal void LoadFromPaths(string? basePath, string? datapackPath, string? worldDatapackPath)
+    {
+        if (Locations.HasFlag(LoadLocations.Assets))
+        {
+            string assetsPath = basePath != null ? Path.Combine(basePath, "assets") : "assets";
+            if (!Directory.Exists(assetsPath))
+                Directory.CreateDirectory(assetsPath);
+            OnLoadAssets(assetsPath, false, LoadLocations.Assets);
+        }
+
+        if (Locations.HasFlag(LoadLocations.GameDatapack) && datapackPath != null)
+            LoadPacksFrom(datapackPath, LoadLocations.GameDatapack);
+
+        if (Locations.HasFlag(LoadLocations.WorldDatapack) && worldDatapackPath != null)
+            LoadPacksFrom(worldDatapackPath, LoadLocations.WorldDatapack);
+    }
+
+    private protected void LoadPacksFrom(string basePath, LoadLocations location)
+    {
+        string packsDir = Path.Combine(basePath, "datapacks");
+        if (!Directory.Exists(packsDir))
+        {
+            Directory.CreateDirectory(packsDir);
+            return;
+        }
+
+        foreach (string pack in Directory.EnumerateDirectories(packsDir))
+        {
+            if (pack.EndsWith(".disabled")) continue;
+            string assets = Path.Join(pack, "data");
+            if (!Directory.Exists(assets)) continue;
+            OnLoadAssets(assets, true, location);
+        }
+    }
+
+    /// <summary>Blocks until any in-flight async load task completes.</summary>
+    internal void WaitForLoad() => Wait();
 
     private protected abstract void OnLoadAssets(string path, bool namespaced, LoadLocations location);
     private protected abstract void Clear();

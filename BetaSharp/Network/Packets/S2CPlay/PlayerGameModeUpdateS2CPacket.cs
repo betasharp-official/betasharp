@@ -35,9 +35,9 @@ public class PlayerGameModeUpdateS2CPacket() : ExtendedProtocolPacket(PacketId.P
             VisibleToWorld = Bits(9, bits),
             BlockDrops = Bits(10, bits),
             CanDrop = Bits(11, bits),
-            CanWalk =  Bits(12, bits),
-            DisallowFlying =  Bits(13, bits),
-            NeedsAir =  Bits(14, bits),
+            CanWalk = Bits(12, bits),
+            DisallowFlying = Bits(13, bits),
+            NeedsAir = Bits(14, bits),
         };
     }
 

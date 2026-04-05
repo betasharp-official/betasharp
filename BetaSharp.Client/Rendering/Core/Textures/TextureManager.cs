@@ -1,14 +1,14 @@
+using System.Buffers;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Resource.Pack;
+using BetaSharp.DataAsset;
+using Microsoft.Extensions.Logging;
+using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using static BetaSharp.Client.Rendering.Core.Textures.TextureAtlasMipmapGenerator;
-using Microsoft.Extensions.Logging;
-using System.Buffers;
-using BetaSharp.DataAsset;
-using Silk.NET.OpenGL;
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
 

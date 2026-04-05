@@ -37,7 +37,7 @@ public class CactusRenderer : IBlockRenderer
         float centerLuminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
         float faceLuminance;
 
-        FaceColors dummyColors = new ();
+        FaceColors dummyColors = new();
 
         // --- Bottom Face (Y - 1) ---
         if (flatCtx.RenderAllFaces || bounds.MinY > 0.0D || block.isSideVisible(ctx.BlockReader, pos.x, pos.y - 1, pos.z, 0))

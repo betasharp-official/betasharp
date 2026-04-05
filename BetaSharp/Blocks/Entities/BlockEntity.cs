@@ -1,7 +1,7 @@
 using BetaSharp.NBT;
 using BetaSharp.Network.Packets;
-using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Registries;
+using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Blocks.Entities;

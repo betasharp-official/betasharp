@@ -57,7 +57,8 @@ public class EntityCreeper : EntityMonster
         if (world.IsRemote)
         {
             int state = (sbyte)CreeperState.Value;
-            if (state > 0 && timeSinceIgnited == 0) {
+            if (state > 0 && timeSinceIgnited == 0)
+            {
                 world.Broadcaster.PlaySoundAtEntity(this, "random.fuse", 1.0F, 0.5F);
             }
 

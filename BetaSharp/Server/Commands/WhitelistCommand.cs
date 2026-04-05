@@ -21,11 +21,11 @@ public class WhitelistCommand : ICommand
         switch (action)
         {
             case "on":
-                c.LogOp( "Turned on white-listing");
+                c.LogOp("Turned on white-listing");
                 c.Server.config.SetProperty("white-list", true);
                 break;
             case "off":
-                c.LogOp( "Turned off white-listing");
+                c.LogOp("Turned off white-listing");
                 c.Server.config.SetProperty("white-list", false);
                 break;
             case "list":
@@ -40,16 +40,16 @@ public class WhitelistCommand : ICommand
             case "add" when c.Args.Length >= 2:
                 string addTarget = c.Args[1].ToLower();
                 c.Server.playerManager.addToWhitelist(addTarget);
-                c.LogOp( "Added " + addTarget + " to white-list");
+                c.LogOp("Added " + addTarget + " to white-list");
                 break;
             case "remove" when c.Args.Length >= 2:
                 string removeTarget = c.Args[1].ToLower();
                 c.Server.playerManager.removeFromWhitelist(removeTarget);
-                c.LogOp( "Removed " + removeTarget + " from white-list");
+                c.LogOp("Removed " + removeTarget + " from white-list");
                 break;
             case "reload":
                 c.Server.playerManager.reloadWhitelist();
-                c.LogOp( "Reloaded white-list from file");
+                c.LogOp("Reloaded white-list from file");
                 break;
         }
     }

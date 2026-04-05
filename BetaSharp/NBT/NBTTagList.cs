@@ -7,7 +7,7 @@ public sealed class NBTTagList : NBTBase
 
     public override void WriteTagContents(Stream output)
     {
-        type = list.Count > 0 ? list[0].GetTagType() : (byte) 1;
+        type = list.Count > 0 ? list[0].GetTagType() : (byte)1;
 
         output.WriteByte(type);
         output.WriteInt(list.Count);
@@ -21,7 +21,7 @@ public sealed class NBTTagList : NBTBase
     public override void ReadTagContents(Stream input)
     {
         list = [];
-        type = (byte) input.ReadByte();
+        type = (byte)input.ReadByte();
 
         var length = input.ReadInt();
 
