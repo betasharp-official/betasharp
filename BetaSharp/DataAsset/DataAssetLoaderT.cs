@@ -254,7 +254,23 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         return JsonSerializer.SerializeToElement(merged, s_jsonOptions);
     }
 
-    public bool TryGet(string name, [NotNullWhen(true)] out T? asset, bool shortName = false)
+    /// <summary>
+    /// Looks up an entry by name. If <paramref name="name"/> contains a <c>:</c> it is
+    /// treated as <c>namespace:path</c>; otherwise all namespaces are searched by path.
+    /// </summary>
+    public bool TryGet(string name, [NotNullWhen(true)] out T? asset)
+        => TryGetInternal(name, out asset, prefix: false);
+
+    /// <summary>
+    /// Looks up an entry by prefix. A single character matches the first entry whose
+    /// path starts with that character; a longer string matches the first entry whose
+    /// path starts with the prefix. Namespace prefix matching is also supported via
+    /// <c>ns:prefix</c> syntax.
+    /// </summary>
+    public bool TryGetByPrefix(string prefix, [NotNullWhen(true)] out T? asset)
+        => TryGetInternal(prefix, out asset, prefix: true);
+
+    private bool TryGetInternal(string name, [NotNullWhen(true)] out T? asset, bool prefix)
     {
         asset = null;
         int split = name.IndexOf(':');
@@ -264,10 +280,10 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             string namespaceName = name.Substring(0, split);
             name = name.Substring(split + 1);
 
-            Namespace? ns = Namespace.FindIndex(namespaceName.ToLower(), shortName);
+            Namespace? ns = Namespace.FindIndex(namespaceName.ToLower(), prefix);
             if (ns == null) return false;
 
-            return TryGet(ns, name, out asset, shortName);
+            return TryGetInNamespace(ns, name, out asset, prefix);
         }
 
         foreach (KeyValuePair<ResourceLocation, Holder<T>> a in Assets)
@@ -278,7 +294,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             return true;
         }
 
-        if (shortName)
+        if (prefix)
         {
             int nameLen = name.Length;
             if (nameLen == 1)
@@ -305,9 +321,9 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         return false;
     }
 
-    public bool TryGet(Namespace ns, string name, [NotNullWhen(true)] out T? asset, bool shortName = false)
+    private bool TryGetInNamespace(Namespace ns, string name, [NotNullWhen(true)] out T? asset, bool prefix)
     {
-        if (!shortName)
+        if (!prefix)
         {
             var key = new ResourceLocation(ns, name);
             if (_assets.TryGetValue(key, out Holder<T>? holder))

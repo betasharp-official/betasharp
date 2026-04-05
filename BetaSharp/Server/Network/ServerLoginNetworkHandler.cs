@@ -1,6 +1,5 @@
 using System.Net.Sockets;
 using BetaSharp.Entities;
-using BetaSharp.GameMode;
 using BetaSharp.Network;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;
@@ -136,12 +135,12 @@ public class ServerLoginNetworkHandler : NetHandler
             return;
         }
 
-        ServerPlayerEntity ent = server.playerManager.connectPlayer(this, packet.username);
+        ServerPlayerEntity? ent = server.playerManager.connectPlayer(this, packet.username);
         if (ent != null)
         {
             server.playerManager.loadPlayerData(ent);
             ent.setWorld(server.getWorld(ent.dimensionId));
-            ent.GameMode = GameModes.DefaultGameMode;
+            ent.GameMode = server.DefaultGameMode;
             _logger.LogInformation($"{getConnectionInfo()} logged in with entity id {ent.id} at ({ent.x}, {ent.y}, {ent.z})");
             ServerWorld var3 = server.getWorld(ent.dimensionId);
             Vec3i var4 = var3.Properties.GetSpawnPos();

@@ -1,6 +1,6 @@
 using System.Diagnostics;
+using BetaSharp.DataAsset;
 using BetaSharp.Diagnostics;
-using BetaSharp.GameMode;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Profiling;
 using BetaSharp.Registries;
@@ -16,13 +16,16 @@ using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
+using GameModeClass = BetaSharp.GameMode.GameMode;
 using ServerWorld = BetaSharp.Worlds.Core.ServerWorld;
 
 namespace BetaSharp.Server;
 
 public abstract class BetaSharpServer : ICommandOutput
 {
-    public BetaSharp.Registries.RegistryAccess RegistryAccess { get; set; } = BetaSharp.Registries.RegistryAccess.Empty;
+    public RegistryAccess RegistryAccess { get; set; } = RegistryAccess.Empty;
+
+    public GameModeClass DefaultGameMode { get; private set; } = new();
 
     public Dictionary<string, int> GIVE_COMMANDS_COOLDOWNS = [];
     public ConnectionListener connections;
@@ -114,7 +117,17 @@ public abstract class BetaSharpServer : ICommandOutput
         _logger.LogInformation("Preparing level \"{WorldName}\"", worldName);
         loadWorld(worldName, new WorldSettings(seed, worldType, optionsString));
 
-        GameModes.SetDefaultGameMode(RegistryAccess, config.GetDefaultGamemode("survival"));
+        GameModeClass? resolved = ResolveDefaultGameMode(
+            RegistryAccess.GetOrThrow(RegistryKeys.GameModes),
+            config.GetDefaultGamemode("survival"));
+        if (resolved == null)
+        {
+            _logger.LogError("No game modes are registered.");
+        }
+        else
+        {
+            DefaultGameMode = resolved;
+        }
 
         if (logHelp)
         {
@@ -530,5 +543,28 @@ public abstract class BetaSharpServer : ICommandOutput
     protected virtual PlayerManager CreatePlayerManager()
     {
         return new PlayerManager(this);
+    }
+
+    /// <summary>
+    /// Resolves which game mode should be the server default.
+    /// Tries <paramref name="configuredName"/> first, then "survival", then "default",
+    /// then the first registered entry. Returns <c>null</c> if no game modes exist.
+    /// </summary>
+    internal static GameModeClass? ResolveDefaultGameMode(
+        IReadableRegistry<GameModeClass> registry, string configuredName)
+    {
+        DataAssetLoader<GameModeClass> loader = registry.AsAssetLoader();
+
+        if (!string.IsNullOrEmpty(configuredName) && loader.TryGet(configuredName, out GameModeClass? named))
+            return named;
+
+        if (loader.TryGet("survival", out GameModeClass? survival))
+            return survival;
+
+        if (loader.TryGet("default", out GameModeClass? defaultMode))
+            return defaultMode;
+
+        ResourceLocation? firstKey = registry.Keys.FirstOrDefault();
+        return firstKey != null ? registry.Get(firstKey) : null;
     }
 }

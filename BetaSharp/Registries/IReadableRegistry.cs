@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace BetaSharp.Registries;
 
 /// <summary>
@@ -10,6 +12,12 @@ public interface IReadableRegistry<T> : IEnumerable<T> where T : class
 
     T? Get(ResourceLocation key);
     T? Get(int id);
+
+    bool TryGet(ResourceLocation key, [NotNullWhen(true)] out T? asset)
+    {
+        asset = Get(key);
+        return asset != null;
+    }
 
     int GetId(T value);
     ResourceLocation? GetKey(T value);

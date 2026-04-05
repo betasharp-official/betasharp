@@ -1,10 +1,13 @@
-using BetaSharp.DataAsset;
-using BetaSharp.GameMode;
 using BetaSharp.Registries;
+using BetaSharp.Server;
 using GameModeClass = BetaSharp.GameMode.GameMode;
 
 namespace BetaSharp.Tests;
 
+/// <summary>
+/// Tests for <see cref="BetaSharpServer.ResolveDefaultGameMode"/> — the logic that
+/// picks the server default from the game-mode registry at startup and after /reload.
+/// </summary>
 [Collection("RegistryAccess")]
 public class GameModesTests : IDisposable
 {
@@ -22,172 +25,163 @@ public class GameModesTests : IDisposable
     public void Dispose()
     {
         RegistryAccess.ClearDynamicEntries();
-
         GC.Collect();
         GC.WaitForPendingFinalizers();
         if (Directory.Exists(_tempDir))
             Directory.Delete(_tempDir, recursive: true);
     }
 
-    // ---- Helpers ----
-
-    private RegistryAccess BuildWithGameModes(params (string name, bool disallowFlying)[] modes)
+    private RegistryAccess BuildWithGameModes(params string[] names)
     {
         string dir = Path.Combine(_tempDir, "assets", "gamemode");
         Directory.CreateDirectory(dir);
-        foreach ((string name, bool disallowFlying) in modes)
-        {
-            File.WriteAllText(Path.Combine(dir, $"{name}.json"),
-                $"{{\"DisallowFlying\":{disallowFlying.ToString().ToLower()}}}");
-        }
-
+        foreach (string name in names)
+            File.WriteAllText(Path.Combine(dir, $"{name}.json"), "{}");
         return RegistryAccess.Build(basePath: _tempDir);
     }
 
-    // ---- GameModes.TryGet ----
+    private static IReadableRegistry<GameModeClass> Reg(RegistryAccess ra) =>
+        ra.GetOrThrow(RegistryKeys.GameModes);
+
+    // ---- Configured name ----
 
     [Fact]
-    public void TryGet_returns_true_and_game_mode_for_existing_name()
+    public void Resolves_explicitly_configured_mode()
     {
-        RegistryAccess ra = BuildWithGameModes(("survival", true), ("creative", false));
+        RegistryAccess ra = BuildWithGameModes("survival", "creative");
 
-        bool found = GameModes.TryGet(ra, "survival", out GameModeClass? mode);
+        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "creative");
 
-        Assert.True(found);
-        Assert.NotNull(mode);
-        Assert.Equal("survival", mode.Name);
+        Assert.NotNull(result);
+        Assert.Equal("creative", result.Name);
     }
 
     [Fact]
-    public void TryGet_returns_false_for_unknown_name()
+    public void Configured_name_not_found_falls_back_to_survival()
     {
-        RegistryAccess ra = BuildWithGameModes(("survival", true));
+        RegistryAccess ra = BuildWithGameModes("survival", "creative");
 
-        bool found = GameModes.TryGet(ra, "adventure", out GameModeClass? mode);
+        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "adventure");
 
-        Assert.False(found);
-        Assert.Null(mode);
+        Assert.NotNull(result);
+        Assert.Equal("survival", result.Name);
+    }
+
+    // ---- Fallback chain ----
+
+    [Fact]
+    public void Empty_configured_name_falls_back_to_survival()
+    {
+        RegistryAccess ra = BuildWithGameModes("survival", "creative");
+
+        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "");
+
+        Assert.NotNull(result);
+        Assert.Equal("survival", result.Name);
     }
 
     [Fact]
-    public void TryGet_short_name_matches_by_prefix()
+    public void No_survival_falls_back_to_default()
     {
-        RegistryAccess ra = BuildWithGameModes(("survival", true), ("creative", false));
+        RegistryAccess ra = BuildWithGameModes("default", "creative");
 
-        bool found = GameModes.TryGet(ra, "s", out GameModeClass? mode, shortName: true);
+        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "");
 
-        Assert.True(found);
-        Assert.NotNull(mode);
-        Assert.StartsWith("s", mode.Name);
+        Assert.NotNull(result);
+        Assert.Equal("default", result.Name);
     }
 
     [Fact]
-    public void TryGet_short_name_prefix_match()
+    public void No_survival_or_default_falls_back_to_first_registered_entry()
     {
-        RegistryAccess ra = BuildWithGameModes(("survival", true), ("creative", false));
+        RegistryAccess ra = BuildWithGameModes("adventure");
 
-        bool found = GameModes.TryGet(ra, "surv", out GameModeClass? mode, shortName: true);
+        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "");
+
+        Assert.NotNull(result);
+        Assert.Equal("adventure", result.Name);
+    }
+
+    [Fact]
+    public void Empty_registry_returns_null()
+    {
+        RegistryAccess ra = BuildWithGameModes();
+
+        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "survival");
+
+        Assert.Null(result);
+    }
+
+    // ---- Properties survive resolution ----
+
+    [Fact]
+    public void Resolved_mode_has_correct_properties_from_json()
+    {
+        string dir = Path.Combine(_tempDir, "assets", "gamemode");
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(Path.Combine(dir, "creative.json"), "{\"DisallowFlying\":false}");
+        RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
+
+        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "creative");
+
+        Assert.NotNull(result);
+        Assert.False(result.DisallowFlying);
+        Assert.True(result.CanBreak);  // default value preserved
+    }
+
+    [Fact]
+    public void Resolved_mode_has_betasharp_namespace()
+    {
+        RegistryAccess ra = BuildWithGameModes("survival");
+
+        GameModeClass? result = BetaSharpServer.ResolveDefaultGameMode(Reg(ra), "survival");
+
+        Assert.NotNull(result);
+        Assert.Equal(Namespace.BetaSharp, result.Namespace);
+    }
+
+    // ---- String lookup via AsAssetLoader() ----
+
+    [Fact]
+    public void AsAssetLoader_TryGet_finds_mode_by_exact_name()
+    {
+        RegistryAccess ra = BuildWithGameModes("survival", "creative");
+
+        bool found = Reg(ra).AsAssetLoader().TryGet("survival", out GameModeClass? mode);
 
         Assert.True(found);
         Assert.Equal("survival", mode!.Name);
     }
 
-    // ---- GameModes.Get ----
-
     [Fact]
-    public void Get_returns_game_mode_for_existing_name()
+    public void AsAssetLoader_TryGet_returns_false_for_unknown_name()
     {
-        RegistryAccess ra = BuildWithGameModes(("survival", true));
+        RegistryAccess ra = BuildWithGameModes("survival");
 
-        GameModeClass mode = GameModes.Get(ra, "survival");
+        bool found = Reg(ra).AsAssetLoader().TryGet("adventure", out _);
 
-        Assert.Equal("survival", mode.Name);
+        Assert.False(found);
     }
 
     [Fact]
-    public void Get_throws_for_unknown_name()
+    public void AsAssetLoader_TryGetByPrefix_matches_prefix()
     {
-        RegistryAccess ra = BuildWithGameModes(("survival", true));
+        RegistryAccess ra = BuildWithGameModes("survival", "creative");
 
-        Assert.Throws<ArgumentException>(() => GameModes.Get(ra, "adventure"));
-    }
+        bool found = Reg(ra).AsAssetLoader().TryGetByPrefix("surv", out GameModeClass? mode);
 
-    // ---- GameModes.SetDefaultGameMode ----
-
-    [Fact]
-    public void SetDefaultGameMode_with_name_sets_default_to_named_mode()
-    {
-        RegistryAccess ra = BuildWithGameModes(("survival", true), ("creative", false));
-
-        GameModes.SetDefaultGameMode(ra, "creative");
-
-        Assert.Equal("creative", GameModes.DefaultGameMode.Name);
-        Assert.False(GameModes.DefaultGameMode.DisallowFlying);
+        Assert.True(found);
+        Assert.Equal("survival", mode!.Name);
     }
 
     [Fact]
-    public void SetDefaultGameMode_without_name_prefers_survival()
+    public void AsAssetLoader_TryGetByPrefix_matches_single_character()
     {
-        RegistryAccess ra = BuildWithGameModes(("survival", true), ("creative", false));
+        RegistryAccess ra = BuildWithGameModes("survival", "creative");
 
-        GameModes.SetDefaultGameMode(ra);
+        bool found = Reg(ra).AsAssetLoader().TryGetByPrefix("s", out GameModeClass? mode);
 
-        Assert.Equal("survival", GameModes.DefaultGameMode.Name);
-    }
-
-    [Fact]
-    public void SetDefaultGameMode_without_name_falls_back_to_default_when_no_survival()
-    {
-        RegistryAccess ra = BuildWithGameModes(("default", false), ("adventure", true));
-
-        GameModes.SetDefaultGameMode(ra);
-
-        Assert.Equal("default", GameModes.DefaultGameMode.Name);
-    }
-
-    [Fact]
-    public void SetDefaultGameMode_without_name_falls_back_to_first_when_no_survival_or_default()
-    {
-        RegistryAccess ra = BuildWithGameModes(("adventure", true));
-
-        GameModes.SetDefaultGameMode(ra);
-
-        Assert.Equal("adventure", GameModes.DefaultGameMode.Name);
-    }
-
-    [Fact]
-    public void SetDefaultGameMode_with_empty_name_falls_back_to_survival()
-    {
-        RegistryAccess ra = BuildWithGameModes(("survival", true), ("creative", false));
-
-        GameModes.SetDefaultGameMode(ra, "");
-
-        Assert.Equal("survival", GameModes.DefaultGameMode.Name);
-    }
-
-    // ---- JSON property loading ----
-
-    [Fact]
-    public void Game_mode_properties_are_loaded_from_json()
-    {
-        RegistryAccess ra = BuildWithGameModes(("creative", false));
-
-        GameModeClass creative = GameModes.Get(ra, "creative");
-
-        Assert.False(creative.DisallowFlying);
-        // Unspecified properties retain their default values.
-        Assert.True(creative.CanBreak);
-    }
-
-    // ---- Namespace is set on loaded entries ----
-
-    [Fact]
-    public void Loaded_game_mode_has_betasharp_namespace()
-    {
-        RegistryAccess ra = BuildWithGameModes(("survival", true));
-
-        GameModeClass survival = GameModes.Get(ra, "survival");
-
-        Assert.Equal(Namespace.BetaSharp, survival.Namespace);
+        Assert.True(found);
+        Assert.StartsWith("s", mode!.Name);
     }
 }

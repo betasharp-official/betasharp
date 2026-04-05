@@ -62,7 +62,7 @@ public abstract class EntityPlayer : EntityLiving
         rotationOffset = 180.0F;
         fireImmunityTicks = 20;
         texture = "/mob/char.png";
-        GameMode = GameModes.DefaultGameMode;
+        GameMode = new GameMode.GameMode();
     }
 
     public override bool canBreatheUnderwater() => !GameMode.NeedsAir;
