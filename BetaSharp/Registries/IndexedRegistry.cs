@@ -92,7 +92,7 @@ public class IndexedRegistry<T>(ResourceLocation registryKey) : IRegistry<T> whe
         _holderCache ??= [];
         if (!_holderCache.TryGetValue(key, out Holder<T>? holder))
         {
-            holder = Holder<T>.Direct(value);
+            holder = new(value);
             _holderCache[key] = holder;
         }
 

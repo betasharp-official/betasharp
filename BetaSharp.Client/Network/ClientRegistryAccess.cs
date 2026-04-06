@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BetaSharp.DataAsset;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Registries;
+using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Client.Network;
 
@@ -43,20 +43,20 @@ internal sealed class ClientRegistryAccess
     /// <summary>
     /// Returns a single entry by name, or <c>null</c> if the registry or entry is unknown.
     /// </summary>
-    public T? Get<T>(RegistryKey<T> key, string name) where T : BaseDataAsset, new()
+    public T? Get<T>(RegistryKey<T> key, string name) where T : DataAsset, new()
         => GetAll(key).GetValueOrDefault(name);
 
     /// <summary>
     /// Returns a single entry by name, or <c>null</c> if the registry or entry is unknown.
     /// </summary>
-    public T? Get<T>(RegistryKey<T> key, ResourceLocation item) where T : BaseDataAsset, new()
+    public T? Get<T>(RegistryKey<T> key, ResourceLocation item) where T : DataAsset, new()
         => GetAll(key).GetValueOrDefault(item);
 
     /// <summary>
     /// Returns all entries for a registry as a name → value dictionary.
     /// The result is cached until the registry is re-accumulated.
     /// </summary>
-    public IReadOnlyDictionary<ResourceLocation, T> GetAll<T>(RegistryKey<T> key) where T : BaseDataAsset, new()
+    public IReadOnlyDictionary<ResourceLocation, T> GetAll<T>(RegistryKey<T> key) where T : DataAsset, new()
     {
         if (_cache.TryGetValue(key.Location, out object? cached))
         {
@@ -75,7 +75,7 @@ internal sealed class ClientRegistryAccess
     }
 
     private static Dictionary<ResourceLocation, T> Deserialize<T>(Dictionary<ResourceLocation, string?> raw)
-        where T : BaseDataAsset, new()
+        where T : DataAsset, new()
     {
         var result = new Dictionary<ResourceLocation, T>(raw.Count);
         foreach ((ResourceLocation key, string? json) in raw)

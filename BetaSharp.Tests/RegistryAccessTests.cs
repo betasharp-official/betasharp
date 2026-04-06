@@ -1,5 +1,5 @@
-using BetaSharp.DataAsset;
 using BetaSharp.Registries;
+using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Tests;
 
@@ -8,7 +8,7 @@ namespace BetaSharp.Tests;
 /// the registry infrastructure works for any <see cref="IDataAsset"/> type, not just
 /// the built-in <see cref="BetaSharp.GameMode.GameMode"/>.
 /// </summary>
-public class TestEnchantment : BaseDataAsset
+public class TestEnchantment : DataAsset
 {
     /// <summary>Maximum level the enchantment can reach (e.g. Sharpness V → 5).</summary>
     public int MaxLevel { get; set; } = 1;

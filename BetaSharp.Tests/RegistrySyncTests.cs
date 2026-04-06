@@ -2,9 +2,9 @@ using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Client.Network;
-using BetaSharp.DataAsset;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Registries;
+using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Tests;
 

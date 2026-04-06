@@ -22,7 +22,9 @@ public sealed class Holder<T> where T : class
             if (_value != null) return _value;
 
             if (_resolver == null)
+            {
                 throw new InvalidOperationException("Holder has no value and no resolver.");
+            }
 
             T resolved = _resolver();
             _value = resolved;
@@ -54,11 +56,6 @@ public sealed class Holder<T> where T : class
     {
         _resolver = resolver;
     }
-
-    /// <summary>
-    /// Creates a directly-valued holder. Equivalent to <c>new Holder&lt;T&gt;(value)</c>.
-    /// </summary>
-    public static Holder<T> Direct(T value) => new(value);
 
     /// <summary>
     /// Creates a lazily-resolved holder that invokes <paramref name="resolver"/> on first access.

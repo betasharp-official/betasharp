@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using BetaSharp.DataAsset;
 using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets;
@@ -7,6 +6,7 @@ using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Profiling;
 using BetaSharp.Registries;
+using BetaSharp.Registries.Data;
 using BetaSharp.Server.Command;
 using BetaSharp.Server.Entities;
 using BetaSharp.Server.Internal;

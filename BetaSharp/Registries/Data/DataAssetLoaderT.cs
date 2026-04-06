@@ -1,51 +1,16 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using BetaSharp.Registries;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.DataAsset;
+namespace BetaSharp.Registries.Data;
 
 public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T : class, IDataAsset
 {
     private readonly string _path;
     private readonly bool _allowUnhandled;
-    private Task? _loadTask = null;
-    private readonly Dictionary<ResourceLocation, Holder<T>> _assets = [];
 
-    public Dictionary<ResourceLocation, Holder<T>> Assets
-    {
-        get
-        {
-            if (_loadTask != null) Wait();
-            return _assets;
-        }
-    }
-
-    private protected override void Wait()
-    {
-        if (_loadTask == null) return;
-
-        if (_loadTask.IsFaulted)
-        {
-            throw _loadTask.Exception;
-        }
-
-        if (_loadTask.IsCompleted)
-        {
-            _loadTask = null;
-        }
-        else
-        {
-            _loadTask.Wait();
-            if (_loadTask.IsFaulted)
-            {
-                throw _loadTask.Exception;
-            }
-
-            _loadTask = null;
-        }
-    }
+    public Dictionary<ResourceLocation, Holder<T>> Assets { get; } = [];
 
     public static implicit operator Dictionary<ResourceLocation, Holder<T>>(DataAssetLoader<T> loader) => loader.Assets;
 
@@ -61,7 +26,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
     /// Creates a copy of this loader with all currently-loaded assets, then applies
     /// <paramref name="worldDatapackPath"/> on top. The original loader is unaffected.
     /// </summary>
-    internal DataAssetLoader<T> CloneForWorldDatapacks(string worldDatapackPath)
+    internal DataAssetLoader<T>? CloneForWorldDatapacks(string worldDatapackPath)
     {
         if (!Locations.HasFlag(LoadLocations.WorldDatapack)) return null;
         var clone = new DataAssetLoader<T>(_path, Locations, _allowUnhandled);
@@ -70,32 +35,30 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             // Create an independent holder so world-datapack mutations cannot
             // corrupt the server-level registry that owns the original holders.
             Holder<T> original = pair.Value;
-            clone._assets[pair.Key] = original.IsResolved
+            clone.Assets[pair.Key] = original.IsResolved
                 ? new Holder<T>(original.Value)
                 : Holder<T>.Reference(() => original.Value);
         }
         clone.LoadPacksFrom(worldDatapackPath, LoadLocations.WorldDatapack);
-        clone.WaitForLoad();
         return clone;
     }
 
     private protected override void OnLoadAssets(string path, bool namespaced, LoadLocations location)
     {
-        // Complete pending loading before the next one.
-        Wait();
-        _loadTask = namespaced ? LoadAssetsFromFolders(path, location) : LoadAssets(Namespace.BetaSharp, path, location);
+        if (namespaced) LoadAssetsFromFolders(path, location);
+        else LoadAssets(Namespace.BetaSharp, path, location);
     }
 
-    private async Task LoadAssetsFromFolders(string path, LoadLocations location)
+    private void LoadAssetsFromFolders(string path, LoadLocations location)
     {
         foreach (string dir in Directory.GetDirectories(path, "*", SearchOption.TopDirectoryOnly))
         {
             string dirName = Path.GetFileName(dir);
-            await LoadAssets(Namespace.Get(dirName), dir, location);
+            LoadAssets(Namespace.Get(dirName), dir, location);
         }
     }
 
-    private async Task LoadAssets(Namespace @namespace, string path, LoadLocations location)
+    private void LoadAssets(Namespace @namespace, string path, LoadLocations location)
     {
         path = Path.Join(path, _path);
         if (!Directory.Exists(path))
@@ -107,14 +70,12 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         {
             try
             {
-                LoadedAssetsModify |= location;
-
                 var id = new ResourceLocation(@namespace, Path.GetFileNameWithoutExtension(file));
 
-                if (_assets.TryGetValue(id, out Holder<T>? assetRef))
+                if (Assets.TryGetValue(id, out Holder<T>? assetRef))
                 {
-                    await using FileStream json = File.OpenRead(file);
-                    JsonElement obj = await JsonSerializer.DeserializeAsync<JsonElement>(json, s_jsonOptions);
+                    using FileStream json = File.OpenRead(file);
+                    JsonElement obj = JsonSerializer.Deserialize<JsonElement>(json, s_jsonOptions);
 
                     if (obj.ValueKind != JsonValueKind.Object)
                     {
@@ -136,11 +97,11 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
                 }
                 else if (_allowUnhandled)
                 {
-                    _assets.Add(id, CreateLazyHolder(path, id));
+                    Assets.Add(id, CreateLazyHolder(File.ReadAllText(file), id));
                     continue;
                 }
 
-                T? asset = await FromPath(file);
+                T? asset = FromPath(file);
                 if (asset == null)
                 {
                     s_logger.LogError($"Asset failed to load from file '{file}'");
@@ -150,7 +111,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
 
                 asset.Name = id.Path;
                 asset.Namespace = id.Namespace;
-                _assets.Add(id, new Holder<T>(asset));
+                Assets.Add(id, new Holder<T>(asset));
             }
             catch (JsonException ex)
             {
@@ -158,7 +119,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
                 HasErrors = true;
                 FirstErrorMessage ??= msg;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 HasErrors = true;
                 FirstErrorMessage ??= $"Unexpected error in {Path.GetFileName(file)}";
@@ -176,12 +137,10 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         return false;
     }
 
-    private static async Task<T?> FromPath(string path)
+    private static T? FromPath(string path)
     {
-        await using FileStream json = File.OpenRead(path);
-        T? asset = await JsonSerializer.DeserializeAsync<T>(json, s_jsonOptions);
-        json.Close();
-        return asset;
+        using FileStream json = File.OpenRead(path);
+        return JsonSerializer.Deserialize<T>(json, s_jsonOptions);
     }
 
     private static T? FromJson(JsonElement json) => json.Deserialize<T>(s_jsonOptions);
@@ -213,7 +172,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             HasErrors = true;
             FirstErrorMessage ??= msg;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             HasErrors = true;
             FirstErrorMessage ??= $"Unexpected error updating {target}";
@@ -221,32 +180,30 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
     }
 
     /// <summary>
-    /// Creates a lazy <see cref="Holder{T}"/> that loads its asset from
-    /// <paramref name="dirPath"/>/<paramref name="id"/>.json on first access.
+    /// Creates a lazy <see cref="Holder{T}"/> that parses <paramref name="jsonContent"/> on
+    /// first access. The raw JSON string is captured at load time so no file I/O occurs at
+    /// resolve time.
     /// </summary>
-    internal static Holder<T> CreateLazyHolder(string dirPath, ResourceLocation id)
+    internal static Holder<T> CreateLazyHolder(string jsonContent, ResourceLocation id)
     {
         return Holder<T>.Reference(() =>
         {
-            string filePath = Path.Join(dirPath, id.Path + ".json");
             try
             {
-                Task<T?> t = FromPath(filePath);
-                t.Wait();
-                T asset = t.Result ?? throw new InvalidOperationException($"Asset '{id}' failed to load from '{filePath}'.");
+                T asset = JsonSerializer.Deserialize<T>(jsonContent, s_jsonOptions)
+                    ?? throw new InvalidOperationException($"Asset '{id}' deserialized to null.");
                 asset.Name = id.Path;
                 asset.Namespace = id.Namespace;
                 return asset;
             }
             catch (JsonException ex)
             {
-                string msg = $"Syntax error in lazy-loaded JSON file '{filePath}' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
-
+                string msg = $"Syntax error in lazy-loaded JSON for '{id}' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
                 throw new InvalidOperationException(msg, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not InvalidOperationException)
             {
-                string msg = $"Unexpected error lazy-loading JSON file '{filePath}': {ex.Message}";
+                string msg = $"Unexpected error parsing lazy-loaded JSON for '{id}': {ex.Message}";
                 throw new InvalidOperationException(msg, ex);
             }
         });
@@ -274,7 +231,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             HasErrors = true;
             FirstErrorMessage ??= msg;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             HasErrors = true;
             FirstErrorMessage ??= $"Unexpected error in {Path.GetFileName(path)}";
@@ -392,7 +349,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         if (!prefix)
         {
             var key = new ResourceLocation(ns, name);
-            if (_assets.TryGetValue(key, out Holder<T>? holder))
+            if (Assets.TryGetValue(key, out Holder<T>? holder))
             {
                 asset = holder;
                 return true;
@@ -444,7 +401,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
 
     T? IReadableRegistry<T>.Get(ResourceLocation key)
     {
-        if (_assets.TryGetValue(key, out Holder<T>? holder)) return holder.Value;
+        if (Assets.TryGetValue(key, out Holder<T>? holder)) return holder.Value;
         return null;
     }
 

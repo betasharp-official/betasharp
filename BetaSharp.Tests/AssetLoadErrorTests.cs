@@ -1,5 +1,5 @@
-using BetaSharp.DataAsset;
 using BetaSharp.Registries;
+using BetaSharp.Registries.Data;
 using Xunit;
 
 namespace BetaSharp.Tests;

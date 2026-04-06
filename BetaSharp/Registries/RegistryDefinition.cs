@@ -1,4 +1,4 @@
-using BetaSharp.DataAsset;
+using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Registries;
 
