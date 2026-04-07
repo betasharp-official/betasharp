@@ -43,8 +43,8 @@ public class DataCommand : Command.Command
         EntityManager entities = context.Source.Server.getWorld(player.dimensionId).Entities;
         return kind switch
         {
-            ListKind.player => entities.Players,
-            ListKind.global => entities.GlobalEntities,
+            ListKind.Player => entities.Players,
+            ListKind.Global => entities.GlobalEntities,
             _ => entities.Entities
         };
     }
@@ -129,7 +129,7 @@ public class DataCommand : Command.Command
 
     private static void LogEntitySub(Selector? selector, IEnumerable<Entity> items, ServerPlayerEntity player, ICommandOutput output, string displayName, bool listHits = false)
     {
-        if (selector == Selector.first)
+        if (selector == Selector.First)
         {
             Entity? item = items.FirstOrDefault();
             if (item == null)
@@ -140,7 +140,7 @@ public class DataCommand : Command.Command
 
             LogEntity(item, output);
         }
-        else if (selector == Selector.close)
+        else if (selector == Selector.Close)
         {
             Entity? closest = null;
             double distance = double.MaxValue;
@@ -246,19 +246,19 @@ public class DataCommand : Command.Command
 
     private enum ListKind
     {
-        entity = 0,
-        e = 0,
-        player = 1,
-        p = 1,
-        global = 2,
-        g = 2
+        Entity = 0,
+        E = 0,
+        Player = 1,
+        P = 1,
+        Global = 2,
+        G = 2
     }
 
     private enum Selector
     {
-        first = 0,
-        f = 0,
-        close = 1,
-        c = 1
+        First = 0,
+        F = 0,
+        Close = 1,
+        C = 1
     }
 }

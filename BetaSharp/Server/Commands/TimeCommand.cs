@@ -53,14 +53,14 @@ public class TimeCommand : Command.Command
 
     private enum Time
     {
-        dawn = 0,
-        sunrise = 0,
-        morning = 1000,
-        day = 6000,
-        noon = 6000,
-        sunset = 12000,
-        dusk = 12000,
-        night = 13000,
-        midnight = 18000
+        Dawn = 0,
+        Sunrise = 0,
+        Morning = 1000,
+        Day = 6000,
+        Noon = 6000,
+        Sunset = 12000,
+        Dusk = 12000,
+        Night = 13000,
+        Midnight = 18000
     }
 }

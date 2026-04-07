@@ -13,7 +13,7 @@ public class KillAllCommand : Command.Command
 
     public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
         argBuilder
-            .Executes(ctx => KillAll(ctx, (byte)TypeFilter.all, ""))
+            .Executes(ctx => KillAll(ctx, (byte)TypeFilter.All, ""))
             .Then(ArgumentEnum<TypeFilter>("type")
                 .Executes(ctx => KillAll(ctx, (byte)ctx.GetArgument<TypeFilter>("type"), ""))
                 .Then(ArgumentString("filter")).Executes(ctx => KillAll(ctx, (byte)ctx.GetArgument<TypeFilter>("type"), ctx.GetArgument<string>("filter")))
@@ -38,12 +38,12 @@ public class KillAllCommand : Command.Command
 
                 bool shouldKill = type switch
                 {
-                    (byte)TypeFilter.all => true,
-                    (byte)TypeFilter.mob => entity is EntityLiving,
-                    (byte)TypeFilter.hostile => entity is EntityMonster,
-                    (byte)TypeFilter.friendly => entity is EntityAnimal,
-                    (byte)TypeFilter.item => entity is EntityItem,
-                    (byte)TypeFilter.tnt => entity is EntityTNTPrimed,
+                    (byte)TypeFilter.All => true,
+                    (byte)TypeFilter.Mob => entity is EntityLiving,
+                    (byte)TypeFilter.Hostile => entity is EntityMonster,
+                    (byte)TypeFilter.Friendly => entity is EntityAnimal,
+                    (byte)TypeFilter.Item => entity is EntityItem,
+                    (byte)TypeFilter.Tnt => entity is EntityTNTPrimed,
                     _ => EntityRegistry.GetId(entity)?.Equals(filter, StringComparison.OrdinalIgnoreCase) ?? false
                 };
 
@@ -59,7 +59,7 @@ public class KillAllCommand : Command.Command
         {
             context.Source.Output.SendMessage($"Killed {count} entities (filter: {filter}).");
         }
-        else if (type == (byte)TypeFilter.all)
+        else if (type == (byte)TypeFilter.All)
         {
             context.Source.Output.SendMessage($"Killed {count} entities.");
         }
@@ -73,20 +73,20 @@ public class KillAllCommand : Command.Command
 
     private enum TypeFilter : byte
     {
-        all = 0,
-        a = 0,
-        mob = 1,
-        m = 1,
-        living = 1,
-        hostile = 2,
-        h = 2,
-        monster = 2,
-        friendly = 3,
-        f = 3,
-        animal = 3,
-        item = 4,
-        i = 4,
-        tnt = 5,
-        t = 5
+        All = 0,
+        A = 0,
+        Mob = 1,
+        M = 1,
+        Living = 1,
+        Hostile = 2,
+        H = 2,
+        Monster = 2,
+        Friendly = 3,
+        F = 3,
+        Animal = 3,
+        Item = 4,
+        I = 4,
+        Tnt = 5,
+        T = 5
     }
 }
