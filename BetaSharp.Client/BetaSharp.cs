@@ -269,7 +269,7 @@ public partial class BetaSharp :
             Display.MSAA_Samples = msaaValues[Options.MSAALevel];
 
             Display.create();
-            Display.getGlfw().SetWindowSizeLimits(Display.getWindowHandle(), 850, 480, maximumWidth, maximumHeight);
+            Display.getGlfw().SetWindowSizeLimits(Display.GetWindowHandle(), 850, 480, maximumWidth, maximumHeight);
 
             GLManager.Init(Display.getGL()!);
             if (GLManager.GL is LegacyGL legacyGl)
@@ -367,11 +367,11 @@ public partial class BetaSharp :
         io->ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard | ImGuiConfigFlags.DockingEnable;
 
         // Install game input callbacks first so the ImGui GLFW backend can chain to them.
-        Keyboard.create(Display.getGlfw(), Display.getWindowHandle());
-        Mouse.create(Display.getGlfw(), Display.getWindowHandle(), Display.getWidth(), Display.getHeight());
-        Controller.Create(Display.getGlfw(), Display.getWindowHandle());
+        Keyboard.create(Display.getGlfw(), Display.GetWindowHandle());
+        Mouse.create(Display.getGlfw(), Display.GetWindowHandle(), Display.getWidth(), Display.getHeight());
+        Controller.Create(Display.getGlfw(), Display.GetWindowHandle());
 
-        ImGuiImplGLFW.InitForOpenGL((GLFWwindow*)Display.getWindowHandle(), true);
+        ImGuiImplGLFW.InitForOpenGL((GLFWwindow*)Display.GetWindowHandle(), true);
         ImGuiImplOpenGL3.Init("#version 330 core");
         DebugWindowManager.ApplyStyle();
 
