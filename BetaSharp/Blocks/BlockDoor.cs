@@ -14,22 +14,31 @@ internal class BlockDoor : Block
 
     public BlockDoor(int id, Material material) : base(id, material)
     {
-        textureId = 97;
-        if (material == Material.Metal) ++textureId;
+        TextureId = 97;
+        if (material == Material.Metal)
+        {
+            ++TextureId;
+        }
 
         setBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, Height, 0.5F + HalfWidth);
     }
 
-    public override int getTexture(int side, int meta)
+    public override int GetTexture(Side side, int meta)
     {
-        if (side is 0 or 1) return textureId;
+        if (side is Side.Up or Side.Down)
+        {
+            return TextureId;
+        }
 
         int facing = SetOpen(meta);
-        if (facing is 0 or 2 ^ (side <= 3)) return textureId;
+        if (facing is 0 or 2 ^ (side <= Side.South))
+        {
+            return TextureId;
+        }
 
-        int textureIndex = facing / 2 + ((side & 1) ^ facing);
+        int textureIndex = facing / 2 + ((side.ToInt() & 1) ^ facing);
         textureIndex += (meta & 4) / 4;
-        int texture = textureId - (meta & 8) * 2;
+        int texture = TextureId - (meta & 8) * 2;
         if ((textureIndex & 1) != 0)
         {
             texture = -texture;
@@ -82,8 +91,15 @@ internal class BlockDoor : Block
 
     private bool updateDorState(IWorldContext world, int x, int y, int z)
     {
-        if (world.IsRemote) return true;
-        if (material == Material.Metal) return true;
+        if (world.IsRemote)
+        {
+            return true;
+        }
+
+        if (material == Material.Metal)
+        {
+            return true;
+        }
 
         int meta = world.Reader.GetBlockMeta(x, y, z);
         if ((meta & 8) != 0)

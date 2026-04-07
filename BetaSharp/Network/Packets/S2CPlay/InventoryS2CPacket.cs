@@ -23,7 +23,7 @@ public class InventoryS2CPacket() : Packet(PacketId.InventoryS2C)
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         syncId = (sbyte)stream.ReadByte();
         short itemsCount = stream.ReadShort();
@@ -43,7 +43,7 @@ public class InventoryS2CPacket() : Packet(PacketId.InventoryS2C)
 
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteByte((byte)syncId);
         stream.WriteShort((short)contents.Length);

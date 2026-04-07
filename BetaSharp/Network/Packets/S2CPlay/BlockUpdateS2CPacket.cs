@@ -22,7 +22,7 @@ public class BlockUpdateS2CPacket() : Packet(PacketId.BlockUpdateS2C)
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         x = stream.ReadInt();
         y = stream.ReadByte();
@@ -31,7 +31,7 @@ public class BlockUpdateS2CPacket() : Packet(PacketId.BlockUpdateS2C)
         blockMetadata = stream.ReadByte();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(x);
         stream.WriteByte((byte)y);

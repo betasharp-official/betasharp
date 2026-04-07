@@ -19,7 +19,7 @@ public class UpdateSignPacket() : Packet(PacketId.UpdateSign)
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         x = stream.ReadInt();
         y = stream.ReadShort();
@@ -34,7 +34,7 @@ public class UpdateSignPacket() : Packet(PacketId.UpdateSign)
 
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(x);
         stream.WriteShort((short)y);

@@ -15,13 +15,13 @@ public class PlayerGameModeUpdateS2CPacket() : ExtendedProtocolPacket(PacketId.P
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         Namespace = stream.ReadNamespace();
         GameModeName = stream.ReadString();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteNamespace(Namespace);
         stream.WriteString(GameModeName);

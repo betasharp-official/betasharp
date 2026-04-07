@@ -12,8 +12,8 @@ internal class BlockTrapDoor : Block
     private const float Thickness = 3.0F / 16.0F;
     public BlockTrapDoor(int id, Material material) : base(id, material)
     {
-        textureId = 84;
-        if (material == Material.Metal) ++textureId;
+        TextureId = 84;
+        if (material == Material.Metal) ++TextureId;
         setBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, FullHeight, 0.5F + HalfWidth);
     }
 
@@ -134,10 +134,10 @@ internal class BlockTrapDoor : Block
     {
         sbyte meta = ctx.Direction switch
         {
-            2 => 0,
-            3 => 1,
-            4 => 2,
-            5 => 3,
+            Side.North => 0,
+            Side.South => 1,
+            Side.West => 2,
+            Side.East => 3,
             _ => 0
         };
 
@@ -151,18 +151,18 @@ internal class BlockTrapDoor : Block
         switch (ctx.Direction)
         {
             case 0:
-            case 1:
+            case Side.Up:
                 return false;
-            case 2:
+            case Side.North:
                 ++z;
                 break;
-            case 3:
+            case Side.South:
                 --z;
                 break;
-            case 4:
+            case Side.West:
                 ++x;
                 break;
-            case 5:
+            case Side.East:
                 --x;
                 break;
         }

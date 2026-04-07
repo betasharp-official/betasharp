@@ -18,7 +18,14 @@ internal class BlockRedstoneTorch : BlockTorch
         setTickRandomly(true);
     }
 
-    public override int getTexture(int side, int meta) => side == 1 ? RedstoneWire.getTexture(side, meta) : base.getTexture(side, meta);
+    public override int GetTexture(Side side, int meta)
+    {
+        if (side == Side.Up)
+        {
+            return RedstoneWire.GetTexture(side, meta);
+        }
+        return base.GetTexture(side, meta);
+    }
 
     private static bool isBurnedOut(OnTickEvent ctx, bool recordUpdate, long currentTime)
     {
@@ -81,9 +88,7 @@ internal class BlockRedstoneTorch : BlockTorch
 
     private static bool shouldUnpower(OnTickEvent @event)
     {
-        int x = @event.X;
-        int y = @event.Y;
-        int z = @event.Z;
+        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
         RedstoneEngine redstoneEngine = @event.World.Redstone;
         int meta = @event.World.Reader.GetBlockMeta(x, y, z);
         return (meta == 5 && redstoneEngine.IsPoweringSide(x, y - 1, z, 0)) || (meta == 3 && redstoneEngine.IsPoweringSide(x, y, z - 1, 2)) ||
@@ -92,9 +97,7 @@ internal class BlockRedstoneTorch : BlockTorch
 
     public override void onTick(OnTickEvent @event)
     {
-        int x = @event.X;
-        int y = @event.Y;
-        int z = @event.Z;
+        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
         bool shouldTurnOff = shouldUnpower(@event);
 
         long currentTime = @event.World.GetTime();

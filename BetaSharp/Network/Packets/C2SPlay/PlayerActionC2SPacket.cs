@@ -21,7 +21,7 @@ public class PlayerActionC2SPacket() : Packet(PacketId.PlayerActionC2S)
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         action = stream.ReadByte();
         x = stream.ReadInt();
@@ -30,7 +30,7 @@ public class PlayerActionC2SPacket() : Packet(PacketId.PlayerActionC2S)
         direction = stream.ReadByte();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteByte((byte)action);
         stream.WriteInt(x);

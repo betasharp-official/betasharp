@@ -2,37 +2,22 @@ using BetaSharp.Blocks.Materials;
 
 namespace BetaSharp.Blocks;
 
-internal class BlockCloth : Block
+internal class BlockCloth() : Block(35, 64, Material.Wool)
 {
-    public BlockCloth() : base(35, 64, Material.Wool)
-    {
-    }
-
-    public override int getTexture(int side, int meta)
+    public override int GetTexture(Side side, int meta)
     {
         if (meta == 0)
         {
-            return textureId;
+            return TextureId;
         }
-        else
-        {
-            meta = ~(meta & 15);
-            return 113 + ((meta & 8) >> 3) + (meta & 7) * 16;
-        }
+
+        meta = ~(meta & 15);
+        return 113 + ((meta & 8) >> 3) + (meta & 7) * 16;
     }
 
-    protected override int getDroppedItemMeta(int blockMeta)
-    {
-        return blockMeta;
-    }
+    protected override int getDroppedItemMeta(int blockMeta) => blockMeta;
 
-    public static int getBlockMeta(int itemMeta)
-    {
-        return ~itemMeta & 15;
-    }
+    public static int getBlockMeta(int itemMeta) => ~itemMeta & 15;
 
-    public static int getItemMeta(int blockMeta)
-    {
-        return ~blockMeta & 15;
-    }
+    public static int getItemMeta(int blockMeta) => ~blockMeta & 15;
 }

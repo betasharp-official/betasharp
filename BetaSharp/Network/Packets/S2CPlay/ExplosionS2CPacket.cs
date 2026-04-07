@@ -22,7 +22,7 @@ public class ExplosionS2CPacket() : Packet(PacketId.ExplosionS2C)
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         explosionX = stream.ReadDouble();
         explosionY = stream.ReadDouble();
@@ -45,7 +45,7 @@ public class ExplosionS2CPacket() : Packet(PacketId.ExplosionS2C)
 
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteDouble(explosionX);
         stream.WriteDouble(explosionY);

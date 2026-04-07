@@ -24,7 +24,7 @@ public class PaintingEntitySpawnS2CPacket() : Packet(PacketId.PaintingEntitySpaw
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         entityId = stream.ReadInt();
         title = stream.ReadLongString((ushort)EnumArt.MaxArtTitleLength);
@@ -34,7 +34,7 @@ public class PaintingEntitySpawnS2CPacket() : Packet(PacketId.PaintingEntitySpaw
         direction = stream.ReadInt();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(entityId);
         stream.WriteLongString(title);

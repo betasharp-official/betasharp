@@ -546,7 +546,7 @@ public abstract class EntityLiving : Entity
             int var3 = world.Reader.GetBlockId(MathHelper.Floor(x), MathHelper.Floor(y - (double)0.2F - (double)standingEyeHeight), MathHelper.Floor(z));
             if (var3 > 0)
             {
-                BlockSoundGroup soundGroup = Block.Blocks[var3].soundGroup;
+                BlockSoundGroup soundGroup = Block.Blocks[var3].SoundGroup;
                 world.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.5F, soundGroup.Pitch * (12.0F / 16.0F));
             }
         }
@@ -595,7 +595,7 @@ public abstract class EntityLiving : Entity
                 int groundBlockId = world.Reader.GetBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
                 if (groundBlockId > 0)
                 {
-                    friction = Block.Blocks[groundBlockId].slipperiness * 0.91F;
+                    friction = Block.Blocks[groundBlockId].Slipperiness * 0.91F;
                 }
             }
 
@@ -608,7 +608,7 @@ public abstract class EntityLiving : Entity
                 int groundBlockId = world.Reader.GetBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
                 if (groundBlockId > 0)
                 {
-                    friction = Block.Blocks[groundBlockId].slipperiness * 0.91F;
+                    friction = Block.Blocks[groundBlockId].Slipperiness * 0.91F;
                 }
             }
 

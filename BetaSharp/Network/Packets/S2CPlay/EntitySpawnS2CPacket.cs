@@ -72,7 +72,7 @@ public class EntitySpawnS2CPacket() : PacketBaseEntity(PacketId.EntitySpawnS2C)
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         base.Read(stream);
         entityType = (sbyte)stream.ReadByte();
@@ -89,7 +89,7 @@ public class EntitySpawnS2CPacket() : PacketBaseEntity(PacketId.EntitySpawnS2C)
 
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         base.Write(stream);
         stream.WriteByte((byte)entityType);

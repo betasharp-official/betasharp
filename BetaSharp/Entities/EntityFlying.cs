@@ -41,7 +41,7 @@ public abstract class EntityFlying : EntityLiving
                 int groundBlockId = world.Reader.GetBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
                 if (groundBlockId > 0)
                 {
-                    friction = Block.Blocks[groundBlockId].slipperiness * 0.91F;
+                    friction = Block.Blocks[groundBlockId].Slipperiness * 0.91F;
                 }
             }
 
@@ -54,7 +54,7 @@ public abstract class EntityFlying : EntityLiving
                 int groundBlockId = world.Reader.GetBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
                 if (groundBlockId > 0)
                 {
-                    friction = Block.Blocks[groundBlockId].slipperiness * 0.91F;
+                    friction = Block.Blocks[groundBlockId].Slipperiness * 0.91F;
                 }
             }
 

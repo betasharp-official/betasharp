@@ -34,12 +34,12 @@ public class PlayerMovePacket(PacketId id = PacketId.PlayerMove) : Packet(id)
         handler.onPlayerMove(this);
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         onGround = stream.ReadBoolean();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteBoolean(onGround);
     }

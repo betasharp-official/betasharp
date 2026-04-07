@@ -11,24 +11,14 @@ namespace BetaSharp.Blocks;
 //NOTE: CHESTS DON'T ROTATE BASED ON PLAYER ORIENTATION, THIS IS VANILLA BEHAVIOR, NOT A BUG
 internal class BlockChest : BlockWithEntity
 {
-    private readonly JavaRandom random = new();
+    private const float DropSpread = 0.05F;
+    private static readonly JavaRandom s_random = new();
 
-    public BlockChest(int id) : base(id, Material.Wood)
+    public BlockChest(int id) : base(id, Material.Wood) => TextureId = 26;
+
+    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        textureId = 26;
-    }
-
-    public override int getTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
-    {
-        if (side == 1)
-        {
-            return textureId - 1;
-        }
-
-        if (side == 0)
-        {
-            return textureId - 1;
-        }
+        if (side is Side.Up or Side.Down) return TextureId - 1;
 
         int blockNorth = iBlockReader.GetBlockId(x, y, z - 1);
         int blockSouth = iBlockReader.GetBlockId(x, y, z + 1);
@@ -37,100 +27,108 @@ internal class BlockChest : BlockWithEntity
         int textureOffset;
         int cornerBlock1;
         int cornerBlock2;
-        sbyte facingSide;
+        Side facingSide;
         if (blockNorth != id && blockSouth != id)
         {
             if (blockWest != id && blockEast != id)
             {
-                sbyte facing = 3;
+                Side facing = Side.South;
                 if (BlocksOpaque[blockNorth] && !BlocksOpaque[blockSouth])
                 {
-                    facing = 3;
+                    facing = Side.South;
                 }
 
                 if (BlocksOpaque[blockSouth] && !BlocksOpaque[blockNorth])
                 {
-                    facing = 2;
+                    facing = Side.North;
                 }
 
                 if (BlocksOpaque[blockWest] && !BlocksOpaque[blockEast])
                 {
-                    facing = 5;
+                    facing = Side.East;
                 }
 
                 if (BlocksOpaque[blockEast] && !BlocksOpaque[blockWest])
                 {
-                    facing = 4;
+                    facing = Side.West;
                 }
 
-                return side == facing ? textureId + 1 : textureId;
+                return side == facing ? TextureId + 1 : TextureId;
             }
 
-            if (side != 4 && side != 5)
+            if (side is Side.West or Side.East)
             {
-                textureOffset = 0;
-                if (blockWest == id)
-                {
-                    textureOffset = -1;
-                }
-
-                cornerBlock1 = iBlockReader.GetBlockId(blockWest == id ? x - 1 : x + 1, y, z - 1);
-                cornerBlock2 = iBlockReader.GetBlockId(blockWest == id ? x - 1 : x + 1, y, z + 1);
-                if (side == 3)
-                {
-                    textureOffset = -1 - textureOffset;
-                }
-
-                facingSide = 3;
-                if ((BlocksOpaque[blockNorth] || BlocksOpaque[cornerBlock1]) && !BlocksOpaque[blockSouth] && !BlocksOpaque[cornerBlock2])
-                {
-                    facingSide = 3;
-                }
-
-                if ((BlocksOpaque[blockSouth] || BlocksOpaque[cornerBlock2]) && !BlocksOpaque[blockNorth] && !BlocksOpaque[cornerBlock1])
-                {
-                    facingSide = 2;
-                }
-
-                return (side == facingSide ? textureId + 16 : textureId + 32) + textureOffset;
+                return TextureId;
             }
 
-            return textureId;
-        }
-
-        if (side != 2 && side != 3)
-        {
             textureOffset = 0;
-            if (blockNorth == id)
+            if (blockWest == id)
             {
                 textureOffset = -1;
             }
 
-            cornerBlock1 = iBlockReader.GetBlockId(x - 1, y, blockNorth == id ? z - 1 : z + 1);
-            cornerBlock2 = iBlockReader.GetBlockId(x + 1, y, blockNorth == id ? z - 1 : z + 1);
-            if (side == 4)
+            cornerBlock1 = iBlockReader.GetBlockId(blockWest == id ? x - 1 : x + 1, y, z - 1);
+            cornerBlock2 = iBlockReader.GetBlockId(blockWest == id ? x - 1 : x + 1, y, z + 1);
+            if (side == Side.South)
             {
                 textureOffset = -1 - textureOffset;
             }
 
-            facingSide = 5;
-            if ((BlocksOpaque[blockWest] || BlocksOpaque[cornerBlock1]) && !BlocksOpaque[blockEast] && !BlocksOpaque[cornerBlock2])
+            facingSide = Side.South;
+            if ((BlocksOpaque[blockNorth] || BlocksOpaque[cornerBlock1]) && !BlocksOpaque[blockSouth] && !BlocksOpaque[cornerBlock2])
             {
-                facingSide = 5;
+                facingSide = Side.South;
             }
 
-            if ((BlocksOpaque[blockEast] || BlocksOpaque[cornerBlock2]) && !BlocksOpaque[blockWest] && !BlocksOpaque[cornerBlock1])
+            if ((BlocksOpaque[blockSouth] || BlocksOpaque[cornerBlock2]) && !BlocksOpaque[blockNorth] && !BlocksOpaque[cornerBlock1])
             {
-                facingSide = 4;
+                facingSide = Side.North;
             }
 
-            return (side == facingSide ? textureId + 16 : textureId + 32) + textureOffset;
+            return (side == facingSide ? TextureId + 16 : TextureId + 32) + textureOffset;
         }
 
-        return textureId;
+        if (side is Side.North or Side.South)
+        {
+            return TextureId;
+        }
+
+        textureOffset = 0;
+        if (blockNorth == id)
+        {
+            textureOffset = -1;
+        }
+
+        cornerBlock1 = iBlockReader.GetBlockId(x - 1, y, blockNorth == id ? z - 1 : z + 1);
+        cornerBlock2 = iBlockReader.GetBlockId(x + 1, y, blockNorth == id ? z - 1 : z + 1);
+        if (side == Side.West)
+        {
+            textureOffset = -1 - textureOffset;
+        }
+
+        facingSide = Side.East;
+        if ((BlocksOpaque[blockWest] || BlocksOpaque[cornerBlock1]) && !BlocksOpaque[blockEast] && !BlocksOpaque[cornerBlock2])
+        {
+            facingSide = Side.East;
+        }
+
+        if ((BlocksOpaque[blockEast] || BlocksOpaque[cornerBlock2]) && !BlocksOpaque[blockWest] && !BlocksOpaque[cornerBlock1])
+        {
+            facingSide = Side.West;
+        }
+
+        return (side == facingSide ? TextureId + 16 : TextureId + 32) + textureOffset;
     }
 
-    public override int getTexture(int side) => side == 1 ? textureId - 1 : side == 0 ? textureId - 1 : side == 3 ? textureId + 1 : textureId;
+    public override int GetTexture(Side side)
+    {
+        return side switch
+        {
+            Side.Up or Side.Down => TextureId - 1,
+            Side.South => TextureId + 1,
+            _ => TextureId
+        };
+    }
 
     public override bool canPlaceAt(CanPlaceAtContext context)
     {
@@ -167,33 +165,35 @@ internal class BlockChest : BlockWithEntity
     {
         BlockEntityChest? chest = @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X, @event.Y, @event.Z);
 
-        if (chest == null) return;
+        if (chest == null)
+        {
+            return;
+        }
 
         for (int slot = 0; slot < chest.size(); ++slot)
         {
-            ItemStack stack = chest.getStack(slot);
-            if (stack != null)
+            ItemStack? stack = chest.getStack(slot);
+            if (stack == null) continue;
+
+            float offsetX = s_random.NextFloat() * 0.8F + 0.1F;
+            float offsetY = s_random.NextFloat() * 0.8F + 0.1F;
+            float offsetZ = s_random.NextFloat() * 0.8F + 0.1F;
+
+            while (stack.count > 0)
             {
-                float offsetX = random.NextFloat() * 0.8F + 0.1F;
-                float offsetY = random.NextFloat() * 0.8F + 0.1F;
-                float offsetZ = random.NextFloat() * 0.8F + 0.1F;
-
-                while (stack.count > 0)
+                int amount = s_random.NextInt(21) + 10;
+                if (amount > stack.count)
                 {
-                    int amount = random.NextInt(21) + 10;
-                    if (amount > stack.count)
-                    {
-                        amount = stack.count;
-                    }
-
-                    stack.count -= amount;
-                    EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, amount, stack.getDamage()));
-                    float spread = 0.05F;
-                    entityItem.velocityX = random.NextGaussian() * spread;
-                    entityItem.velocityY = random.NextGaussian() * spread + 0.2F;
-                    entityItem.velocityZ = random.NextGaussian() * spread;
-                    @event.World.Entities.SpawnEntity(entityItem);
+                    amount = stack.count;
                 }
+
+                stack.count -= amount;
+                EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, amount, stack.getDamage()));
+
+                entityItem.velocityX = s_random.NextGaussian() * DropSpread;
+                entityItem.velocityY = s_random.NextGaussian() * DropSpread + 0.2F;
+                entityItem.velocityZ = s_random.NextGaussian() * DropSpread;
+                @event.World.Entities.SpawnEntity(entityItem);
             }
         }
 
@@ -257,8 +257,5 @@ internal class BlockChest : BlockWithEntity
         return true;
     }
 
-    public override BlockEntity getBlockEntity()
-    {
-        return new BlockEntityChest();
-    }
+    public override BlockEntity getBlockEntity() => new BlockEntityChest();
 }

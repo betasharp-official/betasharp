@@ -27,14 +27,14 @@ public class PlayerConnectionUpdateS2CPacket() : ExtendedProtocolPacket(PacketId
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         entityId = stream.ReadInt();
         type = (ConnectionUpdateType)stream.ReadByte();
         name = stream.ReadLongString(16);
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(entityId);
         stream.WriteByte((byte)type);

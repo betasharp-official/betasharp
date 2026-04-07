@@ -13,7 +13,7 @@ internal class BlockDispenser : BlockWithEntity
 
     private static readonly ThreadLocal<JavaRandom> s_random = new(() => new JavaRandom());
 
-    public BlockDispenser(int id) : base(id, Material.Stone) => textureId = 45;
+    public BlockDispenser(int id) : base(id, Material.Stone) => TextureId = 45;
 
     public override int getTickRate() => 4;
 
@@ -66,18 +66,18 @@ internal class BlockDispenser : BlockWithEntity
         @event.World.Writer.SetBlockMeta(x, y, z, direction);
     }
 
-    public override int getTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
+    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (side is 1 or 0) return textureId + 17;
-        int meta = iBlockReader.GetBlockMeta(x, y, z);
-        return side != meta ? textureId : textureId + 1;
+        if (side is Side.Up or Side.Down) return TextureId + 17;
+        Side meta = iBlockReader.GetBlockMeta(x, y, z).ToSide();
+        return side != meta ? TextureId : TextureId + 1;
     }
 
-    public override int getTexture(int side) => side switch
+    public override int GetTexture(Side side) => side switch
     {
-        1 or 0 => textureId + 17,
-        3 => textureId + 1,
-        _ => textureId
+        Side.Up or 0 => TextureId + 17,
+        Side.South => TextureId + 1,
+        _ => TextureId
     };
 
     public override bool onUse(OnUseEvent @event)

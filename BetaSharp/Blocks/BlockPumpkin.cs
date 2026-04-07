@@ -5,40 +5,37 @@ namespace BetaSharp.Blocks;
 
 internal class BlockPumpkin : Block
 {
-    private readonly bool lit;
+    private readonly bool _lit;
 
     public BlockPumpkin(int id, int textureId, bool lit) : base(id, Material.Pumpkin)
     {
-        this.textureId = textureId;
+        TextureId = textureId;
         setTickRandomly(true);
-        this.lit = lit;
+        _lit = lit;
     }
 
-    public override int getTexture(int side, int meta)
+    public override int GetTexture(Side side, int meta)
     {
-        if (side == 1)
-        {
-            return textureId;
-        }
+        if (side is Side.Up or Side.Down) return TextureId;
 
-        if (side == 0)
-        {
-            return textureId;
-        }
-
-        int faceTexture = textureId + 1 + 16;
-        if (lit)
+        int faceTexture = TextureId + 1 + 16;
+        if (_lit)
         {
             ++faceTexture;
         }
 
-        return meta == 2 && side == 2 ? faceTexture :
-            meta == 3 && side == 5 ? faceTexture :
-            meta == 0 && side == 3 ? faceTexture :
-            meta == 1 && side == 4 ? faceTexture : textureId + 16;
+        return meta == 2 && side == Side.North ? faceTexture :
+            meta == 3 && side == Side.East ? faceTexture :
+            meta == 0 && side == Side.South ? faceTexture :
+            meta == 1 && side == Side.West ? faceTexture : TextureId + 16;
     }
 
-    public override int getTexture(int side) => side == 1 ? textureId : side == 0 ? textureId : side == 3 ? textureId + 1 + 16 : textureId + 16;
+    public override int GetTexture(Side side) => side switch
+    {
+        Side.Up or Side.Down => TextureId,
+        Side.South => TextureId + 1 + 16,
+        _ => TextureId + 16
+    };
 
     public override bool canPlaceAt(CanPlaceAtContext evt)
     {

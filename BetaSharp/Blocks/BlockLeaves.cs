@@ -10,6 +10,12 @@ public class BlockLeaves : BlockLeavesBase
     private readonly ThreadLocal<int[]?> s_decayRegion = new(() => null);
     private readonly int spriteIndex;
 
+    const sbyte decayRadius = 4;
+    const sbyte regionSize = 32;
+    const int loadCheckExtent = decayRadius + 1;
+    const int planeSize = regionSize * regionSize;
+    const int centerOffset = regionSize / 2;
+
     public BlockLeaves(int id, int textureId) : base(id, textureId, Material.Leaves, false)
     {
         spriteIndex = textureId;
@@ -21,16 +27,8 @@ public class BlockLeaves : BlockLeavesBase
     public override int getColorMultiplier(IBlockReader reader, int x, int y, int z)
     {
         int meta = reader.GetBlockMeta(x, y, z);
-        if ((meta & 1) == 1)
-        {
-            return FoliageColors.getSpruceColor();
-        }
-
-        if ((meta & 2) == 2)
-        {
-            return FoliageColors.getBirchColor();
-        }
-
+        if ((meta & 1) == 1) return FoliageColors.getSpruceColor();
+        if ((meta & 2) == 2) return FoliageColors.getBirchColor();
         reader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
         double temperature = reader.GetBiomeSource().TemperatureMap[0];
         double downfall = reader.GetBiomeSource().DownfallMap[0];
@@ -39,23 +37,24 @@ public class BlockLeaves : BlockLeavesBase
 
     public override void onBreak(OnBreakEvent @event)
     {
-        sbyte searchRadius = 1;
+        const sbyte searchRadius = 1;
         int loadCheckExtent = searchRadius + 1;
-        if (@event.World.ChunkHost.IsRegionLoaded(@event.X - loadCheckExtent, @event.Y - loadCheckExtent, @event.Z - loadCheckExtent, @event.X + loadCheckExtent, @event.Y + loadCheckExtent, @event.Z + loadCheckExtent))
+        if (!@event.World.ChunkHost.IsRegionLoaded(@event.X - loadCheckExtent, @event.Y - loadCheckExtent, @event.Z - loadCheckExtent, @event.X + loadCheckExtent, @event.Y + loadCheckExtent, @event.Z + loadCheckExtent))
         {
-            for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
+            return;
+        }
+
+        for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
+        {
+            for (int offsetY = -searchRadius; offsetY <= searchRadius; ++offsetY)
             {
-                for (int offsetY = -searchRadius; offsetY <= searchRadius; ++offsetY)
+                for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                 {
-                    for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
-                    {
-                        int blockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                        if (blockId == Leaves.id)
-                        {
-                            int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                            @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, leavesMeta | 8);
-                        }
-                    }
+                    int blockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
+                    if (blockId != Leaves.id) continue;
+
+                    int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
+                    @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, leavesMeta | 8);
                 }
             }
         }
@@ -63,116 +62,99 @@ public class BlockLeaves : BlockLeavesBase
 
     public override void onTick(OnTickEvent @event)
     {
-        if (!@event.World.IsRemote)
+        if (@event.World.IsRemote) return;
+        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        if ((meta & 8) == 0) return;
+        s_decayRegion.Value ??= new int[regionSize * regionSize * regionSize];
+
+        int[] decayRegion = s_decayRegion.Value;
+
+        int distanceToLog;
+        if (@event.World.ChunkHost.IsRegionLoaded(@event.X - loadCheckExtent, @event.Y - loadCheckExtent, @event.Z - loadCheckExtent, @event.X + loadCheckExtent, @event.Y + loadCheckExtent, @event.Z + loadCheckExtent))
         {
-            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-            if ((meta & 8) != 0)
+            distanceToLog = -decayRadius;
+
+            while (distanceToLog <= decayRadius)
             {
-                sbyte decayRadius = 4;
-                int loadCheckExtent = decayRadius + 1;
-                sbyte regionSize = 32;
-                int planeSize = regionSize * regionSize;
-                int centerOffset = regionSize / 2;
-                if (s_decayRegion.Value == null)
+                for (int dx = -decayRadius; dx <= decayRadius; ++dx)
                 {
-                    s_decayRegion.Value = new int[regionSize * regionSize * regionSize];
-                }
-
-                int[] decayRegion = s_decayRegion.Value;
-
-                int distanceToLog;
-                if (@event.World.ChunkHost.IsRegionLoaded(@event.X - loadCheckExtent, @event.Y - loadCheckExtent, @event.Z - loadCheckExtent, @event.X + loadCheckExtent, @event.Y + loadCheckExtent, @event.Z + loadCheckExtent))
-                {
-                    distanceToLog = -decayRadius;
-
-                    while (distanceToLog <= decayRadius)
+                    for (int dy = -decayRadius; dy <= decayRadius; ++dy)
                     {
-                        int dx;
-                        int dy;
-
-                        for (dx = -decayRadius; dx <= decayRadius; ++dx)
+                        int blockId = @event.World.Reader.GetBlockId(@event.X + distanceToLog, @event.Y + dx, @event.Z + dy);
+                        if (blockId == Log.id)
                         {
-                            for (dy = -decayRadius; dy <= decayRadius; ++dy)
-                            {
-                                int blockId = @event.World.Reader.GetBlockId(@event.X + distanceToLog, @event.Y + dx, @event.Z + dy);
-                                if (blockId == Log.id)
-                                {
-                                    decayRegion[(distanceToLog + centerOffset) * planeSize + (dx + centerOffset) * regionSize + dy + centerOffset] = 0;
-                                }
-                                else if (blockId == Leaves.id)
-                                {
-                                    decayRegion[(distanceToLog + centerOffset) * planeSize + (dx + centerOffset) * regionSize + dy + centerOffset] = -2;
-                                }
-                                else
-                                {
-                                    decayRegion[(distanceToLog + centerOffset) * planeSize + (dx + centerOffset) * regionSize + dy + centerOffset] = -1;
-                                }
-                            }
+                            decayRegion[(distanceToLog + centerOffset) * planeSize + (dx + centerOffset) * regionSize + dy + centerOffset] = 0;
                         }
-
-                        ++distanceToLog;
-                    }
-
-                    for (distanceToLog = 1; distanceToLog <= 4; ++distanceToLog)
-                    {
-                        int dx;
-                        int dy;
-                        int dz;
-
-                        for (dx = -decayRadius; dx <= decayRadius; ++dx)
+                        else if (blockId == Leaves.id)
                         {
-                            for (dy = -decayRadius; dy <= decayRadius; ++dy)
-                            {
-                                for (dz = -decayRadius; dz <= decayRadius; ++dz)
-                                {
-                                    if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] == distanceToLog - 1)
-                                    {
-                                        if (decayRegion[(dx + centerOffset - 1) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] == -2)
-                                        {
-                                            decayRegion[(dx + centerOffset - 1) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] = distanceToLog;
-                                        }
-
-                                        if (decayRegion[(dx + centerOffset + 1) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] == -2)
-                                        {
-                                            decayRegion[(dx + centerOffset + 1) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] = distanceToLog;
-                                        }
-
-                                        if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset - 1) * regionSize + dz + centerOffset] == -2)
-                                        {
-                                            decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset - 1) * regionSize + dz + centerOffset] = distanceToLog;
-                                        }
-
-                                        if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset + 1) * regionSize + dz + centerOffset] == -2)
-                                        {
-                                            decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset + 1) * regionSize + dz + centerOffset] = distanceToLog;
-                                        }
-
-                                        if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + (dz + centerOffset - 1)] == -2)
-                                        {
-                                            decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + (dz + centerOffset - 1)] = distanceToLog;
-                                        }
-
-                                        if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset + 1] == -2)
-                                        {
-                                            decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset + 1] = distanceToLog;
-                                        }
-                                    }
-                                }
-                            }
+                            decayRegion[(distanceToLog + centerOffset) * planeSize + (dx + centerOffset) * regionSize + dy + centerOffset] = -2;
+                        }
+                        else
+                        {
+                            decayRegion[(distanceToLog + centerOffset) * planeSize + (dx + centerOffset) * regionSize + dy + centerOffset] = -1;
                         }
                     }
                 }
 
-                distanceToLog = decayRegion[centerOffset * planeSize + centerOffset * regionSize + centerOffset];
-                if (distanceToLog >= 0)
+                ++distanceToLog;
+            }
+
+            for (distanceToLog = 1; distanceToLog <= 4; ++distanceToLog)
+            {
+                for (int dx = -decayRadius; dx <= decayRadius; ++dx)
                 {
-                    @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, meta & -9);
-                }
-                else
-                {
-                    breakLeaves(@event.World, @event.X, @event.Y, @event.Z);
+                    for (int dy = -decayRadius; dy <= decayRadius; ++dy)
+                    {
+                        for (int dz = -decayRadius; dz <= decayRadius; ++dz)
+                        {
+                            if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] != distanceToLog - 1)
+                            {
+                                continue;
+                            }
+
+                            if (decayRegion[(dx + centerOffset - 1) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] == -2)
+                            {
+                                decayRegion[(dx + centerOffset - 1) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] = distanceToLog;
+                            }
+
+                            if (decayRegion[(dx + centerOffset + 1) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] == -2)
+                            {
+                                decayRegion[(dx + centerOffset + 1) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] = distanceToLog;
+                            }
+
+                            if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset - 1) * regionSize + dz + centerOffset] == -2)
+                            {
+                                decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset - 1) * regionSize + dz + centerOffset] = distanceToLog;
+                            }
+
+                            if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset + 1) * regionSize + dz + centerOffset] == -2)
+                            {
+                                decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset + 1) * regionSize + dz + centerOffset] = distanceToLog;
+                            }
+
+                            if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + (dz + centerOffset - 1)] == -2)
+                            {
+                                decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + (dz + centerOffset - 1)] = distanceToLog;
+                            }
+
+                            if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset + 1] == -2)
+                            {
+                                decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset + 1] = distanceToLog;
+                            }
+                        }
+                    }
                 }
             }
+        }
+
+        distanceToLog = decayRegion[centerOffset * planeSize + centerOffset * regionSize + centerOffset];
+        if (distanceToLog >= 0)
+        {
+            @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, meta & -9);
+        }
+        else
+        {
+            breakLeaves(@event.World, @event.X, @event.Y, @event.Z);
         }
     }
 
@@ -201,14 +183,14 @@ public class BlockLeaves : BlockLeavesBase
 
     protected override int getDroppedItemMeta(int blockMeta) => blockMeta & 3;
 
-    public override bool isOpaque() => !graphicsLevel;
+    public override bool isOpaque() => !GraphicsLevel;
 
-    public override int getTexture(int side, int meta) => (meta & 3) == 1 ? textureId + 80 : textureId;
+    public override int GetTexture(Side side, int meta) => (meta & 3) == 1 ? TextureId + 80 : TextureId;
 
     public void setGraphicsLevel(bool bl)
     {
-        graphicsLevel = bl;
-        textureId = spriteIndex + (bl ? 0 : 1);
+        GraphicsLevel = bl;
+        TextureId = spriteIndex + (bl ? 0 : 1);
     }
 
     public override void onSteppedOn(OnEntityStepEvent ctx) => base.onSteppedOn(ctx);

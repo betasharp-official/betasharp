@@ -22,7 +22,7 @@ public class PlayerSleepUpdateS2CPacket() : Packet(PacketId.PlayerSleepUpdateS2C
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         id = stream.ReadInt();
         status = (sbyte)stream.ReadByte();
@@ -31,7 +31,7 @@ public class PlayerSleepUpdateS2CPacket() : Packet(PacketId.PlayerSleepUpdateS2C
         z = stream.ReadInt();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(id);
         stream.WriteByte((byte)status);

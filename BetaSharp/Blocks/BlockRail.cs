@@ -48,21 +48,21 @@ public class BlockRail : Block
         }
     }
 
-    public override int getTexture(int side, int meta)
+    public override int GetTexture(Side side, int meta)
     {
         if (_alwaysStraight)
         {
             if (id == PoweredRail.id && (meta & 8) == 0)
             {
-                return textureId - 16;
+                return TextureId - 16;
             }
         }
         else if (meta >= 6)
         {
-            return textureId - 16;
+            return TextureId - 16;
         }
 
-        return textureId;
+        return TextureId;
     }
 
     public override bool isFullCube() => false;

@@ -17,8 +17,8 @@ public class BlockPistonMoving : BlockWithEntity
 
     public override void onBreak(OnBreakEvent @event)
     {
-        BlockEntity? var5 = @event.World.Entities.GetBlockEntity<BlockEntity>(@event.X, @event.Y, @event.Z);
-        if (var5 is BlockEntityPiston piston)
+        BlockEntity? entity = @event.World.Entities.GetBlockEntity<BlockEntity>(@event.X, @event.Y, @event.Z);
+        if (entity is BlockEntityPiston piston)
         {
             piston.Finish();
         }
@@ -68,19 +68,19 @@ public class BlockPistonMoving : BlockWithEntity
 
     public override Box? getCollisionShape(IBlockReader iBlockReader, EntityManager entities, int x, int y, int z)
     {
-        BlockEntityPiston? var5 = entities.GetBlockEntity<BlockEntityPiston>(x, y, z);
-        if (var5 == null)
+        BlockEntityPiston? piston = entities.GetBlockEntity<BlockEntityPiston>(x, y, z);
+        if (piston == null)
         {
             return null;
         }
 
-        float progress = var5.getProgress(0.0F);
-        if (var5.IsExtending)
+        float progress = piston.getProgress(0.0F);
+        if (piston.IsExtending)
         {
             progress = 1.0F - progress;
         }
 
-        return getPushedBlockCollisionShape(iBlockReader, entities, x, y, z, var5.PushedBlockId, progress, var5.Facing);
+        return getPushedBlockCollisionShape(iBlockReader, entities, x, y, z, piston.PushedBlockId, progress, piston.Facing);
     }
 
     public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)

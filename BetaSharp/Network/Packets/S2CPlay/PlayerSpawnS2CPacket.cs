@@ -31,7 +31,7 @@ public class PlayerSpawnS2CPacket() : Packet(PacketId.PlayerSpawnS2C)
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         entityId = stream.ReadInt();
         name = stream.ReadLongString(16);
@@ -43,7 +43,7 @@ public class PlayerSpawnS2CPacket() : Packet(PacketId.PlayerSpawnS2C)
         currentItem = stream.ReadShort();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(entityId);
         stream.WriteLongString(name);

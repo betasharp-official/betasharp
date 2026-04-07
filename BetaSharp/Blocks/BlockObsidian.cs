@@ -1,18 +1,8 @@
 namespace BetaSharp.Blocks;
 
-internal class BlockObsidian : BlockStone
+internal class BlockObsidian(int id, int textureId) : BlockStone(id, textureId)
 {
-    public BlockObsidian(int id, int textureId) : base(id, textureId)
-    {
-    }
+    public override int getDroppedItemCount() => 1;
 
-    public override int getDroppedItemCount()
-    {
-        return 1;
-    }
-
-    public override int getDroppedItemId(int blockMeta)
-    {
-        return Block.Obsidian.id;
-    }
+    public override int getDroppedItemId(int blockMeta) => Obsidian.id;
 }

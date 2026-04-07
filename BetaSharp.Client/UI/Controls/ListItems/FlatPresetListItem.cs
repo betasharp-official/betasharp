@@ -24,7 +24,7 @@ public class FlatPresetListItem(FlatPresetsScreen.PresetItem preset) : ListItem<
             Block block = Block.Blocks[Value.IconId];
             if (block != null)
             {
-                int textureId = block.getTexture(1);
+                int textureId = block.GetTexture(Side.Up);
                 renderer.DrawItemIntoGui(s_itemRenderer, Value.IconId, Value.IconMeta, textureId, 5, 5);
             }
         }

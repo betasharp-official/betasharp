@@ -31,7 +31,7 @@ public class LivingEntitySpawnS2CPacket() : Packet(PacketId.LivingEntitySpawnS2C
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         entityId = stream.ReadInt();
         type = (sbyte)stream.ReadByte();
@@ -43,7 +43,7 @@ public class LivingEntitySpawnS2CPacket() : Packet(PacketId.LivingEntitySpawnS2C
         Data = stream.ReadUntil(127);
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(entityId);
         stream.WriteByte((byte)type);

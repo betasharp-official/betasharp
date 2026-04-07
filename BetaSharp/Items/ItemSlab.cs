@@ -13,7 +13,7 @@ internal class ItemSlab : ItemBlock
 
     public override int getTextureId(int meta)
     {
-        return Block.Slab.getTexture(2, meta);
+        return Block.Slab.GetTexture(2.ToSide(), meta);
     }
 
     public override int getPlacementMetadata(int meta)
@@ -23,8 +23,8 @@ internal class ItemSlab : ItemBlock
 
     public override String getItemNameIS(ItemStack itemStack)
     {
-        if (BlockSlab.names.Length > itemStack.getDamage())
-            return base.getItemName() + "." + BlockSlab.names[itemStack.getDamage()];
+        if (BlockSlab.Names.Length > itemStack.getDamage())
+            return base.getItemName() + "." + BlockSlab.Names[itemStack.getDamage()];
 
         return "";
     }

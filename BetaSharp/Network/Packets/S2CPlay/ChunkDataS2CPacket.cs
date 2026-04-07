@@ -39,7 +39,7 @@ public class ChunkDataS2CPacket() : Packet(PacketId.ChunkDataS2C)
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         x = stream.ReadInt();
         y = stream.ReadShort();
@@ -60,7 +60,7 @@ public class ChunkDataS2CPacket() : Packet(PacketId.ChunkDataS2C)
         chunkData = output.GetBuffer();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(x);
         stream.WriteShort((short)y);

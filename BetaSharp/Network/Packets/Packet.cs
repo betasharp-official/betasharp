@@ -84,9 +84,9 @@ public abstract class Packet
         return packetR.Get();
     }
 
-    public static Packet? Read(NetworkStream stream, bool server)
+    public static Packet? Read(Stream stream, bool server)
     {
-        Packet packet = null;
+        Packet? packet;
         int rawId;
         try
         {
@@ -131,7 +131,7 @@ public abstract class Packet
         return packet;
     }
 
-    public static void Write(Packet packet, NetworkStream stream)
+    public static void Write(Packet packet, Stream stream)
     {
 #if DEBUG
         if (packet.IsReturned)
@@ -144,9 +144,9 @@ public abstract class Packet
         packet.Return();
     }
 
-    public abstract void Read(NetworkStream stream);
+    public abstract void Read(Stream stream);
 
-    public abstract void Write(NetworkStream stream);
+    public abstract void Write(Stream stream);
 
     public abstract void Apply(NetHandler handler);
 

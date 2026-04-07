@@ -12,7 +12,7 @@ internal class ItemBlock : Item
     public ItemBlock(int id) : base(id)
     {
         blockID = id + 256;
-        setTextureId(Block.Blocks[id + 256].getTexture(2));
+        setTextureId(Block.Blocks[id + 256].GetTexture(2.ToSide()));
     }
 
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
@@ -82,13 +82,13 @@ internal class ItemBlock : Item
             }
         }
 
-        if (block.canPlaceAt(new CanPlaceAtContext(world, meta, x, y, z)))
+        if (block.canPlaceAt(new CanPlaceAtContext(world, meta.ToSide(), x, y, z)))
         {
             int placementMeta = getPlacementMetadata(itemStack.getDamage());
             if (world.Writer.SetBlockWithoutCallingOnPlaced(x, y, z, blockID, placementMeta))
             {
-                Block.Blocks[blockID].onPlaced(new OnPlacedEvent(world, entityPlayer, meta, meta, x, y, z));
-                world.Broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, block.soundGroup.StepSound, (block.soundGroup.Volume + 1.0F) / 2.0F, block.soundGroup.Pitch * 0.8F);
+                Block.Blocks[blockID].onPlaced(new OnPlacedEvent(world, entityPlayer, meta.ToSide(), meta.ToSide(), x, y, z));
+                world.Broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, block.SoundGroup.StepSound, (block.SoundGroup.Volume + 1.0F) / 2.0F, block.SoundGroup.Pitch * 0.8F);
                 itemStack.ConsumeItem(entityPlayer);
             }
 

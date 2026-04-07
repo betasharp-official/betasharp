@@ -48,13 +48,18 @@ public class BlockRedstoneRepeater : Block
         }
     }
 
-    public override int getTexture(int side, int meta) => side == 0 ? _lit ? 99 : 115 : side == 1 ? _lit ? 147 : 131 : 5;
+    public override int GetTexture(Side side, int meta) => side switch
+    {
+        0 => _lit ? 99 : 115,
+        Side.Up => _lit ? 147 : 131,
+        _ => 5
+    };
 
-    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side) => side != 0 && side != 1;
+    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side) => side != 0 && side != Side.Up;
 
     public override BlockRendererType getRenderType() => BlockRendererType.Repeater;
 
-    public override int getTexture(int side) => getTexture(side, 0);
+    public override int GetTexture(Side side) => GetTexture(side, 0);
 
     public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => isPoweringSide(world, x, y, z, side);
 
@@ -63,7 +68,10 @@ public class BlockRedstoneRepeater : Block
         if (!_lit) return false;
 
         int facing = reader.GetBlockMeta(x, y, z) & 3;
-        return facing == 0 && side == 3 ? true : facing == 1 && side == 4 ? true : facing == 2 && side == 2 ? true : facing == 3 && side == 5;
+        return facing == 0 && side == 3 ||
+               facing == 1 && side == 4 ||
+               facing == 2 && side == 2 ||
+               facing == 3 && side == 5;
     }
 
     public override void neighborUpdate(OnTickEvent @event)
@@ -158,6 +166,7 @@ public class BlockRedstoneRepeater : Block
             case 2: targetZ++; break;
             case 3: targetX--; break;
         }
+
         ctx.Broadcaster.NotifyNeighbors(targetX, y, targetZ, id);
     }
 

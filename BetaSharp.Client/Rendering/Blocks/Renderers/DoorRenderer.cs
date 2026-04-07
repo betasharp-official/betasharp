@@ -11,10 +11,10 @@ public class DoorRenderer : IBlockRenderer
 
         var flatCtx = ctx with { EnableAo = false };
 
-        float lightBottom = 0.5F;
-        float lightTop = 1.0F;
-        float lightZ = 0.8F; // East/West
-        float lightX = 0.6F; // North/South
+        const float lightBottom = 0.5F;
+        const float lightTop = 1.0F;
+        const float lightZ = 0.8F; // East/West
+        const float lightX = 0.6F; // North/South
 
         float blockLuminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
         bool isLightEmitter = Block.BlocksLightLuminance[block.id] > 0;
@@ -31,7 +31,7 @@ public class DoorRenderer : IBlockRenderer
         if (isLightEmitter) faceLuminance = 1.0F;
 
         ctx.Tess.setColorOpaque_F(lightBottom * faceLuminance, lightBottom * faceLuminance, lightBottom * faceLuminance);
-        flatCtx.DrawBottomFace(block, vecPos, dummyColors, block.getTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, 0));
+        flatCtx.DrawBottomFace(block, vecPos, dummyColors, block.GetTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, Side.Down));
 
         // --- Top Face (Y + 1) ---
         faceLuminance = block.getLuminance(ctx.Lighting, pos.x, pos.y + 1, pos.z);
@@ -39,7 +39,7 @@ public class DoorRenderer : IBlockRenderer
         if (isLightEmitter) faceLuminance = 1.0F;
 
         ctx.Tess.setColorOpaque_F(lightTop * faceLuminance, lightTop * faceLuminance, lightTop * faceLuminance);
-        flatCtx.DrawTopFace(block, vecPos, dummyColors, block.getTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, 1));
+        flatCtx.DrawTopFace(block, vecPos, dummyColors, block.GetTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, Side.Up));
 
         // --- East Face (Z - 1) ---
         faceLuminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z - 1);
@@ -47,7 +47,7 @@ public class DoorRenderer : IBlockRenderer
         if (isLightEmitter) faceLuminance = 1.0F;
 
         ctx.Tess.setColorOpaque_F(lightZ * faceLuminance, lightZ * faceLuminance, lightZ * faceLuminance);
-        int textureId = block.getTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, 2);
+        int textureId = block.GetTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, Side.North);
 
 
         if (textureId < 0)
@@ -63,7 +63,7 @@ public class DoorRenderer : IBlockRenderer
         if (isLightEmitter) faceLuminance = 1.0F;
 
         ctx.Tess.setColorOpaque_F(lightZ * faceLuminance, lightZ * faceLuminance, lightZ * faceLuminance);
-        textureId = block.getTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, 3);
+        textureId = block.GetTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, Side.South);
 
 
         if (textureId < 0)
@@ -79,7 +79,7 @@ public class DoorRenderer : IBlockRenderer
         if (isLightEmitter) faceLuminance = 1.0F;
 
         ctx.Tess.setColorOpaque_F(lightX * faceLuminance, lightX * faceLuminance, lightX * faceLuminance);
-        textureId = block.getTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, 4);
+        textureId = block.GetTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, Side.West);
 
 
         if (textureId < 0)
@@ -95,7 +95,7 @@ public class DoorRenderer : IBlockRenderer
         if (isLightEmitter) faceLuminance = 1.0F;
 
         ctx.Tess.setColorOpaque_F(lightX * faceLuminance, lightX * faceLuminance, lightX * faceLuminance);
-        textureId = block.getTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, 5);
+        textureId = block.GetTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, Side.East);
 
 
         if (textureId < 0)

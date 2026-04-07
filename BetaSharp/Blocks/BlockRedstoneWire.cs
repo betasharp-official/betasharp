@@ -13,7 +13,7 @@ public class BlockRedstoneWire : Block
 
     public BlockRedstoneWire(int id, int textureId) : base(id, textureId, Material.PistonBreakable) => setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F / 16.0F, 1.0F);
 
-    public override int getTexture(int side, int metaD) => textureId;
+    public override int GetTexture(Side side, int metaD) => TextureId;
 
     public override Box? getCollisionShape(IBlockReader reader, EntityManager entities, int x, int y, int z) => null;
 

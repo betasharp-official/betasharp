@@ -22,7 +22,7 @@ public class FlatLayerListItem(FlatLayerInfo layer) : ListItem<FlatLayerInfo>(la
 
         if (block != null)
         {
-            int textureId = block.getTexture(1);
+            int textureId = block.GetTexture(Side.Up);
             renderer.DrawItemIntoGui(s_itemRenderer, Value.FillBlock, Value.FillBlockMeta, textureId, 5, 5);
         }
 

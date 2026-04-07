@@ -20,28 +20,20 @@ public class BlockPistonBase : Block
 
     public int getTopTexture() => _sticky ? 106 : 107;
 
-    public override int getTexture(int side) =>
+    public override int GetTexture(Side side) =>
         side switch
         {
-            1 => getTopTexture(),
-            0 => 109,
+            Side.Up => getTopTexture(),
+            Side.Down => 109,
             _ => 108
         };
 
-    public override int getTexture(int side, int meta)
+    public override int GetTexture(Side side, int meta)
     {
-        int facing = getFacing(meta);
-        if (facing > 5)
-        {
-            return textureId;
-        }
-
-        if (side == facing)
-        {
-            return !IsExtended(meta) && BoundingBox is { MinX: <= 0.0D, MinY: <= 0.0D, MinZ: <= 0.0D, MaxX: >= 1.0D, MaxY: >= 1.0D, MaxZ: >= 1.0D } ? textureId : 110;
-        }
-
-        return side == PistonConstants.OppositeFace[facing] ? 109 : 108;
+        Side facing = getFacing(meta).ToSide();
+        if (facing > Side.East) return TextureId;
+        if (side == facing) return !IsExtended(meta) && BoundingBox is { MinX: <= 0.0D, MinY: <= 0.0D, MinZ: <= 0.0D, MaxX: >= 1.0D, MaxY: >= 1.0D, MaxZ: >= 1.0D } ? TextureId : 110;
+        return side == facing.OppositeFace() ? 109 : 108;
     }
 
     public override BlockRendererType getRenderType() => BlockRendererType.PistonBase;
@@ -86,10 +78,7 @@ public class BlockPistonBase : Block
         int facing = getFacing(meta);
         bool needsExtension = ShouldExtend(ctx, x, y, z, facing);
 
-        if (meta == 7)
-        {
-            return;
-        }
+        if (meta == 7) return;
 
         switch (needsExtension)
         {
@@ -114,12 +103,12 @@ public class BlockPistonBase : Block
                facing != 3 && ctx.Redstone.IsPoweringSide(x, y, z + 1, 3) ||
                facing != 4 && ctx.Redstone.IsPoweringSide(x - 1, y, z, 4) ||
                facing != 5 && ctx.Redstone.IsPoweringSide(x + 1, y, z, 5) ||
-                           ctx.Redstone.IsPoweringSide(x, y, z, 0) ||
-                           ctx.Redstone.IsPoweringSide(x, y + 2, z, 1) ||
-                           ctx.Redstone.IsPoweringSide(x, y + 1, z - 1, 2) ||
-                           ctx.Redstone.IsPoweringSide(x, y + 1, z + 1, 3) ||
-                           ctx.Redstone.IsPoweringSide(x - 1, y + 1, z, 4) ||
-                           ctx.Redstone.IsPoweringSide(x + 1, y + 1, z, 5);
+               ctx.Redstone.IsPoweringSide(x, y, z, 0) ||
+               ctx.Redstone.IsPoweringSide(x, y + 2, z, 1) ||
+               ctx.Redstone.IsPoweringSide(x, y + 1, z - 1, 2) ||
+               ctx.Redstone.IsPoweringSide(x, y + 1, z + 1, 3) ||
+               ctx.Redstone.IsPoweringSide(x - 1, y + 1, z, 4) ||
+               ctx.Redstone.IsPoweringSide(x + 1, y + 1, z, 5);
     }
 
     public override void onBlockAction(OnBlockActionEvent @event)
@@ -272,7 +261,14 @@ public class BlockPistonBase : Block
         }
 
         int playerYaw = MathHelper.Floor(player.yaw * 4.0F / 360.0F + 0.5D) & 3;
-        return playerYaw == 0 ? 2 : playerYaw == 1 ? 5 : playerYaw == 2 ? 3 : playerYaw == 3 ? 4 : 0;
+        return playerYaw switch
+        {
+            0 => 2,
+            1 => 5,
+            2 => 3,
+            3 => 4,
+            _ => 0
+        };
     }
 
     private static bool CanMoveBlock(int id, IWorldContext ctx, int x, int y, int z, bool allowBreaking)
@@ -284,25 +280,11 @@ public class BlockPistonBase : Block
 
         if (id != Piston.id && id != StickyPiston.id)
         {
-            if (Math.Abs(Blocks[id].getHardness() - (-1.0F)) < 0.001F)
-            {
-                return false;
-            }
-
-            if (Blocks[id].getPistonBehavior() == 2)
-            {
-                return false;
-            }
-
-            if (!allowBreaking && Blocks[id].getPistonBehavior() == 1)
-            {
-                return false;
-            }
+            if (Math.Abs(Blocks[id].getHardness() - (-1.0F)) < 0.001F) return false;
+            if (Blocks[id].getPistonBehavior() == 2) return false;
+            if (!allowBreaking && Blocks[id].getPistonBehavior() == 1) return false;
         }
-        else if (IsExtended(ctx.Reader.GetBlockMeta(x, y, z)))
-        {
-            return false;
-        }
+        else if (IsExtended(ctx.Reader.GetBlockMeta(x, y, z))) return false;
 
         BlockEntity? targetEntity = ctx.Entities.GetBlockEntity<BlockEntity>(x, y, z);
         return targetEntity == null;

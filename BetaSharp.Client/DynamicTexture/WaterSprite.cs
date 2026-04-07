@@ -2,7 +2,7 @@ using BetaSharp.Blocks;
 
 namespace BetaSharp.Client.DynamicTexture;
 
-internal class WaterSprite() : Rendering.Core.Textures.DynamicTexture(Block.FlowingWater.textureId)
+internal class WaterSprite() : Rendering.Core.Textures.DynamicTexture(Block.FlowingWater.TextureId)
 {
     private readonly float[] _heat = new float[256];
     private readonly float[] _heatDelta = new float[256];

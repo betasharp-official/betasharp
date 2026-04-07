@@ -8,8 +8,8 @@ namespace BetaSharp.Network.Packets.S2CPlay;
 /// </summary>
 public class FinishConfigurationS2CPacket() : ExtendedProtocolPacket(PacketId.FinishConfigurationS2C)
 {
-    public override void Read(NetworkStream stream) { }
-    public override void Write(NetworkStream stream) { }
+    public override void Read(Stream stream) { }
+    public override void Write(Stream stream) { }
     public override void Apply(NetHandler handler) => handler.onFinishConfiguration(this);
     public override int Size() => 0;
 }

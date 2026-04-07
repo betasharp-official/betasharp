@@ -502,7 +502,7 @@ public ref struct BlockRenderContext
         bool hasOverrideTex = OverrideTexture >= 0;
         bool tintBottom = true, tintTop = true, tintEast = true, tintWest = true, tintNorth = true, tintSouth = true;
 
-        if (block.textureId == 3 || hasOverrideTex)
+        if (block.TextureId == 3 || hasOverrideTex)
         {
             tintBottom = tintEast = tintWest = tintNorth = tintSouth = false;
         }
@@ -512,7 +512,7 @@ public ref struct BlockRenderContext
         Vec3D vecPos = new(pos.x, pos.y, pos.z); // Allocate struct once
 
         // BOTTOM FACE (Y - 1)
-        if (RenderAllFaces || bounds.MinY > 0.0F || block.isSideVisible(BlockReader, pos.x, pos.y - 1, pos.z, 0))
+        if (RenderAllFaces || bounds.MinY > 0.0F || block.isSideVisible(BlockReader, pos.x, pos.y - 1, pos.z, Side.Down))
         {
             float lYn = block.getLuminance(Lighting, pos.x, pos.y - 1, pos.z);
             if (!ao) v0 = v1 = v2 = v3 = lYn;
@@ -535,7 +535,7 @@ public ref struct BlockRenderContext
             }
 
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.5F, tintBottom);
-            int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(BlockReader, pos.x, pos.y, pos.z, 0);
+            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.x, pos.y, pos.z, Side.Down);
 
             DrawBottomFace(block, in vecPos, colors, textureId, ao && (v0 + v2 > v1 + v3));
 
@@ -543,7 +543,7 @@ public ref struct BlockRenderContext
         }
 
         // TOP FACE (Y + 1)
-        if (RenderAllFaces || bounds.MaxY < 1.0F || block.isSideVisible(BlockReader, pos.x, pos.y + 1, pos.z, 1))
+        if (RenderAllFaces || bounds.MaxY < 1.0F || block.isSideVisible(BlockReader, pos.x, pos.y + 1, pos.z, Side.Up))
         {
             float lYp = block.getLuminance(Lighting, pos.x, pos.y + 1, pos.z);
             if (!ao) v0 = v1 = v2 = v3 = lYp;
@@ -566,7 +566,7 @@ public ref struct BlockRenderContext
             }
 
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 1.0F, tintTop);
-            int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(BlockReader, pos.x, pos.y, pos.z, 1);
+            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.x, pos.y, pos.z, Side.Up);
 
             DrawTopFace(block, in vecPos, colors, textureId, ao && (v0 + v2 > v1 + v3));
 
@@ -574,7 +574,7 @@ public ref struct BlockRenderContext
         }
 
         // EAST FACE (Z - 1)
-        if (RenderAllFaces || bounds.MinZ > 0.0F || block.isSideVisible(BlockReader, pos.x, pos.y, pos.z - 1, 2))
+        if (RenderAllFaces || bounds.MinZ > 0.0F || block.isSideVisible(BlockReader, pos.x, pos.y, pos.z - 1, Side.North))
         {
             float lZn = block.getLuminance(Lighting, pos.x, pos.y, pos.z - 1);
             if (!ao) v0 = v1 = v2 = v3 = lZn;
@@ -596,7 +596,7 @@ public ref struct BlockRenderContext
                 v3 = (dw + w + d + lZn) * 0.25F;
             }
 
-            int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(BlockReader, pos.x, pos.y, pos.z, 2);
+            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.x, pos.y, pos.z, Side.North);
             var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.8F, tintEast);
             bool flipped = ao && (v1 + v3 > v2 + v0);
 
@@ -612,7 +612,7 @@ public ref struct BlockRenderContext
         }
 
         // WEST FACE (Z + 1)
-        if (RenderAllFaces || bounds.MaxZ < 1.0F || block.isSideVisible(BlockReader, pos.x, pos.y, pos.z + 1, 3))
+        if (RenderAllFaces || bounds.MaxZ < 1.0F || block.isSideVisible(BlockReader, pos.x, pos.y, pos.z + 1, Side.South))
         {
             float lZp = block.getLuminance(Lighting, pos.x, pos.y, pos.z + 1);
             if (!ao) v0 = v1 = v2 = v3 = lZp;
@@ -634,7 +634,7 @@ public ref struct BlockRenderContext
                 v3 = (lZp + u + e + ue) * 0.25F;
             }
 
-            int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(BlockReader, pos.x, pos.y, pos.z, 3);
+            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.x, pos.y, pos.z, Side.South);
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.8F, tintWest);
             bool flipped = ao && (v0 + v2 > v1 + v3);
 
@@ -650,7 +650,7 @@ public ref struct BlockRenderContext
         }
 
         // NORTH FACE (X - 1)
-        if (RenderAllFaces || bounds.MinX > 0.0F || block.isSideVisible(BlockReader, pos.x - 1, pos.y, pos.z, 4))
+        if (RenderAllFaces || bounds.MinX > 0.0F || block.isSideVisible(BlockReader, pos.x - 1, pos.y, pos.z, Side.West))
         {
             float lXn = block.getLuminance(Lighting, pos.x - 1, pos.y, pos.z);
             if (!ao) v0 = v1 = v2 = v3 = lXn;
@@ -672,7 +672,7 @@ public ref struct BlockRenderContext
                 v3 = (d + ds + lXn + s) * 0.25F;
             }
 
-            int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(BlockReader, pos.x, pos.y, pos.z, 4);
+            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.x, pos.y, pos.z, Side.West);
             var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.6F, tintNorth);
             bool flipped = ao && (v1 + v3 > v2 + v0);
 
@@ -688,7 +688,7 @@ public ref struct BlockRenderContext
         }
 
         // SOUTH FACE (X + 1)
-        if (RenderAllFaces || bounds.MaxX < 1.0F || block.isSideVisible(BlockReader, pos.x + 1, pos.y, pos.z, 5))
+        if (RenderAllFaces || bounds.MaxX < 1.0F || block.isSideVisible(BlockReader, pos.x + 1, pos.y, pos.z, Side.East))
         {
             float lXp = block.getLuminance(Lighting, pos.x + 1, pos.y, pos.z);
             if (!ao) v0 = v1 = v2 = v3 = lXp;
@@ -710,7 +710,7 @@ public ref struct BlockRenderContext
                 v3 = (u + us + lXp + s) * 0.25F;
             }
 
-            int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(BlockReader, pos.x, pos.y, pos.z, 5);
+            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.x, pos.y, pos.z, 5.ToSide());
             var colors = FaceColors.AssignVertexColors(v3, v0, v1, v2, r, g, b, 0.6F, tintSouth);
             bool flipped = ao && (v3 + v1 > v0 + v2);
 
@@ -741,7 +741,7 @@ public ref struct BlockRenderContext
         const float topMinVOffset = 6.0f * texScale;
         const float topMaxVOffset = 8.0f * texScale;
 
-        int textureId = OverrideTexture >= 0 ? OverrideTexture : block.getTexture(0);
+        int textureId = OverrideTexture >= 0 ? OverrideTexture : block.GetTexture(0);
 
         int texU = (textureId & 15) << 4;
         int texV = textureId & 240;

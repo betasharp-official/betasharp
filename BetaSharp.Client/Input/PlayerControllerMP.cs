@@ -116,7 +116,7 @@ public class PlayerControllerMP : PlayerController
                     curBlockDamageMP += var6.getHardness(Game.Player);
                     if (_mineSoundTimer % 4 == 0 && var6 != null)
                     {
-                        Game.SoundManager.PlaySound(var6.soundGroup.StepSound, (float)x + 0.5F, (float)y + 0.5F, (float)z + 0.5F, (var6.soundGroup.Volume + 1.0F) / 8.0F, var6.soundGroup.Pitch * 0.5F);
+                        Game.SoundManager.PlaySound(var6.SoundGroup.StepSound, (float)x + 0.5F, (float)y + 0.5F, (float)z + 0.5F, (var6.SoundGroup.Volume + 1.0F) / 8.0F, var6.SoundGroup.Pitch * 0.5F);
                     }
 
                     ++_mineSoundTimer;

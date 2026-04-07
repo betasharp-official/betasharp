@@ -5,49 +5,31 @@ namespace BetaSharp.Blocks;
 
 internal class BlockLockedChest : Block
 {
-    public BlockLockedChest(int id) : base(id, Material.Wood) => textureId = 26;
+    public BlockLockedChest(int id) : base(id, Material.Wood) => TextureId = 26;
 
-    public override int getTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
+    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (side == 1)
-        {
-            return textureId - 1;
-        }
+        if (side is Side.Up or Side.Down) return TextureId - 1;
 
-        if (side == 0)
-        {
-            return textureId - 1;
-        }
+        int blockNorth = iBlockReader.GetBlockId(x, y, z - 1);
+        int blockSouth = iBlockReader.GetBlockId(x, y, z + 1);
+        int blockWest = iBlockReader.GetBlockId(x - 1, y, z);
+        int blockEast = iBlockReader.GetBlockId(x + 1, y, z);
 
-        int var6 = iBlockReader.GetBlockId(x, y, z - 1);
-        int var7 = iBlockReader.GetBlockId(x, y, z + 1);
-        int var8 = iBlockReader.GetBlockId(x - 1, y, z);
-        int var9 = iBlockReader.GetBlockId(x + 1, y, z);
-        sbyte var10 = 3;
-        if (BlocksOpaque[var6] && !BlocksOpaque[var7])
-        {
-            var10 = 3;
-        }
-
-        if (BlocksOpaque[var7] && !BlocksOpaque[var6])
-        {
-            var10 = 2;
-        }
-
-        if (BlocksOpaque[var8] && !BlocksOpaque[var9])
-        {
-            var10 = 5;
-        }
-
-        if (BlocksOpaque[var9] && !BlocksOpaque[var8])
-        {
-            var10 = 4;
-        }
-
-        return side == var10 ? textureId + 1 : textureId;
+        Side facing = Side.South;
+        if (BlocksOpaque[blockNorth] && !BlocksOpaque[blockSouth]) facing = Side.South;
+        if (BlocksOpaque[blockSouth] && !BlocksOpaque[blockNorth]) facing = Side.North;
+        if (BlocksOpaque[blockWest] && !BlocksOpaque[blockEast]) facing = Side.East;
+        if (BlocksOpaque[blockEast] && !BlocksOpaque[blockWest]) facing = Side.West;
+        return side == facing ? TextureId + 1 : TextureId;
     }
 
-    public override int getTexture(int side) => side == 1 ? textureId - 1 : side == 0 ? textureId - 1 : side == 3 ? textureId + 1 : textureId;
+    public override int GetTexture(Side side) => side switch
+    {
+        Side.Up or Side.Down => TextureId - 1,
+        Side.South => TextureId + 1,
+        _ => TextureId
+    };
 
     public override bool canPlaceAt(CanPlaceAtContext context) => true;
 

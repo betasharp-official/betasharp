@@ -37,7 +37,7 @@ public class ChunkDeltaUpdateS2CPacket() : Packet(PacketId.ChunkDeltaUpdateS2C)
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         x = stream.ReadInt();
         z = stream.ReadInt();
@@ -56,7 +56,7 @@ public class ChunkDeltaUpdateS2CPacket() : Packet(PacketId.ChunkDeltaUpdateS2C)
         stream.ReadExactly(blockMetadata);
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(x);
         stream.WriteInt(z);

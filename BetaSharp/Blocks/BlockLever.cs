@@ -29,19 +29,19 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
 
         switch (@event.Direction)
         {
-            case 1 when @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z):
+            case Side.Up when @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z):
                 meta = 5 + Random.Shared.Next(2);
                 break;
-            case 2 when @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1):
+            case Side.North when @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1):
                 meta = 4;
                 break;
-            case 3 when @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1):
+            case Side.South when @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1):
                 meta = 3;
                 break;
-            case 4 when @event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z):
+            case Side.West when @event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z):
                 meta = 2;
                 break;
-            case 5 when @event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z):
+            case Side.East when @event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z):
                 meta = 1;
                 break;
             default:

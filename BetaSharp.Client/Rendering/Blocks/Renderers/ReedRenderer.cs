@@ -37,7 +37,7 @@ public class ReedRenderer : IBlockRenderer
     private void RenderCrossedSquares(Block block, int metadata, float x, float y, float z,
         ref BlockRenderContext ctx)
     {
-        int textureId = block.getTexture(0, metadata);
+        int textureId = block.GetTexture(0, metadata);
         if (ctx.OverrideTexture >= 0)
         {
             textureId = ctx.OverrideTexture;

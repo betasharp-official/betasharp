@@ -23,7 +23,7 @@ public class ScreenHandlerSlotUpdateS2CPacket() : Packet(PacketId.ScreenHandlerS
         handler.onScreenHandlerSlotUpdate(this);
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         syncId = (sbyte)stream.ReadByte();
         slot = stream.ReadShort();
@@ -41,7 +41,7 @@ public class ScreenHandlerSlotUpdateS2CPacket() : Packet(PacketId.ScreenHandlerS
 
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteByte((byte)syncId);
         stream.WriteShort((short)slot);

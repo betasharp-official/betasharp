@@ -38,7 +38,7 @@ public class RegistryDataS2CPacket() : ExtendedProtocolPacket(PacketId.RegistryD
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         RegistryId = stream.ReadResourceLocation();
         int count = stream.ReadUShort();
@@ -52,7 +52,7 @@ public class RegistryDataS2CPacket() : ExtendedProtocolPacket(PacketId.RegistryD
         Entries = entries;
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteResourceLocation(RegistryId!);
         stream.WriteUShort((ushort)Entries.Count);

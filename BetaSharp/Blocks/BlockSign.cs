@@ -11,14 +11,20 @@ internal class BlockSign : BlockWithEntity
     private readonly Type _blockEntityType;
     private readonly bool _standing;
 
+    private const float Width = 0.25F;
+    private const float Height = 1.0F;
+    private const float TopOffset = 9.0F / 32.0F;
+    private const float BottomOffset = 25.0F / 32.0F;
+    private const float MinExtent = 0.0F;
+    private const float MaxExtent = 1.0F;
+    private const float Thickness = 2.0F / 16.0F;
+
     public BlockSign(int id, Type blockEntityType, bool standing) : base(id, Material.Wood)
     {
         _standing = standing;
-        textureId = 4;
+        TextureId = 4;
         _blockEntityType = blockEntityType;
-        float width = 0.25F;
-        float height = 1.0F;
-        setBoundingBox(0.5F - width, 0.0F, 0.5F - width, 0.5F + width, height, 0.5F + width);
+        setBoundingBox(0.5F - Width, 0.0F, 0.5F - Width, 0.5F + Width, Height, 0.5F + Width);
     }
 
     public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
@@ -31,34 +37,25 @@ internal class BlockSign : BlockWithEntity
 
     public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
-        if (!_standing)
+        if (_standing) return;
+
+        Side facing = blockReader.GetBlockMeta(x, y, z).ToSide();
+
+        setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+        switch (facing)
         {
-            int facing = blockReader.GetBlockMeta(x, y, z);
-            float topOffset = 9.0F / 32.0F;
-            float bottomOffset = 25.0F / 32.0F;
-            float minExtent = 0.0F;
-            float maxExtent = 1.0F;
-            float thickness = 2.0F / 16.0F;
-            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-            if (facing == 2)
-            {
-                setBoundingBox(minExtent, topOffset, 1.0F - thickness, maxExtent, bottomOffset, 1.0F);
-            }
-
-            if (facing == 3)
-            {
-                setBoundingBox(minExtent, topOffset, 0.0F, maxExtent, bottomOffset, thickness);
-            }
-
-            if (facing == 4)
-            {
-                setBoundingBox(1.0F - thickness, topOffset, minExtent, 1.0F, bottomOffset, maxExtent);
-            }
-
-            if (facing == 5)
-            {
-                setBoundingBox(0.0F, topOffset, minExtent, thickness, bottomOffset, maxExtent);
-            }
+            case Side.North:
+                setBoundingBox(MinExtent, TopOffset, 1.0F - Thickness, MaxExtent, BottomOffset, 1.0F);
+                break;
+            case Side.South:
+                setBoundingBox(MinExtent, TopOffset, 0.0F, MaxExtent, BottomOffset, Thickness);
+                break;
+            case Side.West:
+                setBoundingBox(1.0F - Thickness, TopOffset, MinExtent, 1.0F, BottomOffset, MaxExtent);
+                break;
+            case Side.East:
+                setBoundingBox(0.0F, TopOffset, MinExtent, Thickness, BottomOffset, MaxExtent);
+                break;
         }
     }
 
@@ -94,26 +91,16 @@ internal class BlockSign : BlockWithEntity
         }
         else
         {
-            int facing = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+            Side facing = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z).ToSide();
             shouldBreak = true;
-            if (facing == 2 && @event.World.Reader.GetMaterial(@event.X, @event.Y, @event.Z + 1).IsSolid)
+            switch (facing)
             {
-                shouldBreak = false;
-            }
-
-            if (facing == 3 && @event.World.Reader.GetMaterial(@event.X, @event.Y, @event.Z - 1).IsSolid)
-            {
-                shouldBreak = false;
-            }
-
-            if (facing == 4 && @event.World.Reader.GetMaterial(@event.X + 1, @event.Y, @event.Z).IsSolid)
-            {
-                shouldBreak = false;
-            }
-
-            if (facing == 5 && @event.World.Reader.GetMaterial(@event.X - 1, @event.Y, @event.Z).IsSolid)
-            {
-                shouldBreak = false;
+                case Side.North when @event.World.Reader.GetMaterial(@event.X, @event.Y, @event.Z + 1).IsSolid:
+                case Side.South when @event.World.Reader.GetMaterial(@event.X, @event.Y, @event.Z - 1).IsSolid:
+                case Side.West when @event.World.Reader.GetMaterial(@event.X + 1, @event.Y, @event.Z).IsSolid:
+                case Side.East when @event.World.Reader.GetMaterial(@event.X - 1, @event.Y, @event.Z).IsSolid:
+                    shouldBreak = false;
+                    break;
             }
         }
 

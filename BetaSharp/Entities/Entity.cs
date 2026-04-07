@@ -547,10 +547,10 @@ public abstract class Entity
                     if (horizontalSpeed > (float)nextStepSoundDistance && var28 > 0)
                     {
                         nextStepSoundDistance = (int)horizontalSpeed + 1;
-                        BlockSoundGroup soundGroup = Block.Blocks[var28].soundGroup;
+                        BlockSoundGroup soundGroup = Block.Blocks[var28].SoundGroup;
                         if (world.Reader.GetBlockId(var38, var26 + 1, var39) == Block.Snow.id)
                         {
-                            soundGroup = Block.Snow.soundGroup;
+                            soundGroup = Block.Snow.SoundGroup;
                             world.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
                         }
                         else if (!Block.Blocks[var28].material.IsFluid)

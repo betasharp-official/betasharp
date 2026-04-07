@@ -6,7 +6,7 @@ public class BundleS2CPacket() : ExtendedProtocolPacket(PacketId.BundleS2C)
 {
     public List<Packet> Packets { get; } = [];
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         int count = stream.ReadUShort();
         for (int i = 0; i < count; i++)
@@ -16,7 +16,7 @@ public class BundleS2CPacket() : ExtendedProtocolPacket(PacketId.BundleS2C)
         }
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteUShort((ushort)Packets.Count);
         foreach (Packet p in Packets)

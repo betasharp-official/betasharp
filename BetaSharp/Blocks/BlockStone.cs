@@ -2,14 +2,7 @@ using BetaSharp.Blocks.Materials;
 
 namespace BetaSharp.Blocks;
 
-internal class BlockStone : Block
+internal class BlockStone(int id, int textureId) : Block(id, textureId, Material.Stone)
 {
-    public BlockStone(int id, int textureId) : base(id, textureId, Material.Stone)
-    {
-    }
-
-    public override int getDroppedItemId(int blockMeta)
-    {
-        return Block.Cobblestone.id;
-    }
+    public override int getDroppedItemId(int blockMeta) => Cobblestone.id;
 }

@@ -8,6 +8,14 @@ namespace BetaSharp.Blocks;
 
 public class BlockBed : Block
 {
+    public static readonly Side[][] BedFacings =
+    [
+        [Side.Up, Side.Down, Side.South, Side.North, Side.East, Side.West],
+        [Side.Up, Side.Down, Side.East, Side.West, Side.North, Side.South],
+        [Side.Up, Side.Down, Side.North, Side.South, Side.West, Side.East],
+        [Side.Up, Side.Down, Side.West, Side.East, Side.South, Side.North]
+    ];
+
     private static readonly int[][] s_bedOffsets = [[0, 1], [-1, 0], [0, -1], [1, 0]];
 
     public BlockBed(int id) : base(id, 134, Material.Wool)
@@ -22,9 +30,7 @@ public class BlockBed : Block
             return true;
         }
 
-        int x = @event.X;
-        int y = @event.Y;
-        int z = @event.Z;
+        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
 
         int meta = @event.World.Reader.GetBlockMeta(x, y, z);
         if (!isHeadOfBed(meta))
@@ -109,18 +115,21 @@ public class BlockBed : Block
         return true;
     }
 
-    public override int getTexture(int side, int meta)
+    public override int GetTexture(Side side, int meta)
     {
-        if (side == 0)
+        int direction = getDirection(meta);
+        Side sideFacing = BedFacings[direction][side.ToInt()];
+        if (side == Side.Down) return Planks.TextureId;
+        if (isHeadOfBed(meta))
         {
-            return Planks.textureId;
+            if (sideFacing == Side.North) return TextureId + 2 + 16;
+            if (sideFacing != Side.East && sideFacing != Side.West) return TextureId + 1;
+            return TextureId + 1 + 16;
         }
 
-        int direction = getDirection(meta);
-        int sideFacing = Facings.BED_FACINGS[direction][side];
-        return isHeadOfBed(meta) ? sideFacing == 2 ? textureId + 2 + 16 : sideFacing != 5 && sideFacing != 4 ? textureId + 1 : textureId + 1 + 16 :
-            sideFacing == 3 ? textureId - 1 + 16 :
-            sideFacing != 5 && sideFacing != 4 ? textureId : textureId + 16;
+        if (sideFacing == Side.South) return TextureId - 1 + 16;
+        if (sideFacing != Side.East && sideFacing != Side.West) return TextureId;
+        return TextureId + 16;
     }
 
     public override BlockRendererType getRenderType()

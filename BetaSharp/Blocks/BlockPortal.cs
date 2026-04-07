@@ -4,29 +4,22 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
-public class BlockPortal : BlockBreakable
+public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, Material.NetherPortal, false)
 {
-    public BlockPortal(int id, int textureId) : base(id, textureId, Material.NetherPortal, false)
-    {
-    }
+    private const float Thickness = 2.0F / 16.0F;
+    private const float HalfExtent = 0.5F;
 
     public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
     public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
-        float thickness;
-        float halfExtent;
         if (blockReader.GetBlockId(x - 1, y, z) != id && blockReader.GetBlockId(x + 1, y, z) != id)
         {
-            thickness = 2.0F / 16.0F;
-            halfExtent = 0.5F;
-            setBoundingBox(0.5F - thickness, 0.0F, 0.5F - halfExtent, 0.5F + thickness, 1.0F, 0.5F + halfExtent);
+            setBoundingBox(0.5F - Thickness, 0.0F, 0.5F - HalfExtent, 0.5F + Thickness, 1.0F, 0.5F + HalfExtent);
         }
         else
         {
-            thickness = 0.5F;
-            halfExtent = 2.0F / 16.0F;
-            setBoundingBox(0.5F - thickness, 0.0F, 0.5F - halfExtent, 0.5F + thickness, 1.0F, 0.5F + halfExtent);
+            setBoundingBox(0.5F - HalfExtent, 0.0F, 0.5F - Thickness, 0.5F + HalfExtent, 1.0F, 0.5F + Thickness);
         }
     }
 
@@ -66,20 +59,19 @@ public class BlockPortal : BlockBreakable
             for (verticalOffset = -1; verticalOffset <= 3; ++verticalOffset)
             {
                 bool isFrame = horizontalOffset == -1 || horizontalOffset == 2 || verticalOffset == -1 || verticalOffset == 3;
-                if ((horizontalOffset != -1 && horizontalOffset != 2) || (verticalOffset != -1 && verticalOffset != 3))
+                if (horizontalOffset is -1 or 2 && verticalOffset is -1 or 3) continue;
+
+                int blockId = reader.GetBlockId(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset);
+                if (isFrame)
                 {
-                    int blockId = reader.GetBlockId(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset);
-                    if (isFrame)
-                    {
-                        if (blockId != Obsidian.id)
-                        {
-                            return false;
-                        }
-                    }
-                    else if (blockId != 0 && blockId != Fire.id)
+                    if (blockId != Obsidian.id)
                     {
                         return false;
                     }
+                }
+                else if (blockId != 0 && blockId != Fire.id)
+                {
+                    return false;
                 }
             }
         }
@@ -142,12 +134,9 @@ public class BlockPortal : BlockBreakable
         }
     }
 
-    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side)
+    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (iBlockReader.GetBlockId(x, y, z) == id)
-        {
-            return false;
-        }
+        if (iBlockReader.GetBlockId(x, y, z) == id) return false;
 
         bool edgeWest = iBlockReader.GetBlockId(x - 1, y, z) == id && iBlockReader.GetBlockId(x - 2, y, z) != id;
         bool edgeEast = iBlockReader.GetBlockId(x + 1, y, z) == id && iBlockReader.GetBlockId(x + 2, y, z) != id;
@@ -155,7 +144,10 @@ public class BlockPortal : BlockBreakable
         bool edgeSouth = iBlockReader.GetBlockId(x, y, z + 1) == id && iBlockReader.GetBlockId(x, y, z + 2) != id;
         bool extendsInX = edgeWest || edgeEast;
         bool extendsInZ = edgeNorth || edgeSouth;
-        return extendsInX && side == 4 ? true : extendsInX && side == 5 ? true : extendsInZ && side == 2 ? true : extendsInZ && side == 3;
+        return extendsInX && side == Side.West ||
+               extendsInX && side == Side.East ||
+               extendsInZ && side == Side.North ||
+               extendsInZ && side == Side.South;
     }
 
     public override int getDroppedItemCount() => 0;

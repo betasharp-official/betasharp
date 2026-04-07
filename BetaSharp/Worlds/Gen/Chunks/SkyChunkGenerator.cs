@@ -305,7 +305,7 @@ internal class SkyChunkGenerator : IChunkSource
 
     public void DecorateTerrain(IChunkSource source, int chunkX, int chunkZ)
     {
-        BlockSand.fallInstantly = true;
+        BlockSand.FallInstantly = true;
         int blockX = chunkX * 16;
         int blockZ = chunkZ * 16;
         Biome chunkBiome = _biomeSource.GetBiome(blockX + 16, blockZ + 16);
@@ -566,7 +566,7 @@ internal class SkyChunkGenerator : IChunkSource
             }
         }
 
-        BlockSand.fallInstantly = false;
+        BlockSand.FallInstantly = false;
     }
 
     public bool Save(bool b, LoadingDisplay display) => true;

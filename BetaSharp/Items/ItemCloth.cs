@@ -13,7 +13,7 @@ internal class ItemCloth : ItemBlock
 
     public override int getTextureId(int meta)
     {
-        return Block.Wool.getTexture(2, BlockCloth.getBlockMeta(meta));
+        return Block.Wool.GetTexture(2.ToSide(), BlockCloth.getBlockMeta(meta));
     }
 
     public override int getPlacementMetadata(int meta)

@@ -139,7 +139,7 @@ internal class OverworldChunkGenerator : IChunkSource
     /// <param name="chunkZ">The z-coordinate of the chunk</param>
     public void DecorateTerrain(IChunkSource source, int chunkX, int chunkZ)
     {
-        BlockSand.fallInstantly = true;
+        BlockSand.FallInstantly = true;
         int blockX = chunkX * 16;
         int blockZ = chunkZ * 16;
         Biome chunkBiome = _biomeSource.GetBiome(blockX + 16, blockZ + 16);
@@ -502,7 +502,7 @@ internal class OverworldChunkGenerator : IChunkSource
             }
         }
 
-        BlockSand.fallInstantly = false;
+        BlockSand.FallInstantly = false;
     }
 
     public bool Save(bool saveEntities, LoadingDisplay display) => true;

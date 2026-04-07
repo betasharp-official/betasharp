@@ -36,7 +36,7 @@ public class EntityPositionS2CPacket() : PacketBaseEntity(PacketId.EntityPositio
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         base.Read(stream);
         x = stream.ReadInt();
@@ -46,7 +46,7 @@ public class EntityPositionS2CPacket() : PacketBaseEntity(PacketId.EntityPositio
         pitch = (sbyte)stream.ReadByte();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         base.Write(stream);
         stream.WriteInt(x);
