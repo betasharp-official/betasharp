@@ -132,7 +132,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public ItemStack getEquipment(int slot) => slot == 0 ? inventory.GetItemInHand() : inventory.armor[slot - 1];
 
-    public override bool damage(Entity damageSource, int amount)
+    public override bool damage(Entity? damageSource, int amount)
     {
         if (joinInvulnerabilityTicks > 0)
         {

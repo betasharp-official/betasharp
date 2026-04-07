@@ -12,22 +12,14 @@ public class KickCommand : Command.Command
     public override bool DisallowInternalServer => true;
 
     public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
-        argBuilder.Then(ArgumentString("player").Executes(Execute));
+        argBuilder.Then(ArgumentPlayer("player").Executes(Execute));
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        string target = context.GetArgument<string>("player");
-        ServerPlayerEntity? targetPlayer = context.Source.Server.playerManager.getPlayer(target);
+        var targetPlayer = context.GetArgument<ServerPlayerEntity>("player");
 
-        if (targetPlayer != null)
-        {
-            targetPlayer.NetworkHandler.disconnect("Kicked by admin");
-            context.Source.LogOp("Kicking " + targetPlayer.name);
-        }
-        else
-        {
-            context.Source.Output.SendMessage("Can't find user " + target + ". No kick.");
-        }
+        targetPlayer.NetworkHandler.disconnect("Kicked by admin");
+        context.Source.LogOp("Kicking " + targetPlayer.name);
 
         return 1;
     }

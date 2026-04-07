@@ -367,7 +367,7 @@ public abstract class EntityLiving : Entity
         }
     }
 
-    public override bool damage(Entity entity, int amount)
+    public override bool damage(Entity? entity, int amount)
     {
         if (world.IsRemote)
         {
@@ -1010,6 +1010,11 @@ public abstract class EntityLiving : Entity
         }
 
         return lastSwingAnimationProgress + var2 * partialTick;
+    }
+
+    public Vec3D getPosition()
+    {
+        return new Vec3D(x, y, z);
     }
 
     public Vec3D getPosition(float partialTick)

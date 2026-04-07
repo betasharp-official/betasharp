@@ -493,10 +493,14 @@ public class PlayerManager
 
     public bool sendPacket(string player, Packet packet)
     {
-        ServerPlayerEntity var3 = getPlayer(player);
-        if (var3 != null)
+        return sendPacket(getPlayer(player), packet);
+    }
+
+    public bool sendPacket(ServerPlayerEntity? player, Packet packet)
+    {
+        if (player != null)
         {
-            var3.NetworkHandler.SendPacket(packet);
+            player.NetworkHandler.SendPacket(packet);
             return true;
         }
         else

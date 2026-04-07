@@ -1,16 +1,22 @@
 using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
 public class ReloadCommand : Command.Command
 {
-    public string Usage => "reload";
-    public string Description => "Reloads all datapacks";
-    public string[] Names => ["reload"];
-    public byte PermissionLevel => 4;
+    public override string Usage => "reload";
+    public override string Description => "Reloads all datapacks";
+    public override string[] Names => ["reload"];
+    public override byte PermissionLevel => 4;
 
-    public void Execute(Command.Command.CommandSource c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder.Executes(Execute);
+
+    private static int Execute(CommandContext<CommandSource> context)
     {
-        c.Server.ReloadDatapacks();
+        context.Source.Server.ReloadDatapacks();
+        return 1;
     }
 }

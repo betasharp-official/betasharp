@@ -484,7 +484,7 @@ public abstract class EntityPlayer : EntityLiving
         standingEyeHeight = 1.62F;
     }
 
-    public override bool damage(Entity damageSource, int amount)
+    public override bool damage(Entity? damageSource, int amount)
     {
         if (!GameMode.CanReceiveDamage) return false;
 

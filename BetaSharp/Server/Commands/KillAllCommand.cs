@@ -1,37 +1,57 @@
 using BetaSharp.Entities;
-using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
 public class KillAllCommand : Command.Command
 {
-    public string Usage => "killall [filter]";
-    public string Description => "Kills entities by type";
-    public string[] Names => ["killall"];
+    public override string Usage => "killall <all|mob|monster|animal|item|tnt> <filter>";
+    public override string Description => "Kills entities by type";
+    public override string[] Names => ["killall"];
 
-    public void Execute(Command.Command.CommandSource c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder
+            .Executes(ctx => KillAll(ctx, (byte)TypeFilter.all, ""))
+            .Then(ArgumentEnum<TypeFilter>("type")
+                .Executes(ctx => KillAll(ctx, (byte)ctx.GetArgument<TypeFilter>("type"), ""))
+                .Then(ArgumentString("filter")).Executes(ctx => KillAll(ctx, (byte)ctx.GetArgument<TypeFilter>("type"), ctx.GetArgument<string>("filter")))
+            );
+
+    private enum TypeFilter : byte
     {
-        string filter = c.Args.Length > 0 ? c.Args[0].ToLower() : "all";
+        all = 0,
+        mob = 1,
+        living = 1,
+        monster = 2,
+        animal = 3,
+        item = 4,
+        tnt = 5
+    }
+
+    private static int KillAll(CommandContext<CommandSource> context, byte type, string filter)
+    {
+        filter = filter.ToLower();
         int count = 0;
 
-        for (int w = 0; w < c.Server.worlds.Length; w++)
+        for (int w = 0; w < context.Source.Server.worlds.Length; w++)
         {
-            var world = c.Server.worlds[w];
+            var world = context.Source.Server.worlds[w];
             var entities = new List<Entity>(world.Entities.Entities);
 
             foreach (Entity entity in entities)
             {
                 if (entity is EntityPlayer) continue;
 
-                bool shouldKill = filter switch
+                bool shouldKill = type switch
                 {
-                    "all" => true,
-                    "living" or "mob" => entity is EntityLiving,
-                    "monster" => entity is EntityMonster,
-                    "animal" => entity is EntityAnimal,
-                    "item" => entity is EntityItem,
-                    "tnt" => entity is EntityTNTPrimed,
-                    _ => EntityRegistry.GetId(entity)?.Equals(filter, System.StringComparison.OrdinalIgnoreCase) ?? false
+                    (byte)TypeFilter.all => true,
+                    (byte)TypeFilter.mob => entity is EntityLiving,
+                    (byte)TypeFilter.monster => entity is EntityMonster,
+                    (byte)TypeFilter.animal => entity is EntityAnimal,
+                    (byte)TypeFilter.item => entity is EntityItem,
+                    (byte)TypeFilter.tnt => entity is EntityTNTPrimed,
+                    _ => EntityRegistry.GetId(entity)?.Equals(filter, StringComparison.OrdinalIgnoreCase) ?? false
                 };
 
                 if (shouldKill)
@@ -42,6 +62,19 @@ public class KillAllCommand : Command.Command
             }
         }
 
-        c.Output.SendMessage($"Killed {count} entities (filter: {filter}).");
+        if (type == 255)
+        {
+            context.Source.Output.SendMessage($"Killed {count} entities (filter: {filter}).");
+        }
+        else if (type == (byte)TypeFilter.all)
+        {
+            context.Source.Output.SendMessage($"Killed {count} entities.");
+        }
+        else
+        {
+            context.Source.Output.SendMessage($"Killed {count} {(TypeFilter)type}s.");
+        }
+
+        return 1;
     }
 }

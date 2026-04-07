@@ -18,7 +18,7 @@ public class GiveCommand : Command.Command
                 .Executes(GiveItem)
                 .Then(ArgumentInt("count")
                     .Executes(GiveItemCount)))
-            .Then(ArgumentString("player")
+            .Then(ArgumentPlayer("player")
                 .Then(ArgumentString("item")
                     .Executes(GivePlayerItem)
                     .Then(ArgumentInt("count")
@@ -46,7 +46,7 @@ public class GiveCommand : Command.Command
     private static int GivePlayerItem(CommandContext<CommandSource> context)
     {
         string item = context.GetArgument<string>("item");
-        string player = context.GetArgument<string>("player");
+        var player = context.GetArgument<ServerPlayerEntity>("player");
 
         GiveTo(context.Source, player, item, 1);
         return 1;
@@ -55,7 +55,7 @@ public class GiveCommand : Command.Command
     private static int GivePlayerItemCount(CommandContext<CommandSource> context)
     {
         string item = context.GetArgument<string>("item");
-        string player = context.GetArgument<string>("player");
+        var player = context.GetArgument<ServerPlayerEntity>("player");
         int count = context.GetArgument<int>("count");
 
         GiveTo(context.Source, player, item, count);
@@ -71,18 +71,6 @@ public class GiveCommand : Command.Command
         }
 
         GiveTo(source, sender, item, count);
-    }
-
-    private static void GiveTo(CommandSource source, string playerName, string item, int count)
-    {
-        ServerPlayerEntity? target = source.Server.playerManager.getPlayer(playerName);
-        if (target == null)
-        {
-            source.Output.SendMessage("Can't find user " + playerName);
-            return;
-        }
-
-        GiveTo(source, target, item, count);
     }
 
     private static void GiveTo(CommandSource source, ServerPlayerEntity target, string item, int count)

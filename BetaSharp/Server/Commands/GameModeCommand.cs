@@ -24,7 +24,7 @@ public class GameModeCommand : Command.Command
             .Executes(ShowGamemode)
             .Then(Literal("list").Executes(ListCommands))
             .Then(ArgumentString("gamemode").Executes(SetSendersGm))
-            .Then(ArgumentString("player").Then(ArgumentString("gamemode").Executes(SetTargetGm)));
+            .Then(ArgumentPlayer("player").Then(ArgumentString("gamemode").Executes(SetTargetGm)));
 
     private static int ListCommands(CommandContext<CommandSource> context)
     {
@@ -45,9 +45,8 @@ public class GameModeCommand : Command.Command
 
     private static int SetTargetGm(CommandContext<CommandSource> context)
     {
-        var p = context.Source.Server.playerManager.getPlayer(context.GetArgument<string>("player"));
-        if (p == null) context.Source.Output.SendMessage("Player not found.");
-        else SetGameMode(context.Source.Server.playerManager.getPlayer(context.Source.SenderName)!, context.GetArgument<string>("gamemode"), context.Source);
+        var p = context.GetArgument<ServerPlayerEntity>("player");
+        SetGameMode(p, context.GetArgument<string>("gamemode"), context.Source);
         return 1;
     }
 
