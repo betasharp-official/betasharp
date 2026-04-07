@@ -57,7 +57,7 @@
                                     <TextBlock Text="{CompiledBinding Date}" Opacity="0.5" />
                                 </StackPanel>
 
-                                <SelectableTextBlock Text="{CompiledBinding Url}" Opacity="0.5" />
+                                <SelectableTextBlock Text="{CompiledBinding Url}" TextTrimming="CharacterEllipsis" Opacity="0.5" />
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
