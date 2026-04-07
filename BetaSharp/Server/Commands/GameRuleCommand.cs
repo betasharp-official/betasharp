@@ -21,7 +21,7 @@ public class GameRuleCommand : Command.Command
 
     private static int ListRules(CommandContext<CommandSource> context)
     {
-        var (rules, registry) = GetContext(context);
+        (RuleSet rules, RuleRegistry registry) = GetContext(context);
         context.Source.Output.SendMessage("Available Game Rules:");
         foreach (IGameRule rule in registry.All)
         {
@@ -34,7 +34,7 @@ public class GameRuleCommand : Command.Command
 
     private static int GetRule(CommandContext<CommandSource> context)
     {
-        var (rules, registry) = GetContext(context);
+        (RuleSet rules, RuleRegistry registry) = GetContext(context);
         string ruleName = context.GetArgument<string>("rule");
         ResourceLocation key = ResourceLocation.Parse(ruleName);
 
@@ -53,7 +53,7 @@ public class GameRuleCommand : Command.Command
 
     private static int SetRule(CommandContext<CommandSource> context)
     {
-        var (rules, registry) = GetContext(context);
+        (RuleSet rules, RuleRegistry registry) = GetContext(context);
         string ruleName = context.GetArgument<string>("rule");
         string valueStr = context.GetArgument<string>("value");
         ResourceLocation key = ResourceLocation.Parse(ruleName);

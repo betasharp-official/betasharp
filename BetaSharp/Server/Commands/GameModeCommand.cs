@@ -1,7 +1,6 @@
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Registries;
-using BetaSharp.Server.Command;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Microsoft.Extensions.Logging;
@@ -28,8 +27,8 @@ public class GameModeCommand : Command.Command
 
     private static int ListCommands(CommandContext<CommandSource> context)
     {
-        var registry = context.Source.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes);
-        foreach (var key in registry.Keys)
+        IReadableRegistry<GameMode> registry = context.Source.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes);
+        foreach (ResourceLocation key in registry.Keys)
         {
             context.Source.Output.SendMessage(key.ToString());
         }
@@ -45,14 +44,14 @@ public class GameModeCommand : Command.Command
 
     private static int SetTargetGm(CommandContext<CommandSource> context)
     {
-        var p = context.GetArgument<ServerPlayerEntity>("player");
+        ServerPlayerEntity p = context.GetArgument<ServerPlayerEntity>("player");
         SetGameMode(p, context.GetArgument<string>("gamemode"), context.Source);
         return 1;
     }
 
     private static int ShowGamemode(CommandContext<CommandSource> context)
     {
-        var p = context.Source.Server.playerManager.getPlayer(context.Source.SenderName)!;
+        ServerPlayerEntity p = context.Source.Server.playerManager.getPlayer(context.Source.SenderName)!;
         context.Source.Output.SendMessage(p.GameMode.Name);
         return 1;
     }

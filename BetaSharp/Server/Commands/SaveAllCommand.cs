@@ -1,4 +1,3 @@
-using BetaSharp.Server.Command;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
@@ -16,7 +15,7 @@ public class SaveAllCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        var c = context.Source;
+        CommandSource c = context.Source;
         c.LogOp("Forcing save..");
         c.Server.playerManager?.savePlayers();
 

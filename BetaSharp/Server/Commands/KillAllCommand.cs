@@ -1,4 +1,5 @@
 using BetaSharp.Entities;
+using BetaSharp.Worlds.Core;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
@@ -18,17 +19,6 @@ public class KillAllCommand : Command.Command
                 .Then(ArgumentString("filter")).Executes(ctx => KillAll(ctx, (byte)ctx.GetArgument<TypeFilter>("type"), ctx.GetArgument<string>("filter")))
             );
 
-    private enum TypeFilter : byte
-    {
-        all = 0,
-        mob = 1,
-        living = 1,
-        monster = 2,
-        animal = 3,
-        item = 4,
-        tnt = 5
-    }
-
     private static int KillAll(CommandContext<CommandSource> context, byte type, string filter)
     {
         filter = filter.ToLower();
@@ -36,12 +26,15 @@ public class KillAllCommand : Command.Command
 
         for (int w = 0; w < context.Source.Server.worlds.Length; w++)
         {
-            var world = context.Source.Server.worlds[w];
-            var entities = new List<Entity>(world.Entities.Entities);
+            ServerWorld world = context.Source.Server.worlds[w];
+            List<Entity> entities = new(world.Entities.Entities);
 
             foreach (Entity entity in entities)
             {
-                if (entity is EntityPlayer) continue;
+                if (entity is EntityPlayer)
+                {
+                    continue;
+                }
 
                 bool shouldKill = type switch
                 {
@@ -76,5 +69,16 @@ public class KillAllCommand : Command.Command
         }
 
         return 1;
+    }
+
+    private enum TypeFilter : byte
+    {
+        all = 0,
+        mob = 1,
+        living = 1,
+        monster = 2,
+        animal = 3,
+        item = 4,
+        tnt = 5
     }
 }

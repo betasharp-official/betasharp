@@ -10,9 +10,9 @@ public abstract partial class Command
 {
     private static readonly ILogger s_logger = Log.Instance.For(nameof(Command));
 
-    public virtual string Usage { get; } = "";
-    public virtual string Description { get; } = "";
-    public virtual string[] Names { get; } = [];
+    public abstract string Usage { get; }
+    public abstract string Description { get; }
+    public abstract string[] Names { get; }
 
     /// <summary>
     /// Required permission for command execution.
@@ -40,7 +40,7 @@ public abstract partial class Command
     protected static RequiredArgumentBuilder<CommandSource, string> ArgumentGreedy(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.GreedyString());
     protected static RequiredArgumentBuilder<CommandSource, int> ArgumentInt(string name) => RequiredArgumentBuilder<CommandSource, int>.RequiredArgument(name, Arguments.Integer());
     protected static RequiredArgumentBuilder<CommandSource, bool> ArgumentBool(string name) => RequiredArgumentBuilder<CommandSource, bool>.RequiredArgument(name, Arguments.Bool());
-    protected static RequiredArgumentBuilder<CommandSource, T> ArgumentEnum<T>(string name) where T : struct, System.Enum => RequiredArgumentBuilder<CommandSource, T>.RequiredArgument(name, Arguments.Enum<T>());
+    protected static RequiredArgumentBuilder<CommandSource, T> ArgumentEnum<T>(string name) where T : struct, Enum => RequiredArgumentBuilder<CommandSource, T>.RequiredArgument(name, Arguments.Enum<T>());
     protected static RequiredArgumentBuilder<CommandSource, ServerPlayerEntity> ArgumentPlayer(string name) => RequiredArgumentBuilder<CommandSource, ServerPlayerEntity>.RequiredArgument(name, new ArgPlayer());
     protected static RequiredArgumentBuilder<CommandSource, Vec3D> ArgumentPos(string name) => RequiredArgumentBuilder<CommandSource, Vec3D>.RequiredArgument(name, new ArgPosition());
 

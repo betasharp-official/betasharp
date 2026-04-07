@@ -1,5 +1,4 @@
 using BetaSharp.Entities;
-using BetaSharp.Server.Command;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
@@ -29,7 +28,7 @@ public class KillSelfCommand : Command.Command
 
     private static int ExecuteOther(CommandContext<CommandSource> context)
     {
-        ServerPlayerEntity player = context.GetArgument<ServerPlayerEntity>("player");;
+        ServerPlayerEntity player = context.GetArgument<ServerPlayerEntity>("player");
         player.damage(null, 1000);
         return 1;
     }

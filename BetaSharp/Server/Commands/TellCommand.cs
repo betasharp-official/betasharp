@@ -19,7 +19,7 @@ public class TellCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        var target = context.GetArgument<ServerPlayerEntity>("player");
+        ServerPlayerEntity target = context.GetArgument<ServerPlayerEntity>("player");
         string message = context.GetArgument<string>("message");
         s_logger.LogInformation("[" + context.Source.SenderName + "->" + target.name + "] " + message);
 

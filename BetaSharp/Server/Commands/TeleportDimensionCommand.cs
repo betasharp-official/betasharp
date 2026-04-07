@@ -1,5 +1,4 @@
 using BetaSharp.Entities;
-using BetaSharp.Server.Command;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
@@ -31,7 +30,7 @@ public class TeleportDimensionCommand : Command.Command
 
     private static int TpdimPlayer(CommandContext<CommandSource> context)
     {
-        var player = context.GetArgument<ServerPlayerEntity>("player");
+        ServerPlayerEntity player = context.GetArgument<ServerPlayerEntity>("player");
         return TeleportToDimension(context, player);
     }
 

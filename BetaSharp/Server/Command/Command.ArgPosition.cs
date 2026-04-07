@@ -10,10 +10,7 @@ public abstract partial class Command
 {
     private class ArgPosition : IArgumentType<Vec3D>
     {
-        public Vec3D Parse(IStringReader reader)
-        {
-            return new Vec3D(reader.ReadDouble(), reader.ReadDouble(), reader.ReadDouble());
-        }
+        public Vec3D Parse(IStringReader reader) => new(reader.ReadDouble(), reader.ReadDouble(), reader.ReadDouble());
 
         public Vec3D Parse<T>(StringReader reader, T source)
         {
@@ -21,9 +18,12 @@ public abstract partial class Command
 
             try
             {
-                if (source is not CommandSource c) return Parse(reader);
+                if (source is not CommandSource c)
+                {
+                    return Parse(reader);
+                }
 
-                var pos = new Vec3D();
+                Vec3D pos = new();
                 Vec3D? player = null;
 
                 if (reader.Peek() == '~')
@@ -84,11 +84,8 @@ public abstract partial class Command
             }
         }
 
-        private Vec3D SenderPosition(CommandSource s)
-        {
-            return s.Server.playerManager.getPlayer(s.SenderName)?.getPosition() ?? throw new Exception("Player not found.");
-        }
-
         public IEnumerable<string> Examples => ["~ ~ ~", "19 -5.2, 109", "~12 ~-4 ~8.2"];
+
+        private Vec3D SenderPosition(CommandSource s) => s.Server.playerManager.getPlayer(s.SenderName)?.getPosition() ?? throw new Exception("Player not found.");
     }
 }

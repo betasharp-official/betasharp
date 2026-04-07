@@ -1,4 +1,3 @@
-using BetaSharp.Server.Command;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
@@ -16,7 +15,7 @@ public class SaveOnCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        var c = context.Source;
+        CommandSource c = context.Source;
         c.LogOp("Enabling level saving..");
         for (int i = 0; i < c.Server.worlds.Length; i++)
         {
@@ -39,7 +38,7 @@ public class SaveOffCommand : Command.Command
 
     private static int Execute(CommandContext<CommandSource> context)
     {
-        var c = context.Source;
+        CommandSource c = context.Source;
         c.LogOp("Disabling level saving..");
         for (int i = 0; i < c.Server.worlds.Length; i++)
         {

@@ -1,5 +1,5 @@
 using BetaSharp.Entities;
-using BetaSharp.Server.Command;
+using BetaSharp.Worlds.Core;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
@@ -27,19 +27,26 @@ public class SummonCommand : Command.Command
         }
 
         string entityName = context.GetArgument<string>("entity");
-        var world = context.Source.Server.getWorld(player.dimensionId);
+        ServerWorld world = context.Source.Server.getWorld(player.dimensionId);
         int summoned = 0;
 
         for (int i = 0; i < count; i++)
         {
             Entity? entity = EntityRegistry.CreateEntityAt(entityName, world, (float)player.x, (float)player.y, (float)player.z);
-            if (entity != null) summoned++;
+            if (entity != null)
+            {
+                summoned++;
+            }
         }
 
         if (summoned > 0)
+        {
             context.Source.Output.SendMessage($"Summoned {summoned}x {entityName}");
+        }
         else
+        {
             context.Source.Output.SendMessage($"Unknown entity: {entityName}");
+        }
 
         return 1;
     }

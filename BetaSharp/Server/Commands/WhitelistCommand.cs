@@ -1,4 +1,3 @@
-using BetaSharp.Server.Command;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
@@ -36,7 +35,7 @@ public class WhitelistCommand : Command.Command
 
     private static int WhitelistList(CommandContext<CommandSource> context)
     {
-        var whitelist = context.Source.Server.playerManager.getWhitelist();
+        HashSet<string> whitelist = context.Source.Server.playerManager.getWhitelist();
         string names = string.Join(" ", whitelist);
         context.Source.Output.SendMessage("White-listed players: " + names);
         return 1;

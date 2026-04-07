@@ -46,7 +46,7 @@ public class GiveCommand : Command.Command
     private static int GivePlayerItem(CommandContext<CommandSource> context)
     {
         string item = context.GetArgument<string>("item");
-        var player = context.GetArgument<ServerPlayerEntity>("player");
+        ServerPlayerEntity player = context.GetArgument<ServerPlayerEntity>("player");
 
         GiveTo(context.Source, player, item, 1);
         return 1;
@@ -55,7 +55,7 @@ public class GiveCommand : Command.Command
     private static int GivePlayerItemCount(CommandContext<CommandSource> context)
     {
         string item = context.GetArgument<string>("item");
-        var player = context.GetArgument<ServerPlayerEntity>("player");
+        ServerPlayerEntity player = context.GetArgument<ServerPlayerEntity>("player");
         int count = context.GetArgument<int>("count");
 
         GiveTo(context.Source, player, item, count);
@@ -65,7 +65,8 @@ public class GiveCommand : Command.Command
     private static void GiveTo(CommandSource source, string item, int count)
     {
         ServerPlayerEntity? sender = source.Server.playerManager.getPlayer(source.SenderName);
-        if (sender == null) {
+        if (sender == null)
+        {
             source.Output.SendMessage("Could not find your player.");
             return;
         }

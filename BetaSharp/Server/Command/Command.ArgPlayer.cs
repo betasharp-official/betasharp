@@ -11,20 +11,24 @@ public abstract partial class Command
 {
     private class ArgPlayer : IArgumentType<ServerPlayerEntity>
     {
-        public ServerPlayerEntity Parse(IStringReader reader)
-        {
-            throw new Exception("Unsupported invocation.");
-        }
+        public ServerPlayerEntity Parse(IStringReader reader) => throw new Exception("Unsupported invocation.");
 
         public ServerPlayerEntity Parse<T>(StringReader reader, T source)
         {
-            if (source is not CommandSource c) throw new Exception("Unsupported source.");
+            if (source is not CommandSource c)
+            {
+                throw new Exception("Unsupported source.");
+            }
 
             if (reader.Peek() == '@' && (reader.RemainingLength == 2 || reader.Peek(2) == ' '))
             {
                 reader.Cursor++;
                 char ch = reader.Next();
-                if (ch == 'p' || ch == 'P') return c.Server.playerManager.getPlayer(c.SenderName) ?? throw new Exception("Player not found.");
+                if (ch == 'p' || ch == 'P')
+                {
+                    return c.Server.playerManager.getPlayer(c.SenderName) ?? throw new Exception("Player not found.");
+                }
+
                 throw new Exception("@" + ch + " is invalid at this point.");
             }
 
@@ -34,12 +38,12 @@ public abstract partial class Command
 
         public Task<Suggestions> ListSuggestions<T>(
             CommandContext<T> context,
-            SuggestionsBuilder builder)
-        {
-            return context is not CommandContext<CommandSource> c ? Suggestions.Empty() : ListSuggestionsAsync(c, builder);
-        }
+            SuggestionsBuilder builder) =>
+            context is not CommandContext<CommandSource> c ? Suggestions.Empty() : ListSuggestionsAsync(c, builder);
 
-        async Task<Suggestions> ListSuggestionsAsync(
+        public IEnumerable<string> Examples => ["@p", "player"];
+
+        private async Task<Suggestions> ListSuggestionsAsync(
             CommandContext<CommandSource> context,
             SuggestionsBuilder builder)
         {
@@ -54,16 +58,16 @@ public abstract partial class Command
             }
             else
             {
-                foreach (var p in context.Source.Server.playerManager.players)
+                foreach (ServerPlayerEntity p in context.Source.Server.playerManager.players)
                 {
                     if (p.name.StartsWith(s, StringComparison.OrdinalIgnoreCase))
+                    {
                         builder.Suggest(p.name);
+                    }
                 }
             }
 
             return await builder.BuildAsync();
         }
-
-        public IEnumerable<string> Examples => ["@p", "player"];
     }
 }

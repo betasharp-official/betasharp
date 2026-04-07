@@ -1,6 +1,4 @@
-using System.Globalization;
 using BetaSharp.Entities;
-using BetaSharp.Server.Command;
 using BetaSharp.Util.Maths;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
@@ -31,10 +29,16 @@ public class TeleportCommand : Command.Command
         EntityPlayer a2 = context.GetArgument<EntityPlayer>("target");
 
         if (a1.dimensionId != a2.dimensionId)
+        {
             context.Source.Output.SendMessage("User " + a1.name + " and " + a2.name + " are in different dimensions. No tp.");
+        }
         else
         {
-            if (a1 is not ServerPlayerEntity e) throw new Exception("Not a ServerPlayerEntity");
+            if (a1 is not ServerPlayerEntity e)
+            {
+                throw new Exception("Not a ServerPlayerEntity");
+            }
+
             e.NetworkHandler.teleport(a2.x, a2.y, a2.z, e.yaw, e.pitch);
             context.Source.LogOp("Teleporting " + a1.name + " to " + a2.name + ".");
         }
@@ -65,7 +69,10 @@ public class TeleportCommand : Command.Command
         EntityPlayer a1 = context.GetArgument<EntityPlayer>("player");
         Vec3D pos = context.GetArgument<Vec3D>("position");
 
-        if (a1 is not ServerPlayerEntity e) throw new Exception("Not a ServerPlayerEntity");
+        if (a1 is not ServerPlayerEntity e)
+        {
+            throw new Exception("Not a ServerPlayerEntity");
+        }
 
         e.NetworkHandler.teleport(pos.x, pos.y, pos.z, e.yaw, e.pitch);
         context.Source.Output.SendMessage($"Teleported to {pos}");
