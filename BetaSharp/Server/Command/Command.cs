@@ -1,4 +1,6 @@
+using BetaSharp.Entities;
 using Brigadier.NET;
+using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Builder;
 using Microsoft.Extensions.Logging;
 
@@ -29,12 +31,15 @@ public abstract class Command
     /// <summary>
     /// When true, the command can only be executed on external servers (muliplayer).
     /// </summary>
-    public bool DisallowInternalServer => false;
+    public virtual bool DisallowInternalServer => false;
 
     public virtual LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) => Literal("none");
 
     protected static LiteralArgumentBuilder<CommandSource> Literal(string literal) => LiteralArgumentBuilder<CommandSource>.LiteralArgument(literal);
     protected static RequiredArgumentBuilder<CommandSource, string> ArgumentString(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.String());
+    protected static RequiredArgumentBuilder<CommandSource, string> ArgumentGreedy(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.GreedyString());
+    protected static RequiredArgumentBuilder<CommandSource, int> ArgumentInt(string name) => RequiredArgumentBuilder<CommandSource, int>.RequiredArgument(name, Arguments.Integer());
+    protected static RequiredArgumentBuilder<CommandSource, T> ArgumentEnum<T>(string name) where T : struct, System.Enum => RequiredArgumentBuilder<CommandSource, T>.RequiredArgument(name, Arguments.Enum<T>());
 
     public class CommandSource(ICommandHandler handler, string senderName, ICommandOutput output)
     {

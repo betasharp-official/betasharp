@@ -1,30 +1,35 @@
 using BetaSharp.Entities;
-using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
 public class HealCommand : Command.Command
 {
-    public string Usage => "heal [amount]";
-    public string Description => "Heals yourself";
-    public string[] Names => ["heal"];
+    public override string Usage => "heal <amount>";
+    public override string Description => "Heals yourself";
+    public override string[] Names => ["heal"];
 
-    public void Execute(Command.Command.CommandSource c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder
+            .Executes(HealFull)
+            .Then(ArgumentInt("amount").Executes(HealAmount));
+
+    private static int HealFull(CommandContext<CommandSource> context) => Heal(context, 20);
+
+    private static int HealAmount(CommandContext<CommandSource> context) => Heal(context, context.GetArgument<int>("amount"));
+
+    private static int Heal(CommandContext<CommandSource> context, int amount)
     {
-        ServerPlayerEntity? player = c.Server.playerManager.getPlayer(c.SenderName);
+        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
         if (player == null)
         {
-            c.Output.SendMessage("Could not find your player.");
-            return;
-        }
-
-        int amount = 20;
-        if (c.Args.Length > 0 && int.TryParse(c.Args[0], out int parsed))
-        {
-            amount = parsed;
+            context.Source.Output.SendMessage("Could not find your player.");
+            return 1;
         }
 
         player.heal(amount);
-        c.Output.SendMessage($"Healed for {amount} health.");
+        context.Source.Output.SendMessage($"Healed for {amount} health.");
+        return 1;
     }
 }
