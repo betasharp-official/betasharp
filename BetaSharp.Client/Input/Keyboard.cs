@@ -452,4 +452,9 @@ public class Keyboard
     {
         return glfw.GetClipboardString(window);
     }
+
+    public unsafe static void SetClipboardText(string text)
+    {
+        glfw.SetClipboardString(window, text);
+    }
 }

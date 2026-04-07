@@ -190,6 +190,12 @@ public class TextField : UIElement
                                 SelectionEnd = Text.Length;
 
                                 break;
+                            } else if (e.KeyCode == Keyboard.KEY_C)
+                            {
+                                ReadOnlySpan<char> selection = Text.AsSpan(realSelStart, realSelEnd - realSelStart);
+                                Keyboard.SetClipboardText(selection.ToString());
+
+                                break;
                             }
                         }
                         else
@@ -247,8 +253,8 @@ public class TextField : UIElement
                 int start = Math.Min(SelectionStart, SelectionEnd);
                 int end = Math.Max(SelectionStart, SelectionEnd);
 
-                ReadOnlySpan<char> before = Text.AsSpan(0, start);
-                ReadOnlySpan<char> selection = Text.AsSpan(start, end - start);
+                ReadOnlySpan<char> before = Text.AsSpan(0, realSelStart);
+                ReadOnlySpan<char> selection = Text.AsSpan(realSelStart, realSelEnd - realSelStart);
 
                 renderer.DrawRect(
                     renderer.TextRenderer.GetStringWidth(before) + 4,
