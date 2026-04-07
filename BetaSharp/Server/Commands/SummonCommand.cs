@@ -3,13 +3,13 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class SummonCommand : ICommand
+public class SummonCommand : Command.Command
 {
     public string Usage => "summon <entity>";
     public string Description => "Spawns an entity at your location";
     public string[] Names => ["summon", "spawn"];
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         if (c.Args.Length < 1)
         {

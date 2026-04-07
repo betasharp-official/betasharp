@@ -3,13 +3,13 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class HealCommand : ICommand
+public class HealCommand : Command.Command
 {
     public string Usage => "heal [amount]";
     public string Description => "Heals yourself";
     public string[] Names => ["heal"];
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         ServerPlayerEntity? player = c.Server.playerManager.getPlayer(c.SenderName);
         if (player == null)

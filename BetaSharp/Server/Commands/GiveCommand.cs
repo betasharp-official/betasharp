@@ -4,13 +4,13 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class GiveCommand : ICommand
+public class GiveCommand : Command.Command
 {
     public string Usage => "give [player] <item> [count]";
     public string Description => "Gives yourself an item";
     public string[] Names => ["give"];
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         if (c.Args.Length < 1)
         {

@@ -3,13 +3,13 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class TeleportDimensionCommand : ICommand
+public class TeleportDimensionCommand : Command.Command
 {
     public string Usage => "tpdim <id> [player]";
     public string Description => "Teleports to a dimension";
     public string[] Names => ["tpdim"];
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         if (c.Args.Length < 1)
         {

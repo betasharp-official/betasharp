@@ -2,14 +2,14 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class BanCommand : ICommand
+public class BanCommand : Command.Command
 {
     public string Usage => "ban <player>";
     public string Description => "Bans a player";
     public string[] Names => ["ban"];
     public bool DisallowInternalServer => true;
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         if (c.Args.Length < 1)
         {

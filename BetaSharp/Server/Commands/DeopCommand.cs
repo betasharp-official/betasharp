@@ -2,14 +2,14 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class DeopCommand : ICommand
+public class DeopCommand : Command.Command
 {
     public string Usage => "deop <player>";
     public string Description => "Removes operator status";
     public string[] Names => ["deop"];
     public bool DisallowInternalServer => true;
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         if (c.Args.Length < 1)
         {

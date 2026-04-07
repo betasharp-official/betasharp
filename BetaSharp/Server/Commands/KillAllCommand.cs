@@ -3,13 +3,13 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class KillAllCommand : ICommand
+public class KillAllCommand : Command.Command
 {
     public string Usage => "killall [filter]";
     public string Description => "Kills entities by type";
     public string[] Names => ["killall"];
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         string filter = c.Args.Length > 0 ? c.Args[0].ToLower() : "all";
         int count = 0;

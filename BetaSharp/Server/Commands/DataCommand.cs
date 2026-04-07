@@ -3,14 +3,14 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class DataCommand : ICommand
+public class DataCommand : Command.Command
 {
     public string Usage => "data get ...";
     public string Description => "Get debug info from target(s)";
     public string[] Names => ["data"];
 
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         if (c.Args.Length < 2)
         {
@@ -43,7 +43,7 @@ public class DataCommand : ICommand
         }
     }
 
-    private static void DataGet(ICommand.CommandContext c, ServerPlayerEntity player)
+    private static void DataGet(Command.Command.CommandSource c, ServerPlayerEntity player)
     {
         // convert short to the full string.
         switch (c.Args[1] = c.Args[1].ToLower())
@@ -76,7 +76,7 @@ public class DataCommand : ICommand
         }
     }
 
-    private static void LogEntity<T>(List<T> items, ServerPlayerEntity player, ICommand.CommandContext c) where T : Entity
+    private static void LogEntity<T>(List<T> items, ServerPlayerEntity player, Command.Command.CommandSource c) where T : Entity
     {
         var sel = GetSelector(c.Args);
 
@@ -147,7 +147,7 @@ public class DataCommand : ICommand
         Close = 2
     }
 
-    private static void LogEntitySub<T>(Selector sel, IEnumerable<T> items, ServerPlayerEntity player, ICommand.CommandContext c, bool listHits = false) where T : Entity
+    private static void LogEntitySub<T>(Selector sel, IEnumerable<T> items, ServerPlayerEntity player, Command.Command.CommandSource c, bool listHits = false) where T : Entity
     {
         if (sel == Selector.First)
         {

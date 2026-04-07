@@ -3,14 +3,14 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class KickCommand : ICommand
+public class KickCommand : Command.Command
 {
     public string Usage => "kick <player>";
     public string Description => "Kicks a player";
     public string[] Names => ["kick"];
     public bool DisallowInternalServer => true;
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         if (c.Args.Length < 1)
         {

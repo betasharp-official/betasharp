@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Commands;
 
-public class SayCommand : ICommand
+public class SayCommand : Command.Command
 {
     private static readonly ILogger s_logger = Log.Instance.For(nameof(SayCommand));
 
@@ -12,7 +12,7 @@ public class SayCommand : ICommand
     public string Description => "Broadcasts a message";
     public string[] Names => ["say"];
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         if (c.Args.Length == 0) return;
 

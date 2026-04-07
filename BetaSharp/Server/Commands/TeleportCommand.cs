@@ -4,13 +4,13 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class TeleportCommand : ICommand
+public class TeleportCommand : Command.Command
 {
     public string Usage => "tp <x> <y> <z> / <p1> <p2>";
     public string Description => "Teleport";
     public string[] Names => ["tp", "teleport"];
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         if (c.Args.Length == 3)
         {

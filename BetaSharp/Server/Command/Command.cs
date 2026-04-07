@@ -1,14 +1,16 @@
+using Brigadier.NET;
+using Brigadier.NET.Builder;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Command;
 
-public interface ICommand
+public abstract class Command
 {
-    private static readonly ILogger s_logger = Log.Instance.For(nameof(ICommand));
+    private static readonly ILogger s_logger = Log.Instance.For(nameof(Command));
 
-    public string Usage { get; }
-    public string Description { get; }
-    public string[] Names { get; }
+    public virtual string Usage { get; } = "";
+    public virtual string Description { get; } = "";
+    public virtual string[] Names { get; } = [];
 
     /// <summary>
     /// Required permission for command execution.
@@ -22,24 +24,24 @@ public interface ICommand
     /// 3 - Gamemaster<br/>
     /// 4 - Owner
     /// </remarks>
-    public byte PermissionLevel => 2;
+    public virtual byte PermissionLevel => 2;
 
     /// <summary>
     /// When true, the command can only be executed on external servers (muliplayer).
     /// </summary>
     public bool DisallowInternalServer => false;
 
-    /// <summary>
-    /// Run command.
-    /// </summary>
-    /// <param name="context">command context</param>
-    public void Execute(CommandContext context);
+    public virtual LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) => Literal("none");
 
-    public class CommandContext(BetaSharpServer server, string senderName, string[] args, ICommandOutput output)
+    protected static LiteralArgumentBuilder<CommandSource> Literal(string literal) => LiteralArgumentBuilder<CommandSource>.LiteralArgument(literal);
+    protected static RequiredArgumentBuilder<CommandSource, string> ArgumentString(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.String());
+
+    public class CommandSource(ICommandHandler handler, string senderName, ICommandOutput output)
     {
-        public BetaSharpServer Server { get; } = server;
+        public ICommandHandler Handler { get; } = handler;
+        public BetaSharpServer Server => Handler.Server;
         public string SenderName { get; } = senderName;
-        public string[] Args { get; } = args;
+        public string[] Args => [];
         public ICommandOutput Output { get; } = output;
 
         /// <summary>

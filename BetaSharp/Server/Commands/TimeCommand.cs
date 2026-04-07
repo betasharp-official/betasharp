@@ -3,13 +3,13 @@ using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Server.Commands;
 
-public class TimeCommand : ICommand
+public class TimeCommand : Command.Command
 {
     public string Usage => "time <set|add> <value>";
     public string Description => "Sets the world time";
     public string[] Names => ["time", "settime"];
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         if (c.Args.Length < 1)
         {

@@ -2,16 +2,18 @@ using BetaSharp.Entities;
 using BetaSharp.Rules;
 using BetaSharp.Server.Command;
 using BetaSharp.Worlds.Core;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
 
 namespace BetaSharp.Server.Commands;
 
-public class GameRuleCommand : ICommand
+public class GameRuleCommand : Command.Command
 {
     public string Usage => "gamerule [rule name] [value]";
     public string Description => "Gets or sets a game rule";
     public string[] Names => ["gamerule"];
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         ServerPlayerEntity? player = c.Server.playerManager.getPlayer(c.SenderName);
         ServerWorld world = player != null ? c.Server.getWorld(player.dimensionId) : c.Server.worlds[0];

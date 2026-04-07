@@ -3,13 +3,13 @@ using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Server.Commands;
 
-public class WeatherCommand : ICommand
+public class WeatherCommand : Command.Command
 {
     public string Usage => "weather <clear|rain|storm>";
     public string Description => "Sets the weather";
     public string[] Names => ["weather"];
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         if (c.Args.Length < 1)
         {

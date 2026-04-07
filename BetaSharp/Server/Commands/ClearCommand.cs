@@ -4,13 +4,13 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class ClearCommand : ICommand
+public class ClearCommand : Command.Command
 {
     public string Usage => "clear";
     public string Description => "Clears your inventory";
     public string[] Names => ["clear"];
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         ServerPlayerEntity? player = c.Server.playerManager.getPlayer(c.SenderName);
         if (player == null)

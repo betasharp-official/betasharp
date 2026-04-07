@@ -2,14 +2,14 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class OpCommand : ICommand
+public class OpCommand : Command.Command
 {
     public string Usage => "op <player>";
     public string Description => "Makes a player operator";
     public string[] Names => ["op"];
     public bool DisallowInternalServer => true;
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         if (c.Args.Length < 1)
         {

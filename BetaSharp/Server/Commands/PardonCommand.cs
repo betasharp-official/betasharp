@@ -2,14 +2,14 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class PardonCommand : ICommand
+public class PardonCommand : Command.Command
 {
     public string Usage => "pardon <player>";
     public string Description => "Pardons a player";
     public string[] Names => ["pardon"];
     public bool DisallowInternalServer => true;
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         if (c.Args.Length < 1)
         {

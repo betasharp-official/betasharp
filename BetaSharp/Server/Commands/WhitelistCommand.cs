@@ -2,14 +2,14 @@ using BetaSharp.Server.Command;
 
 namespace BetaSharp.Server.Commands;
 
-public class WhitelistCommand : ICommand
+public class WhitelistCommand : Command.Command
 {
     public string Usage => "whitelist <action> [player]";
     public string Description => "Manages the whitelist";
     public string[] Names => ["whitelist"];
     public bool DisallowInternalServer => true;
 
-    public void Execute(ICommand.CommandContext c)
+    public void Execute(Command.Command.CommandSource c)
     {
         if (c.Args.Length < 1)
         {
