@@ -37,8 +37,8 @@ public class TextField : UIElement
     private bool _control = false;
     private bool _down = false;
 
-    private int realSelStart => SelectionStart > SelectionEnd ? SelectionEnd : SelectionStart;
-    private int realSelEnd => SelectionEnd < SelectionStart ? SelectionStart : SelectionEnd;
+    private int _realSelStart => SelectionStart > SelectionEnd ? SelectionEnd : SelectionStart;
+    private int _realSelEnd => SelectionEnd < SelectionStart ? SelectionStart : SelectionEnd;
 
     public override List<string> GetInspectorProperties()
     {
