@@ -3,6 +3,7 @@ using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.UI.Rendering;
 using Microsoft.Extensions.Logging;
+using Silk.NET.Core;
 using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.UI.Controls.Core;
@@ -19,8 +20,7 @@ public class TextField : UIElement
             if (_text.Length > MaxLength) _text = _text[..MaxLength];
             CursorPosition = _text.Length;
 
-            SelectionStart = CursorPosition;
-            SelectionEnd = CursorPosition;
+            ResetSelection();
         }
     }
 
@@ -67,7 +67,7 @@ public class TextField : UIElement
                 _down = true;
 
                 CursorPosition = GetIndexFromCursorX(e.MouseX - (int)ComputedX - 4, e.Renderer.TextRenderer);
-                RemoveSelection();
+                ResetSelection();
                 _cursorCounter = 0;
             }
         };
@@ -92,130 +92,145 @@ public class TextField : UIElement
             }
         };
 
-        OnKeyDown += (e) =>
+        OnKeyDown += KeyDown;
+    }
+
+    private void KeyDown(UIKeyEvent e)
+    {
+        if (!IsFocused || !e.IsDown) return;
+
+        void Key()
         {
-            logger.LogInformation("key down: {KeyCode} {IsDown}", e.KeyCode, e.IsDown);
-            if (!IsFocused || !e.IsDown) return;
-
-            switch (e.KeyCode)
+            if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL))
             {
-                case Keyboard.KEY_BACK:
-                    if (HasSelection)
-                    {
-                        ReplaceSelection("");
-                    }
-                    else if (CursorPosition > 0)
-                    {
-                        _text = _text.Remove(CursorPosition - 1, 1);
-                        CursorPosition--;
-                        OnTextChanged?.Invoke(_text);
-                    }
-                    break;
+                switch (e.KeyCode)
+                {
+                    case Keyboard.KEY_V:
+                        string clip = Keyboard.GetClipboardText();
+                        int allowed = 0;
 
-                case Keyboard.KEY_DELETE:
-                    if (HasSelection)
-                    {
-                        ReplaceSelection("");
-                    }
-                    else if (CursorPosition < _text.Length)
-                    {
-                        _text = _text.Remove(CursorPosition, 1);
-                        OnTextChanged?.Invoke(_text);
-                    }
-                    break;
+                        if (HasSelection) allowed = MaxLength - Text.Length + (realSelEnd - realSelStart);
+                        else allowed = MaxLength - Text.Length;
 
-                case Keyboard.KEY_LEFT:
-                    if (HasSelection)
-                    {
-                        CursorPosition = realSelStart;
-                        RemoveSelection();
-                    }
-                    else if (CursorPosition > 0)
-                        CursorPosition--;
-                    break;
-
-                case Keyboard.KEY_RIGHT:
-                    if (HasSelection)
-                    {
-                        CursorPosition = realSelEnd;
-                        RemoveSelection();
-                    }
-                    else if (CursorPosition < _text.Length)
-                        CursorPosition++;
-                    break;
-
-                case Keyboard.KEY_HOME:
-                    if (HasSelection) RemoveSelection();
-                    CursorPosition = 0;
-                    break;
-
-                case Keyboard.KEY_END:
-                    if (HasSelection) RemoveSelection();
-                    CursorPosition = _text.Length;
-                    break;
-
-                case Keyboard.KEY_RETURN:
-                    if (HasSelection) RemoveSelection();
-                    OnSubmit?.Invoke();
-                    break;
-
-                default:
-                    if (e.KeyChar >= 32 && e.KeyChar != 127 && _text.Length < MaxLength)
-                    {
-                        if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL))
-                        {
-                            if (e.KeyCode == Keyboard.KEY_V)
-                            {
-                                string clip = Keyboard.GetClipboardText();
-                                int allowed = MaxLength - _text.Length;
-
-                                if (allowed > 0)
-                                {
-                                    if (HasSelection)
-                                    {
-                                        ReplaceSelection(clip);
-                                    }
-                                    else
-                                    {
-                                        _text = _text.Insert(CursorPosition, clip);
-                                        CursorPosition += clip.Length;
-                                        OnTextChanged?.Invoke(_text);
-                                    }
-                                }
-
-                                break;
-                            } else if (e.KeyCode == Keyboard.KEY_A)
-                            {
-                                SelectionStart = 0;
-                                SelectionEnd = Text.Length;
-
-                                break;
-                            } else if (e.KeyCode == Keyboard.KEY_C)
-                            {
-                                ReadOnlySpan<char> selection = Text.AsSpan(realSelStart, realSelEnd - realSelStart);
-                                Keyboard.SetClipboardText(selection.ToString());
-
-                                break;
-                            }
-                        }
-                        else
+                        if (allowed > 0)
                         {
                             if (HasSelection)
                             {
-                                ReplaceSelection(e.KeyChar.ToString());
-                            } else
+                                ReplaceSelection(clip);
+                            }
+                            else
                             {
-                                _text = _text.Insert(CursorPosition, e.KeyChar.ToString());
-                                CursorPosition++;
+                                _text = _text.Insert(CursorPosition, clip);
+                                CursorPosition += clip.Length;
                                 OnTextChanged?.Invoke(_text);
                             }
                         }
-                    }
-                    break;
-            }
 
-            e.Handled = true;
-        };
+                        break;
+                    case Keyboard.KEY_A:
+                        SelectionStart = 0;
+                        SelectionEnd = Text.Length;
+                        CursorPosition = Text.Length;
+
+                        break;
+                    case Keyboard.KEY_C:
+                        if (HasSelection)
+                        {
+                            ReadOnlySpan<char> selection = Selection;
+                            Keyboard.SetClipboardText(selection.ToString());
+                        }
+                        break;
+                    case Keyboard.KEY_X:
+                        if (HasSelection)
+                        {
+                            ReadOnlySpan<char> selection = Selection;
+                            Keyboard.SetClipboardText(selection.ToString());
+                            DeleteSelection();
+                            CursorPosition = realSelStart;
+                            ResetSelection();
+                        }
+                        break;
+                }
+                return;
+            }
+            else if (e.KeyChar >= 32 && e.KeyChar != 127 && _text.Length < MaxLength)
+            {
+                if (HasSelection)
+                {
+                    ReplaceSelection(e.KeyChar.ToString());
+                }
+                else
+                {
+                    _text = _text.Insert(CursorPosition, e.KeyChar.ToString());
+                    CursorPosition++;
+                    OnTextChanged?.Invoke(_text);
+                }
+            }
+        }
+
+        if (HasSelection &&
+            (e.KeyCode == Keyboard.KEY_BACK || e.KeyCode == Keyboard.KEY_DELETE))
+        {
+            DeleteSelection();
+            CursorPosition = realSelStart;
+            ResetSelection();
+            return;
+        }
+
+        switch (e.KeyCode)
+        {
+            case Keyboard.KEY_BACK:
+                _text = _text.Remove(CursorPosition - 1, 1);
+                CursorPosition--;
+                OnTextChanged?.Invoke(_text);
+                break;
+
+            case Keyboard.KEY_DELETE:
+                _text = _text.Remove(CursorPosition, 1);
+                OnTextChanged?.Invoke(_text);
+                break;
+
+            case Keyboard.KEY_LEFT:
+                if (HasSelection)
+                {
+                    CursorPosition = realSelStart;
+                    ResetSelection();
+                }
+                else if (CursorPosition > 0)
+                    CursorPosition--;
+                break;
+
+            case Keyboard.KEY_RIGHT:
+                if (HasSelection)
+                {
+                    CursorPosition = realSelEnd;
+                    ResetSelection();
+                }
+                else if (CursorPosition < _text.Length)
+                    CursorPosition++;
+                break;
+
+            case Keyboard.KEY_HOME:
+                if (HasSelection) ResetSelection();
+                CursorPosition = 0;
+                break;
+
+            case Keyboard.KEY_END:
+                if (HasSelection) ResetSelection();
+                CursorPosition = _text.Length;
+                break;
+
+            case Keyboard.KEY_RETURN:
+                if (HasSelection) ResetSelection();
+                OnSubmit?.Invoke();
+                break;
+
+            default:
+                Key();
+                break;
+        }
+
+        e.Handled = true;
     }
 
     public override void Update(float partialTicks)
@@ -249,12 +264,8 @@ public class TextField : UIElement
         {
             if (HasSelection)
             {
-                logger.LogInformation("selection! {start}-{end} {pos}", SelectionStart, SelectionEnd, CursorPosition);
-                int start = Math.Min(SelectionStart, SelectionEnd);
-                int end = Math.Max(SelectionStart, SelectionEnd);
-
                 ReadOnlySpan<char> before = Text.AsSpan(0, realSelStart);
-                ReadOnlySpan<char> selection = Text.AsSpan(realSelStart, realSelEnd - realSelStart);
+                ReadOnlySpan<char> selection = Selection;
 
                 renderer.DrawRect(
                     renderer.TextRenderer.GetStringWidth(before) + 4,
@@ -264,7 +275,6 @@ public class TextField : UIElement
                     Color.Blue
                 );
             }
-            else logger.LogInformation("no selection");
 
             renderer.DrawText(_text, 4, ComputedHeight / 2 - 4, Color.White);
 
@@ -300,19 +310,26 @@ public class TextField : UIElement
         return Text.Length;
     }
 
-    private void RemoveSelection()
+    private void ResetSelection()
     {
         SelectionStart = CursorPosition;
         SelectionEnd = CursorPosition;
     }
 
-    private void ReplaceSelection(string replacement)
+    private void DeleteSelection()
     {
         int length = realSelEnd - realSelStart;
         _text = _text.Remove(realSelStart, length);
+    }
+
+    private void ReplaceSelection(string replacement)
+    {
+        DeleteSelection();
         _text = _text.Insert(realSelStart, replacement);
         CursorPosition = realSelStart + replacement.Length;
-        RemoveSelection();
+        ResetSelection();
         OnTextChanged?.Invoke(_text);
     }
+
+    private ReadOnlySpan<char> Selection => Text.AsSpan(realSelStart, realSelEnd - realSelStart);
 }
