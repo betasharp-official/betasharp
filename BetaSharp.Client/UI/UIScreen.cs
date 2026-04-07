@@ -437,7 +437,7 @@ public abstract class UIScreen
             if (_hoveredElement != null)
             {
                 _hoveredElement.IsHovered = false;
-                _hoveredElement.OnMouseLeave?.Invoke(new UIMouseEvent { Target = _hoveredElement, MouseX = (int)mouseX, MouseY = (int)mouseY });
+                _hoveredElement.OnMouseLeave?.Invoke(new UIMouseEvent { Target = _hoveredElement, MouseX = (int)mouseX, MouseY = (int)mouseY, Renderer = Renderer });
             }
 
             _hoveredElement = newHovered;
@@ -445,7 +445,7 @@ public abstract class UIScreen
             if (_hoveredElement != null && _hoveredElement.Enabled)
             {
                 _hoveredElement.IsHovered = true;
-                _hoveredElement.OnMouseEnter?.Invoke(new UIMouseEvent { Target = _hoveredElement, MouseX = (int)mouseX, MouseY = (int)mouseY });
+                _hoveredElement.OnMouseEnter?.Invoke(new UIMouseEvent { Target = _hoveredElement, MouseX = (int)mouseX, MouseY = (int)mouseY, Renderer = Renderer });
             }
         }
     }
@@ -479,7 +479,7 @@ public abstract class UIScreen
 
         if (target != null && target.Enabled)
         {
-            var evt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = button };
+            var evt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = button, Renderer = Renderer };
             target.OnMouseDown?.Invoke(evt);
             DraggingElement = target;
 
@@ -501,14 +501,14 @@ public abstract class UIScreen
             UIElement? target = Root.HitTest(scaledX, scaledY);
             if (target != null && target.Enabled)
             {
-                var evt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = button };
+                var evt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = button, Renderer = Renderer };
                 target.OnMouseUp?.Invoke(evt);
             }
             DraggingElement = null; // Snap dragging off when button released
         }
         else if (DraggingElement != null)
         {
-            var moveEvt = new UIMouseEvent { Target = DraggingElement, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = MouseButton.Unknown };
+            var moveEvt = new UIMouseEvent { Target = DraggingElement, MouseX = (int)scaledX, MouseY = (int)scaledY, Button = MouseButton.Unknown, Renderer = Renderer };
             DraggingElement.OnMouseMove?.Invoke(moveEvt);
         }
     }
@@ -521,7 +521,7 @@ public abstract class UIScreen
         UIElement? target = Root.HitTest(scaledX, scaledY);
         if (target == null) return;
 
-        var scrollEvt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, ScrollDelta = dWheel };
+        var scrollEvt = new UIMouseEvent { Target = target, MouseX = (int)scaledX, MouseY = (int)scaledY, ScrollDelta = dWheel, Renderer = Renderer };
         UIElement? current = target;
         while (current != null)
         {
@@ -590,7 +590,7 @@ public abstract class UIScreen
             FocusedElement = target;
             if (target != null && target.Enabled)
             {
-                var evt = new UIMouseEvent { Target = target, MouseX = (int)scaled.X, MouseY = (int)scaled.Y, Button = MouseButton.Left };
+                var evt = new UIMouseEvent { Target = target, MouseX = (int)scaled.X, MouseY = (int)scaled.Y, Button = MouseButton.Left, Renderer = Renderer };
                 target.OnMouseDown?.Invoke(evt);
                 target.OnClick?.Invoke(evt);
             }

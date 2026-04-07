@@ -101,6 +101,8 @@ public class MainMenuScreen(
         }
         Root.AddChild(footerButtons);
 
+        Root.AddChild(new TextField { MaxLength = 10000, Text = "Hello, world! This is sample text." });
+
         AddBottomLabels();
     }
 

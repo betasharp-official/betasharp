@@ -1,6 +1,8 @@
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
+using BetaSharp.Client.Rendering;
 using BetaSharp.Client.UI.Rendering;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
@@ -48,7 +50,9 @@ public class TextField : UIElement
             if (e.Button == MouseButton.Left)
             {
                 e.Handled = true;
-                //TODO: ADD CURSOR SUPPORT
+
+                CursorPosition = GetIndexFromCursorX(e.MouseX - (int)ComputedX - 4, e.Renderer.TextRenderer);
+                _cursorCounter = 0;
             }
         };
 
@@ -134,7 +138,6 @@ public class TextField : UIElement
         renderer.DrawRect(0, ComputedHeight - 1, ComputedWidth, 1, borderColor);
         renderer.DrawRect(0, 0, 1, ComputedHeight, borderColor);
         renderer.DrawRect(ComputedWidth - 1, 0, 1, ComputedHeight, borderColor);
-
         if (string.IsNullOrEmpty(_text) && !IsFocused)
         {
             renderer.DrawText(Placeholder, 4, ComputedHeight / 2 - 4, Color.Gray70);
@@ -151,5 +154,27 @@ public class TextField : UIElement
         }
 
         base.Render(renderer);
+    }
+
+    private static readonly ILogger<TextField> logger = Log.Instance.For<TextField>();
+
+    private int GetIndexFromCursorX(int mouseX, TextRenderer render)
+    {
+        if (Text.Length == 0) return 0;
+        int currentX = 0;
+
+        for (int i = 0; i < Text.Length; i++)
+        {
+            int width = render.GetStringWidth(Text[i].ToString());
+            currentX += width;
+
+            if (currentX >= mouseX) {
+                int diff = currentX - mouseX;
+                if (diff > width / 2) return i;
+                else return i + 1;
+            }
+        }
+
+        return Text.Length - 1;
     }
 }

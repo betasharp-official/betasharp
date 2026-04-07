@@ -1,9 +1,12 @@
+using BetaSharp.Client.UI.Rendering;
+
 namespace BetaSharp.Client.UI;
 
 public class UIEvent
 {
     public bool Handled { get; set; } = false;
     public UIElement? Target { get; set; }
+    public UIRenderer Renderer { get; set; }
 }
 
 public enum MouseButton
