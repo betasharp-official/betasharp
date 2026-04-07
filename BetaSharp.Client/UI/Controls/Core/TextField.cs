@@ -288,8 +288,6 @@ public class TextField : UIElement
         base.Render(renderer);
     }
 
-    private static readonly ILogger<TextField> logger = Log.Instance.For<TextField>();
-
     private int GetIndexFromCursorX(int mouseX, TextRenderer render)
     {
         if (Text.Length == 0) return 0;
