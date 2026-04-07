@@ -62,10 +62,20 @@ public class IndexedRegistry<T>(ResourceLocation registryKey) : IRegistry<T> whe
         return _byId[id];
     }
 
-    public T? Get(ResourceLocation key)
+    public Holder<T>? Get(ResourceLocation key)
     {
-        _byLocation.TryGetValue(key, out T? value);
-        return value;
+        T? value = null;
+        _byLocation.TryGetValue(key, out value);
+        if (value == null) return null;
+
+        _holderCache ??= [];
+        if (!_holderCache.TryGetValue(key, out Holder<T>? holder))
+        {
+            holder = new(value);
+            _holderCache[key] = holder;
+        }
+
+        return holder;
     }
 
     public int GetId(T value)
@@ -83,21 +93,6 @@ public class IndexedRegistry<T>(ResourceLocation registryKey) : IRegistry<T> whe
     public bool ContainsId(int id) => id >= 0 && id < _byId.Count && _byId[id] != null;
 
     public IEnumerable<ResourceLocation> Keys => _byLocation.Keys;
-
-    public Holder<T>? GetHolder(ResourceLocation key)
-    {
-        T? value = Get(key);
-        if (value == null) return null;
-
-        _holderCache ??= [];
-        if (!_holderCache.TryGetValue(key, out Holder<T>? holder))
-        {
-            holder = Holder<T>.Direct(value);
-            _holderCache[key] = holder;
-        }
-
-        return holder;
-    }
 
     public void Freeze()
     {

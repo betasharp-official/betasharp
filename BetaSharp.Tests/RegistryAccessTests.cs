@@ -1,5 +1,5 @@
-using BetaSharp.DataAsset;
 using BetaSharp.Registries;
+using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Tests;
 
@@ -8,7 +8,7 @@ namespace BetaSharp.Tests;
 /// the registry infrastructure works for any <see cref="IDataAsset"/> type, not just
 /// the built-in <see cref="BetaSharp.GameMode.GameMode"/>.
 /// </summary>
-public class TestEnchantment : BaseDataAsset
+public class TestEnchantment : DataAsset
 {
     /// <summary>Maximum level the enchantment can reach (e.g. Sharpness V → 5).</summary>
     public int MaxLevel { get; set; } = 1;
@@ -121,8 +121,8 @@ public class RegistryAccessTests : IDisposable
 
         IReadableRegistry<TestEnchantment> reg = ra.GetOrThrow(s_enchKey);
 
-        TestEnchantment? sharpness = reg.Get(ResourceLocation.Parse("betasharp:sharpness"));
-        TestEnchantment? silkTouch = reg.Get(ResourceLocation.Parse("betasharp:silk_touch"));
+        TestEnchantment? sharpness = reg.GetValue(ResourceLocation.Parse("betasharp:sharpness"));
+        TestEnchantment? silkTouch = reg.GetValue(ResourceLocation.Parse("betasharp:silk_touch"));
 
         Assert.NotNull(sharpness);
         Assert.Equal(5, sharpness.MaxLevel);
@@ -191,7 +191,7 @@ public class RegistryAccessTests : IDisposable
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
         IReadableRegistry<TestEnchantment> reg = ra.GetOrThrow(s_enchKey);
 
-        Holder<TestEnchantment>? holder = reg.GetHolder(ResourceLocation.Parse("betasharp:sharpness"));
+        Holder<TestEnchantment>? holder = reg.Get(ResourceLocation.Parse("betasharp:sharpness"));
 
         Assert.NotNull(holder);
         Assert.Equal(5, holder.Value.MaxLevel);
@@ -224,7 +224,7 @@ public class RegistryAccessTests : IDisposable
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir, datapackPath: _tempDir);
 
         IReadableRegistry<TestEnchantment> reg = ra.GetOrThrow(s_enchKey);
-        TestEnchantment? looting = reg.Get(ResourceLocation.Parse("betasharp:looting"));
+        TestEnchantment? looting = reg.GetValue(ResourceLocation.Parse("betasharp:looting"));
 
         Assert.NotNull(looting);
         Assert.Equal(3, looting.MaxLevel);
@@ -241,7 +241,7 @@ public class RegistryAccessTests : IDisposable
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir, datapackPath: _tempDir);
 
         IReadableRegistry<TestEnchantment> reg = ra.GetOrThrow(s_enchKey);
-        TestEnchantment? sharpness = reg.Get(ResourceLocation.Parse("betasharp:sharpness"));
+        TestEnchantment? sharpness = reg.GetValue(ResourceLocation.Parse("betasharp:sharpness"));
 
         Assert.NotNull(sharpness);
         Assert.Equal(10, sharpness.MaxLevel);
@@ -293,11 +293,11 @@ public class RegistryAccessTests : IDisposable
         RegistryAccess worldRa = serverRa.WithWorldDatapacks(Path.Combine(_tempDir, "world"));
 
         IReadableRegistry<TestEnchantment> worldReg = worldRa.GetOrThrow(s_enchKey);
-        Assert.Equal(8, worldReg.Get(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(8, worldReg.GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
 
         // Server-level is unchanged.
         IReadableRegistry<TestEnchantment> serverReg = serverRa.GetOrThrow(s_enchKey);
-        Assert.Equal(5, serverReg.Get(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(5, serverReg.GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
     }
 
     [Fact]
@@ -376,13 +376,13 @@ public class RegistryAccessTests : IDisposable
 
         RegisterEnchantmentDefinition();
         RegistryAccess first = RegistryAccess.Build(basePath: _tempDir);
-        Assert.Equal(5, first.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(5, first.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
 
         // Author edits the file to bump max level.
         WriteBaseEnchantment("sharpness", maxLevel: 10);
 
         RegistryAccess reloaded = RegistryAccess.Build(basePath: _tempDir);
-        Assert.Equal(10, reloaded.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(10, reloaded.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
     }
 
     [Fact]
@@ -397,8 +397,8 @@ public class RegistryAccessTests : IDisposable
         RegistryAccess reloaded = RegistryAccess.Build(basePath: _tempDir);
 
         // Callers holding a reference to the old instance must not see the new value.
-        Assert.Equal(5, first.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
-        Assert.Equal(10, reloaded.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(5, first.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(10, reloaded.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
     }
 
     [Fact]
@@ -420,13 +420,13 @@ public class RegistryAccessTests : IDisposable
         RegistryAccess worldV2 = serverV2.WithWorldDatapacks(worldDir);
 
         IReadableRegistry<TestEnchantment> reg = worldV2.GetOrThrow(s_enchKey);
-        Assert.Equal(10, reg.Get(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
-        Assert.Equal(4, reg.Get(ResourceLocation.Parse("betasharp:mending"))!.MaxLevel);
+        Assert.Equal(10, reg.GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(4, reg.GetValue(ResourceLocation.Parse("betasharp:mending"))!.MaxLevel);
 
         // Old world instance is unaffected.
         IReadableRegistry<TestEnchantment> oldReg = worldV1.GetOrThrow(s_enchKey);
-        Assert.Equal(5, oldReg.Get(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
-        Assert.Equal(1, oldReg.Get(ResourceLocation.Parse("betasharp:mending"))!.MaxLevel);
+        Assert.Equal(5, oldReg.GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(1, oldReg.GetValue(ResourceLocation.Parse("betasharp:mending"))!.MaxLevel);
     }
 
     [Fact]

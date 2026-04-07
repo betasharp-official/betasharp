@@ -412,7 +412,7 @@ public partial class BetaSharp :
 
     private void SetupResourcesAndPostProcessing()
     {
-        RegistryAccess = RegistryAccess.Build(null, _gameDataDir);
+        RegistryAccess = RegistryAccess.Build();
 
         SoundManager.LoadSoundSettings(Options);
         DefaultMusicCategories.Register(SoundManager);

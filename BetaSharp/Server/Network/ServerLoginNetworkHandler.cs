@@ -141,22 +141,22 @@ public class ServerLoginNetworkHandler : NetHandler
         {
             server.playerManager.loadPlayerData(ent);
             ent.setWorld(server.getWorld(ent.dimensionId));
-            ent.GameMode = server.DefaultGameMode;
+            ent.GameModeHolder = server.DefaultGameMode;
             _logger.LogInformation($"{getConnectionInfo()} logged in with entity id {ent.id} at ({ent.x}, {ent.y}, {ent.z})");
             ServerWorld var3 = server.getWorld(ent.dimensionId);
             Vec3i var4 = var3.Properties.GetSpawnPos();
             ServerPlayNetworkHandler handler = new ServerPlayNetworkHandler(server, connection, ent);
-            handler.sendPacket(new LoginHelloPacket("", ent.id, var3.Seed, (sbyte)var3.Dimension.Id));
-            server.SendConfigurationTo(handler.sendPacket);
-            handler.sendPacket(PlayerGameModeUpdateS2CPacket.Get(ent.GameMode));
-            handler.sendPacket(PlayerSpawnPositionS2CPacket.Get(var4.X, var4.Y, var4.Z));
+            handler.SendPacket(new LoginHelloPacket("", ent.id, var3.Seed, (sbyte)var3.Dimension.Id));
+            server.SendConfigurationTo(handler.SendPacket);
+            handler.SendPacket(PlayerGameModeUpdateS2CPacket.Get(ent.GameMode));
+            handler.SendPacket(PlayerSpawnPositionS2CPacket.Get(var4.X, var4.Y, var4.Z));
             server.playerManager.sendWorldInfo(ent, var3);
             server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(ent.id, PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Join, ent.name));
             server.playerManager.sendToAll(ChatMessagePacket.Get("§e" + ent.name + " joined the game."));
             server.playerManager.addPlayer(ent);
             handler.teleport(ent.x, ent.y, ent.z, ent.yaw, ent.pitch);
             server.connections.AddConnection(handler);
-            handler.sendPacket(WorldTimeUpdateS2CPacket.Get(var3.GetTime()));
+            handler.SendPacket(WorldTimeUpdateS2CPacket.Get(var3.GetTime()));
             ent.initScreenHandler();
         }
 

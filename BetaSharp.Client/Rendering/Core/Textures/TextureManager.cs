@@ -1,7 +1,7 @@
 using System.Buffers;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Resource.Pack;
-using BetaSharp.DataAsset;
+using BetaSharp.Registries.Data;
 using Microsoft.Extensions.Logging;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
@@ -271,9 +271,6 @@ public class TextureManager : IDisposable
 
     public void Reload()
     {
-        DataAssetLoader.ResetResourcepackAssets();
-        DataAssetLoader.LoadResourcepackAssets(BetaSharp.BetaSharpDir);
-
         _atlasTileSizes.Clear();
         foreach (KeyValuePair<string, TextureHandle> entry in _textures)
         {

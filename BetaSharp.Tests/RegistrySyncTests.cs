@@ -2,9 +2,9 @@ using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Client.Network;
-using BetaSharp.DataAsset;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Registries;
+using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Tests;
 
@@ -24,8 +24,8 @@ file sealed class StubRegistry<T>(RegistryKey<T> key, IEnumerable<T> items) : IR
 
     public ResourceLocation RegistryKey => key.Location;
 
-    public T? Get(ResourceLocation location)
-        => _entries.TryGetValue(location, out T? v) ? v : null;
+    public Holder<T>? Get(ResourceLocation location)
+        => _entries.TryGetValue(location, out T? v) ? new Holder<T>(v) : null;
 
     public T? Get(int id) => null;
 
@@ -176,7 +176,8 @@ public sealed class PacketSerializationTests
         TcpClient server = listener.AcceptTcpClient();
         listener.Stop();
         return (client.GetStream(), server.GetStream(),
-            () => { client.Dispose(); server.Dispose(); });
+            () => { client.Dispose(); server.Dispose(); }
+        );
     }
 
     // ---- RegistryDataS2CPacket ----
@@ -346,7 +347,7 @@ public sealed class ClientRegistryAccessTests
         var access = new ClientRegistryAccess();
         access.Accumulate(BuildPacket(survival, creative));
 
-        IReadOnlyDictionary<ResourceLocation, GameMode> all = access.GetAll(s_gameModeKey);
+        IReadOnlyDictionary<ResourceLocation, Holder<GameMode>> all = access.GetAll(s_gameModeKey);
         Assert.Equal(2, all.Count);
         Assert.True(all.ContainsKey("survival"));
         Assert.True(all.ContainsKey("creative"));
@@ -361,7 +362,7 @@ public sealed class ClientRegistryAccessTests
         var access = new ClientRegistryAccess();
         access.Accumulate(BuildPacket(survival, creative));
 
-        GameMode? found = access.Get(s_gameModeKey, "creative");
+        GameMode? found = access.Get(s_gameModeKey, "creative")?.Value;
         Assert.NotNull(found);
         Assert.Equal(0.5f, found.BrakeSpeed);
     }
@@ -381,7 +382,7 @@ public sealed class ClientRegistryAccessTests
         var access = new ClientRegistryAccess();
         // Accumulate nothing for this registry.
 
-        IReadOnlyDictionary<ResourceLocation, GameMode> all = access.GetAll(s_gameModeKey);
+        IReadOnlyDictionary<ResourceLocation, Holder<GameMode>> all = access.GetAll(s_gameModeKey);
         Assert.Empty(all);
     }
 
@@ -393,7 +394,7 @@ public sealed class ClientRegistryAccessTests
         access.Accumulate(BuildPacket(initial));
 
         // Force the cache to populate.
-        GameMode? first = access.Get(s_gameModeKey, "survival");
+        GameMode? first = access.Get(s_gameModeKey, "survival")?.Value;
         Assert.NotNull(first);
         Assert.Equal(1f, first.BrakeSpeed);
 
@@ -401,7 +402,7 @@ public sealed class ClientRegistryAccessTests
         var updated = new GameMode { Name = "survival", BrakeSpeed = 0.5f };
         access.Accumulate(BuildPacket(updated));
 
-        GameMode? second = access.Get(s_gameModeKey, "survival");
+        GameMode? second = access.Get(s_gameModeKey, "survival")?.Value;
         Assert.NotNull(second);
         Assert.Equal(0.5f, second.BrakeSpeed);
     }
@@ -427,7 +428,7 @@ public sealed class ClientRegistryAccessTests
         var access = new ClientRegistryAccess();
         access.Accumulate(BuildPacket(creative));
 
-        GameMode? result = access.Get(s_gameModeKey, "creative");
+        GameMode? result = access.Get(s_gameModeKey, "creative")?.Value;
         Assert.NotNull(result);
         Assert.False(result.DisallowFlying);
         Assert.False(result.FiniteResources);
@@ -439,13 +440,34 @@ public sealed class ClientRegistryAccessTests
     }
 
     [Fact]
+    public void Re_accumulate_without_entry_invalidates_its_holder()
+    {
+        var survival = new GameMode { Name = "survival" };
+        var creative = new GameMode { Name = "creative" };
+        var access = new ClientRegistryAccess();
+        access.Accumulate(BuildPacket(survival, creative));
+
+        // Retain a holder reference before the resync.
+        Holder<GameMode>? holder = access.Get(s_gameModeKey, "creative");
+        Assert.NotNull(holder);
+        Assert.False(holder.IsInvalid);
+
+        // Resync drops "creative" entirely.
+        access.Accumulate(BuildPacket(survival));
+        access.GetAll(s_gameModeKey); // trigger the merge
+
+        Assert.True(holder.IsInvalid);
+        Assert.Throws<InvalidOperationException>(() => _ = holder.Value);
+    }
+
+    [Fact]
     public void Deserialized_entry_has_Name_set_to_the_registry_entry_name()
     {
         var mode = new GameMode { Name = "survival" };
         var access = new ClientRegistryAccess();
         access.Accumulate(BuildPacket(mode));
 
-        GameMode? result = access.Get(s_gameModeKey, "survival");
+        GameMode? result = access.Get(s_gameModeKey, "survival")?.Value;
         Assert.NotNull(result);
         Assert.Equal("survival", result.Name);
     }

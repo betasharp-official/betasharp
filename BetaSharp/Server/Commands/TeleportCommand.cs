@@ -25,7 +25,7 @@ public class TeleportCommand : Command.Command
                 float.TryParse(c.Args[1], CultureInfo.InvariantCulture, out float y) &&
                 float.TryParse(c.Args[2], CultureInfo.InvariantCulture, out float z))
             {
-                sender.networkHandler.teleport(x, y, z, sender.yaw, sender.pitch);
+                sender.NetworkHandler.teleport(x, y, z, sender.yaw, sender.pitch);
                 c.Output.SendMessage($"Teleported to {x}, {y}, {z}");
             }
             else
@@ -54,7 +54,7 @@ public class TeleportCommand : Command.Command
             }
             else
             {
-                source.networkHandler.teleport(target.x, target.y, target.z, target.yaw, target.pitch);
+                source.NetworkHandler.teleport(target.x, target.y, target.z, target.yaw, target.pitch);
                 c.LogOp("Teleporting " + c.Args[0] + " to " + c.Args[1] + ".");
             }
             return;

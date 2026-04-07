@@ -23,7 +23,7 @@ public class KickCommand : Command.Command
 
         if (targetPlayer != null)
         {
-            targetPlayer.networkHandler.disconnect("Kicked by admin");
+            targetPlayer.NetworkHandler.disconnect("Kicked by admin");
             c.LogOp("Kicking " + targetPlayer.name);
         }
         else

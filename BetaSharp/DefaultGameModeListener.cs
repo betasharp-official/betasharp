@@ -1,5 +1,8 @@
-using BetaSharp.DataAsset;
+using BetaSharp.Entities;
+using BetaSharp.Network.Packets;
+using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Registries;
+using BetaSharp.Registries.Data;
 using BetaSharp.Server;
 using Microsoft.Extensions.Logging;
 
@@ -11,7 +14,7 @@ internal sealed class DefaultGameModeListener(BetaSharpServer server) : IRegistr
 
     public void OnRegistriesRebuilt(RegistryAccess registryAccess)
     {
-        GameMode? resolved = ResolveDefaultGameMode(
+        Holder<GameMode>? resolved = ResolveDefaultGameMode(
             registryAccess.GetOrThrow(RegistryKeys.GameModes),
             server.config.GetDefaultGamemode("survival"));
 
@@ -25,23 +28,39 @@ internal sealed class DefaultGameModeListener(BetaSharpServer server) : IRegistr
         }
     }
 
+    public Packet[] GetSyncPackets(RegistryAccess registries, ServerPlayerEntity player)
+    {
+        DataAssetLoader<GameMode> gameModes = registries.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader();
+
+        if (gameModes.TryGetHolder(player.GameMode.Name, out Holder<GameMode>? updated))
+        {
+            player.GameModeHolder = updated;
+        }
+        else
+        {
+            player.GameModeHolder = server.DefaultGameMode;
+        }
+
+        return [PlayerGameModeUpdateS2CPacket.Get(player.GameMode)];
+    }
+
     /// <summary>
     /// Resolves which game mode should be the server default.
     /// Tries <paramref name="configuredName"/> first, then "survival", then "default",
     /// then the first registered entry. Returns <c>null</c> if no game modes exist.
     /// </summary>
-    internal static GameMode? ResolveDefaultGameMode(
+    internal static Holder<GameMode>? ResolveDefaultGameMode(
         IReadableRegistry<GameMode> registry, string configuredName)
     {
         DataAssetLoader<GameMode> loader = registry.AsAssetLoader();
 
-        if (!string.IsNullOrEmpty(configuredName) && loader.TryGet(configuredName, out GameMode? named))
+        if (!string.IsNullOrEmpty(configuredName) && loader.TryGetHolder(configuredName, out Holder<GameMode>? named))
             return named;
 
-        if (loader.TryGet("survival", out GameMode? survival))
+        if (loader.TryGetHolder("survival", out Holder<GameMode>? survival))
             return survival;
 
-        if (loader.TryGet("default", out GameMode? defaultMode))
+        if (loader.TryGetHolder("default", out Holder<GameMode>? defaultMode))
             return defaultMode;
 
         ResourceLocation? firstKey = registry.Keys.FirstOrDefault();

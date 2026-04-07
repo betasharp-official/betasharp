@@ -835,12 +835,12 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onPlayerGameModeUpdate(PlayerGameModeUpdateS2CPacket packet)
     {
-        GameMode? mode = _clientRegistries.Get(RegistryKeys.GameModes, new ResourceLocation(packet.Namespace, packet.GameModeName));
-        if (mode is not null)
+        Holder<GameMode>? gameMode = _clientRegistries.Get(RegistryKeys.GameModes, new ResourceLocation(packet.Namespace, packet.GameModeName));
+        if (gameMode is not null && _context.PlayerHost.Player is { } player)
         {
-            _context.PlayerHost.Player?.GameMode = mode;
+            player.GameModeHolder = gameMode;
         }
-        else
+        else if (gameMode is null)
         {
             _logger.LogWarning("Received unknown game mode name '{Name}'", packet.GameModeName);
         }

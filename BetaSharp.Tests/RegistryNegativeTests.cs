@@ -77,7 +77,7 @@ public class RegistryNegativeTests : IDisposable
         RegistryAccess.AddDynamic(new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment"));
         RegistryAccess ra = Build();
 
-        TestEnchantment? result = ra.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:nonexistent"));
+        TestEnchantment? result = ra.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:nonexistent"));
 
         Assert.Null(result);
     }
@@ -90,7 +90,7 @@ public class RegistryNegativeTests : IDisposable
         RegistryAccess ra = Build();
 
         Holder<TestEnchantment>? holder = ra.GetOrThrow(s_enchKey)
-            .GetHolder(ResourceLocation.Parse("betasharp:nonexistent"));
+            .Get(ResourceLocation.Parse("betasharp:nonexistent"));
 
         Assert.Null(holder);
     }
@@ -118,7 +118,7 @@ public class RegistryNegativeTests : IDisposable
 
         // "betasharp:sharpness" exists; "minecraft:sharpness" must not.
         TestEnchantment? result = ra.GetOrThrow(s_enchKey)
-            .Get(ResourceLocation.Parse("minecraft:sharpness"));
+            .GetValue(ResourceLocation.Parse("minecraft:sharpness"));
 
         Assert.Null(result);
     }

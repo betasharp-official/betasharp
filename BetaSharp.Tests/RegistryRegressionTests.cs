@@ -73,7 +73,7 @@ public class RegistryRegressionTests : IDisposable
         // Before the fix: the server registry also returned 99 because the
         // world-datapack write mutated the shared Holder<T>.
         int serverLevel = serverRa.GetOrThrow(s_enchKey)
-            .Get(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel;
+            .GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel;
 
         Assert.Equal(5, serverLevel);
     }
@@ -105,7 +105,7 @@ public class RegistryRegressionTests : IDisposable
         // Before the fix: the lazy holder in `snapshot` would read the updated file
         // on first access and return 99.
         int level = snapshot.GetOrThrow(s_enchKey)
-            .Get(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel;
+            .GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel;
 
         Assert.Equal(5, level);
     }
@@ -145,7 +145,7 @@ public class RegistryRegressionTests : IDisposable
     //      InvalidOperationException: "Sequence contains no elements."
     //
     // Fix: BetaSharpServer.ResolveDefaultGameMode now uses
-    //      registry.Keys.FirstOrDefault() + registry.Get() so it never depends
+    //      registry.Keys.FirstOrDefault() + registry.GetValue() so it never depends
     //      on GetEnumerator() resolving lazy entries.
     // -------------------------------------------------------------------------
 
@@ -162,11 +162,11 @@ public class RegistryRegressionTests : IDisposable
 
         // Before the fix: this threw InvalidOperationException because
         // no GameMode holder had been resolved yet and First() yielded nothing.
-        BetaSharp.GameMode? result = null;
+        Holder<BetaSharp.GameMode>? result = null;
         var ex = Record.Exception(() => result = DefaultGameModeListener.ResolveDefaultGameMode(registry, ""));
 
         Assert.Null(ex);
-        Assert.Equal("adventure", result!.Name);
+        Assert.Equal("adventure", result!.Value.Name);
     }
 
     // -------------------------------------------------------------------------
@@ -198,8 +198,8 @@ public class RegistryRegressionTests : IDisposable
         RegistryAccess raA = serverRa.WithWorldDatapacks(worldADir);
         RegistryAccess raB = serverRa.WithWorldDatapacks(worldBDir);
 
-        int levelA = raA.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel;
-        int levelB = raB.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel;
+        int levelA = raA.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel;
+        int levelB = raB.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel;
 
         // Before the fix: one world's write would bleed into the other.
         Assert.Equal(10, levelA);

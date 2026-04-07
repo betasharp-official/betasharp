@@ -1,15 +1,14 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BetaSharp.DataAsset;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Registries;
+using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Client.Network;
 
 /// <summary>
 /// Accumulates <see cref="RegistryDataS2CPacket"/>s received during the login configuration
-/// phase and provides typed access to the deserialized data. No per-registry registration is
-/// required — data is stored as raw JSON and deserialized on demand.
+/// phase and provides typed, holder-based access to the deserialized data.
 /// </summary>
 internal sealed class ClientRegistryAccess
 {
@@ -18,15 +17,13 @@ internal sealed class ClientRegistryAccess
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    // Raw JSON strings accumulated from RegistryData packets: registryId → (name → json)
+    // Raw JSON strings pending deserialization: registryId -> (name -> json).
     private readonly Dictionary<ResourceLocation, Dictionary<ResourceLocation, string?>> _raw = [];
 
-    // Deserialized typed cache, invalidated when a registry is re-accumulated (e.g. after /reload)
     private readonly Dictionary<ResourceLocation, object> _cache = [];
 
     /// <summary>
-    /// Stores the entries from a <see cref="RegistryDataS2CPacket"/>, replacing any
-    /// previously accumulated data for that registry.
+    /// Stores the entries from a <see cref="RegistryDataS2CPacket"/>.
     /// </summary>
     public void Accumulate(RegistryDataS2CPacket packet)
     {
@@ -37,47 +34,58 @@ internal sealed class ClientRegistryAccess
         }
 
         _raw[packet.RegistryId!] = entries;
-        _cache.Remove(packet.RegistryId!);
     }
 
     /// <summary>
-    /// Returns a single entry by name, or <c>null</c> if the registry or entry is unknown.
+    /// Returns a holder for a single entry by name, or <c>null</c> if not found.
+    /// The holder is stable across resyncs.
     /// </summary>
-    public T? Get<T>(RegistryKey<T> key, string name) where T : BaseDataAsset, new()
+    public Holder<T>? Get<T>(RegistryKey<T> key, string name) where T : DataAsset, new()
         => GetAll(key).GetValueOrDefault(name);
 
     /// <summary>
-    /// Returns a single entry by name, or <c>null</c> if the registry or entry is unknown.
+    /// Returns a holder for a single entry by resource location, or <c>null</c> if not found.
+    /// The holder is stable across resyncs.
     /// </summary>
-    public T? Get<T>(RegistryKey<T> key, ResourceLocation item) where T : BaseDataAsset, new()
+    public Holder<T>? Get<T>(RegistryKey<T> key, ResourceLocation item) where T : DataAsset, new()
         => GetAll(key).GetValueOrDefault(item);
 
     /// <summary>
-    /// Returns all entries for a registry as a name → value dictionary.
-    /// The result is cached until the registry is re-accumulated.
+    /// Returns all entries for a registry as a name -> holder dictionary.
     /// </summary>
-    public IReadOnlyDictionary<ResourceLocation, T> GetAll<T>(RegistryKey<T> key) where T : BaseDataAsset, new()
+    public IReadOnlyDictionary<ResourceLocation, Holder<T>> GetAll<T>(RegistryKey<T> key) where T : DataAsset, new()
     {
-        if (_cache.TryGetValue(key.Location, out object? cached))
-        {
-            return (IReadOnlyDictionary<ResourceLocation, T>)cached;
-        }
-
         if (!_raw.TryGetValue(key.Location, out Dictionary<ResourceLocation, string?>? raw))
         {
-            return new Dictionary<ResourceLocation, T>();
+            if (_cache.TryGetValue(key.Location, out object? existing))
+            {
+                return (Dictionary<ResourceLocation, Holder<T>>)existing;
+            }
+
+            return new Dictionary<ResourceLocation, Holder<T>>();
         }
 
-        Dictionary<ResourceLocation, T> result = Deserialize<T>(raw);
-        _cache[key.Location] = result;
         _raw.Remove(key.Location);
-        return result;
+
+        if (_cache.TryGetValue(key.Location, out object? cached))
+        {
+            var existing = (Dictionary<ResourceLocation, Holder<T>>)cached;
+            MergeIntoHolders(existing, raw);
+            return existing;
+        }
+        else
+        {
+            Dictionary<ResourceLocation, Holder<T>> dict = DeserializeToHolders<T>(raw);
+            _cache[key.Location] = dict;
+            return dict;
+        }
     }
 
-    private static Dictionary<ResourceLocation, T> Deserialize<T>(Dictionary<ResourceLocation, string?> raw)
-        where T : BaseDataAsset, new()
+    private static Dictionary<ResourceLocation, Holder<T>> DeserializeToHolders<T>(
+        Dictionary<ResourceLocation, string?> raw)
+        where T : DataAsset, new()
     {
-        var result = new Dictionary<ResourceLocation, T>(raw.Count);
+        var result = new Dictionary<ResourceLocation, Holder<T>>(raw.Count);
         foreach ((ResourceLocation key, string? json) in raw)
         {
             if (json is null) continue;
@@ -85,8 +93,39 @@ internal sealed class ClientRegistryAccess
             if (value is null) continue;
             value.Name = key.Path;
             value.Namespace = key.Namespace;
-            result[key] = value;
+            result[key] = new Holder<T>(value);
         }
         return result;
+    }
+
+    private static void MergeIntoHolders<T>(
+        Dictionary<ResourceLocation, Holder<T>> holders,
+        Dictionary<ResourceLocation, string?> raw)
+        where T : DataAsset, new()
+    {
+        foreach ((ResourceLocation key, string? json) in raw)
+        {
+            if (json is null) continue;
+            T? value = JsonSerializer.Deserialize<T>(json, s_options);
+            if (value is null) continue;
+            value.Name = key.Path;
+            value.Namespace = key.Namespace;
+
+            if (holders.TryGetValue(key, out Holder<T>? holder))
+            {
+                holder.Update(value);
+            }
+            else
+            {
+                holders[key] = new Holder<T>(value);
+            }
+        }
+
+        foreach (ResourceLocation k in holders.Keys.Except(raw.Keys).ToList())
+        {
+            Holder<T> stale = holders[k];
+            holders.Remove(k);
+            stale.Invalidate();
+        }
     }
 }

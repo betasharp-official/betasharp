@@ -26,7 +26,7 @@ public class HolderTests
     public void Direct_factory_is_immediately_resolved()
     {
         var w = new Widget { Label = "bar" };
-        var h = Holder<Widget>.Direct(w);
+        var h = new Holder<Widget>(w);
 
         Assert.True(h.IsResolved);
         Assert.Same(w, h.Value);

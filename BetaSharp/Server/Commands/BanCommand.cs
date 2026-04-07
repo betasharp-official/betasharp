@@ -20,6 +20,6 @@ public class BanCommand : Command.Command
         string target = c.Args[0];
         c.Server.playerManager.banPlayer(target);
         c.LogOp("Banning " + target);
-        c.Server.playerManager.getPlayer(target)?.networkHandler.disconnect("Banned by admin");
+        c.Server.playerManager.getPlayer(target)?.NetworkHandler.disconnect("Banned by admin");
     }
 }

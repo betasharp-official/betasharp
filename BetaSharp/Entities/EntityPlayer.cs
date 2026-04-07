@@ -4,6 +4,7 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.NBT;
+using BetaSharp.Registries;
 using BetaSharp.Screens;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
@@ -46,7 +47,18 @@ public abstract class EntityPlayer : EntityLiving
     public float lastScreenDistortion;
     private int damageSpill;
     public EntityFish fishHook = null;
-    public GameMode GameMode;
+
+    /// <summary>
+    /// The player's current game mode value. All reads go through the holder, so if the
+    /// server resyncs registry data the value updates in-place without requiring a
+    /// separate update packet.
+    /// </summary>
+    public GameMode GameMode => GameModeHolder.Value;
+
+    /// <summary>
+    /// The holder backing <see cref="GameMode"/>.
+    /// </summary>
+    public Holder<GameMode> GameModeHolder { get; set; } = new(new GameMode());
 
     public EntityPlayer(IWorldContext world) : base(world)
     {
@@ -61,7 +73,6 @@ public abstract class EntityPlayer : EntityLiving
         rotationOffset = 180.0F;
         fireImmunityTicks = 20;
         texture = "/mob/char.png";
-        GameMode = new GameMode();
     }
 
     public override bool canBreatheUnderwater() => !GameMode.NeedsAir;

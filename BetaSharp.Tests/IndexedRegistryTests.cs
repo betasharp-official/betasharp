@@ -41,7 +41,7 @@ public class IndexedRegistryTests
     public void Get_by_key_returns_registered_value()
     {
         var reg = Build();
-        Color? c = reg.Get(s_red);
+        Color? c = reg.Get(s_red)?.Value;
         Assert.NotNull(c);
         Assert.Equal("red", c.Name);
     }
@@ -91,7 +91,7 @@ public class IndexedRegistryTests
     public void GetId_returns_correct_id_for_registered_value()
     {
         var reg = Build();
-        Color green = reg.Get(s_green)!;
+        Color green = reg.Get(s_green)!.Value;
         Assert.Equal(1, reg.GetId(green));
     }
 
@@ -106,7 +106,7 @@ public class IndexedRegistryTests
     public void GetKey_returns_location_for_registered_value()
     {
         var reg = Build();
-        Color blue = reg.Get(s_blue)!;
+        Color blue = reg.Get(s_blue)!.Value;
         Assert.Equal(s_blue, reg.GetKey(blue));
     }
 
@@ -148,7 +148,7 @@ public class IndexedRegistryTests
     public void GetHolder_returns_holder_wrapping_registered_value()
     {
         var reg = Build();
-        Holder<Color>? h = reg.GetHolder(s_green);
+        Holder<Color>? h = reg.Get(s_green);
 
         Assert.NotNull(h);
         Assert.Equal("green", h.Value.Name);
@@ -158,8 +158,8 @@ public class IndexedRegistryTests
     public void GetHolder_returns_same_holder_instance_on_repeated_calls()
     {
         var reg = Build();
-        Holder<Color>? h1 = reg.GetHolder(s_red);
-        Holder<Color>? h2 = reg.GetHolder(s_red);
+        Holder<Color>? h1 = reg.Get(s_red);
+        Holder<Color>? h2 = reg.Get(s_red);
 
         Assert.Same(h1, h2);
     }
@@ -168,7 +168,7 @@ public class IndexedRegistryTests
     public void GetHolder_returns_null_for_unknown_key()
     {
         var reg = Build();
-        Assert.Null(reg.GetHolder(ResourceLocation.Parse("test:magenta")));
+        Assert.Null(reg.Get(ResourceLocation.Parse("test:magenta")));
     }
 
     // ---- Enumeration ----

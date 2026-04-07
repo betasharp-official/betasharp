@@ -49,10 +49,10 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("survival", "creative");
 
-        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "creative");
+        Holder<GameMode>? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "creative");
 
         Assert.NotNull(result);
-        Assert.Equal("creative", result.Name);
+        Assert.Equal("creative", result.Value.Name);
     }
 
     [Fact]
@@ -60,10 +60,10 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("survival", "creative");
 
-        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "adventure");
+        Holder<GameMode>? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "adventure");
 
         Assert.NotNull(result);
-        Assert.Equal("survival", result.Name);
+        Assert.Equal("survival", result.Value.Name);
     }
 
     // ---- Fallback chain ----
@@ -73,10 +73,10 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("survival", "creative");
 
-        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "");
+        Holder<GameMode>? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "");
 
         Assert.NotNull(result);
-        Assert.Equal("survival", result.Name);
+        Assert.Equal("survival", result.Value.Name);
     }
 
     [Fact]
@@ -84,10 +84,10 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("default", "creative");
 
-        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "");
+        Holder<GameMode>? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "");
 
         Assert.NotNull(result);
-        Assert.Equal("default", result.Name);
+        Assert.Equal("default", result.Value.Name);
     }
 
     [Fact]
@@ -95,10 +95,10 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("adventure");
 
-        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "");
+        Holder<GameMode>? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "");
 
         Assert.NotNull(result);
-        Assert.Equal("adventure", result.Name);
+        Assert.Equal("adventure", result.Value.Name);
     }
 
     [Fact]
@@ -106,7 +106,7 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes();
 
-        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "survival");
+        Holder<GameMode>? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "survival");
 
         Assert.Null(result);
     }
@@ -121,11 +121,11 @@ public class GameModesTests : IDisposable
         File.WriteAllText(Path.Combine(dir, "creative.json"), "{\"DisallowFlying\":false}");
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
 
-        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "creative");
+        Holder<GameMode>? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "creative");
 
         Assert.NotNull(result);
-        Assert.False(result.DisallowFlying);
-        Assert.True(result.CanBreak);  // default value preserved
+        Assert.False(result.Value.DisallowFlying);
+        Assert.True(result.Value.CanBreak);  // default value preserved
     }
 
     [Fact]
@@ -133,10 +133,10 @@ public class GameModesTests : IDisposable
     {
         RegistryAccess ra = BuildWithGameModes("survival");
 
-        GameMode? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "survival");
+        Holder<GameMode>? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "survival");
 
         Assert.NotNull(result);
-        Assert.Equal(Namespace.BetaSharp, result.Namespace);
+        Assert.Equal(Namespace.BetaSharp, result.Value.Namespace);
     }
 
     // ---- String lookup via AsAssetLoader() ----

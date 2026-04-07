@@ -1,5 +1,5 @@
-using BetaSharp.DataAsset;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Registries;
 
@@ -26,6 +26,7 @@ public sealed class RegistryAccess
 
     // ---- Static factory registration (called during bootstrap) ----
 
+    private static readonly Dictionary<ResourceLocation, object> s_builtIns = [];
     private static readonly List<IDynamicRegistryEntry> s_dynamicEntries = [];
 
     private interface IDynamicRegistryEntry
@@ -34,7 +35,7 @@ public sealed class RegistryAccess
         bool IsReloadable { get; }
         bool CanSync { get; }
         DataAssetLoader CreateLoader();
-        DataAssetLoader CloneForWorld(DataAssetLoader loader, string worldDatapackPath);
+        DataAssetLoader? CloneForWorld(DataAssetLoader loader, string worldDatapackPath);
         RegistryDataS2CPacket? BuildSyncPacket(RegistryAccess registryAccess);
     }
 
@@ -45,7 +46,7 @@ public sealed class RegistryAccess
         public bool IsReloadable => definition.IsReloadable;
         public bool CanSync => definition.CanSync;
         public DataAssetLoader CreateLoader() => definition.CreateLoader();
-        public DataAssetLoader CloneForWorld(DataAssetLoader loader, string worldDatapackPath)
+        public DataAssetLoader? CloneForWorld(DataAssetLoader loader, string worldDatapackPath)
             => ((DataAssetLoader<T>)loader).CloneForWorldDatapacks(worldDatapackPath);
         public RegistryDataS2CPacket? BuildSyncPacket(RegistryAccess registryAccess)
         {
@@ -54,10 +55,11 @@ public sealed class RegistryAccess
         }
     }
 
+    public static void AddBuiltIn<T>(RegistryKey<T> key, IReadableRegistry<T> registry) where T : class
+        => s_builtIns[key.Location] = registry;
+
     public static void AddDynamic<T>(RegistryDefinition<T> definition) where T : class, IDataAsset
-    {
-        s_dynamicEntries.Add(new DynamicRegistryEntry<T>(definition));
-    }
+        => s_dynamicEntries.Add(new DynamicRegistryEntry<T>(definition));
 
     /// <summary>For test isolation only — clears all registered dynamic entries.</summary>
     internal static void ClearDynamicEntries() => s_dynamicEntries.Clear();
@@ -130,14 +132,7 @@ public sealed class RegistryAccess
         bool hadAnyErrors = false;
         string? error = null;
 
-        // Built-in static registries
-        var builtIns = new Dictionary<ResourceLocation, object>
-        {
-            [RegistryKeys.EntityTypes.Location] = DefaultRegistries.EntityTypes,
-            [RegistryKeys.Biomes.Location] = DefaultRegistries.Biomes,
-            [RegistryKeys.BlockEntityTypes.Location] = DefaultRegistries.BlockEntityTypes,
-            [RegistryKeys.GameRules.Location] = DefaultRegistries.GameRules,
-        };
+        var builtIns = new Dictionary<ResourceLocation, object>(s_builtIns);
 
         // Dynamic (data-driven) registries — load from base + global datapacks
         var serverLoaders = new Dictionary<ResourceLocation, DataAssetLoader>();
@@ -145,7 +140,6 @@ public sealed class RegistryAccess
         {
             DataAssetLoader loader = entry.CreateLoader();
             loader.LoadFromPaths(basePath, datapackPath, null);  // no world datapacks here
-            loader.WaitForLoad();
 
             if (loader.HasErrors) hadAnyErrors = true;
 
@@ -159,7 +153,9 @@ public sealed class RegistryAccess
             activeLoaders = [];
             foreach (IDynamicRegistryEntry entry in s_dynamicEntries)
             {
-                DataAssetLoader worldLoader = entry.CloneForWorld(serverLoaders[entry.Key], worldDatapackPath);
+                DataAssetLoader? worldLoader = entry.CloneForWorld(serverLoaders[entry.Key], worldDatapackPath);
+
+                if (worldLoader == null) continue;
 
                 if (worldLoader.HasErrors) hadAnyErrors = true;
 
@@ -218,7 +214,11 @@ public sealed class RegistryAccess
         {
             if (_serverLoaders.TryGetValue(entry.Key, out DataAssetLoader? serverLoader))
             {
-                activeLoaders[entry.Key] = entry.CloneForWorld(serverLoader, worldDatapackPath);
+                DataAssetLoader? assetLoader = entry.CloneForWorld(serverLoader, worldDatapackPath);
+
+                if (assetLoader == null) continue;
+
+                activeLoaders[entry.Key] = assetLoader;
             }
         }
 
@@ -266,7 +266,6 @@ public sealed class RegistryAccess
             {
                 DataAssetLoader loader = entry.CreateLoader();
                 loader.LoadFromPaths(_basePath, _datapackPath, null);
-                loader.WaitForLoad();
 
                 if (loader.HasErrors) hadAnyErrors = true;
 
@@ -289,7 +288,10 @@ public sealed class RegistryAccess
             {
                 if (entry.IsReloadable && serverLoaders.TryGetValue(entry.Key, out DataAssetLoader? serverLoader))
                 {
-                    DataAssetLoader worldLoader = entry.CloneForWorld(serverLoader, _worldDatapackPath);
+                    DataAssetLoader? worldLoader = entry.CloneForWorld(serverLoader, _worldDatapackPath);
+
+                    if (worldLoader == null) continue;
+
                     worldLoader.Freeze();
 
                     if (worldLoader.HasErrors) hadAnyErrors = true;

@@ -1,8 +1,8 @@
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BetaSharp.DataAsset;
 using BetaSharp.Registries;
+using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
@@ -30,7 +30,7 @@ public class RegistryDataS2CPacket() : ExtendedProtocolPacket(PacketId.RegistryD
         var entries = new List<Entry>();
         foreach (ResourceLocation entryKey in registry.Keys)
         {
-            T? value = registry.Get(entryKey);
+            T? value = registry.GetValue(entryKey);
             if (value is null) continue;
             entries.Add(new Entry(entryKey, JsonSerializer.Serialize(value, s_writeOptions)));
         }

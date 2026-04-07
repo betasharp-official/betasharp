@@ -42,7 +42,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         this.connection = connection;
         connection.setNetworkHandler(this);
         this.player = player;
-        player.networkHandler = this;
+        player.NetworkHandler = this;
     }
 
     public void tick()
@@ -52,13 +52,13 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
         if (!moved) player.IdleTick();
 
-        if (ticks++ - lastKeepAliveTime > 20) sendPacket(KeepAlivePacket.Get());
+        if (ticks++ - lastKeepAliveTime > 20) SendPacket(KeepAlivePacket.Get());
     }
 
     public void disconnect(string reason)
     {
         player.onDisconnect();
-        sendPacket(DisconnectPacket.Get(reason));
+        SendPacket(DisconnectPacket.Get(reason));
         connection.disconnect();
         server.playerManager.disconnect(player);
         server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(
@@ -259,7 +259,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         teleportTargetY = y;
         teleportTargetZ = z;
         player.setPositionAndAngles(x, y, z, yaw, pitch);
-        player.networkHandler.sendPacket(PlayerMoveFullPacket.Get(x, y + 1.62F, y, z, yaw, pitch, false));
+        player.NetworkHandler.SendPacket(PlayerMoveFullPacket.Get(x, y + 1.62F, y, z, yaw, pitch, false));
     }
 
 
@@ -280,7 +280,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             {
                 if (MathHelper.GetDistSqr(player.x, player.y, player.z, x, y, z) < 256.0)
                 {
-                    player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+                    player.NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
                 }
 
                 return;
@@ -298,7 +298,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             {
                 if (!CanBypassSpawnProtection(x, z, world))
                 {
-                    player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+                    player.NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
                 }
                 else
                 {
@@ -310,7 +310,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 player.interactionManager.continueMining(x, y, z);
                 if (world.Reader.GetBlockId(x, y, z) != 0)
                 {
-                    player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+                    player.NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
                 }
             }
         }
@@ -350,7 +350,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 player.interactionManager.interactBlock(player, world, stack, x, y, z, side);
             }
 
-            player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+            player.NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
             switch (side)
             {
                 case 0:
@@ -373,7 +373,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                     break;
             }
 
-            player.networkHandler.sendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+            player.NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
         }
 
         stack = player.inventory.GetItemInHand();
@@ -389,7 +389,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         player.skipPacketSlotUpdates = false;
         if (!ItemStack.areEqual(player.inventory.GetItemInHand(), packet.stack))
         {
-            sendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(player.currentScreenHandler.SyncId, slot.id, player.inventory.GetItemInHand()));
+            SendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(player.currentScreenHandler.SyncId, slot.id, player.inventory.GetItemInHand()));
         }
     }
 
@@ -412,7 +412,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         disconnect("Protocol error, unexpected packet");
     }
 
-    public void sendPacket(Packet packet)
+    public void SendPacket(Packet packet)
     {
         connection.sendPacket(packet);
         lastKeepAliveTime = ticks;
@@ -488,7 +488,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         {
             string commandText = message[1..];
             _logger.LogInformation($"{player.name} tried command: {commandText}");
-            sendPacket(ChatMessagePacket.Get("§cYou do not have permission to use this command."));
+            SendPacket(ChatMessagePacket.Get("§cYou do not have permission to use this command."));
         }
     }
 
@@ -534,7 +534,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public void SendMessage(string message)
     {
-        sendPacket(ChatMessagePacket.Get("§7" + message));
+        SendPacket(ChatMessagePacket.Get("§7" + message));
     }
 
     public string Name => player.name;
@@ -577,7 +577,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             ItemStack var2 = player.currentScreenHandler.onSlotClick(packet.slot, packet.button, packet.holdingShift, player);
             if (ItemStack.areEqual(packet.stack, var2))
             {
-                player.networkHandler.sendPacket(ScreenHandlerAcknowledgementPacket.Get(packet.syncId, packet.actionType, true));
+                player.NetworkHandler.SendPacket(ScreenHandlerAcknowledgementPacket.Get(packet.syncId, packet.actionType, true));
                 player.skipPacketSlotUpdates = true;
                 player.currentScreenHandler.SendContentUpdates();
                 player.updateCursorStack();
@@ -587,7 +587,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             {
                 // should something be done adding fails?
                 transactions.TryAdd(player.currentScreenHandler.SyncId, packet.actionType);
-                player.networkHandler.sendPacket(ScreenHandlerAcknowledgementPacket.Get(packet.syncId, packet.actionType, false));
+                player.NetworkHandler.SendPacket(ScreenHandlerAcknowledgementPacket.Get(packet.syncId, packet.actionType, false));
                 player.currentScreenHandler.updatePlayerList(player, false);
 
                 int size = player.currentScreenHandler.Slots.Count;

@@ -170,7 +170,7 @@ internal class EntityTrackerEntry
     {
         foreach (var player in listeners)
         {
-            player.networkHandler.sendPacket(packet);
+            player.NetworkHandler.SendPacket(packet);
         }
         packet.Return();
     }
@@ -179,11 +179,11 @@ internal class EntityTrackerEntry
     {
         foreach (var p in listeners)
         {
-            p.networkHandler.sendPacket(packet);
+            p.NetworkHandler.SendPacket(packet);
         }
         if (currentTrackedEntity is ServerPlayerEntity entity)
         {
-            entity.networkHandler.sendPacket(packet);
+            entity.NetworkHandler.SendPacket(packet);
         }
         packet.Return();
     }
@@ -221,11 +221,11 @@ internal class EntityTrackerEntry
                     }
 
                     listeners.Add(player);
-                    player.networkHandler.sendPacket(createAddEntityPacket());
+                    player.NetworkHandler.SendPacket(createAddEntityPacket());
                     if (alwaysUpdateVelocity)
                     {
-                        player.networkHandler
-                            .sendPacket(
+                        player.NetworkHandler
+                            .SendPacket(
                                 EntityVelocityUpdateS2CPacket.Get(
                                     currentTrackedEntity.id,
                                     currentTrackedEntity.velocityX,
@@ -240,7 +240,7 @@ internal class EntityTrackerEntry
                     {
                         for (int slot = 0; slot < equipment.Length; slot++)
                         {
-                            player.networkHandler.sendPacket(EntityEquipmentUpdateS2CPacket.Get(currentTrackedEntity.id, slot, equipment[slot]));
+                            player.NetworkHandler.SendPacket(EntityEquipmentUpdateS2CPacket.Get(currentTrackedEntity.id, slot, equipment[slot]));
                         }
                     }
 
@@ -248,8 +248,8 @@ internal class EntityTrackerEntry
                     {
                         if (trackedPlayer.isSleeping())
                         {
-                            player.networkHandler
-                                .sendPacket(
+                            player.NetworkHandler
+                                .SendPacket(
                                     PlayerSleepUpdateS2CPacket.Get(
                                         currentTrackedEntity,
                                         0,
@@ -264,7 +264,7 @@ internal class EntityTrackerEntry
             }
             else if (listeners.Remove(player))
             {
-                player.networkHandler.sendPacket(EntityDestroyS2CPacket.Get(currentTrackedEntity.id));
+                player.NetworkHandler.SendPacket(EntityDestroyS2CPacket.Get(currentTrackedEntity.id));
             }
         }
     }
@@ -380,7 +380,7 @@ internal class EntityTrackerEntry
     {
         if (listeners.Remove(player))
         {
-            player.networkHandler.sendPacket(EntityDestroyS2CPacket.Get(currentTrackedEntity.id));
+            player.NetworkHandler.SendPacket(EntityDestroyS2CPacket.Get(currentTrackedEntity.id));
         }
     }
 }

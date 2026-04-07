@@ -345,7 +345,7 @@ internal class ChunkMap
 
             if (player.activeChunks.Add(_chunkPos))
             {
-                player.networkHandler.sendPacket(ChunkStatusUpdateS2CPacket.Get(_chunkPos.X, _chunkPos.Z, true));
+                player.NetworkHandler.SendPacket(ChunkStatusUpdateS2CPacket.Get(_chunkPos.X, _chunkPos.Z, true));
             }
 
             player.ScheduleChunkSend(_chunkPos);
@@ -386,7 +386,7 @@ internal class ChunkMap
 
                 if (player.activeChunks.Remove(_chunkPos))
                 {
-                    player.networkHandler.sendPacket(ChunkStatusUpdateS2CPacket.Get(_chunkPos.X, _chunkPos.Z, false));
+                    player.NetworkHandler.SendPacket(ChunkStatusUpdateS2CPacket.Get(_chunkPos.X, _chunkPos.Z, false));
                 }
 
                 player.CancelChunkSend(_chunkPos);
@@ -455,7 +455,7 @@ internal class ChunkMap
             {
                 if (serverPlayer.activeChunks.Contains(_chunkPos))
                 {
-                    serverPlayer.networkHandler.sendPacket(packet);
+                    serverPlayer.NetworkHandler.SendPacket(packet);
                 }
             }
             packet.Return();

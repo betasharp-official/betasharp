@@ -10,14 +10,23 @@ public interface IReadableRegistry<T> : IEnumerable<T> where T : class
     /// <summary>The registry's own identifier (e.g. <c>betasharp:entity_type</c>).</summary>
     ResourceLocation RegistryKey { get; }
 
-    T? Get(ResourceLocation key);
+    /// <summary>
+    /// Returns a <see cref="Holder{T}"/> for the given key, or <c>null</c> if not present.
+    /// </summary>
+    Holder<T>? Get(ResourceLocation key);
+
     T? Get(int id);
 
     bool TryGet(ResourceLocation key, [NotNullWhen(true)] out T? asset)
     {
-        asset = Get(key);
+        asset = Get(key)?.Value;
         return asset != null;
     }
+
+    /// <summary>
+    /// Returns the current value for the given key, or <c>null</c> if not present.
+    /// </summary>
+    T? GetValue(ResourceLocation key) => Get(key)?.Value;
 
     int GetId(T value);
     ResourceLocation? GetKey(T value);
@@ -25,10 +34,4 @@ public interface IReadableRegistry<T> : IEnumerable<T> where T : class
     bool ContainsKey(ResourceLocation key);
 
     IEnumerable<ResourceLocation> Keys { get; }
-
-    /// <summary>
-    /// Returns a <see cref="Holder{T}"/> for the given key, or <c>null</c> if not present.
-    /// Registries that support holder indirection override this; others return <c>null</c>.
-    /// </summary>
-    Holder<T>? GetHolder(ResourceLocation key) => null;
 }
