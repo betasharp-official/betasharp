@@ -7,7 +7,7 @@ namespace BetaSharp.Server.Commands;
 
 public class KillAllCommand : Command.Command
 {
-    public override string Usage => "killall <all|mob|monster|animal|item|tnt> <filter>";
+    public override string Usage => "killall <all|mob|hostile|friendly|item|tnt> <filter>";
     public override string Description => "Kills entities by type";
     public override string[] Names => ["killall"];
 
@@ -40,8 +40,8 @@ public class KillAllCommand : Command.Command
                 {
                     (byte)TypeFilter.all => true,
                     (byte)TypeFilter.mob => entity is EntityLiving,
-                    (byte)TypeFilter.monster => entity is EntityMonster,
-                    (byte)TypeFilter.animal => entity is EntityAnimal,
+                    (byte)TypeFilter.hostile => entity is EntityMonster,
+                    (byte)TypeFilter.friendly => entity is EntityAnimal,
                     (byte)TypeFilter.item => entity is EntityItem,
                     (byte)TypeFilter.tnt => entity is EntityTNTPrimed,
                     _ => EntityRegistry.GetId(entity)?.Equals(filter, StringComparison.OrdinalIgnoreCase) ?? false
@@ -74,11 +74,19 @@ public class KillAllCommand : Command.Command
     private enum TypeFilter : byte
     {
         all = 0,
+        a = 0,
         mob = 1,
+        m = 1,
         living = 1,
+        hostile = 2,
+        h = 2,
         monster = 2,
+        friendly = 3,
+        f = 3,
         animal = 3,
         item = 4,
-        tnt = 5
+        i = 4,
+        tnt = 5,
+        t = 5
     }
 }
