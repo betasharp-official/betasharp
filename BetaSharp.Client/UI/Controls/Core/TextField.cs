@@ -3,6 +3,7 @@ using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.UI.Rendering;
 using Microsoft.Extensions.Logging;
+using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
@@ -25,6 +26,8 @@ public class TextField : UIElement
     public int CursorPosition { get; set; } = 0;
     public Action<string>? OnTextChanged;
     public Action? OnSubmit;
+
+    private bool _control = false;
 
     public override List<string> GetInspectorProperties()
     {
@@ -58,6 +61,7 @@ public class TextField : UIElement
 
         OnKeyDown += (e) =>
         {
+            logger.LogInformation("key down: {KeyCode} {IsDown}", e.KeyCode, e.IsDown);
             if (!IsFocused || !e.IsDown) return;
 
             switch (e.KeyCode)
@@ -104,9 +108,18 @@ public class TextField : UIElement
                 default:
                     if (e.KeyChar >= 32 && e.KeyChar != 127 && _text.Length < MaxLength)
                     {
-                        _text = _text.Insert(CursorPosition, e.KeyChar.ToString());
-                        CursorPosition++;
-                        OnTextChanged?.Invoke(_text);
+                        if (e.KeyCode == Keyboard.KEY_V && Keyboard.isKeyDown(Keyboard.KEY_LCONTROL))
+                        {
+                            string clip = Keyboard.GetClipboardText();
+                            _text = _text.Insert(CursorPosition, clip);
+                            CursorPosition += clip.Length;
+                            OnTextChanged?.Invoke(_text);
+                        } else
+                        {
+                            _text = _text.Insert(CursorPosition, e.KeyChar.ToString());
+                            CursorPosition++;
+                            OnTextChanged?.Invoke(_text);
+                        }
                     }
                     break;
             }

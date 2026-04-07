@@ -488,7 +488,6 @@ public static unsafe class Display
                 options.Position = new Vector2D<int>(_x, _y);
 
             _window = Window.Create(options);
-
             _window.Load += onLoad;
             _window.Resize += onResize;
             _window.Closing += onClosing;

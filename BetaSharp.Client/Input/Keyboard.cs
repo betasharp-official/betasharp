@@ -447,4 +447,9 @@ public class Keyboard
         public long Nanos;
         public bool Repeat;
     }
+
+    public unsafe static string GetClipboardText()
+    {
+        return glfw.GetClipboardString(window);
+    }
 }
