@@ -78,7 +78,7 @@ public class GameRenderer
 
         double reachDistance = (double)_client.PlayerController.getBlockReachDistance();
         _client.ObjectMouseOver = _client.Camera.rayTrace(reachDistance, tickDelta);
-        Vec3D cameraPosition = _client.Camera.getPosition(tickDelta);
+        Vec3D cameraPosition = _client.Camera.GetPosition(tickDelta);
 
         if (_client.ObjectMouseOver.Type != HitResultType.MISS)
         {
@@ -421,7 +421,7 @@ public class GameRenderer
 
         using (Profiler.Begin("RenderEntities"))
         {
-            worldRenderer.RenderEntities(entity.getPosition(tickDelta), frustrumCuller, tickDelta);
+            worldRenderer.RenderEntities(entity.GetPosition(tickDelta), frustrumCuller, tickDelta);
         }
 
         particleManager.renderSpecialParticles(entity, tickDelta);

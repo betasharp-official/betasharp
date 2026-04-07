@@ -1012,12 +1012,12 @@ public abstract class EntityLiving : Entity
         return lastSwingAnimationProgress + var2 * partialTick;
     }
 
-    public Vec3D getPosition()
+    public Vec3D GetPosition()
     {
         return new Vec3D(x, y, z);
     }
 
-    public Vec3D getPosition(float partialTick)
+    public Vec3D GetPosition(float partialTick)
     {
         if (partialTick == 1.0F)
         {
@@ -1065,7 +1065,7 @@ public abstract class EntityLiving : Entity
 
     public HitResult rayTrace(double range, float partialTick)
     {
-        Vec3D startPos = getPosition(partialTick);
+        Vec3D startPos = GetPosition(partialTick);
         Vec3D lookDir = getLook(partialTick);
         Vec3D endPos = startPos + range * lookDir;
         return world.Reader.Raycast(startPos, endPos);
