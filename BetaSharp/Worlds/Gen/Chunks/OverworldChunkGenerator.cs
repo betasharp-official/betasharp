@@ -653,81 +653,81 @@ internal class OverworldChunkGenerator : IChunkSource
     /// <returns>The interpolated result.</returns>
     public void BuildSurfaces(int chunkX, int chunkZ, byte[] blocks, Biome[] biomes)
     {
-        byte blockZ = 64;
-        double chunkBiome = 1.0D / 32.0D;
-        _sandBuffer = _sandGravelNoise.create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome, chunkBiome, 1.0D);
-        _gravelBuffer = _sandGravelNoise.create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, chunkBiome, 1.0D, chunkBiome);
-        _depthBuffer = _depthNoise.create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome * 2.0D, chunkBiome * 2.0D, chunkBiome * 2.0D);
+        const byte WATER_LEVEL = 64;
+        const double oneThirtySecond = 1.0D / 32.0D;
+        _sandBuffer = _sandGravelNoise.create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, oneThirtySecond, oneThirtySecond, 1.0D);
+        _gravelBuffer = _sandGravelNoise.create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, oneThirtySecond, 1.0D, oneThirtySecond);
+        _depthBuffer = _depthNoise.create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, oneThirtySecond * 2.0D, oneThirtySecond * 2.0D, oneThirtySecond * 2.0D);
 
-        for (int horizontalScale = 0; horizontalScale < 16; ++horizontalScale)
+        for (int x = 0; x < 16; ++x)
         {
-            for (int zOffset = 0; zOffset < 16; ++zOffset)
+            for (int z = 0; z < 16; ++z)
             {
-                Biome verticalScale = biomes[horizontalScale + zOffset * 16];
-                bool fraction = _sandBuffer[horizontalScale + zOffset * 16] + _random.NextDouble() * 0.2D > 0.0D;
-                bool temperatureBuffer = _gravelBuffer[horizontalScale + zOffset * 16] + _random.NextDouble() * 0.2D > 3.0D;
-                int featureX = (int)(_depthBuffer[horizontalScale + zOffset * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
-                int featureY = -1;
-                byte featureZ = verticalScale.TopBlockId;
-                byte scaleFraction = verticalScale.SoilBlockId;
+                Biome biome = biomes[x + z * 16];
+                bool fraction = _sandBuffer[x + z * 16] + _random.NextDouble() * 0.2D > 0.0D;
+                bool temperatureBuffer = _gravelBuffer[x + z * 16] + _random.NextDouble() * 0.2D > 3.0D;
+                int stoneActive = (int)(_depthBuffer[x + z * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
+                int stoneDepth = -1;
+                byte topBlock = biome.TopBlockId;
+                byte fillerBlock = biome.SoilBlockId;
 
-                for (int iX = 127; iX >= 0; --iX)
+                for (int y = 127; y >= 0; --y)
                 {
-                    int treeFeature = (zOffset * 16 + horizontalScale) * 128 + iX;
-                    if (iX <= 0 + _random.NextInt(5))
+                    int treeFeature = (z * 16 + x) * 128 + y;
+                    if (y <= 0 + _random.NextInt(5))
                     {
                         blocks[treeFeature] = (byte)Block.Bedrock.id;
                     }
                     else
                     {
-                        byte z = blocks[treeFeature];
-                        if (z == 0)
+                        byte activeBlock = blocks[treeFeature];
+                        if (activeBlock == 0) // Air
                         {
-                            featureY = -1;
+                            stoneDepth = -1;
                         }
                         else if (z == Block.Stone.id)
                         {
-                            if (featureY == -1)
+                            if (stoneDepth == -1)
                             {
-                                if (featureX <= 0)
+                                if (stoneActive <= 0)
                                 {
-                                    featureZ = 0;
-                                    scaleFraction = (byte)Block.Stone.id;
+                                    topBlock = 0;
+                                    fillerBlock = (byte)Block.Stone.id;
                                 }
-                                else if (iX >= blockZ - 4 && iX <= blockZ + 1)
+                                else if (y >= WATER_LEVEL - 4 && y <= WATER_LEVEL + 1)
                                 {
-                                    featureZ = verticalScale.TopBlockId;
-                                    scaleFraction = verticalScale.SoilBlockId;
+                                    topBlock = biome.TopBlockId;
+                                    fillerBlock = biome.SoilBlockId;
                                     if (temperatureBuffer)
                                     {
-                                        featureZ = 0;
+                                        topBlock = 0;
                                     }
 
                                     if (temperatureBuffer)
                                     {
-                                        scaleFraction = (byte)Block.Gravel.id;
+                                        fillerBlock = (byte)Block.Gravel.id;
                                     }
 
                                     if (fraction)
                                     {
-                                        featureZ = (byte)Block.Sand.id;
+                                        topBlock = (byte)Block.Sand.id;
                                     }
 
                                     if (fraction)
                                     {
-                                        scaleFraction = (byte)Block.Sand.id;
+                                        fillerBlock = (byte)Block.Sand.id;
                                     }
                                 }
 
-                                if (iX < blockZ && featureZ == 0)
+                                if (y < WATER_LEVEL && topBlock == 0)
                                 {
-                                    featureZ = (byte)Block.Water.id;
+                                    topBlock = (byte)Block.Water.id;
                                 }
 
-                                featureY = featureX;
-                                if (iX >= blockZ - 1)
+                                featureY = stoneActive;
+                                if (iX >= WATER_LEVEL - 1)
                                 {
-                                    blocks[treeFeature] = featureZ;
+                                    blocks[treeFeature] = topBlock;
                                 }
                                 else
                                 {
