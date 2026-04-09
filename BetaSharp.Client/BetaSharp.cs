@@ -224,7 +224,7 @@ public partial class BetaSharp :
 
         LoadScreen();
 
-        SetupOpenGLAndInput();
+        SetupInputAndRendering();
         SetupResourcesAndPostProcessing();
 
         CheckGLError("Post startup");
@@ -292,15 +292,7 @@ public partial class BetaSharp :
             Display.create(ActiveRendererBackend);
             Display.getGlfw().SetWindowSizeLimits(Display.GetWindowHandle(), 850, 480, maximumWidth, maximumHeight);
 
-            GLManager.Init(Display.getGL()!);
-            if (GLManager.GL is LegacyGL legacyGl)
-            {
-                _debugTelemetry.CaptureSystemInfo(legacyGl);
-            }
-            else
-            {
-                _debugTelemetry.CaptureSystemInfo(null);
-            }
+            _renderBackendRuntime.InitializeGraphicsContext(_debugTelemetry);
 
             Display.getGlfw().SwapInterval(Options.VSync ? 1 : 0);
 
@@ -360,22 +352,8 @@ public partial class BetaSharp :
         };
     }
 
-    private unsafe void SetupOpenGLAndInput()
+    private unsafe void SetupInputAndRendering()
     {
-        bool anisotropicFiltering = GLManager.GL.IsExtensionPresent("GL_EXT_texture_filter_anisotropic");
-        _logger.LogInformation($"Anisotropic Filtering Supported: {anisotropicFiltering}");
-
-        if (anisotropicFiltering)
-        {
-            GLManager.GL.GetFloat(GLEnum.MaxTextureMaxAnisotropy, out float maxAnisotropy);
-            GameOptions.MaxAnisotropy = maxAnisotropy;
-            _logger.LogInformation($"Max Anisotropy: {maxAnisotropy}");
-        }
-        else
-        {
-            GameOptions.MaxAnisotropy = 1.0f;
-        }
-
         ImGui.CreateContext();
 
         ImGuiIO* io = ImGui.GetIO();
@@ -411,17 +389,7 @@ public partial class BetaSharp :
         };
 
         CheckGLError("Pre startup");
-        GLManager.GL.Enable(GLEnum.Texture2D);
-        GLManager.GL.ShadeModel(GLEnum.Smooth);
-        GLManager.GL.ClearDepth(1.0D);
-        GLManager.GL.Enable(GLEnum.DepthTest);
-        GLManager.GL.DepthFunc(GLEnum.Lequal);
-        GLManager.GL.Enable(GLEnum.AlphaTest);
-        GLManager.GL.AlphaFunc(GLEnum.Greater, 0.1F);
-        GLManager.GL.CullFace(GLEnum.Back);
-        GLManager.GL.MatrixMode(GLEnum.Projection);
-        GLManager.GL.LoadIdentity();
-        GLManager.GL.MatrixMode(GLEnum.Modelview);
+        _renderBackendRuntime.ConfigureDefaultRenderState(Options, _logger);
         CheckGLError("Startup");
     }
 
@@ -443,7 +411,7 @@ public partial class BetaSharp :
         TextureManager.AddDynamicTexture(new FireSprite(1));
 
         WorldRenderer = new WorldRenderer(this, TextureManager);
-        GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
+        _renderBackendRuntime.SetMainViewport(Display.getFramebufferWidth(), Display.getFramebufferHeight());
         ParticleManager = new ParticleManager(World, TextureManager);
 
         _ = new ResourceManager()
