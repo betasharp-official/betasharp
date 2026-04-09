@@ -252,7 +252,7 @@ public partial class BetaSharp :
         SetupInputAndRendering();
         SetupResourcesAndPostProcessing();
 
-        CheckGLError("Post startup");
+        CheckRenderBackendErrors("Post startup");
 
         StatFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
         if (_serverName != null)
@@ -416,9 +416,9 @@ public partial class BetaSharp :
             }
         };
 
-        CheckGLError("Pre startup");
+        CheckRenderBackendErrors("Pre startup");
         _renderBackendRuntime.ConfigureDefaultRenderState(Options, _logger);
-        CheckGLError("Startup");
+        CheckRenderBackendErrors("Startup");
     }
 
     private void SetupResourcesAndPostProcessing()
@@ -630,7 +630,7 @@ public partial class BetaSharp :
                     }
 
                     long tickElapsedTime = Stopwatch.GetTimestamp() - tickStartTime;
-                    CheckGLError("Pre render");
+                    CheckRenderBackendErrors("Pre render");
 
                     SoundManager.UpdateListener(Player, Timer.renderPartialTicks);
                     PrepareFrameRenderState();
@@ -755,7 +755,7 @@ public partial class BetaSharp :
                         Resize(DisplayWidth, DisplayHeight);
                     }
 
-                    CheckGLError("Post render");
+                    CheckRenderBackendErrors("Post render");
                     ++frameCounter;
 
                     IsGamePaused = (!IsMultiplayerWorld() || InternalServer != null) && (CurrentScreen?.PausesGame ?? false);
@@ -1757,7 +1757,7 @@ public partial class BetaSharp :
     internal DebugSystemSnapshot DebugSystemSnapshot => _debugTelemetry.SystemSnapshot;
 
     [Conditional("DEBUG")]
-    private void CheckGLError(string location)
+    private void CheckRenderBackendErrors(string location)
     {
         if (!_isRenderBackendInitialized)
         {

@@ -9,9 +9,8 @@ internal static class ImGuiRendererBackendFactory
         return backend switch
         {
             RendererBackendKind.OpenGL => new OpenGlImGuiRendererBackend(),
-            RendererBackendKind.Vulkan => throw new NotSupportedException(
-                "Vulkan ImGui backend is not implemented yet."),
-            _ => throw new NotSupportedException($"Unsupported ImGui backend: {backend}")
+            RendererBackendKind.Vulkan => new NoOpImGuiRendererBackend(RendererBackendKind.Vulkan),
+            _ => new NoOpImGuiRendererBackend(backend)
         };
     }
 }
