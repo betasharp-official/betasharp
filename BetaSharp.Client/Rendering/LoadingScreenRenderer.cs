@@ -35,6 +35,12 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
         if (game.Running)
         {
             _titleText = message;
+
+            if (game.ActiveRendererBackend != RendererBackendKind.OpenGL)
+            {
+                return;
+            }
+
             ScaledResolution resolution = new(game.Options, game.DisplayWidth, game.DisplayHeight);
 
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
@@ -76,6 +82,14 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
         if (currentTimeMs - _lastUpdateMs < 20L) return;
 
         _lastUpdateMs = currentTimeMs;
+
+        if (game.ActiveRendererBackend != RendererBackendKind.OpenGL)
+        {
+            game.UpdateWindow(true);
+            Thread.Yield();
+            return;
+        }
+
         ScaledResolution resolution = new(game.Options, game.DisplayWidth, game.DisplayHeight);
         int width = resolution.ScaledWidth;
         int height = resolution.ScaledHeight;
