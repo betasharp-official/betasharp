@@ -1,6 +1,7 @@
 using BetaSharp.Client.Diagnostics.GuiBackends;
 using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.Options;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Presentation;
 using Microsoft.Extensions.Logging;
 
@@ -58,6 +59,21 @@ internal sealed class VulkanRenderBackendRuntime : IRenderBackendRuntime
     {
         rgbPixels = [];
         return false;
+    }
+
+    public void RenderStartupScreen(
+        GameOptions options,
+        int displayWidth,
+        int displayHeight,
+        int framebufferWidth,
+        int framebufferHeight,
+        TextureHandle logoTexture)
+    {
+        UpdateWindow(true);
+    }
+
+    public void CleanupRenderResources()
+    {
     }
 
     public IRenderPresentation CreatePresentation(int width, int height, GameOptions options)

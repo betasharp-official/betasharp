@@ -15,7 +15,6 @@ using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Backends;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Presentation;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
@@ -47,8 +46,6 @@ using BetaSharp.Worlds.Storage;
 using Hexa.NET.ImGui;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL;
-using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client;
 
@@ -202,7 +199,6 @@ public partial class BetaSharp :
     private IRenderBackendRuntime _renderBackendRuntime = null!;
     private IRenderPresentation _renderPresentation = null!;
     private bool _isRenderBackendInitialized;
-    private GLErrorHandler _glErrorHandler;
     private string _gameDataDir;
 
     private bool _fullscreen;
@@ -327,9 +323,6 @@ public partial class BetaSharp :
             _renderBackendRuntime.ConfigurePresentationMode(Options);
             _isRenderBackendInitialized = true;
 
-#if DEBUG
-            _glErrorHandler = new();
-#endif
         }
         catch (Exception ex)
         {
@@ -511,7 +504,7 @@ public partial class BetaSharp :
             _logger.LogInformation("Stopping!");
 
             try { ChangeWorld(null); } catch (Exception) { }
-            try { GLAllocation.deleteTexturesAndDisplayLists(); } catch (Exception) { }
+            try { _renderBackendRuntime.CleanupRenderResources(); } catch (Exception) { }
 
             // don't bother trying to shutdown imgui because it keeps hanging/crashing
 
@@ -1798,59 +1791,13 @@ public partial class BetaSharp :
 
     private void LoadScreen()
     {
-        if (!SupportsLegacyOpenGlRenderPath)
-        {
-            UpdateWindow(true);
-            return;
-        }
-
-        ScaledResolution var1 = new(Options, DisplayWidth, DisplayHeight);
-        GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-        GLManager.GL.MatrixMode(GLEnum.Projection);
-        GLManager.GL.LoadIdentity();
-        GLManager.GL.Ortho(0.0D, var1.ScaledWidth, var1.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
-        GLManager.GL.MatrixMode(GLEnum.Modelview);
-        GLManager.GL.LoadIdentity();
-        GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
-        GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
-        GLManager.GL.ClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-        Tessellator tessellator = Tessellator.instance;
-        GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Enable(GLEnum.Texture2D);
-        GLManager.GL.Disable(GLEnum.Fog);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        TextureManager.BindTexture(TextureManager.GetTextureId("/title/mojang.png"));
-        tessellator.startDrawingQuads();
-        tessellator.setColorOpaque_I(0xFFFFFF);
-        tessellator.addVertexWithUV(0.0D, (double)DisplayHeight, 0.0D, 0.0D, 0.0D);
-        tessellator.addVertexWithUV((double)DisplayWidth, (double)DisplayHeight, 0.0D, 0.0D, 0.0D);
-        tessellator.addVertexWithUV((double)DisplayWidth, 0.0D, 0.0D, 0.0D, 0.0D);
-        tessellator.addVertexWithUV(0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
-        tessellator.draw();
-        short var3 = 256;
-        short var4 = 256;
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        tessellator.setColorOpaque_I(0xFFFFFF);
-        DrawTextureRegion((var1.ScaledWidth - var3) / 2, (var1.ScaledHeight - var4) / 2, 0, 0, var3, var4);
-        GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Disable(GLEnum.Fog);
-        GLManager.GL.Enable(GLEnum.AlphaTest);
-        GLManager.GL.AlphaFunc(GLEnum.Greater, 0.1F);
-        UpdateWindow(true);
-    }
-
-    private static void DrawTextureRegion(int x, int y, int texX, int texY, int width, int height)
-    {
-        const float uScale = 1 / 256f;
-        const float vScale = 1 / 256f;
-
-        Tessellator tess = Tessellator.instance;
-        tess.startDrawingQuads();
-        tess.addVertexWithUV(x + 0, y + height, 0, (texX + 0) * uScale, (texY + height) * vScale);
-        tess.addVertexWithUV(x + width, y + height, 0, (texX + width) * uScale, (texY + height) * vScale);
-        tess.addVertexWithUV(x + width, y + 0, 0, (texX + width) * uScale, (texY + 0) * vScale);
-        tess.addVertexWithUV(x + 0, y + 0, 0, (texX + 0) * uScale, (texY + 0) * vScale);
-        tess.draw();
+        _renderBackendRuntime.RenderStartupScreen(
+            Options,
+            DisplayWidth,
+            DisplayHeight,
+            Display.getFramebufferWidth(),
+            Display.getFramebufferHeight(),
+            TextureManager.GetTextureId("/title/mojang.png"));
     }
 
     private void SetMainViewport(int width, int height)

@@ -1,6 +1,7 @@
 using BetaSharp.Client.Diagnostics.GuiBackends;
 using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.Options;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Presentation;
 using Microsoft.Extensions.Logging;
 
@@ -22,6 +23,14 @@ internal interface IRenderBackendRuntime
     void CheckBackendErrors(string location, ILogger logger);
     void UpdateWindow(bool processMessages);
     bool TryCaptureScreenshot(int framebufferWidth, int framebufferHeight, out byte[] rgbPixels);
+    void RenderStartupScreen(
+        GameOptions options,
+        int displayWidth,
+        int displayHeight,
+        int framebufferWidth,
+        int framebufferHeight,
+        TextureHandle logoTexture);
+    void CleanupRenderResources();
 
     IRenderPresentation CreatePresentation(int width, int height, GameOptions options);
     IImGuiRendererBackend CreateImGuiRendererBackend();
