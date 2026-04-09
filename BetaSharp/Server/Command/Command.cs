@@ -36,13 +36,15 @@ public abstract partial class Command
     public virtual LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) => Literal("none");
 
     protected static LiteralArgumentBuilder<CommandSource> Literal(string literal) => LiteralArgumentBuilder<CommandSource>.LiteralArgument(literal);
-    protected static RequiredArgumentBuilder<CommandSource, string> ArgumentString(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.Word());
-    protected static RequiredArgumentBuilder<CommandSource, string> ArgumentGreedy(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.GreedyString());
-    protected static RequiredArgumentBuilder<CommandSource, int> ArgumentInt(string name) => RequiredArgumentBuilder<CommandSource, int>.RequiredArgument(name, Arguments.Integer());
-    protected static RequiredArgumentBuilder<CommandSource, bool> ArgumentBool(string name) => RequiredArgumentBuilder<CommandSource, bool>.RequiredArgument(name, Arguments.Bool());
-    protected static RequiredArgumentBuilder<CommandSource, T> ArgumentEnum<T>(string name) where T : struct, Enum => RequiredArgumentBuilder<CommandSource, T>.RequiredArgument(name, Arguments.Enum<T>());
+    protected static RequiredArgumentBuilder<CommandSource, Entity> ArgumentTarget(string name) => RequiredArgumentBuilder<CommandSource, Entity>.RequiredArgument(name, new ArgTarget());
+    protected static RequiredArgumentBuilder<CommandSource, Entity[]> ArgumentTargets(string name) => RequiredArgumentBuilder<CommandSource, Entity[]>.RequiredArgument(name, new ArgTargets());
     protected static RequiredArgumentBuilder<CommandSource, ServerPlayerEntity> ArgumentPlayer(string name) => RequiredArgumentBuilder<CommandSource, ServerPlayerEntity>.RequiredArgument(name, new ArgPlayer());
+    protected static RequiredArgumentBuilder<CommandSource, T> ArgumentEnum<T>(string name) where T : struct, Enum => RequiredArgumentBuilder<CommandSource, T>.RequiredArgument(name, Arguments.Enum<T>());
     protected static RequiredArgumentBuilder<CommandSource, Vec3D> ArgumentPos(string name) => RequiredArgumentBuilder<CommandSource, Vec3D>.RequiredArgument(name, new ArgPosition());
+    protected static RequiredArgumentBuilder<CommandSource, bool> ArgumentBool(string name) => RequiredArgumentBuilder<CommandSource, bool>.RequiredArgument(name, Arguments.Bool());
+    protected static RequiredArgumentBuilder<CommandSource, int> ArgumentInt(string name) => RequiredArgumentBuilder<CommandSource, int>.RequiredArgument(name, Arguments.Integer());
+    protected static RequiredArgumentBuilder<CommandSource, string> ArgumentGreedy(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.GreedyString());
+    protected static RequiredArgumentBuilder<CommandSource, string> ArgumentString(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.Word());
 
 
     public class CommandSource(ICommandHandler handler, string senderName, ICommandOutput output)

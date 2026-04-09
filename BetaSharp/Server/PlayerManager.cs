@@ -439,6 +439,107 @@ public class PlayerManager
         return null;
     }
 
+    public ServerPlayerEntity? GetRandomPlayer()
+    {
+        if (players.Count == 0) return null;
+        int id = Random.Shared.Next(players.Count);
+        return players[id];
+    }
+
+    public ServerPlayerEntity[] GetPlayers(Vec3D? position = null, double range = -1, Selector selector = Selector.Arbitrary, int limit = -1, int? dimensionId = null)
+    {
+        // Perform the fast selecting first if applicable.
+        if (players.Count == 0) return [];
+
+        if (position == null) range = -1;
+        if (selector == Selector.Arbitrary && dimensionId == null && range <= 0)
+        {
+            if (limit == -1 || limit >= players.Count) return players.ToArray();
+            var array = new ServerPlayerEntity[limit];
+            players.CopyTo(0, array, 0, limit);
+            return array;
+        }
+
+        Dictionary<double, ServerPlayerEntity> dict;
+
+        if (range > 0)
+        {
+            Vec3D pos = position!.Value;
+            dict = players.Select((item, i) => (i, item)).ToDictionary(t => t.item.Position.distanceTo(pos), t => t.item);
+        }
+        else
+        {
+            switch (selector)
+            {
+                case Selector.Arbitrary:
+                case Selector.Random:
+                    dict = players.Select((item, i) => (i, item)).ToDictionary(t => (double)t.i, t => t.item);
+                    break;
+                case Selector.Nearest:
+                case Selector.Furthest:
+                    if (position == null) throw new ArgumentNullException(nameof(position));
+                    Vec3D pos = position.Value;
+                    dict = players.Select((item, i) => (i, item)).ToDictionary(t => t.item.Position.distanceTo(pos), t => t.item);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(selector), selector, null);
+            }
+        }
+
+        if (dimensionId != null)
+        {
+            int d = dimensionId.Value;
+            var keysToRemove = new List<double>();
+            foreach (var p in dict)
+            {
+                if (p.Value.dimensionId != d)
+                {
+                    keysToRemove.Add(p.Key);
+                }
+            }
+            foreach (double key in keysToRemove)
+            {
+                dict.Remove(key);
+            }
+        }
+
+        if (range > 0)
+        {
+            var keysToRemove = new List<double>();
+            foreach (var p in dict)
+            {
+                if (p.Key <= range)
+                {
+                    keysToRemove.Add(p.Key);
+                }
+            }
+            foreach (double key in keysToRemove)
+            {
+                dict.Remove(key);
+            }
+        }
+
+        IEnumerable<ServerPlayerEntity> outData;
+
+        if (selector != Selector.Arbitrary && selector != Selector.Random)
+        {
+            outData = dict.OrderBy(p => p.Key).ToDictionary().Values;
+        }
+        else if (selector == Selector.Random)
+        {
+            outData = dict.Values.Shuffle();
+        }
+        else
+        {
+            outData = dict.Values;
+        }
+
+        if (limit > dict.Count) limit = -1;
+
+        if (limit > 0) return outData.Take(limit).ToArray();
+        return outData.ToArray();
+    }
+
     public void messagePlayer(string name, string message)
     {
         ServerPlayerEntity var3 = getPlayer(name);
