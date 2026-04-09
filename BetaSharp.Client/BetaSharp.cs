@@ -146,7 +146,7 @@ public partial class BetaSharp :
     public string DebugText { get; private set; } = "";
     public HitResult ObjectMouseOver = new(HitResultType.MISS);
 
-    public ISceneRenderer SceneRenderer { get; private set; }
+    public ISceneRenderer SceneRenderer { get; private set; } = new NoOpSceneRenderer();
     public WorldRenderer WorldRenderer { get; private set; }
     public int PresentationTargetWidth => _renderPresentation.FramebufferWidth;
     public int PresentationTargetHeight => _renderPresentation.FramebufferHeight;
@@ -291,7 +291,7 @@ public partial class BetaSharp :
         SaveLoader = new RegionWorldStorageSource(Path.Combine(_gameDataDir, "saves"));
         Options = new GameOptions(this, _gameDataDir);
         Options.ReloadTextures += () => { TextureManager.Reload(); };
-        Options.ReloadChunks += () => { WorldRenderer.ChunkRenderer.MarkAllVisibleChunksDirty(); };
+        Options.ReloadChunks += () => { SceneRenderer.MarkVisibleChunksDirty(); };
 
         Profiler.RegisterMainThread();
 
@@ -705,7 +705,7 @@ public partial class BetaSharp :
                         }
 
                         TextureStats.EndFrame();
-                        PushRenderMetrics();
+                        SceneRenderer.PublishRenderMetrics();
                     }
 
                     DisplayWidth = savedWidth;
@@ -789,25 +789,6 @@ public partial class BetaSharp :
         {
             ShutdownGame();
         }
-    }
-
-    private void PushRenderMetrics()
-    {
-        if (WorldRenderer?.ChunkRenderer is not { } cr) return;
-        MetricRegistry.Set(RenderMetrics.ChunksTotal, cr.TotalChunks);
-        MetricRegistry.Set(RenderMetrics.ChunksFrustum, cr.ChunksInFrustum);
-        MetricRegistry.Set(RenderMetrics.ChunksOccluded, cr.ChunksOccluded);
-        MetricRegistry.Set(RenderMetrics.ChunksRendered, cr.ChunksRendered);
-        MetricRegistry.Set(RenderMetrics.VboAllocatedMb, (float)(VertexBuffer<ChunkVertex>.Allocated / 1_000_000.0));
-        MetricRegistry.Set(RenderMetrics.MeshVersionAllocated, ChunkMeshVersion.TotalAllocated);
-        MetricRegistry.Set(RenderMetrics.MeshVersionReleased, ChunkMeshVersion.TotalReleased);
-        MetricRegistry.Set(RenderMetrics.TextureBindsLastFrame, TextureStats.BindsLastFrame);
-        MetricRegistry.Set(RenderMetrics.TextureAvgBinds, (float)TextureStats.AverageBindsPerFrame);
-        MetricRegistry.Set(RenderMetrics.TextureActive, GLTexture.ActiveTextureCount);
-        MetricRegistry.Set(RenderMetrics.EntitiesRendered, WorldRenderer.CountEntitiesRendered);
-        MetricRegistry.Set(RenderMetrics.EntitiesHidden, WorldRenderer.CountEntitiesHidden);
-        MetricRegistry.Set(RenderMetrics.EntitiesTotal, WorldRenderer.CountEntitiesTotal);
-        MetricRegistry.Set(RenderMetrics.ParticlesActive, ParticleManager.ActiveParticleCount);
     }
 
     private void ReportFrameTelemetry(long frameStartNano)
@@ -952,7 +933,7 @@ public partial class BetaSharp :
 
             if (!IsGamePaused)
             {
-                WorldRenderer.UpdateClouds();
+                SceneRenderer.UpdateClouds();
             }
 
             using (Profiler.Begin("TickEntities"))

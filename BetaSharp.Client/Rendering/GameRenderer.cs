@@ -1,13 +1,17 @@
 using System.Diagnostics;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Options;
+using BetaSharp.Client.Rendering.Chunks;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Items;
+using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Profiling;
+using BetaSharp.Util;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
@@ -52,6 +56,30 @@ public class GameRenderer : ISceneRenderer
     public void Tick(float partialTicks) => tick(partialTicks);
     public void OnFrameUpdate(float tickDelta) => onFrameUpdate(tickDelta);
     public void ResetEquippedItemProgress() => itemRenderer.ResetEquippedProgress();
+    public void MarkVisibleChunksDirty() => _client.WorldRenderer?.ChunkRenderer?.MarkAllVisibleChunksDirty();
+    public void UpdateClouds() => _client.WorldRenderer?.UpdateClouds();
+    public void PublishRenderMetrics()
+    {
+        if (_client.WorldRenderer?.ChunkRenderer is not { } chunkRenderer)
+        {
+            return;
+        }
+
+        MetricRegistry.Set(RenderMetrics.ChunksTotal, chunkRenderer.TotalChunks);
+        MetricRegistry.Set(RenderMetrics.ChunksFrustum, chunkRenderer.ChunksInFrustum);
+        MetricRegistry.Set(RenderMetrics.ChunksOccluded, chunkRenderer.ChunksOccluded);
+        MetricRegistry.Set(RenderMetrics.ChunksRendered, chunkRenderer.ChunksRendered);
+        MetricRegistry.Set(RenderMetrics.VboAllocatedMb, (float)(VertexBuffer<ChunkVertex>.Allocated / 1_000_000.0));
+        MetricRegistry.Set(RenderMetrics.MeshVersionAllocated, ChunkMeshVersion.TotalAllocated);
+        MetricRegistry.Set(RenderMetrics.MeshVersionReleased, ChunkMeshVersion.TotalReleased);
+        MetricRegistry.Set(RenderMetrics.TextureBindsLastFrame, TextureStats.BindsLastFrame);
+        MetricRegistry.Set(RenderMetrics.TextureAvgBinds, (float)TextureStats.AverageBindsPerFrame);
+        MetricRegistry.Set(RenderMetrics.TextureActive, GLTexture.ActiveTextureCount);
+        MetricRegistry.Set(RenderMetrics.EntitiesRendered, _client.WorldRenderer.CountEntitiesRendered);
+        MetricRegistry.Set(RenderMetrics.EntitiesHidden, _client.WorldRenderer.CountEntitiesHidden);
+        MetricRegistry.Set(RenderMetrics.EntitiesTotal, _client.WorldRenderer.CountEntitiesTotal);
+        MetricRegistry.Set(RenderMetrics.ParticlesActive, _client.ParticleManager.ActiveParticleCount);
+    }
 
     public void updateCamera()
     {

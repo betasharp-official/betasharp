@@ -23,4 +23,16 @@ internal sealed class NoOpSceneRenderer : ISceneRenderer
     public void ResetEquippedItemProgress()
     {
     }
+
+    public void MarkVisibleChunksDirty()
+    {
+    }
+
+    public void UpdateClouds()
+    {
+    }
+
+    public void PublishRenderMetrics()
+    {
+    }
 }

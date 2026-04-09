@@ -7,4 +7,7 @@ public interface ISceneRenderer
     void UpdateCamera();
     void UpdateTargetedEntity(float tickDelta);
     void ResetEquippedItemProgress();
+    void MarkVisibleChunksDirty();
+    void UpdateClouds();
+    void PublishRenderMetrics();
 }
