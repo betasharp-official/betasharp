@@ -34,6 +34,7 @@ internal interface IRenderBackendRuntime
     void CleanupRenderResources();
     void LogRenderResourceReport();
     ISceneRenderer CreateSceneRenderer(BetaSharp client);
+    IWorldRenderer CreateWorldRenderer(BetaSharp client, TextureManager textureManager);
 
     IRenderPresentation CreatePresentation(int width, int height, GameOptions options);
     IImGuiRendererBackend CreateImGuiRendererBackend();

@@ -147,7 +147,7 @@ public partial class BetaSharp :
     public HitResult ObjectMouseOver = new(HitResultType.MISS);
 
     public ISceneRenderer SceneRenderer { get; private set; } = new NoOpSceneRenderer();
-    public WorldRenderer WorldRenderer { get; private set; }
+    public IWorldRenderer WorldRenderer { get; private set; } = null!;
     public int PresentationTargetWidth => _renderPresentation.FramebufferWidth;
     public int PresentationTargetHeight => _renderPresentation.FramebufferHeight;
     public bool IsPresentationBlitSkipped => _renderPresentation.SkipBlit;
@@ -437,7 +437,7 @@ public partial class BetaSharp :
         TextureManager.AddDynamicTexture(new FireSprite(0));
         TextureManager.AddDynamicTexture(new FireSprite(1));
 
-        WorldRenderer = new WorldRenderer(this, TextureManager);
+        WorldRenderer = _renderBackendRuntime.CreateWorldRenderer(this, TextureManager);
         SetMainViewport(Display.getFramebufferWidth(), Display.getFramebufferHeight());
         ParticleManager = new ParticleManager(World, TextureManager);
 

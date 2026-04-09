@@ -56,7 +56,7 @@ public class GameRenderer : ISceneRenderer
     public void Tick(float partialTicks) => tick(partialTicks);
     public void OnFrameUpdate(float tickDelta) => onFrameUpdate(tickDelta);
     public void ResetEquippedItemProgress() => itemRenderer.ResetEquippedProgress();
-    public void MarkVisibleChunksDirty() => _client.WorldRenderer?.ChunkRenderer?.MarkAllVisibleChunksDirty();
+    public void MarkVisibleChunksDirty() => _client.WorldRenderer?.MarkAllVisibleChunksDirty();
     public void UpdateClouds() => _client.WorldRenderer?.UpdateClouds();
     public void ChangeWorld(World world) => _client.WorldRenderer?.ChangeWorld(world);
     public void SetDamagePartialTime(float value)
@@ -68,15 +68,15 @@ public class GameRenderer : ISceneRenderer
     }
     public void PublishRenderMetrics()
     {
-        if (_client.WorldRenderer?.ChunkRenderer is not { } chunkRenderer)
+        if (_client.WorldRenderer == null || !_client.WorldRenderer.TryGetChunkStats(out ChunkRendererStats chunkStats))
         {
             return;
         }
 
-        MetricRegistry.Set(RenderMetrics.ChunksTotal, chunkRenderer.TotalChunks);
-        MetricRegistry.Set(RenderMetrics.ChunksFrustum, chunkRenderer.ChunksInFrustum);
-        MetricRegistry.Set(RenderMetrics.ChunksOccluded, chunkRenderer.ChunksOccluded);
-        MetricRegistry.Set(RenderMetrics.ChunksRendered, chunkRenderer.ChunksRendered);
+        MetricRegistry.Set(RenderMetrics.ChunksTotal, chunkStats.TotalChunks);
+        MetricRegistry.Set(RenderMetrics.ChunksFrustum, chunkStats.ChunksInFrustum);
+        MetricRegistry.Set(RenderMetrics.ChunksOccluded, chunkStats.ChunksOccluded);
+        MetricRegistry.Set(RenderMetrics.ChunksRendered, chunkStats.ChunksRendered);
         MetricRegistry.Set(RenderMetrics.VboAllocatedMb, (float)(VertexBuffer<ChunkVertex>.Allocated / 1_000_000.0));
         MetricRegistry.Set(RenderMetrics.MeshVersionAllocated, ChunkMeshVersion.TotalAllocated);
         MetricRegistry.Set(RenderMetrics.MeshVersionReleased, ChunkMeshVersion.TotalReleased);
@@ -420,7 +420,7 @@ public class GameRenderer : ISceneRenderer
         }
 
         EntityLiving entity = _client.Camera;
-        WorldRenderer worldRenderer = _client.WorldRenderer;
+        IWorldRenderer worldRenderer = _client.WorldRenderer;
         ParticleManager particleManager = _client.ParticleManager;
         double entX = entity.lastTickX + (entity.x - entity.lastTickX) * (double)tickDelta;
         double entY = entity.lastTickY + (entity.y - entity.lastTickY) * (double)tickDelta;
@@ -965,50 +965,50 @@ public class GameRenderer : ISceneRenderer
     {
         EntityLiving var3 = _client.Camera;
         GLManager.GL.Fog(GLEnum.FogColor, updateFogColorBuffer(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0F));
-        _client.WorldRenderer.ChunkRenderer.SetFogColor(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
+        _client.WorldRenderer.SetChunkFogColor(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
         GLManager.GL.Normal3(0.0F, -1.0F, 0.0F);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         if (_cloudFog)
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
             GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-            _client.WorldRenderer.ChunkRenderer.SetFogMode(1);
-            _client.WorldRenderer.ChunkRenderer.SetFogDensity(0.1f);
+            _client.WorldRenderer.SetChunkFogMode(1);
+            _client.WorldRenderer.SetChunkFogDensity(0.1f);
         }
         else if (var3.isInFluid(Material.Water))
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
             GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-            _client.WorldRenderer.ChunkRenderer.SetFogMode(1);
-            _client.WorldRenderer.ChunkRenderer.SetFogDensity(0.1f);
+            _client.WorldRenderer.SetChunkFogMode(1);
+            _client.WorldRenderer.SetChunkFogDensity(0.1f);
         }
         else if (var3.isInFluid(Material.Lava))
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
             GLManager.GL.Fog(GLEnum.FogDensity, 2.0F);
-            _client.WorldRenderer.ChunkRenderer.SetFogMode(1);
-            _client.WorldRenderer.ChunkRenderer.SetFogDensity(2.0f);
+            _client.WorldRenderer.SetChunkFogMode(1);
+            _client.WorldRenderer.SetChunkFogDensity(2.0f);
         }
         else
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Linear);
             GLManager.GL.Fog(GLEnum.FogStart, _viewDistance * 0.25F);
             GLManager.GL.Fog(GLEnum.FogEnd, _viewDistance);
-            _client.WorldRenderer.ChunkRenderer.SetFogMode(0);
-            _client.WorldRenderer.ChunkRenderer.SetFogStart(_viewDistance * 0.25f);
-            _client.WorldRenderer.ChunkRenderer.SetFogEnd(_viewDistance);
+            _client.WorldRenderer.SetChunkFogMode(0);
+            _client.WorldRenderer.SetChunkFogStart(_viewDistance * 0.25f);
+            _client.WorldRenderer.SetChunkFogEnd(_viewDistance);
             if (mode < 0)
             {
                 GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
                 GLManager.GL.Fog(GLEnum.FogEnd, _viewDistance * 0.8F);
-                _client.WorldRenderer.ChunkRenderer.SetFogStart(0.0f);
-                _client.WorldRenderer.ChunkRenderer.SetFogEnd(_viewDistance * 0.8f);
+                _client.WorldRenderer.SetChunkFogStart(0.0f);
+                _client.WorldRenderer.SetChunkFogEnd(_viewDistance * 0.8f);
             }
 
             if (_client.World.Dimension.IsNether)
             {
                 GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
-                _client.WorldRenderer.ChunkRenderer.SetFogStart(0.0f);
+                _client.WorldRenderer.SetChunkFogStart(0.0f);
             }
         }
 

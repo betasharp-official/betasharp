@@ -85,6 +85,11 @@ internal sealed class VulkanRenderBackendRuntime : IRenderBackendRuntime
         return new NoOpSceneRenderer();
     }
 
+    public IWorldRenderer CreateWorldRenderer(BetaSharp client, TextureManager textureManager)
+    {
+        throw new NotSupportedException("Vulkan world renderer is not implemented yet.");
+    }
+
     public IRenderPresentation CreatePresentation(int width, int height, GameOptions options)
     {
         return RenderPresentationFactory.Create(Kind, width, height, options);

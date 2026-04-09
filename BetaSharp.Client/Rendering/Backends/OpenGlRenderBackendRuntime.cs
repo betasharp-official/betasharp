@@ -186,6 +186,11 @@ internal sealed class OpenGlRenderBackendRuntime : IRenderBackendRuntime
         return new GameRenderer(client);
     }
 
+    public IWorldRenderer CreateWorldRenderer(BetaSharp client, TextureManager textureManager)
+    {
+        return new WorldRenderer(client, textureManager);
+    }
+
     public IRenderPresentation CreatePresentation(int width, int height, GameOptions options)
     {
         return RenderPresentationFactory.Create(Kind, width, height, options);

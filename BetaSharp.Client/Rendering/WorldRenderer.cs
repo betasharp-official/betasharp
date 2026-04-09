@@ -22,7 +22,7 @@ using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering;
 
-public class WorldRenderer : IWorldEventListener
+public class WorldRenderer : IWorldEventListener, IWorldRenderer
 {
     public int CountEntitiesTotal { get; private set; }
     public int CountEntitiesRendered { get; private set; }
@@ -186,6 +186,53 @@ public class WorldRenderer : IWorldEventListener
         ChunkMeshVersion.ClearPool();
 
         _renderEntitiesStartupCounter = 2;
+    }
+
+    public bool TryGetChunkStats(out ChunkRendererStats stats)
+    {
+        if (ChunkRenderer == null)
+        {
+            stats = default;
+            return false;
+        }
+
+        stats = new ChunkRendererStats(
+            ChunkRenderer.TotalChunks,
+            ChunkRenderer.ChunksInFrustum,
+            ChunkRenderer.ChunksOccluded,
+            ChunkRenderer.ChunksRendered,
+            ChunkRenderer.TranslucentMeshes);
+        return true;
+    }
+
+    public void MarkAllVisibleChunksDirty()
+    {
+        ChunkRenderer?.MarkAllVisibleChunksDirty();
+    }
+
+    public void SetChunkFogColor(float red, float green, float blue, float alpha)
+    {
+        ChunkRenderer?.SetFogColor(red, green, blue, alpha);
+    }
+
+    public void SetChunkFogMode(int mode)
+    {
+        ChunkRenderer?.SetFogMode(mode);
+    }
+
+    public void SetChunkFogDensity(float density)
+    {
+        ChunkRenderer?.SetFogDensity(density);
+    }
+
+    public void SetChunkFogStart(float start)
+    {
+        ChunkRenderer?.SetFogStart(start);
+    }
+
+    public void SetChunkFogEnd(float end)
+    {
+        ChunkRenderer?.SetFogEnd(end);
     }
 
     public void RenderEntities(Vec3D var1, ICuller culler, float var3)
