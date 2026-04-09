@@ -138,6 +138,10 @@ public partial class BetaSharp :
     public IRenderPresentation RenderPresentation { get; private set; }
     [Obsolete("Use RenderPresentation instead.")]
     public IRenderPresentation FramebufferManager => RenderPresentation;
+    public int PresentationTargetWidth => RenderPresentation.FramebufferWidth;
+    public int PresentationTargetHeight => RenderPresentation.FramebufferHeight;
+    public bool IsPresentationBlitSkipped => RenderPresentation.SkipBlit;
+    public PresentationViewportImage CurrentPresentationViewportImage => RenderPresentation.ViewportImage;
     public TextureManager TextureManager { get; private set; }
     public SkinManager SkinManager { get; private set; }
     public TextRenderer TextRenderer { get; private set; }
@@ -653,7 +657,7 @@ public partial class BetaSharp :
                             int vpW = (int)vpSize.X, vpH = (int)vpSize.Y;
                             if (_lastViewportSize != vpSize)
                             {
-                                RenderPresentation.Resize(vpW, vpH);
+                                ResizePresentationTarget(vpW, vpH);
                                 _lastViewportSize = vpSize;
                             }
                             DisplayWidth = vpW;
@@ -662,21 +666,21 @@ public partial class BetaSharp :
                             DebugViewportOffset = new Vector2(
                                 _debugWindowManager.ViewportPos.X,
                                 Display.getHeight() - vpH - _debugWindowManager.ViewportPos.Y);
-                            RenderPresentation.SkipBlit = true;
+                            SetPresentationBlitSkipped(true);
                         }
                         else
                         {
                             DebugViewportOffset = Vector2.Zero;
-                            RenderPresentation.SkipBlit = false;
+                            SetPresentationBlitSkipped(false);
                         }
                     }
                     else
                     {
                         DebugViewportOffset = Vector2.Zero;
-                        RenderPresentation.SkipBlit = false;
+                        SetPresentationBlitSkipped(false);
                         if (_lastViewportSize != Vector2.Zero)
                         {
-                            RenderPresentation.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+                            ResizePresentationToWindowFramebuffer();
                             _lastViewportSize = Vector2.Zero;
                             _debugWindowManager.ViewportImage = PresentationViewportImage.Empty;
                         }
@@ -702,9 +706,9 @@ public partial class BetaSharp :
 
                     if (imguiThisFrame)
                     {
-                        if (RenderPresentation.SkipBlit)
+                        if (IsPresentationBlitSkipped)
                         {
-                            _debugWindowManager.ViewportImage = RenderPresentation.ViewportImage;
+                            _debugWindowManager.ViewportImage = CurrentPresentationViewportImage;
                         }
 
                         using (Profiler.Begin("ImguiBuild"))
@@ -1670,7 +1674,7 @@ public partial class BetaSharp :
         DisplayHeight = newHeight;
         Mouse.setDisplayDimensions(DisplayWidth, DisplayHeight);
 
-        RenderPresentation.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+        ResizePresentationToWindowFramebuffer();
     }
 
     private void ScreenshotListener()
@@ -1853,6 +1857,31 @@ public partial class BetaSharp :
         }
 
         _renderBackendRuntime.PrepareFrameRenderState();
+    }
+
+    public void BeginPresentationFrame()
+    {
+        RenderPresentation.Begin();
+    }
+
+    public void EndPresentationFrame()
+    {
+        RenderPresentation.End();
+    }
+
+    public void ResizePresentationTarget(int width, int height)
+    {
+        RenderPresentation.Resize(width, height);
+    }
+
+    public void ResizePresentationToWindowFramebuffer()
+    {
+        RenderPresentation.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+    }
+
+    public void SetPresentationBlitSkipped(bool skipped)
+    {
+        RenderPresentation.SkipBlit = skipped;
     }
 
     public void UpdateWindow(bool processMessages = true)

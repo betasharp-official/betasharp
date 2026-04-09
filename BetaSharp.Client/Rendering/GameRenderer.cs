@@ -290,7 +290,7 @@ public class GameRenderer
                 _appliedVSyncState = desiredVSync;
             }
 
-            _client.RenderPresentation.Begin();
+            _client.BeginPresentationFrame();
 
             if (_client.World != null)
             {
@@ -310,7 +310,7 @@ public class GameRenderer
             }
             else
             {
-                GLManager.GL.Viewport(0, 0, (uint)_client.RenderPresentation.FramebufferWidth, (uint)_client.RenderPresentation.FramebufferHeight);
+                GLManager.GL.Viewport(0, 0, (uint)_client.PresentationTargetWidth, (uint)_client.PresentationTargetHeight);
                 GLManager.GL.MatrixMode(GLEnum.Projection);
                 GLManager.GL.LoadIdentity();
                 GLManager.GL.MatrixMode(GLEnum.Modelview);
@@ -331,7 +331,7 @@ public class GameRenderer
             }
 
 
-            _client.RenderPresentation.End();
+            _client.EndPresentationFrame();
 
 
             if (var7 < 240)
@@ -387,7 +387,7 @@ public class GameRenderer
 
         using (Profiler.Begin("UpdateFog"))
         {
-            GLManager.GL.Viewport(0, 0, (uint)_client.RenderPresentation.FramebufferWidth, (uint)_client.RenderPresentation.FramebufferHeight);
+            GLManager.GL.Viewport(0, 0, (uint)_client.PresentationTargetWidth, (uint)_client.PresentationTargetHeight);
             updateSkyAndFogColors(tickDelta);
         }
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);

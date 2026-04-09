@@ -21,6 +21,8 @@ internal sealed class SystemWindow(DebugWindowContext ctx) : DebugWindow
         ImGui.Text($"Display GL Context:   {(ctx.DisplayHasOpenGlContext ? "Yes" : "No")}");
         ImGui.Text($"ImGui Backend:        {ctx.ImGuiRendererBackend}");
         ImGui.Text($"Presentation Backend: {ctx.PresentationRendererBackend}");
+        ImGui.Text($"Presentation Target:  {ctx.PresentationTargetWidth}x{ctx.PresentationTargetHeight}");
+        ImGui.Text($"Presentation SkipBlit:{(ctx.IsPresentationBlitSkipped ? " Yes" : " No")}");
         ImGui.Text($"Renderer Runtime Init:{(ctx.IsRendererRuntimeInitialized ? " Yes" : " No")}");
         ImGui.Text($"Legacy GL Render Path:{(ctx.SupportsLegacyOpenGlRenderPath ? " Yes" : " No")}");
         ImGui.Text($"Screenshot Capture:   {(ctx.SupportsScreenshotCapture ? "Yes" : "No")}");
