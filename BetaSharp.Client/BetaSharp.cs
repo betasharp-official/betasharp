@@ -184,7 +184,7 @@ public partial class BetaSharp :
     #region Private Fields
 
     private readonly ILogger<BetaSharp> _logger = Log.Instance.For<BetaSharp>();
-    private readonly LoadingScreenRenderer _loadingScreen;
+    private ILoadingScreenRenderer _loadingScreen;
     private readonly WaterSprite _textureWaterFX = new();
     private readonly LavaSprite _textureLavaFX = new();
     private readonly DebugTelemetry _debugTelemetry = new();
@@ -226,7 +226,7 @@ public partial class BetaSharp :
 
     public BetaSharp(int width, int height, bool isFullscreen, RendererBackendKind rendererBackend = RendererBackendKind.OpenGL)
     {
-        _loadingScreen = new LoadingScreenRenderer(this);
+        _loadingScreen = new NoOpLoadingScreenRenderer(this);
         _tempDisplayHeight = height;
         _fullscreen = isFullscreen;
         DisplayWidth = width;
@@ -304,6 +304,7 @@ public partial class BetaSharp :
             ActiveRendererBackend = backendSelection.Effective;
             RendererFallbackReason = backendSelection.FallbackReason;
             _renderBackendRuntime = RenderBackendRuntimeFactory.Create(ActiveRendererBackend);
+            _loadingScreen = _renderBackendRuntime.CreateLoadingScreenRenderer(this);
             _isRenderBackendInitialized = false;
 
             _logger.LogInformation(

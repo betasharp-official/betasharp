@@ -80,6 +80,11 @@ internal sealed class VulkanRenderBackendRuntime : IRenderBackendRuntime
     {
     }
 
+    public ILoadingScreenRenderer CreateLoadingScreenRenderer(BetaSharp client)
+    {
+        return new NoOpLoadingScreenRenderer(client);
+    }
+
     public ISceneRenderer CreateSceneRenderer(BetaSharp client)
     {
         return new NoOpSceneRenderer();

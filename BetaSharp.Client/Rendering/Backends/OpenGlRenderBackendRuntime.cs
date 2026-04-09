@@ -181,6 +181,11 @@ internal sealed class OpenGlRenderBackendRuntime : IRenderBackendRuntime
         GLTexture.LogLeakReport();
     }
 
+    public ILoadingScreenRenderer CreateLoadingScreenRenderer(BetaSharp client)
+    {
+        return new LoadingScreenRenderer(client);
+    }
+
     public ISceneRenderer CreateSceneRenderer(BetaSharp client)
     {
         return new GameRenderer(client);

@@ -6,7 +6,7 @@ using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering;
 
-public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
+public class LoadingScreenRenderer(BetaSharp game) : ILoadingScreenRenderer
 {
     private string _currentStage = string.Empty;
     private string _titleText = string.Empty;

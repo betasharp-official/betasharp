@@ -33,6 +33,7 @@ internal interface IRenderBackendRuntime
         TextureHandle logoTexture);
     void CleanupRenderResources();
     void LogRenderResourceReport();
+    ILoadingScreenRenderer CreateLoadingScreenRenderer(BetaSharp client);
     ISceneRenderer CreateSceneRenderer(BetaSharp client);
     IWorldRenderer CreateWorldRenderer(BetaSharp client, TextureManager textureManager);
 
