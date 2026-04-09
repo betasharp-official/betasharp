@@ -156,7 +156,7 @@ public partial class BetaSharp :
     public SkinManager SkinManager { get; private set; }
     public TextRenderer TextRenderer { get; private set; }
     public TexturePacks TexturePackList { get; private set; }
-    public ParticleManager ParticleManager { get; private set; }
+    public IParticleManager ParticleManager { get; private set; } = new NoOpParticleManager();
 
     #endregion
 
@@ -440,7 +440,7 @@ public partial class BetaSharp :
 
         WorldRenderer = _renderBackendRuntime.CreateWorldRenderer(this, TextureManager);
         SetMainViewport(Display.getFramebufferWidth(), Display.getFramebufferHeight());
-        ParticleManager = new ParticleManager(World, TextureManager);
+        ParticleManager = _renderBackendRuntime.CreateParticleManager(World, TextureManager);
 
         _ = new ResourceManager()
             .Add(new BetaResourceDownloader(this, _gameDataDir))

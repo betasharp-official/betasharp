@@ -3,6 +3,7 @@ using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Presentation;
+using BetaSharp.Worlds.Core;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Rendering.Backends;
@@ -98,6 +99,11 @@ internal sealed class VulkanRenderBackendRuntime : IRenderBackendRuntime
     public IWorldRenderer CreateWorldRenderer(BetaSharp client, TextureManager textureManager)
     {
         return new NoOpWorldRenderer();
+    }
+
+    public IParticleManager CreateParticleManager(World? world, TextureManager textureManager)
+    {
+        return new NoOpParticleManager();
     }
 
     public IRenderPresentation CreatePresentation(int width, int height, GameOptions options)

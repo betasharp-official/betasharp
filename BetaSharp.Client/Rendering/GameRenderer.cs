@@ -412,7 +412,7 @@ public class GameRenderer : ISceneRenderer
 
         EntityLiving entity = _client.Camera;
         IWorldRenderer worldRenderer = _client.WorldRenderer;
-        ParticleManager particleManager = _client.ParticleManager;
+        IParticleManager particleManager = _client.ParticleManager;
         double entX = entity.lastTickX + (entity.x - entity.lastTickX) * (double)tickDelta;
         double entY = entity.lastTickY + (entity.y - entity.lastTickY) * (double)tickDelta;
         double entZ = entity.lastTickZ + (entity.z - entity.lastTickZ) * (double)tickDelta;

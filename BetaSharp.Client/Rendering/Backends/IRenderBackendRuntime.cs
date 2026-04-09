@@ -4,6 +4,7 @@ using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Presentation;
+using BetaSharp.Worlds.Core;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Rendering.Backends;
@@ -37,6 +38,7 @@ internal interface IRenderBackendRuntime
     ILoadingScreenRenderer CreateLoadingScreenRenderer(BetaSharp client);
     ISceneRenderer CreateSceneRenderer(BetaSharp client);
     IWorldRenderer CreateWorldRenderer(BetaSharp client, TextureManager textureManager);
+    IParticleManager CreateParticleManager(World? world, TextureManager textureManager);
 
     IRenderPresentation CreatePresentation(int width, int height, GameOptions options);
     IImGuiRendererBackend CreateImGuiRendererBackend();

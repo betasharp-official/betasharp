@@ -5,6 +5,7 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Presentation;
+using BetaSharp.Worlds.Core;
 using Microsoft.Extensions.Logging;
 using Silk.NET.OpenGL;
 using LegacyGLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
@@ -203,6 +204,11 @@ internal sealed class OpenGlRenderBackendRuntime : IRenderBackendRuntime
     public IWorldRenderer CreateWorldRenderer(BetaSharp client, TextureManager textureManager)
     {
         return new WorldRenderer(client, textureManager);
+    }
+
+    public IParticleManager CreateParticleManager(World? world, TextureManager textureManager)
+    {
+        return new ParticleManager(world!, textureManager);
     }
 
     public IRenderPresentation CreatePresentation(int width, int height, GameOptions options)

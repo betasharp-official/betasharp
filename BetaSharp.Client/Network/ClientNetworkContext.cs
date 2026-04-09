@@ -10,7 +10,7 @@ public sealed class ClientNetworkContext(
     IScreenNavigator navigator,
     Session session,
     StatFileWriter statFileWriter,
-    ParticleManager particleManager,
+    IParticleManager particleManager,
     Action<string> addChatMessage,
     IClientNetworkFactory factory)
 {
@@ -19,7 +19,7 @@ public sealed class ClientNetworkContext(
     public IScreenNavigator Navigator => navigator;
     public Session Session => session;
     public StatFileWriter StatFileWriter => statFileWriter;
-    public ParticleManager ParticleManager => particleManager;
+    public IParticleManager ParticleManager => particleManager;
     public Action<string> AddChatMessage => addChatMessage;
     public IClientNetworkFactory Factory => factory;
 }

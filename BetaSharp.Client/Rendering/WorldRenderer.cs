@@ -838,7 +838,7 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
             double var20 = 16.0D;
             if (var14 * var14 + var16 * var16 + var18 * var18 <= var20 * var20)
             {
-                ParticleManager pm = _game.ParticleManager;
+                IParticleManager pm = _game.ParticleManager;
                 switch (var1)
                 {
                     case "bubble": pm.AddBubble(var2, var4, var6, var8, var10, var12); break;

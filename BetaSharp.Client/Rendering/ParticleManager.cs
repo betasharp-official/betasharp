@@ -8,7 +8,7 @@ using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Client.Rendering;
 
-public class ParticleManager
+public class ParticleManager : IParticleManager
 {
     protected World worldObj;
     // Layer 0: Standard, Layer 1: Terrain/Digging (mipmapped), Layer 2: Overlays/Items
