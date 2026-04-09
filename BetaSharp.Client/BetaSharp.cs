@@ -197,7 +197,7 @@ public partial class BetaSharp :
     private DebugWindowManager _debugWindowManager;
     private IImGuiRendererBackend _imguiRendererBackend = null!;
     private IRenderBackendRuntime _renderBackendRuntime = null!;
-    private IRenderPresentation _renderPresentation = null!;
+    private IRenderPresentation _renderPresentation = new NoOpRenderPresentation(RendererBackendKind.OpenGL);
     private bool _isRenderBackendInitialized;
     private string _gameDataDir;
 

@@ -13,8 +13,7 @@ public static class RenderPresentationFactory
         return backend switch
         {
             RendererBackendKind.OpenGL => new OpenGlRenderPresentation(width, height, options),
-            RendererBackendKind.Vulkan => throw new NotSupportedException(
-                "Vulkan presentation path is not implemented yet."),
+            RendererBackendKind.Vulkan => new NoOpRenderPresentation(backend, width, height),
             _ => throw new NotSupportedException(
                 $"Unsupported renderer backend for presentation: {backend}")
         };
