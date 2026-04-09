@@ -14,6 +14,7 @@ internal interface IRenderBackendRuntime
     void ConfigureDefaultRenderState(GameOptions options, ILogger logger);
     void ConfigurePresentationMode(GameOptions options);
     void SetMainViewport(int width, int height);
+    void UpdateWindow(bool processMessages);
 
     IRenderPresentation CreatePresentation(int width, int height, GameOptions options);
     IImGuiRendererBackend CreateImGuiRendererBackend();

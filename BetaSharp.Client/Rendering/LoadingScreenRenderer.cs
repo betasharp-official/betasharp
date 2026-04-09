@@ -134,7 +134,7 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
         int stageY = height / 2 - 4 + 8;
         game.TextRenderer.DrawStringWithShadow(_currentStage, stageX, stageY, Color.White);
 
-        Display.update();
+        game.UpdateWindow(true);
         Thread.Yield();
     }
 }

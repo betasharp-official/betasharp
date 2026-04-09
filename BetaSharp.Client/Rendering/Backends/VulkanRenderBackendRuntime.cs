@@ -30,6 +30,14 @@ internal sealed class VulkanRenderBackendRuntime : IRenderBackendRuntime
         throw new NotSupportedException("Vulkan viewport binding is not implemented yet.");
     }
 
+    public void UpdateWindow(bool processMessages)
+    {
+        if (processMessages)
+        {
+            Display.processMessages();
+        }
+    }
+
     public IRenderPresentation CreatePresentation(int width, int height, GameOptions options)
     {
         return RenderPresentationFactory.Create(Kind, width, height, options);

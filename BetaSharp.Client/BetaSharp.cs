@@ -623,7 +623,7 @@ public partial class BetaSharp :
                     {
                         using (Profiler.Begin("DisplayPresent"))
                         {
-                            Display.update();
+                            _renderBackendRuntime.UpdateWindow(true);
                         }
                     }
 
@@ -717,7 +717,7 @@ public partial class BetaSharp :
 
                     if (Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
-                        Display.update();
+                        _renderBackendRuntime.UpdateWindow(true);
                     }
 
                     ScreenshotListener();
@@ -1641,7 +1641,7 @@ public partial class BetaSharp :
             }
 
             Resize(DisplayWidth, DisplayHeight);
-            Display.update();
+            _renderBackendRuntime.UpdateWindow(true);
         }
         catch (Exception displayException)
         {
@@ -1793,7 +1793,7 @@ public partial class BetaSharp :
         GLManager.GL.Disable(GLEnum.Fog);
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.GL.AlphaFunc(GLEnum.Greater, 0.1F);
-        Display.swapBuffers();
+        _renderBackendRuntime.UpdateWindow(true);
     }
 
     private static void DrawTextureRegion(int x, int y, int texX, int texY, int width, int height)
@@ -1808,6 +1808,11 @@ public partial class BetaSharp :
         tess.addVertexWithUV(x + width, y + 0, 0, (texX + width) * uScale, (texY + 0) * vScale);
         tess.addVertexWithUV(x + 0, y + 0, 0, (texX + 0) * uScale, (texY + 0) * vScale);
         tess.draw();
+    }
+
+    public void UpdateWindow(bool processMessages = true)
+    {
+        _renderBackendRuntime.UpdateWindow(processMessages);
     }
 
     #endregion
