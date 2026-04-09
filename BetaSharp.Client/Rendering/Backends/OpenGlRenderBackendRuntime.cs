@@ -13,8 +13,7 @@ namespace BetaSharp.Client.Rendering.Backends;
 internal sealed class OpenGlRenderBackendRuntime : IRenderBackendRuntime
 {
     public RendererBackendKind Kind => RendererBackendKind.OpenGL;
-    public bool SupportsLegacyOpenGlRenderPath => true;
-    public bool SupportsScreenshotCapture => true;
+    public RendererBackendCapabilities Capabilities => RendererBackendCapabilities.For(Kind);
 
     public void InitializeGraphicsContext(DebugTelemetry telemetry)
     {

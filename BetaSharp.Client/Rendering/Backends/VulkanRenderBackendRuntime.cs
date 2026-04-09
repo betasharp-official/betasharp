@@ -9,8 +9,7 @@ namespace BetaSharp.Client.Rendering.Backends;
 internal sealed class VulkanRenderBackendRuntime : IRenderBackendRuntime
 {
     public RendererBackendKind Kind => RendererBackendKind.Vulkan;
-    public bool SupportsLegacyOpenGlRenderPath => false;
-    public bool SupportsScreenshotCapture => false;
+    public RendererBackendCapabilities Capabilities => RendererBackendCapabilities.For(Kind);
 
     public void InitializeGraphicsContext(DebugTelemetry telemetry)
     {

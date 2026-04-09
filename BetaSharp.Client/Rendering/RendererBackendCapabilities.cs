@@ -2,7 +2,9 @@ namespace BetaSharp.Client.Rendering;
 
 public readonly record struct RendererBackendCapabilities(
     bool UsesDisplaySwapBuffers,
-    bool UsesOpenGlContext)
+    bool UsesOpenGlContext,
+    bool SupportsLegacyOpenGlRenderPath,
+    bool SupportsScreenshotCapture)
 {
     public static RendererBackendCapabilities For(RendererBackendKind backendKind)
     {
@@ -10,13 +12,19 @@ public readonly record struct RendererBackendCapabilities(
         {
             RendererBackendKind.OpenGL => new(
                 UsesDisplaySwapBuffers: true,
-                UsesOpenGlContext: true),
+                UsesOpenGlContext: true,
+                SupportsLegacyOpenGlRenderPath: true,
+                SupportsScreenshotCapture: true),
             RendererBackendKind.Vulkan => new(
                 UsesDisplaySwapBuffers: false,
-                UsesOpenGlContext: false),
+                UsesOpenGlContext: false,
+                SupportsLegacyOpenGlRenderPath: false,
+                SupportsScreenshotCapture: false),
             _ => new(
                 UsesDisplaySwapBuffers: true,
-                UsesOpenGlContext: true)
+                UsesOpenGlContext: true,
+                SupportsLegacyOpenGlRenderPath: true,
+                SupportsScreenshotCapture: true)
         };
     }
 }
