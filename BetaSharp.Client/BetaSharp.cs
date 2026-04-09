@@ -864,11 +864,7 @@ public partial class BetaSharp :
 
         using (Profiler.Begin("UpdateDynamicTextures"))
         {
-            TextureManager.BindTexture(TextureManager.GetTextureId("/terrain.png"));
-            if (!IsGamePaused)
-            {
-                TextureManager.Tick();
-            }
+            _renderBackendRuntime.UpdateDynamicTextures(TextureManager, IsGamePaused);
         }
 
         if (CurrentScreen == null && Player != null)

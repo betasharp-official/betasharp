@@ -42,6 +42,11 @@ internal sealed class VulkanRenderBackendRuntime : IRenderBackendRuntime
         // No global state mutation in Vulkan render loops.
     }
 
+    public void UpdateDynamicTextures(TextureManager textureManager, bool isGamePaused)
+    {
+        // TODO: route dynamic texture updates through Vulkan image upload paths.
+    }
+
     public void CheckBackendErrors(string location, ILogger logger)
     {
         // No-op for now. Vulkan validation output is handled by the Vulkan debug messenger when implemented.

@@ -83,6 +83,15 @@ internal sealed class OpenGlRenderBackendRuntime : IRenderBackendRuntime
         GLManager.GL.Enable(LegacyGLEnum.Texture2D);
     }
 
+    public void UpdateDynamicTextures(TextureManager textureManager, bool isGamePaused)
+    {
+        textureManager.BindTexture(textureManager.GetTextureId("/terrain.png"));
+        if (!isGamePaused)
+        {
+            textureManager.Tick();
+        }
+    }
+
     public void CheckBackendErrors(string location, ILogger logger)
     {
         LegacyGLEnum glError = GLManager.GL.GetError();
