@@ -514,7 +514,7 @@ public partial class BetaSharp :
             Mouse.destroy();
             Keyboard.destroy();
 
-            GLTexture.LogLeakReport();
+            _renderBackendRuntime.LogRenderResourceReport();
         }
         finally
         {
@@ -1339,7 +1339,7 @@ public partial class BetaSharp :
             }
 
             Player.movementInput = new MovementInputFromOptions(Options);
-            WorldRenderer?.ChangeWorld(newWorld);
+            SceneRenderer.ChangeWorld(newWorld);
             ParticleManager?.clearEffects(newWorld);
 
             PlayerController.fillHotbar(Player);

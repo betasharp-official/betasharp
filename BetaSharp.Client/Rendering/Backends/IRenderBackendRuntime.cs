@@ -32,6 +32,7 @@ internal interface IRenderBackendRuntime
         int framebufferHeight,
         TextureHandle logoTexture);
     void CleanupRenderResources();
+    void LogRenderResourceReport();
     ISceneRenderer CreateSceneRenderer(BetaSharp client);
 
     IRenderPresentation CreatePresentation(int width, int height, GameOptions options);

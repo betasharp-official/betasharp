@@ -76,6 +76,10 @@ internal sealed class VulkanRenderBackendRuntime : IRenderBackendRuntime
     {
     }
 
+    public void LogRenderResourceReport()
+    {
+    }
+
     public ISceneRenderer CreateSceneRenderer(BetaSharp client)
     {
         return new NoOpSceneRenderer();

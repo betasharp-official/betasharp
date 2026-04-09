@@ -1,3 +1,4 @@
+using BetaSharp.Worlds.Core;
 namespace BetaSharp.Client.Rendering;
 
 public interface ISceneRenderer
@@ -10,4 +11,5 @@ public interface ISceneRenderer
     void MarkVisibleChunksDirty();
     void UpdateClouds();
     void PublishRenderMetrics();
+    void ChangeWorld(World world);
 }

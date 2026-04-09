@@ -58,6 +58,7 @@ public class GameRenderer : ISceneRenderer
     public void ResetEquippedItemProgress() => itemRenderer.ResetEquippedProgress();
     public void MarkVisibleChunksDirty() => _client.WorldRenderer?.ChunkRenderer?.MarkAllVisibleChunksDirty();
     public void UpdateClouds() => _client.WorldRenderer?.UpdateClouds();
+    public void ChangeWorld(World world) => _client.WorldRenderer?.ChangeWorld(world);
     public void PublishRenderMetrics()
     {
         if (_client.WorldRenderer?.ChunkRenderer is not { } chunkRenderer)

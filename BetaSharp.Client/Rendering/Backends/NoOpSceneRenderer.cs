@@ -1,4 +1,5 @@
 using BetaSharp.Client.Rendering;
+using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Client.Rendering.Backends;
 
@@ -33,6 +34,10 @@ internal sealed class NoOpSceneRenderer : ISceneRenderer
     }
 
     public void PublishRenderMetrics()
+    {
+    }
+
+    public void ChangeWorld(World world)
     {
     }
 }
