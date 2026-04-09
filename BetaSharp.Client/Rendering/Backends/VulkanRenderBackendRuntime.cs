@@ -76,6 +76,11 @@ internal sealed class VulkanRenderBackendRuntime : IRenderBackendRuntime
     {
     }
 
+    public ISceneRenderer CreateSceneRenderer(BetaSharp client)
+    {
+        return new NoOpSceneRenderer();
+    }
+
     public IRenderPresentation CreatePresentation(int width, int height, GameOptions options)
     {
         return RenderPresentationFactory.Create(Kind, width, height, options);

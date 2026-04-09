@@ -18,7 +18,7 @@ using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering;
 
-public class GameRenderer
+public class GameRenderer : ISceneRenderer
 {
     private readonly bool _cloudFog = false;
     private readonly BetaSharp _client;
@@ -47,6 +47,11 @@ public class GameRenderer
         itemRenderer = new HeldItemRenderer(game);
         cameraController = new CameraController(game);
     }
+
+    public void UpdateCamera() => updateCamera();
+    public void Tick(float partialTicks) => tick(partialTicks);
+    public void OnFrameUpdate(float tickDelta) => onFrameUpdate(tickDelta);
+    public void ResetEquippedItemProgress() => itemRenderer.ResetEquippedProgress();
 
     public void updateCamera()
     {

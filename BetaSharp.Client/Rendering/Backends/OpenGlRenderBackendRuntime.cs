@@ -176,6 +176,11 @@ internal sealed class OpenGlRenderBackendRuntime : IRenderBackendRuntime
         GLAllocation.deleteTexturesAndDisplayLists();
     }
 
+    public ISceneRenderer CreateSceneRenderer(BetaSharp client)
+    {
+        return new GameRenderer(client);
+    }
+
     public IRenderPresentation CreatePresentation(int width, int height, GameOptions options)
     {
         return RenderPresentationFactory.Create(Kind, width, height, options);
