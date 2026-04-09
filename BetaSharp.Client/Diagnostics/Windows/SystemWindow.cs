@@ -17,10 +17,17 @@ internal sealed class SystemWindow(DebugWindowContext ctx) : DebugWindow
         ImGui.Text($"Renderer (Requested): {ctx.RequestedRendererBackend}");
         ImGui.Text($"Renderer (Active):    {ctx.ActiveRendererBackend}");
         ImGui.Text($"Display Backend:      {ctx.DisplayRendererBackend}");
+        ImGui.Text($"ImGui Backend:        {ctx.ImGuiRendererBackend}");
+        ImGui.Text($"Presentation Backend: {ctx.PresentationRendererBackend}");
 
         if (ctx.RequestedRendererBackend != ctx.ActiveRendererBackend)
         {
             ImGui.TextColored(new System.Numerics.Vector4(1f, 0.8f, 0.35f, 1f), "Renderer fallback active");
+        }
+
+        if (!string.IsNullOrWhiteSpace(ctx.RendererFallbackReason))
+        {
+            ImGui.TextDisabled($"Fallback reason: {ctx.RendererFallbackReason}");
         }
 
         if (ImGui.CollapsingHeader("GPU", ImGuiTreeNodeFlags.DefaultOpen))

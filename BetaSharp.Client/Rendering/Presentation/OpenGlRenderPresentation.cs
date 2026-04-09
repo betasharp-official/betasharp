@@ -1,4 +1,5 @@
 using BetaSharp.Client.Options;
+using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
 using Silk.NET.OpenGL;
 using Framebuffer = BetaSharp.Client.Rendering.Core.Framebuffer;
@@ -81,6 +82,8 @@ public class OpenGlRenderPresentation : IRenderPresentation
 
         gl.BindVertexArray(0);
     }
+
+    public RendererBackendKind BackendKind => RendererBackendKind.OpenGL;
 
     /// <summary>
     /// OpenGL-backed ImGui image handle for the rendered frame. Valid after <see cref="End"/> is called.

@@ -1,7 +1,10 @@
+using BetaSharp.Client.Rendering;
+
 namespace BetaSharp.Client.Rendering.Presentation;
 
 public interface IRenderPresentation
 {
+    RendererBackendKind BackendKind { get; }
     PresentationViewportImage ViewportImage { get; }
     int FramebufferWidth { get; }
     int FramebufferHeight { get; }

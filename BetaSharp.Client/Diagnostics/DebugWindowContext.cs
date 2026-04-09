@@ -40,6 +40,9 @@ internal sealed class DebugWindowContext(BetaSharp game)
     public RendererBackendKind RequestedRendererBackend => game.RequestedRendererBackend;
     public RendererBackendKind ActiveRendererBackend => game.ActiveRendererBackend;
     public RendererBackendKind DisplayRendererBackend => Display.ActiveRendererBackend;
+    public RendererBackendKind ImGuiRendererBackend => game.ImGuiRendererBackend;
+    public RendererBackendKind PresentationRendererBackend => game.PresentationRendererBackend;
+    public string? RendererFallbackReason => game.RendererFallbackReason;
 
     public World? World => game.World;
     public ClientPlayerEntity? Player => game.Player;

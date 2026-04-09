@@ -107,6 +107,9 @@ public partial class BetaSharp :
     public int DisplayHeight { get; private set; }
     public RendererBackendKind RequestedRendererBackend { get; }
     public RendererBackendKind ActiveRendererBackend { get; private set; } = RendererBackendKind.OpenGL;
+    public string? RendererFallbackReason { get; private set; }
+    public RendererBackendKind ImGuiRendererBackend { get; private set; } = RendererBackendKind.OpenGL;
+    public RendererBackendKind PresentationRendererBackend { get; private set; } = RendererBackendKind.OpenGL;
 
     /// <summary>
     /// When the debug viewport is active, the top-left pixel offset of the game viewport
@@ -277,6 +280,7 @@ public partial class BetaSharp :
 
             RendererBackendSelection backendSelection = RendererBackendFactory.Resolve(RequestedRendererBackend);
             ActiveRendererBackend = backendSelection.Effective;
+            RendererFallbackReason = backendSelection.FallbackReason;
             _renderBackendRuntime = RenderBackendRuntimeFactory.Create(ActiveRendererBackend);
 
             _logger.LogInformation(
@@ -364,6 +368,7 @@ public partial class BetaSharp :
         Controller.Create(Display.getGlfw(), Display.GetWindowHandle());
 
         _imguiRendererBackend = _renderBackendRuntime.CreateImGuiRendererBackend();
+        ImGuiRendererBackend = _imguiRendererBackend.BackendKind;
         _imguiRendererBackend.Initialize((nint)Display.GetWindowHandle());
         DebugWindowManager.ApplyStyle();
 
@@ -437,6 +442,7 @@ public partial class BetaSharp :
             Display.getFramebufferWidth(),
             Display.getFramebufferHeight(),
             Options);
+        PresentationRendererBackend = FramebufferManager.BackendKind;
     }
 
     private void LoadVersion()
