@@ -76,6 +76,11 @@ internal sealed class OpenGlRenderBackendRuntime : IRenderBackendRuntime
         GLManager.GL.Viewport(0, 0, (uint)width, (uint)height);
     }
 
+    public void PrepareFrameRenderState()
+    {
+        GLManager.GL.Enable(LegacyGLEnum.Texture2D);
+    }
+
     public void UpdateWindow(bool processMessages)
     {
         Display.update(processMessages);

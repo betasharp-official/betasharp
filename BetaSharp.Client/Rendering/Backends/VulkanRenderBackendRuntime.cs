@@ -35,6 +35,11 @@ internal sealed class VulkanRenderBackendRuntime : IRenderBackendRuntime
         throw new NotSupportedException("Vulkan viewport binding is not implemented yet.");
     }
 
+    public void PrepareFrameRenderState()
+    {
+        // No global state mutation in Vulkan render loops.
+    }
+
     public void UpdateWindow(bool processMessages)
     {
         if (processMessages)
