@@ -220,15 +220,23 @@ public abstract class BetaSharpServer : ICommandOutput
                     Vector2D<int> chunkPos = chunkList[idx];
                     world.ChunkCache.InsertPreGeneratedChunk(chunkPos.X, chunkPos.Y, preGenerated[idx]);
                     world.ChunkCache.DecorateIfReady(chunkPos.X, chunkPos.Y);
+                    world.Lighting.StitchChunkBorders(chunkPos.X, chunkPos.Y);
                 }
 
                 sw2.Stop();
                 _logger.LogInformation("  Level {Level} decoration: {ElapsedMs}ms", i, sw2.ElapsedMilliseconds);
 
                 // Phase 3: Batch lighting drain — all neighbors already loaded so sky-light
-                // propagates without border re-queuing.
                 var sw3 = Stopwatch.StartNew();
-                while (world.Lighting.DoLightingUpdates() && running) { }
+
+                while (!running)
+                {
+                    world.Lighting.DoLightingUpdates(int.MaxValue);
+                    Thread.Sleep(10); // Yield 10ms to let the background thread work
+                }
+
+                while (world.Lighting.DoLightingUpdates(int.MaxValue) && running) { }
+
                 sw3.Stop();
                 _logger.LogInformation("  Level {Level} lighting: {ElapsedMs}ms", i, sw3.ElapsedMilliseconds);
             }
@@ -457,17 +465,13 @@ public abstract class BetaSharpServer : ICommandOutput
                 }
 
                 world.Tick();
-
-                // Cap lighting updates to avoid spending the entire tick (and beyond)
-                // draining the queue. The nether's lava seas can generate thousands
-                // of lighting entries per tick; processing them all in one go causes
-                // >2-second stalls and "Can't keep up" spam. Any remaining work
-                // carries over and is processed across subsequent ticks.
                 var lightSw = Stopwatch.StartNew();
-                while (lightSw.ElapsedMilliseconds < 15L && world.Lighting.DoLightingUpdates())
+                world.Lighting.DoLightingUpdates();
+                lightSw.Stop();
+                if (lightSw.ElapsedMilliseconds > 5)
                 {
+                    _logger.LogWarning("Lighting sync spike: {Elapsed}ms", lightSw.ElapsedMilliseconds);
                 }
-
                 world.Entities.TickEntities();
             }
         }

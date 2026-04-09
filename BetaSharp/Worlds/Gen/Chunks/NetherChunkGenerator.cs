@@ -75,61 +75,63 @@ internal class NetherChunkGenerator : IChunkSource
         int blockX = x * 16;
         int blockZ = z * 16;
 
-        int numIterations;
-        int featureX;
-        int featureY;
-        int featureZ;
-        for (numIterations = 0; numIterations < 8; ++numIterations)
+        // Structured coordinate variables
+        int rx, ry, rz;
+
+        // Lava Springs
+        for (int i = 0; i < 8; ++i)
         {
-            featureX = blockX + random.NextInt(16) + 8;
-            featureY = random.NextInt(120) + 4;
-            featureZ = blockZ + random.NextInt(16) + 8;
-            _featureNetherLavaSpring.Generate(_world, random, featureX, featureY, featureZ);
+            rx = blockX + random.NextInt(16) + 8;
+            ry = random.NextInt(120) + 4;
+            rz = blockZ + random.NextInt(16) + 8;
+            _featureNetherLavaSpring.Generate(_world, random, rx, ry, rz);
         }
 
-        numIterations = random.NextInt(random.NextInt(10) + 1) + 1;
-
-        int featureZFallback;
-        for (featureX = 0; featureX < numIterations; ++featureX)
+        // Fire
+        int fireIterations = random.NextInt(random.NextInt(10) + 1) + 1;
+        for (int i = 0; i < fireIterations; ++i)
         {
-            featureY = blockX + random.NextInt(16) + 8;
-            featureZ = random.NextInt(120) + 4;
-            featureZFallback = blockZ + random.NextInt(16) + 8;
-            _featureNetherFire.Generate(_world, random, featureY, featureZ, featureZFallback);
+            rx = blockX + random.NextInt(16) + 8;
+            ry = random.NextInt(120) + 4;
+            rz = blockZ + random.NextInt(16) + 8;
+            _featureNetherFire.Generate(_world, random, rx, ry, rz);
         }
 
-        numIterations = random.NextInt(random.NextInt(10) + 1);
-
-        for (featureX = 0; featureX < numIterations; ++featureX)
+        // Glowstone Full
+        int glowstoneFullIterations = random.NextInt(random.NextInt(10) + 1);
+        for (int i = 0; i < glowstoneFullIterations; ++i)
         {
-            featureY = blockX + random.NextInt(16) + 8;
-            featureZ = random.NextInt(120) + 4;
-            featureZFallback = blockZ + random.NextInt(16) + 8;
-            _featureGlowstoneFull.Generate(_world, random, featureY, featureZ, featureZFallback);
+            rx = blockX + random.NextInt(16) + 8;
+            ry = random.NextInt(120) + 4;
+            rz = blockZ + random.NextInt(16) + 8;
+            _featureGlowstoneFull.Generate(_world, random, rx, ry, rz);
         }
 
-        for (featureX = 0; featureX < 10; ++featureX)
+        // Glowstone Rare
+        for (int i = 0; i < 10; ++i)
         {
-            featureY = blockX + random.NextInt(16) + 8;
-            featureZ = random.NextInt(128);
-            featureZFallback = blockZ + random.NextInt(16) + 8;
-            _featureGlowstoneRare.Generate(_world, random, featureY, featureZ, featureZFallback);
+            rx = blockX + random.NextInt(16) + 8;
+            ry = random.NextInt(120) + 4; // Safely clamped to prevent Y=128 overflow
+            rz = blockZ + random.NextInt(16) + 8;
+            _featureGlowstoneRare.Generate(_world, random, rx, ry, rz);
         }
 
-        if (random.NextInt(1) == 0)
+        // Brown Mushrooms
+        if (random.NextInt(2) == 0) // Fixed logic: NextInt(2) provides 50% probability
         {
-            featureX = blockX + random.NextInt(16) + 8;
-            featureY = random.NextInt(128);
-            featureZ = blockZ + random.NextInt(16) + 8;
-            _featureBrownMushroom.Generate(_world, random, featureX, featureY, featureZ);
+            rx = blockX + random.NextInt(16) + 8;
+            ry = random.NextInt(120) + 4; // Safely clamped
+            rz = blockZ + random.NextInt(16) + 8;
+            _featureBrownMushroom.Generate(_world, random, rx, ry, rz);
         }
 
-        if (random.NextInt(1) == 0)
+        // Red Mushrooms
+        if (random.NextInt(2) == 0) // Fixed logic
         {
-            featureX = blockX + random.NextInt(16) + 8;
-            featureY = random.NextInt(128);
-            featureZ = blockZ + random.NextInt(16) + 8;
-            _featureRedMushroom.Generate(_world, random, featureX, featureY, featureZ);
+            rx = blockX + random.NextInt(16) + 8;
+            ry = random.NextInt(120) + 4; // Safely clamped
+            rz = blockZ + random.NextInt(16) + 8;
+            _featureRedMushroom.Generate(_world, random, rx, ry, rz);
         }
 
         BlockSand.FallInstantly = false;

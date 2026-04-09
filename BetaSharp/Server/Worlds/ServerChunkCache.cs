@@ -183,17 +183,16 @@ public class ServerChunkCache : IChunkSource
 
     public void DecorateTerrain(IChunkSource source, int x, int z)
     {
-        Chunk var4 = GetChunk(x, z);
-        if (!var4.TerrainPopulated)
-        {
-            var4.TerrainPopulated = true;
-            if (_generator != null)
-            {
-                _generator.DecorateTerrain(source, x, z);
-                var4.MarkDirty();
-                _world.ChunkMap.OnChunkDecorated(x, z);
-            }
-        }
+        Chunk chunk = GetChunk(x, z);
+        if (chunk.TerrainPopulated) return;
+        chunk.TerrainPopulated = true;
+        if (_generator == null) return;
+
+        _generator.DecorateTerrain(source, x, z);
+        chunk.MarkDirty();
+        _world.ChunkMap.OnChunkDecorated(x, z);
+        _world.Lighting.InitializeChunkInterior(x, z);
+        _world.Lighting.StitchChunkBorders(x, z);
     }
 
     public bool Save(bool saveEntities, LoadingDisplay display)
@@ -279,11 +278,15 @@ public class ServerChunkCache : IChunkSource
         int key = ChunkPos.GetHashCode(chunkX, chunkZ);
         _chunksToUnload.Remove(key);
         if (_chunksByPos.ContainsKey(key)) return;
+
         Chunk chunk = LoadChunkFromStorage(chunkX, chunkZ) ?? generatedChunk;
         _chunksByPos.Add(key, chunk);
         _chunks.Add(chunk);
         chunk.PopulateBlockLight();
         chunk.Load();
+
+        _world.Lighting.InitializeChunkInterior(chunkX, chunkZ);
+        _world.Lighting.StitchChunkBorders(chunkX, chunkZ);
     }
 
     // Runs the 4 decoration neighbour checks for a newly inserted chunk,
