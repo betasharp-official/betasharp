@@ -63,7 +63,12 @@ internal sealed class OpenGlRenderBackendRuntime : IRenderBackendRuntime
 
     public void ConfigurePresentationMode(GameOptions options)
     {
-        Display.getGlfw().SwapInterval(options.VSync ? 1 : 0);
+        SetVSyncEnabled(options.VSync);
+    }
+
+    public void SetVSyncEnabled(bool enabled)
+    {
+        Display.getGlfw().SwapInterval(enabled ? 1 : 0);
     }
 
     public void SetMainViewport(int width, int height)

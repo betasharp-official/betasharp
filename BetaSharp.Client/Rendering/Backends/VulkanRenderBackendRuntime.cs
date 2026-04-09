@@ -25,6 +25,11 @@ internal sealed class VulkanRenderBackendRuntime : IRenderBackendRuntime
         // Vulkan presentation mode (FIFO/MAILBOX/IMMEDIATE) will be configured during swapchain creation.
     }
 
+    public void SetVSyncEnabled(bool enabled)
+    {
+        // TODO: map to swapchain present mode when Vulkan swapchain management is implemented.
+    }
+
     public void SetMainViewport(int width, int height)
     {
         throw new NotSupportedException("Vulkan viewport binding is not implemented yet.");

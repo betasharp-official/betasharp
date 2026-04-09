@@ -286,7 +286,7 @@ public class GameRenderer
 
             if (_appliedVSyncState != desiredVSync)
             {
-                Display.setVSyncEnabled(desiredVSync);
+                _client.SetVSyncEnabled(desiredVSync);
                 _appliedVSyncState = desiredVSync;
             }
 

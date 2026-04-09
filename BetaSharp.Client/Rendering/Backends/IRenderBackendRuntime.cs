@@ -13,6 +13,7 @@ internal interface IRenderBackendRuntime
     void InitializeGraphicsContext(DebugTelemetry telemetry);
     void ConfigureDefaultRenderState(GameOptions options, ILogger logger);
     void ConfigurePresentationMode(GameOptions options);
+    void SetVSyncEnabled(bool enabled);
     void SetMainViewport(int width, int height);
     void UpdateWindow(bool processMessages);
 

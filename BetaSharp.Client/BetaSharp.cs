@@ -1815,6 +1815,11 @@ public partial class BetaSharp :
         _renderBackendRuntime.UpdateWindow(processMessages);
     }
 
+    public void SetVSyncEnabled(bool enabled)
+    {
+        _renderBackendRuntime.SetVSyncEnabled(enabled);
+    }
+
     #endregion
 
     #region OS Interop
