@@ -34,6 +34,8 @@ public static unsafe class Display
     public static int MSAA_Samples = 0;
     public static bool DebugMode = false;
     public static RendererBackendKind ActiveRendererBackend { get; private set; } = RendererBackendKind.OpenGL;
+    private static RendererBackendCapabilities _activeBackendCapabilities =
+        RendererBackendCapabilities.For(RendererBackendKind.OpenGL);
     public static bool SupportsWindowBufferSwap
     {
         get
@@ -61,8 +63,8 @@ public static unsafe class Display
 
     // Background color
     private static float _r, _g, _b;
-    private static bool UsesOpenGlContext => ActiveRendererBackend == RendererBackendKind.OpenGL;
-    private static bool UsesDisplaySwapBuffers => UsesOpenGlContext;
+    private static bool UsesOpenGlContext => _activeBackendCapabilities.UsesOpenGlContext;
+    private static bool UsesDisplaySwapBuffers => _activeBackendCapabilities.UsesDisplaySwapBuffers;
 
     static Display()
     {
@@ -532,6 +534,7 @@ public static unsafe class Display
             };
 
             ActiveRendererBackend = rendererBackend;
+            _activeBackendCapabilities = RendererBackendCapabilities.For(rendererBackend);
 
             if (_x >= 0 && _y >= 0)
                 options.Position = new Vector2D<int>(_x, _y);
