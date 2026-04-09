@@ -111,10 +111,12 @@ public partial class BetaSharp :
     public RendererBackendKind ImGuiRendererBackend { get; private set; } = RendererBackendKind.OpenGL;
     public RendererBackendKind PresentationRendererBackend { get; private set; } = RendererBackendKind.OpenGL;
     public bool IsRendererRuntimeInitialized => _isRenderBackendInitialized;
-    public bool SupportsLegacyOpenGlRenderPath =>
-        _isRenderBackendInitialized && _renderBackendRuntime.SupportsLegacyOpenGlRenderPath;
-    public bool SupportsScreenshotCapture =>
-        _isRenderBackendInitialized && _renderBackendRuntime.SupportsScreenshotCapture;
+    public RendererBackendCapabilities ActiveRendererCapabilities =>
+        _isRenderBackendInitialized
+            ? _renderBackendRuntime.Capabilities
+            : RendererBackendCapabilities.For(ActiveRendererBackend);
+    public bool SupportsLegacyOpenGlRenderPath => ActiveRendererCapabilities.SupportsLegacyOpenGlRenderPath;
+    public bool SupportsScreenshotCapture => ActiveRendererCapabilities.SupportsScreenshotCapture;
 
     /// <summary>
     /// When the debug viewport is active, the top-left pixel offset of the game viewport
@@ -135,13 +137,10 @@ public partial class BetaSharp :
 
     public GameRenderer GameRenderer { get; private set; }
     public WorldRenderer WorldRenderer { get; private set; }
-    public IRenderPresentation RenderPresentation { get; private set; }
-    [Obsolete("Use RenderPresentation instead.")]
-    public IRenderPresentation FramebufferManager => RenderPresentation;
-    public int PresentationTargetWidth => RenderPresentation.FramebufferWidth;
-    public int PresentationTargetHeight => RenderPresentation.FramebufferHeight;
-    public bool IsPresentationBlitSkipped => RenderPresentation.SkipBlit;
-    public PresentationViewportImage CurrentPresentationViewportImage => RenderPresentation.ViewportImage;
+    public int PresentationTargetWidth => _renderPresentation.FramebufferWidth;
+    public int PresentationTargetHeight => _renderPresentation.FramebufferHeight;
+    public bool IsPresentationBlitSkipped => _renderPresentation.SkipBlit;
+    public PresentationViewportImage CurrentPresentationViewportImage => _renderPresentation.ViewportImage;
     public TextureManager TextureManager { get; private set; }
     public SkinManager SkinManager { get; private set; }
     public TextRenderer TextRenderer { get; private set; }
@@ -187,6 +186,7 @@ public partial class BetaSharp :
     private DebugWindowManager _debugWindowManager;
     private IImGuiRendererBackend _imguiRendererBackend = null!;
     private IRenderBackendRuntime _renderBackendRuntime = null!;
+    private IRenderPresentation _renderPresentation = null!;
     private bool _isRenderBackendInitialized;
     private GLErrorHandler _glErrorHandler;
     private string _gameDataDir;
@@ -454,11 +454,11 @@ public partial class BetaSharp :
             () => _isMainMenuOpen
         ));
 
-        RenderPresentation = _renderBackendRuntime.CreatePresentation(
+        _renderPresentation = _renderBackendRuntime.CreatePresentation(
             Display.getFramebufferWidth(),
             Display.getFramebufferHeight(),
             Options);
-        PresentationRendererBackend = RenderPresentation.BackendKind;
+        PresentationRendererBackend = _renderPresentation.BackendKind;
     }
 
     private void LoadVersion()
@@ -1861,27 +1861,27 @@ public partial class BetaSharp :
 
     public void BeginPresentationFrame()
     {
-        RenderPresentation.Begin();
+        _renderPresentation.Begin();
     }
 
     public void EndPresentationFrame()
     {
-        RenderPresentation.End();
+        _renderPresentation.End();
     }
 
     public void ResizePresentationTarget(int width, int height)
     {
-        RenderPresentation.Resize(width, height);
+        _renderPresentation.Resize(width, height);
     }
 
     public void ResizePresentationToWindowFramebuffer()
     {
-        RenderPresentation.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+        _renderPresentation.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
     }
 
     public void SetPresentationBlitSkipped(bool skipped)
     {
-        RenderPresentation.SkipBlit = skipped;
+        _renderPresentation.SkipBlit = skipped;
     }
 
     public void UpdateWindow(bool processMessages = true)

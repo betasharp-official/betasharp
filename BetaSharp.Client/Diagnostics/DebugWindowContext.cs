@@ -44,6 +44,7 @@ internal sealed class DebugWindowContext(BetaSharp game)
     public bool DisplayHasOpenGlContext => Display.HasOpenGlContext;
     public RendererBackendKind ImGuiRendererBackend => game.ImGuiRendererBackend;
     public RendererBackendKind PresentationRendererBackend => game.PresentationRendererBackend;
+    public RendererBackendCapabilities ActiveRendererCapabilities => game.ActiveRendererCapabilities;
     public int PresentationTargetWidth => game.PresentationTargetWidth;
     public int PresentationTargetHeight => game.PresentationTargetHeight;
     public bool IsPresentationBlitSkipped => game.IsPresentationBlitSkipped;

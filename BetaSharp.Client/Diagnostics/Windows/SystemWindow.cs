@@ -23,6 +23,8 @@ internal sealed class SystemWindow(DebugWindowContext ctx) : DebugWindow
         ImGui.Text($"Presentation Backend: {ctx.PresentationRendererBackend}");
         ImGui.Text($"Presentation Target:  {ctx.PresentationTargetWidth}x{ctx.PresentationTargetHeight}");
         ImGui.Text($"Presentation SkipBlit:{(ctx.IsPresentationBlitSkipped ? " Yes" : " No")}");
+        ImGui.Text($"Runtime Uses Swap:    {(ctx.ActiveRendererCapabilities.UsesDisplaySwapBuffers ? "Yes" : "No")}");
+        ImGui.Text($"Runtime Uses GL Ctx:  {(ctx.ActiveRendererCapabilities.UsesOpenGlContext ? "Yes" : "No")}");
         ImGui.Text($"Renderer Runtime Init:{(ctx.IsRendererRuntimeInitialized ? " Yes" : " No")}");
         ImGui.Text($"Legacy GL Render Path:{(ctx.SupportsLegacyOpenGlRenderPath ? " Yes" : " No")}");
         ImGui.Text($"Screenshot Capture:   {(ctx.SupportsScreenshotCapture ? "Yes" : "No")}");
