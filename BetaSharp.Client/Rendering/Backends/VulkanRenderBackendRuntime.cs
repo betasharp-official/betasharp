@@ -87,32 +87,9 @@ internal sealed class VulkanRenderBackendRuntime : IRenderBackendRuntime
     {
     }
 
-    public TextureManager CreateLegacyTextureManager(BetaSharp client, TexturePacks texturePacks, GameOptions options)
+    public IRenderBackendResourceServices CreateResourceServices(BetaSharp client, TexturePacks texturePacks, GameOptions options)
     {
-        return new TextureManager(
-            client,
-            texturePacks,
-            options,
-            new NoOpTextureResourceFactory(),
-            new DirectTextureUploadService());
-    }
-
-    public ITextRenderer CreateTextRenderer(GameOptions options, TextureManager textureManager)
-    {
-        return new NoOpTextRenderer();
-    }
-
-    public SkinManager CreateLegacySkinManager(TextureManager textureManager)
-    {
-        return new SkinManager(textureManager);
-    }
-
-    public void ConfigureLegacyEntityRenderDispatcher(BetaSharp client, SkinManager skinManager)
-    {
-    }
-
-    public void RegisterLegacyDynamicTextures(BetaSharp client, TextureManager textureManager)
-    {
+        return new VulkanRenderBackendResourceServices(client, texturePacks, options);
     }
 
     public ILoadingScreenRenderer CreateLoadingScreenRenderer(BetaSharp client)

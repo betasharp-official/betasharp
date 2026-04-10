@@ -152,7 +152,7 @@ public partial class BetaSharp :
     public bool IsPresentationBlitSkipped => _renderPresentation.SkipBlit;
     public PresentationViewportImage CurrentPresentationViewportImage => _renderPresentation.ViewportImage;
     public TextureManager TextureManager { get; private set; }
-    public SkinManager SkinManager { get; private set; }
+    public ISkinManager SkinManager { get; private set; }
     public ITextRenderer TextRenderer { get; private set; }
     public TexturePacks TexturePackList { get; private set; }
     public IParticleManager ParticleManager { get; private set; } = new NoOpParticleManager();
@@ -194,6 +194,7 @@ public partial class BetaSharp :
     private DebugWindowManager _debugWindowManager;
     private IImGuiRendererBackend _imguiRendererBackend = null!;
     private IRenderBackendRuntime _renderBackendRuntime = null!;
+    private IRenderBackendResourceServices _backendResourceServices = null!;
     private IRenderPresentation _renderPresentation = new NoOpRenderPresentation(RendererBackendKind.OpenGL);
     private bool _isRenderBackendInitialized;
     private string _gameDataDir;
@@ -333,8 +334,9 @@ public partial class BetaSharp :
     private void SetupCoreSystems()
     {
         TexturePackList = new TexturePacks(this, new DirectoryInfo(_gameDataDir));
-        TextureManager = _renderBackendRuntime.CreateLegacyTextureManager(this, TexturePackList, Options);
-        TextRenderer = _renderBackendRuntime.CreateTextRenderer(Options, TextureManager);
+        _backendResourceServices = _renderBackendRuntime.CreateResourceServices(this, TexturePackList, Options);
+        TextureManager = _backendResourceServices.TextureManager;
+        TextRenderer = _backendResourceServices.TextRenderer;
 
         UIContext = new UIContext(
             Options,
@@ -360,12 +362,12 @@ public partial class BetaSharp :
             mouseOffset: () => new Vector2D<int>((int)DebugViewportOffset.X, (int)DebugViewportOffset.Y)
         );
 
-        SkinManager = _renderBackendRuntime.CreateLegacySkinManager(TextureManager);
+        SkinManager = _backendResourceServices.SkinManager;
         WaterColors.loadColors(TextureManager.GetColors("/misc/watercolor.png"));
         GrassColors.loadColors(TextureManager.GetColors("/misc/grasscolor.png"));
         FoliageColors.loadColors(TextureManager.GetColors("/misc/foliagecolor.png"));
         SceneRenderer = _renderBackendRuntime.CreateSceneRenderer(this);
-        _renderBackendRuntime.ConfigureLegacyEntityRenderDispatcher(this, SkinManager);
+        _backendResourceServices.ConfigureEntityRendering(this);
         StatFileWriter = new StatFileWriter(Session, _gameDataDir);
 
         StatStringFormatKeyInv format = new(this);
@@ -424,7 +426,7 @@ public partial class BetaSharp :
         SoundManager.LoadSoundSettings(Options);
         DefaultMusicCategories.Register(SoundManager);
 
-        _renderBackendRuntime.RegisterLegacyDynamicTextures(this, TextureManager);
+        _backendResourceServices.RegisterDynamicTextures(this);
 
         WorldRenderer = _renderBackendRuntime.CreateWorldRenderer(this, TextureManager);
         SetMainViewport(Display.getFramebufferWidth(), Display.getFramebufferHeight());

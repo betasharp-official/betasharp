@@ -1,12 +1,9 @@
 using BetaSharp.Client.Diagnostics.GuiBackends;
 using BetaSharp.Client.Diagnostics;
-using BetaSharp.Client.DynamicTexture;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.Entities;
-using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Client.Rendering.Presentation;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Worlds.Core;
@@ -195,43 +192,9 @@ internal sealed class OpenGlRenderBackendRuntime : IRenderBackendRuntime
         GLTexture.LogLeakReport();
     }
 
-    public TextureManager CreateLegacyTextureManager(BetaSharp client, TexturePacks texturePacks, GameOptions options)
+    public IRenderBackendResourceServices CreateResourceServices(BetaSharp client, TexturePacks texturePacks, GameOptions options)
     {
-        return new TextureManager(
-            client,
-            texturePacks,
-            options,
-            new OpenGlTextureResourceFactory(),
-            new DirectTextureUploadService());
-    }
-
-    public ITextRenderer CreateTextRenderer(GameOptions options, TextureManager textureManager)
-    {
-        return new TextRenderer(options, textureManager);
-    }
-
-    public SkinManager CreateLegacySkinManager(TextureManager textureManager)
-    {
-        return new SkinManager(textureManager);
-    }
-
-    public void ConfigureLegacyEntityRenderDispatcher(BetaSharp client, SkinManager skinManager)
-    {
-        EntityRenderDispatcher.Instance.SkinManager = skinManager;
-        EntityRenderDispatcher.Instance.HeldItemRenderer = new HeldItemRenderer(client);
-    }
-
-    public void RegisterLegacyDynamicTextures(BetaSharp client, TextureManager textureManager)
-    {
-        textureManager.AddDynamicTexture(new LavaSprite());
-        textureManager.AddDynamicTexture(new WaterSprite());
-        textureManager.AddDynamicTexture(new NetherPortalSprite());
-        textureManager.AddDynamicTexture(new CompassSprite(client));
-        textureManager.AddDynamicTexture(new ClockSprite(client));
-        textureManager.AddDynamicTexture(new WaterSideSprite());
-        textureManager.AddDynamicTexture(new LavaSideSprite());
-        textureManager.AddDynamicTexture(new FireSprite(0));
-        textureManager.AddDynamicTexture(new FireSprite(1));
+        return new OpenGlRenderBackendResourceServices(client, texturePacks, options);
     }
 
     public ILoadingScreenRenderer CreateLoadingScreenRenderer(BetaSharp client)

@@ -20,7 +20,7 @@ public class EntityRenderDispatcher
     public static double OffsetY { get; set; }
     public static double OffsetZ { get; set; }
     public TextureManager TextureManager { get; private set; }
-    public SkinManager SkinManager { get; set; }
+    public ISkinManager SkinManager { get; set; }
     public HeldItemRenderer HeldItemRenderer { get; set; }
     public World World { get; set; }
     public EntityLiving CameraEntity { get; private set; }

@@ -34,23 +34,7 @@ internal interface IRenderBackendRuntime
         TextureHandle logoTexture);
     void CleanupRenderResources();
     void LogRenderResourceReport();
-    /// <summary>
-    /// Temporary migration bridge for legacy GL-bound asset service creation.
-    /// Remove once texture/skin services are fully backend-neutral.
-    /// </summary>
-    TextureManager CreateLegacyTextureManager(BetaSharp client, TexturePacks texturePacks, GameOptions options);
-    ITextRenderer CreateTextRenderer(GameOptions options, TextureManager textureManager);
-    SkinManager CreateLegacySkinManager(TextureManager textureManager);
-    /// <summary>
-    /// Temporary migration bridge for legacy entity dispatcher wiring.
-    /// Remove once entity rendering is backend-neutral.
-    /// </summary>
-    void ConfigureLegacyEntityRenderDispatcher(BetaSharp client, SkinManager skinManager);
-    /// <summary>
-    /// Temporary migration bridge for GL-style dynamic texture registration.
-    /// Remove once texture uploads are routed through backend-neutral update queues.
-    /// </summary>
-    void RegisterLegacyDynamicTextures(BetaSharp client, TextureManager textureManager);
+    IRenderBackendResourceServices CreateResourceServices(BetaSharp client, TexturePacks texturePacks, GameOptions options);
     ILoadingScreenRenderer CreateLoadingScreenRenderer(BetaSharp client);
     ISceneRenderer CreateSceneRenderer(BetaSharp client);
     IWorldRenderer CreateWorldRenderer(BetaSharp client, TextureManager textureManager);

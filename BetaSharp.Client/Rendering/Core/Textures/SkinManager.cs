@@ -8,7 +8,7 @@ using SixLabors.ImageSharp.Processing;
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
 
-public sealed class SkinManager : IDisposable
+public sealed class SkinManager : ISkinManager
 {
     private readonly ILogger _logger = Log.Instance.For<SkinManager>();
     private readonly TextureManager _textureManager;
