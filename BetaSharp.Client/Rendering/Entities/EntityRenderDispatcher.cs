@@ -19,7 +19,7 @@ public class EntityRenderDispatcher
     public static double OffsetX { get; set; }
     public static double OffsetY { get; set; }
     public static double OffsetZ { get; set; }
-    public TextureManager TextureManager { get; private set; }
+    public ITextureManager TextureManager { get; private set; }
     public ISkinManager SkinManager { get; set; }
     public HeldItemRenderer HeldItemRenderer { get; set; }
     public World World { get; set; }
@@ -89,7 +89,7 @@ public class EntityRenderDispatcher
         return GetEntityClassRenderObject(entity.GetType());
     }
 
-    public void CacheRenderInfo(World world, TextureManager textureManager, ITextRenderer textRenderer, EntityLiving camera, GameOptions options, float tickDelta)
+    public void CacheRenderInfo(World world, ITextureManager textureManager, ITextRenderer textRenderer, EntityLiving camera, GameOptions options, float tickDelta)
     {
         World = world;
         TextureManager = textureManager;

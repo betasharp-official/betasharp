@@ -21,7 +21,7 @@ internal interface IRenderBackendRuntime
     void SetVSyncEnabled(bool enabled);
     void SetMainViewport(int width, int height);
     void PrepareFrameRenderState();
-    void UpdateDynamicTextures(TextureManager textureManager, bool isGamePaused);
+    void UpdateDynamicTextures(ITextureManager textureManager, bool isGamePaused);
     void CheckBackendErrors(string location, ILogger logger);
     void UpdateWindow(bool processMessages);
     bool TryCaptureScreenshot(int framebufferWidth, int framebufferHeight, out byte[] rgbPixels);
@@ -37,8 +37,8 @@ internal interface IRenderBackendRuntime
     IRenderBackendResourceServices CreateResourceServices(BetaSharp client, TexturePacks texturePacks, GameOptions options);
     ILoadingScreenRenderer CreateLoadingScreenRenderer(BetaSharp client);
     ISceneRenderer CreateSceneRenderer(BetaSharp client);
-    IWorldRenderer CreateWorldRenderer(BetaSharp client, TextureManager textureManager);
-    IParticleManager CreateParticleManager(World? world, TextureManager textureManager);
+    IWorldRenderer CreateWorldRenderer(BetaSharp client, ITextureManager textureManager);
+    IParticleManager CreateParticleManager(World? world, ITextureManager textureManager);
 
     IRenderPresentation CreatePresentation(int width, int height, GameOptions options);
     IImGuiRendererBackend CreateImGuiRendererBackend();

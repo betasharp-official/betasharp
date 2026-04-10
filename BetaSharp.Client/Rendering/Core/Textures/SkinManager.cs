@@ -11,7 +11,7 @@ namespace BetaSharp.Client.Rendering.Core.Textures;
 public sealed class SkinManager : ISkinManager
 {
     private readonly ILogger _logger = Log.Instance.For<SkinManager>();
-    private readonly TextureManager _textureManager;
+    private readonly ITextureManager _textureManager;
     private readonly HttpClient _httpClient;
 
     private readonly ConcurrentDictionary<string, Image<Rgba32>> _downloadedImages = new();
@@ -21,7 +21,7 @@ public sealed class SkinManager : ISkinManager
     private const string SkinCacheDirectoryName = "SkinCache";
     private const int CacheValidForDays = 14;
 
-    public SkinManager(TextureManager textureManager)
+    public SkinManager(ITextureManager textureManager)
     {
         _textureManager = textureManager;
         _httpClient = new HttpClient

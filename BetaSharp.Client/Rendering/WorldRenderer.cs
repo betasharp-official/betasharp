@@ -31,7 +31,7 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
     public float DamagePartialTime { get; set; }
 
     private World _world;
-    private readonly TextureManager _textureManager;
+    private readonly ITextureManager _textureManager;
     private readonly BetaSharp _game;
     private int _cloudOffsetX;
     private readonly int _starGLCallList;
@@ -41,7 +41,7 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
     private int _renderDistance = -1;
     private int _renderEntitiesStartupCounter = 2;
 
-    public WorldRenderer(BetaSharp gameInstance, TextureManager textureManager)
+    public WorldRenderer(BetaSharp gameInstance, ITextureManager textureManager)
     {
         _game = gameInstance;
         _textureManager = textureManager;

@@ -17,7 +17,7 @@ public class MapItemRenderer
     private readonly GameOptions _options;
     private readonly ITextRenderer _textRenderer;
 
-    public MapItemRenderer(ITextRenderer textRenderer, GameOptions options, TextureManager textureManager)
+    public MapItemRenderer(ITextRenderer textRenderer, GameOptions options, ITextureManager textureManager)
     {
         _options = options;
         _textRenderer = textRenderer;
@@ -30,7 +30,7 @@ public class MapItemRenderer
 
     }
 
-    public void render(EntityPlayer player, TextureManager textureManager, MapState mapState)
+    public void render(EntityPlayer player, ITextureManager textureManager, MapState mapState)
     {
         for (int i = 0; i < 128 * 128; ++i)
         {

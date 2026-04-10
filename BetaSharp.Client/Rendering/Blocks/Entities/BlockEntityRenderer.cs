@@ -14,7 +14,7 @@ public class BlockEntityRenderer
     public static double StaticPlayerX;
     public static double StaticPlayerY;
     public static double StaticPlayerZ;
-    public TextureManager TextureManager { get; set; }
+    public ITextureManager TextureManager { get; set; }
     public World World { get; set; }
     public EntityLiving PlayerEntity { get; set; }
     public float PlayerYaw { get; set; }
@@ -52,7 +52,7 @@ public class BlockEntityRenderer
         return be == null ? null : GetSpecialRendererForClass(be.GetType());
     }
 
-    public void CacheActiveRenderInfo(World world, TextureManager textureManager, ITextRenderer textRenderer, EntityLiving camera, float tickDelta)
+    public void CacheActiveRenderInfo(World world, ITextureManager textureManager, ITextRenderer textRenderer, EntityLiving camera, float tickDelta)
     {
         if (World != world)
         {

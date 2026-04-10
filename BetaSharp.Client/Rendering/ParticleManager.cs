@@ -14,12 +14,12 @@ public class ParticleManager : IParticleManager
     // Layer 0: Standard, Layer 1: Terrain/Digging (mipmapped), Layer 2: Overlays/Items
     private readonly ParticleBuffer[] _layers = new ParticleBuffer[3];
     private readonly List<ISpecialParticle> _specialParticles = [];
-    private readonly TextureManager _textureManager;
+    private readonly ITextureManager _textureManager;
     private readonly JavaRandom _rand = new();
     // Temp storage for sub-particles spawned during the update loop (avoids buffer mutation)
     private readonly List<ParticleUpdater.DeferredSmoke> _deferredSmoke = [];
 
-    public ParticleManager(World world, TextureManager textureManager)
+    public ParticleManager(World world, ITextureManager textureManager)
     {
         worldObj = world;
         _textureManager = textureManager;

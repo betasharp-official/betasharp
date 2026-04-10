@@ -21,7 +21,7 @@ public abstract class EntityRenderer
 
     protected void loadTexture(string path)
     {
-        TextureManager? textureManager = Dispatcher.TextureManager;
+        ITextureManager? textureManager = Dispatcher.TextureManager;
         textureManager?.BindTexture(textureManager.GetTextureId(path));
     }
 
@@ -123,7 +123,7 @@ public abstract class EntityRenderer
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
 
-        TextureManager textureManager = Dispatcher.TextureManager;
+        ITextureManager textureManager = Dispatcher.TextureManager;
         textureManager.BindTexture(textureManager.GetTextureId("%clamp%/misc/shadow.png"));
 
         GLManager.GL.DepthMask(false);

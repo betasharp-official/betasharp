@@ -44,7 +44,7 @@ internal sealed class VulkanRenderBackendRuntime : IRenderBackendRuntime
         // No global state mutation in Vulkan render loops.
     }
 
-    public void UpdateDynamicTextures(TextureManager textureManager, bool isGamePaused)
+    public void UpdateDynamicTextures(ITextureManager textureManager, bool isGamePaused)
     {
         // TODO: route dynamic texture updates through Vulkan image upload paths.
     }
@@ -102,12 +102,12 @@ internal sealed class VulkanRenderBackendRuntime : IRenderBackendRuntime
         return new NoOpSceneRenderer();
     }
 
-    public IWorldRenderer CreateWorldRenderer(BetaSharp client, TextureManager textureManager)
+    public IWorldRenderer CreateWorldRenderer(BetaSharp client, ITextureManager textureManager)
     {
         return new NoOpWorldRenderer();
     }
 
-    public IParticleManager CreateParticleManager(World? world, TextureManager textureManager)
+    public IParticleManager CreateParticleManager(World? world, ITextureManager textureManager)
     {
         return new NoOpParticleManager();
     }

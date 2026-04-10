@@ -20,7 +20,7 @@ public static class ParticleRenderer
         double x, double y, double z,
         double lastTickX, double lastTickY, double lastTickZ,
         float partialTick,
-        TextureManager textureManager,
+        ITextureManager textureManager,
         IWorldContext world)
     {
         float radYaw = yaw * MathF.PI / 180.0f;

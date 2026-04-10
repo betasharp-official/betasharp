@@ -6,7 +6,7 @@ namespace BetaSharp.Client.Rendering.Backends;
 
 internal sealed class VulkanRenderBackendResourceServices : IRenderBackendResourceServices
 {
-    public TextureManager TextureManager { get; }
+    public ITextureManager TextureManager { get; }
     public ITextRenderer TextRenderer { get; }
     public ISkinManager SkinManager { get; }
 

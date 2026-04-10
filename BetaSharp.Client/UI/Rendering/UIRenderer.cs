@@ -18,9 +18,9 @@ using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.UI.Rendering;
 
-public class UIRenderer(ITextRenderer textRenderer, TextureManager textureManager, GameOptions gameOptions, Func<Vector2D<int>> getDisplaySize)
+public class UIRenderer(ITextRenderer textRenderer, ITextureManager textureManager, GameOptions gameOptions, Func<Vector2D<int>> getDisplaySize)
 {
-    public TextureManager TextureManager { get; } = textureManager;
+    public ITextureManager TextureManager { get; } = textureManager;
     public ITextRenderer TextRenderer { get; } = textRenderer;
     private readonly ItemRenderer _itemRenderer = new();
     private readonly GameOptions _gameOptions = gameOptions;

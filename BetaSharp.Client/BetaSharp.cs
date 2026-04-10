@@ -151,7 +151,7 @@ public partial class BetaSharp :
     public int PresentationTargetHeight => _renderPresentation.FramebufferHeight;
     public bool IsPresentationBlitSkipped => _renderPresentation.SkipBlit;
     public PresentationViewportImage CurrentPresentationViewportImage => _renderPresentation.ViewportImage;
-    public TextureManager TextureManager { get; private set; }
+    public ITextureManager TextureManager { get; private set; }
     public ISkinManager SkinManager { get; private set; }
     public ITextRenderer TextRenderer { get; private set; }
     public TexturePacks TexturePackList { get; private set; }

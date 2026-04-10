@@ -32,7 +32,7 @@ public class TextRenderer : ITextRenderer
 
     private TextureHandle? fontTextureName { get; }
 
-    private readonly TextureManager _textureManager;
+    private readonly ITextureManager _textureManager;
 
     [StructLayout(LayoutKind.Sequential)]
     private readonly struct GlyphInfo(float advanceWidth, float u0, float v0, float u1, float v1, float width, float height)
@@ -121,7 +121,7 @@ public class TextRenderer : ITextRenderer
         UploadAtlasSubImage(0, 0, AtlasSize, _atlasY + _rowHeight);
     }
 
-    public TextRenderer(GameOptions options, TextureManager textureManager)
+    public TextRenderer(GameOptions options, ITextureManager textureManager)
     {
         _textureManager = textureManager;
 

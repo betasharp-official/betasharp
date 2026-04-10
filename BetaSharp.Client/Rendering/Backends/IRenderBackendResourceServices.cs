@@ -9,7 +9,7 @@ namespace BetaSharp.Client.Rendering.Backends;
 /// </summary>
 internal interface IRenderBackendResourceServices
 {
-    TextureManager TextureManager { get; }
+    ITextureManager TextureManager { get; }
     ITextRenderer TextRenderer { get; }
     ISkinManager SkinManager { get; }
 

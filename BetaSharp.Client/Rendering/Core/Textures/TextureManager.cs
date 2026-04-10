@@ -11,7 +11,7 @@ using static BetaSharp.Client.Rendering.Core.Textures.TextureAtlasMipmapGenerato
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
 
-public class TextureManager : IDisposable
+public class TextureManager : ITextureManager
 {
     private readonly ILogger _logger = Log.Instance.For<TextureManager>();
     private readonly Dictionary<string, TextureHandle> _textures = [];

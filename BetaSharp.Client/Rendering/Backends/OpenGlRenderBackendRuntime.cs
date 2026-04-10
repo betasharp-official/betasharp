@@ -85,7 +85,7 @@ internal sealed class OpenGlRenderBackendRuntime : IRenderBackendRuntime
         GLManager.GL.Enable(LegacyGLEnum.Texture2D);
     }
 
-    public void UpdateDynamicTextures(TextureManager textureManager, bool isGamePaused)
+    public void UpdateDynamicTextures(ITextureManager textureManager, bool isGamePaused)
     {
         textureManager.BindTexture(textureManager.GetTextureId("/terrain.png"));
         if (!isGamePaused)
@@ -207,12 +207,12 @@ internal sealed class OpenGlRenderBackendRuntime : IRenderBackendRuntime
         return new GameRenderer(client);
     }
 
-    public IWorldRenderer CreateWorldRenderer(BetaSharp client, TextureManager textureManager)
+    public IWorldRenderer CreateWorldRenderer(BetaSharp client, ITextureManager textureManager)
     {
         return new WorldRenderer(client, textureManager);
     }
 
-    public IParticleManager CreateParticleManager(World? world, TextureManager textureManager)
+    public IParticleManager CreateParticleManager(World? world, ITextureManager textureManager)
     {
         return new ParticleManager(world!, textureManager);
     }

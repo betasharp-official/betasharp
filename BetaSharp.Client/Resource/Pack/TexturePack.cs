@@ -21,11 +21,11 @@ public abstract class TexturePack
     {
     }
 
-    public virtual void Unload(TextureManager textureManager)
+    public virtual void Unload(ITextureManager textureManager)
     {
     }
 
-    public virtual void BindThumbnailTexture(TextureManager textureManager)
+    public virtual void BindThumbnailTexture(ITextureManager textureManager)
     {
     }
 

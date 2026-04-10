@@ -146,7 +146,7 @@ public class ItemRenderer : EntityRenderer
 
     public void drawItemIntoGui(
         ITextRenderer textRenderer,
-        TextureManager textureManager,
+        ITextureManager textureManager,
         int itemId,
         int itemDamage,
         int textureIndex,
@@ -203,7 +203,7 @@ public class ItemRenderer : EntityRenderer
         }
     }
 
-    public void renderItemIntoGUI(ITextRenderer textRenderer, TextureManager textureManager, ItemStack itemStack, int x, int y)
+    public void renderItemIntoGUI(ITextRenderer textRenderer, ITextureManager textureManager, ItemStack itemStack, int x, int y)
     {
         if (itemStack != null)
         {
@@ -211,7 +211,7 @@ public class ItemRenderer : EntityRenderer
         }
     }
 
-    public void renderItemOverlayIntoGUI(ITextRenderer textRenderer, TextureManager textureManager, ItemStack itemStack, int x, int y)
+    public void renderItemOverlayIntoGUI(ITextRenderer textRenderer, ITextureManager textureManager, ItemStack itemStack, int x, int y)
     {
         if (itemStack != null)
         {

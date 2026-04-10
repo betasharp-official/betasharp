@@ -10,7 +10,7 @@ namespace BetaSharp.Client.UI;
 public sealed class UIContext(
     GameOptions options,
     ITextRenderer textRenderer,
-    TextureManager textureManager,
+    ITextureManager textureManager,
     Action playClickSound,
     Func<Vector2D<int>> displaySize,
     Func<Vector2D<int>> inputDisplaySize,
@@ -25,7 +25,7 @@ public sealed class UIContext(
 
     public GameOptions Options => options;
     public ITextRenderer TextRenderer => textRenderer;
-    public TextureManager TextureManager => textureManager;
+    public ITextureManager TextureManager => textureManager;
     public Action PlayClickSound => playClickSound;
     public VirtualCursor VirtualCursor => virtualCursor;
     public Timer Timer => timer;
