@@ -1,6 +1,7 @@
 using BetaSharp.Client.Diagnostics.GuiBackends;
 using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.Options;
+using BetaSharp.Client.Rendering.Chunks;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
@@ -209,7 +210,8 @@ internal sealed class OpenGlRenderBackendRuntime : IRenderBackendRuntime
 
     public IWorldRenderer CreateWorldRenderer(BetaSharp client, ITextureManager textureManager)
     {
-        return new WorldRenderer(client, textureManager);
+        IChunkRendererFactory chunkRendererFactory = new OpenGlChunkRendererFactory();
+        return new WorldRenderer(client, textureManager, chunkRendererFactory);
     }
 
     public IParticleManager CreateParticleManager(World? world, ITextureManager textureManager)

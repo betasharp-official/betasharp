@@ -10,7 +10,7 @@ using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering.Chunks;
 
-public class ChunkRenderer : IChunkVisibilityVisitor
+public class ChunkRenderer : IChunkVisibilityVisitor, IChunkRenderer
 {
     static ChunkRenderer()
     {
@@ -89,6 +89,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     public bool UseOcclusionCulling { get; set; } = true;
 
+    public int SectionSize => SubChunkRenderer.Size;
     public int TotalChunks => _renderers.Count;
     public int ChunksInFrustum { get; private set; }
     public int ChunksOccluded { get; private set; }

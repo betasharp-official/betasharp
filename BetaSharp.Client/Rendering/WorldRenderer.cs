@@ -27,10 +27,11 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
     public int CountEntitiesTotal { get; private set; }
     public int CountEntitiesRendered { get; private set; }
     public int CountEntitiesHidden { get; private set; }
-    public ChunkRenderer ChunkRenderer { get; private set; }
     public float DamagePartialTime { get; set; }
 
-    private World _world;
+    private IChunkRenderer? _chunkRenderer;
+    private World? _world;
+    private readonly IChunkRendererFactory _chunkRendererFactory;
     private readonly ITextureManager _textureManager;
     private readonly BetaSharp _game;
     private int _cloudOffsetX;
@@ -41,10 +42,11 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
     private int _renderDistance = -1;
     private int _renderEntitiesStartupCounter = 2;
 
-    public WorldRenderer(BetaSharp gameInstance, ITextureManager textureManager)
+    public WorldRenderer(BetaSharp gameInstance, ITextureManager textureManager, IChunkRendererFactory chunkRendererFactory)
     {
         _game = gameInstance;
         _textureManager = textureManager;
+        _chunkRendererFactory = chunkRendererFactory;
 
         _starGLCallList = GLAllocation.generateDisplayLists(3);
         GLManager.GL.PushMatrix();
@@ -58,8 +60,6 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
         byte var6 = 64;
         int var7 = 256 / var6 + 2;
         float var5 = 16.0F;
-
-        ChunkRenderer = new(gameInstance.World, () => _game.Options.AlternateBlocksEnabled);
 
         int var8;
         int var9;
@@ -160,20 +160,25 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
             world.EventListeners.Add(this);
             LoadRenderers();
         }
+        else
+        {
+            _chunkRenderer?.Dispose();
+            _chunkRenderer = null;
+        }
 
     }
 
-    public void Tick(Entity view, float var3)
+    public void Tick(Entity view, float partialTicks)
     {
         if (view == null)
         {
             return;
         }
 
-        double var33 = view.lastTickX + (view.x - view.lastTickX) * var3;
-        double var7 = view.lastTickY + (view.y - view.lastTickY) * var3;
-        double var9 = view.lastTickZ + (view.z - view.lastTickZ) * var3;
-        ChunkRenderer.Tick(new(var33, var7, var9));
+        double viewX = view.lastTickX + (view.x - view.lastTickX) * partialTicks;
+        double viewY = view.lastTickY + (view.y - view.lastTickY) * partialTicks;
+        double viewZ = view.lastTickZ + (view.z - view.lastTickZ) * partialTicks;
+        _chunkRenderer?.Tick(new(viewX, viewY, viewZ));
     }
 
     public void LoadRenderers()
@@ -181,58 +186,57 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
         Block.Leaves.setGraphicsLevel(true);
         _renderDistance = _game.Options.renderDistance;
 
-        ChunkRenderer?.Dispose();
-        ChunkRenderer = new(_world, () => _game.Options.AlternateBlocksEnabled);
-        ChunkMeshVersion.ClearPool();
+        _chunkRenderer?.Dispose();
+        _chunkRenderer = _chunkRendererFactory.Create(_world!, () => _game.Options.AlternateBlocksEnabled);
 
         _renderEntitiesStartupCounter = 2;
     }
 
     public bool TryGetChunkStats(out ChunkRendererStats stats)
     {
-        if (ChunkRenderer == null)
+        if (_chunkRenderer == null)
         {
             stats = default;
             return false;
         }
 
         stats = new ChunkRendererStats(
-            ChunkRenderer.TotalChunks,
-            ChunkRenderer.ChunksInFrustum,
-            ChunkRenderer.ChunksOccluded,
-            ChunkRenderer.ChunksRendered,
-            ChunkRenderer.TranslucentMeshes);
+            _chunkRenderer.TotalChunks,
+            _chunkRenderer.ChunksInFrustum,
+            _chunkRenderer.ChunksOccluded,
+            _chunkRenderer.ChunksRendered,
+            _chunkRenderer.TranslucentMeshes);
         return true;
     }
 
     public void MarkAllVisibleChunksDirty()
     {
-        ChunkRenderer?.MarkAllVisibleChunksDirty();
+        _chunkRenderer?.MarkAllVisibleChunksDirty();
     }
 
     public void SetChunkFogColor(float red, float green, float blue, float alpha)
     {
-        ChunkRenderer?.SetFogColor(red, green, blue, alpha);
+        _chunkRenderer?.SetFogColor(red, green, blue, alpha);
     }
 
     public void SetChunkFogMode(int mode)
     {
-        ChunkRenderer?.SetFogMode(mode);
+        _chunkRenderer?.SetFogMode(mode);
     }
 
     public void SetChunkFogDensity(float density)
     {
-        ChunkRenderer?.SetFogDensity(density);
+        _chunkRenderer?.SetFogDensity(density);
     }
 
     public void SetChunkFogStart(float start)
     {
-        ChunkRenderer?.SetFogStart(start);
+        _chunkRenderer?.SetFogStart(start);
     }
 
     public void SetChunkFogEnd(float end)
     {
-        ChunkRenderer?.SetFogEnd(end);
+        _chunkRenderer?.SetFogEnd(end);
     }
 
     public void RenderEntities(Vec3D var1, ICuller culler, float var3)
@@ -320,26 +324,31 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
         }
     }
 
-    public int SortAndRender(EntityLiving var1, int pass, double var3, ICuller cam)
+    public int SortAndRender(EntityLiving entity, int pass, double partialTicks, ICuller culler)
     {
+        if (_world == null || _chunkRenderer == null)
+        {
+            return 0;
+        }
+
         if (_game.Options.renderDistance != _renderDistance)
         {
             LoadRenderers();
         }
 
-        double var33 = var1.lastTickX + (var1.x - var1.lastTickX) * var3;
-        double var7 = var1.lastTickY + (var1.y - var1.lastTickY) * var3;
-        double var9 = var1.lastTickZ + (var1.z - var1.lastTickZ) * var3;
+        double viewX = entity.lastTickX + (entity.x - entity.lastTickX) * partialTicks;
+        double viewY = entity.lastTickY + (entity.y - entity.lastTickY) * partialTicks;
+        double viewZ = entity.lastTickZ + (entity.z - entity.lastTickZ) * partialTicks;
 
         Lighting.turnOff();
 
-        var renderParams = new ChunkRenderParams
+        ChunkRenderParams renderParams = new()
         {
-            Camera = cam,
-            ViewPos = new Vector3D<double>(var33, var7, var9),
+            Camera = culler,
+            ViewPos = new Vector3D<double>(viewX, viewY, viewZ),
             RenderDistance = _renderDistance,
             Ticks = _world.GetTime(),
-            PartialTicks = (float)var3,
+            PartialTicks = (float)partialTicks,
             DeltaTime = _game.Timer.DeltaTime,
             EnvironmentAnimation = _game.Options.EnvironmentAnimation,
             ChunkFade = _game.Options.ChunkFade,
@@ -348,11 +357,11 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
 
         if (pass == 0)
         {
-            ChunkRenderer.Render(renderParams);
+            _chunkRenderer.Render(renderParams);
         }
         else
         {
-            ChunkRenderer.RenderTransparent(renderParams);
+            _chunkRenderer.RenderTransparent(renderParams);
         }
 
         return 0;
@@ -769,12 +778,18 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
 
     public void MarkBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
-        int xStart = (int)Math.Floor((double)minX / SubChunkRenderer.Size);
-        int yStart = (int)Math.Floor((double)minY / SubChunkRenderer.Size);
-        int zStart = (int)Math.Floor((double)minZ / SubChunkRenderer.Size);
-        int xEnd = (int)Math.Ceiling((double)maxX / SubChunkRenderer.Size);
-        int yEnd = (int)Math.Ceiling((double)maxY / SubChunkRenderer.Size);
-        int zEnd = (int)Math.Ceiling((double)maxZ / SubChunkRenderer.Size);
+        if (_chunkRenderer == null)
+        {
+            return;
+        }
+
+        int sectionSize = _chunkRenderer.SectionSize;
+        int xStart = (int)Math.Floor((double)minX / sectionSize);
+        int yStart = (int)Math.Floor((double)minY / sectionSize);
+        int zStart = (int)Math.Floor((double)minZ / sectionSize);
+        int xEnd = (int)Math.Ceiling((double)maxX / sectionSize);
+        int yEnd = (int)Math.Ceiling((double)maxY / sectionSize);
+        int zEnd = (int)Math.Ceiling((double)maxZ / sectionSize);
 
         for (int x = xStart; x <= xEnd; x++)
         {
@@ -782,7 +797,7 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
             {
                 for (int z = zStart; z <= zEnd; z++)
                 {
-                    ChunkRenderer.MarkDirty(new Vector3D<int>(x, y, z) * SubChunkRenderer.Size, true);
+                    _chunkRenderer.MarkDirty(new Vector3D<int>(x, y, z) * sectionSize, true);
                 }
             }
         }
@@ -874,7 +889,7 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
 
     public void NotifyAmbientDarknessChanged()
     {
-        ChunkRenderer.UpdateAllRenderers();
+        _chunkRenderer?.UpdateAllRenderers();
     }
 
     public void UpdateBlockEntity(int var1, int var2, int var3, BlockEntity var4)
