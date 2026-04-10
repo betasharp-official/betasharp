@@ -3,6 +3,7 @@ using BetaSharp.Client.Rendering.Blocks.Entities;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Resource.Pack;
+using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.Rendering.Backends;
 
@@ -13,6 +14,7 @@ internal sealed class VulkanRenderBackendResourceServices : IRenderBackendResour
     public ISkinManager SkinManager { get; }
     public IEntityRenderDispatcher EntityRenderDispatcher { get; }
     public IBlockEntityRenderDispatcher BlockEntityRenderDispatcher { get; }
+    public IUiRenderBackend UiRenderBackend { get; }
 
     public VulkanRenderBackendResourceServices(BetaSharp client, TexturePacks texturePacks, GameOptions options)
     {
@@ -29,6 +31,7 @@ internal sealed class VulkanRenderBackendResourceServices : IRenderBackendResour
         {
             EntityDispatcher = EntityRenderDispatcher
         };
+        UiRenderBackend = new NoOpUiRenderBackend();
     }
 
     public void ConfigureEntityRendering(BetaSharp client)

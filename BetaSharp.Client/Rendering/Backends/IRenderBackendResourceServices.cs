@@ -1,6 +1,7 @@
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Blocks.Entities;
+using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.Rendering.Backends;
 
@@ -16,6 +17,7 @@ internal interface IRenderBackendResourceServices
     ISkinManager SkinManager { get; }
     IEntityRenderDispatcher EntityRenderDispatcher { get; }
     IBlockEntityRenderDispatcher BlockEntityRenderDispatcher { get; }
+    IUiRenderBackend UiRenderBackend { get; }
 
     void ConfigureEntityRendering(BetaSharp client);
     void RegisterDynamicTextures(BetaSharp client);

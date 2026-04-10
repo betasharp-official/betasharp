@@ -350,6 +350,7 @@ public partial class BetaSharp :
             TextureManager,
             EntityRenderDispatcher,
             BlockEntityRenderDispatcher,
+            _backendResourceServices.UiRenderBackend,
             playClickSound: () => SoundManager.PlaySoundFX("random.click", 1.0f, 1.0f),
             displaySize: () => new Vector2D<int>(DisplayWidth, DisplayHeight),
             inputDisplaySize: () =>

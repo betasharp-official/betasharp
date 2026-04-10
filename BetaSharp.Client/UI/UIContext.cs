@@ -4,6 +4,7 @@ using BetaSharp.Client.Rendering.Blocks.Entities;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Client.UI.Screens;
 using Silk.NET.Maths;
 
@@ -15,6 +16,7 @@ public sealed class UIContext(
     ITextureManager textureManager,
     IEntityRenderDispatcher entityRenderDispatcher,
     IBlockEntityRenderDispatcher blockEntityRenderDispatcher,
+    IUiRenderBackend uiRenderBackend,
     Action playClickSound,
     Func<Vector2D<int>> displaySize,
     Func<Vector2D<int>> inputDisplaySize,
@@ -32,6 +34,7 @@ public sealed class UIContext(
     public ITextureManager TextureManager => textureManager;
     public IEntityRenderDispatcher EntityRenderDispatcher => entityRenderDispatcher;
     public IBlockEntityRenderDispatcher BlockEntityRenderDispatcher => blockEntityRenderDispatcher;
+    public IUiRenderBackend UiRenderBackend => uiRenderBackend;
     public Action PlayClickSound => playClickSound;
     public VirtualCursor VirtualCursor => virtualCursor;
     public Timer Timer => timer;

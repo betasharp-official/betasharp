@@ -115,6 +115,7 @@ public abstract class UIScreen
             context.TextureManager,
             context.EntityRenderDispatcher,
             context.BlockEntityRenderDispatcher,
+            context.UiRenderBackend,
             context.Options,
             context.DisplaySize);
 

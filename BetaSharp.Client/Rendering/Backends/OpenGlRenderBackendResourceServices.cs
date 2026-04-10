@@ -5,6 +5,7 @@ using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Client.Resource.Pack;
+using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.Rendering.Backends;
 
@@ -15,6 +16,7 @@ internal sealed class OpenGlRenderBackendResourceServices : IRenderBackendResour
     public ISkinManager SkinManager { get; }
     public IEntityRenderDispatcher EntityRenderDispatcher { get; }
     public IBlockEntityRenderDispatcher BlockEntityRenderDispatcher { get; }
+    public IUiRenderBackend UiRenderBackend { get; }
 
     public OpenGlRenderBackendResourceServices(BetaSharp client, TexturePacks texturePacks, GameOptions options)
     {
@@ -28,6 +30,7 @@ internal sealed class OpenGlRenderBackendResourceServices : IRenderBackendResour
         SkinManager = new SkinManager(TextureManager);
         EntityRenderDispatcher = global::BetaSharp.Client.Rendering.Entities.EntityRenderDispatcher.Instance;
         BlockEntityRenderDispatcher = BlockEntityRenderer.Instance;
+        UiRenderBackend = new OpenGlUiRenderBackend();
     }
 
     public void ConfigureEntityRendering(BetaSharp client)
