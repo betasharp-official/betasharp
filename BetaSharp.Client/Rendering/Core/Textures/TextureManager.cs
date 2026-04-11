@@ -170,7 +170,7 @@ public class TextureManager : ITextureManager
             rawPixels,
             0,
             TextureDataFormat.Rgba,
-            TextureStorageFormat.Rgba);
+            TextureStorageFormat.Rgba8);
 
         _clamp = false;
         _blur = false;

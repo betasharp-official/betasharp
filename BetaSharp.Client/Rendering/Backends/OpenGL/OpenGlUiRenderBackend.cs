@@ -10,6 +10,12 @@ internal sealed class OpenGlUiRenderBackend : IUiRenderBackend
 {
     public void BeginFrame()
     {
+        // Normalize program/texture-unit state so UI draws are not affected by world/presentation passes.
+        GLManager.GL.UseProgram(0);
+        GLManager.GL.ActiveTexture(GLEnum.Texture0);
+
+        // UI rendering is texture-driven; enforce texture sampling regardless of prior world-pass state.
+        GLManager.GL.Enable(GLEnum.Texture2D);
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.DepthTest);
         GLManager.GL.Disable(GLEnum.CullFace);

@@ -176,9 +176,10 @@ public class GLTexture : ITextureResource
     {
         return format switch
         {
-            TextureStorageFormat.Rgba => InternalFormat.Rgba,
+            // Use a sized internal format in core-profile contexts to avoid incomplete textures.
+            TextureStorageFormat.Rgba => InternalFormat.Rgba8,
             TextureStorageFormat.Rgba8 => InternalFormat.Rgba8,
-            _ => InternalFormat.Rgba
+            _ => InternalFormat.Rgba8
         };
     }
 }
