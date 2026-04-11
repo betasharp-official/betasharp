@@ -1,3 +1,4 @@
+using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
@@ -132,7 +133,7 @@ public class ModelWolf : ModelBase
         if (var5.getWolfShaking())
         {
             float var7 = var5.getBrightnessAtEyes(var4) * var5.getShadingWhileShaking(var4);
-            GLManager.GL.Color3(var7, var7, var7);
+            SceneRenderBackendContext.Current.SetColorRgb(var7, var7, var7);
         }
 
     }

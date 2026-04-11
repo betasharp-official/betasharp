@@ -1,5 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Client.Options;
+using BetaSharp.Client.Rendering;
+using BetaSharp.Client.Rendering.Backends;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities.Models;
@@ -22,6 +24,7 @@ public class EntityRenderDispatcher : IEntityRenderDispatcher
     public ITextureManager TextureManager { get; private set; }
     public ISkinManager SkinManager { get; set; }
     public IHeldItemRenderer HeldItemRenderer { get; set; } = new NoOpHeldItemRenderer();
+    public ISceneRenderBackend SceneRenderBackend { get; private set; } = new NoOpSceneRenderBackend();
     public World World { get; set; }
     public EntityLiving CameraEntity { get; private set; }
     public float PlayerViewY { get; set; }
@@ -89,11 +92,12 @@ public class EntityRenderDispatcher : IEntityRenderDispatcher
         return GetEntityClassRenderObject(entity.GetType());
     }
 
-    public void CacheRenderInfo(World world, ITextureManager textureManager, ITextRenderer textRenderer, EntityLiving camera, GameOptions options, float tickDelta)
+    public void CacheRenderInfo(World world, ITextureManager textureManager, ITextRenderer textRenderer, EntityLiving camera, GameOptions options, ISceneRenderBackend sceneRenderBackend, float tickDelta)
     {
         World = world;
         TextureManager = textureManager;
         Options = options;
+        SceneRenderBackend = sceneRenderBackend;
         CameraEntity = camera;
         _fontRenderer = textRenderer;
         if (camera.isSleeping())
@@ -125,7 +129,7 @@ public class EntityRenderDispatcher : IEntityRenderDispatcher
         double z = target.lastTickZ + (target.z - target.lastTickZ) * (double)tickDelta;
         float yaw = target.prevYaw + (target.yaw - target.prevYaw) * tickDelta;
         float brightness = target.getBrightnessAtEyes(tickDelta);
-        GLManager.GL.Color3(brightness, brightness, brightness);
+        SceneRenderBackend.SetColorRgb(brightness, brightness, brightness);
         RenderEntityWithPosYaw(target, x - OffsetX, y - OffsetY, z - OffsetZ, yaw, tickDelta);
     }
 

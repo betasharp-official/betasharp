@@ -16,7 +16,7 @@ public class GiantEntityRenderer : LivingEntityRenderer
 
     protected void preRenderScale(EntityGiantZombie var1, float var2)
     {
-        GLManager.GL.Scale(scale, scale, scale);
+        Scene.Scale(scale, scale, scale);
     }
 
     protected override void PreRenderCallback(EntityLiving var1, float var2)

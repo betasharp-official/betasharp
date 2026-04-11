@@ -20,11 +20,11 @@ public class SquidEntityRenderer : LivingEntityRenderer
     {
         float var5 = var1.prevTiltAngle + (var1.tiltAngle - var1.prevTiltAngle) * var4;
         float var6 = var1.prevTentaclePhase + (var1.tentaclePhase - var1.prevTentaclePhase) * var4;
-        GLManager.GL.Translate(0.0F, 0.5F, 0.0F);
-        GLManager.GL.Rotate(180.0F - var3, 0.0F, 1.0F, 0.0F);
-        GLManager.GL.Rotate(var5, 1.0F, 0.0F, 0.0F);
-        GLManager.GL.Rotate(var6, 0.0F, 1.0F, 0.0F);
-        GLManager.GL.Translate(0.0F, -1.2F, 0.0F);
+        Scene.Translate(0.0F, 0.5F, 0.0F);
+        Scene.Rotate(180.0F - var3, 0.0F, 1.0F, 0.0F);
+        Scene.Rotate(var5, 1.0F, 0.0F, 0.0F);
+        Scene.Rotate(var6, 0.0F, 1.0F, 0.0F);
+        Scene.Translate(0.0F, -1.2F, 0.0F);
     }
 
     protected void func_21005_a(EntitySquid var1, float var2)

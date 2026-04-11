@@ -164,6 +164,11 @@ internal sealed class OpenGlSceneRenderBackend : ISceneRenderBackend
         GLManager.GL.PolygonOffset(factor, units);
     }
 
+    public void SetDepthFunction(SceneDepthFunction depthFunction)
+    {
+        GLManager.GL.DepthFunc(MapDepthFunction(depthFunction));
+    }
+
     public void SetColorMaterial(SceneColorMaterialFace face, SceneColorMaterialParameter parameter)
     {
         GLManager.GL.ColorMaterial(MapColorMaterialFace(face), MapColorMaterialParameter(parameter));
@@ -220,8 +225,19 @@ internal sealed class OpenGlSceneRenderBackend : ISceneRenderBackend
             SceneBlendFactor.One => GLEnum.One,
             SceneBlendFactor.SrcColor => GLEnum.SrcColor,
             SceneBlendFactor.DstColor => GLEnum.DstColor,
+            SceneBlendFactor.DstAlpha => GLEnum.DstAlpha,
             SceneBlendFactor.OneMinusSrcAlpha => GLEnum.OneMinusSrcAlpha,
             _ => GLEnum.SrcAlpha
+        };
+    }
+
+    private static GLEnum MapDepthFunction(SceneDepthFunction depthFunction)
+    {
+        return depthFunction switch
+        {
+            SceneDepthFunction.Equal => GLEnum.Equal,
+            SceneDepthFunction.Lequal => GLEnum.Lequal,
+            _ => GLEnum.Lequal
         };
     }
 

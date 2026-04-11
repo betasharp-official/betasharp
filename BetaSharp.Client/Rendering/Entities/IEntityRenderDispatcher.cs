@@ -1,4 +1,5 @@
 using BetaSharp.Client.Options;
+using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Entities;
@@ -18,6 +19,7 @@ public interface IEntityRenderDispatcher
     ITextureManager TextureManager { get; }
     ISkinManager SkinManager { get; set; }
     IHeldItemRenderer HeldItemRenderer { get; set; }
+    ISceneRenderBackend SceneRenderBackend { get; }
     World World { get; set; }
     EntityLiving CameraEntity { get; }
     float PlayerViewY { get; set; }
@@ -25,7 +27,7 @@ public interface IEntityRenderDispatcher
     GameOptions Options { get; }
 
     EntityRenderer GetEntityRenderObject(Entity entity);
-    void CacheRenderInfo(World world, ITextureManager textureManager, ITextRenderer textRenderer, EntityLiving camera, GameOptions options, float tickDelta);
+    void CacheRenderInfo(World world, ITextureManager textureManager, ITextRenderer textRenderer, EntityLiving camera, GameOptions options, ISceneRenderBackend sceneRenderBackend, float tickDelta);
     void RenderEntity(Entity target, float tickDelta);
     void RenderEntityWithPosYaw(Entity target, double x, double y, double z, float yaw, float tickDelta);
     double GetSquareDistanceTo(double x, double y, double z);

@@ -1,6 +1,5 @@
 using BetaSharp.Blocks;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
@@ -13,6 +12,7 @@ public abstract class EntityRenderer
     public IEntityRenderDispatcher Dispatcher { get; set; } = null!;
     protected float ShadowRadius = 0.0F;
     protected float ShadowStrength = 1.0F;
+    protected ISceneRenderBackend Scene => Dispatcher.SceneRenderBackend;
 
     protected World World => Dispatcher.World;
     public ITextRenderer TextRenderer => Dispatcher.GetTextRenderer();
@@ -45,7 +45,7 @@ public abstract class EntityRenderer
 
     private void RenderOnFire(Entity ent, Vec3D pos, float tickDelta)
     {
-        GLManager.GL.Disable(GLEnum.Lighting);
+        Scene.Disable(SceneRenderCapability.Lighting);
 
         int textureId = Block.Fire.TextureId;
         int texX = (textureId & 15) << 4;
@@ -56,11 +56,11 @@ public abstract class EntityRenderer
         float minV;
         float maxV;
 
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)pos.x, (float)pos.y, (float)pos.z);
+        Scene.PushMatrix();
+        Scene.Translate((float)pos.x, (float)pos.y, (float)pos.z);
 
         float scale = ent.width * 1.4F;
-        GLManager.GL.Scale(scale, scale, scale);
+        Scene.Scale(scale, scale, scale);
 
         loadTexture("/terrain.png");
         Tessellator tess = Tessellator.instance;
@@ -70,9 +70,9 @@ public abstract class EntityRenderer
         float heightRatio = ent.height / scale;
         float yOffset = (float)(ent.y - ent.boundingBox.MinY);
 
-        GLManager.GL.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
-        GLManager.GL.Translate(0.0F, 0.0F, -0.3F + (int)heightRatio * 0.02F);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        Scene.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
+        Scene.Translate(0.0F, 0.0F, -0.3F + (int)heightRatio * 0.02F);
+        Scene.SetColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         float zOffset = 0.0F;
         int pass = 0;
@@ -114,19 +114,19 @@ public abstract class EntityRenderer
         }
 
         tess.draw();
-        GLManager.GL.PopMatrix();
-        GLManager.GL.Enable(GLEnum.Lighting);
+        Scene.PopMatrix();
+        Scene.Enable(SceneRenderCapability.Lighting);
     }
 
     private void RenderShadow(Entity target, Vec3D pos, float shadowiness, float tickDelta)
     {
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        Scene.Enable(SceneRenderCapability.Blend);
+        Scene.SetBlendFunction(SceneBlendFactor.SrcAlpha, SceneBlendFactor.OneMinusSrcAlpha);
 
         ITextureManager textureManager = Dispatcher.TextureManager;
         textureManager.BindTexture(textureManager.GetTextureId("%clamp%/misc/shadow.png"));
 
-        GLManager.GL.DepthMask(false);
+        Scene.SetDepthMask(false);
         float radius = ShadowRadius;
 
         double targetX = target.lastTickX + (target.x - target.lastTickX) * tickDelta;
@@ -170,9 +170,9 @@ public abstract class EntityRenderer
         }
 
         tess.draw();
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.GL.Disable(GLEnum.Blend);
-        GLManager.GL.DepthMask(true);
+        Scene.SetColor(1.0F, 1.0F, 1.0F, 1.0F);
+        Scene.Disable(SceneRenderCapability.Blend);
+        Scene.SetDepthMask(true);
     }
 
     private void renderShadowOnBlock(Block block, Vec3D pos, int blockX, int blockY, int blockZ, float shadowiness, float radius, Vec3D offset)
@@ -206,11 +206,11 @@ public abstract class EntityRenderer
         tess.addVertexWithUV(maxX, minY, minZ, (double)maxU, (double)minV);
     }
 
-    public static void renderShape(Box aabb, Vec3D pos)
+    protected void renderShape(Box aabb, Vec3D pos)
     {
-        GLManager.GL.Disable(GLEnum.Texture2D);
+        Scene.Disable(SceneRenderCapability.Texture2D);
         Tessellator tess = Tessellator.instance;
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        Scene.SetColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         tess.startDrawingQuads();
         tess.setTranslationD(pos.x, pos.y, pos.z);
@@ -254,7 +254,7 @@ public abstract class EntityRenderer
 
         tess.setTranslationD(0.0D, 0.0D, 0.0D);
         tess.draw();
-        GLManager.GL.Enable(GLEnum.Texture2D);
+        Scene.Enable(SceneRenderCapability.Texture2D);
     }
 
     public static void renderShapeFlat(Box aabb)
@@ -318,11 +318,11 @@ public abstract class EntityRenderer
     {
         if (!Dispatcher.Options.ShowDebugInfo) return;
 
-        GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Disable(GLEnum.Texture2D);
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)pos.x, (float)pos.y, (float)pos.z);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        Scene.Disable(SceneRenderCapability.Lighting);
+        Scene.Disable(SceneRenderCapability.Texture2D);
+        Scene.PushMatrix();
+        Scene.Translate((float)pos.x, (float)pos.y, (float)pos.z);
+        Scene.SetColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         Box bb = target.boundingBox;
         double minX = bb.MinX - target.x;
@@ -363,8 +363,8 @@ public abstract class EntityRenderer
         tess.addVertex(minX, maxY, maxZ);
 
         tess.draw();
-        GLManager.GL.PopMatrix();
-        GLManager.GL.Enable(GLEnum.Texture2D);
-        GLManager.GL.Enable(GLEnum.Lighting);
+        Scene.PopMatrix();
+        Scene.Enable(SceneRenderCapability.Texture2D);
+        Scene.Enable(SceneRenderCapability.Lighting);
     }
 }

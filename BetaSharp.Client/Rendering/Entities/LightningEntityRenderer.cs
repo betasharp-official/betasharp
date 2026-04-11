@@ -1,5 +1,4 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 
@@ -11,10 +10,10 @@ public class LightningEntityRenderer : EntityRenderer
     public void render(EntityLightningBolt var1, double x, double y, double z, float yaw, float tickDelta)
     {
         Tessellator var10 = Tessellator.instance;
-        GLManager.GL.Disable(GLEnum.Texture2D);
-        GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.One);
+        Scene.Disable(SceneRenderCapability.Texture2D);
+        Scene.Disable(SceneRenderCapability.Lighting);
+        Scene.Enable(SceneRenderCapability.Blend);
+        Scene.SetBlendFunction(SceneBlendFactor.SrcAlpha, SceneBlendFactor.One);
         double[] var11 = new double[8];
         double[] var12 = new double[8];
         double var13 = 0.0D;
@@ -115,9 +114,9 @@ public class LightningEntityRenderer : EntityRenderer
             }
         }
 
-        GLManager.GL.Disable(GLEnum.Blend);
-        GLManager.GL.Enable(GLEnum.Lighting);
-        GLManager.GL.Enable(GLEnum.Texture2D);
+        Scene.Disable(SceneRenderCapability.Blend);
+        Scene.Enable(SceneRenderCapability.Lighting);
+        Scene.Enable(SceneRenderCapability.Texture2D);
     }
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)

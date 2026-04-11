@@ -1,5 +1,4 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 
@@ -14,21 +13,21 @@ public class PaintingEntityRenderer : EntityRenderer
 
     private void RenderPainting(EntityPainting painting, double x, double y, double z, float yaw)
     {
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)x, (float)y, (float)z);
-        GLManager.GL.Rotate(yaw, 0.0F, 1.0F, 0.0F);
-        GLManager.GL.Enable(GLEnum.RescaleNormal);
+        Scene.PushMatrix();
+        Scene.Translate((float)x, (float)y, (float)z);
+        Scene.Rotate(yaw, 0.0F, 1.0F, 0.0F);
+        Scene.Enable(SceneRenderCapability.RescaleNormal);
 
         loadTexture("/art/kz.png");
 
         EnumArt art = painting.Art;
         float pixelScale = 1.0F / 16.0F;
-        GLManager.GL.Scale(pixelScale, pixelScale, pixelScale);
+        Scene.Scale(pixelScale, pixelScale, pixelScale);
 
         RenderPaintingQuads(painting, art.SizeX, art.SizeY, art.OffsetX, art.OffsetY);
 
-        GLManager.GL.Disable(GLEnum.RescaleNormal);
-        GLManager.GL.PopMatrix();
+        Scene.Disable(SceneRenderCapability.RescaleNormal);
+        Scene.PopMatrix();
     }
 
     private void RenderPaintingQuads(EntityPainting painting, int width, int height, int textureX, int textureY)
@@ -122,7 +121,7 @@ public class PaintingEntityRenderer : EntityRenderer
         }
 
         float light = Dispatcher.World.GetLuminance(checkX, checkY, checkZ);
-        GLManager.GL.Color3(light, light, light);
+        Scene.SetColorRgb(light, light, light);
     }
 
 

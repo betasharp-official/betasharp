@@ -19,7 +19,7 @@ public class MinecartEntityRenderer : EntityRenderer
 
     public void render(EntityMinecart var1, double x, double y, double z, float yaw, float tickDelta)
     {
-        GLManager.GL.PushMatrix();
+        Scene.PushMatrix();
         double var10 = var1.lastTickX + (var1.x - var1.lastTickX) * (double)tickDelta;
         double var12 = var1.lastTickY + (var1.y - var1.lastTickY) * (double)tickDelta;
         double var14 = var1.lastTickZ + (var1.z - var1.lastTickZ) * (double)tickDelta;
@@ -43,9 +43,9 @@ public class MinecartEntityRenderer : EntityRenderer
             }
         }
 
-        GLManager.GL.Translate((float)x, (float)y, (float)z);
-        GLManager.GL.Rotate(180.0F - yaw, 0.0F, 1.0F, 0.0F);
-        GLManager.GL.Rotate(-var19, 0.0F, 0.0F, 1.0F);
+        Scene.Translate((float)x, (float)y, (float)z);
+        Scene.Rotate(180.0F - yaw, 0.0F, 1.0F, 0.0F);
+        Scene.Rotate(-var19, 0.0F, 0.0F, 1.0F);
         float var23 = var1.minecartTimeSinceHit - tickDelta;
         float var24 = var1.minecartCurrentDamage - tickDelta;
         if (var24 < 0.0F)
@@ -55,16 +55,16 @@ public class MinecartEntityRenderer : EntityRenderer
 
         if (var23 > 0.0F)
         {
-            GLManager.GL.Rotate(MathHelper.Sin(var23) * var23 * var24 / 10.0F * var1.minecartRockDirection, 1.0F, 0.0F, 0.0F);
+            Scene.Rotate(MathHelper.Sin(var23) * var23 * var24 / 10.0F * var1.minecartRockDirection, 1.0F, 0.0F, 0.0F);
         }
 
         if (var1.type != 0)
         {
             loadTexture("/terrain.png");
             float var25 = 12.0F / 16.0F;
-            GLManager.GL.Scale(var25, var25, var25);
-            GLManager.GL.Translate(0.0F, 5.0F / 16.0F, 0.0F);
-            GLManager.GL.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
+            Scene.Scale(var25, var25, var25);
+            Scene.Translate(0.0F, 5.0F / 16.0F, 0.0F);
+            Scene.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
             if (var1.type == 1)
             {
                 BlockRenderer.RenderBlockOnInventory(Block.Chest, 0, var1.getBrightnessAtEyes(tickDelta), Tessellator.instance);
@@ -74,15 +74,15 @@ public class MinecartEntityRenderer : EntityRenderer
                 BlockRenderer.RenderBlockOnInventory(Block.Furnace, 0, var1.getBrightnessAtEyes(tickDelta), Tessellator.instance);
             }
 
-            GLManager.GL.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Translate(0.0F, -(5.0F / 16.0F), 0.0F);
-            GLManager.GL.Scale(1.0F / var25, 1.0F / var25, 1.0F / var25);
+            Scene.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);
+            Scene.Translate(0.0F, -(5.0F / 16.0F), 0.0F);
+            Scene.Scale(1.0F / var25, 1.0F / var25, 1.0F / var25);
         }
 
         loadTexture("/item/cart.png");
-        GLManager.GL.Scale(-1.0F, -1.0F, 1.0F);
+        Scene.Scale(-1.0F, -1.0F, 1.0F);
         modelMinecart.render(0.0F, 0.0F, -0.1F, 0.0F, 0.0F, 1.0F / 16.0F);
-        GLManager.GL.PopMatrix();
+        Scene.PopMatrix();
     }
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)

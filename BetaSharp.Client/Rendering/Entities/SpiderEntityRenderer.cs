@@ -1,5 +1,4 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
 
@@ -32,10 +31,10 @@ public class SpiderEntityRenderer : LivingEntityRenderer
         {
             loadTexture("/mob/spider_eyes.png");
             float var4 = (1.0F - var1.getBrightnessAtEyes(1.0F)) * 0.5F;
-            GLManager.GL.Enable(GLEnum.Blend);
-            GLManager.GL.Disable(GLEnum.AlphaTest);
-            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-            GLManager.GL.Color4(1.0F, 1.0F, 1.0F, var4);
+            Scene.Enable(SceneRenderCapability.Blend);
+            Scene.Disable(SceneRenderCapability.AlphaTest);
+            Scene.SetBlendFunction(SceneBlendFactor.SrcAlpha, SceneBlendFactor.OneMinusSrcAlpha);
+            Scene.SetColor(1.0F, 1.0F, 1.0F, var4);
             return true;
         }
     }

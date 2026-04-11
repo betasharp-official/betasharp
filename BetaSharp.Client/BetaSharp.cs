@@ -345,6 +345,7 @@ public partial class BetaSharp :
         EntityRenderDispatcher = _backendResourceServices.EntityRenderDispatcher;
         BlockEntityRenderDispatcher = _backendResourceServices.BlockEntityRenderDispatcher;
         SceneRenderBackend = _backendResourceServices.SceneRenderBackend;
+        SceneRenderBackendContext.Current = SceneRenderBackend;
 
         UIContext = new UIContext(
             Options,

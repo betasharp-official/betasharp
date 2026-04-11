@@ -119,6 +119,10 @@ internal sealed class NoOpSceneRenderBackend : ISceneRenderBackend
     {
     }
 
+    public void SetDepthFunction(SceneDepthFunction depthFunction)
+    {
+    }
+
     public void SetColorMaterial(SceneColorMaterialFace face, SceneColorMaterialParameter parameter)
     {
     }

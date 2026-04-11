@@ -34,8 +34,15 @@ public enum SceneBlendFactor
     One,
     SrcColor,
     DstColor,
+    DstAlpha,
     SrcAlpha,
     OneMinusSrcAlpha
+}
+
+public enum SceneDepthFunction
+{
+    Equal,
+    Lequal
 }
 
 public enum SceneFogMode
@@ -103,6 +110,7 @@ public interface ISceneRenderBackend
     void SetColorMask(bool red, bool green, bool blue, bool alpha);
     void SetLineWidth(float width);
     void SetPolygonOffset(float factor, float units);
+    void SetDepthFunction(SceneDepthFunction depthFunction);
     void SetColorMaterial(SceneColorMaterialFace face, SceneColorMaterialParameter parameter);
 
     void SetFogColor(float red, float green, float blue, float alpha);

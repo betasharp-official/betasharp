@@ -1,4 +1,5 @@
 using BetaSharp.Client.Options;
+using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Items;
@@ -33,6 +34,7 @@ internal sealed class NoOpEntityRenderDispatcher : IEntityRenderDispatcher
     public ITextureManager TextureManager => null!;
     public ISkinManager SkinManager { get; set; } = null!;
     public IHeldItemRenderer HeldItemRenderer { get; set; } = new NoOpHeldItemRenderer();
+    public ISceneRenderBackend SceneRenderBackend { get; } = new NoOpSceneRenderBackend();
     public World World { get; set; } = null!;
     public EntityLiving CameraEntity => null!;
     public float PlayerViewY { get; set; }
@@ -41,7 +43,7 @@ internal sealed class NoOpEntityRenderDispatcher : IEntityRenderDispatcher
 
     public EntityRenderer GetEntityRenderObject(Entity entity) => _renderer;
 
-    public void CacheRenderInfo(World world, ITextureManager textureManager, ITextRenderer textRenderer, EntityLiving camera, GameOptions options, float tickDelta)
+    public void CacheRenderInfo(World world, ITextureManager textureManager, ITextRenderer textRenderer, EntityLiving camera, GameOptions options, ISceneRenderBackend sceneRenderBackend, float tickDelta)
     {
     }
 

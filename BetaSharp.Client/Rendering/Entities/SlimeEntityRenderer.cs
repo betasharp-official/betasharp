@@ -1,5 +1,4 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
 
@@ -20,17 +19,16 @@ public class SlimeEntityRenderer : LivingEntityRenderer
         if (var2 == 0)
         {
             setRenderPassModel(scaleAmount);
-            //GLManager.GL.Enable(GLEnum.Normalize);
-            GLManager.GL.Enable(GLEnum.Blend);
-            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+            Scene.Enable(SceneRenderCapability.Blend);
+            Scene.SetBlendFunction(SceneBlendFactor.SrcAlpha, SceneBlendFactor.OneMinusSrcAlpha);
             return true;
         }
         else
         {
             if (var2 == 1)
             {
-                GLManager.GL.Disable(GLEnum.Blend);
-                GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+                Scene.Disable(SceneRenderCapability.Blend);
+                Scene.SetColor(1.0F, 1.0F, 1.0F, 1.0F);
             }
 
             return false;
@@ -43,7 +41,7 @@ public class SlimeEntityRenderer : LivingEntityRenderer
         float var4 = (var1.prevSquishAmount + (var1.squishAmount - var1.prevSquishAmount) * var2) / (var3 * 0.5F + 1.0F);
         float var5 = 1.0F / (var4 + 1.0F);
         float var6 = var3;
-        GLManager.GL.Scale(var5 * var6, 1.0F / var5 * var6, var5 * var6);
+        Scene.Scale(var5 * var6, 1.0F / var5 * var6, var5 * var6);
     }
 
     protected override void PreRenderCallback(EntityLiving var1, float var2)

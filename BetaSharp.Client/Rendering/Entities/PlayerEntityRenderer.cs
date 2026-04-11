@@ -3,7 +3,6 @@ using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
 using BetaSharp.Items;
@@ -90,19 +89,19 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 else
                 {
                     ITextRenderer textRenderer = TextRenderer;
-                    GLManager.GL.PushMatrix();
-                    GLManager.GL.Translate((float)x + 0.0F, (float)y + 2.3F, (float)z);
-                    GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
-                    GLManager.GL.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
-                    GLManager.GL.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
-                    GLManager.GL.Scale(-nameplateScale, -nameplateScale, nameplateScale);
-                    GLManager.GL.Disable(GLEnum.Lighting);
-                    GLManager.GL.Translate(0.0F, 0.25F / nameplateScale, 0.0F);
-                    GLManager.GL.DepthMask(false);
-                    GLManager.GL.Enable(GLEnum.Blend);
-                    GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+                    Scene.PushMatrix();
+                    Scene.Translate((float)x + 0.0F, (float)y + 2.3F, (float)z);
+                    Scene.SetNormal(0.0F, 1.0F, 0.0F);
+                    Scene.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
+                    Scene.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
+                    Scene.Scale(-nameplateScale, -nameplateScale, nameplateScale);
+                    Scene.Disable(SceneRenderCapability.Lighting);
+                    Scene.Translate(0.0F, 0.25F / nameplateScale, 0.0F);
+                    Scene.SetDepthMask(false);
+                    Scene.Enable(SceneRenderCapability.Blend);
+                    Scene.SetBlendFunction(SceneBlendFactor.SrcAlpha, SceneBlendFactor.OneMinusSrcAlpha);
                     Tessellator tessellator = Tessellator.instance;
-                    GLManager.GL.Disable(GLEnum.Texture2D);
+                    Scene.Disable(SceneRenderCapability.Texture2D);
                     tessellator.startDrawingQuads();
                     int halfNameWidth = textRenderer.GetStringWidth(playerName) / 2;
                     tessellator.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
@@ -111,13 +110,13 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                     tessellator.addVertex(halfNameWidth + 1, 8.0D, 0.0D);
                     tessellator.addVertex(halfNameWidth + 1, -1.0D, 0.0D);
                     tessellator.draw();
-                    GLManager.GL.Enable(GLEnum.Texture2D);
-                    GLManager.GL.DepthMask(true);
+                    Scene.Enable(SceneRenderCapability.Texture2D);
+                    Scene.SetDepthMask(true);
                     textRenderer.DrawString(playerName, -textRenderer.GetStringWidth(playerName) / 2, 0, Color.WhiteAlpha20);
-                    GLManager.GL.Enable(GLEnum.Lighting);
-                    GLManager.GL.Disable(GLEnum.Blend);
-                    GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-                    GLManager.GL.PopMatrix();
+                    Scene.Enable(SceneRenderCapability.Lighting);
+                    Scene.Disable(SceneRenderCapability.Blend);
+                    Scene.SetColor(1.0F, 1.0F, 1.0F, 1.0F);
+                    Scene.PopMatrix();
                 }
             }
         }
@@ -129,18 +128,18 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         ItemStack helmetStack = player.inventory.ArmorItemBySlot(3);
         if (helmetStack != null && helmetStack.getItem().id < 256)
         {
-            GLManager.GL.PushMatrix();
+            Scene.PushMatrix();
             _modelBipedMain.bipedHead.transform(1.0F / 16.0F);
             if (BlockRenderer.IsSideLit(Block.Blocks[helmetStack.ItemId].getRenderType()))
             {
                 float helmetScale = 10.0F / 16.0F;
-                GLManager.GL.Translate(0.0F, -0.25F, 0.0F);
-                GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
-                GLManager.GL.Scale(helmetScale, -helmetScale, helmetScale);
+                Scene.Translate(0.0F, -0.25F, 0.0F);
+                Scene.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
+                Scene.Scale(helmetScale, -helmetScale, helmetScale);
             }
 
             Dispatcher.HeldItemRenderer.renderItem(player, helmetStack);
-            GLManager.GL.PopMatrix();
+            Scene.PopMatrix();
         }
 
         float heldItemScale;
@@ -151,24 +150,24 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 float earYawOffset = player.prevYaw + (player.yaw - player.prevYaw) * tickDelta
                     - (player.lastBodyYaw + (player.bodyYaw - player.lastBodyYaw) * tickDelta);
                 float earPitch = player.prevPitch + (player.pitch - player.prevPitch) * tickDelta;
-                GLManager.GL.PushMatrix();
-                GLManager.GL.Rotate(earYawOffset, 0.0F, 1.0F, 0.0F);
-                GLManager.GL.Rotate(earPitch, 1.0F, 0.0F, 0.0F);
-                GLManager.GL.Translate(6.0F / 16.0F * (earIndex * 2 - 1), 0.0F, 0.0F);
-                GLManager.GL.Translate(0.0F, -(6.0F / 16.0F), 0.0F);
-                GLManager.GL.Rotate(-earPitch, 1.0F, 0.0F, 0.0F);
-                GLManager.GL.Rotate(-earYawOffset, 0.0F, 1.0F, 0.0F);
+                Scene.PushMatrix();
+                Scene.Rotate(earYawOffset, 0.0F, 1.0F, 0.0F);
+                Scene.Rotate(earPitch, 1.0F, 0.0F, 0.0F);
+                Scene.Translate(6.0F / 16.0F * (earIndex * 2 - 1), 0.0F, 0.0F);
+                Scene.Translate(0.0F, -(6.0F / 16.0F), 0.0F);
+                Scene.Rotate(-earPitch, 1.0F, 0.0F, 0.0F);
+                Scene.Rotate(-earYawOffset, 0.0F, 1.0F, 0.0F);
                 float earScale = 4.0F / 3.0F;
-                GLManager.GL.Scale(earScale, earScale, earScale);
+                Scene.Scale(earScale, earScale, earScale);
                 _modelBipedMain.renderEars(1.0F / 16.0F);
-                GLManager.GL.PopMatrix();
+                Scene.PopMatrix();
             }
         }
 
         if (LoadDownloadableImageTexture(player.playerCloakUrl, null))
         {
-            GLManager.GL.PushMatrix();
-            GLManager.GL.Translate(0.0F, 0.0F, 2.0F / 16.0F);
+            Scene.PushMatrix();
+            Scene.Translate(0.0F, 0.0F, 2.0F / 16.0F);
             double capeDeltaX = player.prevCapeX + (player.capeX - player.prevCapeX) * (double)tickDelta
                 - (player.prevX + (player.x - player.prevX) * (double)tickDelta);
             double capeDeltaY = player.prevCapeY + (player.capeY - player.prevCapeY) * (double)tickDelta
@@ -203,20 +202,20 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 capeLift += 25.0F;
             }
 
-            GLManager.GL.Rotate(6.0F + capeForwardSwing / 2.0F + capeLift, 1.0F, 0.0F, 0.0F);
-            GLManager.GL.Rotate(capeSideSwing / 2.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Rotate(-capeSideSwing / 2.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
+            Scene.Rotate(6.0F + capeForwardSwing / 2.0F + capeLift, 1.0F, 0.0F, 0.0F);
+            Scene.Rotate(capeSideSwing / 2.0F, 0.0F, 0.0F, 1.0F);
+            Scene.Rotate(-capeSideSwing / 2.0F, 0.0F, 1.0F, 0.0F);
+            Scene.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
             _modelBipedMain.renderCloak(1.0F / 16.0F);
-            GLManager.GL.PopMatrix();
+            Scene.PopMatrix();
         }
 
         ItemStack heldStack = player.inventory.GetItemInHand();
         if (heldStack != null)
         {
-            GLManager.GL.PushMatrix();
+            Scene.PushMatrix();
             _modelBipedMain.bipedRightArm.transform(1.0F / 16.0F);
-            GLManager.GL.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
+            Scene.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
             if (player.fishHook != null)
             {
                 heldStack = new ItemStack(Item.Stick);
@@ -225,38 +224,38 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             if (heldStack.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[heldStack.ItemId].getRenderType()))
             {
                 heldItemScale = 0.5F;
-                GLManager.GL.Translate(0.0F, 3.0F / 16.0F, -(5.0F / 16.0F));
+                Scene.Translate(0.0F, 3.0F / 16.0F, -(5.0F / 16.0F));
                 heldItemScale *= 12.0F / 16.0F;
-                GLManager.GL.Rotate(20.0F, 1.0F, 0.0F, 0.0F);
-                GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
-                GLManager.GL.Scale(heldItemScale, -heldItemScale, heldItemScale);
+                Scene.Rotate(20.0F, 1.0F, 0.0F, 0.0F);
+                Scene.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
+                Scene.Scale(heldItemScale, -heldItemScale, heldItemScale);
             }
             else if (Item.ITEMS[heldStack.ItemId].isHandheld())
             {
                 heldItemScale = 10.0F / 16.0F;
                 if (Item.ITEMS[heldStack.ItemId].isHandheldRod())
                 {
-                    GLManager.GL.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
-                    GLManager.GL.Translate(0.0F, -(2.0F / 16.0F), 0.0F);
+                    Scene.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
+                    Scene.Translate(0.0F, -(2.0F / 16.0F), 0.0F);
                 }
 
-                GLManager.GL.Translate(0.0F, 3.0F / 16.0F, 0.0F);
-                GLManager.GL.Scale(heldItemScale, -heldItemScale, heldItemScale);
-                GLManager.GL.Rotate(-100.0F, 1.0F, 0.0F, 0.0F);
-                GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
+                Scene.Translate(0.0F, 3.0F / 16.0F, 0.0F);
+                Scene.Scale(heldItemScale, -heldItemScale, heldItemScale);
+                Scene.Rotate(-100.0F, 1.0F, 0.0F, 0.0F);
+                Scene.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
             }
             else
             {
                 heldItemScale = 6.0F / 16.0F;
-                GLManager.GL.Translate(0.25F, 3.0F / 16.0F, -(3.0F / 16.0F));
-                GLManager.GL.Scale(heldItemScale, heldItemScale, heldItemScale);
-                GLManager.GL.Rotate(60.0F, 0.0F, 0.0F, 1.0F);
-                GLManager.GL.Rotate(-90.0F, 1.0F, 0.0F, 0.0F);
-                GLManager.GL.Rotate(20.0F, 0.0F, 0.0F, 1.0F);
+                Scene.Translate(0.25F, 3.0F / 16.0F, -(3.0F / 16.0F));
+                Scene.Scale(heldItemScale, heldItemScale, heldItemScale);
+                Scene.Rotate(60.0F, 0.0F, 0.0F, 1.0F);
+                Scene.Rotate(-90.0F, 1.0F, 0.0F, 0.0F);
+                Scene.Rotate(20.0F, 0.0F, 0.0F, 1.0F);
             }
 
             Dispatcher.HeldItemRenderer.renderItem(player, heldStack);
-            GLManager.GL.PopMatrix();
+            Scene.PopMatrix();
         }
 
     }
@@ -264,7 +263,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
     protected void func_186_b(EntityPlayer player, float tickDelta)
     {
         float playerScale = 15.0F / 16.0F;
-        GLManager.GL.Scale(playerScale, playerScale, playerScale);
+        Scene.Scale(playerScale, playerScale, playerScale);
     }
 
     public void DrawFirstPersonHand()
@@ -291,9 +290,9 @@ public class PlayerEntityRenderer : LivingEntityRenderer
     {
         if (player.isAlive() && player.isSleeping())
         {
-            GLManager.GL.Rotate(player.getSleepingRotation(), 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(getDeathMaxRotation(player), 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Rotate(270.0F, 0.0F, 1.0F, 0.0F);
+            Scene.Rotate(player.getSleepingRotation(), 0.0F, 1.0F, 0.0F);
+            Scene.Rotate(getDeathMaxRotation(player), 0.0F, 0.0F, 1.0F);
+            Scene.Rotate(270.0F, 0.0F, 1.0F, 0.0F);
         }
         else
         {

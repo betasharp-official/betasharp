@@ -22,8 +22,8 @@ public class GhastEntityRenderer : LivingEntityRenderer
         var4 = 1.0F / (var4 * var4 * var4 * var4 * var4 * 2.0F + 1.0F);
         float var5 = (8.0F + var4) / 2.0F;
         float var6 = (8.0F + 1.0F / var4) / 2.0F;
-        GLManager.GL.Scale(var6, var5, var6);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        Scene.Scale(var6, var5, var6);
+        Scene.SetColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     protected override void PreRenderCallback(EntityLiving var1, float var2)

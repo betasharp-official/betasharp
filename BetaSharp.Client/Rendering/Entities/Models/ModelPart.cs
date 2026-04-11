@@ -1,5 +1,5 @@
+using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 
 namespace BetaSharp.Client.Rendering.Entities.Models;
@@ -17,10 +17,11 @@ public class ModelPart
     public float rotateAngleY;
     public float rotateAngleZ;
     private bool compiled;
-    private uint displayList;
+    private int displayList;
     public bool mirror = false;
     public bool visible = true;
     public bool hidden = false;
+    private static ISceneRenderBackend Scene => SceneRenderBackendContext.Current;
 
     public ModelPart(int var1, int var2)
     {
@@ -105,36 +106,36 @@ public class ModelPart
                 {
                     if (rotationPointX == 0.0F && rotationPointY == 0.0F && rotationPointZ == 0.0F)
                     {
-                        GLManager.GL.CallList(displayList);
+                        Scene.CallDisplayList(displayList);
                     }
                     else
                     {
-                        GLManager.GL.Translate(rotationPointX * var1, rotationPointY * var1, rotationPointZ * var1);
-                        GLManager.GL.CallList(displayList);
-                        GLManager.GL.Translate(-rotationPointX * var1, -rotationPointY * var1, -rotationPointZ * var1);
+                        Scene.Translate(rotationPointX * var1, rotationPointY * var1, rotationPointZ * var1);
+                        Scene.CallDisplayList(displayList);
+                        Scene.Translate(-rotationPointX * var1, -rotationPointY * var1, -rotationPointZ * var1);
                     }
                 }
                 else
                 {
-                    GLManager.GL.PushMatrix();
-                    GLManager.GL.Translate(rotationPointX * var1, rotationPointY * var1, rotationPointZ * var1);
+                    Scene.PushMatrix();
+                    Scene.Translate(rotationPointX * var1, rotationPointY * var1, rotationPointZ * var1);
                     if (rotateAngleZ != 0.0F)
                     {
-                        GLManager.GL.Rotate(rotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
+                        Scene.Rotate(rotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
                     }
 
                     if (rotateAngleY != 0.0F)
                     {
-                        GLManager.GL.Rotate(rotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
+                        Scene.Rotate(rotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
                     }
 
                     if (rotateAngleX != 0.0F)
                     {
-                        GLManager.GL.Rotate(rotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
+                        Scene.Rotate(rotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
                     }
 
-                    GLManager.GL.CallList(displayList);
-                    GLManager.GL.PopMatrix();
+                    Scene.CallDisplayList(displayList);
+                    Scene.PopMatrix();
                 }
 
             }
@@ -152,25 +153,25 @@ public class ModelPart
                     compileDisplayList(var1);
                 }
 
-                GLManager.GL.PushMatrix();
-                GLManager.GL.Translate(rotationPointX * var1, rotationPointY * var1, rotationPointZ * var1);
+                Scene.PushMatrix();
+                Scene.Translate(rotationPointX * var1, rotationPointY * var1, rotationPointZ * var1);
                 if (rotateAngleY != 0.0F)
                 {
-                    GLManager.GL.Rotate(rotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
+                    Scene.Rotate(rotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
                 }
 
                 if (rotateAngleX != 0.0F)
                 {
-                    GLManager.GL.Rotate(rotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
+                    Scene.Rotate(rotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
                 }
 
                 if (rotateAngleZ != 0.0F)
                 {
-                    GLManager.GL.Rotate(rotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
+                    Scene.Rotate(rotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
                 }
 
-                GLManager.GL.CallList(displayList);
-                GLManager.GL.PopMatrix();
+                Scene.CallDisplayList(displayList);
+                Scene.PopMatrix();
             }
         }
     }
@@ -190,25 +191,25 @@ public class ModelPart
                 {
                     if (rotationPointX != 0.0F || rotationPointY != 0.0F || rotationPointZ != 0.0F)
                     {
-                        GLManager.GL.Translate(rotationPointX * var1, rotationPointY * var1, rotationPointZ * var1);
+                        Scene.Translate(rotationPointX * var1, rotationPointY * var1, rotationPointZ * var1);
                     }
                 }
                 else
                 {
-                    GLManager.GL.Translate(rotationPointX * var1, rotationPointY * var1, rotationPointZ * var1);
+                    Scene.Translate(rotationPointX * var1, rotationPointY * var1, rotationPointZ * var1);
                     if (rotateAngleZ != 0.0F)
                     {
-                        GLManager.GL.Rotate(rotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
+                        Scene.Rotate(rotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
                     }
 
                     if (rotateAngleY != 0.0F)
                     {
-                        GLManager.GL.Rotate(rotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
+                        Scene.Rotate(rotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
                     }
 
                     if (rotateAngleX != 0.0F)
                     {
-                        GLManager.GL.Rotate(rotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
+                        Scene.Rotate(rotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
                     }
                 }
 
@@ -218,8 +219,8 @@ public class ModelPart
 
     private void compileDisplayList(float var1)
     {
-        displayList = (uint)GLAllocation.generateDisplayLists(1);
-        GLManager.GL.NewList(displayList, GLEnum.Compile);
+        displayList = Scene.GenerateDisplayLists(1);
+        Scene.BeginDisplayList(displayList);
         Tessellator var2 = Tessellator.instance;
 
         for (int var3 = 0; var3 < faces.Length; ++var3)
@@ -227,7 +228,7 @@ public class ModelPart
             faces[var3].draw(var2, var1);
         }
 
-        GLManager.GL.EndList();
+        Scene.EndDisplayList();
         compiled = true;
     }
 }
