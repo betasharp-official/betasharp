@@ -660,23 +660,23 @@ internal class OverworldChunkGenerator : IChunkSource
         _gravelBuffer = _sandGravelNoise.create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, oneThirtySecond, 1.0D, oneThirtySecond);
         _depthBuffer = _depthNoise.create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, oneThirtySecond * 2.0D, oneThirtySecond * 2.0D, oneThirtySecond * 2.0D);
 
-        for (int x = 0; x < 16; ++x)
+        for (int localX = 0; localX < 16; ++localX)
         {
-            for (int z = 0; z < 16; ++z)
+            for (int localZ = 0; localZ < 16; ++localZ)
             {
-                Biome biome = biomes[x + z * 16];
-                bool sandActive = _sandBuffer[x + z * 16] + _random.NextDouble() * 0.2D > 0.0D;
-                bool gravelActive = _gravelBuffer[x + z * 16] + _random.NextDouble() * 0.2D > 3.0D;
-                int stoneActive = (int)(_depthBuffer[x + z * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
-                int stoneDepth = -1;
-                byte topBlock = biome.TopBlockId;
-                byte fillerBlock = biome.SoilBlockId;
+                Biome localBiome = biomes[localX + localZ * 16];
+                bool sandActive = _sandBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 0.0D;
+                bool gravelActive = _gravelBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 3.0D;
+                int surfaceDepth = (int)(_depthBuffer[localX + localZ * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
+                int currentDepth = -1;
+                byte topBlock = localBiome.TopBlockId;
+                byte soilBlock = localBiome.SoilBlockId;
 
-                for (int y = CHUNK_HEIGHT-1; y >= 0; --y)
+                for (int blockY = CHUNK_HEIGHT-1; blockY >= 0; --blockY)
                 {
-                    int blockIndex = (z * 16 + x) * CHUNK_HEIGHT + y;
+                    int blockIndex = (localZ * 16 + localX) * CHUNK_HEIGHT + blockY;
                     // Generate Bedrock floor
-                    if (y <= 0 + _random.NextInt(5))
+                    if (blockY <= 0 + _random.NextInt(5))
                     {
                         blocks[blockIndex] = (byte)Block.Bedrock.id;
                     }
@@ -685,21 +685,21 @@ internal class OverworldChunkGenerator : IChunkSource
                         byte activeBlock = blocks[blockIndex];
                         if (activeBlock == 0) // Air
                         {
-                            stoneDepth = -1;
+                            currentDepth = -1;
                         }
-                        else if (z == Block.Stone.id)
+                        else if (localZ == Block.Stone.id)
                         {
-                            if (stoneDepth == -1)
+                            if (currentDepth == -1)
                             {
-                                if (stoneActive <= 0)
+                                if (surfaceDepth <= 0)
                                 {
                                     topBlock = 0;
-                                    fillerBlock = (byte)Block.Stone.id;
+                                    soilBlock = (byte)Block.Stone.id;
                                 }
-                                else if (y >= WATER_LEVEL - 4 && y <= WATER_LEVEL + 1)
+                                else if (blockY >= WATER_LEVEL - 4 && blockY <= WATER_LEVEL + 1)
                                 {
-                                    topBlock = biome.TopBlockId;
-                                    fillerBlock = biome.SoilBlockId;
+                                    topBlock = localBiome.TopBlockId;
+                                    soilBlock = localBiome.SoilBlockId;
                                     if (gravelActive)
                                     {
                                         topBlock = 0;
@@ -707,7 +707,7 @@ internal class OverworldChunkGenerator : IChunkSource
 
                                     if (gravelActive)
                                     {
-                                        fillerBlock = (byte)Block.Gravel.id;
+                                        soilBlock = (byte)Block.Gravel.id;
                                     }
 
                                     if (sandActive)
@@ -717,33 +717,33 @@ internal class OverworldChunkGenerator : IChunkSource
 
                                     if (sandActive)
                                     {
-                                        fillerBlock = (byte)Block.Sand.id;
+                                        soilBlock = (byte)Block.Sand.id;
                                     }
                                 }
 
-                                if (y < WATER_LEVEL && topBlock == 0)
+                                if (blockY < WATER_LEVEL && topBlock == 0)
                                 {
                                     topBlock = (byte)Block.Water.id;
                                 }
 
-                                stoneDepth = stoneActive;
-                                if (y >= WATER_LEVEL - 1)
+                                currentDepth = surfaceDepth;
+                                if (blockY >= WATER_LEVEL - 1)
                                 {
                                     blocks[blockIndex] = topBlock;
                                 }
                                 else
                                 {
-                                    blocks[blockIndex] = fillerBlock;
+                                    blocks[blockIndex] = soilBlock;
                                 }
                             }
-                            else if (stoneDepth > 0)
+                            else if (currentDepth > 0)
                             {
-                                --stoneDepth;
-                                blocks[blockIndex] = fillerBlock;
-                                if (stoneDepth == 0 && fillerBlock == Block.Sand.id)
+                                --currentDepth;
+                                blocks[blockIndex] = soilBlock;
+                                if (currentDepth == 0 && soilBlock == Block.Sand.id)
                                 {
-                                    stoneDepth = _random.NextInt(4);
-                                    fillerBlock = (byte)Block.Sandstone.id;
+                                    currentDepth = _random.NextInt(4);
+                                    soilBlock = (byte)Block.Sandstone.id;
                                 }
                             }
                         }
