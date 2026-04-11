@@ -251,11 +251,32 @@ public class LightingEngine : ILightProvider
             for (int z = vol.MinZ; z <= vol.MaxZ; ++z)
             {
                 if (!_world.Reader.IsPosLoaded(x, 64, z)) continue;
+
                 Chunk chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
                 if (chunk.IsEmpty()) continue;
-                for (int y = startY; y <= endY; ++y)
+
+                if (vol.Type == LightType.Block)
                 {
-                    ProcessSingleLightNode(vol.Type, x, y, z);
+                    for (int y = startY; y <= endY; ++y)
+                    {
+                        int blockId = _world.Reader.GetBlockId(x, y, z);
+                        if (Block.BlocksLightLuminance[blockId] > 0)
+                        {
+                            ProcessSingleLightNode(vol.Type, x, y, z);
+                        }
+                    }
+                }
+                else
+                {
+                    for (int y = endY; y >= startY; --y)
+                    {
+                        ProcessSingleLightNode(vol.Type, x, y, z);
+                        int blockId = _world.Reader.GetBlockId(x, y, z);
+                        if (Block.BlockLightOpacity[blockId] >= 15 && y < endY)
+                        {
+                            break;
+                        }
+                    }
                 }
             }
         }
