@@ -9,17 +9,17 @@ namespace BetaSharp.Server.Command;
 
 public abstract partial class Command
 {
-    private class ArgPlayer : IArgumentType<ServerPlayerEntity>
+    private class ArgTarget : IArgumentType<Entity>
     {
-        public ServerPlayerEntity Parse(IStringReader reader) => throw new Exception("Unsupported invocation.");
+        public Entity Parse(IStringReader reader) => throw new Exception("Unsupported invocation.");
 
-        public ServerPlayerEntity Parse<T>(StringReader reader, T source)
+        public Entity Parse<T>(StringReader reader, T source) => ParseStatic(reader, source);
+
+        public static Entity ParseStatic<T>(StringReader reader, T source)
         {
-            Entity[] e = ArgTargets.Parse(reader, source, true, 1);
-            if (e.Length < 1) throw ArgTargets.PlayerNotFound.CreateWithContext(reader);
-            var p = e[0] as ServerPlayerEntity;
-            if (p == null) throw ArgTargets.PlayerNotFound.CreateWithContext(reader);
-            return p;
+            Entity[] e = ArgTargets.Parse(reader, source, false, 1);
+            if (e.Length < 1) throw ArgTargets.TargetNotFound.CreateWithContext(reader);
+            return e[0];
         }
 
         public Task<Suggestions> ListSuggestions<T>(

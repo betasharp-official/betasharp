@@ -5,27 +5,27 @@ namespace BetaSharp.Util;
 
 public sealed class DataSynchronizer
 {
-    public static readonly Dictionary<Type, int> TypeIds = [];
+    public static readonly Dictionary<Type, SyncedDataType> TypeIds = [];
 
     private readonly Dictionary<int, ISyncedProperty> _syncedProperties = new();
     public bool Dirty { get; internal set; }
 
     static DataSynchronizer()
     {
-        TypeIds[typeof(byte)] = 0;
-        TypeIds[typeof(short)] = 1;
-        TypeIds[typeof(int)] = 2;
-        TypeIds[typeof(float)] = 3;
-        TypeIds[typeof(string)] = 4;
-        TypeIds[typeof(ItemStack)] = 5;
-        TypeIds[typeof(Vec3i)] = 6;
+        TypeIds[typeof(byte)] = SyncedDataType.Byte;
+        TypeIds[typeof(short)] = SyncedDataType.Short;
+        TypeIds[typeof(int)] = SyncedDataType.Int;
+        TypeIds[typeof(float)] = SyncedDataType.Float;
+        TypeIds[typeof(string)] = SyncedDataType.String;
+        TypeIds[typeof(ItemStack)] = SyncedDataType.ItemStack;
+        TypeIds[typeof(Vec3i)] = SyncedDataType.Vec3i;
 
-        TypeIds[typeof(bool)] = 0; // Serialize bools as bytes
+        TypeIds[typeof(bool)] = SyncedDataType.Byte; // Serialize bools as bytes
     }
 
     public SyncedProperty<T> MakeProperty<T>(int dataValueId, T initialValue)
     {
-        if (!TypeIds.TryGetValue(typeof(T), out int dataType))
+        if (!TypeIds.TryGetValue(typeof(T), out SyncedDataType dataType))
         {
             throw new ArgumentException("Unknown data type: " + typeof(T));
         }
@@ -47,7 +47,7 @@ public sealed class DataSynchronizer
 
     private static void SerializeProperty(Stream stream, ISyncedProperty obj)
     {
-        byte header = (byte)(obj.DataType << 5 | obj.DataValueId & 31);
+        byte header = (byte)((int)(obj.DataType) << 5 | obj.DataValueId & 31);
         stream.WriteByte(header);
 
         switch (obj)
@@ -84,21 +84,23 @@ public sealed class DataSynchronizer
         }
     }
 
-    private void DeserializeProperty(Stream stream, int objectType, int dataValueId)
+    private void DeserializeProperty(Stream stream, SyncedDataType objectType, int dataValueId)
     {
         if (!_syncedProperties.TryGetValue(dataValueId, out var prop))
         {
-            throw new ArgumentException("Property not found: " + dataValueId);
+            SkipProperty(stream, objectType);
+            return;
         }
 
         if (prop.DataType != objectType)
         {
-            throw new ArgumentException("Data type mismatch for property " + dataValueId);
+            SkipProperty(stream, objectType);
+            return;
         }
 
         switch (objectType)
         {
-            case 0:
+            case SyncedDataType.Byte:
                 if (prop is SyncedProperty<bool> property)
                 {
                     property.Value = stream.ReadByte() != 0;
@@ -109,26 +111,40 @@ public sealed class DataSynchronizer
                     ((SyncedProperty<byte>)prop).Value = (byte)stream.ReadByte();
                     break;
                 }
-            case 1:
+            case SyncedDataType.Short:
                 ((SyncedProperty<short>)prop).Value = stream.ReadShort();
                 break;
-            case 2:
+            case SyncedDataType.Int:
                 ((SyncedProperty<int>)prop).Value = stream.ReadInt();
                 break;
-            case 3:
+            case SyncedDataType.Float:
                 ((SyncedProperty<float>)prop).Value = stream.ReadFloat();
                 break;
-            case 4:
+            case SyncedDataType.String:
                 ((SyncedProperty<string>)prop).Value = stream.ReadLongString();
                 break;
-            case 5:
+            case SyncedDataType.ItemStack:
                 ((SyncedProperty<ItemStack>)prop).Value = new ItemStack(stream.ReadShort(), (sbyte)stream.ReadByte(), stream.ReadShort());
                 break;
-            case 6:
+            case SyncedDataType.Vec3i:
                 ((SyncedProperty<Vec3i>)prop).Value = new Vec3i(stream.ReadInt(), stream.ReadInt(), stream.ReadInt());
                 break;
             default:
                 throw new ArgumentException("Unsupported data type: " + objectType);
+        }
+    }
+
+    private static void SkipProperty(Stream stream, SyncedDataType objectType)
+    {
+        switch (objectType)
+        {
+            case SyncedDataType.Byte: stream.ReadByte(); break;
+            case SyncedDataType.Short: stream.ReadShort(); break;
+            case SyncedDataType.Int: stream.ReadInt(); break;
+            case SyncedDataType.Float: stream.ReadFloat(); break;
+            case SyncedDataType.String: stream.ReadLongString(); break;
+            case SyncedDataType.ItemStack: stream.ReadShort(); stream.ReadByte(); stream.ReadShort(); break;
+            case SyncedDataType.Vec3i: stream.ReadInt(); stream.ReadInt(); stream.ReadInt(); break;
         }
     }
 
@@ -163,7 +179,7 @@ public sealed class DataSynchronizer
         {
             int b = stream.ReadByte();
             if (b == -1) break;
-            int objectType = (b & 224) >> 5;
+            SyncedDataType objectType = (SyncedDataType)((b & 224) >> 5);
             int dataValueId = b & 31;
             DeserializeProperty(stream, objectType, dataValueId);
         }

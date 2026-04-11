@@ -358,9 +358,9 @@ public abstract class EntityLiving : Entity
         if (health > 0)
         {
             health += amount;
-            if (health > 20)
+            if (health > maxHealth)
             {
-                health = 20;
+                health = maxHealth;
             }
 
             hearts = maxHealth / 2;
