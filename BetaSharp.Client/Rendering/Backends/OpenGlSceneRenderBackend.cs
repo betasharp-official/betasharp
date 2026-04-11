@@ -7,6 +7,26 @@ namespace BetaSharp.Client.Rendering.Backends;
 
 internal sealed class OpenGlSceneRenderBackend : ISceneRenderBackend
 {
+    public int GenerateDisplayLists(int count)
+    {
+        return GLAllocation.generateDisplayLists(count);
+    }
+
+    public void BeginDisplayList(int listId)
+    {
+        GLManager.GL.NewList((uint)listId, GLEnum.Compile);
+    }
+
+    public void EndDisplayList()
+    {
+        GLManager.GL.EndList();
+    }
+
+    public void CallDisplayList(int listId)
+    {
+        GLManager.GL.CallList((uint)listId);
+    }
+
     public void Enable(SceneRenderCapability capability)
     {
         GLManager.GL.Enable(MapCapability(capability));
@@ -19,7 +39,14 @@ internal sealed class OpenGlSceneRenderBackend : ISceneRenderBackend
 
     public void SetMatrixMode(SceneMatrixMode matrixMode)
     {
-        GLManager.GL.MatrixMode(matrixMode == SceneMatrixMode.Projection ? GLEnum.Projection : GLEnum.Modelview);
+        GLEnum glMatrixMode = matrixMode switch
+        {
+            SceneMatrixMode.Projection => GLEnum.Projection,
+            SceneMatrixMode.Modelview => GLEnum.Modelview,
+            SceneMatrixMode.Texture => GLEnum.Texture,
+            _ => GLEnum.Modelview
+        };
+        GLManager.GL.MatrixMode(glMatrixMode);
     }
 
     public void LoadIdentity()
@@ -112,9 +139,29 @@ internal sealed class OpenGlSceneRenderBackend : ISceneRenderBackend
         GLManager.GL.Normal3(x, y, z);
     }
 
+    public void SetColorRgb(float red, float green, float blue)
+    {
+        GLManager.GL.Color3(red, green, blue);
+    }
+
     public void SetColor(float red, float green, float blue, float alpha)
     {
         GLManager.GL.Color4(red, green, blue, alpha);
+    }
+
+    public void SetColorMask(bool red, bool green, bool blue, bool alpha)
+    {
+        GLManager.GL.ColorMask(red, green, blue, alpha);
+    }
+
+    public void SetLineWidth(float width)
+    {
+        GLManager.GL.LineWidth(width);
+    }
+
+    public void SetPolygonOffset(float factor, float units)
+    {
+        GLManager.GL.PolygonOffset(factor, units);
     }
 
     public void SetColorMaterial(SceneColorMaterialFace face, SceneColorMaterialParameter parameter)
@@ -158,6 +205,7 @@ internal sealed class OpenGlSceneRenderBackend : ISceneRenderBackend
             SceneRenderCapability.DepthTest => GLEnum.DepthTest,
             SceneRenderCapability.Fog => GLEnum.Fog,
             SceneRenderCapability.Lighting => GLEnum.Lighting,
+            SceneRenderCapability.PolygonOffsetFill => GLEnum.PolygonOffsetFill,
             SceneRenderCapability.RescaleNormal => GLEnum.RescaleNormal,
             SceneRenderCapability.Texture2D => GLEnum.Texture2D,
             _ => GLEnum.Texture2D
@@ -169,6 +217,9 @@ internal sealed class OpenGlSceneRenderBackend : ISceneRenderBackend
         return factor switch
         {
             SceneBlendFactor.SrcAlpha => GLEnum.SrcAlpha,
+            SceneBlendFactor.One => GLEnum.One,
+            SceneBlendFactor.SrcColor => GLEnum.SrcColor,
+            SceneBlendFactor.DstColor => GLEnum.DstColor,
             SceneBlendFactor.OneMinusSrcAlpha => GLEnum.OneMinusSrcAlpha,
             _ => GLEnum.SrcAlpha
         };

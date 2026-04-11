@@ -2,6 +2,27 @@ namespace BetaSharp.Client.Rendering.Backends;
 
 internal sealed class NoOpSceneRenderBackend : ISceneRenderBackend
 {
+    private int _nextDisplayListId = 1;
+
+    public int GenerateDisplayLists(int count)
+    {
+        int id = _nextDisplayListId;
+        _nextDisplayListId += Math.Max(1, count);
+        return id;
+    }
+
+    public void BeginDisplayList(int listId)
+    {
+    }
+
+    public void EndDisplayList()
+    {
+    }
+
+    public void CallDisplayList(int listId)
+    {
+    }
+
     public void Enable(SceneRenderCapability capability)
     {
     }
@@ -78,7 +99,23 @@ internal sealed class NoOpSceneRenderBackend : ISceneRenderBackend
     {
     }
 
+    public void SetColorRgb(float red, float green, float blue)
+    {
+    }
+
     public void SetColor(float red, float green, float blue, float alpha)
+    {
+    }
+
+    public void SetColorMask(bool red, bool green, bool blue, bool alpha)
+    {
+    }
+
+    public void SetLineWidth(float width)
+    {
+    }
+
+    public void SetPolygonOffset(float factor, float units)
     {
     }
 

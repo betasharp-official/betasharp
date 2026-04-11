@@ -6,7 +6,6 @@ using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Blocks.Entities;
 using BetaSharp.Client.Rendering.Chunks;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Particles;
@@ -34,6 +33,7 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
     private readonly IChunkRendererFactory _chunkRendererFactory;
     private readonly ITextureManager _textureManager;
     private readonly BetaSharp _game;
+    private readonly ISceneRenderBackend _sceneRenderBackend;
     private int _cloudOffsetX;
     private readonly int _starGLCallList;
     private readonly int _glSkyList;
@@ -45,18 +45,19 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
     public WorldRenderer(BetaSharp gameInstance, ITextureManager textureManager, IChunkRendererFactory chunkRendererFactory)
     {
         _game = gameInstance;
+        _sceneRenderBackend = gameInstance.SceneRenderBackend;
         _textureManager = textureManager;
         _chunkRendererFactory = chunkRendererFactory;
 
-        _starGLCallList = GLAllocation.generateDisplayLists(3);
-        GLManager.GL.PushMatrix();
-        GLManager.GL.NewList((uint)_starGLCallList, GLEnum.Compile);
+        _starGLCallList = _sceneRenderBackend.GenerateDisplayLists(3);
+        _sceneRenderBackend.PushMatrix();
+        _sceneRenderBackend.BeginDisplayList(_starGLCallList);
         RenderStars();
-        GLManager.GL.EndList();
-        GLManager.GL.PopMatrix();
+        _sceneRenderBackend.EndDisplayList();
+        _sceneRenderBackend.PopMatrix();
         Tessellator var4 = Tessellator.instance;
         _glSkyList = _starGLCallList + 1;
-        GLManager.GL.NewList((uint)_glSkyList, GLEnum.Compile);
+        _sceneRenderBackend.BeginDisplayList(_glSkyList);
         byte var6 = 64;
         int var7 = 256 / var6 + 2;
         float var5 = 16.0F;
@@ -76,9 +77,9 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
             }
         }
 
-        GLManager.GL.EndList();
+        _sceneRenderBackend.EndDisplayList();
         _glSkyList2 = _starGLCallList + 2;
-        GLManager.GL.NewList((uint)_glSkyList2, GLEnum.Compile);
+        _sceneRenderBackend.BeginDisplayList(_glSkyList2);
         var5 = -16.0F;
         var4.startDrawingQuads();
 
@@ -94,7 +95,7 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
         }
 
         var4.draw();
-        GLManager.GL.EndList();
+        _sceneRenderBackend.EndDisplayList();
         BuildCloudDisplayLists();
     }
 
@@ -376,7 +377,7 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
     {
         if (!_game.World.Dimension.IsNether)
         {
-            GLManager.GL.Disable(GLEnum.Texture2D);
+            _sceneRenderBackend.Disable(SceneRenderCapability.Texture2D);
             Vector3D<double> var2 = _world.Environment.GetSkyColor(_game.Camera, var1);
             float var3 = (float)var2.X;
             float var4 = (float)var2.Y;
@@ -384,16 +385,16 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
             float var7;
             float var8;
 
-            GLManager.GL.Color3(var3, var4, var5);
+            _sceneRenderBackend.SetColorRgb(var3, var4, var5);
             Tessellator var17 = Tessellator.instance;
-            GLManager.GL.DepthMask(false);
-            GLManager.GL.Enable(GLEnum.Fog);
-            GLManager.GL.Color3(var3, var4, var5);
-            GLManager.GL.CallList((uint)_glSkyList);
-            GLManager.GL.Disable(GLEnum.Fog);
-            GLManager.GL.Disable(GLEnum.AlphaTest);
-            GLManager.GL.Enable(GLEnum.Blend);
-            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+            _sceneRenderBackend.SetDepthMask(false);
+            _sceneRenderBackend.Enable(SceneRenderCapability.Fog);
+            _sceneRenderBackend.SetColorRgb(var3, var4, var5);
+            _sceneRenderBackend.CallDisplayList(_glSkyList);
+            _sceneRenderBackend.Disable(SceneRenderCapability.Fog);
+            _sceneRenderBackend.Disable(SceneRenderCapability.AlphaTest);
+            _sceneRenderBackend.Enable(SceneRenderCapability.Blend);
+            _sceneRenderBackend.SetBlendFunction(SceneBlendFactor.SrcAlpha, SceneBlendFactor.OneMinusSrcAlpha);
             Lighting.turnOff();
             float[] var18 = _world.Dimension.GetBackgroundColor(_world.GetTime(var1), var1);
             float var9;
@@ -402,12 +403,12 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
             float var12;
             if (var18 != null)
             {
-                GLManager.GL.Disable(GLEnum.Texture2D);
-                GLManager.GL.ShadeModel(GLEnum.Smooth);
-                GLManager.GL.PushMatrix();
-                GLManager.GL.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
+                _sceneRenderBackend.Disable(SceneRenderCapability.Texture2D);
+                _sceneRenderBackend.SetShadeModel(SceneShadeModel.Smooth);
+                _sceneRenderBackend.PushMatrix();
+                _sceneRenderBackend.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
                 var8 = _world.GetTime(var1);
-                GLManager.GL.Rotate(var8 > 0.5F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
+                _sceneRenderBackend.Rotate(var8 > 0.5F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
                 var9 = var18[0];
                 var10 = var18[1];
                 var11 = var18[2];
@@ -428,21 +429,21 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
                 }
 
                 var17.draw();
-                GLManager.GL.PopMatrix();
-                GLManager.GL.ShadeModel(GLEnum.Flat);
+                _sceneRenderBackend.PopMatrix();
+                _sceneRenderBackend.SetShadeModel(SceneShadeModel.Flat);
             }
 
-            GLManager.GL.Enable(GLEnum.Texture2D);
-            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.One);
-            GLManager.GL.PushMatrix();
+            _sceneRenderBackend.Enable(SceneRenderCapability.Texture2D);
+            _sceneRenderBackend.SetBlendFunction(SceneBlendFactor.SrcAlpha, SceneBlendFactor.One);
+            _sceneRenderBackend.PushMatrix();
             var7 = 1.0F - _world.Environment.GetRainGradient(var1);
             var8 = 0.0F;
             var9 = 0.0F;
             var10 = 0.0F;
-            GLManager.GL.Color4(1.0F, 1.0F, 1.0F, var7);
-            GLManager.GL.Translate(var8, var9, var10);
-            GLManager.GL.Rotate(0.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Rotate(_world.GetTime(var1) * 360.0F, 1.0F, 0.0F, 0.0F);
+            _sceneRenderBackend.SetColor(1.0F, 1.0F, 1.0F, var7);
+            _sceneRenderBackend.Translate(var8, var9, var10);
+            _sceneRenderBackend.Rotate(0.0F, 0.0F, 0.0F, 1.0F);
+            _sceneRenderBackend.Rotate(_world.GetTime(var1) * 360.0F, 1.0F, 0.0F, 0.0F);
             var11 = 30.0F;
             _textureManager.BindTexture(_textureManager.GetTextureId("/terrain/sun.png"));
             var17.startDrawingQuads();
@@ -459,32 +460,32 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
             var17.addVertexWithUV((double)var11, -100.0D, (double)-var11, 0.0D, 0.0D);
             var17.addVertexWithUV((double)-var11, -100.0D, (double)-var11, 1.0D, 0.0D);
             var17.draw();
-            GLManager.GL.Disable(GLEnum.Texture2D);
+            _sceneRenderBackend.Disable(SceneRenderCapability.Texture2D);
             var12 = _world.CalculateSkyLightIntensity(var1) * var7;
             if (var12 > 0.0F)
             {
-                GLManager.GL.Color4(var12, var12, var12, var12);
-                GLManager.GL.CallList((uint)_starGLCallList);
+                _sceneRenderBackend.SetColor(var12, var12, var12, var12);
+                _sceneRenderBackend.CallDisplayList(_starGLCallList);
             }
 
-            GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-            GLManager.GL.Disable(GLEnum.Blend);
-            GLManager.GL.Enable(GLEnum.AlphaTest);
-            GLManager.GL.Enable(GLEnum.Fog);
-            GLManager.GL.PopMatrix();
+            _sceneRenderBackend.SetColor(1.0F, 1.0F, 1.0F, 1.0F);
+            _sceneRenderBackend.Disable(SceneRenderCapability.Blend);
+            _sceneRenderBackend.Enable(SceneRenderCapability.AlphaTest);
+            _sceneRenderBackend.Enable(SceneRenderCapability.Fog);
+            _sceneRenderBackend.PopMatrix();
             if (_world.Dimension.HasGround)
             {
-                GLManager.GL.Color3(var3 * 0.2F + 0.04F, var4 * 0.2F + 0.04F, var5 * 0.6F + 0.1F);
+                _sceneRenderBackend.SetColorRgb(var3 * 0.2F + 0.04F, var4 * 0.2F + 0.04F, var5 * 0.6F + 0.1F);
             }
             else
             {
-                GLManager.GL.Color3(var3, var4, var5);
+                _sceneRenderBackend.SetColorRgb(var3, var4, var5);
             }
 
-            GLManager.GL.Disable(GLEnum.Texture2D);
-            GLManager.GL.CallList((uint)_glSkyList2);
-            GLManager.GL.Enable(GLEnum.Texture2D);
-            GLManager.GL.DepthMask(true);
+            _sceneRenderBackend.Disable(SceneRenderCapability.Texture2D);
+            _sceneRenderBackend.CallDisplayList(_glSkyList2);
+            _sceneRenderBackend.Enable(SceneRenderCapability.Texture2D);
+            _sceneRenderBackend.SetDepthMask(true);
         }
     }
 
@@ -501,12 +502,12 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
 
     private void BuildCloudDisplayLists()
     {
-        _glCloudsList = GLAllocation.generateDisplayLists(4);
+        _glCloudsList = _sceneRenderBackend.GenerateDisplayLists(4);
         Tessellator tessellator = Tessellator.instance;
 
         for (int i = 0; i < 4; ++i)
         {
-            GLManager.GL.NewList((uint)(_glCloudsList + i), GLEnum.Compile);
+            _sceneRenderBackend.BeginDisplayList(_glCloudsList + i);
             tessellator.startDrawingQuads();
             float cloudHeight = 4.0F;
             float uvScale = 1.0F / 256.0F;
@@ -595,13 +596,13 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
                 }
             }
             tessellator.draw();
-            GLManager.GL.EndList();
+            _sceneRenderBackend.EndDisplayList();
         }
     }
 
     private void RenderCloudsFancy(float var1)
     {
-        GLManager.GL.Disable(GLEnum.CullFace);
+        _sceneRenderBackend.Disable(SceneRenderCapability.CullFace);
         float var2 = (float)(_game.Camera.lastTickY + (_game.Camera.y - _game.Camera.lastTickY) * (double)var1);
         float var4 = 12.0F;
         float var5 = 4.0F;
@@ -613,8 +614,8 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
         var6 -= var11 * 2048;
         var8 -= var12 * 2048;
         _textureManager.BindTexture(_textureManager.GetTextureId("/environment/clouds.png"));
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        _sceneRenderBackend.Enable(SceneRenderCapability.Blend);
+        _sceneRenderBackend.SetBlendFunction(SceneBlendFactor.SrcAlpha, SceneBlendFactor.OneMinusSrcAlpha);
         Vector3D<double> var13 = _world.Environment.GetCloudColor(var1);
         float var14 = (float)var13.X;
         float var15 = (float)var13.Y;
@@ -626,55 +627,55 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
         float var20 = (float)(var6 - MathHelper.Floor(var6));
         float var21 = (float)(var8 - MathHelper.Floor(var8));
 
-        GLManager.GL.Scale(var4, 1.0F, var4);
+        _sceneRenderBackend.Scale(var4, 1.0F, var4);
 
         for (int var25 = 0; var25 < 2; ++var25)
         {
             if (var25 == 0)
             {
-                GLManager.GL.ColorMask(false, false, false, false);
+                _sceneRenderBackend.SetColorMask(false, false, false, false);
             }
             else
             {
-                GLManager.GL.ColorMask(true, true, true, true);
+                _sceneRenderBackend.SetColorMask(true, true, true, true);
             }
 
-            GLManager.GL.PushMatrix();
-            GLManager.GL.Translate(-var20, var10, -var21);
+            _sceneRenderBackend.PushMatrix();
+            _sceneRenderBackend.Translate(-var20, var10, -var21);
 
-            GLManager.GL.MatrixMode(GLEnum.Texture);
-            GLManager.GL.PushMatrix();
-            GLManager.GL.Translate(var17, var18, 0.0F);
-            GLManager.GL.MatrixMode(GLEnum.Modelview);
+            _sceneRenderBackend.SetMatrixMode(SceneMatrixMode.Texture);
+            _sceneRenderBackend.PushMatrix();
+            _sceneRenderBackend.Translate(var17, var18, 0.0F);
+            _sceneRenderBackend.SetMatrixMode(SceneMatrixMode.Modelview);
 
             if (var10 > -var5 - 1.0F)
             {
-                GLManager.GL.Color4(var14 * 0.7F, var15 * 0.7F, var16 * 0.7F, 0.8F);
-                GLManager.GL.CallList((uint)(_glCloudsList + 0)); // Bottom
+                _sceneRenderBackend.SetColor(var14 * 0.7F, var15 * 0.7F, var16 * 0.7F, 0.8F);
+                _sceneRenderBackend.CallDisplayList(_glCloudsList + 0); // Bottom
             }
 
             if (var10 <= var5 + 1.0F)
             {
-                GLManager.GL.Color4(var14, var15, var16, 0.8F);
-                GLManager.GL.CallList((uint)(_glCloudsList + 1)); // Top
+                _sceneRenderBackend.SetColor(var14, var15, var16, 0.8F);
+                _sceneRenderBackend.CallDisplayList(_glCloudsList + 1); // Top
             }
 
-            GLManager.GL.Color4(var14 * 0.9F, var15 * 0.9F, var16 * 0.9F, 0.8F);
-            GLManager.GL.CallList((uint)(_glCloudsList + 2)); // Side X
+            _sceneRenderBackend.SetColor(var14 * 0.9F, var15 * 0.9F, var16 * 0.9F, 0.8F);
+            _sceneRenderBackend.CallDisplayList(_glCloudsList + 2); // Side X
 
-            GLManager.GL.Color4(var14 * 0.8F, var15 * 0.8F, var16 * 0.8F, 0.8F);
-            GLManager.GL.CallList((uint)(_glCloudsList + 3)); // Side Z
+            _sceneRenderBackend.SetColor(var14 * 0.8F, var15 * 0.8F, var16 * 0.8F, 0.8F);
+            _sceneRenderBackend.CallDisplayList(_glCloudsList + 3); // Side Z
 
-            GLManager.GL.MatrixMode(GLEnum.Texture);
-            GLManager.GL.PopMatrix();
-            GLManager.GL.MatrixMode(GLEnum.Modelview);
+            _sceneRenderBackend.SetMatrixMode(SceneMatrixMode.Texture);
+            _sceneRenderBackend.PopMatrix();
+            _sceneRenderBackend.SetMatrixMode(SceneMatrixMode.Modelview);
 
-            GLManager.GL.PopMatrix();
+            _sceneRenderBackend.PopMatrix();
         }
 
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.GL.Disable(GLEnum.Blend);
-        GLManager.GL.Enable(GLEnum.CullFace);
+        _sceneRenderBackend.SetColor(1.0F, 1.0F, 1.0F, 1.0F);
+        _sceneRenderBackend.Disable(SceneRenderCapability.Blend);
+        _sceneRenderBackend.Enable(SceneRenderCapability.CullFace);
     }
 
     public void DrawBlockBreaking(EntityPlayer entityPlayer, HitResult hit, ItemStack? itemStack, float tickDelta)
@@ -683,14 +684,14 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
 
         Tessellator tessellator = Tessellator.instance;
 
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.Enable(GLEnum.AlphaTest);
-        GLManager.GL.Enable(GLEnum.PolygonOffsetFill);
+        _sceneRenderBackend.PushMatrix();
+        _sceneRenderBackend.Enable(SceneRenderCapability.Blend);
+        _sceneRenderBackend.Enable(SceneRenderCapability.AlphaTest);
+        _sceneRenderBackend.Enable(SceneRenderCapability.PolygonOffsetFill);
 
-        GLManager.GL.BlendFunc(GLEnum.DstColor, GLEnum.SrcColor);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 0.5F);
-        GLManager.GL.PolygonOffset(-3.0F, -50.0F);
+        _sceneRenderBackend.SetBlendFunction(SceneBlendFactor.DstColor, SceneBlendFactor.SrcColor);
+        _sceneRenderBackend.SetColor(1.0F, 1.0F, 1.0F, 0.5F);
+        _sceneRenderBackend.SetPolygonOffset(-3.0F, -50.0F);
 
         _textureManager.BindTexture(_textureManager.GetTextureId("/terrain.png"));
 
@@ -709,26 +710,26 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
         tessellator.draw();
 
         tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
-        GLManager.GL.PolygonOffset(0.0F, 0.0F);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        _sceneRenderBackend.SetPolygonOffset(0.0F, 0.0F);
+        _sceneRenderBackend.SetColor(1.0F, 1.0F, 1.0F, 1.0F);
+        _sceneRenderBackend.SetBlendFunction(SceneBlendFactor.SrcAlpha, SceneBlendFactor.OneMinusSrcAlpha);
 
-        GLManager.GL.Disable(GLEnum.PolygonOffsetFill);
-        GLManager.GL.Disable(GLEnum.AlphaTest);
-        GLManager.GL.Disable(GLEnum.Blend);
-        GLManager.GL.PopMatrix();
+        _sceneRenderBackend.Disable(SceneRenderCapability.PolygonOffsetFill);
+        _sceneRenderBackend.Disable(SceneRenderCapability.AlphaTest);
+        _sceneRenderBackend.Disable(SceneRenderCapability.Blend);
+        _sceneRenderBackend.PopMatrix();
     }
 
     public void DrawSelectionBox(EntityPlayer var1, HitResult var2, int var3, ItemStack? var4, float var5)
     {
         if (var3 == 0 && var2.Type == HitResultType.TILE)
         {
-            GLManager.GL.Enable(GLEnum.Blend);
-            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-            GLManager.GL.Color4(0.0F, 0.0F, 0.0F, 0.4F);
-            GLManager.GL.LineWidth(2.0F);
-            GLManager.GL.Disable(GLEnum.Texture2D);
-            GLManager.GL.DepthMask(false);
+            _sceneRenderBackend.Enable(SceneRenderCapability.Blend);
+            _sceneRenderBackend.SetBlendFunction(SceneBlendFactor.SrcAlpha, SceneBlendFactor.OneMinusSrcAlpha);
+            _sceneRenderBackend.SetColor(0.0F, 0.0F, 0.0F, 0.4F);
+            _sceneRenderBackend.SetLineWidth(2.0F);
+            _sceneRenderBackend.Disable(SceneRenderCapability.Texture2D);
+            _sceneRenderBackend.SetDepthMask(false);
             float var6 = 0.002F;
             int var7 = _world.Reader.GetBlockId(var2.BlockX, var2.BlockY, var2.BlockZ);
             if (var7 > 0)
@@ -740,9 +741,9 @@ public class WorldRenderer : IWorldEventListener, IWorldRenderer
                 DrawOutlinedBoundingBox(Block.Blocks[var7].getBoundingBox(_world.Reader, _world.Entities, var2.BlockX, var2.BlockY, var2.BlockZ).Expand((double)var6, (double)var6, (double)var6).Offset(-var8, -var10, -var12));
             }
 
-            GLManager.GL.DepthMask(true);
-            GLManager.GL.Enable(GLEnum.Texture2D);
-            GLManager.GL.Disable(GLEnum.Blend);
+            _sceneRenderBackend.SetDepthMask(true);
+            _sceneRenderBackend.Enable(SceneRenderCapability.Texture2D);
+            _sceneRenderBackend.Disable(SceneRenderCapability.Blend);
         }
 
     }

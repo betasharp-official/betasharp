@@ -11,7 +11,8 @@ public enum SceneClearBufferMask
 public enum SceneMatrixMode
 {
     Projection,
-    Modelview
+    Modelview,
+    Texture
 }
 
 public enum SceneRenderCapability
@@ -23,12 +24,16 @@ public enum SceneRenderCapability
     DepthTest,
     Fog,
     Lighting,
+    PolygonOffsetFill,
     RescaleNormal,
     Texture2D
 }
 
 public enum SceneBlendFactor
 {
+    One,
+    SrcColor,
+    DstColor,
     SrcAlpha,
     OneMinusSrcAlpha
 }
@@ -66,6 +71,11 @@ public enum SceneColorMaterialParameter
 /// </summary>
 public interface ISceneRenderBackend
 {
+    int GenerateDisplayLists(int count);
+    void BeginDisplayList(int listId);
+    void EndDisplayList();
+    void CallDisplayList(int listId);
+
     void Enable(SceneRenderCapability capability);
     void Disable(SceneRenderCapability capability);
 
@@ -88,7 +98,11 @@ public interface ISceneRenderBackend
     void SetAlphaFunction(SceneAlphaFunction function, float threshold);
     void SetShadeModel(SceneShadeModel shadeModel);
     void SetNormal(float x, float y, float z);
+    void SetColorRgb(float red, float green, float blue);
     void SetColor(float red, float green, float blue, float alpha);
+    void SetColorMask(bool red, bool green, bool blue, bool alpha);
+    void SetLineWidth(float width);
+    void SetPolygonOffset(float factor, float units);
     void SetColorMaterial(SceneColorMaterialFace face, SceneColorMaterialParameter parameter);
 
     void SetFogColor(float red, float green, float blue, float alpha);
