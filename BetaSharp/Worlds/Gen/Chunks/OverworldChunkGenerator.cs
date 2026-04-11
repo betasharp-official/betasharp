@@ -687,7 +687,7 @@ internal class OverworldChunkGenerator : IChunkSource
                         {
                             currentDepth = -1;
                         }
-                        else if (localZ == Block.Stone.id)
+                        else if (activeBlock == Block.Stone.id)
                         {
                             if (currentDepth == -1)
                             {
