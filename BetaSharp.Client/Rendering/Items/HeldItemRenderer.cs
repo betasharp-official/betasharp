@@ -3,7 +3,6 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Items;
@@ -15,6 +14,7 @@ namespace BetaSharp.Client.Rendering.Items;
 public class HeldItemRenderer : IHeldItemRenderer
 {
     private readonly BetaSharp _game;
+    private readonly ISceneRenderBackend _sceneRenderBackend;
     private ItemStack itemToRender;
     private float equippedProgress;
     private float prevEquippedProgress;
@@ -26,12 +26,13 @@ public class HeldItemRenderer : IHeldItemRenderer
     public HeldItemRenderer(BetaSharp game)
     {
         _game = game;
+        _sceneRenderBackend = game.SceneRenderBackend;
         mapRenderer = new MapItemRenderer(game.TextRenderer, game.Options, game.TextureManager);
     }
 
     public void renderItem(EntityLiving entity, ItemStack item)
     {
-        GLManager.GL.PushMatrix();
+        _sceneRenderBackend.PushMatrix();
         if (item.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[item.ItemId].getRenderType()))
         {
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/terrain.png"));
@@ -52,13 +53,13 @@ public class HeldItemRenderer : IHeldItemRenderer
             float var9 = 1.0F;
             float var10 = 0.0F;
             float var11 = 0.3F;
-            GLManager.GL.Enable(GLEnum.RescaleNormal);
-            GLManager.GL.Translate(-var10, -var11, 0.0F);
+            _sceneRenderBackend.Enable(SceneRenderCapability.RescaleNormal);
+            _sceneRenderBackend.Translate(-var10, -var11, 0.0F);
             float var12 = 1.5F;
-            GLManager.GL.Scale(var12, var12, var12);
-            GLManager.GL.Rotate(50.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(335.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Translate(-(15.0F / 16.0F), -(1.0F / 16.0F), 0.0F);
+            _sceneRenderBackend.Scale(var12, var12, var12);
+            _sceneRenderBackend.Rotate(50.0F, 0.0F, 1.0F, 0.0F);
+            _sceneRenderBackend.Rotate(335.0F, 0.0F, 0.0F, 1.0F);
+            _sceneRenderBackend.Translate(-(15.0F / 16.0F), -(1.0F / 16.0F), 0.0F);
             float var13 = 1.0F / 16.0F;
             var3.startDrawingQuads();
             var3.setNormal(0.0F, 0.0F, 1.0F);
@@ -138,10 +139,10 @@ public class HeldItemRenderer : IHeldItemRenderer
             }
 
             var3.draw();
-            GLManager.GL.Disable(GLEnum.RescaleNormal);
+            _sceneRenderBackend.Disable(SceneRenderCapability.RescaleNormal);
         }
 
-        GLManager.GL.PopMatrix();
+        _sceneRenderBackend.PopMatrix();
     }
 
     public void renderItemInFirstPerson(float var1)
@@ -149,11 +150,11 @@ public class HeldItemRenderer : IHeldItemRenderer
         float var2 = prevEquippedProgress + (equippedProgress - prevEquippedProgress) * var1;
         ClientPlayerEntity var3 = _game.Player;
         float var4 = var3.prevPitch + (var3.pitch - var3.prevPitch) * var1;
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Rotate(var4, 1.0F, 0.0F, 0.0F);
-        GLManager.GL.Rotate(var3.prevYaw + (var3.yaw - var3.prevYaw) * var1, 0.0F, 1.0F, 0.0F);
+        _sceneRenderBackend.PushMatrix();
+        _sceneRenderBackend.Rotate(var4, 1.0F, 0.0F, 0.0F);
+        _sceneRenderBackend.Rotate(var3.prevYaw + (var3.yaw - var3.prevYaw) * var1, 0.0F, 1.0F, 0.0F);
         Lighting.turnOn();
-        GLManager.GL.PopMatrix();
+        _sceneRenderBackend.PopMatrix();
         ItemStack var5 = itemToRender;
         float var6 = _game.World.GetLuminance(MathHelper.Floor(var3.x), MathHelper.Floor(var3.y), MathHelper.Floor(var3.z));
         float var8;
@@ -165,22 +166,22 @@ public class HeldItemRenderer : IHeldItemRenderer
             var8 = (var7 >> 16 & 255) / 255.0F;
             var9 = (var7 >> 8 & 255) / 255.0F;
             var10 = (var7 & 255) / 255.0F;
-            GLManager.GL.Color4(var6 * var8, var6 * var9, var6 * var10, 1.0F);
+            _sceneRenderBackend.SetColor(var6 * var8, var6 * var9, var6 * var10, 1.0F);
         }
         else
         {
-            GLManager.GL.Color4(var6, var6, var6, 1.0F);
+            _sceneRenderBackend.SetColor(var6, var6, var6, 1.0F);
         }
 
         float var14;
         if (itemToRender != null && itemToRender.ItemId == Item.Map.id)
         {
-            GLManager.GL.PushMatrix();
+            _sceneRenderBackend.PushMatrix();
             var14 = 0.8F;
             float swingProgress = var3.getSwingProgress(var1);
             var9 = MathHelper.Sin(swingProgress * (float)Math.PI);
             var10 = MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI);
-            GLManager.GL.Translate(-var10 * 0.4F, MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI * 2.0F) * 0.2F, -var9 * 0.2F);
+            _sceneRenderBackend.Translate(-var10 * 0.4F, MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI * 2.0F) * 0.2F, -var9 * 0.2F);
             swingProgress = 1.0F - var4 / 45.0F + 0.1F;
             if (swingProgress < 0.0F)
             {
@@ -193,45 +194,45 @@ public class HeldItemRenderer : IHeldItemRenderer
             }
 
             swingProgress = -MathHelper.Cos(swingProgress * (float)Math.PI) * 0.5F + 0.5F;
-            GLManager.GL.Translate(0.0F, 0.0F * var14 - (1.0F - var2) * 1.2F - swingProgress * 0.5F + 0.04F, -0.9F * var14);
-            GLManager.GL.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(swingProgress * -85.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Enable(GLEnum.RescaleNormal);
+            _sceneRenderBackend.Translate(0.0F, 0.0F * var14 - (1.0F - var2) * 1.2F - swingProgress * 0.5F + 0.04F, -0.9F * var14);
+            _sceneRenderBackend.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
+            _sceneRenderBackend.Rotate(swingProgress * -85.0F, 0.0F, 0.0F, 1.0F);
+            _sceneRenderBackend.Enable(SceneRenderCapability.RescaleNormal);
             bindSkinTexture();
 
             for (int i = 0; i < 2; i++)
             {
                 int var21 = i * 2 - 1;
-                GLManager.GL.PushMatrix();
-                GLManager.GL.Translate(-0.0F, -0.6F, 1.1F * var21);
-                GLManager.GL.Rotate(-45 * var21, 1.0F, 0.0F, 0.0F);
-                GLManager.GL.Rotate(-90.0F, 0.0F, 0.0F, 1.0F);
-                GLManager.GL.Rotate(59.0F, 0.0F, 0.0F, 1.0F);
-                GLManager.GL.Rotate(-65 * var21, 0.0F, 1.0F, 0.0F);
+                _sceneRenderBackend.PushMatrix();
+                _sceneRenderBackend.Translate(-0.0F, -0.6F, 1.1F * var21);
+                _sceneRenderBackend.Rotate(-45 * var21, 1.0F, 0.0F, 0.0F);
+                _sceneRenderBackend.Rotate(-90.0F, 0.0F, 0.0F, 1.0F);
+                _sceneRenderBackend.Rotate(59.0F, 0.0F, 0.0F, 1.0F);
+                _sceneRenderBackend.Rotate(-65 * var21, 0.0F, 1.0F, 0.0F);
                 EntityRenderer var11 = _game.EntityRenderDispatcher.GetEntityRenderObject(_game.Player);
                 PlayerEntityRenderer var12 = (PlayerEntityRenderer)var11;
                 float var13 = 1.0F;
-                GLManager.GL.Scale(var13, var13, var13);
+                _sceneRenderBackend.Scale(var13, var13, var13);
                 var12.DrawFirstPersonHand();
-                GLManager.GL.PopMatrix();
+                _sceneRenderBackend.PopMatrix();
             }
 
             var9 = var3.getSwingProgress(var1);
             var10 = MathHelper.Sin(var9 * var9 * (float)Math.PI);
             float var18 = MathHelper.Sin(MathHelper.Sqrt(var9) * (float)Math.PI);
-            GLManager.GL.Rotate(-var10 * 20.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(-var18 * 20.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Rotate(-var18 * 80.0F, 1.0F, 0.0F, 0.0F);
+            _sceneRenderBackend.Rotate(-var10 * 20.0F, 0.0F, 1.0F, 0.0F);
+            _sceneRenderBackend.Rotate(-var18 * 20.0F, 0.0F, 0.0F, 1.0F);
+            _sceneRenderBackend.Rotate(-var18 * 80.0F, 1.0F, 0.0F, 0.0F);
             var9 = 0.38F;
-            GLManager.GL.Scale(var9, var9, var9);
-            GLManager.GL.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Translate(-1.0F, -1.0F, 0.0F);
+            _sceneRenderBackend.Scale(var9, var9, var9);
+            _sceneRenderBackend.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
+            _sceneRenderBackend.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
+            _sceneRenderBackend.Translate(-1.0F, -1.0F, 0.0F);
             var10 = (1 / 64f);
-            GLManager.GL.Scale(var10, var10, var10);
+            _sceneRenderBackend.Scale(var10, var10, var10);
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/misc/mapbg.png"));
             Tessellator var19 = Tessellator.instance;
-            GLManager.GL.Normal3(0.0F, 0.0F, -1.0F);
+            _sceneRenderBackend.SetNormal(0.0F, 0.0F, -1.0F);
             var19.startDrawingQuads();
             byte var20 = 7;
             var19.addVertexWithUV(0 - var20, 128 + var20, 0.0D, 0.0D, 1.0D);
@@ -241,73 +242,73 @@ public class HeldItemRenderer : IHeldItemRenderer
             var19.draw();
             MapState mapState = ItemMap.getMapState(itemToRender.getDamage(), _game.World);
             mapRenderer.render(_game.Player, _game.TextureManager, mapState);
-            GLManager.GL.PopMatrix();
+            _sceneRenderBackend.PopMatrix();
         }
         else if (itemToRender != null)
         {
-            GLManager.GL.PushMatrix();
+            _sceneRenderBackend.PushMatrix();
             var14 = 0.8F;
             var8 = var3.getSwingProgress(var1);
             var9 = MathHelper.Sin(var8 * (float)Math.PI);
             var10 = MathHelper.Sin(MathHelper.Sqrt(var8) * (float)Math.PI);
-            GLManager.GL.Translate(-var10 * 0.4F, MathHelper.Sin(MathHelper.Sqrt(var8) * (float)Math.PI * 2.0F) * 0.2F, -var9 * 0.2F);
-            GLManager.GL.Translate(0.7F * var14, -0.65F * var14 - (1.0F - var2) * 0.6F, -0.9F * var14);
-            GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Enable(GLEnum.RescaleNormal);
+            _sceneRenderBackend.Translate(-var10 * 0.4F, MathHelper.Sin(MathHelper.Sqrt(var8) * (float)Math.PI * 2.0F) * 0.2F, -var9 * 0.2F);
+            _sceneRenderBackend.Translate(0.7F * var14, -0.65F * var14 - (1.0F - var2) * 0.6F, -0.9F * var14);
+            _sceneRenderBackend.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
+            _sceneRenderBackend.Enable(SceneRenderCapability.RescaleNormal);
             var8 = var3.getSwingProgress(var1);
             var9 = MathHelper.Sin(var8 * var8 * (float)Math.PI);
             var10 = MathHelper.Sin(MathHelper.Sqrt(var8) * (float)Math.PI);
-            GLManager.GL.Rotate(-var9 * 20.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(-var10 * 20.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Rotate(-var10 * 80.0F, 1.0F, 0.0F, 0.0F);
+            _sceneRenderBackend.Rotate(-var9 * 20.0F, 0.0F, 1.0F, 0.0F);
+            _sceneRenderBackend.Rotate(-var10 * 20.0F, 0.0F, 0.0F, 1.0F);
+            _sceneRenderBackend.Rotate(-var10 * 80.0F, 1.0F, 0.0F, 0.0F);
             var8 = 0.4F;
-            GLManager.GL.Scale(var8, var8, var8);
+            _sceneRenderBackend.Scale(var8, var8, var8);
             if (itemToRender.getItem().isHandheldRod())
             {
-                GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
+                _sceneRenderBackend.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
             }
 
             renderItem(var3, itemToRender);
-            GLManager.GL.PopMatrix();
+            _sceneRenderBackend.PopMatrix();
         }
         else
         {
-            GLManager.GL.PushMatrix();
+            _sceneRenderBackend.PushMatrix();
             var14 = 0.8F;
             var8 = var3.getSwingProgress(var1);
             var9 = MathHelper.Sin(var8 * (float)Math.PI);
             var10 = MathHelper.Sin(MathHelper.Sqrt(var8) * (float)Math.PI);
-            GLManager.GL.Translate(-var10 * 0.3F, MathHelper.Sin(MathHelper.Sqrt(var8) * (float)Math.PI * 2.0F) * 0.4F, -var9 * 0.4F);
-            GLManager.GL.Translate(0.8F * var14, -(12.0F / 16.0F) * var14 - (1.0F - var2) * 0.6F, -0.9F * var14);
-            GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Enable(GLEnum.RescaleNormal);
+            _sceneRenderBackend.Translate(-var10 * 0.3F, MathHelper.Sin(MathHelper.Sqrt(var8) * (float)Math.PI * 2.0F) * 0.4F, -var9 * 0.4F);
+            _sceneRenderBackend.Translate(0.8F * var14, -(12.0F / 16.0F) * var14 - (1.0F - var2) * 0.6F, -0.9F * var14);
+            _sceneRenderBackend.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
+            _sceneRenderBackend.Enable(SceneRenderCapability.RescaleNormal);
             var8 = var3.getSwingProgress(var1);
             var9 = MathHelper.Sin(var8 * var8 * (float)Math.PI);
             var10 = MathHelper.Sin(MathHelper.Sqrt(var8) * (float)Math.PI);
-            GLManager.GL.Rotate(var10 * 70.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(-var9 * 20.0F, 0.0F, 0.0F, 1.0F);
+            _sceneRenderBackend.Rotate(var10 * 70.0F, 0.0F, 1.0F, 0.0F);
+            _sceneRenderBackend.Rotate(-var9 * 20.0F, 0.0F, 0.0F, 1.0F);
             bindSkinTexture();
-            GLManager.GL.Translate(-1.0F, 3.6F, 3.5F);
-            GLManager.GL.Rotate(120.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Rotate(200.0F, 1.0F, 0.0F, 0.0F);
-            GLManager.GL.Rotate(-135.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Scale(1.0F, 1.0F, 1.0F);
-            GLManager.GL.Translate(5.6F, 0.0F, 0.0F);
+            _sceneRenderBackend.Translate(-1.0F, 3.6F, 3.5F);
+            _sceneRenderBackend.Rotate(120.0F, 0.0F, 0.0F, 1.0F);
+            _sceneRenderBackend.Rotate(200.0F, 1.0F, 0.0F, 0.0F);
+            _sceneRenderBackend.Rotate(-135.0F, 0.0F, 1.0F, 0.0F);
+            _sceneRenderBackend.Scale(1.0F, 1.0F, 1.0F);
+            _sceneRenderBackend.Translate(5.6F, 0.0F, 0.0F);
             EntityRenderer var15 = _game.EntityRenderDispatcher.GetEntityRenderObject(_game.Player);
             PlayerEntityRenderer var16 = (PlayerEntityRenderer)var15;
             var10 = 1.0F;
-            GLManager.GL.Scale(var10, var10, var10);
+            _sceneRenderBackend.Scale(var10, var10, var10);
             var16.DrawFirstPersonHand();
-            GLManager.GL.PopMatrix();
+            _sceneRenderBackend.PopMatrix();
         }
 
-        GLManager.GL.Disable(GLEnum.RescaleNormal);
+        _sceneRenderBackend.Disable(SceneRenderCapability.RescaleNormal);
         Lighting.turnOff();
     }
 
     public void renderOverlays(float var1)
     {
-        GLManager.GL.Disable(GLEnum.AlphaTest);
+        _sceneRenderBackend.Disable(SceneRenderCapability.AlphaTest);
         int var2;
         if (_game.Player.isOnFire())
         {
@@ -355,7 +356,7 @@ public class HeldItemRenderer : IHeldItemRenderer
             renderWarpedTextureOverlay(var1);
         }
 
-        GLManager.GL.Enable(GLEnum.AlphaTest);
+        _sceneRenderBackend.Enable(SceneRenderCapability.AlphaTest);
     }
 
     private void renderInsideOfBlock(float var1, int var2)
@@ -363,8 +364,8 @@ public class HeldItemRenderer : IHeldItemRenderer
         Tessellator var3 = Tessellator.instance;
         _game.Player.getBrightnessAtEyes(var1);
         float var4 = 0.1F;
-        GLManager.GL.Color4(var4, var4, var4, 0.5F);
-        GLManager.GL.PushMatrix();
+        _sceneRenderBackend.SetColor(var4, var4, var4, 0.5F);
+        _sceneRenderBackend.PushMatrix();
         float var5 = -1.0F;
         float var6 = 1.0F;
         float var7 = -1.0F;
@@ -381,18 +382,18 @@ public class HeldItemRenderer : IHeldItemRenderer
         var3.addVertexWithUV((double)var6, (double)var8, (double)var9, (double)var11, (double)var13);
         var3.addVertexWithUV((double)var5, (double)var8, (double)var9, (double)var12, (double)var13);
         var3.draw();
-        GLManager.GL.PopMatrix();
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        _sceneRenderBackend.PopMatrix();
+        _sceneRenderBackend.SetColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     private void renderWarpedTextureOverlay(float var1)
     {
         Tessellator var2 = Tessellator.instance;
         float var3 = _game.Player.getBrightnessAtEyes(var1);
-        GLManager.GL.Color4(var3, var3, var3, 0.5F);
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-        GLManager.GL.PushMatrix();
+        _sceneRenderBackend.SetColor(var3, var3, var3, 0.5F);
+        _sceneRenderBackend.Enable(SceneRenderCapability.Blend);
+        _sceneRenderBackend.SetBlendFunction(SceneBlendFactor.SrcAlpha, SceneBlendFactor.OneMinusSrcAlpha);
+        _sceneRenderBackend.PushMatrix();
         float var4 = 4.0F;
         float var5 = -1.0F;
         float var6 = 1.0F;
@@ -407,22 +408,22 @@ public class HeldItemRenderer : IHeldItemRenderer
         var2.addVertexWithUV((double)var6, (double)var8, (double)var9, (double)(0.0F + var10), (double)(0.0F + var11));
         var2.addVertexWithUV((double)var5, (double)var8, (double)var9, (double)(var4 + var10), (double)(0.0F + var11));
         var2.draw();
-        GLManager.GL.PopMatrix();
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.GL.Disable(GLEnum.Blend);
+        _sceneRenderBackend.PopMatrix();
+        _sceneRenderBackend.SetColor(1.0F, 1.0F, 1.0F, 1.0F);
+        _sceneRenderBackend.Disable(SceneRenderCapability.Blend);
     }
 
     private void renderFireInFirstPerson(float var1)
     {
         Tessellator var2 = Tessellator.instance;
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 0.9F);
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        _sceneRenderBackend.SetColor(1.0F, 1.0F, 1.0F, 0.9F);
+        _sceneRenderBackend.Enable(SceneRenderCapability.Blend);
+        _sceneRenderBackend.SetBlendFunction(SceneBlendFactor.SrcAlpha, SceneBlendFactor.OneMinusSrcAlpha);
         float var3 = 1.0F;
 
         for (int var4 = 0; var4 < 2; ++var4)
         {
-            GLManager.GL.PushMatrix();
+            _sceneRenderBackend.PushMatrix();
             int var5 = Block.Fire.TextureId + var4 * 16;
             int var6 = (var5 & 15) << 4;
             int var7 = var5 & 240;
@@ -435,19 +436,19 @@ public class HeldItemRenderer : IHeldItemRenderer
             float var14 = 0.0F - var3 / 2.0F;
             float var15 = var14 + var3;
             float var16 = -0.5F;
-            GLManager.GL.Translate(-(var4 * 2 - 1) * 0.24F, -0.3F, 0.0F);
-            GLManager.GL.Rotate((var4 * 2 - 1) * 10.0F, 0.0F, 1.0F, 0.0F);
+            _sceneRenderBackend.Translate(-(var4 * 2 - 1) * 0.24F, -0.3F, 0.0F);
+            _sceneRenderBackend.Rotate((var4 * 2 - 1) * 10.0F, 0.0F, 1.0F, 0.0F);
             var2.startDrawingQuads();
             var2.addVertexWithUV((double)var12, (double)var14, (double)var16, (double)var9, (double)var11);
             var2.addVertexWithUV((double)var13, (double)var14, (double)var16, (double)var8, (double)var11);
             var2.addVertexWithUV((double)var13, (double)var15, (double)var16, (double)var8, (double)var10);
             var2.addVertexWithUV((double)var12, (double)var15, (double)var16, (double)var9, (double)var10);
             var2.draw();
-            GLManager.GL.PopMatrix();
+            _sceneRenderBackend.PopMatrix();
         }
 
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.GL.Disable(GLEnum.Blend);
+        _sceneRenderBackend.SetColor(1.0F, 1.0F, 1.0F, 1.0F);
+        _sceneRenderBackend.Disable(SceneRenderCapability.Blend);
     }
 
     public void updateEquippedItem()
