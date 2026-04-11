@@ -654,6 +654,7 @@ internal class OverworldChunkGenerator : IChunkSource
     public void BuildSurfaces(int chunkX, int chunkZ, byte[] blocks, Biome[] biomes)
     {
         const byte WATER_LEVEL = 64;
+        const byte CHUNK_HEIGHT = 128;
         const double oneThirtySecond = 1.0D / 32.0D;
         _sandBuffer = _sandGravelNoise.create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, oneThirtySecond, oneThirtySecond, 1.0D);
         _gravelBuffer = _sandGravelNoise.create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, oneThirtySecond, 1.0D, oneThirtySecond);
@@ -664,23 +665,24 @@ internal class OverworldChunkGenerator : IChunkSource
             for (int z = 0; z < 16; ++z)
             {
                 Biome biome = biomes[x + z * 16];
-                bool fraction = _sandBuffer[x + z * 16] + _random.NextDouble() * 0.2D > 0.0D;
-                bool temperatureBuffer = _gravelBuffer[x + z * 16] + _random.NextDouble() * 0.2D > 3.0D;
+                bool sandActive = _sandBuffer[x + z * 16] + _random.NextDouble() * 0.2D > 0.0D;
+                bool gravelActive = _gravelBuffer[x + z * 16] + _random.NextDouble() * 0.2D > 3.0D;
                 int stoneActive = (int)(_depthBuffer[x + z * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
                 int stoneDepth = -1;
                 byte topBlock = biome.TopBlockId;
                 byte fillerBlock = biome.SoilBlockId;
 
-                for (int y = 127; y >= 0; --y)
+                for (int y = CHUNK_HEIGHT-1; y >= 0; --y)
                 {
-                    int treeFeature = (z * 16 + x) * 128 + y;
+                    int blockIndex = (z * 16 + x) * CHUNK_HEIGHT + y;
+                    // Generate Bedrock floor
                     if (y <= 0 + _random.NextInt(5))
                     {
-                        blocks[treeFeature] = (byte)Block.Bedrock.id;
+                        blocks[blockIndex] = (byte)Block.Bedrock.id;
                     }
                     else
                     {
-                        byte activeBlock = blocks[treeFeature];
+                        byte activeBlock = blocks[blockIndex];
                         if (activeBlock == 0) // Air
                         {
                             stoneDepth = -1;
@@ -698,22 +700,22 @@ internal class OverworldChunkGenerator : IChunkSource
                                 {
                                     topBlock = biome.TopBlockId;
                                     fillerBlock = biome.SoilBlockId;
-                                    if (temperatureBuffer)
+                                    if (gravelActive)
                                     {
                                         topBlock = 0;
                                     }
 
-                                    if (temperatureBuffer)
+                                    if (gravelActive)
                                     {
                                         fillerBlock = (byte)Block.Gravel.id;
                                     }
 
-                                    if (fraction)
+                                    if (sandActive)
                                     {
                                         topBlock = (byte)Block.Sand.id;
                                     }
 
-                                    if (fraction)
+                                    if (sandActive)
                                     {
                                         fillerBlock = (byte)Block.Sand.id;
                                     }
@@ -724,24 +726,24 @@ internal class OverworldChunkGenerator : IChunkSource
                                     topBlock = (byte)Block.Water.id;
                                 }
 
-                                featureY = stoneActive;
-                                if (iX >= WATER_LEVEL - 1)
+                                stoneDepth = stoneActive;
+                                if (y >= WATER_LEVEL - 1)
                                 {
-                                    blocks[treeFeature] = topBlock;
+                                    blocks[blockIndex] = topBlock;
                                 }
                                 else
                                 {
-                                    blocks[treeFeature] = scaleFraction;
+                                    blocks[blockIndex] = fillerBlock;
                                 }
                             }
-                            else if (featureY > 0)
+                            else if (stoneDepth > 0)
                             {
-                                --featureY;
-                                blocks[treeFeature] = scaleFraction;
-                                if (featureY == 0 && scaleFraction == Block.Sand.id)
+                                --stoneDepth;
+                                blocks[blockIndex] = fillerBlock;
+                                if (stoneDepth == 0 && fillerBlock == Block.Sand.id)
                                 {
-                                    featureY = _random.NextInt(4);
-                                    scaleFraction = (byte)Block.Sandstone.id;
+                                    stoneDepth = _random.NextInt(4);
+                                    fillerBlock = (byte)Block.Sandstone.id;
                                 }
                             }
                         }
