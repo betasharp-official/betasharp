@@ -398,6 +398,8 @@ internal class LargeOakTreeFeature : Feature
             height = 5 + rand.NextInt(maxTrunkHeight);
         }
 
+        if (y + height >= level.Properties.WorldHeight) return false;
+
         if (!canPlace())
         {
             return false;
