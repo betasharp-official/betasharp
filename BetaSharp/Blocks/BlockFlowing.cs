@@ -200,7 +200,7 @@ internal class BlockFlowing(int id, Material material) : BlockFluid(id, material
                     break;
             }
 
-            if (isLiquidBreaking(world, neighborX, y, neighborZ) || (world.Reader.GetMaterial(neighborX, y, neighborZ) == material && world.GetBlockMeta(neighborX, y, neighborZ) == 0))
+            if (isLiquidBreaking(world, neighborX, y, neighborZ) || (world.Reader.GetMaterial(neighborX, y, neighborZ) == material && world.Reader.GetBlockMeta(neighborX, y, neighborZ) == 0))
             {
                 continue;
             }
@@ -251,7 +251,7 @@ internal class BlockFlowing(int id, Material material) : BlockFluid(id, material
                     break;
             }
 
-            if (isLiquidBreaking(world, neighborX, y, neighborZ) || (world.Reader.GetMaterial(neighborX, y, neighborZ) == material && world.GetBlockMeta(neighborX, y, neighborZ) == 0))
+            if (isLiquidBreaking(world, neighborX, y, neighborZ) || (world.Reader.GetMaterial(neighborX, y, neighborZ) == material && world.Reader.GetBlockMeta(neighborX, y, neighborZ) == 0))
             {
                 continue;
             }
