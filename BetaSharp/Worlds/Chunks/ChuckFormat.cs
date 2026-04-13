@@ -4,6 +4,10 @@ namespace BetaSharp.Worlds.Chunks;
 
 public static class ChuckFormat
 {
+    /// <summary>
+    /// Unlike <see cref="ChunkHeight"/>, WorldHeight can be changed without breaking the game or compatibility.
+    /// </summary>
+    public static int WorldHeight => 128;
     public static int ChunkHeight => 128;
     public static int ChunkSize => ChunkHeight * 16 * 16;
     public static int GetIndex(int x, int y, int z) => (x << 11) | (z << 7) | y;

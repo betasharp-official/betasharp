@@ -167,12 +167,11 @@ internal class RegionChunkStorage : IChunkStorage
             chunk.SkyLight = new ChunkNibbleArray(chunk.Blocks.Length);
             chunk.PopulateHeightMap();
         }
-        else if (chunk.HeightMap.Length == world.Properties.WorldHeight)
+        else if (chunk.HeightMap.Length == ChuckFormat.WorldHeight)
         {
-            int h = world.Properties.WorldHeight - 1;
             foreach (byte height in chunk.HeightMap)
             {
-                if (height > h)
+                if (height > ChuckFormat.WorldHeight - 1)
                 {
                     chunk.PopulateHeightMapOnly();
                     break;
@@ -246,7 +245,7 @@ internal class RegionChunkStorage : IChunkStorage
                 int x = tickTag.GetInteger("x");
                 int y = tickTag.GetInteger("y");
                 int z = tickTag.GetInteger("z");
-                if (y < 0 || y >= world.Properties.WorldHeight || x < minWx || x > maxWx || z < minWz || z > maxWz)
+                if (y < 0 || y >= ChuckFormat.WorldHeight || x < minWx || x > maxWx || z < minWz || z > maxWz)
                 {
                     Log.Instance.For<RegionChunkStorage>().LogDebug("Skipping TileTicks entry with out-of-range coordinates ({X},{Y},{Z}) for chunk {ChunkX},{ChunkZ}", x, y, z, chunkX, chunkZ);
                     continue;

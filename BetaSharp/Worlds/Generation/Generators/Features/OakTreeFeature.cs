@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
@@ -10,7 +11,7 @@ internal class OakTreeFeature : Feature
     {
         int treeHeight = rand.NextInt(3) + 4;
         bool canPlace = true;
-        if (!(y >= 1 && y + treeHeight + 1 <= level.Properties.WorldHeight))
+        if (!(y >= 1 && y + treeHeight + 1 <= ChuckFormat.WorldHeight))
         {
             return false;
         }
@@ -33,7 +34,7 @@ internal class OakTreeFeature : Feature
             {
                 for (int cz = z - checkRadius; cz <= z + checkRadius && canPlace; ++cz)
                 {
-                    if (cy >= 0 && cy < level.Properties.WorldHeight)
+                    if (cy >= 0 && cy < ChuckFormat.WorldHeight)
                     {
                         int blockId = level.Reader.GetBlockId(cx, cy, cz);
                         if (blockId != 0 && blockId != Block.Leaves.id)
@@ -55,7 +56,7 @@ internal class OakTreeFeature : Feature
         }
 
         int groundId = level.Reader.GetBlockId(x, y - 1, z);
-        if ((groundId == Block.GrassBlock.id || groundId == Block.Dirt.id) && y < level.Properties.WorldHeight - treeHeight - 1)
+        if ((groundId == Block.GrassBlock.id || groundId == Block.Dirt.id) && y < ChuckFormat.WorldHeight - treeHeight - 1)
         {
             level.Writer.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id, 0, false);
 

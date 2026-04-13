@@ -118,10 +118,9 @@ public abstract class BetaSharpServer : ICommandOutput
         string typeString = config.GetLevelType("DEFAULT");
         WorldType worldType = WorldType.ParseWorldType(typeString) ?? WorldType.Default;
         string optionsString = config.GetLevelOptions("");
-        int worldHeight = config.GetWorldHeight(WorldSettings.DefaultWorldHeight);
 
         _logger.LogInformation("Preparing level \"{WorldName}\"", worldName);
-        loadWorld(worldName, new WorldSettings(seed, worldType, worldHeight, optionsString));
+        loadWorld(worldName, new WorldSettings(seed, worldType, optionsString));
 
         foreach (IRegistryReloadListener listener in _reloadListeners)
         {

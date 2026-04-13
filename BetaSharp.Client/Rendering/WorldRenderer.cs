@@ -16,6 +16,7 @@ using BetaSharp.Profiling;
 using BetaSharp.Util;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core;
 using Silk.NET.Maths;
 
@@ -248,9 +249,9 @@ public class WorldRenderer : IWorldEventListener
                     {
                         yFloor = 0;
                     }
-                    else if (yFloor >= _world.Properties.WorldHeight)
+                    else if (yFloor >= ChuckFormat.WorldHeight)
                     {
-                        yFloor = _world.Properties.WorldHeight - 1;
+                        yFloor = ChuckFormat.WorldHeight - 1;
                     }
 
                     if (_world.Reader.IsPosLoaded(MathHelper.Floor(var7.x), yFloor, MathHelper.Floor(var7.z)))

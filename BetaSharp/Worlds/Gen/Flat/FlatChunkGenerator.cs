@@ -58,7 +58,7 @@ internal class FlatChunkGenerator : IChunkSource
             int blockId = layer.FillBlock;
             int blockMeta = layer.FillBlockMeta;
 
-            for (int y = layer.MinY; y < layer.MinY + layer.LayerCount & y < _world.Properties.WorldHeight; ++y)
+            for (int y = layer.MinY; y < layer.MinY + layer.LayerCount & y < ChuckFormat.WorldHeight; ++y)
             {
 
                 for (int x = 0; x < 16; ++x)

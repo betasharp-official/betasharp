@@ -1,3 +1,5 @@
+using BetaSharp.Worlds.Chunks;
+
 namespace BetaSharp.Blocks;
 
 internal class BlockMushroom : BlockPlant
@@ -30,5 +32,5 @@ internal class BlockMushroom : BlockPlant
 
     protected override bool canPlantOnTop(int id) => id == GrassBlock.id || id == Dirt.id || id == Stone.id || id == Gravel.id || id == Cobblestone.id;
 
-    public override bool canGrow(OnTickEvent ctx) => ctx.Y >= 0 && ctx.Y < ctx.World.Properties.WorldHeight && (ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < 13 && canPlantOnTop(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z)));
+    public override bool canGrow(OnTickEvent ctx) => ctx.Y >= 0 && ctx.Y < ChuckFormat.WorldHeight && (ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < 13 && canPlantOnTop(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z)));
 }

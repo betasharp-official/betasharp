@@ -2,7 +2,7 @@ using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.PathFinding;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Generation.Biomes;
 
@@ -133,9 +133,9 @@ internal static class NaturalSpawner
                 {
                     spawnY = 1;
                 }
-                else if (spawnY > world.Properties.WorldHeight)
+                else if (spawnY > ChuckFormat.WorldHeight)
                 {
-                    spawnY = world.Properties.WorldHeight;
+                    spawnY = ChuckFormat.WorldHeight;
                 }
 
                 int r = world.Random.NextInt(Monsters.Length);
@@ -147,12 +147,12 @@ internal static class NaturalSpawner
                 }
 
                 while (!CreatureKind.Monster.CanSpawnAtLocation(world.Reader, spawnX, newSpawnY, spawnZ) &&
-                       newSpawnY < spawnY + 16 && newSpawnY < world.Properties.WorldHeight)
+                       newSpawnY < spawnY + 16 && newSpawnY < ChuckFormat.WorldHeight)
                 {
                     ++newSpawnY;
                 }
 
-                if (newSpawnY < spawnY + 16 && newSpawnY < world.Properties.WorldHeight)
+                if (newSpawnY < spawnY + 16 && newSpawnY < ChuckFormat.WorldHeight)
                 {
                     EntityLiving entity = Monsters[r](world);
 

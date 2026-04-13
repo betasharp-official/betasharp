@@ -13,6 +13,7 @@ using BetaSharp.Server.Network;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
@@ -317,7 +318,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         int worldX = chunkPos.X * 16;
         int worldZ = chunkPos.Z * 16;
-        NetworkHandler.SendPacket(ChunkDataS2CPacket.Get(worldX, 0, worldZ, 16, world.Properties.WorldHeight, 16, world));
+        NetworkHandler.SendPacket(ChunkDataS2CPacket.Get(worldX, 0, worldZ, 16, ChuckFormat.WorldHeight, 16, world));
     }
 
     private void SendBlockEntityUpdates(IWorldContext world, ChunkPos chunkPos)
@@ -327,7 +328,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         int endX = startX + 16;
         int endZ = startZ + 16;
 
-        var blockEntities = world.Entities.GetBlockEntities(startX, 0, startZ, endX, world.Properties.WorldHeight, endZ);
+        var blockEntities = world.Entities.GetBlockEntities(startX, 0, startZ, endX, ChuckFormat.WorldHeight, endZ);
         foreach (BlockEntity blockEntity in blockEntities)
         {
             updateBlockEntity(blockEntity);

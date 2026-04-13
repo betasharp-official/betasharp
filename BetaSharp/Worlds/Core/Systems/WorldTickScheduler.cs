@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Worlds.Chunks;
 
 namespace BetaSharp.Worlds.Core.Systems;
 
@@ -39,7 +40,7 @@ public class WorldTickScheduler
     {
         const byte loadRadius = 8;
         int minY = Math.Max(0, y - loadRadius);
-        int maxY = Math.Min(_context.Properties.WorldHeight -1, y + loadRadius);
+        int maxY = Math.Min(ChuckFormat.WorldHeight -1, y + loadRadius);
 
         if (!_context.ChunkHost.IsPosLoaded(x - loadRadius, minY, z - loadRadius) ||
             !_context.ChunkHost.IsPosLoaded(x + loadRadius, maxY, z + loadRadius))
@@ -93,7 +94,7 @@ public class WorldTickScheduler
         {
             int proportionalLimit = Math.Clamp(_scheduledUpdates.Count / 10, 1000, 8192);
             int maxTicksPerFrame = forceFlush ? _scheduledUpdates.Count : proportionalLimit;
-            int h = _context.Properties.WorldHeight - 1;
+            int h = ChuckFormat.WorldHeight - 1;
 
             for (int i = 0; i < maxTicksPerFrame; ++i)
             {

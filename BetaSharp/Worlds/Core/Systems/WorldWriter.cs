@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Worlds.Chunks;
 
 namespace BetaSharp.Worlds.Core.Systems;
 
@@ -70,7 +71,7 @@ public sealed class WorldWriter : IBlockWriter
         if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000 && y >= 0)
         {
             var chunk = _host.GetChunk(x >> 4, z >> 4);
-            if (y >= chunk.World.Properties.WorldHeight) return false;
+            if (y >= ChuckFormat.WorldHeight) return false;
             return chunk.SetBlock(x & 15, y, z & 15, id, meta);
         }
 
@@ -111,10 +112,10 @@ public sealed class WorldWriter : IBlockWriter
         int chunkZ = z >> 4;
 
         var chunk = _host.GetChunk(chunkX, chunkZ);
-        if (y >= chunk.World.Properties.WorldHeight) return false;
+        if (y >= ChuckFormat.WorldHeight) return false;
         bool changed = chunk.SetBlock(x & 15, y, z & 15, blockId, meta, notifyBlockPlaced);
 
-        if (!changed || chunk.World is not BetaSharp.Worlds.Core.ServerWorld serverWorld || serverWorld.IsRemote) return changed;
+        if (!changed || chunk.World is not ServerWorld serverWorld || serverWorld.IsRemote) return changed;
 
         if (serverWorld.ChunkMap.IsChunkTrackedAndSent(chunkX, chunkZ))
         {
@@ -134,10 +135,10 @@ public sealed class WorldWriter : IBlockWriter
         int chunkZ = z >> 4;
 
         var chunk = _host.GetChunk(chunkX, chunkZ);
-        if (y >= chunk.World.Properties.WorldHeight) return false;
+        if (y >= ChuckFormat.WorldHeight) return false;
         bool changed = chunk.SetBlock(x & 15, y, z & 15, blockId, notifyBlockPlaced);
 
-        if (!changed || chunk.World is not BetaSharp.Worlds.Core.ServerWorld serverWorld || serverWorld.IsRemote) return changed;
+        if (!changed || chunk.World is not ServerWorld serverWorld || serverWorld.IsRemote) return changed;
 
         if (serverWorld.ChunkMap.IsChunkTrackedAndSent(chunkX, chunkZ))
         {
@@ -153,7 +154,7 @@ public sealed class WorldWriter : IBlockWriter
         if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0) return false;
 
         var chunk = _host.GetChunk(x >> 4, z >> 4);
-        if (y >= chunk.World.Properties.WorldHeight) return false;
+        if (y >= ChuckFormat.WorldHeight) return false;
         chunk.SetBlockMeta(x & 15, y, z & 15, meta);
         return true;
     }

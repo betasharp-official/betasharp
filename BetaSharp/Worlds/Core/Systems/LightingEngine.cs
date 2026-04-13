@@ -15,8 +15,6 @@ public class LightingEngine : ILightProvider
     private int _lightingUpdatesCounter;
     private int _lightingUpdatesScheduled;
 
-    public int WorldHeight => _world.Properties.WorldHeight;
-
     public LightingEngine(IWorldContext world)
     {
         _world = world;
@@ -46,7 +44,7 @@ public class LightingEngine : ILightProvider
             return 0;
         }
 
-        if (y >= WorldHeight)
+        if (y >= ChuckFormat.WorldHeight)
         {
             return !_world.Dimension.HasCeiling ? 15 : 0;
         }
@@ -104,7 +102,7 @@ public class LightingEngine : ILightProvider
             return 0;
         }
 
-        if (y >= WorldHeight)
+        if (y >= ChuckFormat.WorldHeight)
         {
             return !_world.Dimension.HasCeiling ? 15 - _world.Environment.AmbientDarkness : 0;
         }
@@ -152,7 +150,7 @@ public class LightingEngine : ILightProvider
             y = 0;
         }
 
-        if (y >= WorldHeight)
+        if (y >= ChuckFormat.WorldHeight)
         {
             return type.lightValue;
         }
@@ -177,7 +175,7 @@ public class LightingEngine : ILightProvider
     {
         if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000)
         {
-            if (y >= 0 && y < WorldHeight)
+            if (y >= 0 && y < ChuckFormat.WorldHeight)
             {
                 if (_world.ChunkHost.HasChunk(x >> 4, z >> 4))
                 {

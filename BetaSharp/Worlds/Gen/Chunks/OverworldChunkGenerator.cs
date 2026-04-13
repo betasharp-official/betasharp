@@ -476,7 +476,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
                 int offsetZ = z - (blockZ + 8);
                 int topSolidBlockY = _world.Reader.GetTopSolidBlockY(x, z);
                 double temperatureSample = _temperatures[offsetX * 16 + offsetZ] - (topSolidBlockY - 64) / 64.0D * 0.3D;
-                if (temperatureSample < 0.5D && topSolidBlockY > 0 && topSolidBlockY < _world.Properties.WorldHeight && _world.Reader.IsAir(x, topSolidBlockY, z) && _world.Reader.GetMaterial(x, topSolidBlockY - 1, z).BlocksMovement &&
+                if (temperatureSample < 0.5D && topSolidBlockY > 0 && topSolidBlockY < ChuckFormat.WorldHeight && _world.Reader.IsAir(x, topSolidBlockY, z) && _world.Reader.GetMaterial(x, topSolidBlockY - 1, z).BlocksMovement &&
                     _world.Reader.GetMaterial(x, topSolidBlockY - 1, z) != Material.Ice)
                 {
                     _world.Writer.SetBlock(x, topSolidBlockY, z, Block.Snow.id, 0, doUpdate: false);
@@ -641,7 +641,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
         _gravelBuffer = _sandGravelNoise.create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, oneThirtySecond, 1.0D, oneThirtySecond);
         _depthBuffer = _depthNoise.create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, oneThirtySecond * 2.0D, oneThirtySecond * 2.0D, oneThirtySecond * 2.0D);
 
-        int maxHeight = Math.Min(_world.Properties.WorldHeight, ChuckFormat.ChunkHeight) - 1;
+        int maxHeight = Math.Min(ChuckFormat.WorldHeight, ChuckFormat.ChunkHeight) - 1;
 
         for (int localX = 0; localX < 16; ++localX)
         {

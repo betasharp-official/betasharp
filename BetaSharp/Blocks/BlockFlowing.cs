@@ -1,4 +1,5 @@
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
@@ -287,7 +288,7 @@ internal class BlockFlowing(int id, Material material) : BlockFluid(id, material
 
     private static bool isLiquidBreaking(IWorldContext world, int x, int y, int z)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= world.Properties.WorldHeight) return false;
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= ChuckFormat.WorldHeight) return false;
 
         if (!world.Reader.IsPosLoaded(x, y, z)) return true;
 
@@ -320,7 +321,7 @@ internal class BlockFlowing(int id, Material material) : BlockFluid(id, material
 
     private bool canSpreadTo(IWorldContext world, int x, int y, int z)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= world.Properties.WorldHeight) return false;
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= ChuckFormat.WorldHeight) return false;
 
         if (!world.Reader.IsPosLoaded(x, y, z)) return false;
 

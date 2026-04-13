@@ -4,6 +4,7 @@ using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core.Systems;
 using Math = System.Math;
 
@@ -737,7 +738,7 @@ public abstract class Entity
         int maxY = MathHelper.Floor(boundingBox.MaxY);
         int maxZ = MathHelper.Floor(boundingBox.MaxZ);
 
-        int h = world.Properties.WorldHeight - 1;
+        int h = ChuckFormat.WorldHeight - 1;
         minY = Math.Clamp(minY, 0, h);
         maxY = Math.Clamp(maxY, 0, h);
 

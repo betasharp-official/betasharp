@@ -2,7 +2,7 @@ using BetaSharp.Worlds.Chunks;
 
 namespace BetaSharp.Worlds.Core.Systems;
 
-public sealed class ChunkHost(IChunkSource chunkSource, int worldHeight)
+public sealed class ChunkHost(IChunkSource chunkSource)
 {
     public IChunkSource ChunkSource => chunkSource;
 
@@ -12,13 +12,13 @@ public sealed class ChunkHost(IChunkSource chunkSource, int worldHeight)
 
     public Chunk GetChunk(int chunkX, int chunkZ) => chunkSource.GetChunk(chunkX, chunkZ);
 
-    public bool IsPosLoaded(int x, int y, int z) => y is >= 0 && y < worldHeight && HasChunk(x >> 4, z >> 4);
+    public bool IsPosLoaded(int x, int y, int z) => y is >= 0 && y < ChuckFormat.WorldHeight && HasChunk(x >> 4, z >> 4);
 
     public bool IsRegionLoaded(int x, int y, int z, int range) => IsRegionLoaded(x - range, y - range, z - range, x + range, y + range, z + range);
 
     public bool IsRegionLoaded(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
-        if (maxY >= 0 && minY < worldHeight)
+        if (maxY >= 0 && minY < ChuckFormat.WorldHeight)
         {
             minX >>= 4;
             minZ >>= 4;
@@ -53,7 +53,7 @@ public sealed class ChunkHost(IChunkSource chunkSource, int worldHeight)
 
         int currentBufferOffset = 0;
         int minY = Math.Max(0, y);
-        int maxY = Math.Min(worldHeight, y + sizeY);
+        int maxY = Math.Min(ChuckFormat.WorldHeight, y + sizeY);
 
         for (int chunkX = startChunkX; chunkX <= endChunkX; chunkX++)
         {

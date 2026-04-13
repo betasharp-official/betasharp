@@ -1,4 +1,5 @@
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
@@ -398,7 +399,7 @@ internal class LargeOakTreeFeature : Feature
             height = 5 + rand.NextInt(maxTrunkHeight);
         }
 
-        if (y + height >= level.Properties.WorldHeight) return false;
+        if (y + height >= ChuckFormat.WorldHeight) return false;
 
         if (!canPlace())
         {

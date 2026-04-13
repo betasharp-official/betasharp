@@ -76,7 +76,7 @@ public abstract class World : IWorldContext
             ? RuleSet.FromNBT(RuleRegistry.Instance, Properties.RulesTag)
             : new RuleSet(RuleRegistry.Instance);
 
-        BlockHost = new ChunkHost(chunkSource, Properties.WorldHeight);
+        BlockHost = new ChunkHost(chunkSource);
         Reader = new WorldReader(this, Dimension);
         Writer = new WorldWriter(BlockHost, Reader);
         Writer.OnBlockChanged += BlockUpdate;
@@ -564,7 +564,7 @@ public abstract class World : IWorldContext
                 int worldZ = localZ + worldZBase;
                 int worldY = Reader.GetTopSolidBlockY(worldX, worldZ);
 
-                if (GetBiomeSource().GetBiome(worldX, worldZ).GetEnableSnow() && worldY >= 0 && worldY < Properties.WorldHeight &&
+                if (GetBiomeSource().GetBiome(worldX, worldZ).GetEnableSnow() && worldY >= 0 && worldY < ChuckFormat.WorldHeight &&
                     currentChunk.GetLight(LightType.Block, localX, worldY, localZ) < 10)
                 {
                     int blockBelowId = currentChunk.GetBlockId(localX, worldY - 1, localZ);
@@ -636,7 +636,7 @@ public abstract class World : IWorldContext
 
         int currentBufferOffset = 0;
         int minY = Math.Max(0, y);
-        int maxY = Math.Min(Properties.WorldHeight, y + sizeY);
+        int maxY = Math.Min(ChuckFormat.WorldHeight, y + sizeY);
 
         for (int chunkX = startChunkX; chunkX <= endChunkX; ++chunkX)
         {

@@ -6,16 +6,14 @@ internal class InternalServerConfiguration : IServerConfiguration
     private readonly string _levelType;
     private readonly string _seed;
     private readonly string _levelOptions;
-    private readonly int _worldHeight;
     private int _viewDistance;
 
-    public InternalServerConfiguration(string levelName, string levelType, string seed, string levelOptions, int viewDistance, int worldHeight)
+    public InternalServerConfiguration(string levelName, string levelType, string seed, string levelOptions, int viewDistance)
     {
         _levelName = levelName;
         _levelType = levelType;
         _seed = seed;
         _levelOptions = levelOptions;
-        _worldHeight = worldHeight;
         _viewDistance = viewDistance;
     }
 
@@ -113,8 +111,6 @@ internal class InternalServerConfiguration : IServerConfiguration
     {
         return _viewDistance;
     }
-
-    public int GetWorldHeight(int fallback) => _worldHeight;
 
     public bool GetWhiteList(bool fallback)
     {

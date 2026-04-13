@@ -17,7 +17,6 @@ public interface IServerConfiguration
     bool GetAllowNether(bool fallback);
     int GetMaxPlayers(int fallback);
     int GetViewDistance(int fallback);
-    int GetWorldHeight(int fallback);
     bool GetWhiteList(bool fallback);
     int GetSpawnRegionSize(int fallback);
     string GetDefaultGamemode(string fallback);

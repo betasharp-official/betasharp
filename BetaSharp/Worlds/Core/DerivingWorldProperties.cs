@@ -13,7 +13,6 @@ internal class DerivingWorldProperties : WorldProperties
     public override int SpawnX => _baseProperties.SpawnX;
     public override int SpawnY => _baseProperties.SpawnY;
     public override int SpawnZ => _baseProperties.SpawnZ;
-    public override int WorldHeight => _baseProperties.WorldHeight;
     public override long WorldTime => _baseProperties.WorldTime;
     public override long LastTimePlayed => _baseProperties.LastTimePlayed;
     public override long SizeOnDisk => _baseProperties.SizeOnDisk;

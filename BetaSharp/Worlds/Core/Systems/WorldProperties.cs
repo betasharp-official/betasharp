@@ -16,7 +16,6 @@ public class WorldProperties
         SpawnX = nbt.GetInteger("SpawnX");
         SpawnY = nbt.GetInteger("SpawnY");
         SpawnZ = nbt.GetInteger("SpawnZ");
-        WorldHeight = nbt.GetInteger("worldHeight");
         WorldTime = nbt.GetLong("Time");
         LastTimePlayed = nbt.GetLong("LastPlayed");
         LevelName = nbt.GetString("LevelName");
@@ -25,8 +24,6 @@ public class WorldProperties
         IsRaining = nbt.GetBoolean("raining");
         ThunderTime = nbt.GetInteger("thunderTime");
         IsThundering = nbt.GetBoolean("thundering");
-
-        if (WorldHeight == 0) WorldHeight = WorldSettings.DefaultWorldHeight;
 
         if (nbt.HasKey("generatorName"))
         {
@@ -68,7 +65,6 @@ public class WorldProperties
         LevelName = levelName;
         TerrainType = settings.TerrainType;
         GeneratorOptions = settings.GeneratorOptions;
-        WorldHeight = settings.WorldHeight;
     }
 
     public WorldProperties(WorldProperties WorldProp)
@@ -77,7 +73,6 @@ public class WorldProperties
         SpawnX = WorldProp.SpawnX;
         SpawnY = WorldProp.SpawnY;
         SpawnZ = WorldProp.SpawnZ;
-        WorldHeight = WorldProp.WorldHeight;
         WorldTime = WorldProp.WorldTime;
         LastTimePlayed = WorldProp.LastTimePlayed;
         SizeOnDisk = WorldProp.SizeOnDisk;
@@ -98,7 +93,6 @@ public class WorldProperties
     public virtual int SpawnX { get; set; }
     public virtual int SpawnY { get; set; }
     public virtual int SpawnZ { get; set; }
-    public virtual int WorldHeight { get; set; } = WorldSettings.DefaultWorldHeight;
     public virtual long WorldTime { get; set; }
     public virtual long LastTimePlayed { get; }
     public virtual long SizeOnDisk { get; set; }
@@ -113,8 +107,6 @@ public class WorldProperties
     public virtual bool IsThundering { get; set; }
     public virtual int ThunderTime { get; set; }
     public virtual string GeneratorOptions { get; set; } = "";
-
-    public int ChunkSize => WorldHeight * 16 * 16;
 
     public NBTTagCompound getNBTTagCompound()
     {
@@ -144,7 +136,6 @@ public class WorldProperties
         worldNbt.SetInteger("SpawnX", SpawnX);
         worldNbt.SetInteger("SpawnY", SpawnY);
         worldNbt.SetInteger("SpawnZ", SpawnZ);
-        worldNbt.SetInteger("worldHeight", WorldHeight);
         worldNbt.SetLong("Time", WorldTime);
         worldNbt.SetLong("SizeOnDisk", SizeOnDisk);
 
