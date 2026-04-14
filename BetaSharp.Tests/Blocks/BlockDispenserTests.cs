@@ -121,7 +121,7 @@ public sealed class BlockDispenserTests
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(23, 64, 23, Block.Dispenser.id, 3);
         AttachDispenser(world, 23, 64, 23);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(23, 64, 23)!.setStack(0, new ItemStack(Item.ARROW.id, 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(23, 64, 23)!.SetStack(0, new ItemStack(Item.ARROW, 1));
 
         int before = world.Entities.Entities.Count;
         Block.Dispenser.onTick(DispenserTick(world, 23, 64, 23));
@@ -146,7 +146,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(3, 63, 3, Block.LitRedstoneTorch.id);
         world.ReaderWriter.SetInitial(3, 64, 3, Block.Dispenser.id, 3);
         AttachDispenser(world, 3, 64, 3);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(3, 64, 3)!.setStack(0, new ItemStack(Item.ARROW.id, 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(3, 64, 3)!.SetStack(0, new ItemStack(Item.ARROW, 1));
 
         Block.Dispenser.onTick(DispenserTick(world, 3, 64, 3));
 
@@ -160,7 +160,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(30, 63, 30, Block.LitRedstoneTorch.id);
         world.ReaderWriter.SetInitial(30, 64, 30, Block.Dispenser.id, 2);
         AttachDispenser(world, 30, 64, 30);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(30, 64, 30)!.setStack(0, new ItemStack(Item.ARROW.id, 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(30, 64, 30)!.SetStack(0, new ItemStack(Item.ARROW, 1));
 
         Block.Dispenser.onTick(DispenserTick(world, 30, 64, 30));
 
@@ -174,7 +174,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(31, 63, 31, Block.LitRedstoneTorch.id);
         world.ReaderWriter.SetInitial(31, 64, 31, Block.Dispenser.id, 5);
         AttachDispenser(world, 31, 64, 31);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(31, 64, 31)!.setStack(0, new ItemStack(Item.ARROW.id, 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(31, 64, 31)!.SetStack(0, new ItemStack(Item.ARROW, 1));
 
         Block.Dispenser.onTick(DispenserTick(world, 31, 64, 31));
 
@@ -188,7 +188,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(32, 63, 32, Block.LitRedstoneTorch.id);
         world.ReaderWriter.SetInitial(32, 64, 32, Block.Dispenser.id, 4);
         AttachDispenser(world, 32, 64, 32);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(32, 64, 32)!.setStack(0, new ItemStack(Item.ARROW.id, 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(32, 64, 32)!.SetStack(0, new ItemStack(Item.ARROW, 1));
 
         Block.Dispenser.onTick(DispenserTick(world, 32, 64, 32));
 
@@ -202,7 +202,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(4, 63, 4, Block.LitRedstoneTorch.id);
         world.ReaderWriter.SetInitial(4, 64, 4, Block.Dispenser.id, 3);
         AttachDispenser(world, 4, 64, 4);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(4, 64, 4)!.setStack(0, new ItemStack(Item.Egg.id, 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(4, 64, 4)!.SetStack(0, new ItemStack(Item.Egg, 1));
 
         Block.Dispenser.onTick(DispenserTick(world, 4, 64, 4));
 
@@ -216,7 +216,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(5, 63, 5, Block.LitRedstoneTorch.id);
         world.ReaderWriter.SetInitial(5, 64, 5, Block.Dispenser.id, 3);
         AttachDispenser(world, 5, 64, 5);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(5, 64, 5)!.setStack(0, new ItemStack(Item.Snowball.id, 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(5, 64, 5)!.SetStack(0, new ItemStack(Item.Snowball, 1));
 
         Block.Dispenser.onTick(DispenserTick(world, 5, 64, 5));
 
@@ -230,11 +230,11 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(6, 63, 6, Block.LitRedstoneTorch.id);
         world.ReaderWriter.SetInitial(6, 64, 6, Block.Dispenser.id, 3);
         AttachDispenser(world, 6, 64, 6);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(6, 64, 6)!.setStack(0, new ItemStack(Item.Stick.id, 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(6, 64, 6)!.SetStack(0, new ItemStack(Item.Stick, 1));
 
         Block.Dispenser.onTick(DispenserTick(world, 6, 64, 6));
 
-        Assert.Contains(world.Entities.Entities, e => e is EntityItem ei && ei.stack.itemId == Item.Stick.id);
+        Assert.Contains(world.Entities.Entities, e => e is EntityItem ei && ei.stack.ItemId == Item.Stick.id);
     }
 
     [Fact]
@@ -418,7 +418,7 @@ public sealed class BlockDispenserTests
         int x = 80, y = 64, z = 80;
         world.ReaderWriter.SetInitial(x, y, z, Block.Dispenser.id, 3);
         AttachDispenser(world, x, y, z);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(x, y, z)!.setStack(0, new ItemStack(Item.IronIngot.id, 24));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(x, y, z)!.SetStack(0, new ItemStack(Item.IronIngot, 24));
 
         Block.Dispenser.onBreak(new OnBreakEvent(world, null, x, y, z));
 
