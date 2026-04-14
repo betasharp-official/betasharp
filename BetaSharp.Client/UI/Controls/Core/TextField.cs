@@ -24,6 +24,8 @@ public class TextField : UIElement
     public Action<string>? OnTextChanged;
     public Action? OnSubmit;
 
+    public override bool DoTextMeasuring => true;
+
     public override List<string> GetInspectorProperties()
     {
         List<string> props = base.GetInspectorProperties();

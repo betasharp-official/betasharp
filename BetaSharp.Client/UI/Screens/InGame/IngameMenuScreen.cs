@@ -26,7 +26,7 @@ public class IngameMenuScreen(
 
         Label title = new() { Text = "Game menu", TextColor = Color.White };
         title.Style.MarginTop = 20;
-        title.Style.MarginBottom = 8;
+        //title.Style.MarginBottom = 8;
         Root.AddChild(title);
         AddTitleSpacer();
 
@@ -81,8 +81,8 @@ public class IngameMenuScreen(
 
         SavingIndicator savingIndicator = new(isSavingComplete);
         savingIndicator.Style.Position = PositionType.Absolute;
-        savingIndicator.Style.Left = 8;
-        savingIndicator.Style.Bottom = 8;
+        savingIndicator.Style.Left = 4;
+        savingIndicator.Style.Bottom = 4;
         Root.AddChild(savingIndicator);
     }
 }
