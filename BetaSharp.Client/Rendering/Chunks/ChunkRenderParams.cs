@@ -1,4 +1,3 @@
-using BetaSharp.Util.Maths;
 using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering.Chunks;
@@ -14,4 +13,5 @@ public struct ChunkRenderParams
     public bool EnvironmentAnimation;
     public bool ChunkFade;
     public bool RenderOccluded;
+    public bool DebugMode;
 }

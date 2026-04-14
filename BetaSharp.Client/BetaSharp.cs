@@ -259,7 +259,7 @@ public partial class BetaSharp :
         SaveLoader = new RegionWorldStorageSource(Path.Combine(_gameDataDir, "saves"));
         Options = new GameOptions(this, _gameDataDir);
         Options.ReloadTextures += () => { TextureManager.Reload(); };
-        Options.ReloadChunks += () => { WorldRenderer.ChunkRenderer.MarkAllVisibleChunksDirty(); };
+        Options.ReloadChunks += () => { WorldRenderer.ChunkRenderer.MarkAllDirty(); };
 
         Profiler.RegisterMainThread();
 

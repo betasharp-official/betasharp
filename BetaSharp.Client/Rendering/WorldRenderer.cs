@@ -296,7 +296,8 @@ public class WorldRenderer : IWorldEventListener
             DeltaTime = _game.Timer.DeltaTime,
             EnvironmentAnimation = _game.Options.EnvironmentAnimation,
             ChunkFade = _game.Options.ChunkFade,
-            RenderOccluded = false
+            RenderOccluded = false,
+            DebugMode = _game.Options.ShowDebugInfo
         };
 
         if (pass == 0)
@@ -735,7 +736,7 @@ public class WorldRenderer : IWorldEventListener
             {
                 for (int z = zStart; z <= zEnd; z++)
                 {
-                    ChunkRenderer.MarkDirty(new Vector3D<int>(x, y, z) * SubChunkRenderer.Size, true);
+                    ChunkRenderer.MarkDirty(new Vector3D<int>(x, y, z) * SubChunkRenderer.Size);
                 }
             }
         }
@@ -827,7 +828,7 @@ public class WorldRenderer : IWorldEventListener
 
     public void NotifyAmbientDarknessChanged()
     {
-        ChunkRenderer.UpdateAllRenderers();
+        ChunkRenderer.MarkAllDirty(true);
     }
 
     public void UpdateBlockEntity(int var1, int var2, int var3, BlockEntity var4)
