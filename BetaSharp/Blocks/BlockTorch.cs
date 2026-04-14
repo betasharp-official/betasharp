@@ -23,6 +23,32 @@ internal class BlockTorch : Block
 
     private static bool canPlaceOn(IBlockReader world, int x, int y, int z) => world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == Fence.id;
 
+    private static bool TryGetHorizontalWallPickRay(EntityLiving placer, int torchX, int torchZ, out double lx, out double lz)
+    {
+        Vec3D look = placer.getLook(1.0F);
+        double h = Math.Sqrt((look.x * look.x) + (look.z * look.z));
+        if (h >= 1e-3)
+        {
+            lx = look.x / h;
+            lz = look.z / h;
+            return true;
+        }
+
+        double vx = placer.x - (torchX + 0.5);
+        double vz = placer.z - (torchZ + 0.5);
+        h = Math.Sqrt((vx * vx) + (vz * vz));
+        if (h >= 1e-4)
+        {
+            lx = vx / h;
+            lz = vz / h;
+            return true;
+        }
+
+        lx = 0.0;
+        lz = 0.0;
+        return false;
+    }
+
     private static int ResolveTorchMetaVanillaOrder(IBlockReader reader, int x, int y, int z)
     {
         if (reader.ShouldSuffocate(x - 1, y, z)) return 1;
@@ -43,56 +69,41 @@ internal class BlockTorch : Block
         int wallCount = (west ? 1 : 0) + (east ? 1 : 0) + (north ? 1 : 0) + (south ? 1 : 0);
         if (ceiling && wallCount >= 2 && placer is not null)
         {
-            double vx = placer.x - (x + 0.5);
-            double vz = placer.z - (z + 0.5);
-            double len = Math.Sqrt(vx * vx + vz * vz);
-            if (len >= 1e-4)
+            if (!TryGetHorizontalWallPickRay(placer, x, z, out double lx, out double lz))
             {
-                vx /= len;
-                vz /= len;
-                int bestMeta = 1;
-                double bestDot = double.NegativeInfinity;
-                if (west)
-                {
-                    double d = vx * -1.0 + vz * 0.0;
-                    if (d > bestDot)
-                    {
-                        bestDot = d;
-                        bestMeta = 1;
-                    }
-                }
+                int v = ResolveTorchMetaVanillaOrder(reader, x, y, z);
+                return v == -1 ? null : v;
+            }
 
-                if (east)
-                {
-                    double d = vx * 1.0 + vz * 0.0;
-                    if (d > bestDot)
-                    {
-                        bestDot = d;
-                        bestMeta = 2;
-                    }
-                }
+            const double tieEps = 1e-4;
+            double d1 = west ? (lx * -1.0) + (lz * 0.0) : double.NegativeInfinity;
+            double d2 = east ? (lx * 1.0) + (lz * 0.0) : double.NegativeInfinity;
+            double d3 = north ? (lx * 0.0) + (lz * -1.0) : double.NegativeInfinity;
+            double d4 = south ? (lx * 0.0) + (lz * 1.0) : double.NegativeInfinity;
+            double maxD = Math.Max(Math.Max(d1, d2), Math.Max(d3, d4));
 
-                if (north)
+            for (int meta = 1; meta <= 4; meta++)
+            {
+                double d = meta switch
                 {
-                    double d = vx * 0.0 + vz * -1.0;
-                    if (d > bestDot)
-                    {
-                        bestDot = d;
-                        bestMeta = 3;
-                    }
-                }
-
-                if (south)
+                    1 => d1,
+                    2 => d2,
+                    3 => d3,
+                    4 => d4,
+                    _ => double.NegativeInfinity
+                };
+                bool solid = meta switch
                 {
-                    double d = vx * 0.0 + vz * 1.0;
-                    if (d > bestDot)
-                    {
-                        bestDot = d;
-                        bestMeta = 4;
-                    }
+                    1 => west,
+                    2 => east,
+                    3 => north,
+                    4 => south,
+                    _ => false
+                };
+                if (solid && Math.Abs(d - maxD) < tieEps)
+                {
+                    return meta;
                 }
-
-                return bestMeta;
             }
         }
 
