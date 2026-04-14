@@ -228,7 +228,13 @@ public abstract class BetaSharpServer : ICommandOutput
                 // Phase 3: Batch lighting drain — all neighbors already loaded so sky-light
                 // propagates without border re-queuing.
                 var sw3 = Stopwatch.StartNew();
-                while (world.Lighting.DoLightingUpdates() && running) { }
+                while (!world.Lighting.IsIdle && running)
+                {
+                    world.Lighting.DoLightingUpdates(int.MaxValue);
+                    Thread.Sleep(1);
+                }
+                world.Lighting.DoLightingUpdates(int.MaxValue);
+
                 sw3.Stop();
                 _logger.LogInformation("  Level {Level} lighting: {ElapsedMs}ms", i, sw3.ElapsedMilliseconds);
             }
@@ -340,6 +346,7 @@ public abstract class BetaSharpServer : ICommandOutput
                         {
                             _currentTps = 0.0f;
                         }
+
                         MetricRegistry.Set(ServerMetrics.Tps, 0.0f);
                         Thread.Sleep(50);
                         continue;
@@ -363,6 +370,7 @@ public abstract class BetaSharpServer : ICommandOutput
                         {
                             _currentTps = _ticksThisSecond * 1000.0f / tpsElapsed;
                         }
+
                         _ticksThisSecond = 0;
                         _lastTpsTime = tpsNow;
                         MetricRegistry.Set(ServerMetrics.Tps, _currentTps);
@@ -464,8 +472,12 @@ public abstract class BetaSharpServer : ICommandOutput
                 // >2-second stalls and "Can't keep up" spam. Any remaining work
                 // carries over and is processed across subsequent ticks.
                 var lightSw = Stopwatch.StartNew();
-                while (lightSw.ElapsedMilliseconds < 15L && world.Lighting.DoLightingUpdates())
+                while (lightSw.ElapsedMilliseconds < 15L && world.Lighting.DoLightingUpdates()){}
+                lightSw.Stop();
+                long elapsedLightingMs = lightSw.ElapsedMilliseconds;
+                if (elapsedLightingMs > 5L)
                 {
+                    _logger.LogWarning("Main thread lighting sync took {Elapsed}ms (Threshold is 5ms).", elapsedLightingMs);
                 }
 
                 world.Entities.TickEntities();
@@ -509,6 +521,7 @@ public abstract class BetaSharpServer : ICommandOutput
                 if (_pendingCommands.Count == 0) break;
                 cmd = _pendingCommands.Dequeue();
             }
+
             _commandHandler.ExecuteCommand(cmd);
         }
     }
