@@ -18,6 +18,24 @@ public static class PlayerNameValidator
         if (trimmed.Length == 0) throw new InvalidPlayerNameException("Player name cannot be empty.");
         if (trimmed.Length != name.Length) throw new InvalidPlayerNameException("Player name cannot have leading or trailing whitespace.");
         if (trimmed.Length > MaxLength) throw new InvalidPlayerNameException($"Player name cannot be longer than {MaxLength} characters.");
-        if (trimmed.Any(char.IsWhiteSpace)) throw new InvalidPlayerNameException("Player name cannot contain whitespace.");
+        if (ContainsIllegalCharacters(name)) throw new InvalidPlayerNameException("Player name may not contain illegal characters. Only [a-zA-Z0-9_] are allowed.");
+    }
+
+    /// <summary>
+    /// Returns if name is does not mach RegEx [a-zA-Z0-9_]
+    /// </summary>
+    private static bool ContainsIllegalCharacters(string name)
+    {
+        foreach (char c in name)
+        {
+            if (
+                (c < 'a' || c > 'z') &&
+                (c < 'A' || c > 'Z') &&
+                (c < '0' || c > '9') &&
+                c != '_'
+            ) return true;
+        }
+
+        return false;
     }
 }
