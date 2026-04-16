@@ -58,7 +58,7 @@ public class ZippedTexturePack : TexturePack
         }
     }
 
-    public override void Unload(TextureManager textureManager)
+    public override void Unload(ITextureManager textureManager)
     {
         if (_texturePackThumbnail != null && _texturePackName != null)
         {
@@ -70,7 +70,7 @@ public class ZippedTexturePack : TexturePack
         CloseTexturePackFile();
     }
 
-    public override void BindThumbnailTexture(TextureManager textureManager)
+    public override void BindThumbnailTexture(ITextureManager textureManager)
     {
         if (_texturePackThumbnail != null && _texturePackName == null)
         {

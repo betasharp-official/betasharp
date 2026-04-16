@@ -5,15 +5,18 @@ using System.Runtime.InteropServices;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Achievements;
 using BetaSharp.Client.Diagnostics;
-using BetaSharp.Client.DynamicTexture;
+using BetaSharp.Client.Diagnostics.GuiBackends;
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering;
+using BetaSharp.Client.Rendering.Backends;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
+using BetaSharp.Client.Rendering.Legacy;
+using BetaSharp.Client.Rendering.Presentation;
 using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.Rendering.Blocks.Entities;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Client.Resource;
@@ -41,12 +44,8 @@ using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
 using Hexa.NET.ImGui;
-using Hexa.NET.ImGui.Backends.GLFW;
-using Hexa.NET.ImGui.Backends.OpenGL3;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL;
-using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client;
 
@@ -103,6 +102,32 @@ public partial class BetaSharp :
 
     public int DisplayWidth { get; private set; }
     public int DisplayHeight { get; private set; }
+    public RendererBackendKind RequestedRendererBackend { get; }
+    public RendererBackendKind ActiveRendererBackend { get; private set; } = RendererBackendKind.OpenGL;
+    public string? RendererFallbackReason { get; private set; }
+    public RendererBackendKind ImGuiRendererBackend { get; private set; } = RendererBackendKind.OpenGL;
+    public RendererBackendKind PresentationRendererBackend { get; private set; } = RendererBackendKind.OpenGL;
+    public bool IsRendererRuntimeInitialized => _isRenderBackendInitialized;
+    public RendererBackendCapabilities ActiveRendererCapabilities =>
+        _isRenderBackendInitialized
+            ? _renderBackendBootstrap.Capabilities
+            : RendererBackendCapabilities.For(ActiveRendererBackend);
+    public RendererBackendStateSnapshot RendererBackendState => new(
+        RequestedBackend: RequestedRendererBackend,
+        ActiveBackend: ActiveRendererBackend,
+        DisplayBackend: Display.ActiveRendererBackend,
+        ImGuiBackend: ImGuiRendererBackend,
+        PresentationBackend: PresentationRendererBackend,
+        RuntimeCapabilities: ActiveRendererCapabilities,
+        IsRuntimeInitialized: IsRendererRuntimeInitialized,
+        DisplaySupportsWindowBufferSwap: Display.SupportsWindowBufferSwap,
+        DisplayHasOpenGlContext: Display.HasOpenGlContext,
+        PresentationTargetWidth: PresentationTargetWidth,
+        PresentationTargetHeight: PresentationTargetHeight,
+        IsPresentationBlitSkipped: IsPresentationBlitSkipped,
+        FallbackReason: RendererFallbackReason);
+    public bool SupportsLegacyOpenGlRenderPath => ActiveRendererCapabilities.SupportsLegacyOpenGlRenderPath;
+    public bool SupportsScreenshotCapture => ActiveRendererCapabilities.SupportsScreenshotCapture;
 
     /// <summary>
     /// When the debug viewport is active, the top-left pixel offset of the game viewport
@@ -121,14 +146,22 @@ public partial class BetaSharp :
     public string DebugText { get; private set; } = "";
     public HitResult ObjectMouseOver = new(HitResultType.MISS);
 
-    public GameRenderer GameRenderer { get; private set; }
-    public WorldRenderer WorldRenderer { get; private set; }
-    public FramebufferManager FramebufferManager { get; private set; }
-    public TextureManager TextureManager { get; private set; }
-    public SkinManager SkinManager { get; private set; }
-    public TextRenderer TextRenderer { get; private set; }
+    public ISceneOrchestrator SceneOrchestrator { get; private set; } = new NoOpSceneOrchestrator();
+    public IWorldRenderer WorldRenderer { get; private set; } = new NoOpWorldRenderer();
+    public ILegacyFixedFunctionApi LegacyFixedFunctionApi { get; private set; } = new NoOpLegacyFixedFunctionApi();
+
+    public FrameContext FrameContext { get; private set; } = new(new NoOpLegacyFixedFunctionApi());
+    public int PresentationTargetWidth => _framePresenter.FramebufferWidth;
+    public int PresentationTargetHeight => _framePresenter.FramebufferHeight;
+    public bool IsPresentationBlitSkipped => _framePresenter.SkipBlit;
+    public PresentationViewportImage CurrentPresentationViewportImage => _framePresenter.ViewportImage;
+    public ITextureManager TextureManager { get; private set; }
+    public ISkinManager SkinManager { get; private set; }
+    public ITextRenderer TextRenderer { get; private set; }
+    public IEntityRenderDispatcher EntityRenderDispatcher { get; private set; } = new NoOpEntityRenderDispatcher();
+    public IBlockEntityRenderDispatcher BlockEntityRenderDispatcher { get; private set; } = new NoOpBlockEntityRenderDispatcher();
     public TexturePacks TexturePackList { get; private set; }
-    public ParticleManager ParticleManager { get; private set; }
+    public IParticleManager ParticleManager { get; private set; } = new NoOpParticleManager();
 
     #endregion
 
@@ -156,9 +189,7 @@ public partial class BetaSharp :
     #region Private Fields
 
     private readonly ILogger<BetaSharp> _logger = Log.Instance.For<BetaSharp>();
-    private readonly LoadingScreenRenderer _loadingScreen;
-    private readonly WaterSprite _textureWaterFX = new();
-    private readonly LavaSprite _textureLavaFX = new();
+    private ILoadingScreenRenderer _loadingScreen;
     private readonly DebugTelemetry _debugTelemetry = new();
 
     private readonly string _serverName;
@@ -167,7 +198,12 @@ public partial class BetaSharp :
 
 
     private DebugWindowManager _debugWindowManager;
-    private GLErrorHandler _glErrorHandler;
+    private IImGuiRendererBackend _imguiRendererBackend = null!;
+    private IRenderBackendBootstrap _renderBackendBootstrap = null!;
+    private IRendererFactory _rendererFactory = null!;
+    private IRendererServices _rendererServices = null!;
+    private IFramePresenter _framePresenter = new NoOpFramePresenter(RendererBackendKind.OpenGL);
+    private bool _isRenderBackendInitialized;
     private string _gameDataDir;
 
     private bool _fullscreen;
@@ -193,13 +229,14 @@ public partial class BetaSharp :
 
     #region Initialization & Lifecycle
 
-    public BetaSharp(int width, int height, bool isFullscreen)
+    public BetaSharp(int width, int height, bool isFullscreen, RendererBackendKind rendererBackend = RendererBackendKind.OpenGL)
     {
-        _loadingScreen = new LoadingScreenRenderer(this);
+        _loadingScreen = new NoOpLoadingScreenRenderer(this);
         _tempDisplayHeight = height;
         _fullscreen = isFullscreen;
         DisplayWidth = width;
         DisplayHeight = height;
+        RequestedRendererBackend = rendererBackend;
     }
 
     public void StartGame()
@@ -217,10 +254,10 @@ public partial class BetaSharp :
 
         LoadScreen();
 
-        SetupOpenGLAndInput();
+        SetupInputAndRendering();
         SetupResourcesAndPostProcessing();
 
-        CheckGLError("Post startup");
+        CheckRenderBackendErrors("Post startup");
 
         StatFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
         if (_serverName != null)
@@ -259,7 +296,7 @@ public partial class BetaSharp :
         SaveLoader = new RegionWorldStorageSource(Path.Combine(_gameDataDir, "saves"));
         Options = new GameOptions(this, _gameDataDir);
         Options.ReloadTextures += () => { TextureManager.Reload(); };
-        Options.ReloadChunks += () => { WorldRenderer.ChunkRenderer.MarkAllVisibleChunksDirty(); };
+        Options.ReloadChunks += () => { SceneOrchestrator.MarkVisibleChunksDirty(); };
 
         Profiler.RegisterMainThread();
 
@@ -268,41 +305,59 @@ public partial class BetaSharp :
             int[] msaaValues = [0, 2, 4, 8];
             Display.MSAA_Samples = msaaValues[Options.MSAALevel];
 
-            Display.create();
+            RendererBackendSelection backendSelection = RendererBackendFactory.Resolve(RequestedRendererBackend);
+            ActiveRendererBackend = backendSelection.Effective;
+            RendererFallbackReason = backendSelection.FallbackReason;
+            _renderBackendBootstrap = RenderBackendBootstrapFactory.Create(ActiveRendererBackend);
+            _rendererFactory = _renderBackendBootstrap.RendererFactory;
+            _loadingScreen = _rendererFactory.CreateLoadingScreenRenderer(this);
+            _isRenderBackendInitialized = false;
+
+            _logger.LogInformation(
+                "Renderer backend requested: {RequestedBackend}; active: {ActiveBackend}",
+                backendSelection.Requested,
+                backendSelection.Effective);
+
+            if (!string.IsNullOrWhiteSpace(backendSelection.FallbackReason))
+            {
+                _logger.LogWarning("{FallbackReason}", backendSelection.FallbackReason);
+            }
+
+            Display.create(ActiveRendererBackend);
             Display.getGlfw().SetWindowSizeLimits(Display.GetWindowHandle(), 850, 480, maximumWidth, maximumHeight);
 
-            GLManager.Init(Display.getGL()!);
-            if (GLManager.GL is LegacyGL legacyGl)
-            {
-                _debugTelemetry.CaptureSystemInfo(legacyGl);
-            }
-            else
-            {
-                _debugTelemetry.CaptureSystemInfo(null);
-            }
+            _renderBackendBootstrap.InitializeGraphicsContext(_debugTelemetry);
+            _renderBackendBootstrap.ConfigurePresentationMode(Options);
+            _isRenderBackendInitialized = true;
 
-            Display.getGlfw().SwapInterval(Options.VSync ? 1 : 0);
-
-#if DEBUG
-            _glErrorHandler = new();
-#endif
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception initializing display");
+            _isRenderBackendInitialized = false;
+            throw new InvalidOperationException($"Failed to initialize renderer backend '{ActiveRendererBackend}'.", ex);
         }
     }
 
     private void SetupCoreSystems()
     {
         TexturePackList = new TexturePacks(this, new DirectoryInfo(_gameDataDir));
-        TextureManager = new TextureManager(this, TexturePackList, Options);
-        TextRenderer = new TextRenderer(Options, TextureManager);
+        _rendererServices = _rendererFactory.CreateServices(this, TexturePackList, Options);
+        TextureManager = _rendererServices.TextureManager;
+        TextRenderer = _rendererServices.TextRenderer;
+        SkinManager = _rendererServices.SkinManager;
+        EntityRenderDispatcher = _rendererServices.EntityRenderDispatcher;
+        BlockEntityRenderDispatcher = _rendererServices.BlockEntityRenderDispatcher;
+        LegacyFixedFunctionApi = _rendererServices.LegacyFixedFunctionApi;
+        FrameContext = new FrameContext(LegacyFixedFunctionApi);
 
         UIContext = new UIContext(
             Options,
             TextRenderer,
             TextureManager,
+            EntityRenderDispatcher,
+            BlockEntityRenderDispatcher,
+            _rendererServices.UiRenderBackend,
             playClickSound: () => SoundManager.PlaySoundFX("random.click", 1.0f, 1.0f),
             displaySize: () => new Vector2D<int>(DisplayWidth, DisplayHeight),
             inputDisplaySize: () =>
@@ -323,13 +378,11 @@ public partial class BetaSharp :
             mouseOffset: () => new Vector2D<int>((int)DebugViewportOffset.X, (int)DebugViewportOffset.Y)
         );
 
-        SkinManager = new SkinManager(TextureManager);
         WaterColors.loadColors(TextureManager.GetColors("/misc/watercolor.png"));
         GrassColors.loadColors(TextureManager.GetColors("/misc/grasscolor.png"));
         FoliageColors.loadColors(TextureManager.GetColors("/misc/foliagecolor.png"));
-        GameRenderer = new GameRenderer(this);
-        EntityRenderDispatcher.Instance.SkinManager = SkinManager;
-        EntityRenderDispatcher.Instance.HeldItemRenderer = new HeldItemRenderer(this);
+        SceneOrchestrator = _rendererFactory.CreateSceneOrchestrator(this);
+        _rendererServices.ConfigureEntityRendering(this);
         StatFileWriter = new StatFileWriter(Session, _gameDataDir);
 
         StatStringFormatKeyInv format = new(this);
@@ -339,29 +392,9 @@ public partial class BetaSharp :
         };
     }
 
-    private unsafe void SetupOpenGLAndInput()
+    private unsafe void SetupInputAndRendering()
     {
-        bool anisotropicFiltering = GLManager.GL.IsExtensionPresent("GL_EXT_texture_filter_anisotropic");
-        _logger.LogInformation($"Anisotropic Filtering Supported: {anisotropicFiltering}");
-
-        if (anisotropicFiltering)
-        {
-            GLManager.GL.GetFloat(GLEnum.MaxTextureMaxAnisotropy, out float maxAnisotropy);
-            GameOptions.MaxAnisotropy = maxAnisotropy;
-            _logger.LogInformation($"Max Anisotropy: {maxAnisotropy}");
-        }
-        else
-        {
-            GameOptions.MaxAnisotropy = 1.0f;
-        }
-
         ImGui.CreateContext();
-
-        // ImGuiImplGLFW and ImGuiImplOpenGL3 are compiled into separate native DLLs,
-        // each with their own GImGui context pointer. We must share the context created
-        // by cimgui.dll with both backend DLLs before calling their Init functions.
-        ImGuiImplGLFW.SetCurrentContext(ImGui.GetCurrentContext());
-        ImGuiImplOpenGL3.SetCurrentContext(ImGui.GetCurrentContext());
 
         ImGuiIO* io = ImGui.GetIO();
         io->ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard | ImGuiConfigFlags.DockingEnable;
@@ -371,8 +404,9 @@ public partial class BetaSharp :
         Mouse.create(Display.getGlfw(), Display.GetWindowHandle(), Display.getWidth(), Display.getHeight());
         Controller.Create(Display.getGlfw(), Display.GetWindowHandle());
 
-        ImGuiImplGLFW.InitForOpenGL((GLFWwindow*)Display.GetWindowHandle(), true);
-        ImGuiImplOpenGL3.Init("#version 330 core");
+        _imguiRendererBackend = _rendererFactory.CreateImGuiRendererBackend();
+        ImGuiRendererBackend = _imguiRendererBackend.BackendKind;
+        _imguiRendererBackend.Initialize((nint)Display.GetWindowHandle());
         DebugWindowManager.ApplyStyle();
 
         _debugWindowManager = new DebugWindowManager(this, () => InGameHasFocus);
@@ -395,19 +429,9 @@ public partial class BetaSharp :
             }
         };
 
-        CheckGLError("Pre startup");
-        GLManager.GL.Enable(GLEnum.Texture2D);
-        GLManager.GL.ShadeModel(GLEnum.Smooth);
-        GLManager.GL.ClearDepth(1.0D);
-        GLManager.GL.Enable(GLEnum.DepthTest);
-        GLManager.GL.DepthFunc(GLEnum.Lequal);
-        GLManager.GL.Enable(GLEnum.AlphaTest);
-        GLManager.GL.AlphaFunc(GLEnum.Greater, 0.1F);
-        GLManager.GL.CullFace(GLEnum.Back);
-        GLManager.GL.MatrixMode(GLEnum.Projection);
-        GLManager.GL.LoadIdentity();
-        GLManager.GL.MatrixMode(GLEnum.Modelview);
-        CheckGLError("Startup");
+        CheckRenderBackendErrors("Pre startup");
+        _renderBackendBootstrap.ConfigureDefaultRenderState(Options, _logger);
+        CheckRenderBackendErrors("Startup");
     }
 
     private void SetupResourcesAndPostProcessing()
@@ -417,19 +441,11 @@ public partial class BetaSharp :
         SoundManager.LoadSoundSettings(Options);
         DefaultMusicCategories.Register(SoundManager);
 
-        TextureManager.AddDynamicTexture(_textureLavaFX);
-        TextureManager.AddDynamicTexture(_textureWaterFX);
-        TextureManager.AddDynamicTexture(new NetherPortalSprite());
-        TextureManager.AddDynamicTexture(new CompassSprite(this));
-        TextureManager.AddDynamicTexture(new ClockSprite(this));
-        TextureManager.AddDynamicTexture(new WaterSideSprite());
-        TextureManager.AddDynamicTexture(new LavaSideSprite());
-        TextureManager.AddDynamicTexture(new FireSprite(0));
-        TextureManager.AddDynamicTexture(new FireSprite(1));
+        _rendererServices.RegisterDynamicTextures(this);
 
-        WorldRenderer = new WorldRenderer(this, TextureManager);
-        GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
-        ParticleManager = new ParticleManager(World, TextureManager);
+        WorldRenderer = _rendererFactory.CreateWorldRenderer(this, TextureManager);
+        SetMainViewport(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+        ParticleManager = _rendererFactory.CreateParticleManager(World, TextureManager);
 
         _ = new ResourceManager()
             .Add(new BetaResourceDownloader(this, _gameDataDir))
@@ -451,9 +467,11 @@ public partial class BetaSharp :
             () => _isMainMenuOpen
         ));
 
-        FramebufferManager = new FramebufferManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
-
-        EntityRenderDispatcher.Instance.SkinManager.RequestDownload(Session.username, true);
+        _framePresenter = _rendererFactory.CreateFramePresenter(
+             Display.getFramebufferWidth(),
+             Display.getFramebufferHeight(),
+             Options);
+        PresentationRendererBackend = _framePresenter.BackendKind;
     }
 
     private void LoadVersion()
@@ -492,7 +510,7 @@ public partial class BetaSharp :
             _logger.LogInformation("Stopping!");
 
             try { ChangeWorld(null); } catch (Exception) { }
-            try { GLAllocation.deleteTexturesAndDisplayLists(); } catch (Exception) { }
+            try { _renderBackendBootstrap.CleanupRenderResources(); } catch (Exception) { }
 
             // don't bother trying to shutdown imgui because it keeps hanging/crashing
 
@@ -502,7 +520,7 @@ public partial class BetaSharp :
             Mouse.destroy();
             Keyboard.destroy();
 
-            GLTexture.LogLeakReport();
+            _renderBackendBootstrap.LogRenderResourceReport();
         }
         finally
         {
@@ -596,8 +614,7 @@ public partial class BetaSharp :
                     bool imguiThisFrame = Options.ShowDebugInfo;
                     if (imguiThisFrame)
                     {
-                        ImGuiImplOpenGL3.NewFrame();
-                        ImGuiImplGLFW.NewFrame();
+                        _imguiRendererBackend.NewFrame();
                         ImGui.NewFrame();
                         ImGuiInput.CapturingKeyboard = ImGui.GetIO().WantCaptureKeyboard && !_debugWindowManager.GameViewportFocused;
                     }
@@ -618,10 +635,10 @@ public partial class BetaSharp :
                     }
 
                     long tickElapsedTime = Stopwatch.GetTimestamp() - tickStartTime;
-                    CheckGLError("Pre render");
+                    CheckRenderBackendErrors("Pre render");
 
                     SoundManager.UpdateListener(Player, Timer.renderPartialTicks);
-                    GLManager.GL.Enable(GLEnum.Texture2D);
+                    PrepareFrameRenderState();
 
                     if (World != null)
                     {
@@ -635,7 +652,7 @@ public partial class BetaSharp :
                     {
                         using (Profiler.Begin("DisplayPresent"))
                         {
-                            Display.update();
+                            UpdateWindow(true);
                         }
                     }
 
@@ -653,7 +670,7 @@ public partial class BetaSharp :
                             int vpW = (int)vpSize.X, vpH = (int)vpSize.Y;
                             if (_lastViewportSize != vpSize)
                             {
-                                FramebufferManager.Resize(vpW, vpH);
+                                ResizePresentationTarget(vpW, vpH);
                                 _lastViewportSize = vpSize;
                             }
                             DisplayWidth = vpW;
@@ -662,23 +679,23 @@ public partial class BetaSharp :
                             DebugViewportOffset = new Vector2(
                                 _debugWindowManager.ViewportPos.X,
                                 Display.getHeight() - vpH - _debugWindowManager.ViewportPos.Y);
-                            FramebufferManager.SkipBlit = true;
+                            SetPresentationBlitSkipped(true);
                         }
                         else
                         {
                             DebugViewportOffset = Vector2.Zero;
-                            FramebufferManager.SkipBlit = false;
+                            SetPresentationBlitSkipped(false);
                         }
                     }
                     else
                     {
                         DebugViewportOffset = Vector2.Zero;
-                        FramebufferManager.SkipBlit = false;
+                        SetPresentationBlitSkipped(false);
                         if (_lastViewportSize != Vector2.Zero)
                         {
-                            FramebufferManager.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+                            ResizePresentationToWindowFramebuffer();
                             _lastViewportSize = Vector2.Zero;
-                            _debugWindowManager.ViewportTextureId = 0;
+                            _debugWindowManager.ViewportImage = PresentationViewportImage.Empty;
                         }
                     }
 
@@ -690,11 +707,11 @@ public partial class BetaSharp :
 
                         using (Profiler.Begin("Render"))
                         {
-                            GameRenderer.onFrameUpdate(Timer.renderPartialTicks);
+                            SceneOrchestrator.OnFrameUpdate(Timer.renderPartialTicks);
                         }
 
                         TextureStats.EndFrame();
-                        PushRenderMetrics();
+                        SceneOrchestrator.PublishRenderMetrics();
                     }
 
                     DisplayWidth = savedWidth;
@@ -702,9 +719,9 @@ public partial class BetaSharp :
 
                     if (imguiThisFrame)
                     {
-                        if (FramebufferManager.SkipBlit)
+                        if (IsPresentationBlitSkipped)
                         {
-                            _debugWindowManager.ViewportTextureId = FramebufferManager.TextureId;
+                            _debugWindowManager.ViewportImage = CurrentPresentationViewportImage;
                         }
 
                         using (Profiler.Begin("ImguiBuild"))
@@ -715,7 +732,7 @@ public partial class BetaSharp :
                         using (Profiler.Begin("ImguiSubmit"))
                         {
                             ImGui.Render();
-                            ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
+                            _imguiRendererBackend.RenderDrawData();
                         }
                     }
 
@@ -729,7 +746,7 @@ public partial class BetaSharp :
 
                     if (Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
-                        Display.update();
+                        UpdateWindow(true);
                     }
 
                     ScreenshotListener();
@@ -743,7 +760,7 @@ public partial class BetaSharp :
                         Resize(DisplayWidth, DisplayHeight);
                     }
 
-                    CheckGLError("Post render");
+                    CheckRenderBackendErrors("Post render");
                     ++frameCounter;
 
                     IsGamePaused = (!IsMultiplayerWorld() || InternalServer != null) && (CurrentScreen?.PausesGame ?? false);
@@ -778,25 +795,6 @@ public partial class BetaSharp :
         {
             ShutdownGame();
         }
-    }
-
-    private void PushRenderMetrics()
-    {
-        if (WorldRenderer?.ChunkRenderer is not { } cr) return;
-        MetricRegistry.Set(RenderMetrics.ChunksTotal, cr.TotalChunks);
-        MetricRegistry.Set(RenderMetrics.ChunksFrustum, cr.ChunksInFrustum);
-        MetricRegistry.Set(RenderMetrics.ChunksOccluded, cr.ChunksOccluded);
-        MetricRegistry.Set(RenderMetrics.ChunksRendered, cr.ChunksRendered);
-        MetricRegistry.Set(RenderMetrics.VboAllocatedMb, (float)(VertexBuffer<ChunkVertex>.Allocated / 1_000_000.0));
-        MetricRegistry.Set(RenderMetrics.MeshVersionAllocated, ChunkMeshVersion.TotalAllocated);
-        MetricRegistry.Set(RenderMetrics.MeshVersionReleased, ChunkMeshVersion.TotalReleased);
-        MetricRegistry.Set(RenderMetrics.TextureBindsLastFrame, TextureStats.BindsLastFrame);
-        MetricRegistry.Set(RenderMetrics.TextureAvgBinds, (float)TextureStats.AverageBindsPerFrame);
-        MetricRegistry.Set(RenderMetrics.TextureActive, GLTexture.ActiveTextureCount);
-        MetricRegistry.Set(RenderMetrics.EntitiesRendered, WorldRenderer.CountEntitiesRendered);
-        MetricRegistry.Set(RenderMetrics.EntitiesHidden, WorldRenderer.CountEntitiesHidden);
-        MetricRegistry.Set(RenderMetrics.EntitiesTotal, WorldRenderer.CountEntitiesTotal);
-        MetricRegistry.Set(RenderMetrics.ParticlesActive, ParticleManager.ActiveParticleCount);
     }
 
     private void ReportFrameTelemetry(long frameStartNano)
@@ -858,8 +856,8 @@ public partial class BetaSharp :
             HUD.Update(1.0f);
         }
 
-        GameRenderer.UpdateTargetedEntity(1.0F);
-        GameRenderer.tick(partialTicks);
+        SceneOrchestrator.UpdateTargetedEntity(1.0F);
+        SceneOrchestrator.Tick(partialTicks);
 
         using (Profiler.Begin("UpdatePlayerController"))
         {
@@ -871,11 +869,7 @@ public partial class BetaSharp :
 
         using (Profiler.Begin("UpdateDynamicTextures"))
         {
-            TextureManager.BindTexture(TextureManager.GetTextureId("/terrain.png"));
-            if (!IsGamePaused)
-            {
-                TextureManager.Tick();
-            }
+            _renderBackendBootstrap.UpdateDynamicTextures(TextureManager, IsGamePaused);
         }
 
         if (CurrentScreen == null && Player != null)
@@ -935,13 +929,13 @@ public partial class BetaSharp :
             {
                 if (!IsGamePaused)
                 {
-                    GameRenderer.updateCamera();
+                    SceneOrchestrator.UpdateCamera();
                 }
             }
 
             if (!IsGamePaused)
             {
-                WorldRenderer.UpdateClouds();
+                SceneOrchestrator.UpdateClouds();
             }
 
             using (Profiler.Begin("TickEntities"))
@@ -1237,7 +1231,7 @@ public partial class BetaSharp :
                     }
                     else if (selectedItem.Count != itemCountBefore)
                     {
-                        GameRenderer.itemRenderer.ResetEquippedProgress();
+                        SceneOrchestrator.ResetEquippedItemProgress();
                     }
                 }
             }
@@ -1247,7 +1241,7 @@ public partial class BetaSharp :
                 ItemStack selectedItem = Player.inventory.GetItemInHand();
                 if (selectedItem != null && PlayerController.sendUseItem(Player, World, selectedItem))
                 {
-                    GameRenderer.itemRenderer.ResetEquippedProgress();
+                    SceneOrchestrator.ResetEquippedItemProgress();
                 }
             }
         }
@@ -1347,7 +1341,7 @@ public partial class BetaSharp :
             }
 
             Player.movementInput = new MovementInputFromOptions(Options);
-            WorldRenderer?.ChangeWorld(newWorld);
+            SceneOrchestrator.ChangeWorld(newWorld);
             ParticleManager?.clearEffects(newWorld);
 
             PlayerController.fillHotbar(Player);
@@ -1602,7 +1596,7 @@ public partial class BetaSharp :
     }
 
     private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, _hideQuitButton, this, CreateNetworkContext(), TexturePackList, Shutdown);
-    private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, HUD.AddChatMessage, this);
+    private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, EntityRenderDispatcher, HUD.AddChatMessage, this);
 
     #endregion
 
@@ -1653,7 +1647,7 @@ public partial class BetaSharp :
             }
 
             Resize(DisplayWidth, DisplayHeight);
-            Display.update();
+            UpdateWindow(true);
         }
         catch (Exception displayException)
         {
@@ -1670,7 +1664,7 @@ public partial class BetaSharp :
         DisplayHeight = newHeight;
         Mouse.setDisplayDimensions(DisplayWidth, DisplayHeight);
 
-        FramebufferManager.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+        ResizePresentationToWindowFramebuffer();
     }
 
     private void ScreenshotListener()
@@ -1682,25 +1676,34 @@ public partial class BetaSharp :
                 _isTakingScreenshot = true;
                 int framebufferWidth = Display.getFramebufferWidth();
                 int framebufferHeight = Display.getFramebufferHeight();
-                int size = framebufferWidth * framebufferHeight * 3;
-                byte[] pixels = new byte[size];
-                GLManager.GL.PixelStore(PixelStoreParameter.PackAlignment, 1);
-                unsafe
-                {
-                    fixed (byte* p = pixels)
-                    {
-                        GLManager.GL.ReadPixels(0, 0, (uint)framebufferWidth, (uint)framebufferHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
-                    }
-                }
 
-                string result = ScreenShotHelper.saveScreenshot(_gameDataDir, DisplayWidth, DisplayHeight, pixels);
-                HUD.AddChatMessage(result);
+                if (TryCaptureScreenshot(framebufferWidth, framebufferHeight, out byte[] pixels))
+                {
+                    string result = ScreenShotHelper.saveScreenshot(_gameDataDir, DisplayWidth, DisplayHeight, pixels);
+                    HUD.AddChatMessage(result);
+                }
+                else
+                {
+                    HUD.AddChatMessage($"Screenshots are not supported yet for renderer '{ActiveRendererBackend}'.");
+                }
             }
         }
         else
         {
             _isTakingScreenshot = false;
         }
+    }
+
+    private bool TryCaptureScreenshot(int framebufferWidth, int framebufferHeight, out byte[] pixels)
+    {
+        pixels = [];
+
+        if (!SupportsScreenshotCapture)
+        {
+            return false;
+        }
+
+        return _renderBackendBootstrap.TryCaptureScreenshot(framebufferWidth, framebufferHeight, out pixels);
     }
 
     private void ForceReload()
@@ -1759,67 +1762,96 @@ public partial class BetaSharp :
     internal DebugSystemSnapshot DebugSystemSnapshot => _debugTelemetry.SystemSnapshot;
 
     [Conditional("DEBUG")]
-    private void CheckGLError(string location)
+    private void CheckRenderBackendErrors(string location)
     {
-        GLEnum glError = GLManager.GL.GetError();
-        if (glError != 0)
+        if (!_isRenderBackendInitialized)
         {
-            _logger.LogError($"#### GL ERROR ####");
-            _logger.LogError($"@ {location}");
-            _logger.LogError($"> {glError.ToString()}");
-            _logger.LogError($"");
+            return;
         }
+
+        _renderBackendBootstrap.CheckBackendErrors(location, _logger);
     }
 
     private void LoadScreen()
     {
-        ScaledResolution var1 = new(Options, DisplayWidth, DisplayHeight);
-        GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-        GLManager.GL.MatrixMode(GLEnum.Projection);
-        GLManager.GL.LoadIdentity();
-        GLManager.GL.Ortho(0.0D, var1.ScaledWidth, var1.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
-        GLManager.GL.MatrixMode(GLEnum.Modelview);
-        GLManager.GL.LoadIdentity();
-        GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
-        GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
-        GLManager.GL.ClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-        Tessellator tessellator = Tessellator.instance;
-        GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Enable(GLEnum.Texture2D);
-        GLManager.GL.Disable(GLEnum.Fog);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        TextureManager.BindTexture(TextureManager.GetTextureId("/title/mojang.png"));
-        tessellator.startDrawingQuads();
-        tessellator.setColorOpaque_I(0xFFFFFF);
-        tessellator.addVertexWithUV(0.0D, (double)DisplayHeight, 0.0D, 0.0D, 0.0D);
-        tessellator.addVertexWithUV((double)DisplayWidth, (double)DisplayHeight, 0.0D, 0.0D, 0.0D);
-        tessellator.addVertexWithUV((double)DisplayWidth, 0.0D, 0.0D, 0.0D, 0.0D);
-        tessellator.addVertexWithUV(0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
-        tessellator.draw();
-        short var3 = 256;
-        short var4 = 256;
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        tessellator.setColorOpaque_I(0xFFFFFF);
-        DrawTextureRegion((var1.ScaledWidth - var3) / 2, (var1.ScaledHeight - var4) / 2, 0, 0, var3, var4);
-        GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Disable(GLEnum.Fog);
-        GLManager.GL.Enable(GLEnum.AlphaTest);
-        GLManager.GL.AlphaFunc(GLEnum.Greater, 0.1F);
-        Display.swapBuffers();
+        TextureHandle splash = TextureManager.GetTextureId("/title/mojang.png");
+
+        _renderBackendBootstrap.RenderStartupScreen(
+            Options,
+            DisplayWidth,
+            DisplayHeight,
+            Display.getFramebufferWidth(),
+            Display.getFramebufferHeight(),
+            splash.Id);
+
+        UpdateWindow(true);
     }
 
-    private static void DrawTextureRegion(int x, int y, int texX, int texY, int width, int height)
+    private void SetMainViewport(int width, int height)
     {
-        const float uScale = 1 / 256f;
-        const float vScale = 1 / 256f;
+        if (!_isRenderBackendInitialized)
+        {
+            return;
+        }
 
-        Tessellator tess = Tessellator.instance;
-        tess.startDrawingQuads();
-        tess.addVertexWithUV(x + 0, y + height, 0, (texX + 0) * uScale, (texY + height) * vScale);
-        tess.addVertexWithUV(x + width, y + height, 0, (texX + width) * uScale, (texY + height) * vScale);
-        tess.addVertexWithUV(x + width, y + 0, 0, (texX + width) * uScale, (texY + 0) * vScale);
-        tess.addVertexWithUV(x + 0, y + 0, 0, (texX + 0) * uScale, (texY + 0) * vScale);
-        tess.draw();
+        _renderBackendBootstrap.SetMainViewport(width, height);
+    }
+
+    private void PrepareFrameRenderState()
+    {
+        if (!_isRenderBackendInitialized)
+        {
+            return;
+        }
+
+        _renderBackendBootstrap.PrepareFrameRenderState();
+    }
+
+    public void BeginPresentationFrame()
+    {
+        _framePresenter.Begin();
+    }
+
+    public void EndPresentationFrame()
+    {
+        _framePresenter.End();
+    }
+
+    public void ResizePresentationTarget(int width, int height)
+    {
+        _framePresenter.Resize(width, height);
+    }
+
+    public void ResizePresentationToWindowFramebuffer()
+    {
+        _framePresenter.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+    }
+
+    public void SetPresentationBlitSkipped(bool skipped)
+    {
+        _framePresenter.SkipBlit = skipped;
+    }
+
+    public void UpdateWindow(bool processMessages = true)
+    {
+        if (!_isRenderBackendInitialized)
+        {
+            Display.update(processMessages);
+            return;
+        }
+
+        _renderBackendBootstrap.UpdateWindow(processMessages);
+    }
+
+    public void SetVSyncEnabled(bool enabled)
+    {
+        if (!_isRenderBackendInitialized)
+        {
+            Display.setVSyncEnabled(enabled);
+            return;
+        }
+
+        _renderBackendBootstrap.SetVSyncEnabled(enabled);
     }
 
     #endregion
@@ -1848,23 +1880,18 @@ public partial class BetaSharp :
 
     public static void Startup(string[] args)
     {
-        (string Name, string Session) result = args.Length switch
-        {
-            0 => ($"Player{Random.Shared.Next()}", "-"),
-            1 => (args[0], "-"),
-            _ => (args[0], args[1]),
-        };
+        ClientStartupOptions options = ClientStartupArgumentParser.Parse(args);
 
-        PlayerNameValidator.Validate(result.Name);
+        PlayerNameValidator.Validate(options.PlayerName);
 
-        StartMainThread(result.Name, result.Session);
+        StartMainThread(options.PlayerName, options.SessionToken, options.RendererBackend);
     }
 
-    private static void StartMainThread(string? playerName, string? sessionToken)
+    private static void StartMainThread(string? playerName, string? sessionToken, RendererBackendKind rendererBackend)
     {
         Thread.CurrentThread.Name = "BetaSharp Main Thread";
 
-        BetaSharp game = new(850, 480, false);
+        BetaSharp game = new(850, 480, false, rendererBackend);
 
         if (playerName != null && sessionToken != null)
         {

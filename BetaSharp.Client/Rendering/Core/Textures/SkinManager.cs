@@ -8,10 +8,10 @@ using SixLabors.ImageSharp.Processing;
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
 
-public sealed class SkinManager : IDisposable
+public sealed class SkinManager : ISkinManager
 {
     private readonly ILogger _logger = Log.Instance.For<SkinManager>();
-    private readonly TextureManager _textureManager;
+    private readonly ITextureManager _textureManager;
     private readonly HttpClient _httpClient;
 
     private readonly ConcurrentDictionary<string, Image<Rgba32>> _downloadedImages = new();
@@ -21,7 +21,7 @@ public sealed class SkinManager : IDisposable
     private const string SkinCacheDirectoryName = "SkinCache";
     private const int CacheValidForDays = 14;
 
-    public SkinManager(TextureManager textureManager)
+    public SkinManager(ITextureManager textureManager)
     {
         _textureManager = textureManager;
         _httpClient = new HttpClient
@@ -51,12 +51,18 @@ public sealed class SkinManager : IDisposable
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to delete old cached skin for {name}", Path.GetFileNameWithoutExtension(file));
+                _logger.LogWarning(ex, "Failed to delete old cached skin for {name}",
+                    Path.GetFileNameWithoutExtension(file));
             }
         }
     }
 
-    public void RequestDownload(string? username, bool cache = false)
+    public void RequestDownload(string? username)
+    {
+        RequestDownload(username, cache: false);
+    }
+
+    public void RequestDownload(string? username, bool cache)
     {
         if (string.IsNullOrWhiteSpace(username) || _textureHandles.ContainsKey(username)
                                                 || _downloadedImages.ContainsKey(username)
@@ -102,7 +108,8 @@ public sealed class SkinManager : IDisposable
 
             _downloadedImages[username] = image;
 
-            _logger.LogInformation("Skin downloaded successfully for {Name}: ({W}x{H})", username, image.Width, image.Height);
+            _logger.LogInformation("Skin downloaded successfully for {Name}: ({W}x{H})", username, image.Width,
+                image.Height);
 
             if (cache)
             {
@@ -112,7 +119,8 @@ public sealed class SkinManager : IDisposable
         }
         catch (ProfileException)
         {
-            _logger.LogWarning("Failed to download skin for {Name}{br}Profile not found.", username, Environment.NewLine);
+            _logger.LogWarning("Failed to download skin for {Name}{br}Profile not found.", username,
+                Environment.NewLine);
         }
         catch (Exception ex)
         {
@@ -154,7 +162,8 @@ public sealed class SkinManager : IDisposable
 
     private async Task<string?> GetProfileIdFromName(string username)
     {
-        var profileResponse = await _httpClient.GetAsync($"https://api.mojang.com/minecraft/profile/lookup/name/{username}");
+        var profileResponse =
+            await _httpClient.GetAsync($"https://api.mojang.com/minecraft/profile/lookup/name/{username}");
         await using var profileStream = await profileResponse.Content.ReadAsStreamAsync();
         var profileNode = await JsonNode.ParseAsync(profileStream);
 
@@ -163,7 +172,8 @@ public sealed class SkinManager : IDisposable
 
     private async Task<string?> GetProfilePropertiesFromId(string id)
     {
-        var skinResponse = await _httpClient.GetAsync($"https://sessionserver.mojang.com/session/minecraft/profile/{id}");
+        var skinResponse =
+            await _httpClient.GetAsync($"https://sessionserver.mojang.com/session/minecraft/profile/{id}");
         await using var skinStream = await skinResponse.Content.ReadAsStreamAsync();
         var skinNode = await JsonNode.ParseAsync(skinStream);
 

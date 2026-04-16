@@ -10,7 +10,7 @@ public class ControlTooltipBar : UIElement
 {
     private readonly IControllerState _controllerState;
     private readonly GameOptions _options;
-    private readonly TextRenderer _textRenderer;
+    private readonly ITextRenderer _textRenderer;
     private readonly Func<InGameTipContext?>? _inGameSource;
     private readonly UIScreen? _screen;
     private readonly List<ActionTip> _tips = [];

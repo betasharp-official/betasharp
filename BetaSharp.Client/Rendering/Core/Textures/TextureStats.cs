@@ -30,7 +30,8 @@ public static class TextureStats
 
         if (s_secondStopwatch.ElapsedMilliseconds >= 1000)
         {
-            AverageBindsPerFrame = s_frameCountInLastSecond > 0 ? s_bindsLastSecond / (double)s_frameCountInLastSecond : 0;
+            AverageBindsPerFrame =
+                s_frameCountInLastSecond > 0 ? s_bindsLastSecond / (double)s_frameCountInLastSecond : 0;
             s_bindsLastSecond = 0;
             s_frameCountInLastSecond = 0;
             s_secondStopwatch.Restart();

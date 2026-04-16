@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
+using BetaSharp.Client.Rendering;
 using Silk.NET.GLFW;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 
 namespace BetaSharp.Client;
@@ -15,7 +15,6 @@ public static unsafe class Display
     private static readonly object _lock = new();
     private static readonly bool _isMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
     private static IWindow? _window;
-    private static GL? _gl;
     private static readonly Glfw? _glfw;
 
     // Display properties
@@ -32,6 +31,29 @@ public static unsafe class Display
     private static GlfwCallbacks.FramebufferSizeCallback? _framebufferSizeCallback;
     public static int MSAA_Samples = 0;
     public static bool DebugMode = false;
+    public static RendererBackendKind ActiveRendererBackend { get; private set; } = RendererBackendKind.OpenGL;
+    private static RendererBackendCapabilities _activeBackendCapabilities =
+        RendererBackendCapabilities.For(RendererBackendKind.OpenGL);
+    public static bool SupportsWindowBufferSwap
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return UsesDisplaySwapBuffers;
+            }
+        }
+    }
+    public static bool HasOpenGlContext
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return UsesOpenGlContext && _window != null;
+            }
+        }
+    }
 
     // Window position
     private static int _x = -1;
@@ -39,6 +61,8 @@ public static unsafe class Display
 
     // Background color
     private static float _r, _g, _b;
+    private static bool UsesOpenGlContext => _activeBackendCapabilities.UsesOpenGlContext;
+    private static bool UsesDisplaySwapBuffers => _activeBackendCapabilities.UsesDisplaySwapBuffers;
 
     static Display()
     {
@@ -470,6 +494,14 @@ public static unsafe class Display
     /// </summary>
     public static void create()
     {
+        create(RendererBackendKind.OpenGL);
+    }
+
+    /// <summary>
+    /// Create the graphics context for the selected renderer backend.
+    /// </summary>
+    public static void create(RendererBackendKind rendererBackend)
+    {
         lock (_lock)
         {
             if (isCreated())
@@ -482,7 +514,25 @@ public static unsafe class Display
             options.VSync = _swapInterval > 0;
             options.IsVisible = true;
             options.Samples = MSAA_Samples;
-            options.API = new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Core, DebugMode ? ContextFlags.Debug : ContextFlags.Default, new APIVersion(4, 1));
+
+            options.API = rendererBackend switch
+            {
+                RendererBackendKind.OpenGL => new GraphicsAPI(
+                    ContextAPI.OpenGL,
+                    (ContextProfile)0,
+                    DebugMode ? ContextFlags.Debug : ContextFlags.Default,
+                    new APIVersion(4, 1)),
+                RendererBackendKind.Vulkan => new GraphicsAPI(
+                    ContextAPI.Vulkan,
+                    ContextProfile.Core,
+                    ContextFlags.Default,
+                    new APIVersion(1, 0)),
+                _ => throw new NotSupportedException(
+                    $"Unsupported renderer backend: {rendererBackend}")
+            };
+
+            ActiveRendererBackend = rendererBackend;
+            _activeBackendCapabilities = RendererBackendCapabilities.For(rendererBackend);
 
             if (_x >= 0 && _y >= 0)
                 options.Position = new Vector2D<int>(_x, _y);
@@ -504,10 +554,6 @@ public static unsafe class Display
 
     private static void onLoad()
     {
-        _gl = GL.GetApi(_window);
-        _gl.ClearColor(_r, _g, _b, 1.0f);
-        _gl.Enable(EnableCap.Multisample);
-
         refreshFramebufferSize();
         if (_window != null && _glfw != null)
         {
@@ -572,6 +618,11 @@ public static unsafe class Display
             if (!isCreated())
                 throw new InvalidOperationException("Display not created");
 
+            if (!UsesDisplaySwapBuffers)
+            {
+                return;
+            }
+
             _window!.SwapBuffers();
         }
     }
@@ -596,7 +647,7 @@ public static unsafe class Display
 
             _wasResized = false;
 
-            if (_window!.IsVisible)
+            if (_window!.IsVisible && UsesDisplaySwapBuffers)
             {
                 swapBuffers();
             }
@@ -618,12 +669,10 @@ public static unsafe class Display
             if (!isCreated())
                 return;
 
-            _gl?.Dispose();
             _window?.Close();
             _window?.Dispose();
 
             _window = null;
-            _gl = null;
             _closeRequested = false;
             _wasResized = false;
             _framebufferWidth = 0;
@@ -635,11 +684,11 @@ public static unsafe class Display
     }
 
     /// <summary>
-    /// Gets the OpenGL context.
+    /// Gets the configured initial background color.
     /// </summary>
-    public static GL? getGL()
+    public static (float R, float G, float B) GetInitialBackgroundColor()
     {
-        return _gl;
+        return (_r, _g, _b);
     }
 
     public static WindowHandle* GetWindowHandle()

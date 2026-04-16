@@ -25,10 +25,10 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
     public override void Setup(BetaSharp game)
     {
         _game = game;
-        TextureManager tm = game.TextureManager;
+        ITextureManager textureManager = game.TextureManager;
         string atlasPath = "/gui/items.png";
 
-        TextureHandle handle = tm.GetTextureId(atlasPath);
+        TextureHandle handle = textureManager.GetTextureId(atlasPath);
         if (handle.Texture != null)
         {
             _resolution = handle.Texture.Width / 16;

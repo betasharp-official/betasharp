@@ -1,5 +1,7 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.Rendering.Entities;
+using BetaSharp.Client.Rendering.Legacy;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -7,26 +9,27 @@ namespace BetaSharp.Client.Rendering.Blocks.Entities;
 
 public abstract class BlockEntitySpecialRenderer
 {
-    protected BlockEntityRenderer tileEntityRenderer;
+    protected IBlockEntityRenderDispatcher tileEntityRenderer;
+    protected ILegacyFixedFunctionApi Scene => tileEntityRenderer.EntityDispatcher.SceneRenderBackend;
 
     public abstract void renderTileEntityAt(BlockEntity blockEntity, double x, double y, double z, float tickDelta);
 
-    protected void bindTextureByName(string var1)
+    protected void bindTextureByName(string texturePath)
     {
-        TextureManager var2 = tileEntityRenderer.TextureManager;
-        var2.BindTexture(var2.GetTextureId(var1));
+        ITextureManager textureManager = tileEntityRenderer.TextureManager;
+        textureManager.BindTexture(textureManager.GetTextureId(texturePath));
     }
 
-    public void setTileEntityRenderer(BlockEntityRenderer var1)
+    public void setTileEntityRenderer(IBlockEntityRenderDispatcher renderer)
     {
-        tileEntityRenderer = var1;
+        tileEntityRenderer = renderer;
     }
 
-    public virtual void func_31069_a(World var1)
+    public virtual void func_31069_a(World world)
     {
     }
 
-    public TextRenderer getFontRenderer()
+    public ITextRenderer getFontRenderer()
     {
         return tileEntityRenderer.GetFontRenderer();
     }

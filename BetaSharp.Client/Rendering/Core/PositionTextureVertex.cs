@@ -8,7 +8,8 @@ internal struct PositionTextureVertex
     public float texturePositionX;
     public float texturePositionY;
 
-    public PositionTextureVertex(float var1, float var2, float var3, float var4, float var5) : this(new Vector3D<double>(var1, var2, var3), var4, var5)
+    public PositionTextureVertex(float var1, float var2, float var3, float var4, float var5) : this(
+        new Vector3D<double>(var1, var2, var3), var4, var5)
     {
     }
 

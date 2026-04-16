@@ -1,8 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using BetaSharp.Client.Rendering.Core.OpenGL;
-using Silk.NET.OpenGL;
 
 namespace BetaSharp.Client.Diagnostics;
 
@@ -25,6 +23,21 @@ internal readonly record struct DebugSystemSnapshot(
         DebugTelemetry.UnknownValue,
         DebugTelemetry.UnknownValue,
         Environment.ProcessorCount,
+        DebugTelemetry.UnknownValue,
+        DebugTelemetry.UnknownValue);
+}
+
+internal readonly record struct DebugGraphicsApiSnapshot(
+    string GpuName,
+    string GpuVram,
+    string ApiVersion,
+    string ShaderLanguageVersion,
+    string DriverVersion)
+{
+    public static DebugGraphicsApiSnapshot Empty { get; } = new(
+        DebugTelemetry.UnknownValue,
+        DebugTelemetry.UnknownValue,
+        DebugTelemetry.UnknownValue,
         DebugTelemetry.UnknownValue,
         DebugTelemetry.UnknownValue);
 }
@@ -52,15 +65,21 @@ internal sealed class DebugTelemetry
 
     public DebugSystemSnapshot SystemSnapshot => _systemSnapshot;
 
-    public void CaptureSystemInfo(LegacyGL? gl)
+    public void CaptureSystemInfo(DebugGraphicsApiSnapshot graphicsApiSnapshot)
     {
-        string glVersion = GetGlString(gl, StringName.Version);
+        string apiVersion = SafeValue(graphicsApiSnapshot.ApiVersion);
+        string driverVersion = SafeValue(graphicsApiSnapshot.DriverVersion);
+        if (driverVersion == UnknownValue)
+        {
+            driverVersion = ParseDriverVersion(apiVersion);
+        }
+
         _systemSnapshot = new DebugSystemSnapshot(
-            GpuName: GetGlString(gl, StringName.Renderer),
-            GpuVram: GetGpuVram(gl),
-            OpenGlVersion: glVersion,
-            GlslVersion: GetGlString(gl, StringName.ShadingLanguageVersion),
-            DriverVersion: ParseDriverVersion(glVersion),
+            GpuName: SafeValue(graphicsApiSnapshot.GpuName),
+            GpuVram: SafeValue(graphicsApiSnapshot.GpuVram),
+            OpenGlVersion: apiVersion,
+            GlslVersion: SafeValue(graphicsApiSnapshot.ShaderLanguageVersion),
+            DriverVersion: driverVersion,
             CpuName: GetCpuName(),
             CpuCoreCount: Environment.ProcessorCount,
             OsDescription: SafeValue(RuntimeInformation.OSDescription),
@@ -132,24 +151,6 @@ internal sealed class DebugTelemetry
         return 1000.0D / frameTimeMs;
     }
 
-    private static string GetGlString(LegacyGL? gl, StringName name)
-    {
-        if (gl == null)
-        {
-            return UnknownValue;
-        }
-
-        try
-        {
-            string? value = gl.SilkGL.GetStringS(name);
-            return SafeValue(value);
-        }
-        catch
-        {
-            return UnknownValue;
-        }
-    }
-
     private static string ParseDriverVersion(string glVersion)
     {
         if (glVersion == UnknownValue)
@@ -185,57 +186,6 @@ internal sealed class DebugTelemetry
 
         return glVersion;
     }
-
-    private static string GetGpuVram(LegacyGL? gl)
-    {
-        if (gl == null)
-        {
-            return UnknownValue;
-        }
-
-        try
-        {
-            // NVIDIA extension that exposes dedicated VRAM size in KB.
-            if (gl.IsExtensionPresent("GL_NVX_gpu_memory_info"))
-            {
-                int dedicatedVidMemKb = gl.SilkGL.GetInteger((Silk.NET.OpenGL.GLEnum)0x9047);
-                if (dedicatedVidMemKb > 0)
-                {
-                    return FormatMemoryKilobytes(dedicatedVidMemKb);
-                }
-
-                // Fallback to total available memory from the same extension.
-                int totalAvailableKb = gl.SilkGL.GetInteger((Silk.NET.OpenGL.GLEnum)0x9048);
-                if (totalAvailableKb > 0)
-                {
-                    return FormatMemoryKilobytes(totalAvailableKb);
-                }
-            }
-        }
-        catch
-        {
-        }
-
-        return UnknownValue;
-    }
-
-    private static string FormatMemoryKilobytes(long kilobytes)
-    {
-        if (kilobytes <= 0)
-        {
-            return UnknownValue;
-        }
-
-        double gib = kilobytes / 1024.0D / 1024.0D;
-        if (gib >= 1.0D)
-        {
-            return $"{gib:0.##} GB";
-        }
-
-        double mib = kilobytes / 1024.0D;
-        return $"{mib:0} MB";
-    }
-
     private static string GetCpuName()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

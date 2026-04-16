@@ -31,7 +31,7 @@ public class BuiltInTexturePack : TexturePack
 
     }
 
-    public override void Unload(TextureManager textureManager)
+    public override void Unload(ITextureManager textureManager)
     {
         if (texturePackThumbnail != null && _texturePackName != null)
         {
@@ -41,7 +41,7 @@ public class BuiltInTexturePack : TexturePack
 
     }
 
-    public override void BindThumbnailTexture(TextureManager textureManager)
+    public override void BindThumbnailTexture(ITextureManager textureManager)
     {
         if (texturePackThumbnail != null && _texturePackName == null)
         {

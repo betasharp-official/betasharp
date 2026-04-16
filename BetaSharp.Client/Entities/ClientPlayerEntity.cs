@@ -1,8 +1,6 @@
 using BetaSharp.Blocks.Entities;
-using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Network;
-using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Client.UI.Screens.InGame;
 using BetaSharp.Client.UI.Screens.InGame.Containers;
 using BetaSharp.Entities;
@@ -224,7 +222,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void sendPickup(Entity entity, int count)
     {
-        Game.ParticleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(Game.World, entity, this, -0.5F)));
+        Game.ParticleManager.AddPickupParticle(entity, this, -0.5F, Game.EntityRenderDispatcher);
     }
 
     public int getPlayerArmorValue()

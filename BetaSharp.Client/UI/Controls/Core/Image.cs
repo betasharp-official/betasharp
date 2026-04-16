@@ -17,7 +17,7 @@ public class Image : UIElement
         List<string> props = base.GetInspectorProperties();
         if (Texture != null)
         {
-            props.Add($"Texture:  Id={Texture.Id}  {Texture.Texture?.Source ?? "null"}");
+            props.Add($"Texture:  Id={Texture.Id}  {Texture.Source}");
             if (U.HasValue && V.HasValue && UWidth.HasValue && VHeight.HasValue)
             {
                 props.Add($"UV:       ({U:F1}, {V:F1})  {UWidth:F1}×{VHeight:F1}");

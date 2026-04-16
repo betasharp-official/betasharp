@@ -2,10 +2,11 @@ namespace BetaSharp.Client.Rendering.Core.Textures;
 
 public class TextureHandle
 {
-    public GLTexture? Texture { get; internal set; }
+    public ITextureResource? Texture { get; internal set; }
     public int Id => (int)(Texture?.Id ?? 0u);
+    public string Source => Texture?.Source ?? "null";
 
-    internal TextureHandle(GLTexture? texture)
+    internal TextureHandle(ITextureResource? texture)
     {
         Texture = texture;
     }
@@ -17,6 +18,6 @@ public class TextureHandle
 
     public override string ToString()
     {
-        return $"TextureHandle(Id={Id}, Source={Texture?.Source ?? "null"})";
+        return $"TextureHandle(Id={Id}, Source={Source})";
     }
 }

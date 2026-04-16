@@ -1,5 +1,6 @@
 using System.Numerics;
 using BetaSharp.Client.Diagnostics.Windows;
+using BetaSharp.Client.Rendering.Presentation;
 using BetaSharp.Profiling;
 using Hexa.NET.ImGui;
 
@@ -22,8 +23,10 @@ internal sealed class DebugWindowManager
     /// <summary>Top-left screen position of the "Game Viewport" content area, in window pixel coordinates.</summary>
     public Vector2 ViewportPos { get; private set; }
 
-    /// <summary>OpenGL texture ID of the rendered frame to display in the viewport. Set to 0 to show nothing.</summary>
-    public uint ViewportTextureId { get; set; }
+    /// <summary>
+    /// Rendered frame image for the viewport preview. Set to <see cref="PresentationViewportImage.Empty"/> to show nothing.
+    /// </summary>
+    public PresentationViewportImage ViewportImage { get; set; }
 
     public DebugWindowManager(BetaSharp game, Func<bool> inGameHasFocus)
     {
@@ -129,12 +132,18 @@ internal sealed class DebugWindowManager
                 // Derive focus from whether the mouse is physically inside the viewport rect,
                 // since NoMouseInputs prevents IsWindowFocused() from ever being true.
                 GameViewportFocused = ImGui.IsMouseHoveringRect(ViewportPos, ViewportPos + contentSize, false);
-                if (ViewportTextureId != 0 && contentSize.X > 0 && contentSize.Y > 0)
+                if (ViewportImage.IsAvailable && contentSize.X > 0 && contentSize.Y > 0)
                 {
-                    // Y-flipped UVs because OpenGL FBOs have origin at bottom-left.
+                    Vector2 uv0 = ViewportImage.FlipY ? new Vector2(0, 1) : new Vector2(0, 0);
+                    Vector2 uv1 = ViewportImage.FlipY ? new Vector2(1, 0) : new Vector2(1, 1);
+
                     unsafe
                     {
-                        ImGui.Image(new ImTextureRef(null, new ImTextureID((ulong)ViewportTextureId)), contentSize, new Vector2(0, 1), new Vector2(1, 0));
+                        ImGui.Image(
+                            new ImTextureRef(null, new ImTextureID(ViewportImage.ImGuiTextureId)),
+                            contentSize,
+                            uv0,
+                            uv1);
                     }
                 }
             }

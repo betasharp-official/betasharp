@@ -37,6 +37,8 @@ namespace BetaSharp.Client.Diagnostics;
 /// </remarks>
 internal sealed class DebugWindowContext(BetaSharp game)
 {
+    public RendererBackendStateSnapshot RendererBackendState => game.RendererBackendState;
+
     public World? World => game.World;
     public ClientPlayerEntity? Player => game.Player;
     public HitResult ObjectMouseOver => game.ObjectMouseOver;

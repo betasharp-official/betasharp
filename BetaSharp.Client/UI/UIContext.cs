@@ -1,7 +1,10 @@
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Options;
+using BetaSharp.Client.Rendering.Blocks.Entities;
+using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Client.UI.Screens;
 using Silk.NET.Maths;
 
@@ -9,8 +12,11 @@ namespace BetaSharp.Client.UI;
 
 public sealed class UIContext(
     GameOptions options,
-    TextRenderer textRenderer,
-    TextureManager textureManager,
+    ITextRenderer textRenderer,
+    ITextureManager textureManager,
+    IEntityRenderDispatcher entityRenderDispatcher,
+    IBlockEntityRenderDispatcher blockEntityRenderDispatcher,
+    IUiRenderBackend uiRenderBackend,
     Action playClickSound,
     Func<Vector2D<int>> displaySize,
     Func<Vector2D<int>> inputDisplaySize,
@@ -24,8 +30,11 @@ public sealed class UIContext(
 {
 
     public GameOptions Options => options;
-    public TextRenderer TextRenderer => textRenderer;
-    public TextureManager TextureManager => textureManager;
+    public ITextRenderer TextRenderer => textRenderer;
+    public ITextureManager TextureManager => textureManager;
+    public IEntityRenderDispatcher EntityRenderDispatcher => entityRenderDispatcher;
+    public IBlockEntityRenderDispatcher BlockEntityRenderDispatcher => blockEntityRenderDispatcher;
+    public IUiRenderBackend UiRenderBackend => uiRenderBackend;
     public Action PlayClickSound => playClickSound;
     public VirtualCursor VirtualCursor => virtualCursor;
     public Timer Timer => timer;

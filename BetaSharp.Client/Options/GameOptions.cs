@@ -265,7 +265,7 @@ public class GameOptions
         VSyncOption = new BoolOption("VSync", "vsync")
         {
             LabelOverride = "VSync",
-            OnChanged = v => Display.getGlfw().SwapInterval(v ? 1 : 0)
+            OnChanged = v => _game?.SetVSyncEnabled(v)
         };
         MipmapsOption = new BoolOption("Mipmaps", "useMipmaps", true)
         {

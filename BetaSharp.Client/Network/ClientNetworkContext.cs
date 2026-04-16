@@ -1,4 +1,5 @@
 using BetaSharp.Client.Rendering;
+using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.UI.Screens;
 using BetaSharp.Stats;
 
@@ -10,7 +11,8 @@ public sealed class ClientNetworkContext(
     IScreenNavigator navigator,
     Session session,
     StatFileWriter statFileWriter,
-    ParticleManager particleManager,
+    IParticleManager particleManager,
+    IEntityRenderDispatcher entityRenderDispatcher,
     Action<string> addChatMessage,
     IClientNetworkFactory factory)
 {
@@ -19,7 +21,8 @@ public sealed class ClientNetworkContext(
     public IScreenNavigator Navigator => navigator;
     public Session Session => session;
     public StatFileWriter StatFileWriter => statFileWriter;
-    public ParticleManager ParticleManager => particleManager;
+    public IParticleManager ParticleManager => particleManager;
+    public IEntityRenderDispatcher EntityRenderDispatcher => entityRenderDispatcher;
     public Action<string> AddChatMessage => addChatMessage;
     public IClientNetworkFactory Factory => factory;
 }

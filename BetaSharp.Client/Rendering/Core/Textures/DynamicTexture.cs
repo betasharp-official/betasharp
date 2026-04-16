@@ -60,7 +60,11 @@ public class DynamicTexture(int iconIdx)
 
             if (width != targetTileSize)
             {
-                image.Mutate(x => x.Resize(new ResizeOptions { Size = new Size(targetTileSize, targetTileSize * CustomFrameCount), Sampler = KnownResamplers.NearestNeighbor }));
+                image.Mutate(x => x.Resize(new ResizeOptions
+                {
+                    Size = new Size(targetTileSize, targetTileSize * CustomFrameCount),
+                    Sampler = KnownResamplers.NearestNeighbor
+                }));
                 width = image.Width;
                 height = image.Height;
             }
@@ -80,7 +84,8 @@ public class DynamicTexture(int iconIdx)
                 CustomFrames[i] = new byte[bytesPerFrame];
                 int currentFrameIndex = i;
 
-                using Image<Rgba32> frame = image.Clone(ctx => ctx.Crop(new Rectangle(0, currentFrameIndex * width, width, width)));
+                using Image<Rgba32> frame = image.Clone(ctx =>
+                    ctx.Crop(new Rectangle(0, currentFrameIndex * width, width, width)));
                 frame.CopyPixelDataTo(CustomFrames[i]);
             }
         }
