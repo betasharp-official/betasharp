@@ -136,6 +136,44 @@ internal sealed class OpenGlRenderBackendBootstrap : IRenderBackendBootstrap
 
     public void RenderStartupScreen(GameOptions options, int displayWidth, int displayHeight, int framebufferWidth, int framebufferHeight, int splashTextureId)
     {
+        GLManager.GL.Viewport(0, 0, (uint)framebufferWidth, (uint)framebufferHeight);
+
+        GLManager.GL.ClearColor(1f, 1f, 1f, 1f);
+        GLManager.GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+        GLManager.GL.MatrixMode(LegacyGLEnum.Projection);
+        GLManager.GL.LoadIdentity();
+        GLManager.GL.Ortho(0.0, displayWidth, displayHeight, 0.0, -1.0, 1.0);
+
+        GLManager.GL.MatrixMode(LegacyGLEnum.Modelview);
+        GLManager.GL.LoadIdentity();
+
+        GLManager.GL.Disable(LegacyGLEnum.DepthTest);
+        GLManager.GL.Disable(LegacyGLEnum.CullFace);
+        GLManager.GL.Disable(LegacyGLEnum.Lighting);
+        GLManager.GL.Enable(LegacyGLEnum.Texture2D);
+        GLManager.GL.Enable(LegacyGLEnum.Blend);
+        GLManager.GL.BlendFunc(LegacyGLEnum.SrcAlpha, LegacyGLEnum.OneMinusSrcAlpha);
+        GLManager.GL.Color4(1f, 1f, 1f, 1f);
+
+        GLManager.GL.BindTexture(LegacyGLEnum.Texture2D, (uint)splashTextureId);
+
+        const float logoWidth = 256f;
+        const float logoHeight = 256f;
+
+        float x = (displayWidth - logoWidth) * 0.5f;
+        float y = (displayHeight - logoHeight) * 0.5f;
+
+        Tessellator tess = Tessellator.instance;
+        tess.startDrawingQuads();
+        tess.setColorOpaque_F(1f, 1f, 1f);
+        tess.addVertexWithUV(x,             y + logoHeight, 0.0, 0.0, 1.0);
+        tess.addVertexWithUV(x + logoWidth, y + logoHeight, 0.0, 1.0, 1.0);
+        tess.addVertexWithUV(x + logoWidth, y,              0.0, 1.0, 0.0);
+        tess.addVertexWithUV(x,             y,              0.0, 0.0, 0.0);
+        tess.draw();
+
+        GLManager.GL.Disable(LegacyGLEnum.Blend);
     }
 
     private static DebugGraphicsApiSnapshot ReadGraphicsApiSnapshot(LegacyGL? gl)

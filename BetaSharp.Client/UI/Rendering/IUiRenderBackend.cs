@@ -33,6 +33,7 @@ public interface IUiRenderBackend
     void TurnOffLighting();
 
     void DrawTexturedQuad(float left, float top, float right, float bottom, float z, double uLeft, double vTop, double uRight, double vBottom);
+    void DrawTexturedQuad(float left, float top, float right, float bottom, float z, double uLeft, double vTop, double uRight, double vBottom, Color tint);
     void DrawSolidQuad(int x1, int y1, int x2, int y2, Color color);
     void DrawGradientQuad(int left, int top, int right, int bottom, Color topColor, Color bottomColor);
 }

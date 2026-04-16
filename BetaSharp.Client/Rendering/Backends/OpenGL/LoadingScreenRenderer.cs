@@ -107,14 +107,22 @@ public class LoadingScreenRenderer(BetaSharp game) : ILoadingScreenRenderer
         TextureHandle backgroundHandle = game.TextureManager.GetTextureId("/gui/background.png");
         game.TextureManager.BindTexture(backgroundHandle);
 
-        float textureScale = 32.0f;
-        tessellator.startDrawingQuads();
-        tessellator.setColorOpaque_I(0x404040);
-        tessellator.addVertexWithUV(0.0, height, 0.0, 0.0, height / textureScale);
-        tessellator.addVertexWithUV(width, height, 0.0, width / textureScale, height / textureScale);
-        tessellator.addVertexWithUV(width, 0.0, 0.0, width / textureScale, 0.0);
-        tessellator.addVertexWithUV(0.0, 0.0, 0.0, 0.0, 0.0);
-        tessellator.draw();
+        float tileSize = 32.0f;
+        DrawTexturedQuad tess = new(tessellator);
+        tess.SetTint(new Color(64, 64, 64, 255));
+
+        for (float py = 0; py < height; py += tileSize)
+        {
+            float h = MathF.Min(tileSize, height - py);
+
+            for (float px = 0; px < width; px += tileSize)
+            {
+                float w = MathF.Min(tileSize, width - px);
+                tess.Draw(px, py, px + w, py + h, 0.0f, 0.0, 0.0, w / tileSize, h / tileSize);
+            }
+        }
+
+        tess.Draw();
 
         if (progress >= 0)
         {
@@ -150,5 +158,27 @@ public class LoadingScreenRenderer(BetaSharp game) : ILoadingScreenRenderer
 
         game.UpdateWindow(true);
         Thread.Yield();
+    }
+
+    private class DrawTexturedQuad(Tessellator tessellator)
+    {
+        private Color _tint = new(64, 64, 64, 255);
+
+        public void SetTint(Color tint)
+        {
+            _tint = tint;
+        }
+
+        public void Draw(float left, float top, float right, float bottom, float z, double uLeft, double vTop, double uRight, double vBottom)
+        {
+            tessellator.startDrawingQuads();
+            tessellator.setColorRGBA(_tint);
+            tessellator.addVertexWithUV(left, bottom, z, uLeft, vBottom);
+            tessellator.addVertexWithUV(right, bottom, z, uRight, vBottom);
+            tessellator.addVertexWithUV(right, top, z, uRight, vTop);
+            tessellator.addVertexWithUV(left, top, z, uLeft, vTop);
+        }
+
+        public void Draw() => tessellator.draw();
     }
 }

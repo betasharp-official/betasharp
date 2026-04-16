@@ -519,7 +519,7 @@ public static unsafe class Display
             {
                 RendererBackendKind.OpenGL => new GraphicsAPI(
                     ContextAPI.OpenGL,
-                    ContextProfile.Core,
+                    (ContextProfile)0,
                     DebugMode ? ContextFlags.Debug : ContextFlags.Default,
                     new APIVersion(4, 1)),
                 RendererBackendKind.Vulkan => new GraphicsAPI(

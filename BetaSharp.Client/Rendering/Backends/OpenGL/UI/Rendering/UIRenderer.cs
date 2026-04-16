@@ -262,25 +262,37 @@ public class UIRenderer(
             (v + uvHeight) * f);
     }
 
-    public void DrawRepeatingTexture(TextureHandle texture, float x, float y, float width, float height, float textureScale, float scrollOffsetY = 0f)
+    public void DrawRepeatingTexture(TextureHandle texture, float x, float y, float width, float height, float tileSize, float scrollOffsetY = 0f)
     {
         TextureManager.BindTexture(texture);
+        Color tint = new(64, 64, 64, 255);
 
-        float finalX = MathF.Floor(x + _translateX);
-        float finalY = MathF.Floor(y + _translateY);
+        float startX = MathF.Floor(x + _translateX);
+        float startY = MathF.Floor(y + _translateY);
 
-        _uiRenderBackend.SetColor(new Color(64, 64, 64, 255));
-        _uiRenderBackend.DrawTexturedQuad(
-            finalX,
-            finalY,
-            finalX + width,
-            finalY + height,
-            0.0f,
-            finalX / textureScale,
-            (finalY + scrollOffsetY) / textureScale,
-            (finalX + width) / textureScale,
-            (finalY + height + scrollOffsetY) / textureScale);
-        _uiRenderBackend.ResetColor();
+        for (float py = 0; py < height; py += tileSize)
+        {
+            float h = MathF.Min(tileSize, height - py);
+            float v1 = scrollOffsetY / tileSize;
+            float v2 = v1 + h / tileSize;
+
+            for (float px = 0; px < width; px += tileSize)
+            {
+                float w = MathF.Min(tileSize, width - px);
+
+                _uiRenderBackend.DrawTexturedQuad(
+                    startX + px,
+                    startY + py,
+                    startX + px + w,
+                    startY + py + h,
+                    0.0f,
+                    0.0,
+                    v1,
+                    w / tileSize,
+                    v2,
+                    tint);
+            }
+        }
     }
 
     public void DrawItemIntoGui(ItemRenderer itemRenderer, int itemId, int itemMeta, int textureId, float x, float y)

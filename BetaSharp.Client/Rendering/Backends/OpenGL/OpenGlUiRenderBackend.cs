@@ -10,18 +10,20 @@ internal sealed class OpenGlUiRenderBackend : IUiRenderBackend
 {
     public void BeginFrame()
     {
-        // Normalize program/texture-unit state so UI draws are not affected by world/presentation passes.
         GLManager.GL.UseProgram(0);
         GLManager.GL.ActiveTexture(GLEnum.Texture0);
 
-        // UI rendering is texture-driven; enforce texture sampling regardless of prior world-pass state.
+        GLManager.GL.MatrixMode(GLEnum.Texture);
+        GLManager.GL.LoadIdentity();
+        GLManager.GL.MatrixMode(GLEnum.Modelview);
+
         GLManager.GL.Enable(GLEnum.Texture2D);
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.DepthTest);
         GLManager.GL.Disable(GLEnum.CullFace);
-        GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        GLManager.GL.Color4(1f, 1f, 1f, 1f);
         GLManager.GL.PushMatrix();
     }
 
@@ -186,8 +188,14 @@ internal sealed class OpenGlUiRenderBackend : IUiRenderBackend
 
     public void DrawTexturedQuad(float left, float top, float right, float bottom, float z, double uLeft, double vTop, double uRight, double vBottom)
     {
+        DrawTexturedQuad(left, top, right, bottom, z, uLeft, vTop, uRight, vBottom, new Color(255, 255, 255, 255));
+    }
+
+    public void DrawTexturedQuad(float left, float top, float right, float bottom, float z, double uLeft, double vTop, double uRight, double vBottom, Color tint)
+    {
         Tessellator tessellator = Tessellator.instance;
         tessellator.startDrawingQuads();
+        tessellator.setColorRGBA(tint);
         tessellator.addVertexWithUV(left, bottom, z, uLeft, vBottom);
         tessellator.addVertexWithUV(right, bottom, z, uRight, vBottom);
         tessellator.addVertexWithUV(right, top, z, uRight, vTop);

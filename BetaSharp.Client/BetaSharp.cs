@@ -1774,13 +1774,17 @@ public partial class BetaSharp :
 
     private void LoadScreen()
     {
+        TextureHandle splash = TextureManager.GetTextureId("/title/mojang.png");
+
         _renderBackendBootstrap.RenderStartupScreen(
             Options,
             DisplayWidth,
             DisplayHeight,
             Display.getFramebufferWidth(),
             Display.getFramebufferHeight(),
-            TextureManager.GetTextureId("/title/mojang.png").Id);
+            splash.Id);
+
+        UpdateWindow(true);
     }
 
     private void SetMainViewport(int width, int height)
