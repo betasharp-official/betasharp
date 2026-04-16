@@ -27,12 +27,4 @@
     <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <Target Name="CopyGlfwAliasForImGui" AfterTargets="Build"
-          Condition="'$(OS)' != 'Windows_NT'">
-    <Copy SourceFiles="$(OutputPath)libglfw.so.3"
-          DestinationFiles="$(OutputPath)libglfw.so"
-          SkipUnchangedFiles="true"
-          Condition="Exists('$(OutputPath)libglfw.so.3')" />
-  </Target>
-
 </Project>
