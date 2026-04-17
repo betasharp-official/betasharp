@@ -1,5 +1,6 @@
 using BetaSharp.Client.Chunks;
 using BetaSharp.Client.Network;
+using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Util.Maths;
@@ -193,7 +194,31 @@ public class ClientWorld : World
 
     public bool SetBlockWithMetaFromPacket(int minX, int minY, int minZ, int blockId, int meta)
     {
+        int previousId = Reader.GetBlockId(minX, minY, minZ);
+        int previousMeta = Reader.GetBlockMeta(minX, minY, minZ);
+        BlockReset? pendingReset = FindBlockReset(minX, minY, minZ);
+
+        int authoritativePreviousId = previousId;
+        int authoritativePreviousMeta = previousMeta;
+        if (authoritativePreviousId == 0 && pendingReset != null)
+        {
+            authoritativePreviousId = pendingReset.BlockId;
+            authoritativePreviousMeta = pendingReset.Meta;
+        }
+
         ClearBlockResets(minX, minY, minZ, minX, minY, minZ);
+        Block? currentBlock = blockId > 0 ? Block.Blocks[blockId] : null;
+        if (currentBlock != null)
+        {
+            ClearLinkedBlockReset(currentBlock, minX, minY, minZ, meta);
+        }
+
+        Block? previousBlock = authoritativePreviousId > 0 ? Block.Blocks[authoritativePreviousId] : null;
+        if (previousBlock != null)
+        {
+            ClearLinkedBlockReset(previousBlock, minX, minY, minZ, authoritativePreviousMeta);
+        }
+
         if (Writer.SetBlockWithoutNotifyingNeighbors(minX, minY, minZ, blockId, meta))
         {
             BlockUpdate(minX, minY, minZ, blockId);
@@ -201,6 +226,31 @@ public class ClientWorld : World
         }
 
         return false;
+    }
+
+    private void ClearLinkedBlockReset(Block block, int x, int y, int z, int meta)
+    {
+        Vec3i? linked = block.getLinkedStatePosition(x, y, z, meta);
+        if (linked == null)
+        {
+            return;
+        }
+
+        ClearBlockResets(linked.Value.X, linked.Value.Y, linked.Value.Z, linked.Value.X, linked.Value.Y, linked.Value.Z);
+    }
+
+    private BlockReset? FindBlockReset(int x, int y, int z)
+    {
+        for (int i = _blockResets.Count - 1; i >= 0; --i)
+        {
+            BlockReset reset = _blockResets[i];
+            if (reset.X == x && reset.Y == y && reset.Z == z)
+            {
+                return reset;
+            }
+        }
+
+        return null;
     }
 
     public override void Disconnect() => _networkHandler.SendPacketAndDisconnect(DisconnectPacket.Get("Quitting"));

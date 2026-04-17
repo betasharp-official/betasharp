@@ -59,6 +59,13 @@ internal class BlockDoor : Block
         return base.getBoundingBox(world, entities, x, y, z);
     }
 
+    public override Vec3i? getLinkedStatePosition(int x, int y, int z, int meta)
+    {
+        int otherY = (meta & 8) != 0 ? y - 1 : y + 1;
+
+        return new Vec3i(x, otherY, z);
+    }
+
     public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
         updateBoundingBox(world, x, y, z);

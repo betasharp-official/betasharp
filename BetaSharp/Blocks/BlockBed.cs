@@ -1,6 +1,7 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Items;
+using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -174,6 +175,18 @@ public class BlockBed : Block
         }
     }
 
+    public override void onBreak(OnBreakEvent @event)
+    {
+        Vec3i otherHalf = getOtherHalfPosition(@event.X, @event.Y, @event.Z, @event.Meta);
+
+        if (@event.World.Reader.GetBlockId(otherHalf.X, otherHalf.Y, otherHalf.Z) == id)
+        {
+            @event.World.Writer.SetBlock(otherHalf.X, otherHalf.Y, otherHalf.Z, 0);
+        }
+    }
+
+    public override Vec3i? getLinkedStatePosition(int x, int y, int z, int meta) => getOtherHalfPosition(x, y, z, meta);
+
     public override int getDroppedItemId(int blockMeta)
     {
         return isHeadOfBed(blockMeta) ? 0 : Item.Bed.id;
@@ -197,6 +210,17 @@ public class BlockBed : Block
     public static bool isBedOccupied(int meta)
     {
         return (meta & 4) != 0;
+    }
+
+    public static Vec3i getOtherHalfPosition(int x, int y, int z, int meta)
+    {
+        int direction = getDirection(meta);
+        int offsetX = s_bedOffsets[direction][0];
+        int offsetZ = s_bedOffsets[direction][1];
+
+        return isHeadOfBed(meta)
+            ? new Vec3i(x - offsetX, y, z - offsetZ)
+            : new Vec3i(x + offsetX, y, z + offsetZ);
     }
 
     public static void updateState(IBlockWriter worldWriter, int x, int y, int z, int meta, bool occupied)
@@ -262,6 +286,12 @@ public class BlockBed : Block
         {
             base.dropStacks(@event);
         }
+    }
+
+    public override void onAfterBreak(OnAfterBreakEvent ctx)
+    {
+        ctx.Player.increaseStat(Stats.Stats.MineBlockStatArray[id], 1);
+        dropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, ctx.Meta & 7));
     }
 
     public override int getPistonBehavior()

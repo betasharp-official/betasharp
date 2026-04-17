@@ -297,7 +297,7 @@ public class Chunk
 
         if (notifyBlockPlaced && oldId != 0 && !World.IsRemote)
         {
-            Block.Blocks[oldId].onBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
+            Block.Blocks[oldId].onBreak(new OnBreakEvent(World, null, worldX, y, worldZ, Meta.GetNibble(localX, y, localZ)));
         }
 
         Meta.SetNibble(localX, y, localZ, meta);
@@ -344,7 +344,7 @@ public class Chunk
 
         if (oldId != 0)
         {
-            Block.Blocks[oldId].onBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
+            Block.Blocks[oldId].onBreak(new OnBreakEvent(World, null, worldX, y, worldZ, Meta.GetNibble(localX, y, localZ)));
         }
 
         Meta.SetNibble(localX, y, localZ, 0);

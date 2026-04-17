@@ -382,9 +382,8 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onChunkDeltaUpdate(ChunkDeltaUpdateS2CPacket packet)
     {
-        Chunk chunk = _worldClient.BlockHost.GetChunk(packet.x, packet.z);
-        int x = packet.x * 16;
-        int y = packet.z * 16;
+        int chunkWorldX = packet.x * 16;
+        int chunkWorldZ = packet.z * 16;
 
         for (int i = 0; i < packet._size; ++i)
         {
@@ -394,9 +393,10 @@ public class ClientNetworkHandler : NetHandler
             int blockX = positions >> 12 & 15;
             int blockZ = positions >> 8 & 15;
             int blockY = positions & 255;
-            chunk.SetBlock(blockX, blockY, blockZ, blockRawId, metadata);
-            _worldClient.ClearBlockResets(blockX + x, blockY, blockZ + y, blockX + x, blockY, blockZ + y);
-            _worldClient.setBlocksDirty(blockX + x, blockY, blockZ + y, blockX + x, blockY, blockZ + y);
+
+            int worldX = blockX + chunkWorldX;
+            int worldZ = blockZ + chunkWorldZ;
+            _worldClient.SetBlockWithMetaFromPacket(worldX, blockY, worldZ, blockRawId, metadata);
         }
 
     }

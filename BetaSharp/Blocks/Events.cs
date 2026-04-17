@@ -11,7 +11,7 @@ public readonly record struct CanPlaceAtContext(IWorldContext World, Side Direct
 
 public readonly record struct OnUseEvent(IWorldContext World, EntityPlayer Player, int X, int Y, int Z);
 
-public readonly record struct OnBreakEvent(IWorldContext World, Entity? Entity, int X, int Y, int Z);
+public readonly record struct OnBreakEvent(IWorldContext World, Entity? Entity, int X, int Y, int Z, int Meta = 0);
 
 public readonly record struct OnBlockBreakStartEvent(IWorldContext World, EntityPlayer Player, int X, int Y, int Z);
 

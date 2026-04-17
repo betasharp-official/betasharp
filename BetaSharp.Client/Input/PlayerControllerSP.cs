@@ -30,6 +30,7 @@ public class PlayerControllerSP : PlayerController
         if (!Game.Player.GameMode.CanBreak) return false;
 
         int blockId = Game.World.Reader.GetBlockId(x, y, z);
+        int blockMeta = Game.World.Reader.GetBlockMeta(x, y, z);
         bool blockRemoved = base.sendBlockRemoved(x, y, z, direction);
         ItemStack itemStackInHand = Game.Player.getHand();
         bool canHarvest = Game.Player.canHarvest(Block.Blocks[blockId]);
@@ -45,7 +46,7 @@ public class PlayerControllerSP : PlayerController
 
         if (blockRemoved && canHarvest)
         {
-            Block.Blocks[blockId].onBreak(new OnBreakEvent(Game.World, Game.Player, x, y, z));
+            Block.Blocks[blockId].onBreak(new OnBreakEvent(Game.World, Game.Player, x, y, z, blockMeta));
         }
 
         return blockRemoved;

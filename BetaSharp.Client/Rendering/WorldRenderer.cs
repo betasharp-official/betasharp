@@ -639,7 +639,20 @@ public class WorldRenderer : IWorldEventListener
         _textureManager.BindTexture(_textureManager.GetTextureId("/terrain.png"));
 
         int targetBlockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
-        Block targetBlock = targetBlockId > 0 ? Block.Blocks[targetBlockId] : Block.Stone;
+        if (targetBlockId <= 0)
+        {
+            // return early and 'clear' opengl context on invalid blocks
+            GLManager.GL.PolygonOffset(0.0F, 0.0F);
+            GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+            GLManager.GL.Disable(GLEnum.PolygonOffsetFill);
+            GLManager.GL.Disable(GLEnum.AlphaTest);
+            GLManager.GL.Disable(GLEnum.Blend);
+            GLManager.GL.PopMatrix();
+            return;
+        }
+
+        Block targetBlock = Block.Blocks[targetBlockId];
 
         double renderX = entityPlayer.LastTickX + (entityPlayer.X - entityPlayer.LastTickX) * (double)tickDelta;
         double renderY = entityPlayer.LastTickY + (entityPlayer.Y - entityPlayer.LastTickY) * (double)tickDelta;
@@ -649,7 +662,14 @@ public class WorldRenderer : IWorldEventListener
         tessellator.setTranslationD(-renderX, -renderY, -renderZ);
         tessellator.disableColor();
 
-        BlockRenderer.RenderBlockByRenderType(_world.Reader, _world.Lighting, targetBlock, new BlockPos(hit.BlockX, hit.BlockY, hit.BlockZ), tessellator, 240 + (int)(DamagePartialTime * 10.0F), true, _game.Options.AlternateBlocksEnabled);
+        DrawBlockDamageOverlay(tessellator, targetBlock, hit.BlockX, hit.BlockY, hit.BlockZ);
+
+        Vec3i? linkedPart = targetBlock.getLinkedInteractionPosition(_world.Reader, hit.BlockX, hit.BlockY, hit.BlockZ);
+        if (linkedPart != null)
+        {
+            DrawBlockDamageOverlay(tessellator, targetBlock, linkedPart.Value.X, linkedPart.Value.Y, linkedPart.Value.Z);
+        }
+
         tessellator.draw();
 
         tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
@@ -682,6 +702,12 @@ public class WorldRenderer : IWorldEventListener
                 double var10 = var1.LastTickY + (var1.Y - var1.LastTickY) * (double)var5;
                 double var12 = var1.LastTickZ + (var1.Z - var1.LastTickZ) * (double)var5;
                 DrawOutlinedBoundingBox(Block.Blocks[var7].getBoundingBox(_world.Reader, _world.Entities, var2.BlockX, var2.BlockY, var2.BlockZ).Expand((double)var6, (double)var6, (double)var6).Offset(-var8, -var10, -var12));
+
+                Vec3i? linkedPart = Block.Blocks[var7].getLinkedInteractionPosition(_world.Reader, var2.BlockX, var2.BlockY, var2.BlockZ);
+                if (linkedPart != null)
+                {
+                    DrawOutlinedBoundingBox(Block.Blocks[var7].getBoundingBox(_world.Reader, _world.Entities, linkedPart.Value.X, linkedPart.Value.Y, linkedPart.Value.Z).Expand((double)var6, (double)var6, (double)var6).Offset(-var8, -var10, -var12));
+                }
             }
 
             GLManager.GL.DepthMask(true);
@@ -718,6 +744,11 @@ public class WorldRenderer : IWorldEventListener
         var2.addVertex(box.MinX, box.MinY, box.MaxZ);
         var2.addVertex(box.MinX, box.MaxY, box.MaxZ);
         var2.draw();
+    }
+
+    private void DrawBlockDamageOverlay(Tessellator tessellator, Block block, int x, int y, int z)
+    {
+        BlockRenderer.RenderBlockByRenderType(_world.Reader, _world.Lighting, block, new BlockPos(x, y, z), tessellator, 240 + (int)(DamagePartialTime * 10.0F), true, _game.Options.AlternateBlocksEnabled);
     }
 
     public void MarkBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)

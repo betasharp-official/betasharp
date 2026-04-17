@@ -341,6 +341,17 @@ public class Block
 
     public virtual Box getBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z) => BoundingBox.Offset(x, y, z);
 
+    public virtual Vec3i? getLinkedStatePosition(int x, int y, int z, int meta) => null;
+
+    public virtual Vec3i? getLinkedInteractionPosition(IBlockReader world, int x, int y, int z)
+    {
+        Vec3i? linked = getLinkedStatePosition(x, y, z, world.GetBlockMeta(x, y, z));
+
+        return linked != null && world.GetBlockId(linked.Value.X, linked.Value.Y, linked.Value.Z) == id
+            ? linked
+            : null;
+    }
+
     public virtual void addIntersectingBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z, Box box, List<Box> boxes)
     {
         Box? collisionBox = getCollisionShape(world, entities, x, y, z);
