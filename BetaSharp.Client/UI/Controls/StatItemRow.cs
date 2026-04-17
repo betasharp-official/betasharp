@@ -55,7 +55,7 @@ public class StatItemRow : UIElement
     {
         if (IsAlternate)
         {
-            renderer.DrawRect(0, 0, ComputedWidth, ComputedHeight, new Color(Color.White, 10));
+            renderer.DrawRect(0, 0, ComputedWidth, ComputedHeight, Color.White.WithAlpha(10));
         }
 
         if (IsHovered)
