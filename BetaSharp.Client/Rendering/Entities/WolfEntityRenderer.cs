@@ -17,7 +17,7 @@ public class WolfEntityRenderer : LivingEntityRenderer
 
     protected float func_25004_a(EntityWolf wolf, float tickDelta)
     {
-        return wolf.getTailRotation();
+        return wolf.GetTailRotation();
     }
 
     protected void func_25006_b(EntityWolf wolf, float tickDelta)

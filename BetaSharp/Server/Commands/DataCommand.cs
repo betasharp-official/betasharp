@@ -40,7 +40,7 @@ public class DataCommand : Command.Command
 
     private static IEnumerable<Entity> GetEntityList(CommandContext<CommandSource> context, ListKind kind, ServerPlayerEntity player)
     {
-        EntityManager entities = context.Source.Server.getWorld(player.dimensionId).Entities;
+        EntityManager entities = context.Source.Server.getWorld(player.DimensionId).Entities;
         return kind switch
         {
             ListKind.Player => entities.Players,
@@ -225,7 +225,7 @@ public class DataCommand : Command.Command
         {
             output.SendMessage("deathTime: " + player.DeathTime);
             output.SendMessage("health: " + player.Health);
-            output.SendMessage("name: " + player.name);
+            output.SendMessage("name: " + player.Name);
         }
         else if (e is EntityLiving living)
         {

@@ -25,22 +25,22 @@ public class ItemRenderer : EntityRenderer
     public void doRenderItem(EntityItem entityItem, double x, double y, double z, float yaw, float tickDelta)
     {
         random.SetSeed(187L);
-        ItemStack stack = entityItem.stack;
+        ItemStack stack = entityItem.Stack;
         GLManager.GL.PushMatrix();
-        float bobOffset = MathHelper.Sin((entityItem.Age + tickDelta) / 10.0F + entityItem.bobPhase) * 0.1F + 0.1F;
-        float spinAngle = ((entityItem.Age + tickDelta) / 20.0F + entityItem.bobPhase) * (180.0F / (float)Math.PI);
+        float bobOffset = MathHelper.Sin((entityItem.Age + tickDelta) / 10.0F + entityItem.BobPhase) * 0.1F + 0.1F;
+        float spinAngle = ((entityItem.Age + tickDelta) / 20.0F + entityItem.BobPhase) * (180.0F / (float)Math.PI);
         byte renderCount = 1;
-        if (entityItem.stack.Count > 1)
+        if (entityItem.Stack.Count > 1)
         {
             renderCount = 2;
         }
 
-        if (entityItem.stack.Count > 5)
+        if (entityItem.Stack.Count > 5)
         {
             renderCount = 3;
         }
 
-        if (entityItem.stack.Count > 20)
+        if (entityItem.Stack.Count > 20)
         {
             renderCount = 4;
         }

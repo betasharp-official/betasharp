@@ -19,7 +19,7 @@ public class UndeadEntityRenderer : LivingEntityRenderer
 
     protected override void RenderMore(EntityLiving entity, float tickDelta)
     {
-        ItemStack heldItem = entity.getHeldItem();
+        ItemStack heldItem = entity.HeldItem;
         if (heldItem != null)
         {
             GLManager.GL.PushMatrix();

@@ -4,7 +4,6 @@ using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Recipes;
 using BetaSharp.Screens.Slots;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Screens;
@@ -69,7 +68,7 @@ public class CraftingScreenHandler : ScreenHandler
                 ItemStack itemStack = input.GetStack(i);
                 if (itemStack != null)
                 {
-                    player.inventory.AddItemStackToInventoryOrDrop(itemStack);
+                    player.Inventory.AddItemStackToInventoryOrDrop(itemStack);
                 }
             }
 

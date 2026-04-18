@@ -14,12 +14,12 @@ public class SheepEntityRenderer : LivingEntityRenderer
 
     protected bool setWoolColorAndRender(EntitySheep sheepEntity, int renderPass, float tickDelta)
     {
-        if (renderPass == 0 && !sheepEntity.getSheared())
+        if (renderPass == 0 && !sheepEntity.IsSheared)
         {
             loadTexture("/mob/sheep_fur.png");
             float brightness = sheepEntity.GetBrightnessAtEyes(tickDelta);
-            int fleeceColor = sheepEntity.getFleeceColor();
-            GLManager.GL.Color3(brightness * EntitySheep.fleeceColorTable[fleeceColor][0], brightness * EntitySheep.fleeceColorTable[fleeceColor][1], brightness * EntitySheep.fleeceColorTable[fleeceColor][2]);
+            int fleeceColor = sheepEntity.FleeceColor;
+            GLManager.GL.Color3(brightness * EntitySheep.FleeceColorTable[fleeceColor][0], brightness * EntitySheep.FleeceColorTable[fleeceColor][1], brightness * EntitySheep.FleeceColorTable[fleeceColor][2]);
             return true;
         }
         else

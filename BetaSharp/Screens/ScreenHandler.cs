@@ -100,7 +100,7 @@ public abstract class ScreenHandler
         ItemStack? returnStack = null;
         if (button == 0 || button == 1)
         {
-            InventoryPlayer playerInventory = player.inventory;
+            InventoryPlayer playerInventory = player.Inventory;
             if (index == -999)
             {
                 if (playerInventory.GetCursorStack() is not null && index == -999)
@@ -242,7 +242,7 @@ public abstract class ScreenHandler
 
     public virtual void onClosed(EntityPlayer player)
     {
-        InventoryPlayer playerInventory = player.inventory;
+        InventoryPlayer playerInventory = player.Inventory;
         if (playerInventory.GetCursorStack() is not null)
         {
             if (player.GameMode.CanDrop)
@@ -254,7 +254,7 @@ public abstract class ScreenHandler
             }
             else
             {
-                player.inventory.AddItemStackToInventoryOrDrop(playerInventory.GetCursorStack());
+                player.Inventory.AddItemStackToInventoryOrDrop(playerInventory.GetCursorStack());
             }
         }
 

@@ -1,5 +1,4 @@
 using BetaSharp.Items;
-using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -7,7 +6,8 @@ namespace BetaSharp.Entities;
 
 public class EntitySpider : EntityMonster
 {
-    public override EntityType Type => EntityRegistry.Spider;
+    private const double ViewDistance = 16.0D;
+
     public EntitySpider(IWorldContext world) : base(world)
     {
         Texture = "/mob/spider.png";
@@ -15,54 +15,38 @@ public class EntitySpider : EntityMonster
         MovementSpeed = 0.8F;
     }
 
+    public override EntityType Type => EntityRegistry.Spider;
+
+    protected override double PassengerRidingHeight => Height * 0.75D - 0.5D;
+
+    protected override string? LivingSound => "mob.spider";
+
+    protected override string? HurtSound => "mob.spider";
+
+    protected override string? DeathSound => "mob.spiderdeath";
+
+    protected override int DropItemId => Item.String.id;
+
+    protected override bool IsOnLadder => HorizontalCollision;
+
+    protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
+
     public override void PostSpawn()
     {
-        if (World.Random.NextInt(100) == 0)
-        {
-            EntitySkeleton skeleton = new EntitySkeleton(World);
-            skeleton.SetPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, 0.0F);
-            World.SpawnEntity(skeleton);
-            skeleton.SetVehicle(this);
-        }
+        if (World.Random.NextInt(100) != 0) return;
+
+        EntitySkeleton skeleton = new(World);
+        skeleton.SetPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, 0.0F);
+        World.SpawnEntity(skeleton);
+        skeleton.SetVehicle(this);
     }
 
-    public override double GetPassengerRidingHeight()
-    {
-        return (double)Height * 0.75D - 0.5D;
-    }
+    protected override bool BypassesSteppingEffects() => false;
 
-    protected override bool BypassesSteppingEffects()
-    {
-        return false;
-    }
-
-    protected override Entity? findPlayerToAttack()
+    protected override Entity? FindPlayerToAttack()
     {
         float brightness = GetBrightnessAtEyes(1.0F);
-        if (brightness < 0.5F)
-        {
-            double distance = 16.0D;
-            return World.Entities.GetClosestPlayerTarget(this.X, this.Y, this.Z, distance);
-        }
-        else
-        {
-            return null;
-        }
-    }
-
-    protected override string getLivingSound()
-    {
-        return "mob.spider";
-    }
-
-    protected override string getHurtSound()
-    {
-        return "mob.spider";
-    }
-
-    protected override string getDeathSound()
-    {
-        return "mob.spiderdeath";
+        return !(brightness < 0.5F) ? null : World.Entities.GetClosestPlayerTarget(X, Y, Z, ViewDistance);
     }
 
     protected override void attackEntity(Entity entity, float distance)
@@ -70,47 +54,25 @@ public class EntitySpider : EntityMonster
         float brightness = GetBrightnessAtEyes(1.0F);
         if (brightness > 0.5F && Random.NextInt(100) == 0)
         {
-            playerToAttack = null;
+            Target = null;
         }
         else
         {
-            if (distance > 2.0F && distance < 6.0F && Random.NextInt(10) == 0)
+            if (distance is > 2.0F and < 6.0F && Random.NextInt(10) == 0)
             {
-                if (OnGround)
-                {
-                    double dx = entity.X - X;
-                    double dz = entity.Z - Z;
-                    float horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz);
-                    VelocityX = dx / (double)horizontalDistance * 0.5D * (double)0.8F + VelocityX * (double)0.2F;
-                    VelocityZ = dz / (double)horizontalDistance * 0.5D * (double)0.8F + VelocityZ * (double)0.2F;
-                    VelocityY = (double)0.4F;
-                }
+                if (!OnGround) return;
+
+                double dx = entity.X - X;
+                double dz = entity.Z - Z;
+                float horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz);
+                VelocityX = dx / horizontalDistance * 0.5D * 0.8F + VelocityX * 0.2F;
+                VelocityZ = dz / horizontalDistance * 0.5D * 0.8F + VelocityZ * 0.2F;
+                VelocityY = 0.4F;
             }
             else
             {
                 base.attackEntity(entity, distance);
             }
-
         }
-    }
-
-    public override void WriteNbt(NBTTagCompound nbt)
-    {
-        base.WriteNbt(nbt);
-    }
-
-    public override void ReadNbt(NBTTagCompound nbt)
-    {
-        base.ReadNbt(nbt);
-    }
-
-    protected override int getDropItemId()
-    {
-        return Item.String.id;
-    }
-
-    public override bool isOnLadder()
-    {
-        return HorizontalCollison;
     }
 }

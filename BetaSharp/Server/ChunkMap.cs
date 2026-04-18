@@ -53,8 +53,8 @@ internal class ChunkMap
             // Unload chunks that are now out of view distance
             foreach (var player in players)
             {
-                int px = (int)player.lastX >> 4;
-                int pz = (int)player.lastZ >> 4;
+                int px = (int)player.LastX >> 4;
+                int pz = (int)player.LastZ >> 4;
 
                 foreach (var item in GetChunks(player, oldDistance))
                 {
@@ -80,8 +80,8 @@ internal class ChunkMap
             // Load chunks that are now within view distance
             foreach (ServerPlayerEntity player in players)
             {
-                int px = (int)player.lastX >> 4;
-                int pz = (int)player.lastZ >> 4;
+                int px = (int)player.LastX >> 4;
+                int pz = (int)player.LastZ >> 4;
 
                 foreach (ChunkPos item in GetChunks(player))
                 {
@@ -188,8 +188,8 @@ internal class ChunkMap
     public void addPlayer(ServerPlayerEntity player)
     {
         player.ResetChunkStreamingState();
-        player.lastX = player.X;
-        player.lastZ = player.Z;
+        player.LastX = player.X;
+        player.LastZ = player.Z;
 
         foreach (ChunkPos item in GetChunks(player))
         {
@@ -230,8 +230,8 @@ internal class ChunkMap
     {
         int playerChunkCenterX = (int)player.X >> 4;
         int playerChunkCenterZ = (int)player.Z >> 4;
-        int playerLastChunkCenterX = (int)player.lastX >> 4;
-        int playerLastChunkCenterZ = (int)player.lastZ >> 4;
+        int playerLastChunkCenterX = (int)player.LastX >> 4;
+        int playerLastChunkCenterZ = (int)player.LastZ >> 4;
         int playerChunkCenterDeltaX = playerChunkCenterX - playerLastChunkCenterX;
         int playerChunkCenterDeltaZ = playerChunkCenterZ - playerLastChunkCenterZ;
         if (playerChunkCenterDeltaX == 0 && playerChunkCenterDeltaZ == 0)
@@ -278,8 +278,8 @@ internal class ChunkMap
             }
         }
 
-        player.lastX = player.X;
-        player.lastZ = player.Z;
+        player.LastX = player.X;
+        player.LastZ = player.Z;
     }
 
     public int getBlockViewDistance()
@@ -356,7 +356,7 @@ internal class ChunkMap
                 return;
             }
 
-            if (player.activeChunks.Add(_chunkPos))
+            if (player.ActiveChunks.Add(_chunkPos))
             {
                 player.NetworkHandler.SendPacket(ChunkStatusUpdateS2CPacket.Get(_chunkPos.X, _chunkPos.Z, true));
             }
@@ -397,7 +397,7 @@ internal class ChunkMap
                     _chunkMap.getWorld().ChunkCache.isLoaded(_chunkPos.X, _chunkPos.Z);
                 }
 
-                if (player.activeChunks.Remove(_chunkPos))
+                if (player.ActiveChunks.Remove(_chunkPos))
                 {
                     player.NetworkHandler.SendPacket(ChunkStatusUpdateS2CPacket.Get(_chunkPos.X, _chunkPos.Z, false));
                 }
@@ -466,7 +466,7 @@ internal class ChunkMap
         {
             foreach (ServerPlayerEntity serverPlayer in _players)
             {
-                if (serverPlayer.activeChunks.Contains(_chunkPos))
+                if (serverPlayer.ActiveChunks.Contains(_chunkPos))
                 {
                     serverPlayer.NetworkHandler.SendPacket(packet);
                 }

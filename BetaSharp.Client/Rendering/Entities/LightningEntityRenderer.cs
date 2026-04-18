@@ -19,7 +19,7 @@ public class LightningEntityRenderer : EntityRenderer
         double[] zOffsets = new double[8];
         double offsetX = 0.0D;
         double offsetZ = 0.0D;
-        JavaRandom random = new(lightningBolt.renderSeed);
+        JavaRandom random = new(lightningBolt.RenderSeed);
 
         for (int segmentIndex = 7; segmentIndex >= 0; --segmentIndex)
         {
@@ -31,7 +31,7 @@ public class LightningEntityRenderer : EntityRenderer
 
         for (int layerIndex = 0; layerIndex < 4; ++layerIndex)
         {
-            JavaRandom branchRandom = new(lightningBolt.renderSeed);
+            JavaRandom branchRandom = new(lightningBolt.RenderSeed);
 
             for (int branchDepth = 0; branchDepth < 3; ++branchDepth)
             {

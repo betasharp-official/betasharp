@@ -7,7 +7,6 @@ namespace BetaSharp.Entities;
 
 public class EntityPig : EntityAnimal
 {
-    public override EntityType Type => EntityRegistry.Pig;
     public readonly SyncedProperty<bool> Saddled;
 
     public EntityPig(IWorldContext world) : base(world)
@@ -17,68 +16,54 @@ public class EntityPig : EntityAnimal
         Saddled = DataSynchronizer.MakeProperty(16, false);
     }
 
-    public override void WriteNbt(NBTTagCompound nbt)
+    public override EntityType Type => EntityRegistry.Pig;
+
+    protected override string? LivingSound => "mob.pig";
+
+    protected override string? HurtSound => "mob.pig";
+
+    protected override string? DeathSound => "mob.pigdeath";
+
+    protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
+
+    protected override void WriteNbt(NBTTagCompound nbt)
     {
         base.WriteNbt(nbt);
         nbt.SetBoolean("Saddle", Saddled.Value);
     }
 
-    public override void ReadNbt(NBTTagCompound nbt)
+    protected override void ReadNbt(NBTTagCompound nbt)
     {
         base.ReadNbt(nbt);
         Saddled.Value = nbt.GetBoolean("Saddle");
     }
 
-    protected override string getLivingSound()
-    {
-        return "mob.pig";
-    }
-
-    protected override string getHurtSound()
-    {
-        return "mob.pig";
-    }
-
-    protected override string getDeathSound()
-    {
-        return "mob.pigdeath";
-    }
-
     public override bool Interact(EntityPlayer player)
     {
-        if (!Saddled.Value || World.IsRemote || Passenger != null && Passenger != player)
-        {
-            return false;
-        }
-        else
-        {
-            player.SetVehicle(this);
-            return true;
-        }
+        if (!Saddled.Value || World.IsRemote || (Passenger != null && !Equals(Passenger, player))) return false;
+
+        player.SetVehicle(this);
+        return true;
     }
 
-    protected override int getDropItemId()
-    {
-        return FireTicks > 0 ? Item.CookedPorkchop.id : Item.RawPorkchop.id;
-    }
+    protected override int DropItemId => FireTicks > 0 ? Item.CookedPorkchop.id : Item.RawPorkchop.id;
 
     public override void OnStruckByLightning(EntityLightningBolt bolt)
     {
-        if (!World.IsRemote)
-        {
-            EntityPigZombie pigZombie = new EntityPigZombie(World);
-            pigZombie.SetPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, Pitch);
-            World.SpawnEntity(pigZombie);
-            MarkDead();
-        }
+        if (World.IsRemote) return;
+
+        EntityPigZombie pigZombie = new(World);
+        pigZombie.SetPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, Pitch);
+        World.SpawnEntity(pigZombie);
+        MarkDead();
     }
 
     protected override void OnLanding(float fallDistance)
     {
         base.OnLanding(fallDistance);
-        if (fallDistance > 5.0F && Passenger is EntityPlayer)
+        if (fallDistance > 5.0F && Passenger is EntityPlayer player)
         {
-            ((EntityPlayer)Passenger).incrementStat(Achievements.KillPig);
+            player.IncrementStat(Achievements.KillPig);
         }
     }
 }

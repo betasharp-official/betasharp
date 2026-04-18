@@ -1,4 +1,3 @@
-using System.Linq;
 using BetaSharp.Entities;
 using BetaSharp.NBT;
 using BetaSharp.Server.Worlds;
@@ -237,7 +236,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
             player.Write(tag);
 
             string tempFile = Path.Combine(_playersDirectory.FullName, "_tmp_.dat");
-            string finalFile = Path.Combine(_playersDirectory.FullName, $"{player.name}.dat");
+            string finalFile = Path.Combine(_playersDirectory.FullName, $"{player.Name}.dat");
 
             using (var stream = File.Create(tempFile))
             {
@@ -248,13 +247,13 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to save player data for {player.name}");
+            _logger.LogWarning(ex, $"Failed to save player data for {player.Name}");
         }
     }
 
     public void LoadPlayerData(EntityPlayer player)
     {
-        NBTTagCompound tag = loadPlayerData(player.name);
+        NBTTagCompound tag = loadPlayerData(player.Name);
         if (tag != null)
         {
             player.Read(tag);

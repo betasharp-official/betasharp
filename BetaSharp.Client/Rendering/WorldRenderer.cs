@@ -242,7 +242,7 @@ public class WorldRenderer : IWorldEventListener
                         continue;
                     }
                 }
-                if (entity.ShouldRender(cameraPos) && (entity.IgnoreFrustumCheck || culler.IsBoundingBoxInFrustum(entity.BoundingBox)) && (entity != _game.Camera || _game.Options.CameraMode != CameraMode.FirstPerson || _game.Camera.isSleeping()))
+                if (entity.ShouldRender(cameraPos) && (entity.IgnoreFrustumCheck || culler.IsBoundingBoxInFrustum(entity.BoundingBox)) && (entity != _game.Camera || _game.Options.CameraMode != CameraMode.FirstPerson || _game.Camera.IsSleeping))
                 {
                     int yFloor = MathHelper.Floor(entity.Y);
                     if (yFloor < 0)
@@ -818,7 +818,7 @@ public class WorldRenderer : IWorldEventListener
     public void NotifyEntityAdded(Entity entity)
     {
         entity.UpdateCloak();
-        EntityRenderDispatcher.Instance.SkinManager.RequestDownload((entity as EntityPlayer)?.name);
+        EntityRenderDispatcher.Instance.SkinManager.RequestDownload((entity as EntityPlayer)?.Name);
     }
 
     public void NotifyEntityRemoved(Entity entity)

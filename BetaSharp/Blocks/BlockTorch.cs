@@ -25,7 +25,7 @@ internal class BlockTorch : Block
 
     private static bool TryGetHorizontalWallPickRay(EntityLiving placer, int torchX, int torchZ, out double lx, out double lz)
     {
-        Vec3D look = placer.getLook(1.0F);
+        Vec3D look = placer.GetLook(1.0F);
         double h = Math.Sqrt((look.x * look.x) + (look.z * look.z));
         if (h >= 1e-3)
         {

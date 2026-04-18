@@ -62,10 +62,10 @@ public class PlayerController
         ItemStack resultStack = stack.use(world, player);
         if (resultStack != stack || resultStack != null && resultStack.Count != originalCount)
         {
-            player.inventory.Main[player.inventory.SelectedSlot] = resultStack;
+            player.Inventory.Main[player.Inventory.SelectedSlot] = resultStack;
             if (resultStack.Count == 0)
             {
-                player.inventory.Main[player.inventory.SelectedSlot] = null;
+                player.Inventory.Main[player.Inventory.SelectedSlot] = null;
             }
 
             return true;
@@ -124,22 +124,22 @@ public class PlayerController
 
     public virtual void interactWithEntity(EntityPlayer player, Entity target)
     {
-        player.interact(target);
+        player.Interact(target);
     }
 
     public virtual void attackEntity(EntityPlayer player, Entity target)
     {
-        player.attack(target);
+        player.Attack(target);
     }
 
     public virtual ItemStack func_27174_a(int windowId, int slotIndex, int mouseButton, bool shiftClick, EntityPlayer player)
     {
-        return player.currentScreenHandler.onSlotClick(slotIndex, mouseButton, shiftClick, player);
+        return player.CurrentScreenHandler.onSlotClick(slotIndex, mouseButton, shiftClick, player);
     }
 
     public virtual void OnGuiClosed(int windowId, EntityPlayer player)
     {
-        player.currentScreenHandler.onClosed(player);
-        player.currentScreenHandler = player.playerScreenHandler;
+        player.CurrentScreenHandler.onClosed(player);
+        player.CurrentScreenHandler = player.PlayerScreenHandler;
     }
 }

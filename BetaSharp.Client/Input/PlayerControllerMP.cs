@@ -6,7 +6,6 @@ using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Input;
 
@@ -41,14 +40,14 @@ public class PlayerControllerMP : PlayerController
 
         int blockId = Game.World.Reader.GetBlockId(x, y, z);
         bool blockRemoved = base.sendBlockRemoved(x, y, z, direction);
-        ItemStack hand = Game.Player.getHand();
+        ItemStack hand = Game.Player.GetHand();
         if (hand != null)
         {
             hand.postMine(blockId, x, y, z, Game.Player);
             if (hand.Count == 0)
             {
                 ItemStack.onRemoved(Game.Player);
-                Game.Player.clearStackInHand();
+                Game.Player.ClearStackInHand();
             }
         }
 
@@ -168,7 +167,7 @@ public class PlayerControllerMP : PlayerController
 
     private void syncCurrentPlayItem()
     {
-        int selectedSlot = Game.Player.inventory.SelectedSlot;
+        int selectedSlot = Game.Player.Inventory.SelectedSlot;
         if (selectedSlot != currentPlayerItem)
         {
             currentPlayerItem = selectedSlot;
@@ -188,7 +187,7 @@ public class PlayerControllerMP : PlayerController
     )
     {
         syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(blockX, blockY, blockZ, blockSide, player.inventory.GetItemInHand()));
+        netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(blockX, blockY, blockZ, blockSide, player.Inventory.ItemInHand));
         bool placed = base.sendPlaceBlock(player, world, selectedItem, blockX, blockY, blockZ, blockSide);
         return placed;
     }
@@ -196,7 +195,7 @@ public class PlayerControllerMP : PlayerController
     public override bool sendUseItem(EntityPlayer player, World world, ItemStack stack)
     {
         syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(-1, -1, -1, 255, player.inventory.GetItemInHand()));
+        netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(-1, -1, -1, 255, player.Inventory.ItemInHand));
         bool usedItem = base.sendUseItem(player, world, stack);
         return usedItem;
     }
@@ -210,19 +209,19 @@ public class PlayerControllerMP : PlayerController
     {
         syncCurrentPlayItem();
         netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(player.ID, target.ID, 1));
-        player.attack(target);
+        player.Attack(target);
     }
 
     public override void interactWithEntity(EntityPlayer player, Entity target)
     {
         syncCurrentPlayItem();
         netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(player.ID, target.ID, 0));
-        player.interact(target);
+        player.Interact(target);
     }
 
     public override ItemStack func_27174_a(int windowId, int slotIndex, int mouseButton, bool shiftClick, EntityPlayer player)
     {
-        short revision = player.currentScreenHandler.nextRevision(player.inventory);
+        short revision = player.CurrentScreenHandler.nextRevision(player.Inventory);
         ItemStack resultStack = base.func_27174_a(windowId, slotIndex, mouseButton, shiftClick, player);
         netClientHandler.AddToSendQueue(ClickSlotC2SPacket.Get(windowId, slotIndex, mouseButton, shiftClick, resultStack, revision));
         return resultStack;

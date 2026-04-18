@@ -446,7 +446,7 @@ public partial class BetaSharp :
             () => PlayerController,
             () => World,
             () => CurrentScreen == null && Player != null && World != null
-                ? new InGameTipContext(ObjectMouseOver, World.Reader, Player.inventory.GetItemInHand())
+                ? new InGameTipContext(ObjectMouseOver, World.Reader, Player.Inventory.ItemInHand)
                 : null,
             () => _isMainMenuOpen
         ));
@@ -884,12 +884,12 @@ public partial class BetaSharp :
             {
                 Navigate(null);
             }
-            else if (Player.isSleeping() && World != null && World.IsRemote)
+            else if (Player.IsSleeping && World != null && World.IsRemote)
             {
                 Navigate(new SleepScreen(UIContext, Player));
             }
         }
-        else if (CurrentScreen is SleepScreen && !Player.isSleeping())
+        else if (CurrentScreen is SleepScreen && !Player.IsSleeping)
         {
             Navigate(null);
         }
@@ -1020,7 +1020,7 @@ public partial class BetaSharp :
                     }
                     else
                     {
-                        Player.inventory.ChangeCurrentItem(mouseWheelDelta);
+                        Player.Inventory.ChangeCurrentItem(mouseWheelDelta);
                         if (Options.InvertScrolling)
                         {
                             if (mouseWheelDelta > 0) mouseWheelDelta = 1;
@@ -1141,7 +1141,7 @@ public partial class BetaSharp :
                 {
                     if (Keyboard.getEventKey() == Keyboard.KEY_1 + slotIndex)
                     {
-                        Player.inventory.SelectedSlot = slotIndex;
+                        Player.Inventory.SelectedSlot = slotIndex;
                     }
                 }
 
@@ -1183,7 +1183,7 @@ public partial class BetaSharp :
         {
             if (mouseButton == 0)
             {
-                Player.swingHand();
+                Player.SwingHand();
             }
 
             bool shouldPerformSecondaryAction = true;
@@ -1218,12 +1218,12 @@ public partial class BetaSharp :
                 }
                 else
                 {
-                    ItemStack selectedItem = Player.inventory.GetItemInHand();
+                    ItemStack selectedItem = Player.Inventory.ItemInHand;
                     int itemCountBefore = selectedItem != null ? selectedItem.Count : 0;
                     if (PlayerController.sendPlaceBlock(Player, World, selectedItem, blockX, blockY, blockZ, blockSide))
                     {
                         shouldPerformSecondaryAction = false;
-                        Player.swingHand();
+                        Player.SwingHand();
                     }
 
                     if (selectedItem == null)
@@ -1233,7 +1233,7 @@ public partial class BetaSharp :
 
                     if (selectedItem.Count == 0)
                     {
-                        Player.inventory.Main[Player.inventory.SelectedSlot] = null;
+                        Player.Inventory.Main[Player.Inventory.SelectedSlot] = null;
                     }
                     else if (selectedItem.Count != itemCountBefore)
                     {
@@ -1244,7 +1244,7 @@ public partial class BetaSharp :
 
             if (shouldPerformSecondaryAction && mouseButton == 1)
             {
-                ItemStack selectedItem = Player.inventory.GetItemInHand();
+                ItemStack selectedItem = Player.Inventory.ItemInHand;
                 if (selectedItem != null && PlayerController.sendUseItem(Player, World, selectedItem))
                 {
                     GameRenderer.itemRenderer.ResetEquippedProgress();
@@ -1265,7 +1265,7 @@ public partial class BetaSharp :
             else if (blockId == Block.Leaves.id) backupId = Block.Sapling.id;
             else if (blockId == Block.DoubleSlab.id) blockId = Block.Slab.id;
 
-            Player.inventory.SetCurrentItem(blockId, backupId);
+            Player.Inventory.SetCurrentItem(blockId, backupId);
         }
     }
 
@@ -1357,7 +1357,7 @@ public partial class BetaSharp :
             }
 
             newWorld.AddPlayer(Player);
-            SkinManager.RequestDownload(Player.name);
+            SkinManager.RequestDownload(Player.Name);
 
             if (newWorld.IsNewWorld)
             {
@@ -1379,15 +1379,15 @@ public partial class BetaSharp :
 
         if (Player is not null && !ignoreSpawnPosition)
         {
-            playerSpawnPos = Player.getSpawnPos();
+            playerSpawnPos = Player.GetSpawnPos();
 
             if (playerSpawnPos is not null)
             {
-                respawnPos = EntityPlayer.findRespawnPosition(World, playerSpawnPos);
+                respawnPos = EntityPlayer.FindRespawnPosition(World, playerSpawnPos);
 
                 if (respawnPos is null)
                 {
-                    Player.sendMessage("tile.bed.notValid");
+                    Player.SendMessage("tile.bed.notValid");
                 }
             }
         }
@@ -1407,12 +1407,12 @@ public partial class BetaSharp :
         }
 
         Player = (ClientPlayerEntity)PlayerController.createPlayer(World);
-        Player.dimensionId = newDimensionId;
+        Player.DimensionId = newDimensionId;
         Player.TeleportToTop();
 
         if (useBedSpawn)
         {
-            Player.setSpawnPos(playerSpawnPos);
+            Player.SetSpawnPos(playerSpawnPos);
             Player.SetPositionAndAnglesKeepPrevAngles(
                 finalRespawnPos.X + 0.5,
                 finalRespawnPos.Y + 0.1,
@@ -1425,7 +1425,7 @@ public partial class BetaSharp :
         World.AddPlayer(Player);
         Player.movementInput = new MovementInputFromOptions(Options);
         Player.ID = previousPlayerId;
-        Player.spawn();
+        Player.Spawn();
         PlayerController.fillHotbar(Player);
 
         ShowText("Respawning");
@@ -1525,7 +1525,7 @@ public partial class BetaSharp :
             }
             else if (Player.Health <= 0)
             {
-                newScreen = new GameOverScreen(UIContext, Player.getScore(), Player.respawn, canRespawn: Session != null, exitToTitle: () => ChangeWorld(null!));
+                newScreen = new GameOverScreen(UIContext, Player.getScore(), Player.Respawn, canRespawn: Session != null, exitToTitle: () => ChangeWorld(null!));
             }
         }
 

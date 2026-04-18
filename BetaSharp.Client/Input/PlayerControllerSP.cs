@@ -31,15 +31,15 @@ public class PlayerControllerSP : PlayerController
 
         int blockId = Game.World.Reader.GetBlockId(x, y, z);
         bool blockRemoved = base.sendBlockRemoved(x, y, z, direction);
-        ItemStack itemStackInHand = Game.Player.getHand();
-        bool canHarvest = Game.Player.canHarvest(Block.Blocks[blockId]);
+        ItemStack itemStackInHand = Game.Player.GetHand();
+        bool canHarvest = Game.Player.CanHarvest(Block.Blocks[blockId]);
         if (itemStackInHand != null)
         {
             itemStackInHand.postMine(blockId, x, y, z, Game.Player);
             if (itemStackInHand.Count == 0)
             {
                 ItemStack.onRemoved(Game.Player);
-                Game.Player.clearStackInHand();
+                Game.Player.ClearStackInHand();
             }
         }
 

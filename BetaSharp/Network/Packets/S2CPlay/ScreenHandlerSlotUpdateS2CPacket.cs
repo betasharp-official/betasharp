@@ -1,4 +1,3 @@
-using System.Net.Sockets;
 using BetaSharp.Items;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
@@ -9,7 +8,7 @@ public class ScreenHandlerSlotUpdateS2CPacket() : Packet(PacketId.ScreenHandlerS
     public int slot;
     public ItemStack stack;
 
-    public static ScreenHandlerSlotUpdateS2CPacket Get(int syncId, int slot, ItemStack stack)
+    public static ScreenHandlerSlotUpdateS2CPacket Get(int syncId, int slot, ItemStack? stack)
     {
         var p = Get<ScreenHandlerSlotUpdateS2CPacket>(PacketId.ScreenHandlerSlotUpdateS2C);
         p.syncId = syncId;

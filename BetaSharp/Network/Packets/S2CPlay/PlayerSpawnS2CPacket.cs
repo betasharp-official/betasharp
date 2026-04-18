@@ -1,4 +1,3 @@
-using System.Net.Sockets;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
@@ -20,13 +19,13 @@ public class PlayerSpawnS2CPacket() : Packet(PacketId.PlayerSpawnS2C)
     {
         var p = Get<PlayerSpawnS2CPacket>(PacketId.PlayerSpawnS2C);
         p.entityId = ent.ID;
-        p.name = ent.name;
+        p.name = ent.Name;
         p.xPosition = MathHelper.Floor(ent.X * 32.0D);
         p.yPosition = MathHelper.Floor(ent.Y * 32.0D);
         p.zPosition = MathHelper.Floor(ent.Z * 32.0D);
         p.rotation = (sbyte)(int)(ent.Yaw * 256.0F / 360.0F);
         p.pitch = (sbyte)(int)(ent.Pitch * 256.0F / 360.0F);
-        ItemStack itemStack = ent.inventory.GetItemInHand();
+        ItemStack itemStack = ent.Inventory.ItemInHand;
         p.currentItem = itemStack == null ? 0 : itemStack.ItemId;
         return p;
     }

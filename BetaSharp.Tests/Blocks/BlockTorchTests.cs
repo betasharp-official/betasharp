@@ -16,7 +16,7 @@ public sealed class BlockTorchTests
 
         public override EntityType Type => EntityRegistry.Player;
 
-        public override void spawn()
+        public override void Spawn()
         {
         }
     }

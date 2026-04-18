@@ -72,13 +72,13 @@ public class BlockBed : Block
             EntityPlayer? occupant = null;
             foreach (EntityPlayer otherPlayer in @event.World.Entities.Players)
             {
-                if (!otherPlayer.isSleeping())
+                if (!otherPlayer.IsSleeping)
                 {
                     continue;
                 }
 
-                Vec3i sleepingPos = otherPlayer.sleepingPos;
-                if (sleepingPos.X == x && sleepingPos.Y == y && sleepingPos.Z == z)
+                Vec3i? sleepingPos = otherPlayer.SleepingPos;
+                if (sleepingPos != null && sleepingPos.Value.X == x && sleepingPos.Value.Y == y && sleepingPos.Value.Z == z)
                 {
                     occupant = otherPlayer;
                 }
@@ -86,21 +86,21 @@ public class BlockBed : Block
 
             if (occupant != null)
             {
-                @event.Player.sendMessage("tile.bed.occupied");
+                @event.Player.SendMessage("tile.bed.occupied");
                 return true;
             }
 
             updateState(@event.World.Writer, x, y, z, meta, false);
         }
 
-        SleepAttemptResult result = @event.Player.trySleep(x, y, z);
+        SleepAttemptResult result = @event.Player.TrySleep(x, y, z);
         switch (result)
         {
             case SleepAttemptResult.OK:
                 updateState(@event.World.Writer, x, y, z, meta, true);
                 return true;
             case SleepAttemptResult.NOT_POSSIBLE_NOW:
-                @event.Player.sendMessage("tile.bed.noSleep");
+                @event.Player.SendMessage("tile.bed.noSleep");
                 break;
             case SleepAttemptResult.NOT_POSSIBLE_HERE:
                 break;

@@ -24,12 +24,12 @@ internal class FurnaceOutputSlot : Slot
         stack.onCraft(thePlayer.World, thePlayer);
         if (stack.ItemId == Item.IronIngot.id)
         {
-            thePlayer.increaseStat(Achievements.AcquireIron, 1);
+            thePlayer.IncreaseStat(Achievements.AcquireIron, 1);
         }
 
         if (stack.ItemId == Item.CookedFish.id)
         {
-            thePlayer.increaseStat(Achievements.CookFish, 1);
+            thePlayer.IncreaseStat(Achievements.CookFish, 1);
         }
 
         base.onTakeItem(stack);

@@ -2,24 +2,11 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public abstract class EntityWaterMob : EntityCreature, SpawnableEntity
+public abstract class EntityWaterMob(IWorldContext world) : EntityCreature(world), SpawnableEntity
 {
-    public EntityWaterMob(IWorldContext world) : base(world)
-    {
-    }
+    protected override bool canBreatheUnderwater() => true;
 
-    public override bool canBreatheUnderwater()
-    {
-        return true;
-    }
+    public override bool CanSpawn() => World.Entities.CanSpawnEntity(BoundingBox);
 
-    public override bool canSpawn()
-    {
-        return World.Entities.CanSpawnEntity(BoundingBox);
-    }
-
-    public override int getTalkInterval()
-    {
-        return 120;
-    }
+    protected override int TalkInterval => 120;
 }

@@ -70,7 +70,7 @@ public class PlayerScreenHandler : ScreenHandler
             ItemStack craftingStack = craftingInput.GetStack(slotIndex);
             if (craftingStack != null)
             {
-                player.inventory.AddItemStackToInventory(craftingStack);
+                player.Inventory.AddItemStackToInventory(craftingStack);
                 craftingInput.SetStack(slotIndex, null);
             }
         }
