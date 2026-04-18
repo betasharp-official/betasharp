@@ -8,6 +8,9 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Client.UI.Controls.ListItems;
 
+/// <summary>
+/// List item for a single flatworld preset, showing info about it.
+/// </summary>
 public class FlatPresetListItem(FlatPresetsScreen.PresetItem preset) : ListItem<FlatPresetsScreen.PresetItem>(preset)
 {
     private static readonly ItemRenderer s_itemRenderer = new();

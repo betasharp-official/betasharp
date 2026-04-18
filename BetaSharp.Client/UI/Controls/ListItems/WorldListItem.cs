@@ -5,6 +5,10 @@ using BetaSharp.Worlds.Storage;
 
 namespace BetaSharp.Client.UI.Controls.ListItems;
 
+/// <summary>
+/// List item for a single world, displaying name, date, etc.
+/// </summary>
+/// <param name="value"></param>
 public class WorldListItem(WorldSaveInfo value) : ListItem<WorldSaveInfo>(value)
 {
     public override void Render(UIRenderer renderer)

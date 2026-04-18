@@ -5,6 +5,10 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.ListItems;
 
+/// <summary>
+/// List item for a texture pack, showing the thumbnail, name, and description.
+/// </summary>
+/// <param name="value"></param>
 public class TexturePackListItem(TexturePack value) : ListItem<TexturePack>(value)
 {
     public override void Render(UIRenderer renderer)

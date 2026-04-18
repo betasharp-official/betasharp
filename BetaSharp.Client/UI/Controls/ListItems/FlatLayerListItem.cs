@@ -7,6 +7,9 @@ using BetaSharp.Worlds.Gen.Flat;
 
 namespace BetaSharp.Client.UI.Controls.ListItems;
 
+/// <summary>
+/// List item for a single layer in a flat world, displaying a FlatLayerInfo
+/// </summary>
 public class FlatLayerListItem(FlatLayerInfo layer) : ListItem<FlatLayerInfo>(layer)
 {
     private static readonly ItemRenderer s_itemRenderer = new();

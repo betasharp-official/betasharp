@@ -6,6 +6,9 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Client.UI.Controls.ListItems;
 
+/// <summary>
+/// List item for a single world type (e.g. flat, normal)
+/// </summary>
 public class SelectWorldTypeListItem(WorldType type) : ListItem<WorldType>(type)
 {
     public override void Render(UIRenderer renderer)
