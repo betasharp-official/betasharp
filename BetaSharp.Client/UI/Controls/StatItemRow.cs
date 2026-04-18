@@ -4,6 +4,9 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Client.UI.Controls;
 
+/// <summary>
+/// Single row in the Statistics menu.
+/// </summary>
 public class StatItemRow : UIElement
 {
     private const float TextY = 8;
