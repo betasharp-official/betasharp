@@ -3,6 +3,9 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.MainMenu;
 
+/// <summary>
+/// Minecraft logo, drawn from the original mclogo.png.
+/// </summary>
 public class MainMenuLogo : UIElement
 {
     private const short LogoWidth = 274;
