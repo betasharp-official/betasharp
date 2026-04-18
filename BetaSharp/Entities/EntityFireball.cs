@@ -27,39 +27,39 @@ public class EntityFireball : Entity
     }
 
 
-    public override bool ShouldRender(double var1)
+    public override bool ShouldRender(double squaredDistanceToCamera)
     {
-        double var3 = BoundingBox.AverageEdgeLength * 4.0D;
-        var3 *= 64.0D;
-        return var1 < var3 * var3;
+        double renderDistance = BoundingBox.AverageEdgeLength * 4.0D;
+        renderDistance *= 64.0D;
+        return squaredDistanceToCamera < renderDistance * renderDistance;
     }
 
-    public EntityFireball(IWorldContext world, double x, double y, double z, double var8, double var10, double var12) : base(world)
+    public EntityFireball(IWorldContext world, double x, double y, double z, double directionX, double directionY, double directionZ) : base(world)
     {
         SetBoundingBoxSpacing(1.0F, 1.0F);
         SetPositionAndAnglesKeepPrevAngles(x, y, z, Yaw, Pitch);
         SetPosition(x, y, z);
-        double var14 = (double)MathHelper.Sqrt(var8 * var8 + var10 * var10 + var12 * var12);
-        powerX = var8 / var14 * 0.1D;
-        powerY = var10 / var14 * 0.1D;
-        powerZ = var12 / var14 * 0.1D;
+        double directionLength = (double)MathHelper.Sqrt(directionX * directionX + directionY * directionY + directionZ * directionZ);
+        powerX = directionX / directionLength * 0.1D;
+        powerY = directionY / directionLength * 0.1D;
+        powerZ = directionZ / directionLength * 0.1D;
     }
 
-    public EntityFireball(IWorldContext world, EntityLiving var2, double var3, double var5, double var7) : base(world)
+    public EntityFireball(IWorldContext world, EntityLiving owner, double accelerationX, double accelerationY, double accelerationZ) : base(world)
     {
-        owner = var2;
+        owner = owner;
         SetBoundingBoxSpacing(1.0F, 1.0F);
-        SetPositionAndAnglesKeepPrevAngles(var2.X, var2.Y, var2.Z, var2.Yaw, var2.Pitch);
+        SetPositionAndAnglesKeepPrevAngles(owner.X, owner.Y, owner.Z, owner.Yaw, owner.Pitch);
         SetPosition(X, Y, Z);
         StandingEyeHeight = 0.0F;
         VelocityX = VelocityY = VelocityZ = 0.0D;
-        var3 += Random.NextGaussian() * 0.4D;
-        var5 += Random.NextGaussian() * 0.4D;
-        var7 += Random.NextGaussian() * 0.4D;
-        double var9 = (double)MathHelper.Sqrt(var3 * var3 + var5 * var5 + var7 * var7);
-        powerX = var3 / var9 * 0.1D;
-        powerY = var5 / var9 * 0.1D;
-        powerZ = var7 / var9 * 0.1D;
+        accelerationX += Random.NextGaussian() * 0.4D;
+        accelerationY += Random.NextGaussian() * 0.4D;
+        accelerationZ += Random.NextGaussian() * 0.4D;
+        double directionLength = (double)MathHelper.Sqrt(accelerationX * accelerationX + accelerationY * accelerationY + accelerationZ * accelerationZ);
+        powerX = accelerationX / directionLength * 0.1D;
+        powerY = accelerationY / directionLength * 0.1D;
+        powerZ = accelerationZ / directionLength * 0.1D;
     }
 
     public override void Tick()
@@ -73,8 +73,8 @@ public class EntityFireball : Entity
 
         if (inGround)
         {
-            int var1 = World.Reader.GetBlockId(blockX, blockY, blockZ);
-            if (var1 == blockId)
+            int inGroundBlockId = World.Reader.GetBlockId(blockX, blockY, blockZ);
+            if (inGroundBlockId == blockId)
             {
                 ++removalTimer;
                 if (removalTimer == 1200)
@@ -97,50 +97,50 @@ public class EntityFireball : Entity
             ++inAirTime;
         }
 
-        Vec3D var15 = new Vec3D(X, Y, Z);
-        Vec3D var2 = new Vec3D(X + VelocityX, Y + VelocityY, Z + VelocityZ);
-        HitResult var3 = World.Reader.Raycast(var15, var2);
-        var15 = new Vec3D(X, Y, Z);
-        var2 = new Vec3D(X + VelocityX, Y + VelocityY, Z + VelocityZ);
-        if (var3.Type != HitResultType.MISS)
+        Vec3D startPos = new Vec3D(X, Y, Z);
+        Vec3D endPos = new Vec3D(X + VelocityX, Y + VelocityY, Z + VelocityZ);
+        HitResult hitResult = World.Reader.Raycast(startPos, endPos);
+        startPos = new Vec3D(X, Y, Z);
+        endPos = new Vec3D(X + VelocityX, Y + VelocityY, Z + VelocityZ);
+        if (hitResult.Type != HitResultType.MISS)
         {
-            var2 = new Vec3D(var3.Pos.x, var3.Pos.y, var3.Pos.z);
+            endPos = new Vec3D(hitResult.Pos.x, hitResult.Pos.y, hitResult.Pos.z);
         }
 
-        Entity var4 = null;
-        var var5 = World.Entities.GetEntities(this, BoundingBox.Stretch(VelocityX, VelocityY, VelocityZ).Expand(1.0D, 1.0D, 1.0D));
-        double var6 = 0.0D;
+        Entity hitEntity = null;
+        var candidateEntities = World.Entities.GetEntities(this, BoundingBox.Stretch(VelocityX, VelocityY, VelocityZ).Expand(1.0D, 1.0D, 1.0D));
+        double nearestHitDistance = 0.0D;
 
-        for (int var8 = 0; var8 < var5.Count; ++var8)
+        for (int candidateIndex = 0; candidateIndex < candidateEntities.Count; ++candidateIndex)
         {
-            Entity var9 = var5[var8];
-            if (var9.IsCollidable() && (var9 != owner || inAirTime >= 25))
+            Entity candidateEntity = candidateEntities[candidateIndex];
+            if (candidateEntity.IsCollidable() && (candidateEntity != owner || inAirTime >= 25))
             {
-                float var10 = 0.3F;
-                Box var11 = var9.BoundingBox.Expand((double)var10, (double)var10, (double)var10);
-                HitResult var12 = var11.Raycast(var15, var2);
-                if (var12.Type != HitResultType.MISS)
+                float collisionMargin = 0.3F;
+                Box candidateBox = candidateEntity.BoundingBox.Expand((double)collisionMargin, (double)collisionMargin, (double)collisionMargin);
+                HitResult candidateHit = candidateBox.Raycast(startPos, endPos);
+                if (candidateHit.Type != HitResultType.MISS)
                 {
-                    double var13 = var15.distanceTo(var12.Pos);
-                    if (var13 < var6 || var6 == 0.0D)
+                    double hitDistance = startPos.distanceTo(candidateHit.Pos);
+                    if (hitDistance < nearestHitDistance || nearestHitDistance == 0.0D)
                     {
-                        var4 = var9;
-                        var6 = var13;
+                        hitEntity = candidateEntity;
+                        nearestHitDistance = hitDistance;
                     }
                 }
             }
         }
 
-        if (var4 != null)
+        if (hitEntity != null)
         {
-            var3 = new HitResult(var4);
+            hitResult = new HitResult(hitEntity);
         }
 
-        if (var3.Type != HitResultType.MISS)
+        if (hitResult.Type != HitResultType.MISS)
         {
             if (!World.IsRemote)
             {
-                if (var3.Entity != null && var3.Entity.Damage(owner, 0))
+                if (hitResult.Entity != null && hitResult.Entity.Damage(owner, 0))
                 {
                 }
 
@@ -153,10 +153,10 @@ public class EntityFireball : Entity
         X += VelocityX;
         Y += VelocityY;
         Z += VelocityZ;
-        float var16 = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
+        float horizontalSpeed = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
         Yaw = (float)(System.Math.Atan2(VelocityX, VelocityZ) * 180.0D / (double)((float)Math.PI));
 
-        for (Pitch = (float)(System.Math.Atan2(VelocityY, (double)var16) * 180.0D / (double)((float)Math.PI)); Pitch - PrevPitch < -180.0F; PrevPitch -= 360.0F)
+        for (Pitch = (float)(System.Math.Atan2(VelocityY, (double)horizontalSpeed) * 180.0D / (double)((float)Math.PI)); Pitch - PrevPitch < -180.0F; PrevPitch -= 360.0F)
         {
         }
 
@@ -177,24 +177,24 @@ public class EntityFireball : Entity
 
         Pitch = PrevPitch + (Pitch - PrevPitch) * 0.2F;
         Yaw = PrevYaw + (Yaw - PrevYaw) * 0.2F;
-        float var17 = 0.95F;
+        float drag = 0.95F;
         if (IsInWater())
         {
-            for (int var18 = 0; var18 < 4; ++var18)
+            for (int bubbleIndex = 0; bubbleIndex < 4; ++bubbleIndex)
             {
-                float var19 = 0.25F;
-                World.Broadcaster.AddParticle("bubble", X - VelocityX * (double)var19, Y - VelocityY * (double)var19, Z - VelocityZ * (double)var19, VelocityX, VelocityY, VelocityZ);
+                float bubbleOffset = 0.25F;
+                World.Broadcaster.AddParticle("bubble", X - VelocityX * (double)bubbleOffset, Y - VelocityY * (double)bubbleOffset, Z - VelocityZ * (double)bubbleOffset, VelocityX, VelocityY, VelocityZ);
             }
 
-            var17 = 0.8F;
+            drag = 0.8F;
         }
 
         VelocityX += powerX;
         VelocityY += powerY;
         VelocityZ += powerZ;
-        VelocityX *= (double)var17;
-        VelocityY *= (double)var17;
-        VelocityZ *= (double)var17;
+        VelocityX *= (double)drag;
+        VelocityY *= (double)drag;
+        VelocityZ *= (double)drag;
         World.Broadcaster.AddParticle("smoke", X, Y + 0.5D, Z, 0.0D, 0.0D, 0.0D);
         SetPosition(X, Y, Z);
     }
@@ -234,12 +234,12 @@ public class EntityFireball : Entity
         ScheduleVelocityUpdate();
         if (entity != null)
         {
-            Vec3D? var3 = entity.GetLookVector();
-            if (var3 != null)
+            Vec3D? lookVector = entity.GetLookVector();
+            if (lookVector != null)
             {
-                VelocityX = var3.Value.x;
-                VelocityY = var3.Value.y;
-                VelocityZ = var3.Value.z;
+                VelocityX = lookVector.Value.x;
+                VelocityY = lookVector.Value.y;
+                VelocityZ = lookVector.Value.z;
                 powerX = VelocityX * 0.1D;
                 powerY = VelocityY * 0.1D;
                 powerZ = VelocityZ * 0.1D;

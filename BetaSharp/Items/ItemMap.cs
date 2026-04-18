@@ -134,9 +134,9 @@ public class ItemMap : NetworkSyncedItem
                             }
 
                             fluidDepth /= blocksPerPixel * blocksPerPixel;
-                            int var10000 = redSum / (blocksPerPixel * blocksPerPixel);
-                            var10000 = greenSum / (blocksPerPixel * blocksPerPixel);
-                            var10000 = blueSum / (blocksPerPixel * blocksPerPixel);
+                            int averageRed = redSum / (blocksPerPixel * blocksPerPixel);
+                            int averageGreen = greenSum / (blocksPerPixel * blocksPerPixel);
+                            int averageBlue = blueSum / (blocksPerPixel * blocksPerPixel);
                             sampleX = 0;
                             sampleZ = 0;
 

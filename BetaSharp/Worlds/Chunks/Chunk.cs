@@ -518,14 +518,14 @@ public class Chunk
     {
         Loaded = false;
 
-        foreach (BlockEntity var2 in BlockEntities.Values)
+        foreach (BlockEntity blockEntity in BlockEntities.Values)
         {
-            var2.markRemoved();
+            blockEntity.markRemoved();
         }
 
-        for (int var3 = 0; var3 < Entities.Length; ++var3)
+        for (int sectionIndex = 0; sectionIndex < Entities.Length; ++sectionIndex)
         {
-            World.Entities.UnloadEntities(Entities[var3]);
+            World.Entities.UnloadEntities(Entities[sectionIndex]);
         }
     }
 

@@ -378,7 +378,7 @@ public abstract class EntityLiving : Entity
             else
             {
                 WalkAnimationSpeed = 1.5F;
-                bool var3 = true;
+                bool playHurtEffects = true;
                 if ((float)Hearts > (float)MaxHealth / 2.0F)
                 {
                     if (amount <= DamageForDisplay)
@@ -388,7 +388,7 @@ public abstract class EntityLiving : Entity
 
                     applyDamage(amount - DamageForDisplay);
                     DamageForDisplay = amount;
-                    var3 = false;
+                    playHurtEffects = false;
                 }
                 else
                 {
@@ -400,22 +400,22 @@ public abstract class EntityLiving : Entity
                 }
 
                 AttackedAtYaw = 0.0F;
-                if (var3)
+                if (playHurtEffects)
                 {
                     World.Broadcaster.EntityEvent(this, (byte)2);
                     ScheduleVelocityUpdate();
                     if (entity != null)
                     {
-                        double var4 = entity.X - X;
+                        double knockbackX = entity.X - X;
 
-                        double var6;
-                        for (var6 = entity.Z - Z; var4 * var4 + var6 * var6 < 1.0E-4D; var6 = (System.Random.Shared.NextDouble() - System.Random.Shared.NextDouble()) * 0.01D)
+                        double knockbackZ;
+                        for (knockbackZ = entity.Z - Z; knockbackX * knockbackX + knockbackZ * knockbackZ < 1.0E-4D; knockbackZ = (System.Random.Shared.NextDouble() - System.Random.Shared.NextDouble()) * 0.01D)
                         {
-                            var4 = (System.Random.Shared.NextDouble() - System.Random.Shared.NextDouble()) * 0.01D;
+                            knockbackX = (System.Random.Shared.NextDouble() - System.Random.Shared.NextDouble()) * 0.01D;
                         }
 
-                        AttackedAtYaw = (float)(System.Math.Atan2(var6, var4) * 180.0D / (double)((float)System.Math.PI)) - Yaw;
-                        knockBack(entity, amount, var4, var6);
+                        AttackedAtYaw = (float)(System.Math.Atan2(knockbackZ, knockbackX) * 180.0D / (double)((float)System.Math.PI)) - Yaw;
+                        knockBack(entity, amount, knockbackX, knockbackZ);
                     }
                     else
                     {
@@ -425,14 +425,14 @@ public abstract class EntityLiving : Entity
 
                 if (Health <= 0)
                 {
-                    if (var3)
+                    if (playHurtEffects)
                     {
                         World.Broadcaster.PlaySoundAtEntity(this, getDeathSound(), getSoundVolume(), (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
                     }
 
                     onKilledBy(entity);
                 }
-                else if (var3)
+                else if (playHurtEffects)
                 {
                     World.Broadcaster.PlaySoundAtEntity(this, getHurtSound(), getSoundVolume(), (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
                 }
@@ -475,14 +475,14 @@ public abstract class EntityLiving : Entity
 
     public void knockBack(Entity entity, int amount, double dx, double dy)
     {
-        float var7 = MathHelper.Sqrt(dx * dx + dy * dy);
-        float var8 = 0.4F;
+        float knockbackLength = MathHelper.Sqrt(dx * dx + dy * dy);
+        float knockbackStrength = 0.4F;
         VelocityX /= 2.0D;
         VelocityY /= 2.0D;
         VelocityZ /= 2.0D;
-        VelocityX -= dx / (double)var7 * (double)var8;
+        VelocityX -= dx / (double)knockbackLength * (double)knockbackStrength;
         VelocityY += (double)0.4F;
-        VelocityZ -= dy / (double)var7 * (double)var8;
+        VelocityZ -= dy / (double)knockbackLength * (double)knockbackStrength;
         if (VelocityY > (double)0.4F)
         {
             VelocityY = (double)0.4F;
@@ -490,16 +490,16 @@ public abstract class EntityLiving : Entity
 
     }
 
-    public virtual void onKilledBy(Entity var1)
+    public virtual void onKilledBy(Entity entity)
     {
-        if (ScoreAmount >= 0 && var1 != null)
+        if (ScoreAmount >= 0 && entity != null)
         {
-            var1.UpdateKilledAchievement(this, ScoreAmount);
+            entity.UpdateKilledAchievement(this, ScoreAmount);
         }
 
-        if (var1 != null)
+        if (entity != null)
         {
-            var1.OnKillOther(this);
+            entity.OnKillOther(this);
         }
 
         if (!World.IsRemote)
@@ -512,14 +512,14 @@ public abstract class EntityLiving : Entity
 
     protected virtual void dropFewItems()
     {
-        int var1 = getDropItemId();
-        if (var1 > 0)
+        int dropItemId = getDropItemId();
+        if (dropItemId > 0)
         {
-            int var2 = Random.NextInt(3);
+            int dropCount = Random.NextInt(3);
 
-            for (int var3 = 0; var3 < var2; ++var3)
+            for (int dropIndex = 0; dropIndex < dropCount; ++dropIndex)
             {
-                DropItem(var1, 1);
+                DropItem(dropItemId, 1);
             }
         }
 
@@ -533,14 +533,14 @@ public abstract class EntityLiving : Entity
     protected override void OnLanding(float fallDistance)
     {
         base.OnLanding(fallDistance);
-        int var2 = (int)Math.Ceiling((double)(fallDistance - 3.0F));
-        if (var2 > 0)
+        int fallDamage = (int)Math.Ceiling((double)(fallDistance - 3.0F));
+        if (fallDamage > 0)
         {
-            Damage(null, var2);
-            int var3 = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(Y - (double)0.2F - (double)StandingEyeHeight), MathHelper.Floor(Z));
-            if (var3 > 0)
+            Damage(null, fallDamage);
+            int groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(Y - (double)0.2F - (double)StandingEyeHeight), MathHelper.Floor(Z));
+            if (groundBlockId > 0)
             {
-                BlockSoundGroup soundGroup = Block.Blocks[var3].SoundGroup;
+                BlockSoundGroup soundGroup = Block.Blocks[groundBlockId].SoundGroup;
                 World.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.5F, soundGroup.Pitch * (12.0F / 16.0F));
             }
         }
@@ -956,29 +956,29 @@ public abstract class EntityLiving : Entity
         return _lookTarget;
     }
 
-    private static float updateRotation(float var1, float var2, float var3)
+    private static float updateRotation(float currentRotation, float targetRotation, float maxDelta)
     {
-        float var4;
-        for (var4 = var2 - var1; var4 < -180.0F; var4 += 360.0F)
+        float delta;
+        for (delta = targetRotation - currentRotation; delta < -180.0F; delta += 360.0F)
         {
         }
 
-        while (var4 >= 180.0F)
+        while (delta >= 180.0F)
         {
-            var4 -= 360.0F;
+            delta -= 360.0F;
         }
 
-        if (var4 > var3)
+        if (delta > maxDelta)
         {
-            var4 = var3;
+            delta = maxDelta;
         }
 
-        if (var4 < -var3)
+        if (delta < -maxDelta)
         {
-            var4 = -var3;
+            delta = -maxDelta;
         }
 
-        return var1 + var4;
+        return currentRotation + delta;
     }
 
     public static void onEntityDeath()
@@ -997,13 +997,13 @@ public abstract class EntityLiving : Entity
 
     public float getSwingProgress(float partialTick)
     {
-        float var2 = SwingAnimationProgress - LastSwingAnimationProgress;
-        if (var2 < 0.0F)
+        float progressDelta = SwingAnimationProgress - LastSwingAnimationProgress;
+        if (progressDelta < 0.0F)
         {
-            ++var2;
+            ++progressDelta;
         }
 
-        return LastSwingAnimationProgress + var2 * partialTick;
+        return LastSwingAnimationProgress + progressDelta * partialTick;
     }
 
     public Vec3D GetPosition()
@@ -1051,9 +1051,9 @@ public abstract class EntityLiving : Entity
             sinYaw = PrevYaw + (Yaw - PrevYaw) * partialTick;
             cosPitch = MathHelper.Cos(-sinYaw * ((float)System.Math.PI / 180.0F) - (float)System.Math.PI);
             sinPitch = MathHelper.Sin(-sinYaw * ((float)System.Math.PI / 180.0F) - (float)System.Math.PI);
-            float var6 = -MathHelper.Cos(-cosYaw * ((float)System.Math.PI / 180.0F));
-            float var7 = MathHelper.Sin(-cosYaw * ((float)System.Math.PI / 180.0F));
-            return new Vec3D((double)(sinPitch * var6), (double)var7, (double)(cosPitch * var6));
+            float horizontalCos = -MathHelper.Cos(-cosYaw * ((float)System.Math.PI / 180.0F));
+            float verticalSin = MathHelper.Sin(-cosYaw * ((float)System.Math.PI / 180.0F));
+            return new Vec3D((double)(sinPitch * horizontalCos), (double)verticalSin, (double)(cosPitch * horizontalCos));
         }
     }
 

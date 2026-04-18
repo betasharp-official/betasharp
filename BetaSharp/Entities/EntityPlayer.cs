@@ -66,8 +66,8 @@ public abstract class EntityPlayer : EntityLiving
         playerScreenHandler = new PlayerScreenHandler(inventory, !world.IsRemote);
         currentScreenHandler = playerScreenHandler;
         StandingEyeHeight = 1.62F;
-        Vec3i var2 = world.Properties.GetSpawnPos();
-        SetPositionAndAnglesKeepPrevAngles((double)var2.X + 0.5D, (double)(var2.Y + 1), (double)var2.Z + 0.5D, 0.0F, 0.0F);
+        Vec3i spawnPos = world.Properties.GetSpawnPos();
+        SetPositionAndAnglesKeepPrevAngles((double)spawnPos.X + 0.5D, (double)(spawnPos.Y + 1), (double)spawnPos.Z + 0.5D, 0.0F, 0.0F);
         Health = 20;
         ModelName = "humanoid";
         RotationOffset = 180.0F;
@@ -147,43 +147,43 @@ public abstract class EntityPlayer : EntityLiving
         prevCapeX = capeX;
         prevCapeY = capeY;
         prevCapeZ = capeZ;
-        double var1 = X - capeX;
-        double var3 = Y - capeY;
-        double var5 = Z - capeZ;
-        double var7 = 10.0D;
-        if (var1 > var7)
+        double capeDeltaX = X - capeX;
+        double capeDeltaY = Y - capeY;
+        double capeDeltaZ = Z - capeZ;
+        double maxCapeDelta = 10.0D;
+        if (capeDeltaX > maxCapeDelta)
         {
             prevCapeX = capeX = X;
         }
 
-        if (var5 > var7)
+        if (capeDeltaZ > maxCapeDelta)
         {
             prevCapeZ = capeZ = Z;
         }
 
-        if (var3 > var7)
+        if (capeDeltaY > maxCapeDelta)
         {
             prevCapeY = capeY = Y;
         }
 
-        if (var1 < -var7)
+        if (capeDeltaX < -maxCapeDelta)
         {
             prevCapeX = capeX = X;
         }
 
-        if (var5 < -var7)
+        if (capeDeltaZ < -maxCapeDelta)
         {
             prevCapeZ = capeZ = Z;
         }
 
-        if (var3 < -var7)
+        if (capeDeltaY < -maxCapeDelta)
         {
             prevCapeY = capeY = Y;
         }
 
-        capeX += var1 * 0.25D;
-        capeZ += var5 * 0.25D;
-        capeY += var3 * 0.25D;
+        capeX += capeDeltaX * 0.25D;
+        capeZ += capeDeltaZ * 0.25D;
+        capeY += capeDeltaY * 0.25D;
         increaseStat(Stats.Stats.MinutesPlayedStat, 1);
         if (Vehicle == null)
         {
@@ -239,13 +239,13 @@ public abstract class EntityPlayer : EntityLiving
 
     public override void TickRiding()
     {
-        double var1 = X;
-        double var3 = Y;
-        double var5 = Z;
+        double startX = X;
+        double startY = Y;
+        double startZ = Z;
         base.TickRiding();
         prevStepBobbingAmount = stepBobbingAmount;
         stepBobbingAmount = 0.0F;
-        increaseRidingMotionStats(X - var1, Y - var3, Z - var5);
+        increaseRidingMotionStats(X - startX, Y - startY, Z - startZ);
     }
 
     public override void TeleportToTop()
@@ -281,25 +281,25 @@ public abstract class EntityPlayer : EntityLiving
         PickupAndInventorySubtick();
         prevStepBobbingAmount = stepBobbingAmount;
         base.tickMovement();
-        float var1 = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
-        float var2 = (float)System.Math.Atan(-VelocityY * (double)0.2F) * 15.0F;
-        if (var1 > 0.1F)
+        float horizontalSpeed = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
+        float tiltTarget = (float)System.Math.Atan(-VelocityY * (double)0.2F) * 15.0F;
+        if (horizontalSpeed > 0.1F)
         {
-            var1 = 0.1F;
+            horizontalSpeed = 0.1F;
         }
 
         if (!OnGround || Health <= 0)
         {
-            var1 = 0.0F;
+            horizontalSpeed = 0.0F;
         }
 
         if (OnGround || Health <= 0)
         {
-            var2 = 0.0F;
+            tiltTarget = 0.0F;
         }
 
-        stepBobbingAmount += (var1 - stepBobbingAmount) * 0.4F;
-        Tilt += (var2 - Tilt) * 0.8F;
+        stepBobbingAmount += (horizontalSpeed - stepBobbingAmount) * 0.4F;
+        Tilt += (tiltTarget - Tilt) * 0.8F;
         CollideWithPickupEntities();
     }
 
@@ -313,9 +313,9 @@ public abstract class EntityPlayer : EntityLiving
         return score;
     }
 
-    public override void onKilledBy(Entity adversary)
+    public override void onKilledBy(Entity entity)
     {
-        base.onKilledBy(adversary);
+        base.onKilledBy(entity);
         SetBoundingBoxSpacing(0.2F, 0.2F);
         SetPosition(X, Y, Z);
         VelocityY = (double)0.1F;
@@ -325,7 +325,7 @@ public abstract class EntityPlayer : EntityLiving
         }
 
         inventory.DropInventory();
-        if (adversary != null)
+        if (entity != null)
         {
             VelocityX = (double)(-MathHelper.Cos((AttackedAtYaw + Yaw) * (float)System.Math.PI / 180.0F) * 0.1F);
             VelocityZ = (double)(-MathHelper.Sin((AttackedAtYaw + Yaw) * (float)System.Math.PI / 180.0F) * 0.1F);
@@ -369,33 +369,33 @@ public abstract class EntityPlayer : EntityLiving
         if (!GameMode.CanDrop) return false;
         if (stack == null) return true;
 
-        EntityItem var3 = new EntityItem(World, X, Y - (double)0.3F + (double)GetEyeHeight(), Z, stack);
-        var3.delayBeforeCanPickup = 40;
-        float var4 = 0.1F;
-        float var5;
+        EntityItem itemEntity = new EntityItem(World, X, Y - (double)0.3F + (double)GetEyeHeight(), Z, stack);
+        itemEntity.delayBeforeCanPickup = 40;
+        float baseSpeed = 0.1F;
+        float randomSpeed;
         if (throwRandomly)
         {
-            var5 = Random.NextFloat() * 0.5F;
-            float var6 = Random.NextFloat() * (float)System.Math.PI * 2.0F;
-            var3.VelocityX = (double)(-MathHelper.Sin(var6) * var5);
-            var3.VelocityZ = (double)(MathHelper.Cos(var6) * var5);
-            var3.VelocityY = (double)0.2F;
+            randomSpeed = Random.NextFloat() * 0.5F;
+            float randomAngle = Random.NextFloat() * (float)System.Math.PI * 2.0F;
+            itemEntity.VelocityX = (double)(-MathHelper.Sin(randomAngle) * randomSpeed);
+            itemEntity.VelocityZ = (double)(MathHelper.Cos(randomAngle) * randomSpeed);
+            itemEntity.VelocityY = (double)0.2F;
         }
         else
         {
-            var4 = 0.3F;
-            var3.VelocityX = (double)(-MathHelper.Sin(Yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)System.Math.PI) * var4);
-            var3.VelocityZ = (double)(MathHelper.Cos(Yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)System.Math.PI) * var4);
-            var3.VelocityY = (double)(-MathHelper.Sin(Pitch / 180.0F * (float)System.Math.PI) * var4 + 0.1F);
-            var4 = 0.02F;
-            var5 = Random.NextFloat() * (float)System.Math.PI * 2.0F;
-            var4 *= Random.NextFloat();
-            var3.VelocityX += Math.Cos((double)var5) * (double)var4;
-            var3.VelocityY += (double)((Random.NextFloat() - Random.NextFloat()) * 0.1F);
-            var3.VelocityZ += Math.Sin((double)var5) * (double)var4;
+            baseSpeed = 0.3F;
+            itemEntity.VelocityX = (double)(-MathHelper.Sin(Yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)System.Math.PI) * baseSpeed);
+            itemEntity.VelocityZ = (double)(MathHelper.Cos(Yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)System.Math.PI) * baseSpeed);
+            itemEntity.VelocityY = (double)(-MathHelper.Sin(Pitch / 180.0F * (float)System.Math.PI) * baseSpeed + 0.1F);
+            baseSpeed = 0.02F;
+            randomSpeed = Random.NextFloat() * (float)System.Math.PI * 2.0F;
+            baseSpeed *= Random.NextFloat();
+            itemEntity.VelocityX += Math.Cos((double)randomSpeed) * (double)baseSpeed;
+            itemEntity.VelocityY += (double)((Random.NextFloat() - Random.NextFloat()) * 0.1F);
+            itemEntity.VelocityZ += Math.Sin((double)randomSpeed) * (double)baseSpeed;
         }
 
-        spawnItem(var3);
+        spawnItem(itemEntity);
         increaseStat(Stats.Stats.DropStat, 1);
 
         return true;
@@ -408,18 +408,18 @@ public abstract class EntityPlayer : EntityLiving
 
     public float getBlockBreakingSpeed(Block block)
     {
-        float var2 = inventory.GetStrVsBlock(block);
+        float breakingSpeed = inventory.GetStrVsBlock(block);
         if (IsInFluid(Material.Water))
         {
-            var2 /= 5.0F;
+            breakingSpeed /= 5.0F;
         }
 
         if (!OnGround)
         {
-            var2 /= 5.0F;
+            breakingSpeed /= 5.0F;
         }
 
-        return var2;
+        return breakingSpeed;
     }
 
     public bool canHarvest(Block block)
@@ -430,8 +430,8 @@ public abstract class EntityPlayer : EntityLiving
     public override void ReadNbt(NBTTagCompound nbt)
     {
         base.ReadNbt(nbt);
-        NBTTagList var2 = nbt.GetTagList("Inventory");
-        inventory.ReadFromNBT(var2);
+        NBTTagList inventoryTagList = nbt.GetTagList("Inventory");
+        inventory.ReadFromNBT(inventoryTagList);
         dimensionId = nbt.GetInteger("Dimension");
         sleeping = nbt.GetBoolean("Sleeping");
         sleepTimer = nbt.GetShort("SleepTimer");
@@ -550,17 +550,17 @@ public abstract class EntityPlayer : EntityLiving
 
             if (entity is not EntityPlayer p || isPvpEnabled() && p.GameMode.CanBeTargeted)
             {
-                var var7 = World.Entities.CollectEntitiesOfType<EntityWolf>(new Box(X, Y, Z, X + 1.0D, Y + 1.0D, Z + 1.0D).Expand(16.0D, 4.0D, 16.0D));
+                var ownedWolves = World.Entities.CollectEntitiesOfType<EntityWolf>(new Box(X, Y, Z, X + 1.0D, Y + 1.0D, Z + 1.0D).Expand(16.0D, 4.0D, 16.0D));
 
-                foreach (EntityWolf var6 in var7)
+                foreach (EntityWolf ownedWolf in ownedWolves)
                 {
-                    if (!var6.isWolfTamed()) continue;
-                    if (var6.getTarget() != null) continue;
-                    if (!name.Equals(var6.getWolfOwner())) continue;
-                    if (sitting && var6.isWolfSitting()) continue;
+                    if (!ownedWolf.isWolfTamed()) continue;
+                    if (ownedWolf.getTarget() != null) continue;
+                    if (!name.Equals(ownedWolf.getWolfOwner())) continue;
+                    if (sitting && ownedWolf.isWolfSitting()) continue;
 
-                    var6.setWolfSitting(false);
-                    var6.setTarget(entity);
+                    ownedWolf.setWolfSitting(false);
+                    ownedWolf.setTarget(entity);
                 }
             }
         }
@@ -568,11 +568,11 @@ public abstract class EntityPlayer : EntityLiving
 
     protected override void applyDamage(int amount)
     {
-        int var2 = 25 - inventory.GetTotalArmorValue();
-        int var3 = amount * var2 + damageSpill;
+        int armorReduction = 25 - inventory.GetTotalArmorValue();
+        int scaledDamage = amount * armorReduction + damageSpill;
         inventory.DamageArmor(amount);
-        amount = var3 / 25;
-        damageSpill = var3 % 25;
+        amount = scaledDamage / 25;
+        damageSpill = scaledDamage % 25;
         base.applyDamage(amount);
     }
 
@@ -630,15 +630,15 @@ public abstract class EntityPlayer : EntityLiving
     public void attack(Entity target)
     {
         if (!GameMode.CanInflictDamage) return;
-        int var2 = inventory.GetDamageVsEntity(target);
-        if (var2 > 0)
+        int damage = inventory.GetDamageVsEntity(target);
+        if (damage > 0)
         {
             if (VelocityY < 0.0D)
             {
-                ++var2;
+                ++damage;
             }
 
-            target.Damage(this, var2);
+            target.Damage(this, damage);
             if (target is EntityLiving living)
             {
                 ItemStack itemStackInHand = getHand();
@@ -657,7 +657,7 @@ public abstract class EntityPlayer : EntityLiving
                     commandWolvesToAttack(living, true);
                 }
 
-                increaseStat(Stats.Stats.DamageDealtStat, var2);
+                increaseStat(Stats.Stats.DamageDealtStat, damage);
             }
         }
     }
@@ -716,28 +716,28 @@ public abstract class EntityPlayer : EntityLiving
         StandingEyeHeight = 0.2F;
         if (World.Reader.IsPosLoaded(x, y, z))
         {
-            int var4 = World.Reader.GetBlockMeta(x, y, z);
-            int var5 = BlockBed.getDirection(var4);
-            float var6 = 0.5F;
-            float var7 = 0.5F;
-            switch (var5)
+            int bedMeta = World.Reader.GetBlockMeta(x, y, z);
+            int bedDirection = BlockBed.getDirection(bedMeta);
+            float sleepX = 0.5F;
+            float sleepZ = 0.5F;
+            switch (bedDirection)
             {
                 case 0:
-                    var7 = 0.9F;
+                    sleepZ = 0.9F;
                     break;
                 case 1:
-                    var6 = 0.1F;
+                    sleepX = 0.1F;
                     break;
                 case 2:
-                    var7 = 0.1F;
+                    sleepZ = 0.1F;
                     break;
                 case 3:
-                    var6 = 0.9F;
+                    sleepX = 0.9F;
                     break;
             }
 
-            calculateSleepOffset(var5);
-            SetPosition((double)((float)x + var6), (double)((float)y + 15.0F / 16.0F), (double)((float)z + var7));
+            calculateSleepOffset(bedDirection);
+            SetPosition((double)((float)x + sleepX), (double)((float)y + 15.0F / 16.0F), (double)((float)z + sleepZ));
         }
         else
         {
@@ -781,18 +781,18 @@ public abstract class EntityPlayer : EntityLiving
     {
         SetBoundingBoxSpacing(0.6F, 1.8F);
         resetEyeHeight();
-        Vec3i? var4 = sleepingPos;
-        if (var4 is (int x, int y, int z) && World.Reader.GetBlockId(x, y, z) == Block.Bed.id)
+        Vec3i? bedPos = sleepingPos;
+        if (bedPos is (int x, int y, int z) && World.Reader.GetBlockId(x, y, z) == Block.Bed.id)
         {
             int bedMeta = World.Reader.GetBlockMeta(x, y, z);
             BlockBed.updateState(World.Writer, x, y, z, bedMeta, false);
-            Vec3i? var5 = BlockBed.findWakeUpPosition(World.Reader, x, y, z, 0);
-            if (var5 == null)
+            Vec3i? wakeUpPos = BlockBed.findWakeUpPosition(World.Reader, x, y, z, 0);
+            if (wakeUpPos == null)
             {
-                var5 = new Vec3i(x, y + 1, z);
+                wakeUpPos = new Vec3i(x, y + 1, z);
             }
 
-            SetPosition(var5.Value.X + 0.5F, var5.Value.Y + StandingEyeHeight + 0.1F, var5.Value.Z + 0.5F);
+            SetPosition(wakeUpPos.Value.X + 0.5F, wakeUpPos.Value.Y + StandingEyeHeight + 0.1F, wakeUpPos.Value.Z + 0.5F);
         }
 
         sleeping = false;
@@ -847,9 +847,9 @@ public abstract class EntityPlayer : EntityLiving
     {
         if (sleepingPos != null)
         {
-            int var1 = World.Reader.GetBlockMeta(sleepingPos.X, sleepingPos.Y, sleepingPos.Z);
-            int var2 = BlockBed.getDirection(var1);
-            switch (var2)
+            int bedMeta = World.Reader.GetBlockMeta(sleepingPos.X, sleepingPos.Y, sleepingPos.Z);
+            int bedDirection = BlockBed.getDirection(bedMeta);
+            switch (bedDirection)
             {
                 case 0:
                     return 90.0F;
@@ -918,32 +918,32 @@ public abstract class EntityPlayer : EntityLiving
 
     public override void travel(float x, float z)
     {
-        double var3 = base.X;
-        double var5 = Y;
-        double var7 = base.Z;
+        double startX = base.X;
+        double startY = Y;
+        double startZ = base.Z;
         base.travel(x, z);
-        updateMovementStat(base.X - var3, Y - var5, base.Z - var7);
+        updateMovementStat(base.X - startX, Y - startY, base.Z - startZ);
     }
 
     private void updateMovementStat(double x, double y, double z)
     {
         if (Vehicle == null)
         {
-            int var7;
+            int distanceScaled;
             if (IsInFluid(Material.Water))
             {
-                var7 = MathHelper.Round(MathHelper.Sqrt(x * x + y * y + z * z) * 100.0F);
-                if (var7 > 0)
+                distanceScaled = MathHelper.Round(MathHelper.Sqrt(x * x + y * y + z * z) * 100.0F);
+                if (distanceScaled > 0)
                 {
-                    increaseStat(Stats.Stats.DistanceDoveStat, var7);
+                    increaseStat(Stats.Stats.DistanceDoveStat, distanceScaled);
                 }
             }
             else if (IsInWater())
             {
-                var7 = MathHelper.Round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
-                if (var7 > 0)
+                distanceScaled = MathHelper.Round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
+                if (distanceScaled > 0)
                 {
-                    increaseStat(Stats.Stats.DistanceSwumStat, var7);
+                    increaseStat(Stats.Stats.DistanceSwumStat, distanceScaled);
                 }
             }
             else if (isOnLadder())
@@ -955,18 +955,18 @@ public abstract class EntityPlayer : EntityLiving
             }
             else if (OnGround)
             {
-                var7 = MathHelper.Round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
-                if (var7 > 0)
+                distanceScaled = MathHelper.Round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
+                if (distanceScaled > 0)
                 {
-                    increaseStat(Stats.Stats.DistanceWalkedStat, var7);
+                    increaseStat(Stats.Stats.DistanceWalkedStat, distanceScaled);
                 }
             }
             else
             {
-                var7 = MathHelper.Round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
-                if (var7 > 25)
+                distanceScaled = MathHelper.Round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
+                if (distanceScaled > 25)
                 {
-                    increaseStat(Stats.Stats.DistanceFlownStat, var7);
+                    increaseStat(Stats.Stats.DistanceFlownStat, distanceScaled);
                 }
             }
         }
@@ -1029,13 +1029,13 @@ public abstract class EntityPlayer : EntityLiving
 
     public override int getItemStackTextureId(ItemStack stack)
     {
-        int var2 = base.getItemStackTextureId(stack);
+        int textureId = base.getItemStackTextureId(stack);
         if (stack.ItemId == Item.FishingRod.id && fishHook != null)
         {
-            var2 = stack.getTextureId() + 16;
+            textureId = stack.getTextureId() + 16;
         }
 
-        return var2;
+        return textureId;
     }
 
     public override void TickPortalCooldown()

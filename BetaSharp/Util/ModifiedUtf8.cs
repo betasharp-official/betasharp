@@ -166,35 +166,35 @@ internal static class ModifiedUtf8
 
         while (index < bytes.Length)
         {
-            byte b1 = bytes[index];
+            byte firstByte = bytes[index];
 
-            if ((b1 & 0x80) == 0)
+            if ((firstByte & 0x80) == 0)
             {
-                if (b1 == 0)
+                if (firstByte == 0)
                 {
                     return false;
                 }
                 index++;
             }
-            else if ((b1 & 0xE0) == 0xC0)
+            else if ((firstByte & 0xE0) == 0xC0)
             {
                 if (index + 1 >= bytes.Length) return false;
-                byte b2 = bytes[index + 1];
-                if ((b2 & 0xC0) != 0x80) return false;
+                byte secondByte = bytes[index + 1];
+                if ((secondByte & 0xC0) != 0x80) return false;
 
-                int val = ((b1 & 0x1F) << 6) | (b2 & 0x3F);
+                int val = ((firstByte & 0x1F) << 6) | (secondByte & 0x3F);
                 if (val < 0x80 && val != 0) return false;
 
                 index += 2;
             }
-            else if ((b1 & 0xF0) == 0xE0)
+            else if ((firstByte & 0xF0) == 0xE0)
             {
                 if (index + 2 >= bytes.Length) return false;
-                byte b2 = bytes[index + 1];
-                byte b3 = bytes[index + 2];
-                if ((b2 & 0xC0) != 0x80 || (b3 & 0xC0) != 0x80) return false;
+                byte secondByte = bytes[index + 1];
+                byte thirdByte = bytes[index + 2];
+                if ((secondByte & 0xC0) != 0x80 || (thirdByte & 0xC0) != 0x80) return false;
 
-                int val = ((b1 & 0x0F) << 12) | ((b2 & 0x3F) << 6) | (b3 & 0x3F);
+                int val = ((firstByte & 0x0F) << 12) | ((secondByte & 0x3F) << 6) | (thirdByte & 0x3F);
                 if (val < 0x800) return false;
 
                 index += 3;
@@ -219,25 +219,25 @@ internal static class ModifiedUtf8
 
         while (byteIndex < bytes.Length)
         {
-            byte b1 = bytes[byteIndex];
+            byte firstByte = bytes[byteIndex];
             char c;
 
-            if ((b1 & 0x80) == 0)
+            if ((firstByte & 0x80) == 0)
             {
-                c = (char)b1;
+                c = (char)firstByte;
                 byteIndex++;
             }
-            else if ((b1 & 0xE0) == 0xC0)
+            else if ((firstByte & 0xE0) == 0xC0)
             {
-                byte b2 = bytes[byteIndex + 1];
-                c = (char)(((b1 & 0x1F) << 6) | (b2 & 0x3F));
+                byte secondByte = bytes[byteIndex + 1];
+                c = (char)(((firstByte & 0x1F) << 6) | (secondByte & 0x3F));
                 byteIndex += 2;
             }
             else
             {
-                byte b2 = bytes[byteIndex + 1];
-                byte b3 = bytes[byteIndex + 2];
-                c = (char)(((b1 & 0x0F) << 12) | ((b2 & 0x3F) << 6) | (b3 & 0x3F));
+                byte secondByte = bytes[byteIndex + 1];
+                byte thirdByte = bytes[byteIndex + 2];
+                c = (char)(((firstByte & 0x0F) << 12) | ((secondByte & 0x3F) << 6) | (thirdByte & 0x3F));
                 byteIndex += 3;
             }
             destination[charIndex++] = c;

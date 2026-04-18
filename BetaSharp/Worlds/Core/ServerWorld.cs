@@ -84,14 +84,14 @@ public class ServerWorld : World
 
     public override Explosion CreateExplosion(Entity? source, double x, double y, double z, float power, bool fire)
     {
-        Explosion var10 = new(this, source, x, y, z, power)
+        Explosion explosion = new(this, source, x, y, z, power)
         {
             isFlaming = fire
         };
-        var10.doExplosionA();
-        var10.doExplosionB(false);
-        server.playerManager.sendToAround(x, y, z, 64.0, Dimension.Id, ExplosionS2CPacket.Get(x, y, z, power, var10.destroyedBlockPositions));
-        return var10;
+        explosion.doExplosionA();
+        explosion.doExplosionB(false);
+        server.playerManager.sendToAround(x, y, z, 64.0, Dimension.Id, ExplosionS2CPacket.Get(x, y, z, power, explosion.destroyedBlockPositions));
+        return explosion;
     }
 
     public void forceSave() => Storage.ForceSave();

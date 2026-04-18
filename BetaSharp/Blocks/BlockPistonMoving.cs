@@ -98,8 +98,8 @@ public class BlockPistonMoving : BlockWithEntity
             progress = 1.0F - progress;
         }
 
-        int var8 = piston.Facing;
-        BoundingBox = BoundingBox.Offset(-(double)(PistonConstants.HeadOffsetX[var8] * progress), -(double)(PistonConstants.HeadOffsetY[var8] * progress), -(double)(PistonConstants.HeadOffsetZ[var8] * progress));
+        int facing = piston.Facing;
+        BoundingBox = BoundingBox.Offset(-(double)(PistonConstants.HeadOffsetX[facing] * progress), -(double)(PistonConstants.HeadOffsetY[facing] * progress), -(double)(PistonConstants.HeadOffsetZ[facing] * progress));
     }
 
     public Box? getPushedBlockCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z, int blockId, float sizeMultiplier, int facing)

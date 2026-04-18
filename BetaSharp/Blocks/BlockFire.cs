@@ -110,9 +110,9 @@ internal class BlockFire : Block
                                 int burnChance = getBurnChance(@event.World.Reader, checkX, checkY, checkZ);
                                 if (burnChance > 0)
                                 {
-                                    int var13 = (burnChance + 40) / (fireAge + 30);
-                                    if (var13 > 0 &&
-                                        @event.World.Random.NextInt(spreadDifficulty) <= var13 &&
+                                    int spreadThreshold = (burnChance + 40) / (fireAge + 30);
+                                    if (spreadThreshold > 0 &&
+                                        @event.World.Random.NextInt(spreadDifficulty) <= spreadThreshold &&
                                         (!@event.World.Environment.IsRaining || !@event.World.Environment.IsRainingAt(checkX, checkY, checkZ)) &&
                                         !@event.World.Environment.IsRainingAt(checkX - 1, checkY, checkZ) &&
                                         !@event.World.Environment.IsRainingAt(checkX + 1, checkY, checkZ) &&

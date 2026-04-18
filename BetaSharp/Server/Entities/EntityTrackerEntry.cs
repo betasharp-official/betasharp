@@ -281,11 +281,11 @@ internal class EntityTrackerEntry
     {
         if (currentTrackedEntity is EntityItem item)
         {
-            var var7 = ItemEntitySpawnS2CPacket.Get(item);
-            item.X = var7.x / 32.0;
-            item.Y = var7.y / 32.0;
-            item.Z = var7.z / 32.0;
-            return var7;
+            var spawnPacket = ItemEntitySpawnS2CPacket.Get(item);
+            item.X = spawnPacket.x / 32.0;
+            item.Y = spawnPacket.y / 32.0;
+            item.Z = spawnPacket.z / 32.0;
+            return spawnPacket;
         }
         else if (currentTrackedEntity is ServerPlayerEntity p)
         {
@@ -293,19 +293,19 @@ internal class EntityTrackerEntry
         }
         else
         {
-            if (currentTrackedEntity is EntityMinecart var1)
+            if (currentTrackedEntity is EntityMinecart minecartEntity)
             {
-                if (var1.type == 0)
+                if (minecartEntity.type == 0)
                 {
                     return EntitySpawnS2CPacket.Get(currentTrackedEntity, 10);
                 }
 
-                if (var1.type == 1)
+                if (minecartEntity.type == 1)
                 {
                     return EntitySpawnS2CPacket.Get(currentTrackedEntity, 11);
                 }
 
-                if (var1.type == 2)
+                if (minecartEntity.type == 2)
                 {
                     return EntitySpawnS2CPacket.Get(currentTrackedEntity, 12);
                 }
@@ -351,14 +351,14 @@ internal class EntityTrackerEntry
             }
             else
             {
-                if (currentTrackedEntity is EntityFallingSand var3)
+                if (currentTrackedEntity is EntityFallingSand fallingSandEntity)
                 {
-                    if (var3.blockId == Block.Sand.id)
+                    if (fallingSandEntity.blockId == Block.Sand.id)
                     {
                         return EntitySpawnS2CPacket.Get(currentTrackedEntity, 70);
                     }
 
-                    if (var3.blockId == Block.Gravel.id)
+                    if (fallingSandEntity.blockId == Block.Gravel.id)
                     {
                         return EntitySpawnS2CPacket.Get(currentTrackedEntity, 71);
                     }
