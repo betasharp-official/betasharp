@@ -22,7 +22,7 @@ public class AchievementsScreen(
         Root.AddChild(new Background(BackgroundType.World));
 
         // Title
-        Label title = new() { Text = "Achievements", TextColor = Color.White };
+        Label title = new() { Text = TranslationStorage.Instance.TranslateKey("achievements.title"), TextColor = Color.White };
         title.Style.MarginTop = 20;
         title.Style.MarginBottom = 8;
         Root.AddChild(title);
@@ -74,7 +74,7 @@ public class AchievementsScreen(
         PopulateAchievementList(cardList);
 
         Button btnDone = CreateButton();
-        btnDone.Text = "Done";
+        btnDone.Text = TranslationStorage.Instance.TranslateKey("achievements.done");
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 20;
         btnDone.Style.FlexShrink = 0;

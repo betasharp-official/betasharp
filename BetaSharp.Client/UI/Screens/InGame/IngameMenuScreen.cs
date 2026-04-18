@@ -22,7 +22,7 @@ public class IngameMenuScreen(
 
         Root.AddChild(new Background(BackgroundType.World));
 
-        Label title = new() { Text = "Game menu", TextColor = Color.White };
+        Label title = new() { Text = TranslationStorage.Instance.TranslateKey("gamemenu.title"), TextColor = Color.White };
         title.Style.MarginTop = 20;
         title.Style.MarginBottom = 8;
         Root.AddChild(title);
@@ -31,7 +31,7 @@ public class IngameMenuScreen(
         TranslationStorage translator = TranslationStorage.Instance;
 
         Button btnBack = CreateButton();
-        btnBack.Text = "Back to Game";
+        btnBack.Text = TranslationStorage.Instance.TranslateKey("gamemenu.backToGame");
         btnBack.OnClick += (e) =>
         {
             Context.Navigator.Navigate(null);

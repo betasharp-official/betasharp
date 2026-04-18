@@ -27,7 +27,7 @@ public class GameOverScreen(
 
         Label title = new()
         {
-            Text = "Game over!",
+            Text = TranslationStorage.Instance.TranslateKey("gameover.title"),
             TextColor = Color.White,
             Scale = 2.0f,
             Centered = true
@@ -37,14 +37,14 @@ public class GameOverScreen(
 
         Label scoreLabel = new()
         {
-            Text = "Score: &e" + score,
+            Text = TranslationStorage.Instance.TranslateKey("gameover.score") + ": &e" + score,
             TextColor = Color.White
         };
         scoreLabel.Style.MarginBottom = 20;
         Root.AddChild(scoreLabel);
 
         Button btnRespawn = CreateButton();
-        btnRespawn.Text = "Respawn";
+        btnRespawn.Text = TranslationStorage.Instance.TranslateKey("gameover.respawn");
         btnRespawn.OnClick += (e) =>
         {
             respawn();
@@ -59,7 +59,7 @@ public class GameOverScreen(
         Root.AddChild(btnRespawn);
 
         Button btnTitle = CreateButton();
-        btnTitle.Text = "Title menu";
+        btnTitle.Text = TranslationStorage.Instance.TranslateKey("gameover.titleMenu");
         btnTitle.OnClick += (e) =>
         {
             exitToTitle();

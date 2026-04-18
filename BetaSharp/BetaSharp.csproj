@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net10.0</TargetFramework>
@@ -26,8 +26,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="lang/en_US-stats.lang" />
+    <EmbeddedResource Include="lang/en_US.lang" />
+    <EmbeddedResource Include="lang/pl_PL-stats.lang" />
+    <EmbeddedResource Include="lang/pl_PL.lang" />
     <EmbeddedResource Include="shaders/chunk.vert" />
-    <EmbeddedResource Include="shaders/chunk.frag" />
+    <EmbeddedResource Include="shaders/chunk.frag" />  
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="BetaSharp.Tests" />

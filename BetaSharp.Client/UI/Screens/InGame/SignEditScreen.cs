@@ -21,7 +21,7 @@ public class SignEditScreen(UIContext context, BlockEntitySign sign, Action? edi
 
         Root.AddChild(new Background(BackgroundType.World));
 
-        Label title = new() { Text = "Edit sign message:", TextColor = Color.White };
+        Label title = new() { Text = TranslationStorage.Instance.TranslateKey("sign.title"), TextColor = Color.White };
         title.Style.MarginBottom = 10;
         Root.AddChild(title);
 
@@ -32,7 +32,7 @@ public class SignEditScreen(UIContext context, BlockEntitySign sign, Action? edi
         Root.AddChild(preview);
 
         Button btnDone = CreateButton();
-        btnDone.Text = "Done";
+        btnDone.Text = TranslationStorage.Instance.TranslateKey("sign.done");
         btnDone.Style.Width = 200;
         btnDone.OnClick += (_) => CloseAndSave();
         Root.AddChild(btnDone);

@@ -21,7 +21,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
 
         Root.AddChild(new Background(BackgroundType.World));
 
-        Label title = new() { Text = "Statistics", TextColor = Color.White };
+        Label title = new() { Text = TranslationStorage.Instance.TranslateKey("stats.title"), TextColor = Color.White };
         title.Style.MarginTop = 20;
         title.Style.MarginBottom = 8;
         Root.AddChild(title);
@@ -34,9 +34,9 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
         tabBar.Style.Height = 30;
         tabBar.Style.MarginBottom = 6;
 
-        _btnGeneral = CreateTabButton("General", Tab.General);
-        _btnBlocks = CreateTabButton("Blocks", Tab.Blocks);
-        _btnItems = CreateTabButton("Items", Tab.Items);
+        _btnGeneral = CreateTabButton(TranslationStorage.Instance.TranslateKey("stats.general"), Tab.General);
+        _btnBlocks = CreateTabButton(TranslationStorage.Instance.TranslateKey("stats.blocks"), Tab.Blocks);
+        _btnItems = CreateTabButton(TranslationStorage.Instance.TranslateKey("stats.items"), Tab.Items);
 
         tabBar.AddChild(_btnGeneral);
         tabBar.AddChild(_btnBlocks);
@@ -54,7 +54,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
 
         // Done button
         Button btnDone = CreateButton();
-        btnDone.Text = "Done";
+        btnDone.Text = TranslationStorage.Instance.TranslateKey("stats.done");
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 20;
         btnDone.Style.FlexShrink = 0; // Prevent squeezing
@@ -135,7 +135,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
 
     private void PopulateBlocksStats(Panel list)
     {
-        AddHeaderRow(list, "Mined", "Crafted", "Used");
+        AddHeaderRow(list, TranslationStorage.Instance.TranslateKey("stats.blocks.mined"), TranslationStorage.Instance.TranslateKey("stats.blocks.crafted"), TranslationStorage.Instance.TranslateKey("stats.blocks.used"));
 
         var blockStats = Stats.Stats.BlocksMinedStats
             .OfType<StatCrafting>()
@@ -160,7 +160,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
 
     private void PopulateItemsStats(Panel list)
     {
-        AddHeaderRow(list, "Broken", "Crafted", "Used");
+        AddHeaderRow(list, TranslationStorage.Instance.TranslateKey("stats.items.broken"), TranslationStorage.Instance.TranslateKey("stats.items.crafted"), TranslationStorage.Instance.TranslateKey("stats.items.used"));
 
         var itemStats = Stats.Stats.ItemStats
             .OfType<StatCrafting>()
@@ -195,7 +195,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
         row.Style.MarginBottom = 2;
         row.Style.AlignItems = Align.Center; // Align headers
 
-        row.AddChild(new Label { Text = "Item", TextColor = Color.GrayA0 });
+        row.AddChild(new Label { Text = TranslationStorage.Instance.TranslateKey("stats.item"), TextColor = Color.GrayA0 });
 
         // Custom panel to align headers to the right
         Panel spacer = new();
