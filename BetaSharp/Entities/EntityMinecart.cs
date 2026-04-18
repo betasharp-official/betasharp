@@ -803,9 +803,9 @@ public class EntityMinecart : Entity, IInventory
     }
 
     // Compatibility wrappers for any external code still calling the old names.
-    public Vec3D? func_515_a(double x, double y, double z, double var7)
+    public Vec3D? func_515_a(double x, double y, double z, double trackOffset)
     {
-        return getTrackPositionOffset(x, y, z, var7);
+        return getTrackPositionOffset(x, y, z, trackOffset);
     }
 
     public Vec3D? func_514_g(double x, double y, double z)

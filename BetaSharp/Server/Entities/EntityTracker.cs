@@ -102,10 +102,10 @@ public class EntityTracker
         }
         else
         {
-            EntityTrackerEntry var5 = new(entity, trackedDistance, tracingFrequency, alwaysUpdateVelocity);
-            entries.Add(var5);
-            entriesById[entity.ID] = var5;
-            var5.updateListeners(world.getWorld(dimensionId).Entities.Players.Cast<ServerPlayerEntity>());
+            EntityTrackerEntry trackerEntry = new(entity, trackedDistance, tracingFrequency, alwaysUpdateVelocity);
+            entries.Add(trackerEntry);
+            entriesById[entity.ID] = trackerEntry;
+            trackerEntry.updateListeners(world.getWorld(dimensionId).Entities.Players.Cast<ServerPlayerEntity>());
         }
     }
 
@@ -113,11 +113,11 @@ public class EntityTracker
     {
         if (entity is ServerPlayerEntity)
         {
-            ServerPlayerEntity var2 = (ServerPlayerEntity)entity;
+            ServerPlayerEntity playerEntity = (ServerPlayerEntity)entity;
 
-            foreach (EntityTrackerEntry var4 in entries)
+            foreach (EntityTrackerEntry trackerEntry in entries)
             {
-                var4.notifyEntityRemoved(var2);
+                trackerEntry.notifyEntityRemoved(playerEntity);
             }
         }
 
@@ -194,9 +194,9 @@ public class EntityTracker
 
     public void removeListener(ServerPlayerEntity player)
     {
-        foreach (EntityTrackerEntry var3 in entries)
+        foreach (EntityTrackerEntry trackerEntry in entries)
         {
-            var3.removeListener(player);
+            trackerEntry.removeListener(player);
         }
     }
 }

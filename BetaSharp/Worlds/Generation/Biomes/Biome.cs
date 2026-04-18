@@ -109,20 +109,20 @@ public class Biome
         return downfall < 0.9f ? SeasonalForest : Rainforest;
     }
 
-    public virtual int GetSkyColorByTemp(float var1)
+    public virtual int GetSkyColorByTemp(float temperature)
     {
-        var1 /= 3.0F;
-        if (var1 < -1.0F)
+        temperature /= 3.0F;
+        if (temperature < -1.0F)
         {
-            var1 = -1.0F;
+            temperature = -1.0F;
         }
 
-        if (var1 > 1.0F)
+        if (temperature > 1.0F)
         {
-            var1 = 1.0F;
+            temperature = 1.0F;
         }
 
-        return ToRgb(224.0f / 360.0f - var1 * 0.05f, 0.5f + var1 * 0.1f, 1.0f);
+        return ToRgb(224.0f / 360.0f - temperature * 0.05f, 0.5f + temperature * 0.1f, 1.0f);
     }
 
     public static (int R, int G, int B) FromHsbColor(float hue, float saturation, float brightness)

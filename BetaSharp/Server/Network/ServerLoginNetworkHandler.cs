@@ -143,20 +143,20 @@ public class ServerLoginNetworkHandler : NetHandler
             ent.SetWorld(server.getWorld(ent.dimensionId));
             ent.GameModeHolder = server.DefaultGameMode;
             _logger.LogInformation($"{getConnectionInfo()} logged in with entity id {ent.ID} at ({ent.X}, {ent.Y}, {ent.Z})");
-            ServerWorld var3 = server.getWorld(ent.dimensionId);
-            Vec3i var4 = var3.Properties.GetSpawnPos();
+            ServerWorld playerWorld = server.getWorld(ent.dimensionId);
+            Vec3i spawnPos = playerWorld.Properties.GetSpawnPos();
             ServerPlayNetworkHandler handler = new ServerPlayNetworkHandler(server, connection, ent);
-            handler.SendPacket(new LoginHelloPacket("", ent.ID, var3.Seed, (sbyte)var3.Dimension.Id));
+            handler.SendPacket(new LoginHelloPacket("", ent.ID, playerWorld.Seed, (sbyte)playerWorld.Dimension.Id));
             server.SendConfigurationTo(handler.SendPacket);
             handler.SendPacket(PlayerGameModeUpdateS2CPacket.Get(ent.GameMode));
-            handler.SendPacket(PlayerSpawnPositionS2CPacket.Get(var4.X, var4.Y, var4.Z));
-            PlayerManager.sendWorldInfo(ent, var3);
+            handler.SendPacket(PlayerSpawnPositionS2CPacket.Get(spawnPos.X, spawnPos.Y, spawnPos.Z));
+            PlayerManager.sendWorldInfo(ent, playerWorld);
             server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(ent.ID, PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Join, ent.name));
             server.playerManager.sendToAll(ChatMessagePacket.Get("§e" + ent.name + " joined the game."));
             server.playerManager.addPlayer(ent);
             handler.teleport(ent.X, ent.Y, ent.Z, ent.Yaw, ent.Pitch);
             server.connections.AddConnection(handler);
-            handler.SendPacket(WorldTimeUpdateS2CPacket.Get(var3.GetTime()));
+            handler.SendPacket(WorldTimeUpdateS2CPacket.Get(playerWorld.GetTime()));
             ent.initScreenHandler();
         }
 

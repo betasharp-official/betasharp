@@ -79,8 +79,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         moved = true;
         if (!teleported)
         {
-            double var3 = packet.y - teleportTargetY;
-            if (packet.x == teleportTargetX && var3 * var3 < 0.01 && packet.z == teleportTargetZ)
+            double teleportDeltaY = packet.y - teleportTargetY;
+            if (packet.x == teleportTargetX && teleportDeltaY * teleportDeltaY < 0.01 && packet.z == teleportTargetZ)
             {
                 teleported = true;
             }
@@ -90,32 +90,32 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         {
             if (player.Vehicle != null)
             {
-                float var27 = player.Yaw;
-                float var4 = player.Pitch;
+                float yaw = player.Yaw;
+                float pitch = player.Pitch;
                 player.Vehicle.UpdatePassengerPosition();
-                double var28 = player.X;
-                double var29 = player.Y;
-                double var30 = player.Z;
-                double var31 = 0.0;
-                double var34 = 0.0;
+                double vehicleX = player.X;
+                double vehicleY = player.Y;
+                double vehicleZ = player.Z;
+                double moveX = 0.0;
+                double moveZ = 0.0;
                 if (packet.changeLook)
                 {
-                    var27 = packet.yaw;
-                    var4 = packet.pitch;
+                    yaw = packet.yaw;
+                    pitch = packet.pitch;
                 }
 
                 if (packet.changePosition && packet.y == -999.0 && packet.eyeHeight == -999.0)
                 {
-                    var31 = packet.x;
-                    var34 = packet.z;
+                    moveX = packet.x;
+                    moveZ = packet.z;
                 }
 
                 player.OnGround = packet.onGround;
                 player.PlayerTick(false);
-                player.Move(var31, 0.0, var34);
-                player.SetPositionAndAngles(var28, var29, var30, var27, var4);
-                player.VelocityX = var31;
-                player.VelocityZ = var34;
+                player.Move(moveX, 0.0, moveZ);
+                player.SetPositionAndAngles(vehicleX, vehicleY, vehicleZ, yaw, pitch);
+                player.VelocityX = moveX;
+                player.VelocityZ = moveZ;
                 if (player.Vehicle != null)
                 {
                     sWorld.Entities.TickVehicleBypassingFilter(player.Vehicle, true);
@@ -142,15 +142,15 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 return;
             }
 
-            double var26 = player.Y;
+            double previousY = player.Y;
             teleportTargetX = player.X;
             teleportTargetY = player.Y;
             teleportTargetZ = player.Z;
-            double var5 = player.X;
-            double var7 = player.Y;
-            double var9 = player.Z;
-            float var11 = player.Yaw;
-            float var12 = player.Pitch;
+            double targetX = player.X;
+            double targetY = player.Y;
+            double targetZ = player.Z;
+            float targetYaw = player.Yaw;
+            float targetPitch = player.Pitch;
             if (packet.changePosition && packet.y == -999.0 && packet.eyeHeight == -999.0)
             {
                 packet.changePosition = false;
@@ -158,14 +158,14 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
             if (packet.changePosition)
             {
-                var5 = packet.x;
-                var7 = packet.y;
-                var9 = packet.z;
-                double var13 = packet.eyeHeight - packet.y;
-                if (!player.isSleeping() && (var13 > 1.65 || var13 < 0.1))
+                targetX = packet.x;
+                targetY = packet.y;
+                targetZ = packet.z;
+                double stanceHeight = packet.eyeHeight - packet.y;
+                if (!player.isSleeping() && (stanceHeight > 1.65 || stanceHeight < 0.1))
                 {
                     disconnect("Illegal stance");
-                    _logger.LogWarning($"{player.name} had an illegal stance: {var13}");
+                    _logger.LogWarning($"{player.name} had an illegal stance: {stanceHeight}");
                     return;
                 }
 
@@ -178,64 +178,64 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
             if (packet.changeLook)
             {
-                var11 = packet.yaw;
-                var12 = packet.pitch;
+                targetYaw = packet.yaw;
+                targetPitch = packet.pitch;
             }
 
             player.PlayerTick(false);
             player.CameraOffset = 0.0F;
-            player.SetPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
+            player.SetPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, targetYaw, targetPitch);
             if (!teleported)
             {
                 return;
             }
 
-            double var32 = var5 - player.X;
-            double var15 = var7 - player.Y;
-            double var17 = var9 - player.Z;
-            double var19 = var32 * var32 + var15 * var15 + var17 * var17;
-            if (var19 > 100.0)
+            double deltaX = targetX - player.X;
+            double deltaY = targetY - player.Y;
+            double deltaZ = targetZ - player.Z;
+            double movedDistanceSq = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+            if (movedDistanceSq > 100.0)
             {
                 _logger.LogWarning($"{player.name} moved too quickly!");
                 disconnect("You moved too quickly :( (Hacking?)");
                 return;
             }
 
-            float var21 = (1 / 16f);
-            bool var22 = sWorld.Entities.GetEntityCollisionsScratch(player, player.BoundingBox.Contract(var21, var21, var21)).Count == 0;
-            player.Move(var32, var15, var17);
-            var32 = var5 - player.X;
-            var15 = var7 - player.Y;
-            if (var15 > -0.5 || var15 < 0.5)
+            float collisionPadding = (1 / 16f);
+            bool wasClear = sWorld.Entities.GetEntityCollisionsScratch(player, player.BoundingBox.Contract(collisionPadding, collisionPadding, collisionPadding)).Count == 0;
+            player.Move(deltaX, deltaY, deltaZ);
+            deltaX = targetX - player.X;
+            deltaY = targetY - player.Y;
+            if (deltaY > -0.5 || deltaY < 0.5)
             {
-                var15 = 0.0;
+                deltaY = 0.0;
             }
 
-            var17 = var9 - player.Z;
-            var19 = var32 * var32 + var15 * var15 + var17 * var17;
-            bool var23 = false;
-            if (var19 > 0.0625 && !player.isSleeping())
+            deltaZ = targetZ - player.Z;
+            movedDistanceSq = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+            bool validMove = false;
+            if (movedDistanceSq > 0.0625 && !player.isSleeping())
             {
-                var23 = true;
+                validMove = true;
                 _logger.LogWarning($"{player.name} moved wrongly!");
-                _logger.LogInformation($"Got position {var5}, {var7}, {var9}");
+                _logger.LogInformation($"Got position {targetX}, {targetY}, {targetZ}");
                 _logger.LogInformation($"Expected {player.X}, {player.Y}, {player.Z}");
             }
 
-            player.SetPositionAndAngles(var5, var7, var9, var11, var12);
-            bool var24 = sWorld.Entities.GetEntityCollisionsScratch(player, player.BoundingBox.Contract(var21, var21, var21)).Count == 0;
-            if (var22 && (var23 || !var24) && !player.isSleeping())
+            player.SetPositionAndAngles(targetX, targetY, targetZ, targetYaw, targetPitch);
+            bool isClearNow = sWorld.Entities.GetEntityCollisionsScratch(player, player.BoundingBox.Contract(collisionPadding, collisionPadding, collisionPadding)).Count == 0;
+            if (wasClear && (validMove || !isClearNow) && !player.isSleeping())
             {
-                teleport(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
+                teleport(teleportTargetX, teleportTargetY, teleportTargetZ, targetYaw, targetPitch);
                 return;
             }
 
-            Box var25 = player.BoundingBox.Expand(var21, var21, var21).Stretch(0.0, -0.55, 0.0);
-            if (server.flightEnabled || sWorld.Reader.IsMaterialInBox(var25, m => m != Material.Air))
+            Box flightCheckBox = player.BoundingBox.Expand(collisionPadding, collisionPadding, collisionPadding).Stretch(0.0, -0.55, 0.0);
+            if (server.flightEnabled || sWorld.Reader.IsMaterialInBox(flightCheckBox, m => m != Material.Air))
             {
                 floatingTime = 0;
             }
-            else if (var15 >= -0.03125)
+            else if (deltaY >= -0.03125)
             {
                 floatingTime++;
                 if (floatingTime > 80 && player.GameMode.DisallowFlying)
@@ -248,7 +248,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
             player.OnGround = packet.onGround;
             server.playerManager.updatePlayerChunks(player);
-            player.handleFall(player.Y - var26, packet.onGround);
+            player.handleFall(player.Y - previousY, packet.onGround);
         }
     }
 
@@ -442,15 +442,15 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         {
             msg = msg.Trim();
 
-            for (int var3 = 0; var3 < msg.Length; var3++)
+            for (int charIndex = 0; charIndex < msg.Length; charIndex++)
             {
                 // Allow the section sign (§) for color/style codes as well as the standard allowed characters
-                if (msg[var3] == (char)167) // '§'
+                if (msg[charIndex] == (char)167) // '§'
                 {
                     continue;
                 }
 
-                if (!ChatAllowedCharacters.IsAllowedCharacter(msg[var3]))
+                if (!ChatAllowedCharacters.IsAllowedCharacter(msg[charIndex]))
                 {
                     disconnect("Illegal characters in chat");
                     return;
@@ -542,17 +542,17 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public override void handleInteractEntity(PlayerInteractEntityC2SPacket packet)
     {
-        ServerWorld var2 = server.getWorld(player.dimensionId);
-        Entity var3 = var2.getEntity(packet.entityId);
-        if (var3 != null && player.canSee(var3) && player.GetSquaredDistance(var3) < 36.0)
+        ServerWorld playerWorld = server.getWorld(player.dimensionId);
+        Entity targetEntity = playerWorld.getEntity(packet.entityId);
+        if (targetEntity != null && player.canSee(targetEntity) && player.GetSquaredDistance(targetEntity) < 36.0)
         {
             if (packet.isLeftClick == 0)
             {
-                player.interact(var3);
+                player.interact(targetEntity);
             }
             else if (packet.isLeftClick == 1)
             {
-                player.attack(var3);
+                player.attack(targetEntity);
             }
         }
     }
@@ -574,8 +574,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     {
         if (player.currentScreenHandler.SyncId == packet.syncId && player.currentScreenHandler.canOpen(player))
         {
-            ItemStack var2 = player.currentScreenHandler.onSlotClick(packet.slot, packet.button, packet.holdingShift, player);
-            if (ItemStack.areEqual(packet.stack, var2))
+            ItemStack clickedStack = player.currentScreenHandler.onSlotClick(packet.slot, packet.button, packet.holdingShift, player);
+            if (ItemStack.areEqual(packet.stack, clickedStack))
             {
                 player.NetworkHandler.SendPacket(ScreenHandlerAcknowledgementPacket.Get(packet.syncId, packet.actionType, true));
                 player.skipPacketSlotUpdates = true;
@@ -591,14 +591,14 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 player.currentScreenHandler.updatePlayerList(player, false);
 
                 int size = player.currentScreenHandler.Slots.Count;
-                List<ItemStack> var3 = new List<ItemStack>(size);
+                List<ItemStack> slotStacks = new List<ItemStack>(size);
 
                 for (int i = 0; i < size; i++)
                 {
-                    var3.Add(((Slot)player.currentScreenHandler.Slots[i]).getStack());
+                    slotStacks.Add(((Slot)player.currentScreenHandler.Slots[i]).getStack());
                 }
 
-                player.onContentsUpdate(player.currentScreenHandler, var3);
+                player.onContentsUpdate(player.currentScreenHandler, slotStacks);
             }
         }
     }
@@ -616,57 +616,58 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public override void handleUpdateSign(UpdateSignPacket packet)
     {
-        ServerWorld var2 = server.getWorld(player.dimensionId);
-        if (var2.Reader.IsPosLoaded(packet.x, packet.y, packet.z))
+        ServerWorld playerWorld = server.getWorld(player.dimensionId);
+        if (playerWorld.Reader.IsPosLoaded(packet.x, packet.y, packet.z))
         {
-            BlockEntity var3 = var2.Entities.GetBlockEntity<BlockEntitySign>(packet.x, packet.y, packet.z);
-            if (var3 is BlockEntitySign var4)
+            BlockEntity blockEntity = playerWorld.Entities.GetBlockEntity<BlockEntitySign>(packet.x, packet.y, packet.z);
+            BlockEntitySign? sign = blockEntity as BlockEntitySign;
+            if (sign != null)
             {
-                if (!var4.IsEditable())
+                if (!sign.IsEditable())
                 {
                     server.Warn("Player " + player.name + " just tried to change non-editable sign");
                     return;
                 }
             }
 
-            for (int var9 = 0; var9 < 4; var9++)
+            for (int lineIndex = 0; lineIndex < 4; lineIndex++)
             {
-                bool var5 = true;
-                if (packet.text[var9].Length > 15)
+                bool lineValid = true;
+                if (packet.text[lineIndex].Length > 15)
                 {
-                    var5 = false;
+                    lineValid = false;
                 }
                 else
                 {
-                    for (int var6 = 0; var6 < packet.text[var9].Length; var6++)
+                    for (int charIndex = 0; charIndex < packet.text[lineIndex].Length; charIndex++)
                     {
-                        if (!ChatAllowedCharacters.IsAllowedCharacter(packet.text[var9][var6]))
+                        if (!ChatAllowedCharacters.IsAllowedCharacter(packet.text[lineIndex][charIndex]))
                         {
-                            var5 = false;
+                            lineValid = false;
                         }
                     }
                 }
 
-                if (!var5)
+                if (!lineValid)
                 {
-                    packet.text[var9] = "!?";
+                    packet.text[lineIndex] = "!?";
                 }
             }
 
-            if (var3 is BlockEntitySign var7)
+            if (sign != null)
             {
-                int var10 = packet.x;
-                int var11 = packet.y;
-                int var12 = packet.z;
+                int x = packet.x;
+                int y = packet.y;
+                int z = packet.z;
 
-                for (int var8 = 0; var8 < 4; var8++)
+                for (int textLineIndex = 0; textLineIndex < 4; textLineIndex++)
                 {
-                    var7.Texts[var8] = packet.text[var8];
+                    sign.Texts[textLineIndex] = packet.text[textLineIndex];
                 }
 
-                var7.SetEditable(false);
-                var7.MarkDirty();
-                var2.Broadcaster.BlockUpdateEvent(var10, var11, var12);
+                sign.SetEditable(false);
+                sign.MarkDirty();
+                playerWorld.Broadcaster.BlockUpdateEvent(x, y, z);
             }
         }
     }

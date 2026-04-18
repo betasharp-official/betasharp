@@ -30,9 +30,9 @@ public class PlayerManager
     {
         _chunkMaps = new ChunkMap[2];
         _server = server;
-        int var2 = server.config.GetViewDistance(10);
-        _chunkMaps[0] = new ChunkMap(server, 0, var2);
-        _chunkMaps[1] = new ChunkMap(server, -1, var2);
+        int viewDistance = server.config.GetViewDistance(10);
+        _chunkMaps[0] = new ChunkMap(server, 0, viewDistance);
+        _chunkMaps[1] = new ChunkMap(server, -1, viewDistance);
         _maxPlayerCount = server.config.GetMaxPlayers(20);
         _whitelistEnabled = server.config.GetWhiteList(false);
     }
@@ -56,8 +56,8 @@ public class PlayerManager
         player.activeChunks.Clear();
         player.ChunksTerrainSentToClient.Clear();
         GetChunkMap(player.dimensionId).addPlayer(player);
-        ServerWorld var2 = _server.getWorld(player.dimensionId);
-        var2.ChunkCache.LoadChunk((int)player.X >> 4, (int)player.Z >> 4);
+        ServerWorld playerWorld = _server.getWorld(player.dimensionId);
+        playerWorld.ChunkCache.LoadChunk((int)player.X >> 4, (int)player.Z >> 4);
     }
 
     public int getBlockViewDistance()
@@ -84,15 +84,15 @@ public class PlayerManager
     {
         players.Add(player);
         player.ResetChunkStreamingState();
-        ServerWorld var2 = _server.getWorld(player.dimensionId);
-        var2.ChunkCache.LoadChunk((int)player.X >> 4, (int)player.Z >> 4);
+        ServerWorld playerWorld = _server.getWorld(player.dimensionId);
+        playerWorld.ChunkCache.LoadChunk((int)player.X >> 4, (int)player.Z >> 4);
 
-        while (var2.Entities.GetEntityCollisions(player, player.BoundingBox).Count != 0)
+        while (playerWorld.Entities.GetEntityCollisions(player, player.BoundingBox).Count != 0)
         {
             player.SetPosition(player.X, player.Y + 1.0, player.Z);
         }
 
-        var2.Entities.SpawnEntity(player);
+        playerWorld.Entities.SpawnEntity(player);
         GetChunkMap(player.dimensionId).addPlayer(player);
     }
 
@@ -167,7 +167,7 @@ public class PlayerManager
         GetChunkMap(player.dimensionId).removePlayer(player);
         players.Remove(player);
         _server.getWorld(player.dimensionId).Entities.ServerRemove(player);
-        Vec3i? var3 = player.getSpawnPos();
+        Vec3i? spawnPos = player.getSpawnPos();
         player.dimensionId = dimensionId;
         ServerPlayerEntity serverPlayer = new(
             _server, _server.getWorld(player.dimensionId), player.name, new ServerPlayerInteractionManager(_server.getWorld(player.dimensionId))
@@ -176,14 +176,14 @@ public class PlayerManager
             ID = player.ID,
             NetworkHandler = player.NetworkHandler
         };
-        ServerWorld var5 = _server.getWorld(player.dimensionId);
-        if (var3 is (int x, int y, int z))
+        ServerWorld targetWorld = _server.getWorld(player.dimensionId);
+        if (spawnPos is (int x, int y, int z))
         {
-            Vec3i? var6 = EntityPlayer.findRespawnPosition(_server.getWorld(player.dimensionId), var3);
-            if (var6 is (int x2, int y2, int z2))
+            Vec3i? respawnPos = EntityPlayer.findRespawnPosition(_server.getWorld(player.dimensionId), spawnPos);
+            if (respawnPos is (int x2, int y2, int z2))
             {
                 serverPlayer.SetPositionAndAnglesKeepPrevAngles(x2 + 0.5F, y2 + 0.1F, z2 + 0.5F, 0.0F, 0.0F);
-                serverPlayer.setSpawnPos(var3);
+                serverPlayer.setSpawnPos(spawnPos);
 
             }
             else
@@ -192,18 +192,18 @@ public class PlayerManager
             }
         }
 
-        var5.ChunkCache.LoadChunk((int)serverPlayer.X >> 4, (int)serverPlayer.Z >> 4);
+        targetWorld.ChunkCache.LoadChunk((int)serverPlayer.X >> 4, (int)serverPlayer.Z >> 4);
 
-        while (var5.Entities.GetEntityCollisions(serverPlayer, serverPlayer.BoundingBox).Count != 0)
+        while (targetWorld.Entities.GetEntityCollisions(serverPlayer, serverPlayer.BoundingBox).Count != 0)
         {
             serverPlayer.SetPosition(serverPlayer.X, serverPlayer.Y + 1.0, serverPlayer.Z);
         }
 
         serverPlayer.NetworkHandler.SendPacket(PlayerRespawnPacket.Get((sbyte)serverPlayer.dimensionId));
         serverPlayer.NetworkHandler.teleport(serverPlayer.X, serverPlayer.Y, serverPlayer.Z, serverPlayer.Yaw, serverPlayer.Pitch);
-        sendWorldInfo(serverPlayer, var5);
+        sendWorldInfo(serverPlayer, targetWorld);
         GetChunkMap(serverPlayer.dimensionId).addPlayer(serverPlayer);
-        var5.SpawnEntity(serverPlayer);
+        targetWorld.SpawnEntity(serverPlayer);
         players.Add(serverPlayer);
         serverPlayer.initScreenHandler();
         return serverPlayer;
@@ -299,9 +299,9 @@ public class PlayerManager
             _pendingViewDistance = -1;
         }
 
-        for (int var1 = 0; var1 < _chunkMaps.Length; var1++)
+        for (int chunkMapIndex = 0; chunkMapIndex < _chunkMaps.Length; chunkMapIndex++)
         {
-            _chunkMaps[var1].updateChunks();
+            _chunkMaps[chunkMapIndex].updateChunks();
         }
     }
 
@@ -320,22 +320,22 @@ public class PlayerManager
 
     public void sendToAll(Packet packet)
     {
-        for (int var2 = 0; var2 < players.Count; var2++)
+        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
-            ServerPlayerEntity var3 = players[var2];
-            var3.NetworkHandler.SendPacket(packet);
+            ServerPlayerEntity playerEntity = players[playerIndex];
+            playerEntity.NetworkHandler.SendPacket(packet);
         }
         packet.Return();
     }
 
     public void sendToDimension(Packet packet, int dimensionId)
     {
-        for (int var3 = 0; var3 < players.Count; var3++)
+        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
-            ServerPlayerEntity var4 = players[var3];
-            if (var4.dimensionId == dimensionId)
+            ServerPlayerEntity playerEntity = players[playerIndex];
+            if (playerEntity.dimensionId == dimensionId)
             {
-                var4.NetworkHandler.SendPacket(packet);
+                playerEntity.NetworkHandler.SendPacket(packet);
             }
         }
         packet.Return();
@@ -427,12 +427,12 @@ public class PlayerManager
 
     public ServerPlayerEntity? getPlayer(string name)
     {
-        for (int var2 = 0; var2 < players.Count; var2++)
+        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
-            ServerPlayerEntity var3 = players[var2];
-            if (var3.name.EqualsIgnoreCase(name))
+            ServerPlayerEntity playerEntity = players[playerIndex];
+            if (playerEntity.name.EqualsIgnoreCase(name))
             {
-                return var3;
+                return playerEntity;
             }
         }
 
@@ -542,10 +542,10 @@ public class PlayerManager
 
     public void messagePlayer(string name, string message)
     {
-        ServerPlayerEntity var3 = getPlayer(name);
-        if (var3 != null)
+        ServerPlayerEntity playerEntity = getPlayer(name);
+        if (playerEntity != null)
         {
-            var3.NetworkHandler.SendPacket(ChatMessagePacket.Get(message));
+            playerEntity.NetworkHandler.SendPacket(ChatMessagePacket.Get(message));
         }
     }
 
@@ -556,17 +556,17 @@ public class PlayerManager
 
     public void sendToAround(EntityPlayer? player, double x, double y, double z, double range, int dimensionId, Packet packet)
     {
-        for (int var12 = 0; var12 < players.Count; var12++)
+        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
-            ServerPlayerEntity var13 = players[var12];
-            if (var13 != player && var13.dimensionId == dimensionId)
+            ServerPlayerEntity playerEntity = players[playerIndex];
+            if (playerEntity != player && playerEntity.dimensionId == dimensionId)
             {
-                double var14 = x - var13.X;
-                double var16 = y - var13.Y;
-                double var18 = z - var13.Z;
-                if (var14 * var14 + var16 * var16 + var18 * var18 < range * range)
+                double deltaX = x - playerEntity.X;
+                double deltaY = y - playerEntity.Y;
+                double deltaZ = z - playerEntity.Z;
+                if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ < range * range)
                 {
-                    var13.NetworkHandler.SendPacket(packet);
+                    playerEntity.NetworkHandler.SendPacket(packet);
                 }
             }
         }
@@ -613,9 +613,9 @@ public class PlayerManager
 
     public void savePlayers()
     {
-        for (int var1 = 0; var1 < players.Count; var1++)
+        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
-            _saveHandler.SavePlayerData(players[var1]);
+            _saveHandler.SavePlayerData(players[playerIndex]);
         }
     }
 

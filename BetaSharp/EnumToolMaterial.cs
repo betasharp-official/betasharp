@@ -13,12 +13,12 @@ internal class EnumToolMaterial
     private readonly float efficiencyOnProperMaterial;
     private readonly int damageVsEntity;
 
-    private EnumToolMaterial(int var3, int var4, float var5, int var6)
+    private EnumToolMaterial(int harvestLevel, int maxUses, float efficiencyOnProperMaterial, int damageVsEntity)
     {
-        harvestLevel = var3;
-        maxUses = var4;
-        efficiencyOnProperMaterial = var5;
-        damageVsEntity = var6;
+        this.harvestLevel = harvestLevel;
+        this.maxUses = maxUses;
+        this.efficiencyOnProperMaterial = efficiencyOnProperMaterial;
+        this.damageVsEntity = damageVsEntity;
     }
 
     public int getMaxUses()

@@ -144,10 +144,10 @@ internal class ChunkMap
 
     public void markBlockForUpdate(int x, int y, int z)
     {
-        int var4 = x >> 4;
-        int var5 = z >> 4;
-        TrackedChunk? var6 = GetOrCreateChunk(var4, var5, false);
-        var6?.updatePlayerChunks(x & 15, y, z & 15);
+        int chunkX = x >> 4;
+        int chunkZ = z >> 4;
+        TrackedChunk? trackedChunk = GetOrCreateChunk(chunkX, chunkZ, false);
+        trackedChunk?.updatePlayerChunks(x & 15, y, z & 15);
     }
 
     internal bool IsChunkTrackedAndSent(int chunkX, int chunkZ)
@@ -221,9 +221,9 @@ internal class ChunkMap
 
     private bool isWithinViewDistance(int chunkX, int chunkZ, int centerX, int centerZ)
     {
-        int var5 = chunkX - centerX;
-        int var6 = chunkZ - centerZ;
-        return var5 >= -_viewDistance && var5 <= _viewDistance && var6 >= -_viewDistance && var6 <= _viewDistance;
+        int deltaX = chunkX - centerX;
+        int deltaZ = chunkZ - centerZ;
+        return deltaX >= -_viewDistance && deltaX <= _viewDistance && deltaZ >= -_viewDistance && deltaZ <= _viewDistance;
     }
 
     public void updatePlayerChunks(ServerPlayerEntity player)
@@ -387,8 +387,8 @@ internal class ChunkMap
             {
                 if (_players.Count == 0)
                 {
-                    long var2 = GetChunkHash(_chunkPos.X, _chunkPos.Z);
-                    _chunkMap._chunkMapping.Remove(var2);
+                    long chunkHash = GetChunkHash(_chunkPos.X, _chunkPos.Z);
+                    _chunkMap._chunkMapping.Remove(chunkHash);
                     if (_dirtyBlockCount > 0)
                     {
                         _chunkMap._chunksToUpdate.Remove(this);
@@ -514,12 +514,12 @@ internal class ChunkMap
 
                     for (int i = 0; i < _dirtyBlockCount; i++)
                     {
-                        int var13 = _chunkPos.X * 16 + (_dirtyBlocks[i] >> 12 & 15);
-                        int var15 = _dirtyBlocks[i] & 0xFF;
-                        int var16 = _chunkPos.Z * 16 + (_dirtyBlocks[i] >> 8 & 15);
-                        if (Block.BlocksWithEntity[sWorld.Reader.GetBlockId(var13, var15, var16)])
+                        int worldX = _chunkPos.X * 16 + (_dirtyBlocks[i] >> 12 & 15);
+                        int worldY = _dirtyBlocks[i] & 0xFF;
+                        int worldZ = _chunkPos.Z * 16 + (_dirtyBlocks[i] >> 8 & 15);
+                        if (Block.BlocksWithEntity[sWorld.Reader.GetBlockId(worldX, worldY, worldZ)])
                         {
-                            sendBlockEntityUpdate(sWorld.Entities.GetBlockEntity<BlockEntity>(var13, var15, var16));
+                            sendBlockEntityUpdate(sWorld.Entities.GetBlockEntity<BlockEntity>(worldX, worldY, worldZ));
                         }
                     }
                 }
