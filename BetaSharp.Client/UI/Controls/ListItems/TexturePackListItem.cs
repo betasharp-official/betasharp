@@ -15,9 +15,11 @@ public class TexturePackListItem(TexturePack value) : ListItem<TexturePack>(valu
     {
         base.Render(renderer);
 
+        // draw thumnail
         Value.BindThumbnailTexture(renderer.TextureManager);
         renderer.DrawBoundTexture(4, 4, 24, 24);
 
+        // get file name and draw
         string? fileName = Value.TexturePackFileName;
         if (string.IsNullOrEmpty(fileName))
         {
@@ -26,6 +28,7 @@ public class TexturePackListItem(TexturePack value) : ListItem<TexturePack>(valu
 
         renderer.DrawText(fileName, 32, 3, Color.White);
 
+        // descriptions
         if (!string.IsNullOrEmpty(Value.FirstDescriptionLine))
         {
             renderer.DrawText(Value.FirstDescriptionLine, 32, 12, Color.GrayA0);

@@ -15,6 +15,7 @@ public class WorldListItem(WorldSaveInfo value) : ListItem<WorldSaveInfo>(value)
     {
         base.Render(renderer);
 
+        // get and draw display name
         string displayName = Value.DisplayName;
         if (string.IsNullOrEmpty(displayName))
         {
@@ -23,9 +24,9 @@ public class WorldListItem(WorldSaveInfo value) : ListItem<WorldSaveInfo>(value)
 
         renderer.DrawText(displayName, 5, 5, Color.White);
 
+        // secondary
         string dateFormatPattern = "MMM d, yyyy HH:mm";
         DateTime lastPlayed = DateTimeOffset.FromUnixTimeMilliseconds(Value.LastPlayed).ToLocalTime().DateTime;
-
         string secondary = $"{Value.FileName} ({lastPlayed.ToString(dateFormatPattern)}, {Value.Size / 1024L / 1024.0F:F2} MB)";
 
         if (Value.IsUnsupported)
