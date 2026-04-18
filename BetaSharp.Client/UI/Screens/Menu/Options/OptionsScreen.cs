@@ -52,9 +52,10 @@ public class OptionsScreen(
         }
 
         AddSubButton(translations.TranslateKey("options.video"), () => Context.Navigator.Navigate(new VideoSettingsScreen(Context, this)));
-        AddSubButton("UI Settings", () => Context.Navigator.Navigate(new UISettingsScreen(Context, this)));
-        AddSubButton("Audio Settings", () => Context.Navigator.Navigate(new AudioSettingsScreen(Context, this)));
+        AddSubButton(translations.TranslateKey("options.uiSettings"), () => Context.Navigator.Navigate(new UISettingsScreen(Context, this)));
+        AddSubButton(translations.TranslateKey("options.audioSettings"), () => Context.Navigator.Navigate(new AudioSettingsScreen(Context, this)));
         AddSubButton(translations.TranslateKey("options.controls"), () => Context.Navigator.Navigate(new AllControlsScreen(Context, this)));
+        AddSubButton(translations.TranslateKey("options.language"), () => Context.Navigator.Navigate(new LanguageSelection(Context, this)));
 
         return list;
     }

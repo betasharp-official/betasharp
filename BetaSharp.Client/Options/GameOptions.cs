@@ -1,3 +1,4 @@
+using System.Reflection;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI;
 using Microsoft.Extensions.Logging;
@@ -9,6 +10,7 @@ namespace BetaSharp.Client.Options;
 
 public class GameOptions
 {
+
     private readonly ILogger<GameOptions> _logger = Log.Instance.For<GameOptions>();
 
     private static readonly string[] DifficultyLabels =
@@ -25,6 +27,12 @@ public class GameOptions
         "options.guiScale.small",
         "options.guiScale.normal",
         "options.guiScale.large",
+    ];
+
+    private static readonly string[] LanguageLabels =
+    [
+        "English (US)",
+        "Polski (PL)",
     ];
 
     private static readonly string[] AnisoLabels = ["options.off", "2x", "4x", "8x", "16x"];
@@ -60,6 +68,7 @@ public class GameOptions
     public CycleOption MsaaOption { get; private set; }
     public BoolOption ShowWTHITOption { get; private set; }
     public BoolOption ShowCoordinatesOption { get; private set; }
+    public CycleOption LanguageOption { get; private set; }
 
 
     public GameOption[] MainScreenOptions => [DifficultyOption, FovOption];
@@ -74,6 +83,8 @@ public class GameOptions
     ];
 
     public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption];
+
+    public GameOption[] LanguageOptions => [LanguageOption];
 
     public float MusicVolume
     {
@@ -104,6 +115,7 @@ public class GameOptions
     public bool VSync => VSyncOption.Value;
     public int Difficulty => DifficultyOption.Value;
     public int GuiScale => GuiScaleOption.Value;
+    public int Language => LanguageOption.Value;
     public int AnisotropicLevel => AnisotropicOption.Value;
     public int MSAALevel => MsaaOption.Value;
     public int INITIAL_MSAA;
@@ -323,6 +335,8 @@ public class GameOptions
             }
         };
 
+        LanguageOption = new CycleOption("options.language", "language", LanguageLabels);
+
         _allOptions = [];
         foreach (GameOption option in GetAllOptions())
         {
@@ -355,6 +369,7 @@ public class GameOptions
         yield return MsaaOption;
         yield return ShowWTHITOption;
         yield return ShowCoordinatesOption;
+        yield return LanguageOption;
     }
 
 
@@ -400,6 +415,18 @@ public class GameOptions
         catch (Exception)
         {
             _logger.LogError("Failed to load options");
+        }
+
+        switch(Language)
+        {
+            case 0:
+                TranslationStorage.Instance.LoadLanguageFile("lang/en_US.lang");
+                TranslationStorage.Instance.LoadLanguageFile("lang/en_US-stats.lang");
+                break;
+            case 1:
+                TranslationStorage.Instance.LoadLanguageFile("lang/pl_PL.lang");
+                TranslationStorage.Instance.LoadLanguageFile("lang/pl_PL-stats.lang");
+                break;
         }
     }
 
