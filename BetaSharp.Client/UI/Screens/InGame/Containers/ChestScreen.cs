@@ -37,10 +37,7 @@ public class ChestScreen : ContainerScreen
         var topBg = new Image
         {
             Texture = Renderer.TextureManager.GetTextureId("/gui/container.png"),
-            U = 0,
-            V = 0,
-            UWidth = 176,
-            VHeight = topHeight
+            UV = new(0, 0, 176, topHeight)
         };
         topBg.Style.Width = _xSize;
         topBg.Style.Height = topHeight;
@@ -50,10 +47,7 @@ public class ChestScreen : ContainerScreen
         var bottomBg = new Image
         {
             Texture = Renderer.TextureManager.GetTextureId("/gui/container.png"),
-            U = 0,
-            V = 126,
-            UWidth = 176,
-            VHeight = 96
+            UV = new(0, 0, 176, 96)
         };
         bottomBg.Style.Width = _xSize;
         bottomBg.Style.Height = 96;
