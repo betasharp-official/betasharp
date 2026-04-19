@@ -1,6 +1,6 @@
 using BetaSharp.Blocks;
 
-namespace BetaSharp.Tests.Blocks;
+namespace BetaSharp.Tests.TestSupport;
 
 public record InstantUpdate(int X, int Y, int Z, int BlockId);
 
