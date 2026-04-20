@@ -228,7 +228,7 @@ public abstract class EntityPlayer : EntityLiving
 
     public override void UpdateCloak()
     {
-        playerCloakUrl = "http://s3.amazonaws.com/MinecraftCloaks/" + name + ".png";
+        playerCloakUrl = string.IsNullOrWhiteSpace(name) ? string.Empty : $"{name}#cape";
         CloakUrl = playerCloakUrl;
     }
 
@@ -282,7 +282,7 @@ public abstract class EntityPlayer : EntityLiving
         prevStepBobbingAmount = stepBobbingAmount;
         base.tickMovement();
         float horizontalSpeed = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
-        float tiltTarget = (float)System.Math.Atan(-VelocityY * (double)0.2F) * 15.0F;
+        float tiltTarget = (float)Math.Atan(-VelocityY * (double)0.2F) * 15.0F;
         if (horizontalSpeed > 0.1F)
         {
             horizontalSpeed = 0.1F;
@@ -327,8 +327,8 @@ public abstract class EntityPlayer : EntityLiving
         inventory.DropInventory();
         if (entity != null)
         {
-            VelocityX = (double)(-MathHelper.Cos((AttackedAtYaw + Yaw) * (float)System.Math.PI / 180.0F) * 0.1F);
-            VelocityZ = (double)(-MathHelper.Sin((AttackedAtYaw + Yaw) * (float)System.Math.PI / 180.0F) * 0.1F);
+            VelocityX = (double)(-MathHelper.Cos((AttackedAtYaw + Yaw) * (float)Math.PI / 180.0F) * 0.1F);
+            VelocityZ = (double)(-MathHelper.Sin((AttackedAtYaw + Yaw) * (float)Math.PI / 180.0F) * 0.1F);
         }
         else
         {
@@ -376,7 +376,7 @@ public abstract class EntityPlayer : EntityLiving
         if (throwRandomly)
         {
             randomSpeed = Random.NextFloat() * 0.5F;
-            float randomAngle = Random.NextFloat() * (float)System.Math.PI * 2.0F;
+            float randomAngle = Random.NextFloat() * (float)Math.PI * 2.0F;
             itemEntity.VelocityX = (double)(-MathHelper.Sin(randomAngle) * randomSpeed);
             itemEntity.VelocityZ = (double)(MathHelper.Cos(randomAngle) * randomSpeed);
             itemEntity.VelocityY = (double)0.2F;
@@ -384,11 +384,11 @@ public abstract class EntityPlayer : EntityLiving
         else
         {
             baseSpeed = 0.3F;
-            itemEntity.VelocityX = (double)(-MathHelper.Sin(Yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)System.Math.PI) * baseSpeed);
-            itemEntity.VelocityZ = (double)(MathHelper.Cos(Yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)System.Math.PI) * baseSpeed);
-            itemEntity.VelocityY = (double)(-MathHelper.Sin(Pitch / 180.0F * (float)System.Math.PI) * baseSpeed + 0.1F);
+            itemEntity.VelocityX = (double)(-MathHelper.Sin(Yaw / 180.0F * (float)Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)Math.PI) * baseSpeed);
+            itemEntity.VelocityZ = (double)(MathHelper.Cos(Yaw / 180.0F * (float)Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)Math.PI) * baseSpeed);
+            itemEntity.VelocityY = (double)(-MathHelper.Sin(Pitch / 180.0F * (float)Math.PI) * baseSpeed + 0.1F);
             baseSpeed = 0.02F;
-            randomSpeed = Random.NextFloat() * (float)System.Math.PI * 2.0F;
+            randomSpeed = Random.NextFloat() * (float)Math.PI * 2.0F;
             baseSpeed *= Random.NextFloat();
             itemEntity.VelocityX += Math.Cos((double)randomSpeed) * (double)baseSpeed;
             itemEntity.VelocityY += (double)((Random.NextFloat() - Random.NextFloat()) * 0.1F);
