@@ -11,9 +11,6 @@ namespace BetaSharp.Tests.E2E;
 
 internal sealed class HeadlessE2ETestSession : IDisposable
 {
-    private static readonly Lock s_runtimeLock = new();
-    private static bool s_runtimeInitialized;
-
     private readonly List<InternalConnection> _clientConnections = [];
     private bool _disposed;
 
@@ -35,7 +32,7 @@ internal sealed class HeadlessE2ETestSession : IDisposable
 
     public HeadlessE2ETestSession(string? testName = null)
     {
-        EnsureRuntimeInitialized();
+        E2ETestRuntimeBootstrap.EnsureInitialized();
 
         string sessionName = string.IsNullOrWhiteSpace(testName) ? "e2e" : testName;
         RootPath = Path.Combine(Path.GetTempPath(), $"BetaSharp-E2E-{sessionName}-{Guid.NewGuid():N}");
@@ -129,26 +126,6 @@ internal sealed class HeadlessE2ETestSession : IDisposable
         catch
         {
             // Cleanup best effort only.
-        }
-    }
-
-    private static void EnsureRuntimeInitialized()
-    {
-        lock (s_runtimeLock)
-        {
-            if (s_runtimeInitialized)
-            {
-                return;
-            }
-
-            string logRoot = Path.Combine(Path.GetTempPath(), "BetaSharp-E2E-Logs");
-            Directory.CreateDirectory(logRoot);
-
-            Log.Instance.Initialize(logRoot);
-            AssetManager.Initialize(AssetManager.AssetProfile.Headless);
-            Bootstrap.Initialize();
-
-            s_runtimeInitialized = true;
         }
     }
 }
