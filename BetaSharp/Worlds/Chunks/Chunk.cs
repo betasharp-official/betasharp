@@ -297,7 +297,7 @@ public class Chunk
 
         if (notifyBlockPlaced && oldId != 0 && !World.IsRemote)
         {
-            Block.Blocks[oldId].onBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
+            Block.Blocks[oldId].OnBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
         }
 
         Meta.SetNibble(localX, y, localZ, meta);
@@ -322,7 +322,7 @@ public class Chunk
 
         if (notifyBlockPlaced && rawId != 0 && !World.IsRemote)
         {
-            Block.Blocks[rawId].onPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
+            Block.Blocks[rawId].OnPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
         }
 
         Dirty = true;
@@ -344,7 +344,7 @@ public class Chunk
 
         if (oldId != 0)
         {
-            Block.Blocks[oldId].onBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
+            Block.Blocks[oldId].OnBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
         }
 
         Meta.SetNibble(localX, y, localZ, 0);
@@ -364,7 +364,7 @@ public class Chunk
 
         if (notifyBlockPlaced && rawId != 0 && !World.IsRemote)
         {
-            Block.Blocks[rawId].onPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
+            Block.Blocks[rawId].OnPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
         }
 
         Dirty = true;
@@ -446,7 +446,7 @@ public class Chunk
 
         if (BlockEntities.TryGetValue(pos, out BlockEntity? entity))
         {
-            if (entity != null && !entity.isRemoved())
+            if (entity != null && !entity.IsRemoved())
             {
                 return entity;
             }
@@ -485,7 +485,7 @@ public class Chunk
         int id = GetBlockId(localX, y, localZ);
         if (id != 0 && Block.Blocks[id] is BlockWithEntity)
         {
-            blockEntity.cancelRemoval();
+            blockEntity.CancelRemoval();
             BlockEntities[pos] = blockEntity;
         }
         else
@@ -499,7 +499,7 @@ public class Chunk
         BlockPos pos = new(localX, y, localZ);
         if (Loaded && BlockEntities.Remove(pos, out BlockEntity? entity))
         {
-            entity.markRemoved();
+            entity.MarkRemoved();
         }
     }
 
@@ -520,7 +520,7 @@ public class Chunk
 
         foreach (BlockEntity blockEntity in BlockEntities.Values)
         {
-            blockEntity.markRemoved();
+            blockEntity.MarkRemoved();
         }
 
         for (int sectionIndex = 0; sectionIndex < Entities.Length; ++sectionIndex)

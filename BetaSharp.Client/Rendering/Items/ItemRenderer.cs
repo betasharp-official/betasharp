@@ -50,13 +50,13 @@ public class ItemRenderer : EntityRenderer
         float var16;
         float var17;
         float var18;
-        if (var10.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[var10.ItemId].getRenderType()))
+        if (var10.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[var10.ItemId].GetRenderType()))
         {
             GLManager.GL.Rotate(var12, 0.0F, 1.0F, 0.0F);
             loadTexture("/terrain.png");
             float var28 = 0.25F;
-            if (!Block.Blocks[var10.ItemId].isFullCube() && var10.ItemId != Block.Slab.id
-                && Block.Blocks[var10.ItemId].getRenderType() != BlockRendererType.PistonBase)
+            if (!Block.Blocks[var10.ItemId].IsFullCube() && var10.ItemId != Block.Slab.ID
+                && Block.Blocks[var10.ItemId].GetRenderType() != BlockRendererType.PistonBase)
             {
                 var28 = 0.5F;
             }
@@ -143,7 +143,7 @@ public class ItemRenderer : EntityRenderer
     public void drawItemIntoGui(TextRenderer var1, TextureManager var2, int var3, int var4, int var5, int var6, int var7)
     {
         float var11;
-        if (var3 < 256 && BlockRenderer.IsSideLit(Block.Blocks[var3].getRenderType()))
+        if (var3 < 256 && BlockRenderer.IsSideLit(Block.Blocks[var3].GetRenderType()))
         {
             var2.BindTexture(var2.GetTextureId("/terrain.png"));
             Block var14 = Block.Blocks[var3];

@@ -12,26 +12,32 @@ internal class BlockReed : Block
     public BlockReed(int id, int textureId) : base(id, Material.Plant)
     {
         TextureId = textureId;
-        setBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, 1.0F, 0.5F + HalfWidth);
-        setTickRandomly(true);
+        SetBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, 1.0F, 0.5F + HalfWidth);
+        SetTickRandomly(true);
     }
 
-    public override void onTick(OnTickEvent @event)
+    public override void OnTick(OnTickEvent @event)
     {
-        if (!@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z)) return;
+        if (!@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z))
+        {
+            return;
+        }
 
         int heightBelow = 1;
-        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == id)
+        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == ID)
         {
             heightBelow++;
         }
 
-        if (heightBelow >= 3) return;
+        if (heightBelow >= 3)
+        {
+            return;
+        }
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (meta == 15)
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, ID);
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 0);
         }
         else
@@ -40,36 +46,39 @@ internal class BlockReed : Block
         }
     }
 
-    public override bool canPlaceAt(CanPlaceAtContext evt)
+    public override bool CanPlaceAt(CanPlaceAtContext evt)
     {
         int blockBelowId = evt.World.Reader.GetBlockId(evt.X, evt.Y - 1, evt.Z);
-        return blockBelowId == id ||
-               (blockBelowId == GrassBlock.id ||
-                blockBelowId == Dirt.id) && (evt.World.Reader.GetMaterial(evt.X - 1, evt.Y - 1, evt.Z) == Material.Water ||
-                                             evt.World.Reader.GetMaterial(evt.X + 1, evt.Y - 1, evt.Z) == Material.Water ||
-                                             evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z - 1) == Material.Water ||
-                                             evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z + 1) == Material.Water);
+        return blockBelowId == ID ||
+               ((blockBelowId == GrassBlock.ID ||
+                 blockBelowId == Dirt.ID) && (evt.World.Reader.GetMaterial(evt.X - 1, evt.Y - 1, evt.Z) == Material.Water ||
+                                              evt.World.Reader.GetMaterial(evt.X + 1, evt.Y - 1, evt.Z) == Material.Water ||
+                                              evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z - 1) == Material.Water ||
+                                              evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z + 1) == Material.Water));
     }
 
-    public override void neighborUpdate(OnTickEvent @event) => breakIfCannotGrow(@event);
+    public override void NeighborUpdate(OnTickEvent @event) => BreakIfCannotGrow(@event);
 
-    protected void breakIfCannotGrow(OnTickEvent @event)
+    protected void BreakIfCannotGrow(OnTickEvent @event)
     {
-        if (canGrow(@event)) return;
+        if (CanGrow(@event))
+        {
+            return;
+        }
 
-        dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 
-    public override bool canGrow(OnTickEvent @event) => canPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z));
+    public override bool CanGrow(OnTickEvent @event) => CanPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z));
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
+    public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override int getDroppedItemId(int blockMeta) => Item.SugarCane.id;
+    public override int GetDroppedItemId(int blockMeta) => Item.SugarCane.id;
 
-    public override bool isOpaque() => false;
+    public override bool IsOpaque() => false;
 
-    public override bool isFullCube() => false;
+    public override bool IsFullCube() => false;
 
-    public override BlockRendererType getRenderType() => BlockRendererType.Reed;
+    public override BlockRendererType GetRenderType() => BlockRendererType.Reed;
 }

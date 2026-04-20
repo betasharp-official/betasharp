@@ -103,16 +103,16 @@ internal class LakeFeature : Feature
                 for (int dz = 4; dz < 8; ++dz)
                 {
                     if (lakeMask[(dx * 16 + dy) * 8 + dz] &&
-                        level.Reader.GetBlockId(x + dx, y + dz - 1, z + dy) == Block.Dirt.id &&
+                        level.Reader.GetBlockId(x + dx, y + dz - 1, z + dy) == Block.Dirt.ID &&
                         level.Lighting.GetBrightness(LightType.Sky, x + dx, y + dz, z + dy) > 0)
                     {
-                        level.Writer.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz - 1, z + dy, Block.GrassBlock.id, 0, false);
+                        level.Writer.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz - 1, z + dy, Block.GrassBlock.ID, 0, false);
                     }
                 }
             }
         }
 
-        if (Block.Blocks[_waterBlockId].material == Material.Lava)
+        if (Block.Blocks[_waterBlockId].Material == Material.Lava)
         {
             for (int dx = 0; dx < 16; ++dx)
             {
@@ -131,7 +131,7 @@ internal class LakeFeature : Feature
                                       );
                         if (isEdge && (dz < 4 || rand.NextInt(2) != 0) && level.Reader.GetMaterial(x + dx, y + dz, z + dy).IsSolid)
                         {
-                            level.Writer.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, Block.Stone.id, 0, false);
+                            level.Writer.SetBlockWithoutNotifyingNeighbors(x + dx, y + dz, z + dy, Block.Stone.ID, 0, false);
                         }
                     }
                 }

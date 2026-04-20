@@ -15,37 +15,37 @@ public sealed class BlockRedstoneRepeaterTests
     public void NeighborUpdate_UnlitRepeater_WhenPowered_SchedulesTickUsingDelaySetting()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 63, 0, Block.Stone.id);
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.Repeater.id, 4); // facing=0, delay index=1 => 4 ticks
-        world.ReaderWriter.SetInitial(0, 64, 1, Block.RedstoneWire.id, 15); // power input for facing=0
+        world.ReaderWriter.SetInitial(0, 63, 0, Block.Stone.ID);
+        world.ReaderWriter.SetInitial(0, 64, 0, Block.Repeater.ID, 4); // facing=0, delay index=1 => 4 ticks
+        world.ReaderWriter.SetInitial(0, 64, 1, Block.RedstoneWire.ID, 15); // power input for facing=0
 
-        Block.Repeater.neighborUpdate(RepeaterEvent(world));
+        Block.Repeater.NeighborUpdate(RepeaterEvent(world));
 
         Assert.Contains(world.TickSchedulerSpy.ScheduledTicks, t =>
-            t is { X: 0, Y: 64, Z: 0 } && t.BlockId == Block.Repeater.id && t.TickRate == 4);
+            t is { X: 0, Y: 64, Z: 0 } && t.BlockId == Block.Repeater.ID && t.TickRate == 4);
     }
 
     [Fact]
     public void NeighborUpdate_LitRepeater_WhenUnpowered_SchedulesTickUsingDelaySetting()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 63, 0, Block.Stone.id);
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.PoweredRepeater.id, 8); // facing=0, delay index=2 => 6 ticks
+        world.ReaderWriter.SetInitial(0, 63, 0, Block.Stone.ID);
+        world.ReaderWriter.SetInitial(0, 64, 0, Block.PoweredRepeater.ID, 8); // facing=0, delay index=2 => 6 ticks
 
-        Block.PoweredRepeater.neighborUpdate(RepeaterEvent(world));
+        Block.PoweredRepeater.NeighborUpdate(RepeaterEvent(world));
 
         Assert.Contains(world.TickSchedulerSpy.ScheduledTicks, t =>
-            t is { X: 0, Y: 64, Z: 0 } && t.BlockId == Block.PoweredRepeater.id && t.TickRate == 6);
+            t is { X: 0, Y: 64, Z: 0 } && t.BlockId == Block.PoweredRepeater.ID && t.TickRate == 6);
     }
 
     [Fact]
     public void NeighborUpdate_WithoutSupportingBlock_BreaksRepeaterIntoAir()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.Repeater.id);
+        world.ReaderWriter.SetInitial(0, 64, 0, Block.Repeater.ID);
         // No supporting block at (0,63,0) => ShouldSuffocate false.
 
-        Block.Repeater.neighborUpdate(RepeaterEvent(world));
+        Block.Repeater.NeighborUpdate(RepeaterEvent(world));
 
         Assert.Equal(0, world.Reader.GetBlockId(0, 64, 0));
         Assert.Contains(world.ReaderWriter.SetBlockCalls, c => c.X == 0 && c.Y == 64 && c.Z == 0 && c.BlockId == 0);
@@ -55,13 +55,13 @@ public sealed class BlockRedstoneRepeaterTests
     public void OnTick_UnlitRepeater_WhenPowered_TransitionsToPoweredRepeaterPreservingMeta()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 63, 0, Block.Stone.id);
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.Repeater.id, 1); // facing=1
-        world.ReaderWriter.SetInitial(-1, 64, 0, Block.RedstoneWire.id, 7); // power input for facing=1
+        world.ReaderWriter.SetInitial(0, 63, 0, Block.Stone.ID);
+        world.ReaderWriter.SetInitial(0, 64, 0, Block.Repeater.ID, 1); // facing=1
+        world.ReaderWriter.SetInitial(-1, 64, 0, Block.RedstoneWire.ID, 7); // power input for facing=1
 
-        Block.Repeater.onTick(RepeaterEvent(world));
+        Block.Repeater.OnTick(RepeaterEvent(world));
 
-        Assert.Equal(Block.PoweredRepeater.id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(Block.PoweredRepeater.ID, world.Reader.GetBlockId(0, 64, 0));
         Assert.Equal(1, world.Reader.GetBlockMeta(0, 64, 0));
     }
 
@@ -69,12 +69,12 @@ public sealed class BlockRedstoneRepeaterTests
     public void OnTick_LitRepeater_WhenUnpowered_TransitionsToUnlitRepeaterPreservingMeta()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 63, 0, Block.Stone.id);
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.PoweredRepeater.id, 3);
+        world.ReaderWriter.SetInitial(0, 63, 0, Block.Stone.ID);
+        world.ReaderWriter.SetInitial(0, 64, 0, Block.PoweredRepeater.ID, 3);
 
-        Block.PoweredRepeater.onTick(RepeaterEvent(world));
+        Block.PoweredRepeater.OnTick(RepeaterEvent(world));
 
-        Assert.Equal(Block.Repeater.id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(Block.Repeater.ID, world.Reader.GetBlockId(0, 64, 0));
         Assert.Equal(3, world.Reader.GetBlockMeta(0, 64, 0));
     }
 
@@ -82,13 +82,13 @@ public sealed class BlockRedstoneRepeaterTests
     public void OnTick_UnlitRepeater_WhenStillUnpowered_TurnsOnThenSchedulesPoweredTick()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 63, 0, Block.Stone.id);
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.Repeater.id, 12); // delay index=3 => 8 ticks
+        world.ReaderWriter.SetInitial(0, 63, 0, Block.Stone.ID);
+        world.ReaderWriter.SetInitial(0, 64, 0, Block.Repeater.ID, 12); // delay index=3 => 8 ticks
 
-        Block.Repeater.onTick(RepeaterEvent(world));
+        Block.Repeater.OnTick(RepeaterEvent(world));
 
-        Assert.Equal(Block.PoweredRepeater.id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(Block.PoweredRepeater.ID, world.Reader.GetBlockId(0, 64, 0));
         Assert.Contains(world.TickSchedulerSpy.ScheduledTicks, t =>
-            t is { X: 0, Y: 64, Z: 0 } && t.BlockId == Block.PoweredRepeater.id && t.TickRate == 8);
+            t is { X: 0, Y: 64, Z: 0 } && t.BlockId == Block.PoweredRepeater.ID && t.TickRate == 8);
     }
 }

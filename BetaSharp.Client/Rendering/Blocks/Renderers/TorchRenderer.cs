@@ -9,8 +9,8 @@ public class TorchRenderer : IBlockRenderer
     {
         int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
 
-        float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
-        if (Block.BlocksLightLuminance[block.id] > 0)
+        float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        if (Block.BlocksLightLuminance[block.ID] > 0)
         {
             luminance = 1.0F;
         }

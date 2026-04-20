@@ -13,22 +13,31 @@ internal class BlockCrops : BlockPlant
     public BlockCrops(int i, int j) : base(i, j)
     {
         TextureId = j;
-        setTickRandomly(true);
-        setBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, 0.25F, 0.5F + HalfWidth);
+        SetTickRandomly(true);
+        SetBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, 0.25F, 0.5F + HalfWidth);
     }
 
-    protected override bool canPlantOnTop(int id) => id == Farmland.id;
+    protected override bool CanPlantOnTop(int id) => id == Farmland.ID;
 
-    public override void onTick(OnTickEvent @event)
+    public override void OnTick(OnTickEvent @event)
     {
-        base.onTick(@event);
-        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y + 1, @event.Z) < 9) return;
+        base.OnTick(@event);
+        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y + 1, @event.Z) < 9)
+        {
+            return;
+        }
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        if (meta >= 7) return;
+        if (meta >= 7)
+        {
+            return;
+        }
 
         float moisture = getAvailableMoisture(@event.World.Reader, @event.X, @event.Y, @event.Z);
-        if (Random.Shared.Next(100) / moisture != 0) return;
+        if (Random.Shared.Next(100) / moisture != 0)
+        {
+            return;
+        }
 
         ++meta;
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
@@ -47,9 +56,9 @@ internal class BlockCrops : BlockPlant
         int blockNorthEast = read.GetBlockId(x + 1, y, z - 1);
         int blockSouthEast = read.GetBlockId(x + 1, y, z + 1);
         int blockSouthWest = read.GetBlockId(x - 1, y, z + 1);
-        bool cropsEastWest = blockWest == id || blockEast == id;
-        bool cropsNorthSouth = blockNorth == id || blockSouth == id;
-        bool cropsDiagonals = blockNorthWest == id || blockNorthEast == id || blockSouthEast == id || blockSouthWest == id;
+        bool cropsEastWest = blockWest == ID || blockEast == ID;
+        bool cropsNorthSouth = blockNorth == ID || blockSouth == ID;
+        bool cropsDiagonals = blockNorthWest == ID || blockNorthEast == ID || blockSouthEast == ID || blockSouthWest == ID;
 
         for (int dx = x - 1; dx <= x + 1; ++dx)
         {
@@ -57,7 +66,7 @@ internal class BlockCrops : BlockPlant
             {
                 int blockBelow = read.GetBlockId(dx, y - 1, dz);
                 float cellMoisture = 0.0F;
-                if (blockBelow == Farmland.id)
+                if (blockBelow == Farmland.ID)
                 {
                     cellMoisture = 1.0F;
                     if (read.GetBlockMeta(dx, y - 1, dz) > 0)
@@ -93,16 +102,22 @@ internal class BlockCrops : BlockPlant
         return TextureId + meta;
     }
 
-    public override BlockRendererType getRenderType() => BlockRendererType.Crops;
+    public override BlockRendererType GetRenderType() => BlockRendererType.Crops;
 
-    public override void dropStacks(OnDropEvent @event)
+    public override void DropStacks(OnDropEvent @event)
     {
-        base.dropStacks(@event);
-        if (@event.World.IsRemote || !@event.World.Rules.GetBool(DefaultRules.DoTileDrops)) return;
+        base.DropStacks(@event);
+        if (@event.World.IsRemote || !@event.World.Rules.GetBool(DefaultRules.DoTileDrops))
+        {
+            return;
+        }
 
         for (int attempt = 0; attempt < 3; ++attempt)
         {
-            if (Random.Shared.Next(15) > @event.Meta) continue;
+            if (Random.Shared.Next(15) > @event.Meta)
+            {
+                continue;
+            }
 
             float offsetX = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5F;
             float offsetY = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5F;
@@ -115,7 +130,7 @@ internal class BlockCrops : BlockPlant
         }
     }
 
-    public override int getDroppedItemId(int blockMeta) => blockMeta == 7 ? Item.Wheat.id : -1;
+    public override int GetDroppedItemId(int blockMeta) => blockMeta == 7 ? Item.Wheat.id : -1;
 
-    public override int getDroppedItemCount() => 1;
+    public override int GetDroppedItemCount() => 1;
 }

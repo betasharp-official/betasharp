@@ -10,9 +10,9 @@ public sealed class BlockTrapDoorTests
     public void NeighborUpdate_WhenAttachedBlockMissing_BreaksTrapDoor()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.Trapdoor.id); // hinge expects block at z+1
+        world.ReaderWriter.SetInitial(0, 64, 0, Block.Trapdoor.ID); // hinge expects block at z+1
 
-        Block.Trapdoor.neighborUpdate(Tick(world));
+        Block.Trapdoor.NeighborUpdate(Tick(world));
 
         Assert.Equal(0, world.Reader.GetBlockId(0, 64, 0));
     }

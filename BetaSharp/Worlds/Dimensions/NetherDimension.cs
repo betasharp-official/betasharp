@@ -44,7 +44,7 @@ internal class NetherDimension : Dimension
     public override bool IsValidSpawnPoint(int x, int z)
     {
         int blockId = World.GetSpawnBlockId(x, z);
-        return blockId != Block.Bedrock.id && blockId != 0 && Block.BlocksOpaque[blockId];
+        return blockId != Block.Bedrock.ID && blockId != 0 && Block.BlocksOpaque[blockId];
     }
 
     public override float GetTimeOfDay(long time, float tickDelta) => 0.5F;

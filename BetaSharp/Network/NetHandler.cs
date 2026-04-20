@@ -201,7 +201,7 @@ public abstract class NetHandler
         handle(packet);
     }
 
-    public virtual void handleUpdateSign(UpdateSignPacket packet)
+    public virtual void HandleUpdateSign(UpdateSignPacket packet)
     {
         handle(packet);
     }

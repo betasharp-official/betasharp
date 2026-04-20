@@ -18,7 +18,7 @@ internal class ItemHoe : Item
     {
         int targetBlockId = world.Reader.GetBlockId(x, y, z);
         int blockAbove = world.Reader.GetBlockId(x, y + 1, z);
-        if ((meta == 0 || blockAbove != 0 || targetBlockId != Block.GrassBlock.id) && targetBlockId != Block.Dirt.id)
+        if ((meta == 0 || blockAbove != 0 || targetBlockId != Block.GrassBlock.ID) && targetBlockId != Block.Dirt.ID)
         {
             return false;
         }
@@ -32,7 +32,7 @@ internal class ItemHoe : Item
             }
             else
             {
-                world.Writer.SetBlock(x, y, z, block.id);
+                world.Writer.SetBlock(x, y, z, block.ID);
                 itemStack.DamageItem(1, entityPlayer);
                 return true;
             }

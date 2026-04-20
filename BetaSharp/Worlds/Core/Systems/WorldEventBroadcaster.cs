@@ -83,7 +83,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
 
         int meta = reader.GetBlockMeta(x, y, z);
         OnTickEvent tickEvent = new(worldContext, x, y, z, meta, blockId);
-        block.neighborUpdate(tickEvent);
+        block.NeighborUpdate(tickEvent);
     }
 
     public void AddWorldAccess(IWorldEventListener worldAccess) => eventListeners.Add(worldAccess);
@@ -105,7 +105,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
         int blockId = reader.GetBlockId(x, y, z);
         if (blockId > 0)
         {
-            Block.Blocks[blockId].onBlockAction(new OnBlockActionEvent(worldContext, soundType, pitch, x, y, z));
+            Block.Blocks[blockId].OnBlockAction(new OnBlockActionEvent(worldContext, soundType, pitch, x, y, z));
         }
 
         for (int i = 0; i < eventListeners.Count; ++i)

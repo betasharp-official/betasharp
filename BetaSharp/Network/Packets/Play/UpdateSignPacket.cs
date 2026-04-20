@@ -49,7 +49,7 @@ public class UpdateSignPacket() : Packet(PacketId.UpdateSign)
 
     public override void Apply(NetHandler networkHandler)
     {
-        networkHandler.handleUpdateSign(this);
+        networkHandler.HandleUpdateSign(this);
     }
 
     public override int Size()

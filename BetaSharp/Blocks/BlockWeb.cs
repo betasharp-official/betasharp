@@ -11,15 +11,15 @@ internal class BlockWeb : Block
     {
     }
 
-    public override void onEntityCollision(OnEntityCollisionEvent ctx) => ctx.Entity.Slowed = true;
+    public override void OnEntityCollision(OnEntityCollisionEvent ctx) => ctx.Entity.Slowed = true;
 
-    public override bool isOpaque() => false;
+    public override bool IsOpaque() => false;
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
+    public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override BlockRendererType getRenderType() => BlockRendererType.Reed;
+    public override BlockRendererType GetRenderType() => BlockRendererType.Reed;
 
-    public override bool isFullCube() => false;
+    public override bool IsFullCube() => false;
 
-    public override int getDroppedItemId(int blockMeta) => Item.String.id;
+    public override int GetDroppedItemId(int blockMeta) => Item.String.id;
 }

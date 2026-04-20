@@ -6,37 +6,25 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Blocks.Entities;
 
+/// <summary>
+///     Block entity for mob spawners, allowing them to spawn mobs and store the mob type and spawn delay.
+/// </summary>
 public class BlockEntityMobSpawner : BlockEntity
 {
-    public override BlockEntityType Type => BlockEntity.MobSpawner;
-    public int SpawnDelay { get; set; } = -1;
-    private string _spawnedEntityId = "Pig";
-    public double Rotation { get; set; }
-    public double LastRotation { get; set; } = 0.0D;
-
     private readonly ILogger<BlockEntityMobSpawner> _logger = Log.Instance.For<BlockEntityMobSpawner>();
 
-    public BlockEntityMobSpawner()
-    {
-        SpawnDelay = 20;
-    }
+    public BlockEntityMobSpawner() => SpawnDelay = 20;
+    public override BlockEntityType Type => MobSpawner;
 
-    public string GetSpawnedEntityId()
-    {
-        return _spawnedEntityId;
-    }
+    public int SpawnDelay { get; set; } = -1;
+    public string SpawnedEntityId { get; set; } = "Pig";
 
-    public void SetSpawnedEntityId(string spawnedEntityId)
-    {
-        _spawnedEntityId = spawnedEntityId;
-    }
+    public double Rotation { get; set; }
+    public double LastRotation { get; set; }
 
-    public bool IsPlayerInRange()
-    {
-        return World.Entities.GetClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
-    }
+    public bool IsPlayerInRange() => World.Entities.GetClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
 
-    public override void tick(EntityManager entities)
+    public override void Tick(EntityManager entities)
     {
         LastRotation = Rotation;
         if (IsPlayerInRange())
@@ -69,7 +57,7 @@ public class BlockEntityMobSpawner : BlockEntity
 
                 for (int spawnAttempt = 0; spawnAttempt < max; ++spawnAttempt)
                 {
-                    EntityLiving? entityLiving = (EntityLiving?)EntityRegistry.Create(_spawnedEntityId, World);
+                    EntityLiving? entityLiving = (EntityLiving?)EntityRegistry.Create(SpawnedEntityId, World);
                     if (entityLiving == null)
                     {
                         return;
@@ -77,7 +65,7 @@ public class BlockEntityMobSpawner : BlockEntity
 
                     int count = World.Entities
                         .CollectEntitiesOfType<EntityLiving>(new Box(X, Y, Z, X + 1, Y + 1, Z + 1)
-                        .Expand(8.0D, 4.0D, 8.0D))
+                            .Expand(8.0D, 4.0D, 8.0D))
                         .Count(e => e.GetType() == entityLiving.GetType());
                     if (count >= 6)
                     {
@@ -111,7 +99,7 @@ public class BlockEntityMobSpawner : BlockEntity
                 }
             }
 
-            base.tick(entities);
+            base.Tick(entities);
         }
     }
 
@@ -121,17 +109,17 @@ public class BlockEntityMobSpawner : BlockEntity
         _logger.LogInformation("Spawn Delay: " + SpawnDelay);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
-        _spawnedEntityId = nbt.GetString("EntityId");
+        base.ReadNbt(nbt);
+        SpawnedEntityId = nbt.GetString("EntityId");
         SpawnDelay = nbt.GetShort("Delay");
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
-        nbt.SetString("EntityId", _spawnedEntityId);
+        base.WriteNbt(nbt);
+        nbt.SetString("EntityId", SpawnedEntityId);
         nbt.SetShort("Delay", (short)SpawnDelay);
     }
 }

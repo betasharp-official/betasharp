@@ -7,45 +7,60 @@ internal class BlockNote(int id) : BlockWithEntity(id, BlockTextures.NoteBlock, 
 {
     public override int GetTexture(Side side) => BlockTextures.NoteBlock;
 
-    public override void neighborUpdate(OnTickEvent @event)
+    public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (!(@event.BlockId > 0 && Blocks[@event.BlockId].canEmitRedstonePower())) return;
+        if (!(@event.BlockId > 0 && Blocks[@event.BlockId].CanEmitRedstonePower()))
+        {
+            return;
+        }
 
         bool isPowered = @event.World.Redstone.IsStrongPowered(@event.X, @event.Y, @event.Z);
         BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
-        if (blockEntity == null || blockEntity.powered == isPowered) return;
+        if (blockEntity == null || blockEntity.Powered == isPowered)
+        {
+            return;
+        }
 
         if (isPowered)
         {
-            blockEntity.playNote(@event.World, @event.X, @event.Y, @event.Z);
+            blockEntity.PlayNote(@event.World, @event.X, @event.Y, @event.Z);
         }
 
-        blockEntity.powered = isPowered;
+        blockEntity.Powered = isPowered;
     }
 
-    public override bool onUse(OnUseEvent @event)
+    public override bool OnUse(OnUseEvent @event)
     {
-        if (@event.World.IsRemote) return true;
+        if (@event.World.IsRemote)
+        {
+            return true;
+        }
 
         BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
-        if (blockEntity == null) return false;
+        if (blockEntity == null)
+        {
+            return false;
+        }
 
-        blockEntity.cycleNote();
-        blockEntity.playNote(@event.World, @event.X, @event.Y, @event.Z);
+        blockEntity.CycleNote();
+        blockEntity.PlayNote(@event.World, @event.X, @event.Y, @event.Z);
         return true;
     }
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvent @event)
+    public override void OnBlockBreakStart(OnBlockBreakStartEvent @event)
     {
-        if (@event.World.IsRemote) return;
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
 
         BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
-        blockEntity?.playNote(@event.World, @event.X, @event.Y, @event.Z);
+        blockEntity?.PlayNote(@event.World, @event.X, @event.Y, @event.Z);
     }
 
-    public override BlockEntity getBlockEntity() => new BlockEntityNote();
+    public override BlockEntity GetBlockEntity() => new BlockEntityNote();
 
-    public override void onBlockAction(OnBlockActionEvent @event)
+    public override void OnBlockAction(OnBlockActionEvent @event)
     {
         float pitch = (float)Math.Pow(2.0D, (@event.Data2 - 12) / 12.0D);
         string instrumentName = @event.Data1 switch

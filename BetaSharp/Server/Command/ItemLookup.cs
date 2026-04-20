@@ -55,7 +55,7 @@ internal static class ItemLookup
         {
             if (field.GetValue(null) is Block block)
             {
-                s_itemNameToId.TryAdd(field.Name.ToLower(), block.id);
+                s_itemNameToId.TryAdd(field.Name.ToLower(), block.ID);
             }
         }
 

@@ -12,12 +12,12 @@ internal class ItemReed : Item
 
     public ItemReed(int id, Block block) : base(id)
     {
-        field_320_a = block.id;
+        field_320_a = block.ID;
     }
 
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (world.Reader.GetBlockId(x, y, z) == Block.Snow.id)
+        if (world.Reader.GetBlockId(x, y, z) == Block.Snow.ID)
         {
             meta = 0;
         }
@@ -60,12 +60,12 @@ internal class ItemReed : Item
         }
         else
         {
-            if (Block.Blocks[field_320_a].canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
+            if (Block.Blocks[field_320_a].CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
             {
                 Block block = Block.Blocks[field_320_a];
                 if (world.Writer.SetBlock(x, y, z, field_320_a))
                 {
-                    Block.Blocks[field_320_a].onPlaced(new OnPlacedEvent(world, entityPlayer, meta.ToSide(), meta.ToSide(), x, y, z));
+                    Block.Blocks[field_320_a].OnPlaced(new OnPlacedEvent(world, entityPlayer, meta.ToSide(), meta.ToSide(), x, y, z));
                     world.Broadcaster.PlaySoundAtEntity(entityPlayer, block.SoundGroup.StepSound, (block.SoundGroup.Volume + 1.0F) / 2.0F, block.SoundGroup.Pitch * 0.8F);
                     itemStack.ConsumeItem(entityPlayer);
                 }

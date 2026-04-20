@@ -31,9 +31,9 @@ public class BlockRenderer
 
     public static bool RenderBlockByRenderType(IBlockReader world, ILightProvider lighting, Block block, BlockPos pos, Tessellator tess, int overrideTexture = -1, bool renderAllFaces = false, bool doVariance = false)
     {
-        BlockRendererType type = block.getRenderType();
+        BlockRendererType type = block.GetRenderType();
 
-        block.updateBoundingBox(world, pos.x, pos.y, pos.z);
+        block.UpdateBoundingBox(world, pos.x, pos.y, pos.z);
 
         TextureVariance topRule = doVariance ? block.TopVariance : TextureVariance.None;
         TextureVariance botRule = doVariance ? block.BottomVariance : TextureVariance.None;
@@ -100,7 +100,7 @@ public class BlockRenderer
 
     public static void RenderBlockOnInventory(Block block, int metadata, float brightness, Tessellator tess)
     {
-        BlockRendererType renderType = block.getRenderType();
+        BlockRendererType renderType = block.GetRenderType();
         var uiCtx = new BlockRenderContext(
             blockReader: NullBlockReader.Instance,
             tess: tess,
@@ -119,7 +119,7 @@ public class BlockRenderer
 
             void SetFaceColor(int face)
             {
-                int c = block.getColorForFace(metadata, face);
+                int c = block.GetColorForFace(metadata, face);
                 GLManager.GL.Color4(
                     (c >> 16 & 255) / 255.0F * brightness,
                     (c >> 8 & 255) / 255.0F * brightness,
@@ -127,7 +127,7 @@ public class BlockRenderer
                     1.0F);
             }
 
-            block.setupRenderBoundingBox();
+            block.SetupRenderBoundingBox();
             GLManager.GL.Translate(-0.5F, -0.5F, -0.5F);
 
             tess.startDrawingQuads();
@@ -175,14 +175,14 @@ public class BlockRenderer
         }
         else
         {
-            int color = block.getColor(metadata);
+            int color = block.GetColor(metadata);
             GLManager.GL.Color4(
                 (color >> 16 & 255) / 255.0F * brightness,
                 (color >> 8 & 255) / 255.0F * brightness,
                 (color & 255) / 255.0F * brightness,
                 1.0F);
             GLManager.GL.Translate(-0.5F, -0.5F, -0.5F);
-            var itemWorld = new ItemRenderBlockAccess(block.id, metadata, brightness);
+            var itemWorld = new ItemRenderBlockAccess(block.ID, metadata, brightness);
             BlockPos itemPos = new(0, 0, 0);
             tess.startDrawingQuads();
             tess.setNormal(0.0F, 1.0F, 0.0F);
@@ -211,35 +211,35 @@ public class BlockRenderer
         tess.startDrawingQuads();
 
         // Base luminance at the entity's current position
-        float currentLuminance = block.getLuminance(world.Lighting, x, y, z);
+        float currentLuminance = block.GetLuminance(world.Lighting, x, y, z);
         Vec3D localOrigin = new Vec3D(-0.5, -0.5, -0.5);
         FaceColors dummyColors = new FaceColors();
 
         // Bottom Face
-        float faceLum = Math.Max(currentLuminance, block.getLuminance(world.Lighting, x, y - 1, z));
+        float faceLum = Math.Max(currentLuminance, block.GetLuminance(world.Lighting, x, y - 1, z));
         tess.setColorOpaque_F(lightBottom * faceLum, lightBottom * faceLum, lightBottom * faceLum);
         entityCtx.DrawBottomFace(block, localOrigin, dummyColors, block.GetTexture(Side.Down));
 
         // Top Face
-        faceLum = Math.Max(currentLuminance, block.getLuminance(world.Lighting, x, y + 1, z));
+        faceLum = Math.Max(currentLuminance, block.GetLuminance(world.Lighting, x, y + 1, z));
         tess.setColorOpaque_F(lightTop * faceLum, lightTop * faceLum, lightTop * faceLum);
         entityCtx.DrawTopFace(block, localOrigin, dummyColors, block.GetTexture(Side.Up));
 
         // East/West Faces
-        faceLum = Math.Max(currentLuminance, block.getLuminance(world.Lighting, x, y, z - 1));
+        faceLum = Math.Max(currentLuminance, block.GetLuminance(world.Lighting, x, y, z - 1));
         tess.setColorOpaque_F(lightZ * faceLum, lightZ * faceLum, lightZ * faceLum);
         entityCtx.DrawEastFace(block, localOrigin, dummyColors, block.GetTexture(Side.North));
 
-        faceLum = Math.Max(currentLuminance, block.getLuminance(world.Lighting, x, y, z + 1));
+        faceLum = Math.Max(currentLuminance, block.GetLuminance(world.Lighting, x, y, z + 1));
         tess.setColorOpaque_F(lightZ * faceLum, lightZ * faceLum, lightZ * faceLum);
         entityCtx.DrawWestFace(block, localOrigin, dummyColors, block.GetTexture(Side.South));
 
         // North/South Faces
-        faceLum = Math.Max(currentLuminance, block.getLuminance(world.Lighting, x - 1, y, z));
+        faceLum = Math.Max(currentLuminance, block.GetLuminance(world.Lighting, x - 1, y, z));
         tess.setColorOpaque_F(lightX * faceLum, lightX * faceLum, lightX * faceLum);
         entityCtx.DrawNorthFace(block, localOrigin, dummyColors, block.GetTexture(Side.West));
 
-        faceLum = Math.Max(currentLuminance, block.getLuminance(world.Lighting, x + 1, y, z));
+        faceLum = Math.Max(currentLuminance, block.GetLuminance(world.Lighting, x + 1, y, z));
         tess.setColorOpaque_F(lightX * faceLum, lightX * faceLum, lightX * faceLum);
         entityCtx.DrawSouthFace(block, localOrigin, dummyColors, block.GetTexture(Side.East));
 

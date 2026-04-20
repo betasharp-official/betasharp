@@ -8,10 +8,10 @@ public sealed class BlockTntTests
     public void NeighborUpdate_WhenPoweredByEmitter_PrimesAndClearsBlock()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.TNT.id);
-        world.ReaderWriter.SetInitial(0, 63, 0, Block.LitRedstoneTorch.id); // powers TNT
+        world.ReaderWriter.SetInitial(0, 64, 0, Block.TNT.ID);
+        world.ReaderWriter.SetInitial(0, 63, 0, Block.LitRedstoneTorch.ID); // powers TNT
 
-        Block.TNT.neighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, Block.LitRedstoneTorch.id));
+        Block.TNT.NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, Block.LitRedstoneTorch.ID));
 
         Assert.Equal(0, world.Reader.GetBlockId(0, 64, 0));
     }
@@ -20,11 +20,11 @@ public sealed class BlockTntTests
     public void NeighborUpdate_NonEmitterTrigger_DoesNotPrimeTnt()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.TNT.id);
-        world.ReaderWriter.SetInitial(0, 63, 0, Block.Stone.id);
+        world.ReaderWriter.SetInitial(0, 64, 0, Block.TNT.ID);
+        world.ReaderWriter.SetInitial(0, 63, 0, Block.Stone.ID);
 
-        Block.TNT.neighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, Block.Stone.id));
+        Block.TNT.NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, Block.Stone.ID));
 
-        Assert.Equal(Block.TNT.id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(Block.TNT.ID, world.Reader.GetBlockId(0, 64, 0));
     }
 }

@@ -14,7 +14,7 @@ internal class ItemRedstone : Item
 
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (world.Reader.GetBlockId(x, y, z) != Block.Snow.id)
+        if (world.Reader.GetBlockId(x, y, z) != Block.Snow.ID)
         {
             if (meta == 0)
             {
@@ -52,10 +52,10 @@ internal class ItemRedstone : Item
             }
         }
 
-        if (Block.RedstoneWire.canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
+        if (Block.RedstoneWire.CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
             itemStack.ConsumeItem(entityPlayer);
-            world.Writer.SetBlock(x, y, z, Block.RedstoneWire.id);
+            world.Writer.SetBlock(x, y, z, Block.RedstoneWire.ID);
         }
 
         return true;

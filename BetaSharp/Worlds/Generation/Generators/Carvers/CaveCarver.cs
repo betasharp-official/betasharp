@@ -124,7 +124,7 @@ internal class CaveCarver : Carver
                                 int blockIndex = (blockX * 16 + blockZ) * 128 + blockY;
                                 if (blockY >= 0 && blockY < 128)
                                 {
-                                    if (blocks[blockIndex] == Block.FlowingWater.id || blocks[blockIndex] == Block.Water.id)
+                                    if (blocks[blockIndex] == Block.FlowingWater.ID || blocks[blockIndex] == Block.Water.ID)
                                     {
                                         waterIsPresent = true;
                                     }
@@ -157,23 +157,23 @@ internal class CaveCarver : Carver
                                         if (localY > -0.7D && localX * localX + localY * localY + localZ * localZ < 1.0D)
                                         {
                                             byte blockType = blocks[blockIndex];
-                                            if (blockType == Block.GrassBlock.id)
+                                            if (blockType == Block.GrassBlock.ID)
                                             {
                                                 isGrassBlock = true;
                                             }
 
-                                            if (blockType == Block.Stone.id || blockType == Block.Dirt.id || blockType == Block.GrassBlock.id)
+                                            if (blockType == Block.Stone.ID || blockType == Block.Dirt.ID || blockType == Block.GrassBlock.ID)
                                             {
                                                 if (blockY < 10)
                                                 {
-                                                    blocks[blockIndex] = (byte)Block.FlowingLava.id;
+                                                    blocks[blockIndex] = (byte)Block.FlowingLava.ID;
                                                 }
                                                 else
                                                 {
                                                     blocks[blockIndex] = 0;
-                                                    if (isGrassBlock && blocks[blockIndex - 1] == Block.Dirt.id)
+                                                    if (isGrassBlock && blocks[blockIndex - 1] == Block.Dirt.ID)
                                                     {
-                                                        blocks[blockIndex - 1] = (byte)Block.GrassBlock.id;
+                                                        blocks[blockIndex - 1] = (byte)Block.GrassBlock.ID;
                                                     }
                                                 }
                                             }

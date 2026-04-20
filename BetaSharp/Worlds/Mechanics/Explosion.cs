@@ -67,7 +67,7 @@ public class Explosion
                             int blockId = _level.Reader.GetBlockId(blockX, blockY, blockZ);
                             if (blockId > 0)
                             {
-                                blastPower -= (Block.Blocks[blockId].getBlastResistance(exploder) + 0.3F) * stepSize;
+                                blastPower -= (Block.Blocks[blockId].GetBlastResistance(exploder) + 0.3F) * stepSize;
                             }
 
                             if (blastPower > 0.0F)
@@ -130,7 +130,7 @@ public class Explosion
             int belowBlockId = _level.Reader.GetBlockId(x, y - 1, z);
             if (blockIdAtPos == 0 && Block.BlocksOpaque[belowBlockId] && ExplosionRNG.NextInt(3) == 0)
             {
-                _level.Writer.SetBlock(x, y, z, Block.Fire.id);
+                _level.Writer.SetBlock(x, y, z, Block.Fire.ID);
             }
         }
     }
@@ -170,9 +170,9 @@ public class Explosion
 
             if (blockId > 0)
             {
-                Block.Blocks[blockId].dropStacks(new OnDropEvent(_level, x, y, z, _level.Reader.GetBlockMeta(x, y, z), 0.3F));
+                Block.Blocks[blockId].DropStacks(new OnDropEvent(_level, x, y, z, _level.Reader.GetBlockMeta(x, y, z), 0.3F));
                 _level.Writer.SetBlock(x, y, z, 0);
-                Block.Blocks[blockId].onDestroyedByExplosion(new OnDestroyedByExplosionEvent(_level, x, y, z));
+                Block.Blocks[blockId].OnDestroyedByExplosion(new OnDestroyedByExplosionEvent(_level, x, y, z));
             }
         }
     }

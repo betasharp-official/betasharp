@@ -52,7 +52,7 @@ internal class ItemSign : Item
                 ++x;
             }
 
-            if (!Block.Sign.canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
+            if (!Block.Sign.CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
             {
                 return false;
             }
@@ -60,11 +60,11 @@ internal class ItemSign : Item
             {
                 if (meta == 1)
                 {
-                    world.Writer.SetBlock(x, y, z, Block.Sign.id, MathHelper.Floor((double)((entityPlayer.Yaw + 180.0F) * 16.0F / 360.0F) + 0.5D) & 15);
+                    world.Writer.SetBlock(x, y, z, Block.Sign.ID, MathHelper.Floor((double)((entityPlayer.Yaw + 180.0F) * 16.0F / 360.0F) + 0.5D) & 15);
                 }
                 else
                 {
-                    world.Writer.SetBlock(x, y, z, Block.WallSign.id, meta);
+                    world.Writer.SetBlock(x, y, z, Block.WallSign.ID, meta);
                 }
 
                 itemStack.ConsumeItem(entityPlayer);

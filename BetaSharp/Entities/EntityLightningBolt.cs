@@ -25,9 +25,9 @@ public class EntityLightningBolt : EntityWeatherEffect
             int strikeX = MathHelper.Floor(x);
             int strikeY = MathHelper.Floor(y);
             int strikeZ = MathHelper.Floor(z);
-            if (world.Reader.GetBlockId(strikeX, strikeY, strikeZ) == 0 && Block.Fire.canPlaceAt(new CanPlaceAtContext(world, 0, strikeX, strikeY, strikeZ)))
+            if (world.Reader.GetBlockId(strikeX, strikeY, strikeZ) == 0 && Block.Fire.CanPlaceAt(new CanPlaceAtContext(world, 0, strikeX, strikeY, strikeZ)))
             {
-                world.Writer.SetBlock(strikeX, strikeY, strikeZ, Block.Fire.id);
+                world.Writer.SetBlock(strikeX, strikeY, strikeZ, Block.Fire.ID);
             }
 
             for (strikeX = 0; strikeX < 4; ++strikeX)
@@ -35,9 +35,9 @@ public class EntityLightningBolt : EntityWeatherEffect
                 strikeY = MathHelper.Floor(x) + Random.NextInt(3) - 1;
                 strikeZ = MathHelper.Floor(y) + Random.NextInt(3) - 1;
                 int fireZ = MathHelper.Floor(z) + Random.NextInt(3) - 1;
-                if (world.Reader.GetBlockId(strikeY, strikeZ, fireZ) == 0 && Block.Fire.canPlaceAt(new CanPlaceAtContext(world, 0, strikeY, strikeZ, fireZ)))
+                if (world.Reader.GetBlockId(strikeY, strikeZ, fireZ) == 0 && Block.Fire.CanPlaceAt(new CanPlaceAtContext(world, 0, strikeY, strikeZ, fireZ)))
                 {
-                    world.Writer.SetBlock(strikeY, strikeZ, fireZ, Block.Fire.id);
+                    world.Writer.SetBlock(strikeY, strikeZ, fireZ, Block.Fire.ID);
                 }
             }
         }
@@ -70,9 +70,9 @@ public class EntityLightningBolt : EntityWeatherEffect
                     int floorX = MathHelper.Floor(X);
                     int floorY = MathHelper.Floor(Y);
                     int floorZ = MathHelper.Floor(Z);
-                    if (World.Reader.GetBlockId(floorX, floorY, floorZ) == 0 && Block.Fire.canPlaceAt(new CanPlaceAtContext(World, 0, floorX, floorY, floorZ)))
+                    if (World.Reader.GetBlockId(floorX, floorY, floorZ) == 0 && Block.Fire.CanPlaceAt(new CanPlaceAtContext(World, 0, floorX, floorY, floorZ)))
                     {
-                        World.Writer.SetBlock(floorX, floorY, floorZ, Block.Fire.id);
+                        World.Writer.SetBlock(floorX, floorY, floorZ, Block.Fire.ID);
                     }
                 }
             }

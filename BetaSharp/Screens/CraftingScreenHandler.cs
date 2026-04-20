@@ -78,7 +78,7 @@ public class CraftingScreenHandler : ScreenHandler
 
     public override bool canUse(EntityPlayer player)
     {
-        return world.Reader.GetBlockId(x, y, z) != Block.CraftingTable.id ? false : player.GetSquaredDistance(x + 0.5D, y + 0.5D, z + 0.5D) <= 64.0D;
+        return world.Reader.GetBlockId(x, y, z) != Block.CraftingTable.ID ? false : player.GetSquaredDistance(x + 0.5D, y + 0.5D, z + 0.5D) <= 64.0D;
     }
 
     public override ItemStack quickMove(int slotNumber)

@@ -16,8 +16,8 @@ public class RepeaterRenderer : IBlockRenderer
         slabCtx.DrawBlock(block, pos);
 
         // 2. Prepare Torch Rendering
-        float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
-        if (Block.BlocksLightLuminance[block.id] > 0)
+        float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        if (Block.BlocksLightLuminance[block.ID] > 0)
         {
             luminance = (luminance + 1.0F) * 0.5F;
         }

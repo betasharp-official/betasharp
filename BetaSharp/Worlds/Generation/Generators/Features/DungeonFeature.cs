@@ -72,11 +72,11 @@ internal class DungeonFeature : Feature
                     {
                         if (cy == y - 1 && rand.NextInt(4) != 0)
                         {
-                            level.Writer.SetBlock(cx, cy, cz, Block.MossyCobblestone.id, 0, false);
+                            level.Writer.SetBlock(cx, cy, cz, Block.MossyCobblestone.ID, 0, false);
                         }
                         else
                         {
-                            level.Writer.SetBlock(cx, cy, cz, Block.Cobblestone.id, 0, false);
+                            level.Writer.SetBlock(cx, cy, cz, Block.Cobblestone.ID, 0, false);
                         }
                     }
                 }
@@ -118,7 +118,7 @@ internal class DungeonFeature : Feature
                         continue;
                     }
 
-                    level.Writer.SetBlock(chestX, y, chestZ, Block.Chest.id, 0, true);
+                    level.Writer.SetBlock(chestX, y, chestZ, Block.Chest.ID, 0, true);
 
                     BlockEntityChest? chest = level.Entities.GetBlockEntity<BlockEntityChest>(chestX, y, chestZ);
                     for (int k = 0; k < 8; ++k)
@@ -133,9 +133,9 @@ internal class DungeonFeature : Feature
             }
         }
 
-        level.Writer.SetBlock(x, y, z, Block.Spawner.id, 0, true);
+        level.Writer.SetBlock(x, y, z, Block.Spawner.ID, 0, true);
         BlockEntityMobSpawner? spawner = level.Entities.GetBlockEntity<BlockEntityMobSpawner>(x, y, z);
-        spawner!.SetSpawnedEntityId(PickMobSpawner(rand));
+        spawner!.SpawnedEntityId = PickMobSpawner(rand);
         return true;
     }
 

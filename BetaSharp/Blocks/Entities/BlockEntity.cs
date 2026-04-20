@@ -6,57 +6,99 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Blocks.Entities;
 
+/// <summary>
+///     Abstract class to represent a block entity, allowing a block to store inventory or other such
+///     stuff apart from the block.
+/// </summary>
 public abstract class BlockEntity
 {
     private static readonly IRegistry<BlockEntityType> s_registry = DefaultRegistries.BlockEntityTypes;
     private static readonly ILogger<BlockEntity> s_logger = Log.Instance.For<BlockEntity>();
-    public IWorldContext World;
+
+    // Block entity registered types
+    // No documentation for each as they are self-explanatory and will just fill up the file.
+    public static readonly BlockEntityType Furnace = Register<BlockEntityFurnace>("Furnace");
+    public static readonly BlockEntityType Chest = Register<BlockEntityChest>("Chest");
+    public static readonly BlockEntityType RecordPlayer = Register<BlockEntityRecordPlayer>("RecordPlayer");
+    public static readonly BlockEntityType Dispenser = Register<BlockEntityDispenser>("Trap");
+    public static readonly BlockEntityType Sign = Register<BlockEntitySign>("Sign");
+    public static readonly BlockEntityType MobSpawner = Register<BlockEntityMobSpawner>("MobSpawner");
+    public static readonly BlockEntityType Music = Register<BlockEntityNote>("Music");
+    public static readonly BlockEntityType Piston = Register<BlockEntityPiston>("Piston");
     protected bool Removed;
+
+    static BlockEntity()
+    {
+    }
+
+    public IWorldContext World { get; set; }
+
     public abstract BlockEntityType Type { get; }
 
-    public int X;
-    public int Y;
-    public int Z;
+    public int X { get; set; }
+    public int Y { get; set; }
+    public int Z { get; set; }
 
-    public static readonly BlockEntityType Furnace = Register(() => new BlockEntityFurnace(), "Furnace");
-    public static readonly BlockEntityType Chest = Register(() => new BlockEntityChest(), "Chest");
-    public static readonly BlockEntityType RecordPlayer = Register(() => new BlockEntityRecordPlayer(), "RecordPlayer");
-    public static readonly BlockEntityType Dispenser = Register(() => new BlockEntityDispenser(), "Trap");
-    public static readonly BlockEntityType Sign = Register(() => new BlockEntitySign(), "Sign");
-    public static readonly BlockEntityType MobSpawner = Register(() => new BlockEntityMobSpawner(), "MobSpawner");
-    public static readonly BlockEntityType Note = Register(() => new BlockEntityNote(), "Music");
-    public static readonly BlockEntityType Piston = Register(() => new BlockEntityPiston(), "Piston");
+    /// <summary>
+    ///     Gets the metadata value associated with the block at the current coordinates.
+    /// </summary>
+    public int PushedBlockData => World.Reader.GetBlockMeta(X, Y, Z);
 
-    private static BlockEntityType Register<T>(Func<T> factory, string id) where T : BlockEntity
+    private static BlockEntityType Register<T>(string id) where T : BlockEntity, new()
     {
-        var type = new BlockEntityType(() => factory(), id);
+        BlockEntityType type = new(() => new T(), id);
         s_registry.Register(ResourceLocation.Parse(id.ToLower()), type);
         return type;
     }
 
-    public virtual void readNbt(NBTTagCompound nbt)
+    /// <summary>
+    ///     Read data for the entity from a NBT tag compound.
+    ///     Expected to be overridden (with base.ReadNbt(nbt), of course).
+    /// </summary>
+    /// <param name="nbt"><see cref="NBTTagCompound" /> containing the data to read.</param>
+    public virtual void ReadNbt(NBTTagCompound nbt)
     {
         X = nbt.GetInteger("x");
         Y = nbt.GetInteger("y");
         Z = nbt.GetInteger("z");
     }
 
-    public virtual void writeNbt(NBTTagCompound nbt)
+    /// <summary>
+    ///     Write data for the entity to a NBT tag compound.
+    ///     Expected to be overridden (with base.WriteNbt(nbt), of course).
+    /// </summary>
+    /// <param name="nbt"><see cref="NBTTagCompound" /> to write the data to.</param>
+    public virtual void WriteNbt(NBTTagCompound nbt)
     {
-        nbt.SetString("id", Type.Id);
+        nbt.SetString("id", Type.ID);
         nbt.SetInteger("x", X);
         nbt.SetInteger("y", Y);
         nbt.SetInteger("z", Z);
     }
 
-    public virtual void tick(EntityManager entities)
+    /// <summary>
+    ///     Run a single tick for the block entity.
+    ///     Expected to be overridden if the block entity needs to do something every tick.
+    /// </summary>
+    /// <param name="entities"><see cref="EntityManager" /> containing the entities in the world.</param>
+    public virtual void Tick(EntityManager entities)
     {
     }
 
+    /// <summary>
+    ///     Create a BlockEntity from a NBT tag compound.
+    ///     Uses the "id" tag to determine the type of block entity to create, and then calls ReadNbt,
+    ///     to, of course, get the data.
+    /// </summary>
+    /// <param name="nbt"><see cref="NBTTagCompound" /> containing the data to read, expected to have an "id" tag.</param>
+    /// <returns>A <see cref="BlockEntity"></see> representing the NBT, or null if invalid.</returns>
     public static BlockEntity? CreateFromNbt(NBTTagCompound nbt)
     {
         string id = nbt.GetString("id");
-        if (string.IsNullOrEmpty(id)) return null;
+        if (string.IsNullOrEmpty(id))
+        {
+            return null;
+        }
 
         BlockEntityType? type = s_registry.Get(ResourceLocation.Parse(id.ToLower()));
         if (type == null)
@@ -68,7 +110,7 @@ public abstract class BlockEntity
         try
         {
             BlockEntity blockEntity = type.Create();
-            blockEntity.readNbt(nbt);
+            blockEntity.ReadNbt(nbt);
             return blockEntity;
         }
         catch (Exception exception)
@@ -77,8 +119,6 @@ public abstract class BlockEntity
             return null;
         }
     }
-
-    public int PushedBlockData => World.Reader.GetBlockMeta(X, Y, Z);
 
     public void MarkDirty()
     {
@@ -90,7 +130,11 @@ public abstract class BlockEntity
         World.Broadcaster.UpdateBlockEntity(X, Y, Z, this);
     }
 
-    public double distanceFrom(double x, double y, double z)
+    /// <summary>
+    ///     Gets the (squared!) distance from the center of the block entity to the given coordinates.
+    /// </summary>
+    /// <returns>The squared distance from the center of the block entity to the given coordinates.
+    public double DistanceFrom(double x, double y, double z)
     {
         double dx = X + 0.5D - x;
         double dy = Y + 0.5D - y;
@@ -98,11 +142,11 @@ public abstract class BlockEntity
         return dx * dx + dy * dy + dz * dz;
     }
 
-    public Block getBlock() => Block.Blocks[World.Reader.GetBlockId(X, Y, Z)];
+    public Block GetBlock() => Block.Blocks[World.Reader.GetBlockId(X, Y, Z)];
 
-    public virtual Packet createUpdatePacket() => null;
+    public virtual Packet CreateUpdatePacket() => null;
 
-    public bool isRemoved()
+    public bool IsRemoved()
     {
         if (Removed)
         {
@@ -121,11 +165,7 @@ public abstract class BlockEntity
         return false;
     }
 
-    public void markRemoved() => Removed = true;
+    public void MarkRemoved() => Removed = true;
 
-    public void cancelRemoval() => Removed = false;
-
-    static BlockEntity()
-    {
-    }
+    public void CancelRemoval() => Removed = false;
 }

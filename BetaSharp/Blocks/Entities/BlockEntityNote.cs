@@ -4,40 +4,45 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks.Entities;
 
+/// <summary>
+///     Block entity for the noteblock, playing notes.
+/// </summary>
 internal class BlockEntityNote : BlockEntity
 {
-    public override BlockEntityType Type => BlockEntity.Note;
-    public sbyte note;
-    public bool powered = false;
+    public override BlockEntityType Type => Music;
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public sbyte Note { get; set; }
+
+    public bool Powered { get; set; } = false;
+
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
-        nbt.SetByte("note", note);
+        base.WriteNbt(nbt);
+        nbt.SetByte("note", Note);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
-        note = nbt.GetByte("note");
-        if (note < 0)
+        base.ReadNbt(nbt);
+        Note = nbt.GetByte("note");
+        if (Note < 0)
         {
-            note = 0;
+            Note = 0;
         }
 
-        if (note > 24)
+        if (Note > 24)
         {
-            note = 24;
+            Note = 24;
         }
     }
 
-    public void cycleNote()
+    public void CycleNote()
     {
-        note = (sbyte)((note + 1) % 25);
+        Note = (sbyte)((Note + 1) % 25);
         MarkDirty();
     }
 
-    public void playNote(IWorldContext level, int x, int y, int z)
+    public void PlayNote(IWorldContext level, int x, int y, int z)
     {
         if (level.Reader.GetMaterial(x, y + 1, z) == Material.Air)
         {
@@ -63,7 +68,7 @@ internal class BlockEntityNote : BlockEntity
                 instrument = 4;
             }
 
-            level.Broadcaster.PlayNote(x, y, z, instrument, note);
+            level.Broadcaster.PlayNote(x, y, z, instrument, Note);
         }
     }
 }

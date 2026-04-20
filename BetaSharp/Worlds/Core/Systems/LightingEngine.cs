@@ -64,8 +64,8 @@ public class LightingEngine : ILightProvider
         if (checkNeighbors)
         {
             int blockId = _world.Reader.GetBlockId(x, y, z);
-            if (blockId == Block.Slab.id || blockId == Block.Farmland.id ||
-                blockId == Block.CobblestoneStairs.id || blockId == Block.WoodenStairs.id)
+            if (blockId == Block.Slab.ID || blockId == Block.Farmland.ID ||
+                blockId == Block.CobblestoneStairs.ID || blockId == Block.WoodenStairs.ID)
             {
                 int neighborMaxLight = GetLightLevel(x, y + 1, z, false);
                 int lightPosX = GetLightLevel(x + 1, y, z, false);

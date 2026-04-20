@@ -14,7 +14,7 @@ public class ItemShears : Item
 
     public override bool postMine(ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving entityLiving)
     {
-        if (blockId == Block.Leaves.id || blockId == Block.Cobweb.id)
+        if (blockId == Block.Leaves.ID || blockId == Block.Cobweb.ID)
         {
             itemStack.DamageItem(1, entityLiving);
         }
@@ -24,11 +24,11 @@ public class ItemShears : Item
 
     public override bool isSuitableFor(Block block)
     {
-        return block.id == Block.Cobweb.id;
+        return block.ID == Block.Cobweb.ID;
     }
 
     public override float getMiningSpeedMultiplier(ItemStack itemStack, Block block)
     {
-        return block.id != Block.Cobweb.id && block.id != Block.Leaves.id ? (block.id == Block.Wool.id ? 5.0F : base.getMiningSpeedMultiplier(itemStack, block)) : 15.0F;
+        return block.ID != Block.Cobweb.ID && block.ID != Block.Leaves.ID ? (block.ID == Block.Wool.ID ? 5.0F : base.getMiningSpeedMultiplier(itemStack, block)) : 15.0F;
     }
 }

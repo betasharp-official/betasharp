@@ -32,7 +32,7 @@ public class HeldItemRenderer
     public void renderItem(EntityLiving entity, ItemStack item)
     {
         GLManager.GL.PushMatrix();
-        if (item.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[item.ItemId].getRenderType()))
+        if (item.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[item.ItemId].GetRenderType()))
         {
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/terrain.png"));
             BlockRenderer.RenderBlockOnInventory(Block.Blocks[item.ItemId], item.getDamage(), entity.GetBrightnessAtEyes(1.0F), Tessellator.instance);

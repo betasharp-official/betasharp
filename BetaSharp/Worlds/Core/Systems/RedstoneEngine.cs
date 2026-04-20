@@ -7,7 +7,7 @@ public class RedstoneEngine(IBlockReader world)
     public bool IsStrongPoweringSide(int x, int y, int z, int side)
     {
         int blockId = world.GetBlockId(x, y, z);
-        return blockId != 0 && Block.Blocks[blockId].isStrongPoweringSide(world, x, y, z, side);
+        return blockId != 0 && Block.Blocks[blockId].IsStrongPoweringSide(world, x, y, z, side);
     }
 
     public bool IsStrongPowered(int x, int y, int z)
@@ -24,7 +24,7 @@ public class RedstoneEngine(IBlockReader world)
     {
         if (world.ShouldSuffocate(x, y, z)) return IsStrongPowered(x, y, z);
         int blockId = world.GetBlockId(x, y, z);
-        return blockId != 0 && Block.Blocks[blockId].isPoweringSide(world, x, y, z, side);
+        return blockId != 0 && Block.Blocks[blockId].IsPoweringSide(world, x, y, z, side);
     }
 
     public bool IsPowered(int x, int y, int z)

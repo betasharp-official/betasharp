@@ -8,9 +8,9 @@ internal class BlockSoulSand(int id, int textureId) : Block(id, textureId, Mater
 {
     private const float Height = 2.0F / 16.0F;
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => new Box(x, y, z, x + 1, y + 1 - Height, z + 1);
+    public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => new Box(x, y, z, x + 1, y + 1 - Height, z + 1);
 
-    public override void onEntityCollision(OnEntityCollisionEvent @event)
+    public override void OnEntityCollision(OnEntityCollisionEvent @event)
     {
         @event.Entity.VelocityX *= 0.4;
         @event.Entity.VelocityZ *= 0.4;

@@ -18,7 +18,7 @@ public class ItemRecord : Item
 
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (world.Reader.GetBlockId(x, y, z) == Block.Jukebox.id && world.Reader.GetBlockMeta(x, y, z) == 0)
+        if (world.Reader.GetBlockId(x, y, z) == Block.Jukebox.ID && world.Reader.GetBlockMeta(x, y, z) == 0)
         {
             if (world.IsRemote)
             {
@@ -26,7 +26,7 @@ public class ItemRecord : Item
             }
             else
             {
-                BlockJukeBox.insertRecord(world, x, y, z, id);
+                BlockJukeBox.InsertRecord(world, x, y, z, id);
                 world.Broadcaster.WorldEvent(1005, x, y, z, id);
                 itemStack.ConsumeItem(entityPlayer);
                 return true;

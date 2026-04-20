@@ -8,108 +8,37 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks.Entities;
 
-public class BlockEntityFurnace : BlockEntity, IInventory
+/// <summary>
+/// Block entity for the furnace block, allowing it to store inventory and smelt items.
+/// </summary>
+public class BlockEntityFurnace : BlockEntityWithInventory<BlockEntityFurnace>
 {
     public override BlockEntityType Type => Furnace;
-    private ItemStack?[] _inventory = new ItemStack[3];
+
+    public override int Size => 3;
+    public override string Name => "Furnace";
+
+
     public int BurnTime { get; set; }
+
     public int CookTime { get; set; }
+
     public int FuelTime { get; set; }
 
-    public int Size => _inventory.Length;
-
-    public ItemStack? GetStack(int slot)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        return _inventory[slot];
-    }
-
-    public ItemStack? RemoveStack(int slot, int stack)
-    {
-        if (_inventory[slot] != null)
-        {
-            ItemStack removedStack;
-            ItemStack? iStack = _inventory[slot];
-
-            if (iStack is null) return null;
-
-            if (iStack.Count <= stack)
-            {
-                removedStack = iStack;
-                _inventory[slot] = null;
-                return removedStack;
-            }
-
-            removedStack = iStack.Split(stack);
-            if (iStack.Count == 0)
-            {
-                _inventory[slot] = null;
-            }
-
-            return removedStack;
-        }
-
-        return null;
-    }
-
-    public void SetStack(int slot, ItemStack? stack)
-    {
-        _inventory[slot] = stack;
-        if (stack != null && stack.Count > MaxCountPerStack)
-        {
-            stack.Count = MaxCountPerStack;
-        }
-    }
-
-    public string Name => "Furnace";
-
-    public int MaxCountPerStack => 64;
-
-    public bool CanPlayerUse(EntityPlayer player)
-    {
-        return World.Entities.GetBlockEntity<BlockEntityFurnace>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
-    }
-
-    public override void readNbt(NBTTagCompound nbt)
-    {
-        base.readNbt(nbt);
-        NBTTagList itemList = nbt.GetTagList("Items");
-        _inventory = new ItemStack[Size];
-
-        for (int itemIndex = 0; itemIndex < itemList.TagCount(); ++itemIndex)
-        {
-            NBTTagCompound itemTag = (NBTTagCompound)itemList.TagAt(itemIndex);
-            sbyte slot = itemTag.GetByte("Slot");
-            if (slot >= 0 && slot < _inventory.Length)
-            {
-                _inventory[slot] = new ItemStack(itemTag);
-            }
-        }
+        base.ReadNbt(nbt);
 
         BurnTime = nbt.GetShort("BurnTime");
         CookTime = nbt.GetShort("CookTime");
         FuelTime = GetFuelTime(_inventory[1]);
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
         nbt.SetShort("BurnTime", (short)BurnTime);
         nbt.SetShort("CookTime", (short)CookTime);
-        NBTTagList itemList = new();
-
-        for (int slotIndex = 0; slotIndex < _inventory.Length; ++slotIndex)
-        {
-            ItemStack? stack = _inventory[slotIndex];
-            if (stack != null)
-            {
-                NBTTagCompound slotTag = new();
-                slotTag.SetByte("Slot", (sbyte)slotIndex);
-                stack.writeToNBT(slotTag);
-                itemList.SetTag(slotTag);
-            }
-        }
-
-        nbt.SetTag("Items", itemList);
     }
 
     public int GetCookTimeDelta(int multiplier)
@@ -129,7 +58,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
 
     public bool IsBurning => BurnTime > 0;
 
-    public override void tick(EntityManager entities)
+    public override void Tick(EntityManager entities)
     {
         bool wasBurning = BurnTime > 0;
         bool stateChanged = false;
@@ -176,7 +105,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             if (wasBurning != BurnTime > 0)
             {
                 stateChanged = true;
-                BlockFurnace.updateLitState(BurnTime > 0, World, X, Y, Z);
+                BlockFurnace.UpdateLitState(BurnTime > 0, World, X, Y, Z);
             }
         }
 
@@ -262,6 +191,6 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         }
 
         int itemId = itemStack.getItem().id;
-        return itemId < 256 && Block.Blocks[itemId].material == Material.Wood ? 300 : itemId == Item.Stick.id ? 100 : itemId == Item.Coal.id ? 1600 : itemId == Item.LavaBucket.id ? 20000 : itemId == Block.Sapling.id ? 100 : 0;
+        return itemId < 256 && Block.Blocks[itemId].Material == Material.Wood ? 300 : itemId == Item.Stick.id ? 100 : itemId == Item.Coal.id ? 1600 : itemId == Item.LavaBucket.id ? 20000 : itemId == Block.Sapling.ID ? 100 : 0;
     }
 }

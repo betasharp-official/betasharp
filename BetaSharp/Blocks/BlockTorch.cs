@@ -11,17 +11,17 @@ internal class BlockTorch : Block
     private const float TorchWidth = 0.15F;
     private const float TorchWidthGround = 0.1F;
 
-    public BlockTorch(int id, int textureId) : base(id, textureId, Material.PistonBreakable) => setTickRandomly(true);
+    public BlockTorch(int id, int textureId) : base(id, textureId, Material.PistonBreakable) => SetTickRandomly(true);
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
+    public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override bool isOpaque() => false;
+    public override bool IsOpaque() => false;
 
-    public override bool isFullCube() => false;
+    public override bool IsFullCube() => false;
 
-    public override BlockRendererType getRenderType() => BlockRendererType.Torch;
+    public override BlockRendererType GetRenderType() => BlockRendererType.Torch;
 
-    private static bool canPlaceOn(IBlockReader world, int x, int y, int z) => world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == Fence.id;
+    private static bool CanPlaceOn(IBlockReader world, int x, int y, int z) => world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == Fence.ID;
 
     private static bool TryGetHorizontalWallPickRay(EntityLiving placer, int torchX, int torchZ, out double lx, out double lz)
     {
@@ -55,7 +55,7 @@ internal class BlockTorch : Block
         if (reader.ShouldSuffocate(x + 1, y, z)) return 2;
         if (reader.ShouldSuffocate(x, y, z - 1)) return 3;
         if (reader.ShouldSuffocate(x, y, z + 1)) return 4;
-        if (canPlaceOn(reader, x, y - 1, z)) return 5;
+        if (CanPlaceOn(reader, x, y - 1, z)) return 5;
         return -1;
     }
 
@@ -111,21 +111,21 @@ internal class BlockTorch : Block
         return vanilla == -1 ? null : vanilla;
     }
 
-    public override bool canPlaceAt(CanPlaceAtContext context) =>
+    public override bool CanPlaceAt(CanPlaceAtContext context) =>
         context.World.Reader.ShouldSuffocate(context.X - 1, context.Y, context.Z) ||
         context.World.Reader.ShouldSuffocate(context.X + 1, context.Y, context.Z) ||
         context.World.Reader.ShouldSuffocate(context.X, context.Y, context.Z - 1) ||
         context.World.Reader.ShouldSuffocate(context.X, context.Y, context.Z + 1) ||
-        canPlaceOn(context.World.Reader, context.X, context.Y - 1, context.Z);
+        CanPlaceOn(context.World.Reader, context.X, context.Y - 1, context.Z);
 
-    public override void onPlaced(OnPlacedEvent @event)
+    public override void OnPlaced(OnPlacedEvent @event)
     {
         IBlockReader reader = @event.World.Reader;
         int meta = reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
 
         switch (@event.Direction)
         {
-            case Side.Up when canPlaceOn(reader, @event.X, @event.Y - 1, @event.Z):
+            case Side.Up when CanPlaceOn(reader, @event.X, @event.Y - 1, @event.Z):
                 meta = 5;
                 break;
             case Side.North when reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1):
@@ -155,9 +155,9 @@ internal class BlockTorch : Block
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
     }
 
-    public override void onTick(OnTickEvent @event)
+    public override void OnTick(OnTickEvent @event)
     {
-        base.onTick(@event);
+        base.OnTick(@event);
         if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) == 0)
         {
             onPlaced(@event);
@@ -175,7 +175,7 @@ internal class BlockTorch : Block
         breakIfCannotPlaceAt(@event, @event.X, @event.Y, @event.Z);
     }
 
-    public override void neighborUpdate(OnTickEvent @event)
+    public override void NeighborUpdate(OnTickEvent @event)
     {
         if (!breakIfCannotPlaceAt(@event, @event.X, @event.Y, @event.Z)) return;
 
@@ -184,48 +184,48 @@ internal class BlockTorch : Block
                           !@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) && meta == 2 ||
                           !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) && meta == 3 ||
                           !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1) && meta == 4 ||
-                          !canPlaceOn(@event.World.Reader, @event.X, @event.Y - 1, @event.Z) && meta == 5;
+                          !CanPlaceOn(@event.World.Reader, @event.X, @event.Y - 1, @event.Z) && meta == 5;
 
         if (!shouldDrop) return;
-        dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 
     private bool breakIfCannotPlaceAt(OnTickEvent @event, int x, int y, int z)
     {
-        if (canPlaceAt(new CanPlaceAtContext(@event.World, 0, x, y, z))) return true;
+        if (CanPlaceAt(new CanPlaceAtContext(@event.World, 0, x, y, z))) return true;
 
-        dropStacks(new OnDropEvent(@event.World, x, y, z, @event.World.Reader.GetBlockMeta(x, y, z)));
+        DropStacks(new OnDropEvent(@event.World, x, y, z, @event.World.Reader.GetBlockMeta(x, y, z)));
         @event.World.Writer.SetBlock(x, y, z, 0);
         return false;
     }
 
-    public override HitResult raycast(IBlockReader world, EntityManager entities, int x, int y, int z, Vec3D startPos, Vec3D endPos)
+    public override HitResult Raycast(IBlockReader world, EntityManager entities, int x, int y, int z, Vec3D startPos, Vec3D endPos)
     {
         int rotation = world.GetBlockMeta(x, y, z) & 7;
         switch (rotation)
         {
             case 1:
-                setBoundingBox(0.0F, 0.2F, 0.5F - TorchWidth, TorchWidth * 2.0F, 0.8F, 0.5F + TorchWidth);
+                SetBoundingBox(0.0F, 0.2F, 0.5F - TorchWidth, TorchWidth * 2.0F, 0.8F, 0.5F + TorchWidth);
                 break;
             case 2:
-                setBoundingBox(1.0F - TorchWidth * 2.0F, 0.2F, 0.5F - TorchWidth, 1.0F, 0.8F, 0.5F + TorchWidth);
+                SetBoundingBox(1.0F - TorchWidth * 2.0F, 0.2F, 0.5F - TorchWidth, 1.0F, 0.8F, 0.5F + TorchWidth);
                 break;
             case 3:
-                setBoundingBox(0.5F - TorchWidth, 0.2F, 0.0F, 0.5F + TorchWidth, 0.8F, TorchWidth * 2.0F);
+                SetBoundingBox(0.5F - TorchWidth, 0.2F, 0.0F, 0.5F + TorchWidth, 0.8F, TorchWidth * 2.0F);
                 break;
             case 4:
-                setBoundingBox(0.5F - TorchWidth, 0.2F, 1.0F - TorchWidth * 2.0F, 0.5F + TorchWidth, 0.8F, 1.0F);
+                SetBoundingBox(0.5F - TorchWidth, 0.2F, 1.0F - TorchWidth * 2.0F, 0.5F + TorchWidth, 0.8F, 1.0F);
                 break;
             default:
-                setBoundingBox(0.5F - TorchWidthGround, 0.0F, 0.5F - TorchWidthGround, 0.5F + TorchWidthGround, 0.6F, 0.5F + TorchWidthGround);
+                SetBoundingBox(0.5F - TorchWidthGround, 0.0F, 0.5F - TorchWidthGround, 0.5F + TorchWidthGround, 0.6F, 0.5F + TorchWidthGround);
                 break;
         }
 
-        return base.raycast(world, entities, x, y, z, startPos, endPos);
+        return base.Raycast(world, entities, x, y, z, startPos, endPos);
     }
 
-    public override void randomDisplayTick(OnTickEvent @event)
+    public override void RandomDisplayTick(OnTickEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         float flameX = @event.X + 0.5F;

@@ -13,40 +13,48 @@ internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.T
         _ => BlockTextures.TntSide
     };
 
-    public override void onPlaced(OnPlacedEvent @event)
+    public override void OnPlaced(OnPlacedEvent @event)
     {
-        base.onPlaced(@event);
-        if (!@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z)) return;
-
-        onMetadataChange(new OnMetadataChangeEvent(@event.World, @event.X, @event.Y, @event.Z, 1));
-        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-    }
-
-    public override void neighborUpdate(OnTickEvent @event)
-    {
-        if (@event.BlockId <= 0 || !Blocks[@event.BlockId].canEmitRedstonePower() || !@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
+        base.OnPlaced(@event);
+        if (!@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
+        {
             return;
+        }
 
-        onMetadataChange(new OnMetadataChangeEvent(@event.World, @event.X, @event.Y, @event.Z, 1));
+        OnMetadataChange(new OnMetadataChangeEvent(@event.World, @event.X, @event.Y, @event.Z, 1));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 
-    public override int getDroppedItemCount() => 0;
+    public override void NeighborUpdate(OnTickEvent @event)
+    {
+        if (@event.BlockId <= 0 || !Blocks[@event.BlockId].CanEmitRedstonePower() || !@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
+        {
+            return;
+        }
 
-    public override void onDestroyedByExplosion(OnDestroyedByExplosionEvent @event)
+        OnMetadataChange(new OnMetadataChangeEvent(@event.World, @event.X, @event.Y, @event.Z, 1));
+        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
+    }
+
+    public override int GetDroppedItemCount() => 0;
+
+    public override void OnDestroyedByExplosion(OnDestroyedByExplosionEvent @event)
     {
         EntityTNTPrimed entityTntPrimed = new(@event.World, @event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F);
         entityTntPrimed.fuse = @event.World.Random.NextInt(entityTntPrimed.fuse / 4) + entityTntPrimed.fuse / 8;
         @event.World.Entities.SpawnEntity(entityTntPrimed);
     }
 
-    public override void onMetadataChange(OnMetadataChangeEvent @event)
+    public override void OnMetadataChange(OnMetadataChangeEvent @event)
     {
-        if (@event.World.IsRemote) return;
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
 
         if ((@event.Meta & 1) == 0)
         {
-            dropStack(@event.World, @event.X, @event.Y, @event.Z, new ItemStack(TNT.id, 1, 0));
+            DropStack(@event.World, @event.X, @event.Y, @event.Z, new ItemStack(TNT.ID, 1, 0));
         }
         else
         {
@@ -56,15 +64,15 @@ internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.T
         }
     }
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvent ctx)
+    public override void OnBlockBreakStart(OnBlockBreakStartEvent ctx)
     {
         if (ctx.Player.getHand() != null && ctx.Player.getHand().ItemId == Item.FlintAndSteel.id)
         {
             ctx.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(ctx.X, ctx.Y, ctx.Z, 1);
         }
 
-        base.onBlockBreakStart(ctx);
+        base.OnBlockBreakStart(ctx);
     }
 
-    public override bool onUse(OnUseEvent ctx) => base.onUse(ctx);
+    public override bool OnUse(OnUseEvent ctx) => base.OnUse(ctx);
 }

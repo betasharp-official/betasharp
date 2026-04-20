@@ -7,7 +7,7 @@ internal class BlockSponge : Block
     private const sbyte AbsorbRadius = 2;
     public BlockSponge(int id) : base(id, Material.Sponge) => TextureId = BlockTextures.Sponge;
 
-    public override void onPlaced(OnPlacedEvent @event)
+    public override void OnPlaced(OnPlacedEvent @event)
     {
         for (int checkX = @event.X - AbsorbRadius; checkX <= @event.X + AbsorbRadius; ++checkX)
         {
@@ -23,9 +23,8 @@ internal class BlockSponge : Block
         }
     }
 
-    public override void onBreak(OnBreakEvent @event)
+    public override void OnBreak(OnBreakEvent @event)
     {
-
         for (int checkX = @event.X - AbsorbRadius; checkX <= @event.X + AbsorbRadius; ++checkX)
         {
             for (int checkY = @event.Y - AbsorbRadius; checkY <= @event.Y + AbsorbRadius; ++checkY)

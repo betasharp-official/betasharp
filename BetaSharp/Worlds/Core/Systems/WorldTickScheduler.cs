@@ -52,7 +52,7 @@ public class WorldTickScheduler
             if (currentBlockId == blockId && currentBlockId > 0)
             {
                 int meta = _context.Reader.GetBlockMeta(x, y, z);
-                Block.Blocks[currentBlockId].onTick(new OnTickEvent(_context, x, y, z, meta, currentBlockId));
+                Block.Blocks[currentBlockId].OnTick(new OnTickEvent(_context, x, y, z, meta, currentBlockId));
             }
         }
         else
@@ -142,14 +142,14 @@ public class WorldTickScheduler
         foreach (var blockUpdate in readyToExecute)
         {
             int meta = _context.Reader.GetBlockMeta(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
-            Block.Blocks[blockUpdate.BlockId].onTick(new OnTickEvent(_context, blockUpdate.X, blockUpdate.Y, blockUpdate.Z, meta, blockUpdate.BlockId));
+            Block.Blocks[blockUpdate.BlockId].OnTick(new OnTickEvent(_context, blockUpdate.X, blockUpdate.Y, blockUpdate.Z, meta, blockUpdate.BlockId));
         }
     }
 
     public void TriggerInstantTick(int x, int y, int z, int blockId)
     {
         int meta = _context.Reader.GetBlockMeta(x, y, z);
-        Block.Blocks[blockId].onTick(new OnTickEvent(_context, x, y, z, meta, blockId));
+        Block.Blocks[blockId].OnTick(new OnTickEvent(_context, x, y, z, meta, blockId));
     }
 
     /// <summary>

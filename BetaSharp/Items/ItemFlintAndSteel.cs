@@ -50,7 +50,7 @@ internal class ItemFlintAndSteel : Item
         if (blockId == 0)
         {
             world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "fire.ignite", 1.0F, itemRand.NextFloat() * 0.4F + 0.8F);
-            world.Writer.SetBlock(x, y, z, Block.Fire.id);
+            world.Writer.SetBlock(x, y, z, Block.Fire.ID);
         }
 
         itemStack.DamageItem(1, entityPlayer);

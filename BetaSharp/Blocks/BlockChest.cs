@@ -8,7 +8,6 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
-//NOTE: CHESTS DON'T ROTATE BASED ON PLAYER ORIENTATION, THIS IS VANILLA BEHAVIOR, NOT A BUG
 internal class BlockChest : BlockWithEntity
 {
     private const float DropSpread = 0.05F;
@@ -25,8 +24,8 @@ internal class BlockChest : BlockWithEntity
         int blockWest = iBlockReader.GetBlockId(x - 1, y, z);
         int blockEast = iBlockReader.GetBlockId(x + 1, y, z);
 
-        bool isDoubleEw = blockWest == id || blockEast == id;
-        bool isDoubleNs = blockNorth == id || blockSouth == id;
+        bool isDoubleEw = blockWest == ID || blockEast == ID;
+        bool isDoubleNs = blockNorth == ID || blockSouth == ID;
 
         if (!isDoubleNs && !isDoubleEw)
         {
@@ -43,7 +42,7 @@ internal class BlockChest : BlockWithEntity
         {
             if (side is Side.West or Side.East) return BlockTextures.ChestSingleSide;
 
-            bool isWestPartner = blockWest == id;
+            bool isWestPartner = blockWest == ID;
             int corner1 = iBlockReader.GetBlockId(isWestPartner ? x - 1 : x + 1, y, z - 1);
             int corner2 = iBlockReader.GetBlockId(isWestPartner ? x - 1 : x + 1, y, z + 1);
 
@@ -60,7 +59,7 @@ internal class BlockChest : BlockWithEntity
         {
             if (side is Side.North or Side.South) return BlockTextures.ChestSingleSide;
 
-            bool isNorthPartner = blockNorth == id;
+            bool isNorthPartner = blockNorth == ID;
             int corner1 = iBlockReader.GetBlockId(x - 1, y, isNorthPartner ? z - 1 : z + 1);
             int corner2 = iBlockReader.GetBlockId(x + 1, y, isNorthPartner ? z - 1 : z + 1);
 
@@ -83,35 +82,33 @@ internal class BlockChest : BlockWithEntity
         return isRightHalf ? BlockTextures.ChestDoubleBackLeft : BlockTextures.ChestDoubleBackRight;
     }
 
-    public override int GetTexture(Side side)
-    {
-        return side switch
+    public override int GetTexture(Side side) =>
+        side switch
         {
             Side.Up or Side.Down => BlockTextures.ChestSingleSide,
             Side.South => BlockTextures.ChestSingleFront,
             _ => BlockTextures.ChestSingleSide
         };
-    }
 
-    public override bool canPlaceAt(CanPlaceAtContext context)
+    public override bool CanPlaceAt(CanPlaceAtContext context)
     {
         int adjacentChestCount = 0;
-        if (context.World.Reader.GetBlockId(context.X - 1, context.Y, context.Z) == id)
+        if (context.World.Reader.GetBlockId(context.X - 1, context.Y, context.Z) == ID)
         {
             ++adjacentChestCount;
         }
 
-        if (context.World.Reader.GetBlockId(context.X + 1, context.Y, context.Z) == id)
+        if (context.World.Reader.GetBlockId(context.X + 1, context.Y, context.Z) == ID)
         {
             ++adjacentChestCount;
         }
 
-        if (context.World.Reader.GetBlockId(context.X, context.Y, context.Z - 1) == id)
+        if (context.World.Reader.GetBlockId(context.X, context.Y, context.Z - 1) == ID)
         {
             ++adjacentChestCount;
         }
 
-        if (context.World.Reader.GetBlockId(context.X, context.Y, context.Z + 1) == id)
+        if (context.World.Reader.GetBlockId(context.X, context.Y, context.Z + 1) == ID)
         {
             ++adjacentChestCount;
         }
@@ -119,12 +116,12 @@ internal class BlockChest : BlockWithEntity
         return adjacentChestCount > 1 ? false : hasNeighbor(context) ? false : hasNeighbor(context) ? false : hasNeighbor(context) ? false : !hasNeighbor(context);
     }
 
-    private bool hasNeighbor(CanPlaceAtContext evt) => evt.World.Reader.GetBlockId(evt.X, evt.Y, evt.Z) != id ? false :
-        evt.World.Reader.GetBlockId(evt.X - 1, evt.Y, evt.Z) == id ? true :
-        evt.World.Reader.GetBlockId(evt.X + 1, evt.Y, evt.Z) == id ? true :
-        evt.World.Reader.GetBlockId(evt.X, evt.Y, evt.Z - 1) == id ? true : evt.World.Reader.GetBlockId(evt.X, evt.Y, evt.Z + 1) == id;
+    private bool hasNeighbor(CanPlaceAtContext evt) => evt.World.Reader.GetBlockId(evt.X, evt.Y, evt.Z) != ID ? false :
+        evt.World.Reader.GetBlockId(evt.X - 1, evt.Y, evt.Z) == ID ? true :
+        evt.World.Reader.GetBlockId(evt.X + 1, evt.Y, evt.Z) == ID ? true :
+        evt.World.Reader.GetBlockId(evt.X, evt.Y, evt.Z - 1) == ID ? true : evt.World.Reader.GetBlockId(evt.X, evt.Y, evt.Z + 1) == ID;
 
-    public override void onBreak(OnBreakEvent @event)
+    public override void OnBreak(OnBreakEvent @event)
     {
         BlockEntityChest? chest = @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X, @event.Y, @event.Z);
 
@@ -136,7 +133,10 @@ internal class BlockChest : BlockWithEntity
         for (int slot = 0; slot < chest.Size; ++slot)
         {
             ItemStack? stack = chest.GetStack(slot);
-            if (stack == null) continue;
+            if (stack == null)
+            {
+                continue;
+            }
 
             float offsetX = s_random.NextFloat() * 0.8F + 0.1F;
             float offsetY = s_random.NextFloat() * 0.8F + 0.1F;
@@ -160,10 +160,10 @@ internal class BlockChest : BlockWithEntity
             }
         }
 
-        base.onBreak(@event);
+        base.OnBreak(@event);
     }
 
-    public override bool onUse(OnUseEvent @event)
+    public override bool OnUse(OnUseEvent @event)
     {
         IInventory? chestInventory = @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X, @event.Y, @event.Z);
         if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y + 1, @event.Z))
@@ -171,42 +171,42 @@ internal class BlockChest : BlockWithEntity
             return true;
         }
 
-        if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == id && @event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y + 1, @event.Z))
+        if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == ID && @event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y + 1, @event.Z))
         {
             return true;
         }
 
-        if (@event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == id && @event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y + 1, @event.Z))
+        if (@event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == ID && @event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y + 1, @event.Z))
         {
             return true;
         }
 
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z - 1) == id && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y + 1, @event.Z - 1))
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z - 1) == ID && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y + 1, @event.Z - 1))
         {
             return true;
         }
 
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1) == id && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y + 1, @event.Z + 1))
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1) == ID && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y + 1, @event.Z + 1))
         {
             return true;
         }
 
-        if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == id)
+        if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == ID)
         {
             chestInventory = new InventoryLargeChest("Large chest", @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X - 1, @event.Y, @event.Z), chestInventory);
         }
 
-        if (@event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == id)
+        if (@event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == ID)
         {
             chestInventory = new InventoryLargeChest("Large chest", chestInventory, @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X + 1, @event.Y, @event.Z));
         }
 
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z - 1) == id)
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z - 1) == ID)
         {
             chestInventory = new InventoryLargeChest("Large chest", @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X, @event.Y, @event.Z - 1), chestInventory);
         }
 
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1) == id)
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1) == ID)
         {
             chestInventory = new InventoryLargeChest("Large chest", chestInventory, @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X, @event.Y, @event.Z + 1));
         }
@@ -220,5 +220,5 @@ internal class BlockChest : BlockWithEntity
         return true;
     }
 
-    public override BlockEntity getBlockEntity() => new BlockEntityChest();
+    public override BlockEntity GetBlockEntity() => new BlockEntityChest();
 }

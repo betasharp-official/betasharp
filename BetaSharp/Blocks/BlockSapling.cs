@@ -11,14 +11,14 @@ internal class BlockSapling : BlockPlant
 
     public BlockSapling(int id) : base(id, BlockTextures.SaplingOak)
     {
-        setBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, HalfSize * 2.0F, 0.5F + HalfSize);
+        SetBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, HalfSize * 2.0F, 0.5F + HalfSize);
     }
 
-    public override void onTick(OnTickEvent @event)
+    public override void OnTick(OnTickEvent @event)
     {
         if (@event.World.IsRemote) return;
 
-        base.onTick(@event);
+        base.OnTick(@event);
         if (@event.World.Reader.GetBrightness(@event.X, @event.Y + 1, @event.Z) < 9 || Random.Shared.Next(30) != 0) return;
 
         int saplingMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
@@ -28,7 +28,7 @@ internal class BlockSapling : BlockPlant
         }
         else
         {
-            generate(@event.World, @event.X, @event.Y, @event.Z);
+            Generate(@event.World, @event.X, @event.Y, @event.Z);
         }
     }
 
@@ -43,11 +43,11 @@ internal class BlockSapling : BlockPlant
         };
     }
 
-    public void generate(IWorldContext world, int x, int y, int z)
+    public void Generate(IWorldContext world, int x, int y, int z)
     {
         int saplingType = world.Reader.GetBlockMeta(x, y, z) & 3;
         world.Writer.SetBlock(x, y, z, 0);
-        Feature? treeFeature = null; 
+        object treeFeature = null;
         if (saplingType == 1)
         {
             treeFeature = new SpruceTreeFeature();
@@ -65,11 +65,11 @@ internal class BlockSapling : BlockPlant
             }
         }
 
-        if (!treeFeature!.Generate(world, s_random, x, y, z))
+        if (!((Feature)treeFeature).Generate(world, s_random, x, y, z))
         {
-            world.Writer.SetBlock(x, y, z, id, saplingType);
+            world.Writer.SetBlock(x, y, z, ID, saplingType);
         }
     }
 
-    protected override int getDroppedItemMeta(int blockMeta) => blockMeta & 3;
+    protected override int GetDroppedItemMeta(int blockMeta) => blockMeta & 3;
 }

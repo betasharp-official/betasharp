@@ -51,7 +51,7 @@ public abstract class Dimension
         int y = World.Reader.GetTopY(x, z);
         int topBlockId = World.Reader.GetBlockId(x, y, z);
 
-        return topBlockId != 0 && Block.Blocks[topBlockId] != null && Block.Blocks[topBlockId].material.BlocksMovement;
+        return topBlockId != 0 && Block.Blocks[topBlockId] != null && Block.Blocks[topBlockId].Material.BlocksMovement;
     }
 
     public virtual float GetTimeOfDay(long time, float tickDelta)

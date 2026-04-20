@@ -8,7 +8,7 @@ public class BlockTallGrass : BlockPlant
 {
     private const float HalfSize = 0.4F;
 
-    public BlockTallGrass(int i, int j) : base(i, j) => setBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, 0.8F, 0.5F + HalfSize);
+    public BlockTallGrass(int i, int j) : base(i, j) => SetBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, 0.8F, 0.5F + HalfSize);
 
     public override int GetTexture(Side side, int meta) => meta switch
     {
@@ -18,12 +18,15 @@ public class BlockTallGrass : BlockPlant
         _ => TextureId
     };
 
-    public override int getColor(int meta) => meta == 0 ? 0xFFFFFF : GrassColors.getDefaultColor();
+    public override int GetColor(int meta) => meta == 0 ? 0xFFFFFF : GrassColors.getDefaultColor();
 
-    public override int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z)
+    public override int GetColorMultiplier(IBlockReader iBlockReader, int x, int y, int z)
     {
         int meta = iBlockReader.GetBlockMeta(x, y, z);
-        if (meta == 0) return 0xFFFFFF;
+        if (meta == 0)
+        {
+            return 0xFFFFFF;
+        }
 
         long positionSeed = x * 3129871 + z * 6129781 + y;
         positionSeed = positionSeed * positionSeed * 42317861L + positionSeed * 11L;
@@ -36,9 +39,12 @@ public class BlockTallGrass : BlockPlant
         return GrassColors.getColor(temperature, downfall);
     }
 
-    public override int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z, int knownMeta)
+    public override int GetColorMultiplier(IBlockReader iBlockReader, int x, int y, int z, int knownMeta)
     {
-        if (knownMeta == 0) return 0xFFFFFF;
+        if (knownMeta == 0)
+        {
+            return 0xFFFFFF;
+        }
 
         long positionSeed = x * 3129871 + z * 6129781 + y;
         positionSeed = positionSeed * positionSeed * 42317861L + positionSeed * 11L;
@@ -51,5 +57,5 @@ public class BlockTallGrass : BlockPlant
         return GrassColors.getColor(temperature, downfall);
     }
 
-    public override int getDroppedItemId(int blockMeta) => Random.Shared.Next(8) == 0 ? Item.Seeds.id : -1;
+    public override int GetDroppedItemId(int blockMeta) => Random.Shared.Next(8) == 0 ? Item.Seeds.id : -1;
 }

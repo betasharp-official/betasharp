@@ -1,6 +1,9 @@
 namespace BetaSharp.Blocks;
 
-public enum BlockRendererType : int
+/// <summary>
+///     Enumeration of block renderer types, corresponding to the rendering logic used for each block.
+/// </summary>
+public enum BlockRendererType
 {
     Entity = -1,
     Standard = 0,
@@ -20,5 +23,5 @@ public enum BlockRendererType : int
     Bed = 14,
     Repeater = 15,
     PistonBase = 16,
-    PistonExtension = 17,
+    PistonExtension = 17
 }

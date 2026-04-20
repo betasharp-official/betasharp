@@ -67,7 +67,7 @@ public class SimulationRunner
                 }
 
                 int meta = _world.Reader.GetBlockMeta(tick.X, tick.Y, tick.Z);
-                Block.Blocks[blockId].onTick(new OnTickEvent(_world, tick.X, tick.Y, tick.Z, meta, blockId));
+                Block.Blocks[blockId].OnTick(new OnTickEvent(_world, tick.X, tick.Y, tick.Z, meta, blockId));
 
                 PullScheduledTicksFromWorldSpy();
                 DrainInstantUpdates();
@@ -105,7 +105,7 @@ public class SimulationRunner
             }
 
             int meta = _world.Reader.GetBlockMeta(update.X, update.Y, update.Z);
-            Block.Blocks[blockId].neighborUpdate(new OnTickEvent(_world, update.X, update.Y, update.Z, meta, update.BlockId));
+            Block.Blocks[blockId].NeighborUpdate(new OnTickEvent(_world, update.X, update.Y, update.Z, meta, update.BlockId));
         }
     }
 

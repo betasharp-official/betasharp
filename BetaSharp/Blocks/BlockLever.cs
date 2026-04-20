@@ -6,22 +6,22 @@ namespace BetaSharp.Blocks;
 
 internal class BlockLever(int id, int level) : Block(id, level, Material.PistonBreakable)
 {
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
+    public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override bool isOpaque() => false;
+    public override bool IsOpaque() => false;
 
-    public override bool isFullCube() => false;
+    public override bool IsFullCube() => false;
 
-    public override BlockRendererType getRenderType() => BlockRendererType.Lever;
+    public override BlockRendererType GetRenderType() => BlockRendererType.Lever;
 
-    public override bool canPlaceAt(CanPlaceAtContext context) =>
+    public override bool CanPlaceAt(CanPlaceAtContext context) =>
         context.World.Reader.ShouldSuffocate(context.X - 1, context.Y, context.Z) ||
         context.World.Reader.ShouldSuffocate(context.X + 1, context.Y, context.Z) ||
         context.World.Reader.ShouldSuffocate(context.X, context.Y, context.Z - 1) ||
         context.World.Reader.ShouldSuffocate(context.X, context.Y, context.Z + 1) ||
         context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
 
-    public override void onPlaced(OnPlacedEvent @event)
+    public override void OnPlaced(OnPlacedEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         int powered = meta & 8;
@@ -73,7 +73,7 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
 
         if (meta == -1)
         {
-            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
         else
@@ -82,9 +82,12 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
         }
     }
 
-    public override void neighborUpdate(OnTickEvent @event)
+    public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (!breakIfCannotPlaceAt(@event)) return;
+        if (!BreakIfCannotPlaceAt(@event))
+        {
+            return;
+        }
 
         int direction = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) & 7;
 
@@ -95,22 +98,28 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
                           (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && direction == 5) ||
                           (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && direction == 6);
 
-        if (!shouldDrop) return;
+        if (!shouldDrop)
+        {
+            return;
+        }
 
-        dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 
-    private bool breakIfCannotPlaceAt(OnTickEvent ctx)
+    private bool BreakIfCannotPlaceAt(OnTickEvent ctx)
     {
-        if (canPlaceAt(new CanPlaceAtContext(ctx.World, 0, ctx.X, ctx.Y, ctx.Z))) return true;
+        if (CanPlaceAt(new CanPlaceAtContext(ctx.World, 0, ctx.X, ctx.Y, ctx.Z)))
+        {
+            return true;
+        }
 
-        dropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z)));
+        DropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z)));
         ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
         return false;
     }
 
-    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
+    public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
         int meta = blockReader.GetBlockMeta(x, y, z) & 7;
         float width = 3.0F / 16.0F;
@@ -118,35 +127,38 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
         switch (meta)
         {
             case 1:
-                setBoundingBox(0.0F, 0.2F, 0.5F - width, width * 2.0F, 0.8F, 0.5F + width);
+                SetBoundingBox(0.0F, 0.2F, 0.5F - width, width * 2.0F, 0.8F, 0.5F + width);
                 break;
             case 2:
-                setBoundingBox(1.0F - width * 2.0F, 0.2F, 0.5F - width, 1.0F, 0.8F, 0.5F + width);
+                SetBoundingBox(1.0F - width * 2.0F, 0.2F, 0.5F - width, 1.0F, 0.8F, 0.5F + width);
                 break;
             case 3:
-                setBoundingBox(0.5F - width, 0.2F, 0.0F, 0.5F + width, 0.8F, width * 2.0F);
+                SetBoundingBox(0.5F - width, 0.2F, 0.0F, 0.5F + width, 0.8F, width * 2.0F);
                 break;
             case 4:
-                setBoundingBox(0.5F - width, 0.2F, 1.0F - width * 2.0F, 0.5F + width, 0.8F, 1.0F);
+                SetBoundingBox(0.5F - width, 0.2F, 1.0F - width * 2.0F, 0.5F + width, 0.8F, 1.0F);
                 break;
             default:
                 width = 0.25F;
-                setBoundingBox(0.5F - width, 0.0F, 0.5F - width, 0.5F + width, 0.6F, 0.5F + width);
+                SetBoundingBox(0.5F - width, 0.0F, 0.5F - width, 0.5F + width, 0.6F, 0.5F + width);
                 break;
         }
     }
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvent ctx) => toggleLever(ctx.World, ctx.X, ctx.Y, ctx.Z);
+    public override void OnBlockBreakStart(OnBlockBreakStartEvent ctx) => ToggleLever(ctx.World, ctx.X, ctx.Y, ctx.Z);
 
-    public override bool onUse(OnUseEvent ctx)
+    public override bool OnUse(OnUseEvent ctx)
     {
-        if (ctx.World.IsRemote) return true;
+        if (ctx.World.IsRemote)
+        {
+            return true;
+        }
 
-        toggleLever(ctx.World, ctx.X, ctx.Y, ctx.Z);
+        ToggleLever(ctx.World, ctx.X, ctx.Y, ctx.Z);
         return true;
     }
 
-    private void toggleLever(IWorldContext world, int x, int y, int z)
+    private void ToggleLever(IWorldContext world, int x, int y, int z)
     {
         int meta = world.Reader.GetBlockMeta(x, y, z);
         int direction = meta & 7;
@@ -155,66 +167,69 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
         world.Writer.SetBlockMeta(x, y, z, direction + powered);
         world.Broadcaster.SetBlocksDirty(x, y, z);
         world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.click", 0.3F, powered > 0 ? 0.6F : 0.5F);
-        world.Broadcaster.NotifyNeighbors(x, y, z, id);
+        world.Broadcaster.NotifyNeighbors(x, y, z, ID);
 
         switch (direction)
         {
             case 1:
-                world.Broadcaster.NotifyNeighbors(x - 1, y, z, id);
+                world.Broadcaster.NotifyNeighbors(x - 1, y, z, ID);
                 break;
             case 2:
-                world.Broadcaster.NotifyNeighbors(x + 1, y, z, id);
+                world.Broadcaster.NotifyNeighbors(x + 1, y, z, ID);
                 break;
             case 3:
-                world.Broadcaster.NotifyNeighbors(x, y, z - 1, id);
+                world.Broadcaster.NotifyNeighbors(x, y, z - 1, ID);
                 break;
             case 4:
-                world.Broadcaster.NotifyNeighbors(x, y, z + 1, id);
+                world.Broadcaster.NotifyNeighbors(x, y, z + 1, ID);
                 break;
             default:
-                world.Broadcaster.NotifyNeighbors(x, y - 1, z, id);
+                world.Broadcaster.NotifyNeighbors(x, y - 1, z, ID);
                 break;
         }
     }
 
-    public override void onBreak(OnBreakEvent ctx)
+    public override void OnBreak(OnBreakEvent ctx)
     {
         int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         if ((meta & 8) > 0)
         {
-            ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, id);
+            ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, ID);
             int direction = meta & 7;
 
             switch (direction)
             {
                 case 1:
-                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X - 1, ctx.Y, ctx.Z, id);
+                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X - 1, ctx.Y, ctx.Z, ID);
                     break;
                 case 2:
-                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X + 1, ctx.Y, ctx.Z, id);
+                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X + 1, ctx.Y, ctx.Z, ID);
                     break;
                 case 3:
-                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z - 1, id);
+                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z - 1, ID);
                     break;
                 case 4:
-                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z + 1, id);
+                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z + 1, ID);
                     break;
                 default:
-                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, id);
+                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, ID);
                     break;
             }
         }
 
-        base.onBreak(ctx);
+        base.OnBreak(ctx);
     }
 
-    public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) =>
+    public override bool IsPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) =>
         (iBlockReader.GetBlockMeta(x, y, z) & 8) > 0;
 
-    public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side)
+    public override bool IsStrongPoweringSide(IBlockReader world, int x, int y, int z, int side)
     {
         int meta = world.GetBlockMeta(x, y, z);
-        if ((meta & 8) == 0) return false;
+        if ((meta & 8) == 0)
+        {
+            return false;
+        }
 
         int direction = meta & 7;
         return (direction == 6 && side == 1) ||
@@ -225,5 +240,5 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
                (direction == 1 && side == 5);
     }
 
-    public override bool canEmitRedstonePower() => true;
+    public override bool CanEmitRedstonePower() => true;
 }

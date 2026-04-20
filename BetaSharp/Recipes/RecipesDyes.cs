@@ -9,7 +9,7 @@ internal class RecipesDyes
     {
         for (int colorIndex = 0; colorIndex < 16; ++colorIndex)
         {
-            m.AddShapelessRecipe(new ItemStack(Block.Wool, 1, BlockCloth.getItemMeta(colorIndex)), new ItemStack(Item.Dye, 1, colorIndex), new ItemStack(Item.ITEMS[Block.Wool.id], 1, 0));
+            m.AddShapelessRecipe(new ItemStack(Block.Wool, 1, BlockCloth.getItemMeta(colorIndex)), new ItemStack(Item.Dye, 1, colorIndex), new ItemStack(Item.ITEMS[Block.Wool.ID], 1, 0));
         }
 
         m.AddShapelessRecipe(new ItemStack(Item.Dye, 2, 11), Block.Dandelion);

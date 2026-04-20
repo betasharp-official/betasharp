@@ -136,12 +136,12 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
 
     private void InitFeatures()
     {
-        _featureNetherLavaSpring = new NetherLavaSpringFeature(Block.FlowingLava.id);
+        _featureNetherLavaSpring = new NetherLavaSpringFeature(Block.FlowingLava.ID);
         _featureNetherFire = new NetherFirePatchFeature();
         _featureGlowstoneFull = new GlowstoneClusterFeature();
         _featureGlowstoneRare = new GlowstoneClusterFeatureRare();
-        _featureBrownMushroom = new PlantPatchFeature(Block.BrownMushroom.id);
-        _featureRedMushroom = new PlantPatchFeature(Block.RedMushroom.id);
+        _featureBrownMushroom = new PlantPatchFeature(Block.BrownMushroom.ID);
+        _featureRedMushroom = new PlantPatchFeature(Block.RedMushroom.ID);
     }
 
     public void BuildTerrain(int chunkX, int chunkZ, byte[] blocks)
@@ -190,12 +190,12 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
                                 int blockType = 0;
                                 if (sampleY * 8 + subY < lavaLevel)
                                 {
-                                    blockType = Block.Lava.id;
+                                    blockType = Block.Lava.ID;
                                 }
 
                                 if (terrainDensity > 0.0D)
                                 {
-                                    blockType = Block.Netherrack.id;
+                                    blockType = Block.Netherrack.ID;
                                 }
 
                                 blocks[blockIndex] = (byte)blockType;
@@ -233,19 +233,19 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
                 bool isGravel = _gravelBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 0.0D;
                 int surfaceDepth = (int)(_depthBuffer[localX + localZ * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
                 int currentDepth = -1;
-                byte topBlock = (byte)Block.Netherrack.id;
-                byte soilBlock = (byte)Block.Netherrack.id;
+                byte topBlock = (byte)Block.Netherrack.ID;
+                byte soilBlock = (byte)Block.Netherrack.ID;
 
                 for (int blockY = 127; blockY >= 0; --blockY)
                 {
                     int blockIndex = (localZ * 16 + localX) * 128 + blockY;
                     if (blockY >= 127 - _random.NextInt(5))
                     {
-                        blocks[blockIndex] = (byte)Block.Bedrock.id;
+                        blocks[blockIndex] = (byte)Block.Bedrock.ID;
                     }
                     else if (blockY <= 0 + _random.NextInt(5))
                     {
-                        blocks[blockIndex] = (byte)Block.Bedrock.id;
+                        blocks[blockIndex] = (byte)Block.Bedrock.ID;
                     }
                     else
                     {
@@ -254,43 +254,43 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
                         {
                             currentDepth = -1;
                         }
-                        else if (currentBlock == Block.Netherrack.id)
+                        else if (currentBlock == Block.Netherrack.ID)
                         {
                             if (currentDepth == -1)
                             {
                                 if (surfaceDepth <= 0)
                                 {
                                     topBlock = 0;
-                                    soilBlock = (byte)Block.Netherrack.id;
+                                    soilBlock = (byte)Block.Netherrack.ID;
                                 }
                                 else if (blockY >= seaLevel - 4 && blockY <= seaLevel + 1)
                                 {
-                                    topBlock = (byte)Block.Netherrack.id;
-                                    soilBlock = (byte)Block.Netherrack.id;
+                                    topBlock = (byte)Block.Netherrack.ID;
+                                    soilBlock = (byte)Block.Netherrack.ID;
                                     if (isGravel)
                                     {
-                                        topBlock = (byte)Block.Gravel.id;
+                                        topBlock = (byte)Block.Gravel.ID;
                                     }
 
                                     if (isGravel)
                                     {
-                                        soilBlock = (byte)Block.Netherrack.id;
+                                        soilBlock = (byte)Block.Netherrack.ID;
                                     }
 
                                     if (isSoulsand)
                                     {
-                                        topBlock = (byte)Block.Soulsand.id;
+                                        topBlock = (byte)Block.Soulsand.ID;
                                     }
 
                                     if (isSoulsand)
                                     {
-                                        soilBlock = (byte)Block.Soulsand.id;
+                                        soilBlock = (byte)Block.Soulsand.ID;
                                     }
                                 }
 
                                 if (blockY < seaLevel && topBlock == 0)
                                 {
-                                    topBlock = (byte)Block.Lava.id;
+                                    topBlock = (byte)Block.Lava.ID;
                                 }
 
                                 currentDepth = surfaceDepth;

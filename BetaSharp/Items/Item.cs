@@ -59,7 +59,7 @@ public class Item
     public static Item IronHoe = (new ItemHoe(36, EnumToolMaterial.IRON)).setTexturePosition(2, 8).setItemName("hoeIron");
     public static Item DiamondHoe = (new ItemHoe(37, EnumToolMaterial.EMERALD)).setTexturePosition(3, 8).setItemName("hoeDiamond");
     public static Item GoldenHoe = (new ItemHoe(38, EnumToolMaterial.GOLD)).setTexturePosition(4, 8).setItemName("hoeGold");
-    public static Item Seeds = (new ItemSeeds(39, Block.Wheat.id)).setTexturePosition(9, 0).setItemName("seeds");
+    public static Item Seeds = (new ItemSeeds(39, Block.Wheat.ID)).setTexturePosition(9, 0).setItemName("seeds");
     public static Item Wheat = (new Item(40)).setTexturePosition(9, 1).setItemName("wheat");
     public static Item Bread = (new ItemFood(41, 5, false)).setTexturePosition(9, 2).setItemName("bread");
     public static Item LeatherHelmet = (new ItemArmor(42, 0, 0, 0)).setTexturePosition(0, 0).setItemName("helmetCloth");
@@ -90,8 +90,8 @@ public class Item
     public static Item Sign = (new ItemSign(67)).setTexturePosition(10, 2).setItemName("sign");
     public static Item WoodenDoor = (new ItemDoor(68, Material.Wood)).setTexturePosition(11, 2).setItemName("doorWood");
     public static Item Bucket = (new ItemBucket(69, 0)).setTexturePosition(10, 4).setItemName("bucket");
-    public static Item WaterBucket = (new ItemBucket(70, Block.FlowingWater.id)).setTexturePosition(11, 4).setItemName("bucketWater").setCraftingReturnItem(Bucket);
-    public static Item LavaBucket = (new ItemBucket(71, Block.FlowingLava.id)).setTexturePosition(12, 4).setItemName("bucketLava").setCraftingReturnItem(Bucket);
+    public static Item WaterBucket = (new ItemBucket(70, Block.FlowingWater.ID)).setTexturePosition(11, 4).setItemName("bucketWater").setCraftingReturnItem(Bucket);
+    public static Item LavaBucket = (new ItemBucket(71, Block.FlowingLava.ID)).setTexturePosition(12, 4).setItemName("bucketLava").setCraftingReturnItem(Bucket);
     public static Item Minecart = (new ItemMinecart(72, 0)).setTexturePosition(7, 8).setItemName("minecart");
     public static Item Saddle = (new ItemSaddle(73)).setTexturePosition(8, 6).setItemName("saddle");
     public static Item IronDoor = (new ItemDoor(74, Material.Metal)).setTexturePosition(12, 2).setItemName("doorIron");

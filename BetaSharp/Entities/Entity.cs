@@ -578,7 +578,7 @@ public abstract class Entity
                     blockY = MathHelper.Floor(this.Y - (double)0.2F - (double)StandingEyeHeight);
                     blockZ = MathHelper.Floor(this.Z);
                     blockId = World.Reader.GetBlockId(blockX, blockY, blockZ);
-                    if (World.Reader.GetBlockId(blockX, blockY - 1, blockZ) == Block.Fence.id)
+                    if (World.Reader.GetBlockId(blockX, blockY - 1, blockZ) == Block.Fence.ID)
                     {
                         blockId = World.Reader.GetBlockId(blockX, blockY - 1, blockZ);
                     }
@@ -587,17 +587,17 @@ public abstract class Entity
                     {
                         _nextStepSoundDistance = (int)HorizontalSpeed + 1;
                         BlockSoundGroup soundGroup = Block.Blocks[blockId].SoundGroup;
-                        if (World.Reader.GetBlockId(blockX, blockY + 1, blockZ) == Block.Snow.id)
+                        if (World.Reader.GetBlockId(blockX, blockY + 1, blockZ) == Block.Snow.ID)
                         {
                             soundGroup = Block.Snow.SoundGroup;
                             World.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
                         }
-                        else if (!Block.Blocks[blockId].material.IsFluid)
+                        else if (!Block.Blocks[blockId].Material.IsFluid)
                         {
                             World.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
                         }
 
-                        Block.Blocks[blockId].onSteppedOn(new OnEntityStepEvent(World, this, blockX, blockY, blockZ));
+                        Block.Blocks[blockId].OnSteppedOn(new OnEntityStepEvent(World, this, blockX, blockY, blockZ));
                     }
                 }
             }
@@ -619,7 +619,7 @@ public abstract class Entity
                             int collisionBlockId = World.Reader.GetBlockId(collisionX, collisionY, collisionZ);
                             if (collisionBlockId > 0)
                             {
-                                Block.Blocks[collisionBlockId].onEntityCollision(new OnEntityCollisionEvent(World, this, collisionX, collisionY, collisionZ));
+                                Block.Blocks[collisionBlockId].OnEntityCollision(new OnEntityCollisionEvent(World, this, collisionX, collisionY, collisionZ));
                             }
                         }
                     }
@@ -720,9 +720,9 @@ public abstract class Entity
         int floorEyeY = MathHelper.Floor((float)MathHelper.Floor(eyeY));
         int floorZ = MathHelper.Floor(Z);
         int id = World.Reader.GetBlockId(floorX, floorEyeY, floorZ);
-        if (id != 0 && Block.Blocks[id].material == mat)
+        if (id != 0 && Block.Blocks[id].Material == mat)
         {
-            float fluidHeight = BlockFluid.getFluidHeightFromMeta(World.Reader.GetBlockMeta(floorX, floorEyeY, floorZ)) - 1.0F / 9.0F;
+            float fluidHeight = BlockFluid.GetFluidHeightFromMeta(World.Reader.GetBlockMeta(floorX, floorEyeY, floorZ)) - 1.0F / 9.0F;
             float fluidSurfaceY = (float)(floorEyeY + 1) - fluidHeight;
             return eyeY < (double)fluidSurfaceY;
         }

@@ -25,7 +25,7 @@ internal class CraftingResultSlot : Slot
     public override void onTakeItem(ItemStack stack)
     {
         stack.onCraft(thePlayer.World, thePlayer);
-        if (stack.ItemId == Block.CraftingTable.id)
+        if (stack.ItemId == Block.CraftingTable.ID)
         {
             thePlayer.increaseStat(Achievements.BuildWorkbench, 1);
         }
@@ -33,7 +33,7 @@ internal class CraftingResultSlot : Slot
         {
             thePlayer.increaseStat(Achievements.BuildPickaxe, 1);
         }
-        else if (stack.ItemId == Block.Furnace.id)
+        else if (stack.ItemId == Block.Furnace.ID)
         {
             thePlayer.increaseStat(Achievements.BuildFurnace, 1);
         }

@@ -12,62 +12,62 @@ internal class BlockRedstoneOre : Block
     {
         if (lit)
         {
-            setTickRandomly(true);
+            SetTickRandomly(true);
         }
 
         this.lit = lit;
     }
 
-    public override int getTickRate() => 30;
+    public override int GetTickRate() => 30;
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvent @event)
+    public override void OnBlockBreakStart(OnBlockBreakStartEvent @event)
     {
-        light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-        base.onBlockBreakStart(@event);
+        Light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        base.OnBlockBreakStart(@event);
     }
 
-    public override void onSteppedOn(OnEntityStepEvent @event)
+    public override void OnSteppedOn(OnEntityStepEvent @event)
     {
-        light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-        base.onSteppedOn(@event);
+        Light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        base.OnSteppedOn(@event);
     }
 
-    public override bool onUse(OnUseEvent @event)
+    public override bool OnUse(OnUseEvent @event)
     {
-        light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-        return base.onUse(@event);
+        Light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        return base.OnUse(@event);
     }
 
-    private void light(IBlockWriter worldWriter, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    private void Light(IBlockWriter worldWriter, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        spawnParticles(worldRead, broadcaster, x, y, z);
-        if (worldRead.GetBlockId(x, y, z) == RedstoneOre.id)
+        SpawnParticles(worldRead, broadcaster, x, y, z);
+        if (worldRead.GetBlockId(x, y, z) == RedstoneOre.ID)
         {
-            worldWriter.SetBlock(x, y, z, LitRedstoneOre.id);
+            worldWriter.SetBlock(x, y, z, LitRedstoneOre.ID);
         }
     }
 
-    public override void onTick(OnTickEvent @event)
+    public override void OnTick(OnTickEvent @event)
     {
-        if (id == LitRedstoneOre.id)
+        if (ID == LitRedstoneOre.ID)
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, RedstoneOre.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, RedstoneOre.ID);
         }
     }
 
-    public override int getDroppedItemId(int blockMeta) => Item.Redstone.id;
+    public override int GetDroppedItemId(int blockMeta) => Item.Redstone.id;
 
-    public override int getDroppedItemCount() => 4 + Random.Shared.Next(2);
+    public override int GetDroppedItemCount() => 4 + Random.Shared.Next(2);
 
-    public override void randomDisplayTick(OnTickEvent ctx)
+    public override void RandomDisplayTick(OnTickEvent ctx)
     {
         if (lit)
         {
-            spawnParticles(ctx.World.Reader, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
+            SpawnParticles(ctx.World.Reader, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
         }
     }
 
-    private static void spawnParticles(IBlockReader reader, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    private static void SpawnParticles(IBlockReader reader, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         double faceOffset = 1.0D / 16.0D;
         for (int direction = 0; direction < 6; ++direction)

@@ -479,7 +479,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
                 if (temperatureSample < 0.5D && topSolidBlockY > 0 && topSolidBlockY < ChuckFormat.WorldHeight && _world.Reader.IsAir(x, topSolidBlockY, z) && _world.Reader.GetMaterial(x, topSolidBlockY - 1, z).BlocksMovement &&
                     _world.Reader.GetMaterial(x, topSolidBlockY - 1, z) != Material.Ice)
                 {
-                    _world.Writer.SetBlock(x, topSolidBlockY, z, Block.Snow.id, 0, doUpdate: false);
+                    _world.Writer.SetBlock(x, topSolidBlockY, z, Block.Snow.ID, 0, doUpdate: false);
                 }
             }
         }
@@ -497,30 +497,30 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
 
     private void InitFeatures()
     {
-        _featureWaterLake = new LakeFeature(Block.Water.id);
-        _featureLavaLake = new LakeFeature(Block.Lava.id);
+        _featureWaterLake = new LakeFeature(Block.Water.ID);
+        _featureLavaLake = new LakeFeature(Block.Lava.ID);
         _featureDungeon = new DungeonFeature();
         _featureClay = new ClayOreFeature(32);
-        _featureDirt = new OreFeature(Block.Dirt.id, 32);
-        _featureGravel = new OreFeature(Block.Gravel.id, 32);
-        _featureCoal = new OreFeature(Block.CoalOre.id, 16);
-        _featureIron = new OreFeature(Block.IronOre.id, 8);
-        _featureGold = new OreFeature(Block.GoldOre.id, 8);
-        _featureRedstone = new OreFeature(Block.RedstoneOre.id, 7);
-        _featureDiamond = new OreFeature(Block.DiamondOre.id, 7);
-        _featureLapis = new OreFeature(Block.LapisOre.id, 6);
-        _featureDandelion = new PlantPatchFeature(Block.Dandelion.id);
-        _featureGrass1 = new GrassPatchFeature(Block.Grass.id, 1);
-        _featureGrass2 = new GrassPatchFeature(Block.Grass.id, 2);
-        _featureDeadBush = new DeadBushPatchFeature(Block.DeadBush.id);
-        _featureRose = new PlantPatchFeature(Block.Rose.id);
-        _featureBrownMushroom = new PlantPatchFeature(Block.BrownMushroom.id);
-        _featureRedMushroom = new PlantPatchFeature(Block.RedMushroom.id);
+        _featureDirt = new OreFeature(Block.Dirt.ID, 32);
+        _featureGravel = new OreFeature(Block.Gravel.ID, 32);
+        _featureCoal = new OreFeature(Block.CoalOre.ID, 16);
+        _featureIron = new OreFeature(Block.IronOre.ID, 8);
+        _featureGold = new OreFeature(Block.GoldOre.ID, 8);
+        _featureRedstone = new OreFeature(Block.RedstoneOre.ID, 7);
+        _featureDiamond = new OreFeature(Block.DiamondOre.ID, 7);
+        _featureLapis = new OreFeature(Block.LapisOre.ID, 6);
+        _featureDandelion = new PlantPatchFeature(Block.Dandelion.ID);
+        _featureGrass1 = new GrassPatchFeature(Block.Grass.ID, 1);
+        _featureGrass2 = new GrassPatchFeature(Block.Grass.ID, 2);
+        _featureDeadBush = new DeadBushPatchFeature(Block.DeadBush.ID);
+        _featureRose = new PlantPatchFeature(Block.Rose.ID);
+        _featureBrownMushroom = new PlantPatchFeature(Block.BrownMushroom.ID);
+        _featureRedMushroom = new PlantPatchFeature(Block.RedMushroom.ID);
         _featureSugarcane = new SugarCanePatchFeature();
         _featurePumpkin = new PumpkinPatchFeature();
         _featureCactus = new CactusPatchFeature();
-        _featureWaterSpring = new SpringFeature(Block.FlowingWater.id);
-        _featureLavaSpring = new SpringFeature(Block.FlowingLava.id);
+        _featureWaterSpring = new SpringFeature(Block.FlowingWater.ID);
+        _featureLavaSpring = new SpringFeature(Block.FlowingLava.ID);
     }
 
     /// <summary>
@@ -591,11 +591,11 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
                                 {
                                     if (temp < 0.5D && sampleY * 8 + subY >= halfChunkHeight - 1)
                                     {
-                                        blockType = Block.Ice.id;
+                                        blockType = Block.Ice.ID;
                                     }
                                     else
                                     {
-                                        blockType = Block.Water.id;
+                                        blockType = Block.Water.ID;
                                     }
                                 }
 
@@ -603,7 +603,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
                                 // turn it into stone
                                 if (terrainDensity > 0.0D)
                                 {
-                                    blockType = Block.Stone.id;
+                                    blockType = Block.Stone.ID;
                                 }
 
                                 blocks[blockIndex] = (byte)blockType;
@@ -661,7 +661,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
                     // Generate Bedrock floor
                     if (blockY <= 0 + _random.NextInt(5))
                     {
-                        blocks[blockIndex] = (byte)Block.Bedrock.id;
+                        blocks[blockIndex] = (byte)Block.Bedrock.ID;
                     }
                     else
                     {
@@ -670,14 +670,14 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
                         {
                             currentDepth = -1;
                         }
-                        else if (activeBlock == Block.Stone.id)
+                        else if (activeBlock == Block.Stone.ID)
                         {
                             if (currentDepth == -1)
                             {
                                 if (surfaceDepth <= 0)
                                 {
                                     topBlock = 0;
-                                    soilBlock = (byte)Block.Stone.id;
+                                    soilBlock = (byte)Block.Stone.ID;
                                 }
                                 else if (blockY >= WATER_LEVEL - 4 && blockY <= WATER_LEVEL + 1)
                                 {
@@ -690,23 +690,23 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
 
                                     if (gravelActive)
                                     {
-                                        soilBlock = (byte)Block.Gravel.id;
+                                        soilBlock = (byte)Block.Gravel.ID;
                                     }
 
                                     if (sandActive)
                                     {
-                                        topBlock = (byte)Block.Sand.id;
+                                        topBlock = (byte)Block.Sand.ID;
                                     }
 
                                     if (sandActive)
                                     {
-                                        soilBlock = (byte)Block.Sand.id;
+                                        soilBlock = (byte)Block.Sand.ID;
                                     }
                                 }
 
                                 if (blockY < WATER_LEVEL && topBlock == 0)
                                 {
-                                    topBlock = (byte)Block.Water.id;
+                                    topBlock = (byte)Block.Water.ID;
                                 }
 
                                 currentDepth = surfaceDepth;
@@ -723,10 +723,10 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
                             {
                                 --currentDepth;
                                 blocks[blockIndex] = soilBlock;
-                                if (currentDepth == 0 && soilBlock == Block.Sand.id)
+                                if (currentDepth == 0 && soilBlock == Block.Sand.ID)
                                 {
                                     currentDepth = _random.NextInt(4);
-                                    soilBlock = (byte)Block.Sandstone.id;
+                                    soilBlock = (byte)Block.Sandstone.ID;
                                 }
                             }
                         }

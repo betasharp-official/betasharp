@@ -19,51 +19,54 @@ internal class BlockPressurePlate : Block
     public BlockPressurePlate(int id, int textureId, PressurePlateActiviationRule rule, Material material) : base(id, textureId, material)
     {
         _activationRule = rule;
-        setTickRandomly(true);
-        setBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1 / 32f, 1.0F - EdgeInset);
+        SetTickRandomly(true);
+        SetBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1 / 32f, 1.0F - EdgeInset);
     }
 
-    public override int getTickRate() => 20;
+    public override int GetTickRate() => 20;
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
+    public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override bool isOpaque() => false;
+    public override bool IsOpaque() => false;
 
-    public override bool isFullCube() => false;
+    public override bool IsFullCube() => false;
 
-    public override bool canPlaceAt(CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
+    public override bool CanPlaceAt(CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
 
-    public override void onPlaced(OnPlacedEvent @event)
+    public override void OnPlaced(OnPlacedEvent @event)
     {
     }
 
-    public override void neighborUpdate(OnTickEvent @event)
+    public override void NeighborUpdate(OnTickEvent @event)
     {
         bool shouldBreak = !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
 
-        if (!shouldBreak) return;
+        if (!shouldBreak)
+        {
+            return;
+        }
 
-        dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 
-    public override void onTick(OnTickEvent @event)
+    public override void OnTick(OnTickEvent @event)
     {
         if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) != 0)
         {
-            updatePlateState(@event.World, @event.X, @event.Y, @event.Z);
+            UpdatePlateState(@event.World, @event.X, @event.Y, @event.Z);
         }
     }
 
-    public override void onEntityCollision(OnEntityCollisionEvent @event)
+    public override void OnEntityCollision(OnEntityCollisionEvent @event)
     {
         if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) != 1)
         {
-            updatePlateState(@event.World, @event.X, @event.Y, @event.Z);
+            UpdatePlateState(@event.World, @event.X, @event.Y, @event.Z);
         }
     }
 
-    private void updatePlateState(IWorldContext ctx, int x, int y, int z)
+    private void UpdatePlateState(IWorldContext ctx, int x, int y, int z)
     {
         bool wasPressed = ctx.Reader.GetBlockMeta(x, y, z) == 1;
         bool shouldBePressed = false;
@@ -87,69 +90,71 @@ internal class BlockPressurePlate : Block
                 if (!ctx.IsRemote)
                 {
                     ctx.Writer.SetBlockMeta(x, y, z, 1);
-                    ctx.Broadcaster.NotifyNeighbors(x, y, z, id);
-                    ctx.Broadcaster.NotifyNeighbors(x, y - 1, z, id);
+                    ctx.Broadcaster.NotifyNeighbors(x, y, z, ID);
+                    ctx.Broadcaster.NotifyNeighbors(x, y - 1, z, ID);
                     ctx.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
                 }
                 else
                 {
                     ctx.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.1D, z + 0.5D, "random.click", 0.3F, 0.6F);
                 }
+
                 break;
 
             case false when wasPressed:
                 if (!ctx.IsRemote)
                 {
                     ctx.Writer.SetBlockMeta(x, y, z, 0);
-                    ctx.Broadcaster.NotifyNeighbors(x, y, z, id);
-                    ctx.Broadcaster.NotifyNeighbors(x, y - 1, z, id);
+                    ctx.Broadcaster.NotifyNeighbors(x, y, z, ID);
+                    ctx.Broadcaster.NotifyNeighbors(x, y - 1, z, ID);
                     ctx.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
                 }
                 else
                 {
                     ctx.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.1D, z + 0.5D, "random.click", 0.3F, 0.5F);
                 }
+
                 break;
         }
 
         if (shouldBePressed && !ctx.IsRemote)
         {
-            ctx.TickScheduler.ScheduleBlockUpdate(x, y, z, id, getTickRate());
+            ctx.TickScheduler.ScheduleBlockUpdate(x, y, z, ID, GetTickRate());
         }
     }
 
-    public override void onBreak(OnBreakEvent @event)
+    public override void OnBreak(OnBreakEvent @event)
     {
         int plateState = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (plateState > 0)
         {
-            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, id);
-            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, id);
+            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, ID);
+            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, ID);
         }
 
-        base.onBreak(@event);
+        base.OnBreak(@event);
     }
 
-    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
+    public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
         bool isPressed = blockReader.GetBlockMeta(x, y, z) == 1;
         if (isPressed)
         {
-            setBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1 / 32f, 1.0F - EdgeInset);
+            SetBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1 / 32f, 1.0F - EdgeInset);
         }
         else
         {
-            setBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1.0F / 16.0F, 1.0F - EdgeInset);
+            SetBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1.0F / 16.0F, 1.0F - EdgeInset);
         }
     }
 
-    public override bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => iBlockReader.GetBlockMeta(x, y, z) > 0;
+    public override bool IsPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => iBlockReader.GetBlockMeta(x, y, z) > 0;
 
-    public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => world.GetBlockMeta(x, y, z) != 0 && side == 1;
+    public override bool IsStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => world.GetBlockMeta(x, y, z) != 0 && side == 1;
 
-    public override bool canEmitRedstonePower() => true;
+    public override bool CanEmitRedstonePower() => true;
 
-    public override void setupRenderBoundingBox() => setBoundingBox(0.5F - HalfWidth, 0.5F - HalfHeight, 0.5F - HalfDepth, 0.5F + HalfWidth, 0.5F + HalfHeight, 0.5F + HalfDepth);
+    public override void SetupRenderBoundingBox() => SetBoundingBox(0.5F - HalfWidth, 0.5F - HalfHeight, 0.5F - HalfDepth, 0.5F + HalfWidth, 0.5F + HalfHeight, 0.5F + HalfDepth);
 
-    public override int getPistonBehavior() => 1;
+    public override PistonBehavior GetPistonBehavior() => PistonBehavior.Break;
 }

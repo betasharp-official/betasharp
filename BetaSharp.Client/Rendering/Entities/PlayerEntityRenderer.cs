@@ -131,7 +131,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         {
             GLManager.GL.PushMatrix();
             _modelBipedMain.bipedHead.transform(1.0F / 16.0F);
-            if (BlockRenderer.IsSideLit(Block.Blocks[var3.ItemId].getRenderType()))
+            if (BlockRenderer.IsSideLit(Block.Blocks[var3.ItemId].GetRenderType()))
             {
                 float var4 = 10.0F / 16.0F;
                 GLManager.GL.Translate(0.0F, -0.25F, 0.0F);
@@ -218,7 +218,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 var21 = new ItemStack(Item.Stick);
             }
 
-            if (var21.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[var21.ItemId].getRenderType()))
+            if (var21.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[var21.ItemId].GetRenderType()))
             {
                 var5 = 0.5F;
                 GLManager.GL.Translate(0.0F, 3.0F / 16.0F, -(5.0F / 16.0F));

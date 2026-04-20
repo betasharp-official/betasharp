@@ -178,7 +178,7 @@ public class WorldRenderer : IWorldEventListener
 
     public void LoadRenderers()
     {
-        Block.Leaves.setGraphicsLevel(true);
+        Block.Leaves.SetGraphicsLevel(true);
         _renderDistance = _game.Options.renderDistance;
 
         ChunkRenderer?.Dispose();
@@ -265,7 +265,7 @@ public class WorldRenderer : IWorldEventListener
             for (var6 = 0; var6 < _world.Entities.BlockEntities.Count; ++var6)
             {
                 BlockEntity entity = _world.Entities.BlockEntities[var6];
-                if (!entity.isRemoved() && culler.IsBoundingBoxInFrustum(new Box(entity.X, entity.Y, entity.Z, entity.X + 1, entity.Y + 1, entity.Z + 1)))
+                if (!entity.IsRemoved() && culler.IsBoundingBoxInFrustum(new Box(entity.X, entity.Y, entity.Z, entity.X + 1, entity.Y + 1, entity.Z + 1)))
                 {
                     BlockEntityRenderer.Instance.RenderTileEntity(entity, var3);
                 }
@@ -677,11 +677,11 @@ public class WorldRenderer : IWorldEventListener
             int var7 = _world.Reader.GetBlockId(var2.BlockX, var2.BlockY, var2.BlockZ);
             if (var7 > 0)
             {
-                Block.Blocks[var7].updateBoundingBox(_world.Reader, var2.BlockX, var2.BlockY, var2.BlockZ);
+                Block.Blocks[var7].UpdateBoundingBox(_world.Reader, var2.BlockX, var2.BlockY, var2.BlockZ);
                 double var8 = var1.LastTickX + (var1.X - var1.LastTickX) * (double)var5;
                 double var10 = var1.LastTickY + (var1.Y - var1.LastTickY) * (double)var5;
                 double var12 = var1.LastTickZ + (var1.Z - var1.LastTickZ) * (double)var5;
-                DrawOutlinedBoundingBox(Block.Blocks[var7].getBoundingBox(_world.Reader, _world.Entities, var2.BlockX, var2.BlockY, var2.BlockZ).Expand((double)var6, (double)var6, (double)var6).Offset(-var8, -var10, -var12));
+                DrawOutlinedBoundingBox(Block.Blocks[var7].GetBoundingBox(_world.Reader, _world.Entities, var2.BlockX, var2.BlockY, var2.BlockZ).Expand((double)var6, (double)var6, (double)var6).Offset(-var8, -var10, -var12));
             }
 
             GLManager.GL.DepthMask(true);

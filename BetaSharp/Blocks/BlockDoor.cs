@@ -16,7 +16,7 @@ internal class BlockDoor : Block
     {
         TextureId = BlockTextures.DoorWood;
         if (material == Material.Metal) TextureId = BlockTextures.DoorIron;
-        setBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, Height, 0.5F + HalfWidth);
+        SetBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, Height, 0.5F + HalfWidth);
     }
 
     public override int GetTexture(Side side, int meta)
@@ -43,56 +43,56 @@ internal class BlockDoor : Block
         return texture;
     }
 
-    public override bool isOpaque() => false;
+    public override bool IsOpaque() => false;
 
-    public override bool isFullCube() => false;
+    public override bool IsFullCube() => false;
 
-    public override BlockRendererType getRenderType() => BlockRendererType.Door;
+    public override BlockRendererType GetRenderType() => BlockRendererType.Door;
 
-    public override Box getBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z)
+    public override Box GetBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
-        updateBoundingBox(world, x, y, z);
-        return base.getBoundingBox(world, entities, x, y, z);
+        UpdateBoundingBox(world, x, y, z);
+        return base.GetBoundingBox(world, entities, x, y, z);
     }
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
+    public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
-        updateBoundingBox(world, x, y, z);
-        return base.getCollisionShape(world, entities, x, y, z);
+        UpdateBoundingBox(world, x, y, z);
+        return base.GetCollisionShape(world, entities, x, y, z);
     }
 
-    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => Rotate(SetOpen(blockReader.GetBlockMeta(x, y, z)));
+    public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => Rotate(SetOpen(blockReader.GetBlockMeta(x, y, z)));
 
     public void Rotate(int meta)
     {
-        setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F, 1.0F);
+        SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F, 1.0F);
         switch (meta)
         {
             case 0:
-                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, Thickness);
+                SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, Thickness);
                 break;
             case 1:
-                setBoundingBox(1.0F - Thickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                SetBoundingBox(1.0F - Thickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 break;
             case 2:
-                setBoundingBox(0.0F, 0.0F, 1.0F - Thickness, 1.0F, 1.0F, 1.0F);
+                SetBoundingBox(0.0F, 0.0F, 1.0F - Thickness, 1.0F, 1.0F, 1.0F);
                 break;
             case 3:
-                setBoundingBox(0.0F, 0.0F, 0.0F, Thickness, 1.0F, 1.0F);
+                SetBoundingBox(0.0F, 0.0F, 0.0F, Thickness, 1.0F, 1.0F);
                 break;
         }
     }
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvent @event) => updateDorState(@event.World, @event.X, @event.Y, @event.Z);
+    public override void OnBlockBreakStart(OnBlockBreakStartEvent @event) => UpdateDoorState(@event.World, @event.X, @event.Y, @event.Z);
 
-    private bool updateDorState(IWorldContext world, int x, int y, int z)
+    private bool UpdateDoorState(IWorldContext world, int x, int y, int z)
     {
         if (world.IsRemote)
         {
             return true;
         }
 
-        if (material == Material.Metal)
+        if (Material == Material.Metal)
         {
             return true;
         }
@@ -100,15 +100,15 @@ internal class BlockDoor : Block
         int meta = world.Reader.GetBlockMeta(x, y, z);
         if ((meta & 8) != 0)
         {
-            if (world.Reader.GetBlockId(x, y - 1, z) == id)
+            if (world.Reader.GetBlockId(x, y - 1, z) == ID)
             {
-                updateDorState(world, x, y - 1, z);
+                UpdateDoorState(world, x, y - 1, z);
             }
 
             return true;
         }
 
-        if (world.Reader.GetBlockId(x, y + 1, z) == id)
+        if (world.Reader.GetBlockId(x, y + 1, z) == ID)
         {
             world.Writer.SetBlockMeta(x, y + 1, z, (meta ^ 4) + 8);
         }
@@ -120,18 +120,21 @@ internal class BlockDoor : Block
     }
 
 
-    public override bool onUse(OnUseEvent @event) => updateDorState(@event.World, @event.X, @event.Y, @event.Z);
+    public override bool OnUse(OnUseEvent @event) => UpdateDoorState(@event.World, @event.X, @event.Y, @event.Z);
     public static int SetOpen(int meta) => (meta & 4) == 0 ? (meta - 1) & 3 : meta & 3;
 
     public void SetOpen(IWorldContext world, int x, int y, int z, bool open)
     {
-        if (world.IsRemote) return;
+        if (world.IsRemote)
+        {
+            return;
+        }
 
         int meta = world.Reader.GetBlockMeta(x, y, z);
 
         if ((meta & 8) != 0)
         {
-            if (world.Reader.GetBlockId(x, y - 1, z) == id)
+            if (world.Reader.GetBlockId(x, y - 1, z) == ID)
             {
                 y -= 1;
                 meta = world.Reader.GetBlockMeta(x, y, z);
@@ -142,9 +145,12 @@ internal class BlockDoor : Block
             }
         }
 
-        if (isOpen(meta) == open) return;
+        if (IsOpen(meta) == open)
+        {
+            return;
+        }
 
-        if (world.Reader.GetBlockId(x, y + 1, z) == id)
+        if (world.Reader.GetBlockId(x, y + 1, z) == ID)
         {
             world.Writer.SetBlockMeta(x, y + 1, z, (meta ^ 4) + 8);
         }
@@ -154,27 +160,27 @@ internal class BlockDoor : Block
         world.Broadcaster.WorldEvent(1003, x, y, z, 0);
     }
 
-    public override void neighborUpdate(OnTickEvent @event)
+    public override void NeighborUpdate(OnTickEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
 
         if ((meta & 8) != 0)
         {
-            if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) != id)
+            if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) != ID)
             {
                 @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             }
-            else if (@event.BlockId > 0 && Blocks[@event.BlockId].canEmitRedstonePower())
+            else if (@event.BlockId > 0 && Blocks[@event.BlockId].CanEmitRedstonePower())
             {
                 int bottomMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y - 1, @event.Z);
-                neighborUpdate(new OnTickEvent(@event.World, @event.X, @event.Y - 1, @event.Z, bottomMeta, @event.BlockId));
+                NeighborUpdate(new OnTickEvent(@event.World, @event.X, @event.Y - 1, @event.Z, bottomMeta, @event.BlockId));
             }
         }
         else
         {
             bool wasBroken = false;
 
-            if (@event.World.Reader.GetBlockId(@event.X, @event.Y + 1, @event.Z) != id)
+            if (@event.World.Reader.GetBlockId(@event.X, @event.Y + 1, @event.Z) != ID)
             {
                 @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
                 wasBroken = true;
@@ -184,7 +190,7 @@ internal class BlockDoor : Block
             {
                 @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
                 wasBroken = true;
-                if (@event.World.Reader.GetBlockId(@event.X, @event.Y + 1, @event.Z) == id)
+                if (@event.World.Reader.GetBlockId(@event.X, @event.Y + 1, @event.Z) == ID)
                 {
                     @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, 0);
                 }
@@ -194,10 +200,10 @@ internal class BlockDoor : Block
             {
                 if (!@event.World.IsRemote)
                 {
-                    dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, meta));
+                    DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, meta));
                 }
             }
-            else if (@event.BlockId > 0 && Blocks[@event.BlockId].canEmitRedstonePower())
+            else if (@event.BlockId > 0 && Blocks[@event.BlockId].CanEmitRedstonePower())
             {
                 bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
                                  @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
@@ -207,20 +213,20 @@ internal class BlockDoor : Block
         }
     }
 
-    public override int getDroppedItemId(int blockMeta) => (blockMeta & 8) != 0 ? 0 : material == Material.Metal ? Item.IronDoor.id : Item.WoodenDoor.id;
+    public override int GetDroppedItemId(int blockMeta) => (blockMeta & 8) != 0 ? 0 : Material == Material.Metal ? Item.IronDoor.id : Item.WoodenDoor.id;
 
-    public override HitResult raycast(IBlockReader world, EntityManager entities, int x, int y, int z, Vec3D startPos, Vec3D endPos)
+    public override HitResult Raycast(IBlockReader world, EntityManager entities, int x, int y, int z, Vec3D startPos, Vec3D endPos)
     {
-        updateBoundingBox(world, entities, x, y, z);
-        return base.raycast(world, entities, x, y, z, startPos, endPos);
+        UpdateBoundingBox(world, entities, x, y, z);
+        return base.Raycast(world, entities, x, y, z, startPos, endPos);
     }
 
 
-    public override bool canPlaceAt(CanPlaceAtContext evt) => evt.Y < 127 &&
+    public override bool CanPlaceAt(CanPlaceAtContext evt) => evt.Y < 127 &&
                                                               evt.World.Reader.ShouldSuffocate(evt.X, evt.Y - 1, evt.Z) &&
-                                                              base.canPlaceAt(evt);
+                                                              base.CanPlaceAt(evt);
 
-    public static bool isOpen(int meta) => (meta & 4) != 0;
+    public static bool IsOpen(int meta) => (meta & 4) != 0;
 
-    public override int getPistonBehavior() => 1;
+    public override PistonBehavior GetPistonBehavior() => PistonBehavior.Break;
 }

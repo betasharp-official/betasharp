@@ -20,7 +20,7 @@ internal class GrassPatchFeature : Feature
         while (true)
         {
             int blockId = level.Reader.GetBlockId(x, y, z);
-            if ((blockId != 0 && blockId != Block.Leaves.id) || y <= 0)
+            if ((blockId != 0 && blockId != Block.Leaves.ID) || y <= 0)
             {
                 for (int i = 0; i < 128; ++i)
                 {
@@ -28,7 +28,7 @@ internal class GrassPatchFeature : Feature
                     int genY = y + rand.NextInt(4) - rand.NextInt(4);
                     int genZ = z + rand.NextInt(8) - rand.NextInt(8);
                     if (level.Reader.IsAir(genX, genY, genZ) &&
-                        ((BlockPlant)Block.Blocks[_tallGrassBlockId]).canGrow(new OnTickEvent(level, genX, genY, genZ, level.Reader.GetBlockMeta(genX, genY, genZ), level.Reader.GetBlockId(genX, genY, genZ))))
+                        ((BlockPlant)Block.Blocks[_tallGrassBlockId]).CanGrow(new OnTickEvent(level, genX, genY, genZ, level.Reader.GetBlockMeta(genX, genY, genZ), level.Reader.GetBlockId(genX, genY, genZ))))
                     {
                         level.Writer.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, _tallGrassBlockId, _tallGrassBlockMeta, false);
                     }

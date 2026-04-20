@@ -305,13 +305,13 @@ public class ParticleManager
         ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz, vx, vy, vz);
 
         int texIndex = block.GetTexture(hitFace.ToSide(), meta);
-        float gravity = block.particleFallSpeedModifier;
+        float gravity = block.ParticleFallSpeedModifier;
         float r = 0.6f, g = 0.6f, b = 0.6f;
         float baseScale = RandomBaseScale() / 2.0f;
 
         if (!(block == Block.GrassBlock && texIndex != 0))
         {
-            int color = block.getColorMultiplier(worldObj.Reader, blockX, blockY, blockZ, meta);
+            int color = block.GetColorMultiplier(worldObj.Reader, blockX, blockY, blockZ, meta);
             r *= (color >> 16 & 255) / 255.0f;
             g *= (color >> 8 & 255) / 255.0f;
             b *= (color & 255) / 255.0f;
@@ -333,13 +333,13 @@ public class ParticleManager
         bvz *= velScale;
 
         int texIndex = block.GetTexture(hitFace.ToSide(), meta);
-        float gravity = block.particleFallSpeedModifier;
+        float gravity = block.ParticleFallSpeedModifier;
         float r = 0.6f, g = 0.6f, b = 0.6f;
         float baseScale = RandomBaseScale() * sizeScale / 2.0f;
 
         if (!(block == Block.GrassBlock && texIndex != 0))
         {
-            int color = block.getColorMultiplier(worldObj.Reader, blockX, blockY, blockZ, meta);
+            int color = block.GetColorMultiplier(worldObj.Reader, blockX, blockY, blockZ, meta);
             r *= (color >> 16 & 255) / 255.0f;
             g *= (color >> 8 & 255) / 255.0f;
             b *= (color & 255) / 255.0f;
@@ -356,7 +356,7 @@ public class ParticleManager
 
         int texIndex = item.getTextureId(0);
         float baseScale = RandomBaseScale() / 2.0f;
-        float gravity = Block.SnowBlock.particleFallSpeedModifier;
+        float gravity = Block.SnowBlock.ParticleFallSpeedModifier;
 
         _layers[2].Add(ParticleType.Slime, x, y, z, bvx, bvy, bvz,
             1.0f, 1.0f, 1.0f, baseScale, gravity, texIndex,

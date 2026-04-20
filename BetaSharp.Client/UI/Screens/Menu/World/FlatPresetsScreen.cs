@@ -21,7 +21,7 @@ public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) 
         private static int GetIconIdFromValue(string value)
         {
             var info = FlatGeneratorInfo.CreateFromString(value);
-            return info.FlatLayers.Count > 0 ? info.FlatLayers[^1].FillBlock : Block.GrassBlock.id;
+            return info.FlatLayers.Count > 0 ? info.FlatLayers[^1].FillBlock : Block.GrassBlock.ID;
         }
 
         private static int GetIconMetaFromValue(string value)
@@ -34,9 +34,9 @@ public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) 
     public static readonly List<PresetItem> Presets =
     [
         new PresetItem("Classic Flat", "2;7,2x3,2;1;village"),
-        new PresetItem("Tunnelers' Dream", "2;7,230x1,5x3,2;1;biome_1,dungeon,decoration,stronghold,mineshaft", Block.Stone.id),
+        new PresetItem("Tunnelers' Dream", "2;7,230x1,5x3,2;1;biome_1,dungeon,decoration,stronghold,mineshaft", Block.Stone.ID),
         new PresetItem("Water World", "2;7,5x1,5x3,5x12,90x9;1;village,biome_1"),
-        new PresetItem("Overworld", "2;7,59x1,3x3,2;1;village,biome_1,decoration,stronghold,mineshaft,dungeon,lake,lava_lake", Block.DeadBush.id),
+        new PresetItem("Overworld", "2;7,59x1,3x3,2;1;village,biome_1,decoration,stronghold,mineshaft,dungeon,lake,lava_lake", Block.DeadBush.ID),
         new PresetItem("Snowy Kingdom", "2;7,59x1,3x3,2,78;1;village,biome_1"),
         new PresetItem("Bottomless Pit", "2;2x4,3x3,2;1;village,biome_1", Item.Feather.id),
         new PresetItem("Desert", "2;7,3x1,52x24,8x12;1;village,biome_1,decoration,stronghold,mineshaft,dungeon"),

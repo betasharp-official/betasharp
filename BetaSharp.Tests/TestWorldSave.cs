@@ -11,7 +11,7 @@ public class TestWorldSave
     {
         var chest = new BlockEntityChest();
         var nbt = new NBTTagCompound();
-        chest.writeNbt(nbt);
+        chest.WriteNbt(nbt);
         Assert.Equal("Chest", nbt.GetString("id"));
     }
 }

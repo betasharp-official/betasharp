@@ -39,10 +39,10 @@ internal class PortalForcer
 
                 for (int y = 127; y >= 0; --y)
                 {
-                    if (world.Reader.GetBlockId(x, y, z) == Block.NetherPortal.id)
+                    if (world.Reader.GetBlockId(x, y, z) == Block.NetherPortal.ID)
                     {
                         // Walk down to the bottom obsidian block of the portal frame
-                        while (world.Reader.GetBlockId(x, y - 1, z) == Block.NetherPortal.id)
+                        while (world.Reader.GetBlockId(x, y - 1, z) == Block.NetherPortal.ID)
                         {
                             --y;
                         }
@@ -69,22 +69,22 @@ internal class PortalForcer
             double targetZ = foundZ + 0.5D;
 
             // Offset the player so they don't spawn inside the obsidian frame
-            if (world.Reader.GetBlockId(foundX - 1, foundY, foundZ) == Block.NetherPortal.id)
+            if (world.Reader.GetBlockId(foundX - 1, foundY, foundZ) == Block.NetherPortal.ID)
             {
                 targetX -= 0.5D;
             }
 
-            if (world.Reader.GetBlockId(foundX + 1, foundY, foundZ) == Block.NetherPortal.id)
+            if (world.Reader.GetBlockId(foundX + 1, foundY, foundZ) == Block.NetherPortal.ID)
             {
                 targetX += 0.5D;
             }
 
-            if (world.Reader.GetBlockId(foundX, foundY, foundZ - 1) == Block.NetherPortal.id)
+            if (world.Reader.GetBlockId(foundX, foundY, foundZ - 1) == Block.NetherPortal.ID)
             {
                 targetZ -= 0.5D;
             }
 
-            if (world.Reader.GetBlockId(foundX, foundY, foundZ + 1) == Block.NetherPortal.id)
+            if (world.Reader.GetBlockId(foundX, foundY, foundZ + 1) == Block.NetherPortal.ID)
             {
                 targetZ += 0.5D;
             }
@@ -271,7 +271,7 @@ internal class PortalForcer
                         int buildZ = finalZ + (wDepth - 1) * finalDirZ - w * finalDirX;
 
                         bool isFloor = h < 0;
-                        world.Writer.SetBlock(buildX, buildY, buildZ, isFloor ? Block.Obsidian.id : 0);
+                        world.Writer.SetBlock(buildX, buildY, buildZ, isFloor ? Block.Obsidian.ID : 0);
                     }
                 }
             }
@@ -289,7 +289,7 @@ internal class PortalForcer
                     int buildZ = finalZ + (wDepth - 1) * finalDirZ;
 
                     bool isFrameEdge = wDepth == 0 || wDepth == 3 || h == -1 || h == 3;
-                    world.Writer.SetBlockInternal(buildX, buildY, buildZ, isFrameEdge ? Block.Obsidian.id : Block.NetherPortal.id);
+                    world.Writer.SetBlockInternal(buildX, buildY, buildZ, isFrameEdge ? Block.Obsidian.ID : Block.NetherPortal.ID);
                 }
             }
 

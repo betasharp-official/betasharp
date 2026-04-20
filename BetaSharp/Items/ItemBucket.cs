@@ -107,7 +107,7 @@ internal class ItemBucket : Item
 
                     if (world.Reader.IsAir(hitX, hitY, hitZ) || !world.Reader.GetMaterial(hitX, hitY, hitZ).IsSolid)
                     {
-                        if (world.Dimension.EvaporatesWater && isFull == Block.FlowingWater.id)
+                        if (world.Dimension.EvaporatesWater && isFull == Block.FlowingWater.ID)
                         {
                             world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.fizz", 0.5F, 2.6F + (world.Random.NextFloat() - world.Random.NextFloat()) * 0.8F);
 

@@ -23,8 +23,8 @@ internal class ItemDoor : Item
         if (side != 1) return false;
         y++;
 
-        int blockId = doorMaterial == Material.Wood ? Block.Door.id : Block.IronDoor.id;
-        if (!Block.Blocks[blockId].canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z))) return false;
+        int blockId = doorMaterial == Material.Wood ? Block.Door.ID : Block.IronDoor.ID;
+        if (!Block.Blocks[blockId].CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z))) return false;
 
         int facing = MathHelper.Floor((entityPlayer.Yaw + 180.0f) * 4.0f / 360.0f - 0.5f) & 3;
         int offsetX = 0;

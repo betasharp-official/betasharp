@@ -25,11 +25,11 @@ internal class BlockFurnace : BlockWithEntity
         TextureId = BlockTextures.FurnaceSide;
     }
 
-    public override int getDroppedItemId(int blockMeta) => Furnace.id;
+    public override int GetDroppedItemId(int blockMeta) => Furnace.ID;
 
-    public override void onPlaced(OnPlacedEvent @event)
+    public override void OnPlaced(OnPlacedEvent @event)
     {
-        base.onPlaced(@event);
+        base.OnPlaced(@event);
 
         if (@event.Placer != null)
         {
@@ -53,13 +53,16 @@ internal class BlockFurnace : BlockWithEntity
         }
         else
         {
-            updateDirection(@event);
+            UpdateDirection(@event);
         }
     }
 
-    private static void updateDirection(OnPlacedEvent @event)
+    private static void UpdateDirection(OnPlacedEvent @event)
     {
-        if (@event.World.IsRemote) return;
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
 
         IBlockReader reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
@@ -70,12 +73,24 @@ internal class BlockFurnace : BlockWithEntity
         bool isEastOpaque = BlocksOpaque[reader.GetBlockId(x + 1, y, z)];
 
         byte direction = 3;
-        if (isNorthOpaque && !isSouthOpaque) direction = 3;
-        else if (isSouthOpaque && !isNorthOpaque) direction = 2;
+        if (isNorthOpaque && !isSouthOpaque)
+        {
+            direction = 3;
+        }
+        else if (isSouthOpaque && !isNorthOpaque)
+        {
+            direction = 2;
+        }
 
 
-        if (isWestOpaque && !isEastOpaque) direction = 5;
-        else if (isEastOpaque && !isWestOpaque) direction = 4;
+        if (isWestOpaque && !isEastOpaque)
+        {
+            direction = 5;
+        }
+        else if (isEastOpaque && !isWestOpaque)
+        {
+            direction = 4;
+        }
 
         @event.World.Writer.SetBlockMeta(x, y, z, direction);
     }
@@ -89,9 +104,12 @@ internal class BlockFurnace : BlockWithEntity
     }
 
 
-    public override void randomDisplayTick(OnTickEvent @event)
+    public override void RandomDisplayTick(OnTickEvent @event)
     {
-        if (!_lit) return;
+        if (!_lit)
+        {
+            return;
+        }
 
         Side rotation = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z).ToSide();
         float particleX = @event.X + 0.5F;
@@ -127,33 +145,39 @@ internal class BlockFurnace : BlockWithEntity
         _ => BlockTextures.FurnaceSide
     };
 
-    public override bool onUse(OnUseEvent @event)
+    public override bool OnUse(OnUseEvent @event)
     {
-        if (@event.World.IsRemote) return true;
+        if (@event.World.IsRemote)
+        {
+            return true;
+        }
 
         BlockEntityFurnace? furnace = @event.World.Entities.GetBlockEntity<BlockEntityFurnace>(@event.X, @event.Y, @event.Z);
-        if (furnace == null) return false;
+        if (furnace == null)
+        {
+            return false;
+        }
 
         @event.Player.openFurnaceScreen(furnace);
         return true;
     }
 
-    public static void updateLitState(bool lit, IWorldContext world, int x, int y, int z)
+    public static void UpdateLitState(bool lit, IWorldContext world, int x, int y, int z)
     {
         int meta = world.Reader.GetBlockMeta(x, y, z);
         BlockEntity? furnace = world.Entities.GetBlockEntity<BlockEntity>(x, y, z);
         s_ignoreBlockRemoval.Value = true;
-        world.Writer.SetBlock(x, y, z, lit ? LitFurnace.id : Furnace.id);
+        world.Writer.SetBlock(x, y, z, lit ? LitFurnace.ID : Furnace.ID);
 
         s_ignoreBlockRemoval.Value = false;
         world.Writer.SetBlockMeta(x, y, z, meta);
-        furnace?.cancelRemoval();
+        furnace?.CancelRemoval();
         world.Entities.SetBlockEntity(x, y, z, furnace!);
     }
 
-    public override BlockEntity getBlockEntity() => new BlockEntityFurnace();
+    public override BlockEntity GetBlockEntity() => new BlockEntityFurnace();
 
-    public override void onBreak(OnBreakEvent @event)
+    public override void OnBreak(OnBreakEvent @event)
     {
         if (!s_ignoreBlockRemoval.Value)
         {
@@ -168,7 +192,10 @@ internal class BlockFurnace : BlockWithEntity
             for (int slotIndex = 0; slotIndex < furnace.Size; ++slotIndex)
             {
                 ItemStack? stack = furnace.GetStack(slotIndex);
-                if (stack == null) continue;
+                if (stack == null)
+                {
+                    continue;
+                }
 
                 float offsetX = s_random.NextFloat() * 0.8F + 0.1F;
                 float offsetY = s_random.NextFloat() * 0.8F + 0.1F;
@@ -177,7 +204,10 @@ internal class BlockFurnace : BlockWithEntity
                 while (stack.Count > 0)
                 {
                     int stackCount = s_random.NextInt(21) + 10;
-                    if (stackCount > stack.Count) stackCount = stack.Count;
+                    if (stackCount > stack.Count)
+                    {
+                        stackCount = stack.Count;
+                    }
 
                     stack.Count -= stackCount;
                     EntityItem droppedItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, stackCount, stack.getDamage()))
@@ -191,6 +221,6 @@ internal class BlockFurnace : BlockWithEntity
             }
         }
 
-        base.onBreak(@event);
+        base.OnBreak(@event);
     }
 }

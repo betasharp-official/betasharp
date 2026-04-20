@@ -11,38 +11,41 @@ public class BlockPlant : Block
     public BlockPlant(int id, int textureId) : base(id, Material.Plant)
     {
         TextureId = textureId;
-        setTickRandomly(true);
-        setBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, HalfSize * 3.0F, 0.5F + HalfSize);
+        SetTickRandomly(true);
+        SetBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, HalfSize * 3.0F, 0.5F + HalfSize);
     }
 
-    public override bool canPlaceAt(CanPlaceAtContext context) => base.canPlaceAt(context) && canPlantOnTop(context.World.Reader.GetBlockId(context.X, context.Y - 1, context.Z));
+    public override bool CanPlaceAt(CanPlaceAtContext context) => base.CanPlaceAt(context) && CanPlantOnTop(context.World.Reader.GetBlockId(context.X, context.Y - 1, context.Z));
 
-    protected virtual bool canPlantOnTop(int id) => id == GrassBlock.id || id == Dirt.id || id == Farmland.id;
+    protected virtual bool CanPlantOnTop(int id) => id == GrassBlock.ID || id == Dirt.ID || id == Farmland.ID;
 
-    public override void neighborUpdate(OnTickEvent @event)
+    public override void NeighborUpdate(OnTickEvent @event)
     {
-        base.neighborUpdate(@event);
+        base.NeighborUpdate(@event);
         breakIfCannotGrow(@event.World, @event.X, @event.Y, @event.Z);
     }
 
-    public override void onTick(OnTickEvent @event) => breakIfCannotGrow(@event.World, @event.X, @event.Y, @event.Z);
+    public override void OnTick(OnTickEvent @event) => breakIfCannotGrow(@event.World, @event.X, @event.Y, @event.Z);
 
     protected void breakIfCannotGrow(IWorldContext level, int x, int y, int z)
     {
-        if (canGrow(new OnTickEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z), level.Reader.GetBlockId(x, y, z)))) return;
+        if (CanGrow(new OnTickEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z), level.Reader.GetBlockId(x, y, z))))
+        {
+            return;
+        }
 
-        dropStacks(new OnDropEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z)));
+        DropStacks(new OnDropEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z)));
         level.Writer.SetBlock(x, y, z, 0);
     }
 
-    public override bool canGrow(OnTickEvent ctx) =>
-        (ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) >= 8 || ctx.World.Lighting.HasSkyLight(ctx.X, ctx.Y, ctx.Z)) && canPlantOnTop(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z));
+    public override bool CanGrow(OnTickEvent ctx) =>
+        (ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) >= 8 || ctx.World.Lighting.HasSkyLight(ctx.X, ctx.Y, ctx.Z)) && CanPlantOnTop(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z));
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
+    public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override bool isOpaque() => false;
+    public override bool IsOpaque() => false;
 
-    public override bool isFullCube() => false;
+    public override bool IsFullCube() => false;
 
-    public override BlockRendererType getRenderType() => BlockRendererType.Reed;
+    public override BlockRendererType GetRenderType() => BlockRendererType.Reed;
 }

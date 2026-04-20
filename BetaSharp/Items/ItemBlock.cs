@@ -18,7 +18,7 @@ internal class ItemBlock : Item
 
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (world.Reader.GetBlockId(x, y, z) == Block.Snow.id)
+        if (world.Reader.GetBlockId(x, y, z) == Block.Snow.ID)
         {
             meta = 0;
         }
@@ -61,7 +61,7 @@ internal class ItemBlock : Item
         }
 
         int existingBlockId = world.Reader.GetBlockId(x, y, z);
-        if (existingBlockId != 0 && !Block.Blocks[existingBlockId].material.IsReplaceable)
+        if (existingBlockId != 0 && !Block.Blocks[existingBlockId].Material.IsReplaceable)
         {
             return false;
         }
@@ -72,7 +72,7 @@ internal class ItemBlock : Item
         }
 
         Block block = Block.Blocks[blockID];
-        Box? collisionBox = block.getCollisionShape(world.Reader, world.Entities, x, y, z);
+        Box? collisionBox = block.GetCollisionShape(world.Reader, world.Entities, x, y, z);
         if (collisionBox is { } box)
         {
             List<Entity> entitiesInBox = world.Entities.CollectEntitiesOfType<Entity>(box);
@@ -83,12 +83,12 @@ internal class ItemBlock : Item
             }
         }
 
-        if (block.canPlaceAt(new CanPlaceAtContext(world, meta.ToSide(), x, y, z)))
+        if (block.CanPlaceAt(new CanPlaceAtContext(world, meta.ToSide(), x, y, z)))
         {
             int placementMeta = getPlacementMetadata(itemStack.getDamage());
             if (world.Writer.SetBlockWithoutCallingOnPlaced(x, y, z, blockID, placementMeta))
             {
-                Block.Blocks[blockID].onPlaced(new OnPlacedEvent(world, entityPlayer, meta.ToSide(), meta.ToSide(), x, y, z));
+                Block.Blocks[blockID].OnPlaced(new OnPlacedEvent(world, entityPlayer, meta.ToSide(), meta.ToSide(), x, y, z));
                 world.Broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, block.SoundGroup.StepSound, (block.SoundGroup.Volume + 1.0F) / 2.0F, block.SoundGroup.Pitch * 0.8F);
                 itemStack.ConsumeItem(entityPlayer);
             }
@@ -101,11 +101,11 @@ internal class ItemBlock : Item
 
     public override string getItemNameIS(ItemStack itemStack)
     {
-        return Block.Blocks[blockID].getBlockName();
+        return Block.Blocks[blockID].GetBlockName();
     }
 
     public override string getItemName()
     {
-        return Block.Blocks[blockID].getBlockName();
+        return Block.Blocks[blockID].GetBlockName();
     }
 }

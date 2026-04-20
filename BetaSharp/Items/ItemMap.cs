@@ -105,11 +105,11 @@ public class ItemMap : NetworkSyncedItem
                                 sampleX = sampleX * sampleX * 31287121 + sampleX * 11;
                                 if ((sampleX >> 20 & 1) == 0)
                                 {
-                                    blockHistogram[Block.Dirt.id] += 10;
+                                    blockHistogram[Block.Dirt.ID] += 10;
                                 }
                                 else
                                 {
-                                    blockHistogram[Block.Stone.id] += 10;
+                                    blockHistogram[Block.Stone.ID] += 10;
                                 }
 
                                 avgHeight = 100.0D;
@@ -164,7 +164,7 @@ public class ItemMap : NetworkSyncedItem
                             colorIndex = 0;
                             if (sampleZ > 0)
                             {
-                                MapColor mapColor = Block.Blocks[sampleZ].material.MapColor;
+                                MapColor mapColor = Block.Blocks[sampleZ].Material.MapColor;
                                 if (mapColor == MapColor.Water)
                                 {
                                     shadeFactor = (double)fluidDepth * 0.1D + (double)(pixelX + pixelZ & 1) * 0.2D;
@@ -230,7 +230,7 @@ public class ItemMap : NetworkSyncedItem
             {
                 foundSurface = false;
             }
-            else if (scanY > 0 && blockId > 0 && Block.Blocks[blockId].material.MapColor == MapColor.Air)
+            else if (scanY > 0 && blockId > 0 && Block.Blocks[blockId].Material.MapColor == MapColor.Air)
             {
                 foundSurface = false;
             }
@@ -243,7 +243,7 @@ public class ItemMap : NetworkSyncedItem
 
             if (foundSurface)
             {
-                if (blockId == 0 || !Block.Blocks[blockId].material.IsFluid)
+                if (blockId == 0 || !Block.Blocks[blockId].Material.IsFluid)
                 {
                     exitLoop = true;
                 }
@@ -255,7 +255,7 @@ public class ItemMap : NetworkSyncedItem
                     {
                         int fluidBlockId = chunk.GetBlockId(chunkX + dx, depthCheckY--, chunkZ + dz);
                         ++fluidDepth;
-                        if (depthCheckY <= 0 || fluidBlockId == 0 || !Block.Blocks[fluidBlockId].material.IsFluid)
+                        if (depthCheckY <= 0 || fluidBlockId == 0 || !Block.Blocks[fluidBlockId].Material.IsFluid)
                         {
                             exitLoop = true;
                             break;

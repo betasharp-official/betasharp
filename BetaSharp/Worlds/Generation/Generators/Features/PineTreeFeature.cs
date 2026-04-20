@@ -41,7 +41,7 @@ internal class PineTreeFeature : Feature
                     if (cy >= 0 && cy < ChuckFormat.WorldHeight)
                     {
                         int blockId = level.Reader.GetBlockId(cx, cy, cz);
-                        if (blockId != 0 && blockId != Block.Leaves.id)
+                        if (blockId != 0 && blockId != Block.Leaves.ID)
                         {
                             canPlace = false;
                         }
@@ -60,9 +60,9 @@ internal class PineTreeFeature : Feature
         }
 
         int groundId = level.Reader.GetBlockId(x, y - 1, z);
-        if ((groundId == Block.GrassBlock.id || groundId == Block.Dirt.id) && y < ChuckFormat.WorldHeight - treeHeight - 1)
+        if ((groundId == Block.GrassBlock.ID || groundId == Block.Dirt.ID) && y < ChuckFormat.WorldHeight - treeHeight - 1)
         {
-            level.Writer.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.id, 0, false);
+            level.Writer.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.ID, 0, false);
             int currentLeafRadius = 0;
 
             for (int cy = y + treeHeight; cy >= y + trunkWithNoLeaves; --cy)
@@ -76,7 +76,7 @@ internal class PineTreeFeature : Feature
                         int offsetZ = cz - z;
                         if ((Math.Abs(offsetX) != currentLeafRadius || Math.Abs(offsetZ) != currentLeafRadius || currentLeafRadius <= 0) && !Block.BlocksOpaque[level.Reader.GetBlockId(cx, cy, cz)])
                         {
-                            level.Writer.SetBlockWithoutNotifyingNeighbors(cx, cy, cz, Block.Leaves.id, 1, false);
+                            level.Writer.SetBlockWithoutNotifyingNeighbors(cx, cy, cz, Block.Leaves.ID, 1, false);
                         }
                     }
                 }
@@ -96,9 +96,9 @@ internal class PineTreeFeature : Feature
             for (int trunkY = 0; trunkY < treeHeight - 1; ++trunkY)
             {
                 int blockAtTrunk = level.Reader.GetBlockId(x, y + trunkY, z);
-                if (blockAtTrunk == 0 || blockAtTrunk == Block.Leaves.id)
+                if (blockAtTrunk == 0 || blockAtTrunk == Block.Leaves.ID)
                 {
-                    level.Writer.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, Block.Log.id, 1, false);
+                    level.Writer.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, Block.Log.ID, 1, false);
                 }
             }
 

@@ -31,7 +31,7 @@ internal class BlockLockedChest : Block
         _ => BlockTextures.ChestSingleSide
     };
 
-    public override bool canPlaceAt(CanPlaceAtContext context) => true;
+    public override bool CanPlaceAt(CanPlaceAtContext context) => true;
 
-    public override void onTick(OnTickEvent @event) => @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
+    public override void OnTick(OnTickEvent @event) => @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
 }

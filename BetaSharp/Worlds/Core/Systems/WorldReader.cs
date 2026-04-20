@@ -47,13 +47,13 @@ public class WorldReader : IBlockReader
     public Material GetMaterial(int x, int y, int z)
     {
         int blockId = GetBlockId(x, y, z);
-        return blockId == 0 ? Material.Air : Block.Blocks[blockId].material;
+        return blockId == 0 ? Material.Air : Block.Blocks[blockId].Material;
     }
 
     public bool IsOpaque(int x, int y, int z)
     {
         Block? block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.isOpaque();
+        return block != null && block.IsOpaque();
     }
 
     public bool ShouldSuffocate(int x, int y, int z)
@@ -64,7 +64,7 @@ public class WorldReader : IBlockReader
         }
 
         Block? block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.material.Suffocates && block.isFullCube();
+        return block != null && block.Material.Suffocates && block.IsFullCube();
     }
 
     public BiomeSource GetBiomeSource() => _dimension.BiomeSource;
@@ -136,7 +136,7 @@ public class WorldReader : IBlockReader
         for (; currentY > 0; --currentY)
         {
             int blockId = chunk.GetBlockId(localX, currentY, localZ);
-            Material material = blockId == 0 ? Material.Air : Block.Blocks[blockId].material;
+            Material material = blockId == 0 ? Material.Air : Block.Blocks[blockId].Material;
 
             if (material.BlocksMovement || material.IsFluid)
             {
@@ -157,7 +157,7 @@ public class WorldReader : IBlockReader
         for (; currentY > 0; currentY--)
         {
             int blockId = chunk.GetBlockId(localX, currentY, localZ);
-            if (blockId != 0 && Block.Blocks[blockId].material.BlocksMovement)
+            if (blockId != 0 && Block.Blocks[blockId].Material.BlocksMovement)
             {
                 return currentY + 1;
             }
@@ -186,10 +186,10 @@ public class WorldReader : IBlockReader
         Block? initialBlock = Block.Blocks[initialId];
 
         if ((!ignoreNonSolid || initialBlock == null ||
-             initialBlock.getCollisionShape(this, _context.Entities, currentX, currentY, currentZ) != null) &&
-            initialId > 0 && initialBlock!.hasCollision(initialMeta, includeFluids))
+             initialBlock.GetCollisionShape(this, _context.Entities, currentX, currentY, currentZ) != null) &&
+            initialId > 0 && initialBlock!.HasCollision(initialMeta, includeFluids))
         {
-            HitResult result = initialBlock.raycast(this, _context.Entities, currentX, currentY, currentZ, start, end);
+            HitResult result = initialBlock.Raycast(this, _context.Entities, currentX, currentY, currentZ, start, end);
             if (result.Type != HitResultType.MISS)
             {
                 return result;
@@ -316,10 +316,10 @@ public class WorldReader : IBlockReader
             Block? blockAtStep = Block.Blocks[blockIdAtStep];
 
             if ((!ignoreNonSolid || blockAtStep == null ||
-                 blockAtStep.getCollisionShape(this, _context.Entities, currentX, currentY, currentZ) != null) &&
-                blockIdAtStep > 0 && blockAtStep!.hasCollision(metaAtStep, includeFluids))
+                 blockAtStep.GetCollisionShape(this, _context.Entities, currentX, currentY, currentZ) != null) &&
+                blockIdAtStep > 0 && blockAtStep!.HasCollision(metaAtStep, includeFluids))
             {
-                HitResult hit = blockAtStep.raycast(this, _context.Entities, currentX, currentY, currentZ, start, end);
+                HitResult hit = blockAtStep.Raycast(this, _context.Entities, currentX, currentY, currentZ, start, end);
                 if (hit.Type != HitResultType.MISS)
                 {
                     return hit;
@@ -426,14 +426,14 @@ public class WorldReader : IBlockReader
                 for (int z = minZ; z < maxZ; ++z)
                 {
                     Block? block = Block.Blocks[GetBlockId(x, y, z)];
-                    if (block != null && block.material == fluidMaterial)
+                    if (block != null && block.Material == fluidMaterial)
                     {
-                        double fluidSurfaceY = y + 1 - BlockFluid.getFluidHeightFromMeta(GetBlockMeta(x, y, z));
+                        double fluidSurfaceY = y + 1 - BlockFluid.GetFluidHeightFromMeta(GetBlockMeta(x, y, z));
 
                         if (maxY >= fluidSurfaceY)
                         {
                             isSubmerged = true;
-                            Vec3D blockFlow = block.applyVelocity(new OnApplyVelocityEvent(_context, entity, x, y, z));
+                            Vec3D blockFlow = block.ApplyVelocity(new OnApplyVelocityEvent(_context, entity, x, y, z));
                             flowVector.x += blockFlow.x;
                             flowVector.y += blockFlow.y;
                             flowVector.z += blockFlow.z;

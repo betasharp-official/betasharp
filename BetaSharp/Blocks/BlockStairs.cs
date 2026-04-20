@@ -8,72 +8,72 @@ internal class BlockStairs : Block
 {
     private readonly Block _baseBlock;
 
-    public BlockStairs(int id, Block block) : base(id, block.TextureId, block.material)
+    public BlockStairs(int id, Block block) : base(id, block.TextureId, block.Material)
     {
         _baseBlock = block;
-        setHardness(block.hardness);
-        setResistance(block.resistance / 3.0F);
-        setSoundGroup(block.SoundGroup);
-        setOpacity(255);
+        SetHardness(block.Hardness);
+        SetResistance(block.Resistance / 3.0F);
+        SetSoundGroup(block.SoundGroup);
+        SetOpacity(255);
     }
 
-    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+    public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
 
-    public override bool isOpaque() => false;
+    public override bool IsOpaque() => false;
 
-    public override bool isFullCube() => false;
+    public override bool IsFullCube() => false;
 
-    public override BlockRendererType getRenderType() => BlockRendererType.Stairs;
+    public override BlockRendererType GetRenderType() => BlockRendererType.Stairs;
 
-    public override void addIntersectingBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z, Box box, List<Box> boxes)
+    public override void AddIntersectingBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z, Box box, List<Box> boxes)
     {
         int meta = world.GetBlockMeta(x, y, z);
         switch (meta)
         {
             case 0:
-                setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F);
-                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
-                setBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F);
+                base.AddIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                base.AddIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
                 break;
             case 1:
-                setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 1.0F, 1.0F);
-                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
-                setBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F);
-                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 1.0F, 1.0F);
+                base.AddIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F);
+                base.AddIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
                 break;
             case 2:
-                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.5F);
-                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
-                setBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 1.0F, 1.0F);
-                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.5F);
+                base.AddIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 1.0F, 1.0F);
+                base.AddIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
                 break;
             case 3:
-                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F);
-                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
-                setBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F);
-                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F);
+                base.AddIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F);
+                base.AddIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
                 break;
         }
 
-        setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+        SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    public override void randomDisplayTick(OnTickEvent @event) => _baseBlock.randomDisplayTick(@event);
+    public override void RandomDisplayTick(OnTickEvent @event) => _baseBlock.RandomDisplayTick(@event);
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvent @event) => _baseBlock.onBlockBreakStart(@event);
+    public override void OnBlockBreakStart(OnBlockBreakStartEvent @event) => _baseBlock.OnBlockBreakStart(@event);
 
-    public override void onMetadataChange(OnMetadataChangeEvent @event) => _baseBlock.onMetadataChange(@event);
+    public override void OnMetadataChange(OnMetadataChangeEvent @event) => _baseBlock.OnMetadataChange(@event);
 
-    public override float getLuminance(ILightProvider lighting, int x, int y, int z) => _baseBlock.getLuminance(lighting, x, y, z);
+    public override float GetLuminance(ILightProvider lighting, int x, int y, int z) => _baseBlock.GetLuminance(lighting, x, y, z);
 
-    public override float getBlastResistance(Entity entity) => _baseBlock.getBlastResistance(entity);
+    public override float GetBlastResistance(Entity entity) => _baseBlock.GetBlastResistance(entity);
 
-    public override int getRenderLayer() => _baseBlock.getRenderLayer();
+    public override int GetRenderLayer() => _baseBlock.GetRenderLayer();
 
-    public override int getDroppedItemId(int blockMeta) => _baseBlock.getDroppedItemId(blockMeta);
+    public override int GetDroppedItemId(int blockMeta) => _baseBlock.GetDroppedItemId(blockMeta);
 
-    public override int getDroppedItemCount() => _baseBlock.getDroppedItemCount();
+    public override int GetDroppedItemCount() => _baseBlock.GetDroppedItemCount();
 
     public override int GetTexture(Side side, int meta) => _baseBlock.GetTexture(side, meta);
 
@@ -81,19 +81,19 @@ internal class BlockStairs : Block
 
     public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side) => _baseBlock.GetTextureId(iBlockReader, x, y, z, side);
 
-    public override int getTickRate() => _baseBlock.getTickRate();
+    public override int GetTickRate() => _baseBlock.GetTickRate();
 
-    public override Box getBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z) => _baseBlock.getBoundingBox(world, entities, x, y, z);
+    public override Box GetBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z) => _baseBlock.GetBoundingBox(world, entities, x, y, z);
 
-    public override Vec3D applyVelocity(OnApplyVelocityEvent ctx) => _baseBlock.applyVelocity(ctx);
+    public override Vec3D ApplyVelocity(OnApplyVelocityEvent ctx) => _baseBlock.ApplyVelocity(ctx);
 
-    public override bool hasCollision() => _baseBlock.hasCollision();
+    public override bool HasCollision() => _baseBlock.HasCollision();
 
-    public override bool hasCollision(int meta, bool allowLiquids) => _baseBlock.hasCollision(meta, allowLiquids);
+    public override bool HasCollision(int meta, bool allowLiquids) => _baseBlock.HasCollision(meta, allowLiquids);
 
-    public override bool canPlaceAt(CanPlaceAtContext evt) => _baseBlock.canPlaceAt(evt);
+    public override bool CanPlaceAt(CanPlaceAtContext evt) => _baseBlock.CanPlaceAt(evt);
 
-    public override void onPlaced(OnPlacedEvent evt)
+    public override void OnPlaced(OnPlacedEvent evt)
     {
         int meta = 0;
         if (evt.Placer != null)
@@ -122,19 +122,19 @@ internal class BlockStairs : Block
         }
 
         evt.World.Writer.SetBlockMeta(evt.X, evt.Y, evt.Z, meta);
-        evt.World.Broadcaster.NotifyNeighbors(evt.X, evt.Y, evt.Z, id);
-        _baseBlock.onPlaced(evt);
+        evt.World.Broadcaster.NotifyNeighbors(evt.X, evt.Y, evt.Z, ID);
+        _baseBlock.OnPlaced(evt);
     }
 
-    public override void onBreak(OnBreakEvent ctx) => _baseBlock.onBreak(ctx);
+    public override void OnBreak(OnBreakEvent ctx) => _baseBlock.OnBreak(ctx);
 
-    public override void dropStacks(OnDropEvent ctx) => _baseBlock.dropStacks(ctx);
+    public override void DropStacks(OnDropEvent ctx) => _baseBlock.DropStacks(ctx);
 
-    public override void onSteppedOn(OnEntityStepEvent ctx) => _baseBlock.onSteppedOn(ctx);
+    public override void OnSteppedOn(OnEntityStepEvent ctx) => _baseBlock.OnSteppedOn(ctx);
 
-    public override void onTick(OnTickEvent ctx) => _baseBlock.onTick(ctx);
+    public override void OnTick(OnTickEvent ctx) => _baseBlock.OnTick(ctx);
 
-    public override bool onUse(OnUseEvent ctx) => _baseBlock.onUse(ctx);
+    public override bool OnUse(OnUseEvent ctx) => _baseBlock.OnUse(ctx);
 
-    public override void onDestroyedByExplosion(OnDestroyedByExplosionEvent ctx) => _baseBlock.onDestroyedByExplosion(ctx);
+    public override void OnDestroyedByExplosion(OnDestroyedByExplosionEvent ctx) => _baseBlock.OnDestroyedByExplosion(ctx);
 }

@@ -151,7 +151,7 @@ public static class ParticleUpdater
         Material mat = world.Reader.GetMaterial(fx, fy, fz);
         if (mat.IsFluid || mat.IsSolid)
         {
-            double surfaceY = fy + 1 - BlockFluid.getFluidHeightFromMeta(world.Reader.GetBlockMeta(fx, fy, fz));
+            double surfaceY = fy + 1 - BlockFluid.GetFluidHeightFromMeta(world.Reader.GetBlockMeta(fx, fy, fz));
             if (buf.Y[i] < surfaceY) buf.Dead[i] = true;
         }
     }

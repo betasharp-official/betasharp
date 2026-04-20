@@ -9,34 +9,34 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
     private const float Thickness = 2.0F / 16.0F;
     private const float HalfExtent = 0.5F;
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
+    public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
+    public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
-        if (blockReader.GetBlockId(x - 1, y, z) != id && blockReader.GetBlockId(x + 1, y, z) != id)
+        if (blockReader.GetBlockId(x - 1, y, z) != ID && blockReader.GetBlockId(x + 1, y, z) != ID)
         {
-            setBoundingBox(0.5F - Thickness, 0.0F, 0.5F - HalfExtent, 0.5F + Thickness, 1.0F, 0.5F + HalfExtent);
+            SetBoundingBox(0.5F - Thickness, 0.0F, 0.5F - HalfExtent, 0.5F + Thickness, 1.0F, 0.5F + HalfExtent);
         }
         else
         {
-            setBoundingBox(0.5F - HalfExtent, 0.0F, 0.5F - Thickness, 0.5F + HalfExtent, 1.0F, 0.5F + Thickness);
+            SetBoundingBox(0.5F - HalfExtent, 0.0F, 0.5F - Thickness, 0.5F + HalfExtent, 1.0F, 0.5F + Thickness);
         }
     }
 
-    public override bool isOpaque() => false;
+    public override bool IsOpaque() => false;
 
-    public override bool isFullCube() => false;
+    public override bool IsFullCube() => false;
 
-    public static bool create(IBlockReader reader, IBlockWriter writer, int x, int y, int z)
+    public static bool Create(IBlockReader reader, IBlockWriter writer, int x, int y, int z)
     {
         sbyte extendsInZ = 0;
         sbyte extendsInX = 0;
-        if (reader.GetBlockId(x - 1, y, z) == Obsidian.id || reader.GetBlockId(x + 1, y, z) == Obsidian.id)
+        if (reader.GetBlockId(x - 1, y, z) == Obsidian.ID || reader.GetBlockId(x + 1, y, z) == Obsidian.ID)
         {
             extendsInZ = 1;
         }
 
-        if (reader.GetBlockId(x, y, z - 1) == Obsidian.id || reader.GetBlockId(x, y, z + 1) == Obsidian.id)
+        if (reader.GetBlockId(x, y, z - 1) == Obsidian.ID || reader.GetBlockId(x, y, z + 1) == Obsidian.ID)
         {
             extendsInX = 1;
         }
@@ -59,17 +59,20 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
             for (verticalOffset = -1; verticalOffset <= 3; ++verticalOffset)
             {
                 bool isFrame = horizontalOffset == -1 || horizontalOffset == 2 || verticalOffset == -1 || verticalOffset == 3;
-                if (horizontalOffset is -1 or 2 && verticalOffset is -1 or 3) continue;
+                if (horizontalOffset is -1 or 2 && verticalOffset is -1 or 3)
+                {
+                    continue;
+                }
 
                 int blockId = reader.GetBlockId(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset);
                 if (isFrame)
                 {
-                    if (blockId != Obsidian.id)
+                    if (blockId != Obsidian.ID)
                     {
                         return false;
                     }
                 }
-                else if (blockId != 0 && blockId != Fire.id)
+                else if (blockId != 0 && blockId != Fire.ID)
                 {
                     return false;
                 }
@@ -80,49 +83,49 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
         {
             for (verticalOffset = 0; verticalOffset < 3; ++verticalOffset)
             {
-                writer.SetBlockInternal(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset, NetherPortal.id);
+                writer.SetBlockInternal(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset, NetherPortal.ID);
             }
         }
 
         return true;
     }
 
-    public override void neighborUpdate(OnTickEvent @event)
+    public override void NeighborUpdate(OnTickEvent @event)
     {
         sbyte offsetX = 0;
         sbyte offsetZ = 1;
-        if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == id || @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == id)
+        if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == ID || @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == ID)
         {
             offsetX = 1;
             offsetZ = 0;
         }
 
         int portalBottomY;
-        for (portalBottomY = @event.Y; @event.World.Reader.GetBlockId(@event.X, portalBottomY - 1, @event.Z) == id; --portalBottomY)
+        for (portalBottomY = @event.Y; @event.World.Reader.GetBlockId(@event.X, portalBottomY - 1, @event.Z) == ID; --portalBottomY)
         {
         }
 
-        if (@event.World.Reader.GetBlockId(@event.X, portalBottomY - 1, @event.Z) != Obsidian.id)
+        if (@event.World.Reader.GetBlockId(@event.X, portalBottomY - 1, @event.Z) != Obsidian.ID)
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
         else
         {
             int blocksAbove;
-            for (blocksAbove = 1; blocksAbove < 4 && @event.World.Reader.GetBlockId(@event.X, portalBottomY + blocksAbove, @event.Z) == id; ++blocksAbove)
+            for (blocksAbove = 1; blocksAbove < 4 && @event.World.Reader.GetBlockId(@event.X, portalBottomY + blocksAbove, @event.Z) == ID; ++blocksAbove)
             {
             }
 
-            if (blocksAbove == 3 && @event.World.Reader.GetBlockId(@event.X, portalBottomY + blocksAbove, @event.Z) == Obsidian.id)
+            if (blocksAbove == 3 && @event.World.Reader.GetBlockId(@event.X, portalBottomY + blocksAbove, @event.Z) == Obsidian.ID)
             {
-                bool hasXNeighbors = @event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == id || @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == id;
-                bool hasZNeighbors = @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z - 1) == id || @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1) == id;
+                bool hasXNeighbors = @event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == ID || @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == ID;
+                bool hasZNeighbors = @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z - 1) == ID || @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1) == ID;
                 if (hasXNeighbors && hasZNeighbors)
                 {
                     @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
                 }
-                else if ((@event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y, @event.Z + offsetZ) != Obsidian.id || @event.World.Reader.GetBlockId(@event.X - offsetX, @event.Y, @event.Z - offsetZ) != id) &&
-                         (@event.World.Reader.GetBlockId(@event.X - offsetX, @event.Y, @event.Z - offsetZ) != Obsidian.id || @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y, @event.Z + offsetZ) != id))
+                else if ((@event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y, @event.Z + offsetZ) != Obsidian.ID || @event.World.Reader.GetBlockId(@event.X - offsetX, @event.Y, @event.Z - offsetZ) != ID) &&
+                         (@event.World.Reader.GetBlockId(@event.X - offsetX, @event.Y, @event.Z - offsetZ) != Obsidian.ID || @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y, @event.Z + offsetZ) != ID))
                 {
                     @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
                 }
@@ -134,27 +137,30 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
         }
     }
 
-    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
+    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (iBlockReader.GetBlockId(x, y, z) == id) return false;
+        if (iBlockReader.GetBlockId(x, y, z) == ID)
+        {
+            return false;
+        }
 
-        bool edgeWest = iBlockReader.GetBlockId(x - 1, y, z) == id && iBlockReader.GetBlockId(x - 2, y, z) != id;
-        bool edgeEast = iBlockReader.GetBlockId(x + 1, y, z) == id && iBlockReader.GetBlockId(x + 2, y, z) != id;
-        bool edgeNorth = iBlockReader.GetBlockId(x, y, z - 1) == id && iBlockReader.GetBlockId(x, y, z - 2) != id;
-        bool edgeSouth = iBlockReader.GetBlockId(x, y, z + 1) == id && iBlockReader.GetBlockId(x, y, z + 2) != id;
+        bool edgeWest = iBlockReader.GetBlockId(x - 1, y, z) == ID && iBlockReader.GetBlockId(x - 2, y, z) != ID;
+        bool edgeEast = iBlockReader.GetBlockId(x + 1, y, z) == ID && iBlockReader.GetBlockId(x + 2, y, z) != ID;
+        bool edgeNorth = iBlockReader.GetBlockId(x, y, z - 1) == ID && iBlockReader.GetBlockId(x, y, z - 2) != ID;
+        bool edgeSouth = iBlockReader.GetBlockId(x, y, z + 1) == ID && iBlockReader.GetBlockId(x, y, z + 2) != ID;
         bool extendsInX = edgeWest || edgeEast;
         bool extendsInZ = edgeNorth || edgeSouth;
-        return extendsInX && side == Side.West ||
-               extendsInX && side == Side.East ||
-               extendsInZ && side == Side.North ||
-               extendsInZ && side == Side.South;
+        return (extendsInX && side == Side.West) ||
+               (extendsInX && side == Side.East) ||
+               (extendsInZ && side == Side.North) ||
+               (extendsInZ && side == Side.South);
     }
 
-    public override int getDroppedItemCount() => 0;
+    public override int GetDroppedItemCount() => 0;
 
-    public override int getRenderLayer() => 1;
+    public override int GetRenderLayer() => 1;
 
-    public override void onEntityCollision(OnEntityCollisionEvent @event)
+    public override void OnEntityCollision(OnEntityCollisionEvent @event)
     {
         if (@event.Entity.Vehicle == null && @event.Entity.Passenger == null)
         {
@@ -162,7 +168,7 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
         }
     }
 
-    public override void randomDisplayTick(OnTickEvent @event)
+    public override void RandomDisplayTick(OnTickEvent @event)
     {
         if (Random.Shared.Next(100) == 0)
         {
@@ -178,7 +184,7 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
             double velocityX = (Random.Shared.NextSingle() - 0.5D) * 0.5D;
             double velocityY = (Random.Shared.NextSingle() - 0.5D) * 0.5D;
             double velocityZ = (Random.Shared.NextSingle() - 0.5D) * 0.5D;
-            if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) != id && @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) != id)
+            if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) != ID && @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) != ID)
             {
                 particleX = @event.X + 0.5D + 0.25D * direction;
                 velocityX = Random.Shared.NextSingle() * 2.0F * direction;

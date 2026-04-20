@@ -8,25 +8,25 @@ internal class BlockCake : Block
 {
     private const float CakeHeight = 0.5F;
     private const float EdgeInset = 1.0F / 16.0F;
-    public BlockCake(int id, int textureId) : base(id, textureId, Material.Cake) => setTickRandomly(true);
+    public BlockCake(int id, int textureId) : base(id, textureId, Material.Cake) => SetTickRandomly(true);
 
-    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
+    public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
         int slicesEaten = blockReader.GetBlockMeta(x, y, z);
         float minX = (1 + slicesEaten * 2) / 16.0F;
-        setBoundingBox(minX, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
+        SetBoundingBox(minX, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
     }
 
-    public override void setupRenderBoundingBox() => setBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
+    public override void SetupRenderBoundingBox() => SetBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
+    public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
         int slicesEaten = world.GetBlockMeta(x, y, z);
         float minX = (1 + slicesEaten * 2) / 16.0F;
         return new Box(x + minX, y, z + EdgeInset, x + 1 - EdgeInset, y + CakeHeight - EdgeInset, z + 1 - EdgeInset);
     }
 
-    public override Box getBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z)
+    public override Box GetBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
         int slicesEaten = world.GetBlockMeta(x, y, z);
         float minX = (1 + slicesEaten * 2) / 16.0F;
@@ -48,11 +48,11 @@ internal class BlockCake : Block
         _ => TextureId + 1
     };
 
-    public override bool isFullCube() => false;
+    public override bool IsFullCube() => false;
 
-    public override bool isOpaque() => false;
+    public override bool IsOpaque() => false;
 
-    public override bool onUse(OnUseEvent @event)
+    public override bool OnUse(OnUseEvent @event)
     {
         if (@event.Player.Health >= 20) return true;
 
@@ -71,7 +71,7 @@ internal class BlockCake : Block
         return true;
     }
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvent @event)
+    public override void OnBlockBreakStart(OnBlockBreakStartEvent @event)
     {
         if (@event.Player.Health >= 20) return;
 
@@ -88,20 +88,24 @@ internal class BlockCake : Block
         }
     }
 
-    public override bool canPlaceAt(CanPlaceAtContext evt) => base.canPlaceAt(evt) && canGrow(evt.World.Reader, evt.X, evt.Y, evt.Z);
+    public override bool CanPlaceAt(CanPlaceAtContext evt) => base.CanPlaceAt(evt) && CanGrow(evt.World.Reader, evt.X, evt.Y, evt.Z);
 
-    public override void neighborUpdate(OnTickEvent @event)
+    public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (canGrow(@event.World.Reader, @event.X, @event.Y, @event.Z)) return;
-        dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        if (CanGrow(@event.World.Reader, @event.X, @event.Y, @event.Z))
+        {
+            return;
+        }
+
+        DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 
-    public override bool canGrow(OnTickEvent @event) => canGrow(@event.World.Reader, @event.X, @event.Y, @event.Z);
+    public override bool CanGrow(OnTickEvent @event) => CanGrow(@event.World.Reader, @event.X, @event.Y, @event.Z);
 
-    private static bool canGrow(IBlockReader world, int x, int y, int z) => world.GetMaterial(x, y - 1, z).IsSolid;
+    private static bool CanGrow(IBlockReader world, int x, int y, int z) => world.GetMaterial(x, y - 1, z).IsSolid;
 
-    public override int getDroppedItemCount() => 0;
+    public override int GetDroppedItemCount() => 0;
 
-    public override int getDroppedItemId(int blockMeta) => 0;
+    public override int GetDroppedItemId(int blockMeta) => 0;
 }

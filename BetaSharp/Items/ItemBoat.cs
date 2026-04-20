@@ -46,7 +46,7 @@ internal class ItemBoat : Item
                 int hitZ = hitResult.BlockZ;
                 if (!world.IsRemote)
                 {
-                    if (world.Reader.GetBlockId(hitX, hitY, hitZ) == Block.Snow.id)
+                    if (world.Reader.GetBlockId(hitX, hitY, hitZ) == Block.Snow.ID)
                     {
                         --hitY;
                     }

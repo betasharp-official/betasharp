@@ -10,34 +10,40 @@ public class BlockPistonExtension : Block
 
     public BlockPistonExtension(int id, int textureId) : base(id, textureId, Material.Piston)
     {
-        setSoundGroup(SoundStoneFootstep);
-        setHardness(0.5F);
+        SetSoundGroup(SoundStoneFootstep);
+        SetHardness(0.5F);
     }
 
-    public override void onBreak(OnBreakEvent @event)
+    public override void OnBreak(OnBreakEvent @event)
     {
-        base.onBreak(@event);
+        base.OnBreak(@event);
         (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
         int blockMeta = @event.World.Reader.GetBlockMeta(x, y, z);
-        Side oppositeFace = getFacing(blockMeta).OppositeFace();
+        Side oppositeFace = GetFacing(blockMeta).OppositeFace();
 
         x += PistonConstants.HeadOffsetX[oppositeFace.ToInt()];
         y += PistonConstants.HeadOffsetY[oppositeFace.ToInt()];
         z += PistonConstants.HeadOffsetZ[oppositeFace.ToInt()];
 
         int blockId = @event.World.Reader.GetBlockId(x, y, z);
-        if (blockId != Piston.id && blockId != StickyPiston.id) return;
+        if (blockId != Piston.ID && blockId != StickyPiston.ID)
+        {
+            return;
+        }
 
         int meta = @event.World.Reader.GetBlockMeta(x, y, z);
-        if (!BlockPistonBase.IsExtended(meta)) return;
+        if (!BlockPistonBase.IsExtended(meta))
+        {
+            return;
+        }
 
-        Blocks[blockId].dropStacks(new OnDropEvent(@event.World, x, y, z, meta));
+        Blocks[blockId].DropStacks(new OnDropEvent(@event.World, x, y, z, meta));
         @event.World.Writer.SetBlock(x, y, z, 0);
     }
 
     public override int GetTexture(Side side, int meta)
     {
-        Side facing = getFacing(meta);
+        Side facing = GetFacing(meta);
         if (side == facing)
         {
             return PistonHeadSprite >= 0 ? PistonHeadSprite : (meta & 8) != 0 ? TextureId - 1 : TextureId;
@@ -46,102 +52,102 @@ public class BlockPistonExtension : Block
         return side == facing.OppositeFace() ? 107 : 108;
     }
 
-    public override BlockRendererType getRenderType() => BlockRendererType.PistonExtension;
+    public override BlockRendererType GetRenderType() => BlockRendererType.PistonExtension;
 
-    public override bool isOpaque() => false;
+    public override bool IsOpaque() => false;
 
-    public override bool isFullCube() => false;
+    public override bool IsFullCube() => false;
 
-    public override bool canPlaceAt(CanPlaceAtContext context) => false;
+    public override bool CanPlaceAt(CanPlaceAtContext context) => false;
 
-    public override int getDroppedItemCount() => 0;
+    public override int GetDroppedItemCount() => 0;
 
-    public override void addIntersectingBoundingBox(IBlockReader reader, EntityManager entities, int x, int y, int z, Box box, List<Box> boxes)
+    public override void AddIntersectingBoundingBox(IBlockReader reader, EntityManager entities, int x, int y, int z, Box box, List<Box> boxes)
     {
         int facing = reader.GetBlockMeta(x, y, z);
-        switch (getFacing(facing))
+        switch (GetFacing(facing))
         {
             case Side.Down:
-                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
-                base.addIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
-                setBoundingBox(6.0F / 16.0F, 0.25F, 6.0F / 16.0F, 10.0F / 16.0F, 1.0F, 10.0F / 16.0F);
-                base.addIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
+                base.AddIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
+                SetBoundingBox(6.0F / 16.0F, 0.25F, 6.0F / 16.0F, 10.0F / 16.0F, 1.0F, 10.0F / 16.0F);
+                base.AddIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
                 break;
             case Side.Up:
-                setBoundingBox(0.0F, 12.0F / 16.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-                base.addIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
-                setBoundingBox(6.0F / 16.0F, 0.0F, 6.0F / 16.0F, 10.0F / 16.0F, 12.0F / 16.0F, 10.0F / 16.0F);
-                base.addIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.0F, 12.0F / 16.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                base.AddIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
+                SetBoundingBox(6.0F / 16.0F, 0.0F, 6.0F / 16.0F, 10.0F / 16.0F, 12.0F / 16.0F, 10.0F / 16.0F);
+                base.AddIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
                 break;
             case Side.North:
-                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.25F);
-                base.addIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
-                setBoundingBox(0.25F, 6.0F / 16.0F, 0.25F, 12.0F / 16.0F, 10.0F / 16.0F, 1.0F);
-                base.addIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.25F);
+                base.AddIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.25F, 6.0F / 16.0F, 0.25F, 12.0F / 16.0F, 10.0F / 16.0F, 1.0F);
+                base.AddIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
                 break;
             case Side.South:
-                setBoundingBox(0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F, 1.0F);
-                base.addIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
-                setBoundingBox(0.25F, 6.0F / 16.0F, 0.0F, 12.0F / 16.0F, 10.0F / 16.0F, 12.0F / 16.0F);
-                base.addIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F, 1.0F);
+                base.AddIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.25F, 6.0F / 16.0F, 0.0F, 12.0F / 16.0F, 10.0F / 16.0F, 12.0F / 16.0F);
+                base.AddIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
                 break;
             case Side.West:
-                setBoundingBox(0.0F, 0.0F, 0.0F, 0.25F, 1.0F, 1.0F);
-                base.addIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
-                setBoundingBox(6.0F / 16.0F, 0.25F, 0.25F, 10.0F / 16.0F, 12.0F / 16.0F, 1.0F);
-                base.addIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.0F, 0.0F, 0.0F, 0.25F, 1.0F, 1.0F);
+                base.AddIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
+                SetBoundingBox(6.0F / 16.0F, 0.25F, 0.25F, 10.0F / 16.0F, 12.0F / 16.0F, 1.0F);
+                base.AddIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
                 break;
             case Side.East:
-                setBoundingBox(12.0F / 16.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-                base.addIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
-                setBoundingBox(0.0F, 6.0F / 16.0F, 0.25F, 12.0F / 16.0F, 10.0F / 16.0F, 12.0F / 16.0F);
-                base.addIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
+                SetBoundingBox(12.0F / 16.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                base.AddIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
+                SetBoundingBox(0.0F, 6.0F / 16.0F, 0.25F, 12.0F / 16.0F, 10.0F / 16.0F, 12.0F / 16.0F);
+                base.AddIntersectingBoundingBox(reader, entities, x, y, z, box, boxes);
                 break;
         }
 
-        setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+        SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
+    public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
         int meta = blockReader.GetBlockMeta(x, y, z);
-        switch (getFacing(meta))
+        switch (GetFacing(meta))
         {
             case Side.Down:
-                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
+                SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
                 break;
             case Side.Up:
-                setBoundingBox(0.0F, 12.0F / 16.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                SetBoundingBox(0.0F, 12.0F / 16.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 break;
             case Side.North:
-                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.25F);
+                SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.25F);
                 break;
             case Side.South:
-                setBoundingBox(0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F, 1.0F);
+                SetBoundingBox(0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F, 1.0F);
                 break;
             case Side.West:
-                setBoundingBox(0.0F, 0.0F, 0.0F, 0.25F, 1.0F, 1.0F);
+                SetBoundingBox(0.0F, 0.0F, 0.0F, 0.25F, 1.0F, 1.0F);
                 break;
             case Side.East:
-                setBoundingBox(12.0F / 16.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                SetBoundingBox(12.0F / 16.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 break;
         }
     }
 
-    public override void neighborUpdate(OnTickEvent @event)
+    public override void NeighborUpdate(OnTickEvent @event)
     {
-        int facing = getFacing(@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)).ToInt();
+        int facing = GetFacing(@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)).ToInt();
         int blockId = @event.World.Reader.GetBlockId(@event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing]);
-        if (blockId != Piston.id && blockId != StickyPiston.id)
+        if (blockId != Piston.ID && blockId != StickyPiston.ID)
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
         else
         {
-            Blocks[blockId].neighborUpdate(new OnTickEvent(@event.World, @event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing],
-                @event.World.Reader.GetBlockMeta(@event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing]), id));
+            Blocks[blockId].NeighborUpdate(new OnTickEvent(@event.World, @event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing],
+                @event.World.Reader.GetBlockMeta(@event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing]), ID));
         }
     }
 
-    public static Side getFacing(int meta) => (meta & 7).ToSide();
+    public static Side GetFacing(int meta) => (meta & 7).ToSide();
 }

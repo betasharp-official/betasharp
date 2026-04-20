@@ -68,16 +68,16 @@ internal class ItemDye : Item
         if (itemStack.getDamage() == 15)
         {
             int blockId = world.Reader.GetBlockId(x, y, z);
-            if (blockId == Block.Sapling.id)
+            if (blockId == Block.Sapling.ID)
             {
                 if (!world.IsRemote)
                 {
-                    ((BlockSapling)Block.Sapling).generate(world, x, y, z);
+                    ((BlockSapling)Block.Sapling).Generate(world, x, y, z);
                     itemStack.ConsumeItem(entityPlayer);
                 }
                 return true;
             }
-            if (blockId == Block.Wheat.id)
+            if (blockId == Block.Wheat.ID)
             {
                 if (!world.IsRemote)
                 {
@@ -86,7 +86,7 @@ internal class ItemDye : Item
                 }
                 return true;
             }
-            if (blockId == Block.GrassBlock.id)
+            if (blockId == Block.GrassBlock.ID)
             {
                 if (!world.IsRemote)
                 {
@@ -104,7 +104,7 @@ internal class ItemDye : Item
                             spawnX += itemRand.NextInt(3) - 1;
                             spawnY += (itemRand.NextInt(3) - 1) * itemRand.NextInt(3) / 2;
                             spawnZ += itemRand.NextInt(3) - 1;
-                            if (world.Reader.GetBlockId(spawnX, spawnY - 1, spawnZ) != Block.GrassBlock.id || world.Reader.ShouldSuffocate(spawnX, spawnY, spawnZ))
+                            if (world.Reader.GetBlockId(spawnX, spawnY - 1, spawnZ) != Block.GrassBlock.ID || world.Reader.ShouldSuffocate(spawnX, spawnY, spawnZ))
                             {
                                 validPosition = false;
                             }
@@ -114,15 +114,15 @@ internal class ItemDye : Item
                         {
                             if (itemRand.NextInt(10) != 0)
                             {
-                                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Grass.id, 1);
+                                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Grass.ID, 1);
                             }
                             else if (itemRand.NextInt(3) != 0)
                             {
-                                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Dandelion.id);
+                                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Dandelion.ID);
                             }
                             else
                             {
-                                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Rose.id);
+                                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Rose.ID);
                             }
                         }
                     }

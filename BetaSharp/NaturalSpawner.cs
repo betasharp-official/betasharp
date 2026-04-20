@@ -170,7 +170,7 @@ internal static class NaturalSpawner
                                 Math.Abs(pathPoint.Y - player.Y) < 1.5D)
                             {
                                 Vec3i wakeUpPos =
-                                    BlockBed.findWakeUpPosition(world.Reader, MathHelper.Floor(player.X),
+                                    BlockBed.FindWakeUpPosition(world.Reader, MathHelper.Floor(player.X),
                                         MathHelper.Floor(player.Y), MathHelper.Floor(player.Z), 1) ??
                                     new Vec3i(spawnX, newSpawnY + 1, spawnZ);
 

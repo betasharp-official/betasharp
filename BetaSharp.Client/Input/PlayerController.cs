@@ -33,7 +33,7 @@ public class PlayerController
         bool success = world.Writer.SetBlock(x, y, z, 0);
         if (block != null && success)
         {
-            block.onMetadataChange(new OnMetadataChangeEvent(world, x, y, z, blockMeta));
+            block.OnMetadataChange(new OnMetadataChangeEvent(world, x, y, z, blockMeta));
         }
 
         return success;
@@ -108,7 +108,7 @@ public class PlayerController
         if (targetId > 0 && !player.IsSneaking())
         {
             if (!player.GameMode.CanInteract) return false;
-            bool used = Block.Blocks[targetId].onUse(new OnUseEvent(world, player, blockX, blockY, blockZ));
+            bool used = Block.Blocks[targetId].OnUse(new OnUseEvent(world, player, blockX, blockY, blockZ));
             if (used) return true;
         }
 

@@ -13,7 +13,7 @@ public class LadderRenderer : IBlockRenderer
             textureId = ctx.OverrideTexture;
         }
 
-        float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
         ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
 
         int texU = (textureId & 15) << 4;

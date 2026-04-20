@@ -2,24 +2,30 @@ using BetaSharp.NBT;
 
 namespace BetaSharp.Blocks.Entities;
 
+/// <summary>
+///     Block entity for a record player, storing the record currently playing.
+/// </summary>
 internal class BlockEntityRecordPlayer : BlockEntity
 {
-    public override BlockEntityType Type => BlockEntity.RecordPlayer;
-    public int recordId;
+    /// <summary>
+    ///     Item ID of the record currently playing, or 0 if no record is playing.
+    /// </summary>
+    public int RecordID;
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override BlockEntityType Type => RecordPlayer;
+
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
-        recordId = nbt.GetInteger("Record");
+        base.ReadNbt(nbt);
+        RecordID = nbt.GetInteger("Record");
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
-        if (recordId > 0)
+        base.WriteNbt(nbt);
+        if (RecordID > 0)
         {
-            nbt.SetInteger("Record", recordId);
+            nbt.SetInteger("Record", RecordID);
         }
-
     }
 }

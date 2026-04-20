@@ -9,7 +9,7 @@ public class PistonBaseRenderer : IBlockRenderer
     {
         int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
         bool isExpanded = ctx.CustomFlag || (metadata & 8) != 0;
-        int facing = BlockPistonBase.getFacing(metadata);
+        int facing = BlockPistonBase.GetFacing(metadata);
 
         int uvTop = 0, uvBottom = 0, uvNorth = 0, uvSouth = 0, uvEast = 0, uvWest = 0;
         Box? bounds = ctx.OverrideBounds ?? block.BoundingBox;

@@ -9,11 +9,11 @@ public class BlockLeavesBase : Block
 
     protected BlockLeavesBase(int id, int textureId, Material material, bool graphicsLevel) : base(id, textureId, material) => GraphicsLevel = graphicsLevel;
 
-    public override bool isOpaque() => false;
+    public override bool IsOpaque() => false;
 
-    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
+    public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
         int blockId = iBlockReader.GetBlockId(x, y, z);
-        return (GraphicsLevel || blockId != id) && base.isSideVisible(iBlockReader, x, y, z, side);
+        return (GraphicsLevel || blockId != ID) && base.IsSideVisible(iBlockReader, x, y, z, side);
     }
 }

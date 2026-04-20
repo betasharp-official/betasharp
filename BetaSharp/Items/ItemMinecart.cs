@@ -19,7 +19,7 @@ internal class ItemMinecart : Item
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
         int blockId = world.Reader.GetBlockId(x, y, z);
-        if (BlockRail.isRail(blockId))
+        if (BlockRail.IsRail(blockId))
         {
             if (!world.IsRemote)
             {

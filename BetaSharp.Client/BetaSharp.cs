@@ -1260,10 +1260,10 @@ public partial class BetaSharp :
             int blockId = World.Reader.GetBlockId(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
             int backupId = 0;
 
-            if (blockId == Block.GrassBlock.id) backupId = Block.Dirt.id;
-            else if (blockId == Block.Bedrock.id) backupId = Block.Stone.id;
-            else if (blockId == Block.Leaves.id) backupId = Block.Sapling.id;
-            else if (blockId == Block.DoubleSlab.id) blockId = Block.Slab.id;
+            if (blockId == Block.GrassBlock.ID) backupId = Block.Dirt.ID;
+            else if (blockId == Block.Bedrock.ID) backupId = Block.Stone.ID;
+            else if (blockId == Block.Leaves.ID) backupId = Block.Sapling.ID;
+            else if (blockId == Block.DoubleSlab.ID) blockId = Block.Slab.ID;
 
             Player.inventory.SetCurrentItem(blockId, backupId);
         }

@@ -12,39 +12,39 @@ public class BlockRail : Block
     public BlockRail(int id, int textureId, bool alwaysStraight) : base(id, textureId, Material.PistonBreakable)
     {
         _alwaysStraight = alwaysStraight;
-        setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
+        SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
     }
 
-    public static bool isRail(IWorldContext level, int x, int y, int z)
+    public static bool IsRail(IWorldContext level, int x, int y, int z)
     {
         int blockId = level.Reader.GetBlockId(x, y, z);
-        return blockId == Rail.id || blockId == PoweredRail.id || blockId == DetectorRail.id;
+        return blockId == Rail.ID || blockId == PoweredRail.ID || blockId == DetectorRail.ID;
     }
 
-    public static bool isRail(int blockId) => blockId == Rail.id || blockId == PoweredRail.id || blockId == DetectorRail.id;
+    public static bool IsRail(int blockId) => blockId == Rail.ID || blockId == PoweredRail.ID || blockId == DetectorRail.ID;
 
-    public bool isAlwaysStraight() => _alwaysStraight;
+    public bool IsAlwaysStraight() => _alwaysStraight;
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
+    public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override bool isOpaque() => false;
+    public override bool IsOpaque() => false;
 
-    public override HitResult raycast(IBlockReader world, EntityManager entities, int x, int y, int z, Vec3D startPos, Vec3D endPos)
+    public override HitResult Raycast(IBlockReader world, EntityManager entities, int x, int y, int z, Vec3D startPos, Vec3D endPos)
     {
-        updateBoundingBox(world, x, y, z);
-        return base.raycast(world, entities, x, y, z, startPos, endPos);
+        UpdateBoundingBox(world, x, y, z);
+        return base.Raycast(world, entities, x, y, z, startPos, endPos);
     }
 
-    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
+    public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
         int meta = blockReader.GetBlockMeta(x, y, z);
         if (meta is >= 2 and <= 5)
         {
-            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 10.0F / 16.0F, 1.0F);
+            SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 10.0F / 16.0F, 1.0F);
         }
         else
         {
-            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
+            SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
         }
     }
 
@@ -52,7 +52,7 @@ public class BlockRail : Block
     {
         if (_alwaysStraight)
         {
-            if (id == PoweredRail.id && (meta & 8) == 0)
+            if (ID == PoweredRail.ID && (meta & 8) == 0)
             {
                 return BlockTextures.PoweredRailOff;
             }
@@ -65,28 +65,31 @@ public class BlockRail : Block
         return TextureId;
     }
 
-    public override bool isFullCube() => false;
+    public override bool IsFullCube() => false;
 
-    public override BlockRendererType getRenderType() => BlockRendererType.MinecartTrack;
+    public override BlockRendererType GetRenderType() => BlockRendererType.MinecartTrack;
 
-    public override bool canPlaceAt(CanPlaceAtContext evt) => evt.World.Reader.ShouldSuffocate(evt.X, evt.Y - 1, evt.Z);
+    public override bool CanPlaceAt(CanPlaceAtContext evt) => evt.World.Reader.ShouldSuffocate(evt.X, evt.Y - 1, evt.Z);
 
-    public override void onPlaced(OnPlacedEvent @event)
+    public override void OnPlaced(OnPlacedEvent @event)
     {
         if (!@event.World.IsRemote)
         {
-            updateShape(@event.World, @event.X, @event.Y, @event.Z, true);
-            if (id == PoweredRail.id)
+            UpdateShape(@event.World, @event.X, @event.Y, @event.Z, true);
+            if (ID == PoweredRail.ID)
             {
                 int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-                neighborUpdate(new OnTickEvent(@event.World, @event.X, @event.Y, @event.Z, meta, id));
+                NeighborUpdate(new OnTickEvent(@event.World, @event.X, @event.Y, @event.Z, meta, ID));
             }
         }
     }
 
-    public override void neighborUpdate(OnTickEvent @event)
+    public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (@event.World.IsRemote) return;
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         int railMeta = meta;
@@ -96,20 +99,20 @@ public class BlockRail : Block
         }
 
         bool shouldBreak = !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) ||
-                           railMeta == 2 && !@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) ||
-                           railMeta == 3 && !@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) ||
-                           railMeta == 4 && !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) ||
-                           railMeta == 5 && !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1);
+                           (railMeta == 2 && !@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z)) ||
+                           (railMeta == 3 && !@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z)) ||
+                           (railMeta == 4 && !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1)) ||
+                           (railMeta == 5 && !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1));
 
         if (shouldBreak)
         {
-            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
-        else if (id == PoweredRail.id)
+        else if (ID == PoweredRail.ID)
         {
             bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
-            isPowered = isPowered || isPoweredByConnectedRails(@event.World, @event.X, @event.Y, @event.Z, meta, true, 0) || isPoweredByConnectedRails(@event.World, @event.X, @event.Y, @event.Z, meta, false, 0);
+            isPowered = isPowered || IsPoweredByConnectedRails(@event.World, @event.X, @event.Y, @event.Z, meta, true, 0) || IsPoweredByConnectedRails(@event.World, @event.X, @event.Y, @event.Z, meta, false, 0);
             bool stateChanged = false;
             if (isPowered && (meta & 8) == 0)
             {
@@ -122,29 +125,38 @@ public class BlockRail : Block
                 stateChanged = true;
             }
 
-            if (!stateChanged) return;
+            if (!stateChanged)
+            {
+                return;
+            }
 
-            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, id);
+            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, ID);
 
-            if (railMeta is 2 or 3 or 4 or 5) @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, id);
+            if (railMeta is 2 or 3 or 4 or 5)
+            {
+                @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, ID);
+            }
 
-            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, id);
+            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, ID);
         }
-        else if (id > 0 &&
-                 Blocks[id].canEmitRedstonePower() &&
+        else if (ID > 0 &&
+                 Blocks[ID].CanEmitRedstonePower() &&
                  !_alwaysStraight &&
                  RailLogic.GetNAdjacentTracks(new RailLogic(this, @event.World, new Vec3i(@event.X, @event.Y, @event.Z))) == 3)
         {
-            updateShape(@event.World, @event.X, @event.Y, @event.Z, false);
+            UpdateShape(@event.World, @event.X, @event.Y, @event.Z, false);
         }
     }
 
-    private void updateShape(IWorldContext level, int x, int y, int z, bool force)
+    private void UpdateShape(IWorldContext level, int x, int y, int z, bool force)
     {
-        if (!level.IsRemote) new RailLogic(this, level, new Vec3i(x, y, z)).UpdateState(level.Redstone.IsPowered(x, y, z), force);
+        if (!level.IsRemote)
+        {
+            new RailLogic(this, level, new Vec3i(x, y, z)).UpdateState(level.Redstone.IsPowered(x, y, z), force);
+        }
     }
 
-    private bool isPoweredByConnectedRails(IWorldContext level, int x, int y, int z, int meta, bool towardsNegative, int depth)
+    private bool IsPoweredByConnectedRails(IWorldContext level, int x, int y, int z, int meta, bool towardsNegative, int depth)
     {
         if (depth >= 8)
         {
@@ -235,30 +247,43 @@ public class BlockRail : Block
                 break;
         }
 
-        return isPoweredByRail(level, x, y, z, towardsNegative, depth, shape) ||
-               isSameY && isPoweredByRail(level, x, y - 1, z, towardsNegative, depth, shape);
+        return IsPoweredByRail(level, x, y, z, towardsNegative, depth, shape) ||
+               (isSameY && IsPoweredByRail(level, x, y - 1, z, towardsNegative, depth, shape));
     }
 
-    private bool isPoweredByRail(IWorldContext level, int x, int y, int z, bool towardsNegative, int depth, int shape)
+    private bool IsPoweredByRail(IWorldContext level, int x, int y, int z, bool towardsNegative, int depth, int shape)
     {
         int blockId = level.Reader.GetBlockId(x, y, z);
-        if (blockId != PoweredRail.id) return false;
+        if (blockId != PoweredRail.ID)
+        {
+            return false;
+        }
 
         int meta = level.Reader.GetBlockMeta(x, y, z);
         int railMeta = meta & 7;
 
-        if (shape == 1 && railMeta is 0 or 4 or 5) return false;
-        if (shape == 0 && railMeta is 1 or 2 or 3) return false;
+        if (shape == 1 && railMeta is 0 or 4 or 5)
+        {
+            return false;
+        }
 
-        if ((meta & 8) == 0) return false;
+        if (shape == 0 && railMeta is 1 or 2 or 3)
+        {
+            return false;
+        }
+
+        if ((meta & 8) == 0)
+        {
+            return false;
+        }
 
         if (!level.Redstone.IsPowered(x, y, z) && !level.Redstone.IsPowered(x, y + 1, z))
         {
-            return isPoweredByConnectedRails(level, x, y, z, meta, towardsNegative, depth + 1);
+            return IsPoweredByConnectedRails(level, x, y, z, meta, towardsNegative, depth + 1);
         }
 
         return true;
     }
 
-    public override int getPistonBehavior() => 0;
+    public override PistonBehavior GetPistonBehavior() => PistonBehavior.Normal;
 }

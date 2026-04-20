@@ -7,19 +7,20 @@ namespace BetaSharp.Blocks;
 internal class BlockFarmland : Block
 {
     private const sbyte CropRadius = 0;
+
     public BlockFarmland(int id) : base(id, Material.Soil)
     {
         TextureId = BlockTextures.FarmlandDry;
-        setTickRandomly(true);
-        setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 15.0F / 16.0F, 1.0F);
-        setOpacity(255);
+        SetTickRandomly(true);
+        SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 15.0F / 16.0F, 1.0F);
+        SetOpacity(255);
     }
 
-    public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => new Box(x + 0, y + 0, z + 0, x + 1, y + 1, z + 1);
+    public override Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => new Box(x + 0, y + 0, z + 0, x + 1, y + 1, z + 1);
 
-    public override bool isOpaque() => false;
+    public override bool IsOpaque() => false;
 
-    public override bool isFullCube() => false;
+    public override bool IsFullCube() => false;
 
     public override int GetTexture(Side side, int meta) => side switch
     {
@@ -29,21 +30,24 @@ internal class BlockFarmland : Block
     };
 
 
-    public override void onTick(OnTickEvent @event)
+    public override void OnTick(OnTickEvent @event)
     {
-        if (Random.Shared.Next(5) != 0) return;
+        if (Random.Shared.Next(5) != 0)
+        {
+            return;
+        }
 
 
-        if (!isWaterNearby(@event.World.Reader, @event.X, @event.Y, @event.Z) && !@event.World.Environment.IsRaining)
+        if (!IsWaterNearby(@event.World.Reader, @event.X, @event.Y, @event.Z) && !@event.World.Environment.IsRaining)
         {
             int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             if (meta > 0)
             {
                 @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta - 1);
             }
-            else if (!hasCrop(@event.World.Reader, @event.X, @event.Y, @event.Z))
+            else if (!HasCrop(@event.World.Reader, @event.X, @event.Y, @event.Z))
             {
-                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Dirt.id);
+                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Dirt.ID);
             }
         }
         else
@@ -52,28 +56,31 @@ internal class BlockFarmland : Block
         }
     }
 
-    public override void onSteppedOn(OnEntityStepEvent @event)
+    public override void OnSteppedOn(OnEntityStepEvent @event)
     {
         if (Random.Shared.Next(4) == 0)
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Dirt.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Dirt.ID);
         }
     }
 
-    private static bool hasCrop(IBlockReader world, int x, int y, int z)
+    private static bool HasCrop(IBlockReader world, int x, int y, int z)
     {
         for (int dx = x - CropRadius; dx <= x + CropRadius; ++dx)
         {
             for (int dy = z - CropRadius; dy <= z + CropRadius; ++dy)
             {
-                if (world.GetBlockId(dx, y + 1, dy) == Wheat.id) return true;
+                if (world.GetBlockId(dx, y + 1, dy) == Wheat.ID)
+                {
+                    return true;
+                }
             }
         }
 
         return false;
     }
 
-    private static bool isWaterNearby(IBlockReader reader, int x, int y, int z)
+    private static bool IsWaterNearby(IBlockReader reader, int x, int y, int z)
     {
         for (int checkX = x - 4; checkX <= x + 4; ++checkX)
         {
@@ -92,14 +99,14 @@ internal class BlockFarmland : Block
         return false;
     }
 
-    public override void neighborUpdate(OnTickEvent @event)
+    public override void NeighborUpdate(OnTickEvent @event)
     {
-        base.neighborUpdate(@event);
+        base.NeighborUpdate(@event);
         if (@event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z).IsSolid)
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Dirt.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Dirt.ID);
         }
     }
 
-    public override int getDroppedItemId(int blockMeta) => Dirt.getDroppedItemId(0);
+    public override int GetDroppedItemId(int blockMeta) => Dirt.GetDroppedItemId(0);
 }

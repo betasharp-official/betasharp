@@ -133,7 +133,7 @@ public class EntityItem : Entity
             int pickedUpCount = stack.Count;
             if (delayBeforeCanPickup == 0 && player.inventory.AddItemStackToInventory(stack))
             {
-                if (stack.ItemId == Block.Log.id)
+                if (stack.ItemId == Block.Log.ID)
                 {
                     player.incrementStat(Achievements.MineWood);
                 }

@@ -532,7 +532,7 @@ internal class ChunkMap
         {
             if (blockentity != null)
             {
-                Packet packet = blockentity.createUpdatePacket();
+                Packet packet = blockentity.CreateUpdatePacket();
                 if (packet != null)
                 {
                     sendPacketToPlayers(packet);

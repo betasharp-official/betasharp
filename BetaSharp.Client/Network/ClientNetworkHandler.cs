@@ -189,12 +189,12 @@ public class ClientNetworkHandler : NetHandler
 
         if (packet.entityType == 70)
         {
-            entity = new EntityFallingSand(_worldClient, x, y, z, Block.Sand.id);
+            entity = new EntityFallingSand(_worldClient, x, y, z, Block.Sand.ID);
         }
 
         if (packet.entityType == 71)
         {
-            entity = new EntityFallingSand(_worldClient, x, y, z, Block.Gravel.id);
+            entity = new EntityFallingSand(_worldClient, x, y, z, Block.Gravel.ID);
         }
 
         if (entity != null)
@@ -707,7 +707,7 @@ public class ClientNetworkHandler : NetHandler
 
     }
 
-    public override void handleUpdateSign(UpdateSignPacket packet)
+    public override void HandleUpdateSign(UpdateSignPacket packet)
     {
         if (_context.WorldHost.World.BlockHost.IsPosLoaded(packet.x, packet.y, packet.z))
         {

@@ -13,7 +13,7 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
 
     public void renderTileEntitySignAt(BlockEntitySign var1, double var2, double var4, double var6, float var8)
     {
-        Block var9 = var1.getBlock();
+        Block var9 = var1.GetBlock();
         GLManager.GL.PushMatrix();
         float var10 = 2.0F / 3.0F;
         float var12;

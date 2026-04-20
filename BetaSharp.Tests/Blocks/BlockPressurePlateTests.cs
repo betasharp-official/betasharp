@@ -10,9 +10,9 @@ public sealed class BlockPressurePlateTests
     public void NeighborUpdate_WithoutSupport_BreaksPressurePlate()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.StonePressurePlate.id);
+        world.ReaderWriter.SetInitial(0, 64, 0, Block.StonePressurePlate.ID);
 
-        Block.StonePressurePlate.neighborUpdate(Tick(world));
+        Block.StonePressurePlate.NeighborUpdate(Tick(world));
 
         Assert.Equal(0, world.Reader.GetBlockId(0, 64, 0));
     }
@@ -21,10 +21,10 @@ public sealed class BlockPressurePlateTests
     public void OnTick_UnpressedPlate_DoesNotScheduleTicks()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 63, 0, Block.Stone.id);
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.StonePressurePlate.id);
+        world.ReaderWriter.SetInitial(0, 63, 0, Block.Stone.ID);
+        world.ReaderWriter.SetInitial(0, 64, 0, Block.StonePressurePlate.ID);
 
-        Block.StonePressurePlate.onTick(Tick(world));
+        Block.StonePressurePlate.OnTick(Tick(world));
 
         Assert.Empty(world.TickSchedulerSpy.ScheduledTicks);
     }
