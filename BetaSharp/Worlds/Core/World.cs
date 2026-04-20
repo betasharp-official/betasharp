@@ -44,20 +44,13 @@ public abstract class World : IWorldContext
 
         WorldProperties? loadedProperties = worldStorage.LoadProperties();
         bool shouldInitializeSpawn = loadedProperties == null;
-        if (loadedProperties == null)
-        {
-            Properties = new WorldProperties(settings, levelName);
-        }
-        else
-        {
-            Properties = loadedProperties;
-        }
+        Properties = loadedProperties ?? new WorldProperties(settings, levelName);
 
         if (dim != null)
         {
             Dimension = dim;
         }
-        else if (Properties != null && Properties.Dimension == -1)
+        else if (Properties.Dimension == -1)
         {
             Dimension = Dimension.FromId(-1);
         }
@@ -65,10 +58,6 @@ public abstract class World : IWorldContext
         {
             Dimension = Dimension.FromId(0);
         }
-
-
-
-
 
 
         if (Dimension is OverworldDimension && Properties.TerrainType == WorldType.Sky)
@@ -290,7 +279,7 @@ public abstract class World : IWorldContext
             NBTTagCompound? tag = Properties.PlayerTag;
             if (tag != null)
             {
-                player.read(tag);
+                player.Read(tag);
                 Properties.PlayerTag = null;
             }
 
@@ -501,8 +490,8 @@ public abstract class World : IWorldContext
         for (int i = 0; i < Entities.Players.Count; ++i)
         {
             EntityPlayer player = Entities.Players[i];
-            int playerChunkX = MathHelper.Floor(player.x / 16.0D);
-            int playerChunkZ = MathHelper.Floor(player.z / 16.0D);
+            int playerChunkX = MathHelper.Floor(player.X / 16.0D);
+            int playerChunkZ = MathHelper.Floor(player.Z / 16.0D);
             const byte viewDistance = 9;
 
             for (int xOffset = -viewDistance; xOffset <= viewDistance; ++xOffset)
@@ -541,7 +530,7 @@ public abstract class World : IWorldContext
                 {
                     EntityPlayer? closest = Entities.GetClosestPlayer(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, 8.0D);
                     if (closest != null &&
-                        closest.getSquaredDistance(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D) > 4.0D)
+                        closest.GetSquaredDistance(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D) > 4.0D)
                     {
                         Broadcaster.PlaySoundAtPos(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, "ambient.cave.cave", 0.7F,
                             0.8F + Random.NextFloat() * 0.2F);
@@ -575,7 +564,7 @@ public abstract class World : IWorldContext
                 int worldZ = localZ + worldZBase;
                 int worldY = Reader.GetTopSolidBlockY(worldX, worldZ);
 
-                if (GetBiomeSource().GetBiome(worldX, worldZ).GetEnableSnow() && worldY >= 0 && worldY < 128 &&
+                if (GetBiomeSource().GetBiome(worldX, worldZ).GetEnableSnow() && worldY >= 0 && worldY < ChuckFormat.WorldHeight &&
                     currentChunk.GetLight(LightType.Block, localX, worldY, localZ) < 10)
                 {
                     int blockBelowId = currentChunk.GetBlockId(localX, worldY - 1, localZ);
@@ -603,7 +592,7 @@ public abstract class World : IWorldContext
                 int localZ = (randomTickVal >> 8) & 15;
                 int localY = (randomTickVal >> 16) & 127;
 
-                int blockId = currentChunk.Blocks[(localX << 11) | (localZ << 7) | localY] & 255;
+                int blockId = currentChunk.GetBlockId(localX, localY, localZ);
                 if (Block.BlocksRandomTick[blockId])
                 {
                     Block.Blocks[blockId].OnTick(new OnTickEvent(this, localX + worldXBase, localY, localZ + worldZBase, currentChunk.GetBlockMeta(localX, localY, localZ), blockId));
@@ -647,7 +636,7 @@ public abstract class World : IWorldContext
 
         int currentBufferOffset = 0;
         int minY = Math.Max(0, y);
-        int maxY = Math.Min(128, y + sizeY);
+        int maxY = Math.Min(ChuckFormat.WorldHeight, y + sizeY);
 
         for (int chunkX = startChunkX; chunkX <= endChunkX; ++chunkX)
         {

@@ -11,7 +11,7 @@ using BetaSharp.Worlds.Generation.Generators.Features;
 
 namespace BetaSharp.Worlds.Gen.Chunks;
 
-internal class OverworldChunkGenerator : IChunkSource
+internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
 {
     private readonly BiomeSource _biomeSource;
     private readonly Carver _carver = new CaveCarver();
@@ -19,14 +19,11 @@ internal class OverworldChunkGenerator : IChunkSource
     private readonly OctavePerlinNoiseSampler _floatingIslandNoise;
     private readonly OctavePerlinNoiseSampler _floatingIslandScale;
     private readonly OctavePerlinNoiseSampler _forestNoise;
-    private readonly IWorldContext _level;
     private readonly OctavePerlinNoiseSampler _maxLimitPerlinNoise;
     private readonly OctavePerlinNoiseSampler _minLimitPerlinNoise;
-    private readonly JavaRandom _random;
     private readonly OctavePerlinNoiseSampler _sandGravelNoise;
 
     // Seed and per-instance biome source (allows thread-safe parallel generation)
-    private readonly long _seed;
     private readonly OctavePerlinNoiseSampler _selectorNoise;
     private Biome[] _biomes;
     private double[] _depthBuffer = new double[256];
@@ -66,10 +63,8 @@ internal class OverworldChunkGenerator : IChunkSource
     private double[] _selectorNoiseBuffer;
     private double[] _temperatures;
 
-    public OverworldChunkGenerator(IWorldContext world, long seed)
+    public OverworldChunkGenerator(IWorldContext world, long seed) : base(world, seed)
     {
-        _level = world;
-        _random = new JavaRandom(seed);
         _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
         _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
         _selectorNoise = new OctavePerlinNoiseSampler(_random, 8);
@@ -78,32 +73,19 @@ internal class OverworldChunkGenerator : IChunkSource
         _floatingIslandScale = new OctavePerlinNoiseSampler(_random, 10);
         _floatingIslandNoise = new OctavePerlinNoiseSampler(_random, 16);
         _forestNoise = new OctavePerlinNoiseSampler(_random, 8);
-        _seed = seed;
         _biomeSource = world.Dimension.BiomeSource;
         InitFeatures();
     }
 
-    private OverworldChunkGenerator(IWorldContext level, long seed, BiomeSource biomeSource)
+    private OverworldChunkGenerator(IWorldContext world, long seed, BiomeSource biomeSource) : this(world, seed)
     {
-        _level = level;
-        _seed = seed;
         _biomeSource = biomeSource;
-        _random = new JavaRandom(seed);
-        _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
-        _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
-        _selectorNoise = new OctavePerlinNoiseSampler(_random, 8);
-        _sandGravelNoise = new OctavePerlinNoiseSampler(_random, 4);
-        _depthNoise = new OctavePerlinNoiseSampler(_random, 4);
-        _floatingIslandScale = new OctavePerlinNoiseSampler(_random, 10);
-        _floatingIslandNoise = new OctavePerlinNoiseSampler(_random, 16);
-        _forestNoise = new OctavePerlinNoiseSampler(_random, 8);
-        InitFeatures();
     }
 
     // Creates a thread-safe parallel generator with its own BiomeSource and _random state.
     // All noise samplers are deterministically equivalent (same seed), so chunk output is identical.
     public IChunkSource CreateParallelInstance()
-        => new OverworldChunkGenerator(_level, _seed, new BiomeSource(_level));
+        => new OverworldChunkGenerator(_world, _seed, new BiomeSource(_world));
 
     public Chunk LoadChunk(int chunkX, int chunkZ) => GetChunk(chunkX, chunkZ);
 
@@ -117,13 +99,13 @@ internal class OverworldChunkGenerator : IChunkSource
     public Chunk GetChunk(int chunkX, int chunkZ)
     {
         _random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
-        byte[] blocks = new byte[-short.MinValue];
-        Chunk chunk = new(_level, blocks, chunkX, chunkZ);
+        byte[] blocks = new byte[ChuckFormat.ChunkSize];
+        Chunk chunk = new(_world, blocks, chunkX, chunkZ);
         _biomes = _biomeSource.GetBiomesInArea(_biomes, chunkX * 16, chunkZ * 16, 16, 16);
         double[] temperatureMap = _biomeSource.TemperatureMap;
         BuildTerrain(chunkX, chunkZ, blocks, _biomes, temperatureMap);
         BuildSurfaces(chunkX, chunkZ, blocks, _biomes);
-        _carver.carve(this, _level, chunkX, chunkZ, blocks);
+        _carver.carve(this, _world, chunkX, chunkZ, blocks);
         chunk.PopulateHeightMap();
         return chunk;
     }
@@ -143,10 +125,10 @@ internal class OverworldChunkGenerator : IChunkSource
         int blockX = chunkX * 16;
         int blockZ = chunkZ * 16;
         Biome chunkBiome = _biomeSource.GetBiome(blockX + 16, blockZ + 16);
-        _random.SetSeed(_level.Seed);
+        _random.SetSeed(_world.Seed);
         long xOffset = _random.NextLong() / 2L * 2L + 1L;
         long zOffset = _random.NextLong() / 2L * 2L + 1L;
-        _random.SetSeed((chunkX * xOffset + chunkZ * zOffset) ^ _level.Seed);
+        _random.SetSeed((chunkX * xOffset + chunkZ * zOffset) ^ _world.Seed);
         double fraction;
         int featureX;
         int featureY;
@@ -158,7 +140,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureWaterLake.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureWaterLake.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate lava lakes
@@ -169,7 +151,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureZ = blockZ + _random.NextInt(16) + 8;
             if (featureY < 64 || _random.NextInt(10) == 0)
             {
-                _featureLavaLake.Generate(_level, _random, featureX, featureY, featureZ);
+                _featureLavaLake.Generate(_world, _random, featureX, featureY, featureZ);
             }
         }
 
@@ -179,7 +161,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureDungeon.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureDungeon.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Clay patches
@@ -188,7 +170,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16);
-            _featureClay.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureClay.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Dirt blobs
@@ -197,7 +179,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16);
-            _featureDirt.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureDirt.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Gravel blobs
@@ -206,7 +188,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16);
-            _featureGravel.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureGravel.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Coal Ore Veins
@@ -215,7 +197,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16);
-            _featureCoal.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureCoal.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Iron Ore Veins
@@ -224,7 +206,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(64);
             featureZ = blockZ + _random.NextInt(16);
-            _featureIron.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureIron.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Gold Ore Veins
@@ -233,7 +215,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(32);
             featureZ = blockZ + _random.NextInt(16);
-            _featureGold.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureGold.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Redstone Ore Veins
@@ -242,7 +224,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(16);
             featureZ = blockZ + _random.NextInt(16);
-            _featureRedstone.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureRedstone.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Diamond Ore Veins
@@ -251,7 +233,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(16);
             featureZ = blockZ + _random.NextInt(16);
-            _featureDiamond.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureDiamond.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Lapis Lazuli Ore Veins
@@ -260,7 +242,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16);
             featureY = _random.NextInt(16);
             featureZ = blockZ + _random.NextInt(16);
-            _featureLapis.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureLapis.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Determine the number and type of trees that should be generated
@@ -313,7 +295,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureZ = blockZ + _random.NextInt(16) + 8;
             Feature treeFeature = chunkBiome.GetRandomWorldGenForTrees(_random);
             treeFeature.prepare(1.0D, 1.0D, 1.0D);
-            treeFeature.Generate(_level, _random, featureX, _level.Reader.GetTopY(featureX, featureZ), featureZ);
+            treeFeature.Generate(_world, _random, featureX, _world.Reader.GetTopY(featureX, featureZ), featureZ);
         }
 
         // Choose an appropriate amount of Dandelions
@@ -345,7 +327,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureDandelion.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureDandelion.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         byte amountOfTallgrass = 0;
@@ -387,7 +369,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            (grassMeta == 1 ? _featureGrass1 : _featureGrass2).Generate(_level, _random, featureX, featureY, featureZ);
+            (grassMeta == 1 ? _featureGrass1 : _featureGrass2).Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Deadbushes
@@ -402,7 +384,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureDeadBush.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureDeadBush.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Roses
@@ -411,7 +393,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureRose.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureRose.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Brown Mushrooms
@@ -420,7 +402,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureBrownMushroom.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureBrownMushroom.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Red Mushrooms
@@ -429,7 +411,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureRedMushroom.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureRedMushroom.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Sugarcane
@@ -438,7 +420,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureSugarcane.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureSugarcane.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Pumpkin Patches
@@ -447,7 +429,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            _featurePumpkin.Generate(_level, _random, featureX, featureY, featureZ);
+            _featurePumpkin.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate Cacti
@@ -462,7 +444,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(128);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureCactus.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureCactus.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate one-block water sources
@@ -471,7 +453,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(_random.NextInt(120) + 8);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureWaterSpring.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureWaterSpring.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Generate one-block lava sources
@@ -480,7 +462,7 @@ internal class OverworldChunkGenerator : IChunkSource
             featureX = blockX + _random.NextInt(16) + 8;
             featureY = _random.NextInt(_random.NextInt(_random.NextInt(112) + 8) + 8);
             featureZ = blockZ + _random.NextInt(16) + 8;
-            _featureLavaSpring.Generate(_level, _random, featureX, featureY, featureZ);
+            _featureLavaSpring.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
         // Place Snow in cold regions
@@ -492,12 +474,12 @@ internal class OverworldChunkGenerator : IChunkSource
             {
                 int offsetX = x - (blockX + 8);
                 int offsetZ = z - (blockZ + 8);
-                int var22 = _level.Reader.GetTopSolidBlockY(x, z);
-                double temperatureSample = _temperatures[offsetX * 16 + offsetZ] - (var22 - 64) / 64.0D * 0.3D;
-                if (temperatureSample < 0.5D && var22 > 0 && var22 < 128 && _level.Reader.IsAir(x, var22, z) && _level.Reader.GetMaterial(x, var22 - 1, z).BlocksMovement &&
-                    _level.Reader.GetMaterial(x, var22 - 1, z) != Material.Ice)
+                int topSolidBlockY = _world.Reader.GetTopSolidBlockY(x, z);
+                double temperatureSample = _temperatures[offsetX * 16 + offsetZ] - (topSolidBlockY - 64) / 64.0D * 0.3D;
+                if (temperatureSample < 0.5D && topSolidBlockY > 0 && topSolidBlockY < ChuckFormat.WorldHeight && _world.Reader.IsAir(x, topSolidBlockY, z) && _world.Reader.GetMaterial(x, topSolidBlockY - 1, z).BlocksMovement &&
+                    _world.Reader.GetMaterial(x, topSolidBlockY - 1, z) != Material.Ice)
                 {
-                    _level.Writer.SetBlock(x, var22, z, Block.Snow.ID, 0, doUpdate: false);
+                    _world.Writer.SetBlock(x, topSolidBlockY, z, Block.Snow.ID, 0, doUpdate: false);
                 }
             }
         }
@@ -592,8 +574,8 @@ internal class OverworldChunkGenerator : IChunkSource
 
                         for (int subX = 0; subX < 4; ++subX)
                         {
-                            int blockIndex = ((subX + sampleX * 4) << 11) | ((sampleZ * 4) << 7) | (sampleY * 8 + subY);
-                            const short chunkHeight = 128; // Chunk Height
+                            int blockIndex = ChuckFormat.GetIndex(subX + sampleX * 4, sampleY * 8 + subY, sampleZ * 4);
+
                             double terrainDensity = terrainX0;
                             double densityStepZ = (terrainX1 - terrainX0) * horizontalLerpStep;
 
@@ -625,7 +607,7 @@ internal class OverworldChunkGenerator : IChunkSource
                                 }
 
                                 blocks[blockIndex] = (byte)blockType;
-                                blockIndex += chunkHeight;
+                                blockIndex += ChuckFormat.ChunkHeight;
                                 terrainDensity += densityStepZ;
                             }
 
@@ -653,95 +635,98 @@ internal class OverworldChunkGenerator : IChunkSource
     /// <returns>The interpolated result.</returns>
     public void BuildSurfaces(int chunkX, int chunkZ, byte[] blocks, Biome[] biomes)
     {
-        byte blockZ = 64;
-        double chunkBiome = 1.0D / 32.0D;
-        _sandBuffer = _sandGravelNoise.create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome, chunkBiome, 1.0D);
-        _gravelBuffer = _sandGravelNoise.create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, chunkBiome, 1.0D, chunkBiome);
-        _depthBuffer = _depthNoise.create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome * 2.0D, chunkBiome * 2.0D, chunkBiome * 2.0D);
+        const byte WATER_LEVEL = 64;
+        const double oneThirtySecond = 1.0D / 32.0D;
+        _sandBuffer = _sandGravelNoise.create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, oneThirtySecond, oneThirtySecond, 1.0D);
+        _gravelBuffer = _sandGravelNoise.create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, oneThirtySecond, 1.0D, oneThirtySecond);
+        _depthBuffer = _depthNoise.create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, oneThirtySecond * 2.0D, oneThirtySecond * 2.0D, oneThirtySecond * 2.0D);
 
-        for (int horizontalScale = 0; horizontalScale < 16; ++horizontalScale)
+        int maxHeight = Math.Min(ChuckFormat.WorldHeight, ChuckFormat.ChunkHeight) - 1;
+
+        for (int localX = 0; localX < 16; ++localX)
         {
-            for (int zOffset = 0; zOffset < 16; ++zOffset)
+            for (int localZ = 0; localZ < 16; ++localZ)
             {
-                Biome verticalScale = biomes[horizontalScale + zOffset * 16];
-                bool fraction = _sandBuffer[horizontalScale + zOffset * 16] + _random.NextDouble() * 0.2D > 0.0D;
-                bool temperatureBuffer = _gravelBuffer[horizontalScale + zOffset * 16] + _random.NextDouble() * 0.2D > 3.0D;
-                int featureX = (int)(_depthBuffer[horizontalScale + zOffset * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
-                int featureY = -1;
-                byte featureZ = verticalScale.TopBlockId;
-                byte scaleFraction = verticalScale.SoilBlockId;
+                Biome localBiome = biomes[localX + localZ * 16];
+                bool sandActive = _sandBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 0.0D;
+                bool gravelActive = _gravelBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 3.0D;
+                int surfaceDepth = (int)(_depthBuffer[localX + localZ * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
+                int currentDepth = -1;
+                byte topBlock = localBiome.TopBlockId;
+                byte soilBlock = localBiome.SoilBlockId;
 
-                for (int iX = 127; iX >= 0; --iX)
+                for (int blockY = maxHeight; blockY >= 0; --blockY)
                 {
-                    int treeFeature = (zOffset * 16 + horizontalScale) * 128 + iX;
-                    if (iX <= 0 + _random.NextInt(5))
+                    int blockIndex = (localZ * 16 + localX) * ChuckFormat.ChunkHeight + blockY;
+                    // Generate Bedrock floor
+                    if (blockY <= 0 + _random.NextInt(5))
                     {
-                        blocks[treeFeature] = (byte)Block.Bedrock.ID;
+                        blocks[blockIndex] = (byte)Block.Bedrock.ID;
                     }
                     else
                     {
-                        byte z = blocks[treeFeature];
-                        if (z == 0)
+                        byte activeBlock = blocks[blockIndex];
+                        if (activeBlock == 0) // Air
                         {
-                            featureY = -1;
+                            currentDepth = -1;
                         }
-                        else if (z == Block.Stone.ID)
+                        else if (activeBlock == Block.Stone.ID)
                         {
-                            if (featureY == -1)
+                            if (currentDepth == -1)
                             {
-                                if (featureX <= 0)
+                                if (surfaceDepth <= 0)
                                 {
-                                    featureZ = 0;
-                                    scaleFraction = (byte)Block.Stone.ID;
+                                    topBlock = 0;
+                                    soilBlock = (byte)Block.Stone.ID;
                                 }
-                                else if (iX >= blockZ - 4 && iX <= blockZ + 1)
+                                else if (blockY >= WATER_LEVEL - 4 && blockY <= WATER_LEVEL + 1)
                                 {
-                                    featureZ = verticalScale.TopBlockId;
-                                    scaleFraction = verticalScale.SoilBlockId;
-                                    if (temperatureBuffer)
+                                    topBlock = localBiome.TopBlockId;
+                                    soilBlock = localBiome.SoilBlockId;
+                                    if (gravelActive)
                                     {
-                                        featureZ = 0;
+                                        topBlock = 0;
                                     }
 
-                                    if (temperatureBuffer)
+                                    if (gravelActive)
                                     {
-                                        scaleFraction = (byte)Block.Gravel.ID;
+                                        soilBlock = (byte)Block.Gravel.ID;
                                     }
 
-                                    if (fraction)
+                                    if (sandActive)
                                     {
-                                        featureZ = (byte)Block.Sand.ID;
+                                        topBlock = (byte)Block.Sand.ID;
                                     }
 
-                                    if (fraction)
+                                    if (sandActive)
                                     {
-                                        scaleFraction = (byte)Block.Sand.ID;
+                                        soilBlock = (byte)Block.Sand.ID;
                                     }
-                                }
-
-                                if (iX < blockZ && featureZ == 0)
-                                {
-                                    featureZ = (byte)Block.Water.ID;
                                 }
 
-                                featureY = featureX;
-                                if (iX >= blockZ - 1)
+                                if (blockY < WATER_LEVEL && topBlock == 0)
                                 {
-                                    blocks[treeFeature] = featureZ;
+                                    topBlock = (byte)Block.Water.ID;
+                                }
+
+                                currentDepth = surfaceDepth;
+                                if (blockY >= WATER_LEVEL - 1)
+                                {
+                                    blocks[blockIndex] = topBlock;
                                 }
                                 else
                                 {
-                                    blocks[treeFeature] = scaleFraction;
+                                    blocks[blockIndex] = soilBlock;
                                 }
                             }
-                            else if (featureY > 0)
+                            else if (currentDepth > 0)
                             {
-                                --featureY;
-                                blocks[treeFeature] = scaleFraction;
-                                if (featureY == 0 && scaleFraction == Block.Sand.ID)
+                                --currentDepth;
+                                blocks[blockIndex] = soilBlock;
+                                if (currentDepth == 0 && soilBlock == Block.Sand.ID)
                                 {
-                                    featureY = _random.NextInt(4);
-                                    scaleFraction = (byte)Block.Sandstone.ID;
+                                    currentDepth = _random.NextInt(4);
+                                    soilBlock = (byte)Block.Sandstone.ID;
                                 }
                             }
                         }
@@ -885,8 +870,8 @@ internal class OverworldChunkGenerator : IChunkSource
                     // Reduce density towards max height
                     if (iY > sizeY - 4)
                     {
-                        double var44 = (iY - (sizeY - 4)) / 3.0F;
-                        terrainDensity = terrainDensity * (1.0D - var44) + -10.0D * var44;
+                        double surfaceBlend = (iY - (sizeY - 4)) / 3.0F;
+                        terrainDensity = terrainDensity * (1.0D - surfaceBlend) + -10.0D * surfaceBlend;
                     }
 
                     heightMap[xyzIndex] = terrainDensity;

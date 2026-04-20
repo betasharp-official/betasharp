@@ -6,7 +6,7 @@ namespace BetaSharp.Server.Commands;
 
 public class TeleportDimensionCommand : Command.Command
 {
-    public override string Usage => "tpdim <id> <player<";
+    public override string Usage => "tpdim <id> <player>";
     public override string Description => "Teleports to a dimension";
     public override string[] Names => ["tpdim"];
 

@@ -10,41 +10,41 @@ public abstract class EntityMonster : EntityCreature, Monster
 
     public EntityMonster(IWorldContext world) : base(world)
     {
-        health = 20;
+        Health = 20;
     }
 
     public override void tickMovement()
     {
-        float brightness = getBrightnessAtEyes(1.0F);
+        float brightness = GetBrightnessAtEyes(1.0F);
         if (brightness > 0.5F)
         {
-            entityAge += 2;
+            EntityAge += 2;
         }
 
         base.tickMovement();
     }
 
-    public override void tick()
+    public override void Tick()
     {
-        base.tick();
-        if (!world.IsRemote && world.Difficulty == 0)
+        base.Tick();
+        if (!World.IsRemote && World.Difficulty == 0)
         {
-            markDead();
+            MarkDead();
         }
 
     }
 
     protected override Entity? findPlayerToAttack()
     {
-        EntityPlayer? player = world.Entities.GetClosestPlayerTarget(this.x, this.y, this.z, 16.0D);
+        EntityPlayer? player = World.Entities.GetClosestPlayerTarget(this.X, this.Y, this.Z, 16.0D);
         return player != null && canSee(player) ? player : null;
     }
 
-    public override bool damage(Entity entity, int amount)
+    public override bool Damage(Entity entity, int amount)
     {
-        if (base.damage(entity, amount))
+        if (base.Damage(entity, amount))
         {
-            if (passenger != entity && vehicle != entity)
+            if (Passenger != entity && Vehicle != entity)
             {
                 if (entity != this)
                 {
@@ -69,48 +69,48 @@ public abstract class EntityMonster : EntityCreature, Monster
 
     protected override void attackEntity(Entity entity, float distance)
     {
-        if (attackTime <= 0 && distance < 2.0F && entity.boundingBox.MaxY > boundingBox.MinY && entity.boundingBox.MinY < boundingBox.MaxY)
+        if (AttackTime <= 0 && distance < 2.0F && entity.BoundingBox.MaxY > BoundingBox.MinY && entity.BoundingBox.MinY < BoundingBox.MaxY)
         {
-            attackTime = 20;
-            entity.damage(this, attackStrength);
+            AttackTime = 20;
+            entity.Damage(this, attackStrength);
         }
 
     }
 
     protected override float getBlockPathWeight(int x, int y, int z)
     {
-        return 0.5F - world.Lighting.GetLuminance(x, y, z);
+        return 0.5F - World.Lighting.GetLuminance(x, y, z);
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
     }
 
     public override bool canSpawn()
     {
-        int x = MathHelper.Floor(this.x);
-        int y = MathHelper.Floor(boundingBox.MinY);
-        int z = MathHelper.Floor(this.z);
-        if (world.Lighting.GetBrightness(LightType.Sky, x, y, z) > random.NextInt(32))
+        int x = MathHelper.Floor(this.X);
+        int y = MathHelper.Floor(BoundingBox.MinY);
+        int z = MathHelper.Floor(this.Z);
+        if (World.Lighting.GetBrightness(LightType.Sky, x, y, z) > Random.NextInt(32))
         {
             return false;
         }
 
-        int lightLevel = world.Lighting.GetLightLevel(x, y, z);
-        if (world.Environment.IsThundering())
+        int lightLevel = World.Lighting.GetLightLevel(x, y, z);
+        if (World.Environment.IsThundering())
         {
-            int ambientDarkness = world.Environment.AmbientDarkness;
-            world.Environment.AmbientDarkness = 10;
-            lightLevel = world.Lighting.GetLightLevel(x, y, z);
-            world.Environment.AmbientDarkness = ambientDarkness;
+            int ambientDarkness = World.Environment.AmbientDarkness;
+            World.Environment.AmbientDarkness = 10;
+            lightLevel = World.Lighting.GetLightLevel(x, y, z);
+            World.Environment.AmbientDarkness = ambientDarkness;
         }
 
-        return lightLevel <= random.NextInt(8) && base.canSpawn();
+        return lightLevel <= Random.NextInt(8) && base.canSpawn();
     }
 }

@@ -24,6 +24,7 @@ internal class BlockRedstoneTorch : BlockTorch
         {
             return RedstoneWire.GetTexture(side, meta);
         }
+
         return base.GetTexture(side, meta);
     }
 
@@ -38,12 +39,18 @@ internal class BlockRedstoneTorch : BlockTorch
 
             int updateCount = 0;
 
-            foreach (var updateInfo in s_torchUpdates)
+            foreach (RedstoneUpdateInfo updateInfo in s_torchUpdates)
             {
-                if (updateInfo.x != ctx.X || updateInfo.y != ctx.Y || updateInfo.z != ctx.Z) continue;
+                if (updateInfo.x != ctx.X || updateInfo.y != ctx.Y || updateInfo.z != ctx.Z)
+                {
+                    continue;
+                }
 
                 ++updateCount;
-                if (updateCount >= 8) return true;
+                if (updateCount >= 8)
+                {
+                    return true;
+                }
             }
 
             return false;
@@ -54,9 +61,15 @@ internal class BlockRedstoneTorch : BlockTorch
 
     public override void OnPlaced(OnPlacedEvent @event)
     {
-        if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) == 0) base.OnPlaced(@event);
+        if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) == 0)
+        {
+            base.OnPlaced(@event);
+        }
 
-        if (!_lit) return;
+        if (!_lit)
+        {
+            return;
+        }
 
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, ID);
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, ID);
@@ -68,7 +81,10 @@ internal class BlockRedstoneTorch : BlockTorch
 
     public override void OnBreak(OnBreakEvent @event)
     {
-        if (!_lit) return;
+        if (!_lit)
+        {
+            return;
+        }
 
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, ID);
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, ID);
@@ -80,7 +96,10 @@ internal class BlockRedstoneTorch : BlockTorch
 
     public override bool IsPoweringSide(IBlockReader world, int x, int y, int z, int side)
     {
-        if (!_lit) return false;
+        if (!_lit)
+        {
+            return false;
+        }
 
         int meta = world.GetBlockMeta(x, y, z);
         return (meta != 5 || side != 1) && (meta != 3 || side != 3) && (meta != 4 || side != 2) && (meta != 1 || side != 5) && (meta != 2 || side != 4);
@@ -112,11 +131,17 @@ internal class BlockRedstoneTorch : BlockTorch
 
         if (_lit)
         {
-            if (!shouldTurnOff) return;
+            if (!shouldTurnOff)
+            {
+                return;
+            }
 
             @event.World.Writer.SetBlock(x, y, z, RedstoneTorch.ID, @event.World.Reader.GetBlockMeta(x, y, z));
 
-            if (!isBurnedOut(@event, true, currentTime)) return;
+            if (!isBurnedOut(@event, true, currentTime))
+            {
+                return;
+            }
 
             @event.World.Broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, "random.fizz", 0.5F, 2.6F + (Random.Shared.NextSingle() - Random.Shared.NextSingle()) * 0.8F);
 
@@ -151,7 +176,10 @@ internal class BlockRedstoneTorch : BlockTorch
 
     public override void RandomDisplayTick(OnTickEvent @event)
     {
-        if (!_lit) return;
+        if (!_lit)
+        {
+            return;
+        }
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         double particleX = @event.X + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;

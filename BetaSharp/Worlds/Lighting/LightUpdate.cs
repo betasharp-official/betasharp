@@ -41,7 +41,7 @@ internal struct LightUpdate
         }
 
         int startY = MinY < 0 ? 0 : MinY;
-        int endY = MaxY >= 128 ? 127 : MaxY;
+        int endY = MaxY >= ChuckFormat.WorldHeight ? ChuckFormat.WorldHeight - 1 : MaxY;
 
         int cachedChunkX = 0;
         int cachedChunkZ = 0;
@@ -111,37 +111,37 @@ internal struct LightUpdate
                         }
                         else
                         {
-                            int l1 = lighting.GetBrightness(LightType, x - 1, y, z);
-                            int l2 = lighting.GetBrightness(LightType, x + 1, y, z);
-                            int l3 = lighting.GetBrightness(LightType, x, y - 1, z);
-                            int l4 = lighting.GetBrightness(LightType, x, y + 1, z);
-                            int l5 = lighting.GetBrightness(LightType, x, y, z - 1);
-                            int l6 = lighting.GetBrightness(LightType, x, y, z + 1);
+                            int westLight = lighting.GetBrightness(LightType, x - 1, y, z);
+                            int eastLight = lighting.GetBrightness(LightType, x + 1, y, z);
+                            int downLight = lighting.GetBrightness(LightType, x, y - 1, z);
+                            int upLight = lighting.GetBrightness(LightType, x, y + 1, z);
+                            int northLight = lighting.GetBrightness(LightType, x, y, z - 1);
+                            int southLight = lighting.GetBrightness(LightType, x, y, z + 1);
 
-                            targetLight = l1;
-                            if (l2 > targetLight)
+                            targetLight = westLight;
+                            if (eastLight > targetLight)
                             {
-                                targetLight = l2;
+                                targetLight = eastLight;
                             }
 
-                            if (l3 > targetLight)
+                            if (downLight > targetLight)
                             {
-                                targetLight = l3;
+                                targetLight = downLight;
                             }
 
-                            if (l4 > targetLight)
+                            if (upLight > targetLight)
                             {
-                                targetLight = l4;
+                                targetLight = upLight;
                             }
 
-                            if (l5 > targetLight)
+                            if (northLight > targetLight)
                             {
-                                targetLight = l5;
+                                targetLight = northLight;
                             }
 
-                            if (l6 > targetLight)
+                            if (southLight > targetLight)
                             {
-                                targetLight = l6;
+                                targetLight = southLight;
                             }
 
                             targetLight -= opacity;

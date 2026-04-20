@@ -203,7 +203,7 @@ public class ServerPlayerInteractionManager
 
     public bool interactBlock(EntityPlayer player, World world, ItemStack? stack, int x, int y, int z, int side)
     {
-        if (!player.isSneaking())
+        if (!player.IsSneaking())
         {
             if (!player.GameMode.CanInteract) return false;
             int blockId = world.Reader.GetBlockId(x, y, z);

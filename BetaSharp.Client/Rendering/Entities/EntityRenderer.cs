@@ -59,7 +59,7 @@ public abstract class EntityRenderer
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate((float)pos.x, (float)pos.y, (float)pos.z);
 
-        float scale = ent.width * 1.4F;
+        float scale = ent.Width * 1.4F;
         GLManager.GL.Scale(scale, scale, scale);
 
         loadTexture("/terrain.png");
@@ -67,8 +67,8 @@ public abstract class EntityRenderer
 
         float widthOffset = 0.5F;
         float depthOffset = 0.0F;
-        float heightRatio = ent.height / scale;
-        float yOffset = (float)(ent.y - ent.boundingBox.MinY);
+        float heightRatio = ent.Height / scale;
+        float yOffset = (float)(ent.Y - ent.BoundingBox.MinY);
 
         GLManager.GL.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
         GLManager.GL.Translate(0.0F, 0.0F, -0.3F + (int)heightRatio * 0.02F);
@@ -129,9 +129,9 @@ public abstract class EntityRenderer
         GLManager.GL.DepthMask(false);
         float radius = ShadowRadius;
 
-        double targetX = target.lastTickX + (target.x - target.lastTickX) * tickDelta;
-        double targetY = target.lastTickY + (target.y - target.lastTickY) * tickDelta + target.getShadowRadius();
-        double targetZ = target.lastTickZ + (target.z - target.lastTickZ) * tickDelta;
+        double targetX = target.LastTickX + (target.X - target.LastTickX) * tickDelta;
+        double targetY = target.LastTickY + (target.Y - target.LastTickY) * tickDelta + target.GetShadowRadius();
+        double targetZ = target.LastTickZ + (target.Z - target.LastTickZ) * tickDelta;
 
         int minX = MathHelper.Floor(targetX - radius);
         int maxX = MathHelper.Floor(targetX + radius);
@@ -158,11 +158,11 @@ public abstract class EntityRenderer
                     {
                         renderShadowOnBlock(
                             Block.Blocks[blockId],
-                            new Vec3D(pos.x, pos.y + target.getShadowRadius(), pos.z),
+                            new Vec3D(pos.x, pos.y + target.GetShadowRadius(), pos.z),
                             blockX, blockY, blockZ,
                             shadowiness,
                             radius,
-                            new Vec3D(dx, dy + target.getShadowRadius(), dz)
+                            new Vec3D(dx, dy + target.GetShadowRadius(), dz)
                         );
                     }
                 }
@@ -299,7 +299,7 @@ public abstract class EntityRenderer
     {
         if (ShadowRadius > 0.0F)
         {
-            double distance = Dispatcher.GetSquareDistanceTo(target.x, target.y, target.z);
+            double distance = Dispatcher.GetSquareDistanceTo(target.X, target.Y, target.Z);
             float shadowiness = (float)((1.0D - distance / 256.0D) * ShadowStrength);
             if (shadowiness > 0.0F)
             {
@@ -307,7 +307,7 @@ public abstract class EntityRenderer
             }
         }
 
-        if (target.isOnFire())
+        if (target.IsOnFire())
         {
             RenderOnFire(target, pos, tickDelta);
         }
@@ -324,13 +324,13 @@ public abstract class EntityRenderer
         GLManager.GL.Translate((float)pos.x, (float)pos.y, (float)pos.z);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
 
-        Box bb = target.boundingBox;
-        double minX = bb.MinX - target.x;
-        double maxX = bb.MaxX - target.x;
-        double minY = bb.MinY - target.y;
-        double maxY = bb.MaxY - target.y;
-        double minZ = bb.MinZ - target.z;
-        double maxZ = bb.MaxZ - target.z;
+        Box bb = target.BoundingBox;
+        double minX = bb.MinX - target.X;
+        double maxX = bb.MaxX - target.X;
+        double minY = bb.MinY - target.Y;
+        double maxY = bb.MaxY - target.Y;
+        double minZ = bb.MinZ - target.Z;
+        double maxZ = bb.MaxZ - target.Z;
 
         Tessellator tess = Tessellator.instance;
         tess.startDrawing(1);

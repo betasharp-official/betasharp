@@ -215,8 +215,15 @@ public abstract class BlockFluid : Block
 
     private void CheckBlockCollisions(IBlockReader reader, IBlockWriter writer, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        if (reader.GetBlockId(x, y, z) != ID) return;
-        if (Material != Material.Lava) return;
+        if (reader.GetBlockId(x, y, z) != ID)
+        {
+            return;
+        }
+
+        if (Material != Material.Lava)
+        {
+            return;
+        }
 
         bool hasWaterAdjacent =
             reader.GetMaterial(x, y, z - 1) == Material.Water ||
@@ -225,7 +232,10 @@ public abstract class BlockFluid : Block
             reader.GetMaterial(x + 1, y, z) == Material.Water ||
             reader.GetMaterial(x, y + 1, z) == Material.Water;
 
-        if (!hasWaterAdjacent) return;
+        if (!hasWaterAdjacent)
+        {
+            return;
+        }
 
         int meta = reader.GetBlockMeta(x, y, z);
         switch (meta)

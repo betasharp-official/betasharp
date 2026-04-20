@@ -1,4 +1,5 @@
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Entities;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
@@ -22,6 +23,94 @@ internal class BlockTorch : Block
 
     private static bool CanPlaceOn(IBlockReader world, int x, int y, int z) => world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == Fence.ID;
 
+    private static bool TryGetHorizontalWallPickRay(EntityLiving placer, int torchX, int torchZ, out double lx, out double lz)
+    {
+        Vec3D look = placer.getLook(1.0F);
+        double h = Math.Sqrt((look.x * look.x) + (look.z * look.z));
+        if (h >= 1e-3)
+        {
+            lx = look.x / h;
+            lz = look.z / h;
+            return true;
+        }
+
+        double vx = placer.X - (torchX + 0.5);
+        double vz = placer.Z - (torchZ + 0.5);
+        h = Math.Sqrt((vx * vx) + (vz * vz));
+        if (h >= 1e-4)
+        {
+            lx = vx / h;
+            lz = vz / h;
+            return true;
+        }
+
+        lx = 0.0;
+        lz = 0.0;
+        return false;
+    }
+
+    private static int ResolveTorchMetaVanillaOrder(IBlockReader reader, int x, int y, int z)
+    {
+        if (reader.ShouldSuffocate(x - 1, y, z)) return 1;
+        if (reader.ShouldSuffocate(x + 1, y, z)) return 2;
+        if (reader.ShouldSuffocate(x, y, z - 1)) return 3;
+        if (reader.ShouldSuffocate(x, y, z + 1)) return 4;
+        if (CanPlaceOn(reader, x, y - 1, z)) return 5;
+        return -1;
+    }
+
+    private static int? TryResolveTorchMetaForDownPlacement(IBlockReader reader, int x, int y, int z, EntityLiving? placer)
+    {
+        bool ceiling = reader.ShouldSuffocate(x, y + 1, z);
+        bool west = reader.ShouldSuffocate(x - 1, y, z);
+        bool east = reader.ShouldSuffocate(x + 1, y, z);
+        bool north = reader.ShouldSuffocate(x, y, z - 1);
+        bool south = reader.ShouldSuffocate(x, y, z + 1);
+        int wallCount = (west ? 1 : 0) + (east ? 1 : 0) + (north ? 1 : 0) + (south ? 1 : 0);
+        if (ceiling && wallCount >= 2 && placer is not null)
+        {
+            if (!TryGetHorizontalWallPickRay(placer, x, z, out double lx, out double lz))
+            {
+                int v = ResolveTorchMetaVanillaOrder(reader, x, y, z);
+                return v == -1 ? null : v;
+            }
+
+            const double tieEps = 1e-4;
+            double westScore = west ? (lx * -1.0) + (lz * 0.0) : double.NegativeInfinity;
+            double eastScore = east ? (lx * 1.0) + (lz * 0.0) : double.NegativeInfinity;
+            double northScore = north ? (lx * 0.0) + (lz * -1.0) : double.NegativeInfinity;
+            double southScore = south ? (lx * 0.0) + (lz * 1.0) : double.NegativeInfinity;
+            double maxD = Math.Max(Math.Max(westScore, eastScore), Math.Max(northScore, southScore));
+
+            for (int meta = 1; meta <= 4; meta++)
+            {
+                double d = meta switch
+                {
+                    1 => westScore,
+                    2 => eastScore,
+                    3 => northScore,
+                    4 => southScore,
+                    _ => double.NegativeInfinity
+                };
+                bool solid = meta switch
+                {
+                    1 => west,
+                    2 => east,
+                    3 => north,
+                    4 => south,
+                    _ => false
+                };
+                if (solid && Math.Abs(d - maxD) < tieEps)
+                {
+                    return meta;
+                }
+            }
+        }
+
+        int vanilla = ResolveTorchMetaVanillaOrder(reader, x, y, z);
+        return vanilla == -1 ? null : vanilla;
+    }
+
     public override bool CanPlaceAt(CanPlaceAtContext context) =>
         context.World.Reader.ShouldSuffocate(context.X - 1, context.Y, context.Z) ||
         context.World.Reader.ShouldSuffocate(context.X + 1, context.Y, context.Z) ||
@@ -31,30 +120,36 @@ internal class BlockTorch : Block
 
     public override void OnPlaced(OnPlacedEvent @event)
     {
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        if (@event.Direction == Side.Up && CanPlaceOn(@event.World.Reader, @event.X, @event.Y - 1, @event.Z))
-        {
-            meta = 5;
-        }
+        IBlockReader reader = @event.World.Reader;
+        int meta = reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
 
-        if (@event.Direction == Side.North && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1))
+        switch (@event.Direction)
         {
-            meta = 4;
-        }
+            case Side.Up when CanPlaceOn(reader, @event.X, @event.Y - 1, @event.Z):
+                meta = 5;
+                break;
+            case Side.North when reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1):
+                meta = 4;
+                break;
+            case Side.South when reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1):
+                meta = 3;
+                break;
+            case Side.West when reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z):
+                meta = 2;
+                break;
+            case Side.East when reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z):
+                meta = 1;
+                break;
+            case Side.Down:
+                {
+                    int? resolved = TryResolveTorchMetaForDownPlacement(reader, @event.X, @event.Y, @event.Z, @event.Placer);
+                    if (resolved.HasValue)
+                    {
+                        meta = resolved.Value;
+                    }
 
-        if (@event.Direction == Side.South && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1))
-        {
-            meta = 3;
-        }
-
-        if (@event.Direction == Side.West && @event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z))
-        {
-            meta = 2;
-        }
-
-        if (@event.Direction == Side.East && @event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z))
-        {
-            meta = 1;
+                    break;
+                }
         }
 
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
@@ -65,75 +160,38 @@ internal class BlockTorch : Block
         base.OnTick(@event);
         if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) == 0)
         {
-            OnPlaced(@event);
+            onPlaced(@event);
         }
     }
 
-    public virtual void OnPlaced(OnTickEvent @event)
+    private void onPlaced(OnTickEvent @event)
     {
-        if (@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z))
+        int resolved = ResolveTorchMetaVanillaOrder(@event.World.Reader, @event.X, @event.Y, @event.Z);
+        if (resolved != -1)
         {
-            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 1);
-        }
-        else if (@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z))
-        {
-            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 2);
-        }
-        else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1))
-        {
-            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 3);
-        }
-        else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1))
-        {
-            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 4);
-        }
-        else if (CanPlaceOn(@event.World.Reader, @event.X, @event.Y - 1, @event.Z))
-        {
-            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 5);
+            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, resolved);
         }
 
-        BreakIfCannotPlaceAt(@event, @event.X, @event.Y, @event.Z);
+        breakIfCannotPlaceAt(@event, @event.X, @event.Y, @event.Z);
     }
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (BreakIfCannotPlaceAt(@event, @event.X, @event.Y, @event.Z))
-        {
-            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-            bool shouldDrop = false;
+        if (!breakIfCannotPlaceAt(@event, @event.X, @event.Y, @event.Z)) return;
 
-            if (!@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) && meta == 1)
-            {
-                shouldDrop = true;
-            }
+        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        bool shouldDrop = !@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) && meta == 1 ||
+                          !@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) && meta == 2 ||
+                          !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) && meta == 3 ||
+                          !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1) && meta == 4 ||
+                          !CanPlaceOn(@event.World.Reader, @event.X, @event.Y - 1, @event.Z) && meta == 5;
 
-            if (!@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) && meta == 2)
-            {
-                shouldDrop = true;
-            }
-
-            if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) && meta == 3)
-            {
-                shouldDrop = true;
-            }
-
-            if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1) && meta == 4)
-            {
-                shouldDrop = true;
-            }
-
-            if (!CanPlaceOn(@event.World.Reader, @event.X, @event.Y - 1, @event.Z) && meta == 5)
-            {
-                shouldDrop = true;
-            }
-
-            if (!shouldDrop) return;
-            DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-        }
+        if (!shouldDrop) return;
+        DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 
-    private bool BreakIfCannotPlaceAt(OnTickEvent @event, int x, int y, int z)
+    private bool breakIfCannotPlaceAt(OnTickEvent @event, int x, int y, int z)
     {
         if (CanPlaceAt(new CanPlaceAtContext(@event.World, 0, x, y, z))) return true;
 

@@ -6,7 +6,7 @@ namespace BetaSharp.Client.Chunks;
 
 public class MultiplayerChunkCache(World world) : IChunkSource
 {
-    private readonly Chunk _empty = new EmptyChunk(world, new byte[-short.MinValue], 0, 0);
+    private readonly Chunk _empty = new EmptyChunk(world, new byte[ChuckFormat.ChunkSize], 0, 0);
     private readonly Dictionary<ChunkPos, Chunk> _chunkByPos = [];
 
     public bool IsChunkLoaded(int x, int z)
@@ -28,7 +28,7 @@ public class MultiplayerChunkCache(World world) : IChunkSource
     public Chunk LoadChunk(int x, int z)
     {
         ChunkPos key = new(x, z);
-        byte[] blocks = new byte[-short.MinValue];
+        byte[] blocks = new byte[ChuckFormat.ChunkSize];
         Chunk chunk = new(world, blocks, x, z);
 
         Array.Fill(chunk.SkyLight.Bytes, (byte)255);

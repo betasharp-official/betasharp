@@ -29,7 +29,10 @@ public class BlockPlant : Block
 
     protected void breakIfCannotGrow(IWorldContext level, int x, int y, int z)
     {
-        if (CanGrow(new OnTickEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z), level.Reader.GetBlockId(x, y, z)))) return;
+        if (CanGrow(new OnTickEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z), level.Reader.GetBlockId(x, y, z))))
+        {
+            return;
+        }
 
         DropStacks(new OnDropEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z)));
         level.Writer.SetBlock(x, y, z, 0);

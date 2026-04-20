@@ -10,39 +10,39 @@ public class EntitySpider : EntityMonster
     public override EntityType Type => EntityRegistry.Spider;
     public EntitySpider(IWorldContext world) : base(world)
     {
-        texture = "/mob/spider.png";
-        setBoundingBoxSpacing(1.4F, 0.9F);
-        movementSpeed = 0.8F;
+        Texture = "/mob/spider.png";
+        SetBoundingBoxSpacing(1.4F, 0.9F);
+        MovementSpeed = 0.8F;
     }
 
     public override void PostSpawn()
     {
-        if (world.Random.NextInt(100) == 0)
+        if (World.Random.NextInt(100) == 0)
         {
-            EntitySkeleton skeleton = new EntitySkeleton(world);
-            skeleton.setPositionAndAnglesKeepPrevAngles(x, y, z, yaw, 0.0F);
-            world.SpawnEntity(skeleton);
-            skeleton.setVehicle(this);
+            EntitySkeleton skeleton = new EntitySkeleton(World);
+            skeleton.SetPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, 0.0F);
+            World.SpawnEntity(skeleton);
+            skeleton.SetVehicle(this);
         }
     }
 
-    public override double getPassengerRidingHeight()
+    public override double GetPassengerRidingHeight()
     {
-        return (double)height * 0.75D - 0.5D;
+        return (double)Height * 0.75D - 0.5D;
     }
 
-    protected override bool bypassesSteppingEffects()
+    protected override bool BypassesSteppingEffects()
     {
         return false;
     }
 
     protected override Entity? findPlayerToAttack()
     {
-        float brightness = getBrightnessAtEyes(1.0F);
+        float brightness = GetBrightnessAtEyes(1.0F);
         if (brightness < 0.5F)
         {
             double distance = 16.0D;
-            return world.Entities.GetClosestPlayerTarget(this.x, this.y, this.z, distance);
+            return World.Entities.GetClosestPlayerTarget(this.X, this.Y, this.Z, distance);
         }
         else
         {
@@ -67,23 +67,23 @@ public class EntitySpider : EntityMonster
 
     protected override void attackEntity(Entity entity, float distance)
     {
-        float brightness = getBrightnessAtEyes(1.0F);
-        if (brightness > 0.5F && random.NextInt(100) == 0)
+        float brightness = GetBrightnessAtEyes(1.0F);
+        if (brightness > 0.5F && Random.NextInt(100) == 0)
         {
             playerToAttack = null;
         }
         else
         {
-            if (distance > 2.0F && distance < 6.0F && random.NextInt(10) == 0)
+            if (distance > 2.0F && distance < 6.0F && Random.NextInt(10) == 0)
             {
-                if (onGround)
+                if (OnGround)
                 {
-                    double dx = entity.x - x;
-                    double dz = entity.z - z;
+                    double dx = entity.X - X;
+                    double dz = entity.Z - Z;
                     float horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz);
-                    velocityX = dx / (double)horizontalDistance * 0.5D * (double)0.8F + velocityX * (double)0.2F;
-                    velocityZ = dz / (double)horizontalDistance * 0.5D * (double)0.8F + velocityZ * (double)0.2F;
-                    velocityY = (double)0.4F;
+                    VelocityX = dx / (double)horizontalDistance * 0.5D * (double)0.8F + VelocityX * (double)0.2F;
+                    VelocityZ = dz / (double)horizontalDistance * 0.5D * (double)0.8F + VelocityZ * (double)0.2F;
+                    VelocityY = (double)0.4F;
                 }
             }
             else
@@ -94,14 +94,14 @@ public class EntitySpider : EntityMonster
         }
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
     }
 
     protected override int getDropItemId()
@@ -111,6 +111,6 @@ public class EntitySpider : EntityMonster
 
     public override bool isOnLadder()
     {
-        return horizontalCollison;
+        return HorizontalCollison;
     }
 }

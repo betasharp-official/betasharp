@@ -165,7 +165,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
     {
         for (int slotIndex = 0; slotIndex < Main.Length; ++slotIndex)
         {
-            Main[slotIndex]?.inventoryTick(Player.world, Player, slotIndex, SelectedSlot == slotIndex);
+            Main[slotIndex]?.inventoryTick(Player.World, Player, slotIndex, SelectedSlot == slotIndex);
         }
     }
 
@@ -476,7 +476,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
 
     public bool CanPlayerUse(EntityPlayer entityPlayer)
     {
-        return !Player.dead && entityPlayer.getSquaredDistance(Player) <= 64.0D;
+        return !Player.Dead && entityPlayer.GetSquaredDistance(Player) <= 64.0D;
     }
 
     public bool Contains(ItemStack itemStack)

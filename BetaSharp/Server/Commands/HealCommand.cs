@@ -18,15 +18,21 @@ public class HealCommand : Command.Command
                 .Executes(HealFullOther)
                 .Then(ArgumentInt("amount").Executes(HealAmountOther)));
 
-    private static int HealFull(CommandContext<CommandSource> context) => Heal(context, 20);
+    private static int HealFull(CommandContext<CommandSource> context) => Heal(context, 255);
 
     private static int HealAmount(CommandContext<CommandSource> context) => Heal(context, context.GetArgument<int>("amount"));
 
-    private static int HealFullOther(CommandContext<CommandSource> context) => Heal(context, context.GetArgument<ServerPlayerEntity>("player"), 20);
+    private static int HealFullOther(CommandContext<CommandSource> context) => Heal(context, context.GetArgument<ServerPlayerEntity>("player"), 255);
     private static int HealAmountOther(CommandContext<CommandSource> context) => Heal(context, context.GetArgument<ServerPlayerEntity>("player"), context.GetArgument<int>("amount"));
 
     private static int Heal(CommandContext<CommandSource> context, int amount)
     {
+        if (amount <= 0)
+        {
+            context.Source.Output.SendMessage("Heal must be a positive number.");
+            return 1;
+        }
+
         ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
         if (player == null)
         {
@@ -34,15 +40,23 @@ public class HealCommand : Command.Command
             return 1;
         }
 
+        int old = player.Health;
         player.heal(amount);
-        context.Source.Output.SendMessage($"Healed for {amount} health.");
+        context.Source.Output.SendMessage($"Healed for {player.Health - old} health.");
         return 1;
     }
 
     private static int Heal(CommandContext<CommandSource> context, ServerPlayerEntity player, int amount)
     {
+        if (amount <= 0)
+        {
+            context.Source.Output.SendMessage("Heal must be a positive number.");
+            return 1;
+        }
+
+        int old = player.Health;
         player.heal(amount);
-        context.Source.Output.SendMessage($"Healed {player.name} for {amount} health.");
+        context.Source.Output.SendMessage($"Healed {player.name} for {player.Health - old} health.");
         return 1;
     }
 }

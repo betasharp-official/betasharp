@@ -11,7 +11,7 @@ public class ClientCommandC2SPacket() : Packet(PacketId.ClientCommandC2S)
     public static ClientCommandC2SPacket Get(Entity ent, int mode)
     {
         var p = Get<ClientCommandC2SPacket>(PacketId.ClientCommandC2S);
-        p.entityId = ent.id;
+        p.entityId = ent.ID;
         p.mode = mode;
         return p;
     }

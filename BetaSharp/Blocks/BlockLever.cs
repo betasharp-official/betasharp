@@ -84,7 +84,10 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (!BreakIfCannotPlaceAt(@event)) return;
+        if (!BreakIfCannotPlaceAt(@event))
+        {
+            return;
+        }
 
         int direction = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) & 7;
 
@@ -95,7 +98,10 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
                           (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && direction == 5) ||
                           (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && direction == 6);
 
-        if (!shouldDrop) return;
+        if (!shouldDrop)
+        {
+            return;
+        }
 
         DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -103,7 +109,10 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
 
     private bool BreakIfCannotPlaceAt(OnTickEvent ctx)
     {
-        if (CanPlaceAt(new CanPlaceAtContext(ctx.World, 0, ctx.X, ctx.Y, ctx.Z))) return true;
+        if (CanPlaceAt(new CanPlaceAtContext(ctx.World, 0, ctx.X, ctx.Y, ctx.Z)))
+        {
+            return true;
+        }
 
         DropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z)));
         ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
@@ -140,7 +149,10 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
 
     public override bool OnUse(OnUseEvent ctx)
     {
-        if (ctx.World.IsRemote) return true;
+        if (ctx.World.IsRemote)
+        {
+            return true;
+        }
 
         ToggleLever(ctx.World, ctx.X, ctx.Y, ctx.Z);
         return true;
@@ -214,7 +226,10 @@ internal class BlockLever(int id, int level) : Block(id, level, Material.PistonB
     public override bool IsStrongPoweringSide(IBlockReader world, int x, int y, int z, int side)
     {
         int meta = world.GetBlockMeta(x, y, z);
-        if ((meta & 8) == 0) return false;
+        if ((meta & 8) == 0)
+        {
+            return false;
+        }
 
         int direction = meta & 7;
         return (direction == 6 && side == 1) ||

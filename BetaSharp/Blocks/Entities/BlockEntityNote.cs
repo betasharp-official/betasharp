@@ -5,11 +5,11 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Entities;
 
 /// <summary>
-/// Block entity for the noteblock, playing notes.
+///     Block entity for the noteblock, playing notes.
 /// </summary>
 internal class BlockEntityNote : BlockEntity
 {
-    public override BlockEntityType Type => BlockEntity.Music;
+    public override BlockEntityType Type => Music;
 
     public sbyte Note { get; set; }
 

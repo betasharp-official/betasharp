@@ -31,8 +31,8 @@ public class PlayerControllerMP : PlayerController
 
     public override void flipPlayer(EntityPlayer playerEntity)
     {
-        playerEntity.yaw = -180.0F;
-        playerEntity.prevYaw = -180.0F;
+        playerEntity.Yaw = -180.0F;
+        playerEntity.PrevYaw = -180.0F;
     }
 
     public override bool sendBlockRemoved(int x, int y, int z, int direction)
@@ -209,14 +209,14 @@ public class PlayerControllerMP : PlayerController
     public override void attackEntity(EntityPlayer var1, Entity var2)
     {
         syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.id, var2.id, 1));
+        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.ID, var2.ID, 1));
         var1.attack(var2);
     }
 
     public override void interactWithEntity(EntityPlayer var1, Entity var2)
     {
         syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.id, var2.id, 0));
+        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.ID, var2.ID, 0));
         var1.interact(var2);
     }
 

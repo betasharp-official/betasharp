@@ -7,29 +7,22 @@ using Microsoft.Extensions.Logging;
 namespace BetaSharp.Blocks.Entities;
 
 /// <summary>
-/// Block entity for mob spawners, allowing them to spawn mobs and store the mob type and spawn delay.
+///     Block entity for mob spawners, allowing them to spawn mobs and store the mob type and spawn delay.
 /// </summary>
 public class BlockEntityMobSpawner : BlockEntity
 {
-    public override BlockEntityType Type => BlockEntity.MobSpawner;
+    private readonly ILogger<BlockEntityMobSpawner> _logger = Log.Instance.For<BlockEntityMobSpawner>();
+
+    public BlockEntityMobSpawner() => SpawnDelay = 20;
+    public override BlockEntityType Type => MobSpawner;
 
     public int SpawnDelay { get; set; } = -1;
     public string SpawnedEntityId { get; set; } = "Pig";
 
     public double Rotation { get; set; }
-    public double LastRotation { get; set; } = 0.0D;
+    public double LastRotation { get; set; }
 
-    private readonly ILogger<BlockEntityMobSpawner> _logger = Log.Instance.For<BlockEntityMobSpawner>();
-
-    public BlockEntityMobSpawner()
-    {
-        SpawnDelay = 20;
-    }
-
-    public bool IsPlayerInRange()
-    {
-        return World.Entities.GetClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
-    }
+    public bool IsPlayerInRange() => World.Entities.GetClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
 
     public override void Tick(EntityManager entities)
     {
@@ -72,7 +65,7 @@ public class BlockEntityMobSpawner : BlockEntity
 
                     int count = World.Entities
                         .CollectEntitiesOfType<EntityLiving>(new Box(X, Y, Z, X + 1, Y + 1, Z + 1)
-                        .Expand(8.0D, 4.0D, 8.0D))
+                            .Expand(8.0D, 4.0D, 8.0D))
                         .Count(e => e.GetType() == entityLiving.GetType());
                     if (count >= 6)
                     {
@@ -85,7 +78,7 @@ public class BlockEntityMobSpawner : BlockEntity
                         double posX = X + (World.Random.NextDouble() - World.Random.NextDouble()) * 4.0D;
                         double posY = Y + World.Random.NextInt(3) - 1;
                         double posZ = Z + (World.Random.NextDouble() - World.Random.NextDouble()) * 4.0D;
-                        entityLiving.setPositionAndAnglesKeepPrevAngles(posX, posY, posZ, World.Random.NextFloat() * 360.0F, 0.0F);
+                        entityLiving.SetPositionAndAnglesKeepPrevAngles(posX, posY, posZ, World.Random.NextFloat() * 360.0F, 0.0F);
                         if (entityLiving.canSpawn())
                         {
                             World.SpawnEntity(entityLiving);

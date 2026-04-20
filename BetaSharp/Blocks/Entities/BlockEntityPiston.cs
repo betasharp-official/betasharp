@@ -6,20 +6,10 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Entities;
 
 /// <summary>
-/// Block entity for both the extending and source blocks of a piston.
+///     Block entity for both the extending and source blocks of a piston.
 /// </summary>
-///
 public class BlockEntityPiston : BlockEntity
 {
-    public override BlockEntityType Type => Piston;
-
-    public int PushedBlockId { get; private set; }
-    public new int PushedBlockData { get; private set; }
-    public bool IsExtending { get; private set; }
-    public int Facing { get; private set; }
-    public bool IsSource { get; }
-    public bool IsExtensionIncomplete => IsExtending && _progress < 1.0F;
-
     private float _lastProgress;
     private float _progress;
 
@@ -36,9 +26,21 @@ public class BlockEntityPiston : BlockEntity
         IsSource = source;
     }
 
+    public override BlockEntityType Type => Piston;
+
+    public int PushedBlockId { get; private set; }
+    public new int PushedBlockData { get; private set; }
+    public bool IsExtending { get; private set; }
+    public int Facing { get; private set; }
+    public bool IsSource { get; }
+    public bool IsExtensionIncomplete => IsExtending && _progress < 1.0F;
+
     public float GetProgress(float tickDelta)
     {
-        if (tickDelta > 1.0F) tickDelta = 1.0F;
+        if (tickDelta > 1.0F)
+        {
+            tickDelta = 1.0F;
+        }
 
         return _progress + (_lastProgress - _progress) * tickDelta;
     }
@@ -61,16 +63,22 @@ public class BlockEntityPiston : BlockEntity
         }
 
         Box? pushCollisionBox = Block.MovingPiston.GetPushedBlockCollisionShape(World.Reader, entities, X, Y, Z, PushedBlockId, collisionShapeSizeMultiplier, Facing);
-        if (pushCollisionBox == null) return;
+        if (pushCollisionBox == null)
+        {
+            return;
+        }
 
         List<Entity> entitiesToPush = World.Entities.GetEntities(null!, pushCollisionBox.Value);
-        if (entitiesToPush.Count <= 0) return;
+        if (entitiesToPush.Count <= 0)
+        {
+            return;
+        }
 
         List<Entity> pushedEntities = [];
         pushedEntities.AddRange(entitiesToPush);
         foreach (Entity entity in pushedEntities)
         {
-            entity.move(
+            entity.Move(
                 entityMoveMultiplier * PistonConstants.HeadOffsetX[Facing],
                 entityMoveMultiplier * PistonConstants.HeadOffsetY[Facing],
                 entityMoveMultiplier * PistonConstants.HeadOffsetZ[Facing]
@@ -105,7 +113,10 @@ public class BlockEntityPiston : BlockEntity
 
     public void Finish()
     {
-        if (!(_progress < 1.0F)) return;
+        if (!(_progress < 1.0F))
+        {
+            return;
+        }
 
         _progress = _lastProgress = 1.0F;
         FinalizeBlock();

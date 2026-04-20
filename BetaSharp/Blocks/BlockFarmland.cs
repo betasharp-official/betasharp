@@ -7,9 +7,10 @@ namespace BetaSharp.Blocks;
 internal class BlockFarmland : Block
 {
     private const sbyte CropRadius = 0;
+
     public BlockFarmland(int id) : base(id, Material.Soil)
     {
-        TextureId = 87;
+        TextureId = BlockTextures.FarmlandDry;
         SetTickRandomly(true);
         SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 15.0F / 16.0F, 1.0F);
         SetOpacity(255);
@@ -23,15 +24,18 @@ internal class BlockFarmland : Block
 
     public override int GetTexture(Side side, int meta) => side switch
     {
-        Side.Up when meta > 0 => TextureId - 1,
-        Side.Up => TextureId,
-        _ => 2
+        Side.Up when meta > 0 => BlockTextures.FarmlandWet - 1,
+        Side.Up => BlockTextures.FarmlandWet,
+        _ => BlockTextures.Dirt
     };
 
 
     public override void OnTick(OnTickEvent @event)
     {
-        if (Random.Shared.Next(5) != 0) return;
+        if (Random.Shared.Next(5) != 0)
+        {
+            return;
+        }
 
 
         if (!IsWaterNearby(@event.World.Reader, @event.X, @event.Y, @event.Z) && !@event.World.Environment.IsRaining)
@@ -66,7 +70,10 @@ internal class BlockFarmland : Block
         {
             for (int dy = z - CropRadius; dy <= z + CropRadius; ++dy)
             {
-                if (world.GetBlockId(dx, y + 1, dy) == Wheat.ID) return true;
+                if (world.GetBlockId(dx, y + 1, dy) == Wheat.ID)
+                {
+                    return true;
+                }
             }
         }
 

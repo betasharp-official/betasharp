@@ -78,10 +78,16 @@ public class BlockRedstoneWire : Block
                 }
             }
 
-            if (maxCurrent > 0) maxCurrent--;
+            if (maxCurrent > 0)
+            {
+                maxCurrent--;
+            }
         }
 
-        if (oldMeta == maxCurrent) return;
+        if (oldMeta == maxCurrent)
+        {
+            return;
+        }
 
         level.Writer.SetBlockMeta(x, y, z, maxCurrent);
 
@@ -93,7 +99,10 @@ public class BlockRedstoneWire : Block
             int nz = z + (dir == 2 ? -1 : dir == 3 ? 1 : 0);
             int ny = y - 1;
 
-            if (level.Reader.ShouldSuffocate(nx, y, nz)) ny += 2;
+            if (level.Reader.ShouldSuffocate(nx, y, nz))
+            {
+                ny += 2;
+            }
 
             int neighborMax = GetMaxCurrentStrength(level.Reader, nx, y, nz, -1);
             if (neighborMax >= 0 && neighborMax != (maxCurrent > 0 ? maxCurrent - 1 : 0))
@@ -122,7 +131,10 @@ public class BlockRedstoneWire : Block
 
     private void NotifyWireNeighborsOfNeighborChange(IWorldContext level, int x, int y, int z)
     {
-        if (level.Reader.GetBlockId(x, y, z) != ID) return;
+        if (level.Reader.GetBlockId(x, y, z) != ID)
+        {
+            return;
+        }
 
         level.Broadcaster.NotifyNeighbors(x, y, z, ID);
         level.Broadcaster.NotifyNeighbors(x - 1, y, z, ID);
@@ -136,7 +148,10 @@ public class BlockRedstoneWire : Block
     public override void OnPlaced(OnPlacedEvent @event)
     {
         base.OnPlaced(@event);
-        if (@event.World.IsRemote) return;
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
 
         UpdateAndPropagateCurrentStrength(@event.World, @event.X, @event.Y, @event.Z);
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, ID);
@@ -185,7 +200,10 @@ public class BlockRedstoneWire : Block
     public override void OnBreak(OnBreakEvent @event)
     {
         base.OnBreak(@event);
-        if (@event.World.IsRemote) return;
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
 
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, ID);
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, ID);
@@ -233,14 +251,21 @@ public class BlockRedstoneWire : Block
 
     private int GetMaxCurrentStrength(IBlockReader reader, int x, int y, int z, int power)
     {
-        if (reader.GetBlockId(x, y, z) != ID) return power;
+        if (reader.GetBlockId(x, y, z) != ID)
+        {
+            return power;
+        }
+
         int currentStrength = reader.GetBlockMeta(x, y, z);
         return currentStrength > power ? currentStrength : power;
     }
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (@event.World.IsRemote) return;
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         bool placeAt = CanPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z));
@@ -263,9 +288,20 @@ public class BlockRedstoneWire : Block
 
     public override bool IsPoweringSide(IBlockReader reader, int x, int y, int z, int side)
     {
-        if (!s_wiresProvidePower.Value) return false;
-        if (reader.GetBlockMeta(x, y, z) == 0) return false;
-        if (side == 1) return true;
+        if (!s_wiresProvidePower.Value)
+        {
+            return false;
+        }
+
+        if (reader.GetBlockMeta(x, y, z) == 0)
+        {
+            return false;
+        }
+
+        if (side == 1)
+        {
+            return true;
+        }
 
         bool connectsMinusX = IsPowerProviderOrWire(reader, x - 1, y, z, 1) || (!reader.ShouldSuffocate(x - 1, y, z) && IsPowerProviderOrWire(reader, x - 1, y - 1, z, -1));
         bool connectsPlusX = IsPowerProviderOrWire(reader, x + 1, y, z, 3) || (!reader.ShouldSuffocate(x + 1, y, z) && IsPowerProviderOrWire(reader, x + 1, y - 1, z, -1));
@@ -274,17 +310,32 @@ public class BlockRedstoneWire : Block
 
         if (!reader.ShouldSuffocate(x, y + 1, z))
         {
-            if (reader.ShouldSuffocate(x - 1, y, z) && IsPowerProviderOrWire(reader, x - 1, y + 1, z, -1)) connectsMinusX = true;
-            if (reader.ShouldSuffocate(x + 1, y, z) && IsPowerProviderOrWire(reader, x + 1, y + 1, z, -1)) connectsPlusX = true;
-            if (reader.ShouldSuffocate(x, y, z - 1) && IsPowerProviderOrWire(reader, x, y + 1, z - 1, -1)) connectsMinusZ = true;
-            if (reader.ShouldSuffocate(x, y, z + 1) && IsPowerProviderOrWire(reader, x, y + 1, z + 1, -1)) connectsPlusZ = true;
+            if (reader.ShouldSuffocate(x - 1, y, z) && IsPowerProviderOrWire(reader, x - 1, y + 1, z, -1))
+            {
+                connectsMinusX = true;
+            }
+
+            if (reader.ShouldSuffocate(x + 1, y, z) && IsPowerProviderOrWire(reader, x + 1, y + 1, z, -1))
+            {
+                connectsPlusX = true;
+            }
+
+            if (reader.ShouldSuffocate(x, y, z - 1) && IsPowerProviderOrWire(reader, x, y + 1, z - 1, -1))
+            {
+                connectsMinusZ = true;
+            }
+
+            if (reader.ShouldSuffocate(x, y, z + 1) && IsPowerProviderOrWire(reader, x, y + 1, z + 1, -1))
+            {
+                connectsPlusZ = true;
+            }
         }
 
-        return !connectsMinusZ && !connectsPlusX && !connectsMinusX && !connectsPlusZ && side is >= 2 and <= 5 ||
-               side == 2 && connectsMinusZ && !connectsMinusX && !connectsPlusX ||
-               side == 3 && connectsPlusZ && !connectsMinusX && !connectsPlusX ||
-               side == 4 && connectsMinusX && !connectsMinusZ && !connectsPlusZ ||
-               side == 5 && connectsPlusX && !connectsMinusZ && !connectsPlusZ;
+        return (!connectsMinusZ && !connectsPlusX && !connectsMinusX && !connectsPlusZ && side is >= 2 and <= 5) ||
+               (side == 2 && connectsMinusZ && !connectsMinusX && !connectsPlusX) ||
+               (side == 3 && connectsPlusZ && !connectsMinusX && !connectsPlusX) ||
+               (side == 4 && connectsMinusX && !connectsMinusZ && !connectsPlusZ) ||
+               (side == 5 && connectsPlusX && !connectsMinusZ && !connectsPlusZ);
     }
 
     public override bool CanEmitRedstonePower() => s_wiresProvidePower.Value;
@@ -292,7 +343,10 @@ public class BlockRedstoneWire : Block
     public override void RandomDisplayTick(OnTickEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        if (meta <= 0) return;
+        if (meta <= 0)
+        {
+            return;
+        }
 
         double x = @event.X + 0.5D + (@event.World.Random.NextFloat() - 0.5D) * 0.2D;
         double y = @event.Y + 1.0F / 16.0F;
@@ -318,17 +372,34 @@ public class BlockRedstoneWire : Block
     public static bool IsPowerProviderOrWire(IBlockReader reader, int x, int y, int z, int direction)
     {
         int blockId = reader.GetBlockId(x, y, z);
-        if (blockId == 0) return false;
-        if (blockId == RedstoneWire.ID) return true;
+        if (blockId == 0)
+        {
+            return false;
+        }
+
+        if (blockId == RedstoneWire.ID)
+        {
+            return true;
+        }
+
         if (blockId == StonePressurePlate.ID ||
             blockId == WoodenPressurePlate.ID ||
             blockId == Button.ID ||
             blockId == Lever.ID)
+        {
             return true;
+        }
 
-        if (blockId != Repeater.ID && blockId != PoweredRepeater.ID) return Blocks[blockId].CanEmitRedstonePower();
+        if (blockId != Repeater.ID && blockId != PoweredRepeater.ID)
+        {
+            return Blocks[blockId].CanEmitRedstonePower();
+        }
 
-        if (direction < 0) return false;
+        if (direction < 0)
+        {
+            return false;
+        }
+
         int meta = reader.GetBlockMeta(x, y, z);
         int orientation = meta & 3;
         int opposite = (orientation + 2) & 3;

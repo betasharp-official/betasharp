@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
@@ -10,7 +11,7 @@ internal class BirchTreeFeature : Feature
     {
         int treeHeight = rand.NextInt(3) + 5;
         bool canPlace = true;
-        if (!(y >= 1 && y + treeHeight + 1 <= 128))
+        if (!(y >= 1 && y + treeHeight + 1 <= ChuckFormat.WorldHeight))
         {
             return false;
         }
@@ -34,7 +35,7 @@ internal class BirchTreeFeature : Feature
             {
                 for (int cz = z - checkRadius; cz <= z + checkRadius && canPlace; ++cz)
                 {
-                    if (cy >= 0 && cy < 128)
+                    if (cy >= 0 && cy < ChuckFormat.WorldHeight)
                     {
                         int blockId = level.Reader.GetBlockId(cx, cy, cz);
                         if (blockId != 0 && blockId != Block.Leaves.ID)
@@ -56,7 +57,7 @@ internal class BirchTreeFeature : Feature
         }
 
         int soilId = level.Reader.GetBlockId(x, y - 1, z);
-        if ((soilId == Block.GrassBlock.ID || soilId == Block.Dirt.ID) && y < 128 - treeHeight - 1)
+        if ((soilId == Block.GrassBlock.ID || soilId == Block.Dirt.ID) && y < ChuckFormat.WorldHeight - treeHeight - 1)
         {
             level.Writer.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, Block.Dirt.ID, 0, false);
 

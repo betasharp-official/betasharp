@@ -1,3 +1,5 @@
+using BetaSharp.Worlds.Chunks;
+
 namespace BetaSharp.Blocks;
 
 internal class BlockMushroom : BlockPlant
@@ -12,7 +14,10 @@ internal class BlockMushroom : BlockPlant
 
     public override void OnTick(OnTickEvent @event)
     {
-        if (Random.Shared.Next(100) != 0) return;
+        if (Random.Shared.Next(100) != 0)
+        {
+            return;
+        }
 
         int tryX = @event.X + Random.Shared.Next(3) - 1;
         int tryY = @event.Y + Random.Shared.Next(2) - Random.Shared.Next(2);
@@ -30,7 +35,5 @@ internal class BlockMushroom : BlockPlant
 
     protected override bool CanPlantOnTop(int id) => id == GrassBlock.ID || id == Dirt.ID || id == Stone.ID || id == Gravel.ID || id == Cobblestone.ID;
 
-    public override bool CanGrow(OnTickEvent ctx) => ctx.Y is >= 0 and < 128 &&
-                                                     ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < 13 &&
-                                                     CanPlantOnTop(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z));
+    public override bool CanGrow(OnTickEvent ctx) => ctx.Y >= 0 && ctx.Y < ChuckFormat.WorldHeight && (ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < 13 && CanPlantOnTop(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z)));
 }

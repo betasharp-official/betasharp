@@ -1,4 +1,5 @@
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Generation.Generators.Features;
@@ -27,369 +28,369 @@ internal class LargeOakTreeFeature : Feature
             trunkHeight = height - 1;
         }
 
-        int var1 = (int)(1.382D + Math.Pow(foliageDensity * height / 13.0D, 2.0D));
-        if (var1 < 1)
+        int branchCountTarget = (int)(1.382D + Math.Pow(foliageDensity * height / 13.0D, 2.0D));
+        if (branchCountTarget < 1)
         {
-            var1 = 1;
+            branchCountTarget = 1;
         }
 
-        //int[][] var2 = new int[var1 * this.field_878_e][4];
-        int[][] var2 = new int[var1 * height][];
-        for (int i = 0; i < var2.Length; i++)
+        //int[][] branchCandidates = new int[branchCountTarget * this.field_878_e][4];
+        int[][] branchCandidates = new int[branchCountTarget * height][];
+        for (int i = 0; i < branchCandidates.Length; i++)
         {
-            var2[i] = new int[4];
+            branchCandidates[i] = new int[4];
         }
 
-        int var3 = origin[1] + height - foliageClusterHeight;
-        int var4 = 1;
-        int var5 = origin[1] + trunkHeight;
-        int var6 = var3 - origin[1];
-        var2[0][0] = origin[0];
-        var2[0][1] = var3;
-        var2[0][2] = origin[2];
-        var2[0][3] = var5;
-        --var3;
+        int foliageY = origin[1] + height - foliageClusterHeight;
+        int branchCount = 1;
+        int trunkTopY = origin[1] + trunkHeight;
+        int foliageOffset = foliageY - origin[1];
+        branchCandidates[0][0] = origin[0];
+        branchCandidates[0][1] = foliageY;
+        branchCandidates[0][2] = origin[2];
+        branchCandidates[0][3] = trunkTopY;
+        --foliageY;
 
         while (true)
         {
-            while (var6 >= 0)
+            while (foliageOffset >= 0)
             {
-                int var7 = 0;
-                float var8 = getTreeShape(var6);
-                if (var8 < 0.0F)
+                int attemptIndex = 0;
+                float treeShapeRadius = getTreeShape(foliageOffset);
+                if (treeShapeRadius < 0.0F)
                 {
-                    --var3;
-                    --var6;
+                    --foliageY;
+                    --foliageOffset;
                 }
                 else
                 {
-                    for (double var9 = 0.5D; var7 < var1; ++var7)
+                    for (double coordinateBias = 0.5D; attemptIndex < branchCountTarget; ++attemptIndex)
                     {
-                        double var11 = branchLengthScale * var8 * (Random.Shared.NextSingle() + 0.328D);
-                        double var13 = Random.Shared.NextSingle() * 2.0D * 3.14159D;
-                        int var15 = MathHelper.Floor(var11 * Math.Sin(var13) + origin[0] + var9);
-                        int var16 = MathHelper.Floor(var11 * Math.Cos(var13) + origin[2] + var9);
-                        int[] var17 = [var15, var3, var16];
-                        int[] var18 = [var15, var3 + foliageClusterHeight, var16];
-                        if (tryBranch(var17, var18) == -1)
+                        double branchDistance = branchLengthScale * treeShapeRadius * (Random.Shared.NextSingle() + 0.328D);
+                        double branchAngle = Random.Shared.NextSingle() * 2.0D * 3.14159D;
+                        int branchX = MathHelper.Floor(branchDistance * Math.Sin(branchAngle) + origin[0] + coordinateBias);
+                        int branchZ = MathHelper.Floor(branchDistance * Math.Cos(branchAngle) + origin[2] + coordinateBias);
+                        int[] branchBasePos = [branchX, foliageY, branchZ];
+                        int[] foliageTopPos = [branchX, foliageY + foliageClusterHeight, branchZ];
+                        if (tryBranch(branchBasePos, foliageTopPos) == -1)
                         {
-                            int[] var19 = [origin[0], origin[1], origin[2]];
-                            double var20 = Math.Sqrt(Math.Pow(Math.Abs(origin[0] - var17[0]), 2.0D) + Math.Pow(Math.Abs(origin[2] - var17[2]), 2.0D));
-                            double var22 = var20 * branchSlope;
-                            if (var17[1] - var22 > var5)
+                            int[] trunkAttachPos = [origin[0], origin[1], origin[2]];
+                            double horizontalDistance = Math.Sqrt(Math.Pow(Math.Abs(origin[0] - branchBasePos[0]), 2.0D) + Math.Pow(Math.Abs(origin[2] - branchBasePos[2]), 2.0D));
+                            double verticalOffset = horizontalDistance * branchSlope;
+                            if (branchBasePos[1] - verticalOffset > trunkTopY)
                             {
-                                var19[1] = var5;
+                                trunkAttachPos[1] = trunkTopY;
                             }
                             else
                             {
-                                var19[1] = (int)(var17[1] - var22);
+                                trunkAttachPos[1] = (int)(branchBasePos[1] - verticalOffset);
                             }
 
-                            if (tryBranch(var19, var17) == -1)
+                            if (tryBranch(trunkAttachPos, branchBasePos) == -1)
                             {
-                                var2[var4][0] = var15;
-                                var2[var4][1] = var3;
-                                var2[var4][2] = var16;
-                                var2[var4][3] = var19[1];
-                                ++var4;
+                                branchCandidates[branchCount][0] = branchX;
+                                branchCandidates[branchCount][1] = foliageY;
+                                branchCandidates[branchCount][2] = branchZ;
+                                branchCandidates[branchCount][3] = trunkAttachPos[1];
+                                ++branchCount;
                             }
                         }
                     }
 
-                    --var3;
-                    --var6;
+                    --foliageY;
+                    --foliageOffset;
                 }
             }
 
-            //this.field_868_o = new int[var4][4];
-            branches = new int[var4][];
+            //this.field_868_o = new int[branchCount][4];
+            branches = new int[branchCount][];
             for (int i = 0; i < branches.Length; i++)
             {
                 branches[i] = new int[4];
             }
-            Array.Copy(var2, 0, branches, 0, var4);
+            Array.Copy(branchCandidates, 0, branches, 0, branchCount);
             return;
         }
     }
 
-    private void placeCluster(int var1, int var2, int var3, float var4, sbyte var5, int var6)
+    private void placeCluster(int x, int y, int z, float radius, sbyte axis, int blockId)
     {
-        int var7 = (int)(var4 + 0.618D);
-        sbyte var8 = MINOR_AXES[var5];
-        sbyte var9 = MINOR_AXES[var5 + 3];
-        int[] var10 = [var1, var2, var3];
-        int[] var11 = [0, 0, 0];
-        int var12 = -var7;
-        int var13 = -var7;
+        int radiusInt = (int)(radius + 0.618D);
+        sbyte firstMinorAxis = MINOR_AXES[axis];
+        sbyte secondMinorAxis = MINOR_AXES[axis + 3];
+        int[] centerPos = [x, y, z];
+        int[] currentPos = [0, 0, 0];
+        int primaryOffset = -radiusInt;
+        int secondaryOffset = -radiusInt;
 
-        for (var11[var5] = var10[var5]; var12 <= var7; ++var12)
+        for (currentPos[axis] = centerPos[axis]; primaryOffset <= radiusInt; ++primaryOffset)
         {
-            var11[var8] = var10[var8] + var12;
-            var13 = -var7;
+            currentPos[firstMinorAxis] = centerPos[firstMinorAxis] + primaryOffset;
+            secondaryOffset = -radiusInt;
 
-            while (var13 <= var7)
+            while (secondaryOffset <= radiusInt)
             {
-                double var15 = Math.Sqrt(
-                    Math.Pow(Math.Abs(var12) + 0.5D, 2.0D) +
-                    Math.Pow(Math.Abs(var13) + 0.5D, 2.0D)
+                double distanceFromCenter = Math.Sqrt(
+                    Math.Pow(Math.Abs(primaryOffset) + 0.5D, 2.0D) +
+                    Math.Pow(Math.Abs(secondaryOffset) + 0.5D, 2.0D)
                 );
 
-                if (var15 > var4)
+                if (distanceFromCenter > radius)
                 {
-                    ++var13;
+                    ++secondaryOffset;
                     continue;
                 }
 
-                var11[var9] = var10[var9] + var13;
-                int var14 = _level.Reader.GetBlockId(var11[0], var11[1], var11[2]);
+                currentPos[secondMinorAxis] = centerPos[secondMinorAxis] + secondaryOffset;
+                int currentBlockId = _level.Reader.GetBlockId(currentPos[0], currentPos[1], currentPos[2]);
 
-                if (var14 != 0 && var14 != 18)
+                if (currentBlockId != 0 && currentBlockId != 18)
                 {
-                    ++var13;
+                    ++secondaryOffset;
                     continue;
                 }
 
-                _level.Writer.SetBlock(var11[0], var11[1], var11[2], var6, 0, false);
-                ++var13;
+                _level.Writer.SetBlock(currentPos[0], currentPos[1], currentPos[2], blockId, 0, false);
+                ++secondaryOffset;
             }
         }
     }
 
-    private float getTreeShape(int var1)
+    private float getTreeShape(int foliageOffset)
     {
-        if (var1 < (float)height * 0.3D)
+        if (foliageOffset < (float)height * 0.3D)
         {
             return -1.618F;
         }
 
-        float var2 = height / 2.0F;
-        float var3 = height / 2.0F - var1;
-        float var4;
-        if (var3 == 0.0F)
+        float halfHeight = height / 2.0F;
+        float distanceFromCenter = height / 2.0F - foliageOffset;
+        float shapeRadius;
+        if (distanceFromCenter == 0.0F)
         {
-            var4 = var2;
+            shapeRadius = halfHeight;
         }
-        else if (Math.Abs(var3) >= var2)
+        else if (Math.Abs(distanceFromCenter) >= halfHeight)
         {
-            var4 = 0.0F;
+            shapeRadius = 0.0F;
         }
         else
         {
-            var4 = (float)Math.Sqrt(Math.Pow(Math.Abs(var2), 2.0D) - Math.Pow(Math.Abs(var3), 2.0D));
+            shapeRadius = (float)Math.Sqrt(Math.Pow(Math.Abs(halfHeight), 2.0D) - Math.Pow(Math.Abs(distanceFromCenter), 2.0D));
         }
 
-        var4 *= 0.5F;
-        return var4;
+        shapeRadius *= 0.5F;
+        return shapeRadius;
     }
 
-    private float getClusterShape(int var1) => var1 >= 0 && var1 < foliageClusterHeight ? var1 != 0 && var1 != foliageClusterHeight - 1 ? 3.0F : 2.0F : -1.0F;
+    private float getClusterShape(int clusterLayer) => clusterLayer >= 0 && clusterLayer < foliageClusterHeight ? clusterLayer != 0 && clusterLayer != foliageClusterHeight - 1 ? 3.0F : 2.0F : -1.0F;
 
-    private void placeFoliageCluster(int var1, int var2, int var3)
+    private void placeFoliageCluster(int x, int y, int z)
     {
-        int var4 = var2;
+        int leafY = y;
 
-        for (int var5 = var2 + foliageClusterHeight; var4 < var5; ++var4)
+        for (int clusterTopY = y + foliageClusterHeight; leafY < clusterTopY; ++leafY)
         {
-            float var6 = getClusterShape(var4 - var2);
-            placeCluster(var1, var4, var3, var6, 1, 18);
+            float clusterRadius = getClusterShape(leafY - y);
+            placeCluster(x, leafY, z, clusterRadius, 1, 18);
         }
     }
 
-    private void placeBranch(int[] var1, int[] var2, int var3)
+    private void placeBranch(int[] fromPos, int[] toPos, int blockId)
     {
-        int[] var4 = [0, 0, 0];
-        sbyte var5 = 0;
+        int[] delta = [0, 0, 0];
+        sbyte axis = 0;
 
-        sbyte var6;
-        for (var6 = 0; var5 < 3; ++var5)
+        sbyte dominantAxis;
+        for (dominantAxis = 0; axis < 3; ++axis)
         {
-            var4[var5] = var2[var5] - var1[var5];
-            if (Math.Abs(var4[var5]) > Math.Abs(var4[var6]))
+            delta[axis] = toPos[axis] - fromPos[axis];
+            if (Math.Abs(delta[axis]) > Math.Abs(delta[dominantAxis]))
             {
-                var6 = var5;
+                dominantAxis = axis;
             }
         }
 
-        if (var4[var6] != 0)
+        if (delta[dominantAxis] != 0)
         {
-            sbyte var7 = MINOR_AXES[var6];
-            sbyte var8 = MINOR_AXES[var6 + 3];
-            sbyte var9;
-            if (var4[var6] > 0)
+            sbyte firstMinorAxis = MINOR_AXES[dominantAxis];
+            sbyte secondMinorAxis = MINOR_AXES[dominantAxis + 3];
+            sbyte stepDirection;
+            if (delta[dominantAxis] > 0)
             {
-                var9 = 1;
+                stepDirection = 1;
             }
             else
             {
-                var9 = -1;
+                stepDirection = -1;
             }
 
-            double var10 = var4[var7] / (double)var4[var6];
-            double var12 = var4[var8] / (double)var4[var6];
-            int[] var14 = [0, 0, 0];
-            int var15 = 0;
+            double firstMinorSlope = delta[firstMinorAxis] / (double)delta[dominantAxis];
+            double secondMinorSlope = delta[secondMinorAxis] / (double)delta[dominantAxis];
+            int[] currentPos = [0, 0, 0];
+            int step = 0;
 
-            for (int var16 = var4[var6] + var9; var15 != var16; var15 += var9)
+            for (int endStep = delta[dominantAxis] + stepDirection; step != endStep; step += stepDirection)
             {
-                var14[var6] = MathHelper.Floor(var1[var6] + var15 + 0.5D);
-                var14[var7] = MathHelper.Floor(var1[var7] + var15 * var10 + 0.5D);
-                var14[var8] = MathHelper.Floor(var1[var8] + var15 * var12 + 0.5D);
-                _level.Writer.SetBlockWithoutNotifyingNeighbors(var14[0], var14[1], var14[2], var3, 0, false);
+                currentPos[dominantAxis] = MathHelper.Floor(fromPos[dominantAxis] + step + 0.5D);
+                currentPos[firstMinorAxis] = MathHelper.Floor(fromPos[firstMinorAxis] + step * firstMinorSlope + 0.5D);
+                currentPos[secondMinorAxis] = MathHelper.Floor(fromPos[secondMinorAxis] + step * secondMinorSlope + 0.5D);
+                _level.Writer.SetBlockWithoutNotifyingNeighbors(currentPos[0], currentPos[1], currentPos[2], blockId, 0, false);
             }
         }
     }
 
     private void placeFoliage()
     {
-        int var1 = 0;
+        int branchIndex = 0;
 
-        for (int var2 = branches.Length; var1 < var2; ++var1)
+        for (int branchCount = branches.Length; branchIndex < branchCount; ++branchIndex)
         {
-            int var3 = branches[var1][0];
-            int var4 = branches[var1][1];
-            int var5 = branches[var1][2];
-            placeFoliageCluster(var3, var4, var5);
+            int branchX = branches[branchIndex][0];
+            int branchY = branches[branchIndex][1];
+            int branchZ = branches[branchIndex][2];
+            placeFoliageCluster(branchX, branchY, branchZ);
         }
     }
 
-    private bool shouldPlaceBranch(int var1) => var1 >= height * 0.2D;
+    private bool shouldPlaceBranch(int branchHeight) => branchHeight >= height * 0.2D;
 
     private void placeTrunk()
     {
-        int var1 = origin[0];
-        int var2 = origin[1];
-        int var3 = origin[1] + trunkHeight;
-        int var4 = origin[2];
-        int[] var5 = [var1, var2, var4];
-        int[] var6 = [var1, var3, var4];
-        placeBranch(var5, var6, 17);
+        int baseX = origin[0];
+        int baseY = origin[1];
+        int topY = origin[1] + trunkHeight;
+        int baseZ = origin[2];
+        int[] trunkBase = [baseX, baseY, baseZ];
+        int[] trunkTop = [baseX, topY, baseZ];
+        placeBranch(trunkBase, trunkTop, 17);
         if (trunkWidth == 2)
         {
-            ++var5[0];
-            ++var6[0];
-            placeBranch(var5, var6, 17);
-            ++var5[2];
-            ++var6[2];
-            placeBranch(var5, var6, 17);
-            var5[0] += -1;
-            var6[0] += -1;
-            placeBranch(var5, var6, 17);
+            ++trunkBase[0];
+            ++trunkTop[0];
+            placeBranch(trunkBase, trunkTop, 17);
+            ++trunkBase[2];
+            ++trunkTop[2];
+            placeBranch(trunkBase, trunkTop, 17);
+            trunkBase[0] += -1;
+            trunkTop[0] += -1;
+            placeBranch(trunkBase, trunkTop, 17);
         }
     }
 
     private void placeBranches()
     {
-        int var1 = 0;
-        int var2 = branches.Length;
+        int branchIndex = 0;
+        int branchCount = branches.Length;
 
-        for (int[] var3 = [origin[0], origin[1], origin[2]]; var1 < var2; ++var1)
+        for (int[] trunkBase = [origin[0], origin[1], origin[2]]; branchIndex < branchCount; ++branchIndex)
         {
-            int[] var4 = branches[var1];
-            int[] var5 = [var4[0], var4[1], var4[2]];
-            var3[1] = var4[3];
-            int var6 = var3[1] - origin[1];
-            if (shouldPlaceBranch(var6))
+            int[] branchData = branches[branchIndex];
+            int[] branchBase = [branchData[0], branchData[1], branchData[2]];
+            trunkBase[1] = branchData[3];
+            int branchHeight = trunkBase[1] - origin[1];
+            if (shouldPlaceBranch(branchHeight))
             {
-                placeBranch(var3, var5, 17);
+                placeBranch(trunkBase, branchBase, 17);
             }
         }
     }
 
-    private int tryBranch(int[] var1, int[] var2)
+    private int tryBranch(int[] fromPos, int[] toPos)
     {
-        int[] var3 = [0, 0, 0];
-        sbyte var4 = 0;
+        int[] delta = [0, 0, 0];
+        sbyte axis = 0;
 
-        sbyte var5;
-        for (var5 = 0; var4 < 3; ++var4)
+        sbyte dominantAxis;
+        for (dominantAxis = 0; axis < 3; ++axis)
         {
-            var3[var4] = var2[var4] - var1[var4];
-            if (Math.Abs(var3[var4]) > Math.Abs(var3[var5]))
+            delta[axis] = toPos[axis] - fromPos[axis];
+            if (Math.Abs(delta[axis]) > Math.Abs(delta[dominantAxis]))
             {
-                var5 = var4;
+                dominantAxis = axis;
             }
         }
 
-        if (var3[var5] == 0)
+        if (delta[dominantAxis] == 0)
         {
             return -1;
         }
 
-        sbyte var6 = MINOR_AXES[var5];
-        sbyte var7 = MINOR_AXES[var5 + 3];
-        sbyte var8;
-        if (var3[var5] > 0)
+        sbyte firstMinorAxis = MINOR_AXES[dominantAxis];
+        sbyte secondMinorAxis = MINOR_AXES[dominantAxis + 3];
+        sbyte stepDirection;
+        if (delta[dominantAxis] > 0)
         {
-            var8 = 1;
+            stepDirection = 1;
         }
         else
         {
-            var8 = -1;
+            stepDirection = -1;
         }
 
-        double var9 = var3[var6] / (double)var3[var5];
-        double var11 = var3[var7] / (double)var3[var5];
-        int[] var13 = [0, 0, 0];
-        int var14 = 0;
+        double firstMinorSlope = delta[firstMinorAxis] / (double)delta[dominantAxis];
+        double secondMinorSlope = delta[secondMinorAxis] / (double)delta[dominantAxis];
+        int[] currentPos = [0, 0, 0];
+        int step = 0;
 
-        int var15;
-        for (var15 = var3[var5] + var8; var14 != var15; var14 += var8)
+        int endStep;
+        for (endStep = delta[dominantAxis] + stepDirection; step != endStep; step += stepDirection)
         {
-            var13[var5] = var1[var5] + var14;
-            var13[var6] = MathHelper.Floor(var1[var6] + var14 * var9);
-            var13[var7] = MathHelper.Floor(var1[var7] + var14 * var11);
-            int var16 = _level.Reader.GetBlockId(var13[0], var13[1], var13[2]);
-            if (var16 != 0 && var16 != 18)
+            currentPos[dominantAxis] = fromPos[dominantAxis] + step;
+            currentPos[firstMinorAxis] = MathHelper.Floor(fromPos[firstMinorAxis] + step * firstMinorSlope);
+            currentPos[secondMinorAxis] = MathHelper.Floor(fromPos[secondMinorAxis] + step * secondMinorSlope);
+            int blockId = _level.Reader.GetBlockId(currentPos[0], currentPos[1], currentPos[2]);
+            if (blockId != 0 && blockId != 18)
             {
                 break;
             }
         }
 
-        return var14 == var15 ? -1 : Math.Abs(var14);
+        return step == endStep ? -1 : Math.Abs(step);
     }
 
     private bool canPlace()
     {
-        int[] var1 = [origin[0], origin[1], origin[2]];
-        int[] var2 = [origin[0], origin[1] + height - 1, origin[2]];
-        int var3 = _level.Reader.GetBlockId(origin[0], origin[1] - 1, origin[2]);
-        if (var3 != 2 && var3 != 3)
+        int[] basePos = [origin[0], origin[1], origin[2]];
+        int[] topPos = [origin[0], origin[1] + height - 1, origin[2]];
+        int soilBlockId = _level.Reader.GetBlockId(origin[0], origin[1] - 1, origin[2]);
+        if (soilBlockId != 2 && soilBlockId != 3)
         {
             return false;
         }
 
-        int var4 = tryBranch(var1, var2);
-        if (var4 == -1)
+        int clearHeight = tryBranch(basePos, topPos);
+        if (clearHeight == -1)
         {
             return true;
         }
 
-        if (var4 < 6)
+        if (clearHeight < 6)
         {
             return false;
         }
 
-        height = var4;
+        height = clearHeight;
         return true;
     }
 
-    public override void prepare(double d0, double d1, double d2)
+    public override void prepare(double heightScale, double branchScale, double foliageScale)
     {
-        maxTrunkHeight = (int)(d0 * 12.0D);
-        if (d0 > 0.5D)
+        maxTrunkHeight = (int)(heightScale * 12.0D);
+        if (heightScale > 0.5D)
         {
             foliageClusterHeight = 5;
         }
 
-        branchLengthScale = d1;
-        foliageDensity = d2;
+        branchLengthScale = branchScale;
+        foliageDensity = foliageScale;
     }
 
     public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
         _level = level;
-        long var6 = rand.NextLong();
-        rand.SetSeed(var6);
+        long seed = rand.NextLong();
+        rand.SetSeed(seed);
         origin[0] = x;
         origin[1] = y;
         origin[2] = z;
@@ -397,6 +398,8 @@ internal class LargeOakTreeFeature : Feature
         {
             height = 5 + rand.NextInt(maxTrunkHeight);
         }
+
+        if (y + height >= ChuckFormat.WorldHeight) return false;
 
         if (!canPlace())
         {

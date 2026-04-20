@@ -39,31 +39,31 @@ internal class EntityTrackerEntry
         this.trackedDistance = trackedDistance;
         trackingFrequency = trackedFrequency;
         this.alwaysUpdateVelocity = alwaysUpdateVelocity;
-        lastX = MathHelper.Floor(entity.x * 32.0);
-        lastY = MathHelper.Floor(entity.y * 32.0);
-        lastZ = MathHelper.Floor(entity.z * 32.0);
-        lastYaw = MathHelper.Floor(entity.yaw * 256.0F / 360.0F);
-        lastPitch = MathHelper.Floor(entity.pitch * 256.0F / 360.0F);
+        lastX = MathHelper.Floor(entity.X * 32.0);
+        lastY = MathHelper.Floor(entity.Y * 32.0);
+        lastZ = MathHelper.Floor(entity.Z * 32.0);
+        lastYaw = MathHelper.Floor(entity.Yaw * 256.0F / 360.0F);
+        lastPitch = MathHelper.Floor(entity.Pitch * 256.0F / 360.0F);
     }
 
     public override bool Equals(object obj)
     {
-        return obj is EntityTrackerEntry entry && entry.currentTrackedEntity.id == currentTrackedEntity.id;
+        return obj is EntityTrackerEntry entry && entry.currentTrackedEntity.ID == currentTrackedEntity.ID;
     }
 
     public override int GetHashCode()
     {
-        return currentTrackedEntity.id;
+        return currentTrackedEntity.ID;
     }
 
     public void notifyNewLocation(IEnumerable<ServerPlayerEntity> players)
     {
         newPlayerDataUpdated = false;
-        if (!isInitialized || currentTrackedEntity.getSquaredDistance(x, y, z) > 16.0)
+        if (!isInitialized || currentTrackedEntity.GetSquaredDistance(x, y, z) > 16.0)
         {
-            x = currentTrackedEntity.x;
-            y = currentTrackedEntity.y;
-            z = currentTrackedEntity.z;
+            x = currentTrackedEntity.X;
+            y = currentTrackedEntity.Y;
+            z = currentTrackedEntity.Z;
             isInitialized = true;
             newPlayerDataUpdated = true;
             updateListeners(players);
@@ -76,31 +76,31 @@ internal class EntityTrackerEntry
         // tracking window instead of waiting for the next and possibly drifting client side.
         if (alwaysUpdateVelocity)
         {
-            double velDeltaX = currentTrackedEntity.velocityX - velocityX;
-            double velDeltaY = currentTrackedEntity.velocityY - velocityY;
-            double velDeltaZ = currentTrackedEntity.velocityZ - velocityZ;
+            double velDeltaX = currentTrackedEntity.VelocityX - velocityX;
+            double velDeltaY = currentTrackedEntity.VelocityY - velocityY;
+            double velDeltaZ = currentTrackedEntity.VelocityZ - velocityZ;
             double velocityTolerance = 0.02;
             double velDeltaSqr = velDeltaX * velDeltaX + velDeltaY * velDeltaY + velDeltaZ * velDeltaZ;
             if (velDeltaSqr > velocityTolerance * velocityTolerance
                 || velDeltaSqr > 0.0
-                && currentTrackedEntity.velocityX == 0.0
-                && currentTrackedEntity.velocityY == 0.0
-                && currentTrackedEntity.velocityZ == 0.0)
+                && currentTrackedEntity.VelocityX == 0.0
+                && currentTrackedEntity.VelocityY == 0.0
+                && currentTrackedEntity.VelocityZ == 0.0)
             {
-                velocityX = currentTrackedEntity.velocityX;
-                velocityY = currentTrackedEntity.velocityY;
-                velocityZ = currentTrackedEntity.velocityZ;
-                sendToListeners(EntityVelocityUpdateS2CPacket.Get(currentTrackedEntity.id, velocityX, velocityY, velocityZ));
+                velocityX = currentTrackedEntity.VelocityX;
+                velocityY = currentTrackedEntity.VelocityY;
+                velocityZ = currentTrackedEntity.VelocityZ;
+                sendToListeners(EntityVelocityUpdateS2CPacket.Get(currentTrackedEntity.ID, velocityX, velocityY, velocityZ));
             }
         }
 
         if (++ticks % trackingFrequency == 0)
         {
-            int posX = MathHelper.Floor(currentTrackedEntity.x * 32.0);
-            int posY = MathHelper.Floor(currentTrackedEntity.y * 32.0);
-            int posZ = MathHelper.Floor(currentTrackedEntity.z * 32.0);
-            int rotYaw = MathHelper.Floor(currentTrackedEntity.yaw * 256.0F / 360.0F);
-            int rotPitch = MathHelper.Floor(currentTrackedEntity.pitch * 256.0F / 360.0F);
+            int posX = MathHelper.Floor(currentTrackedEntity.X * 32.0);
+            int posY = MathHelper.Floor(currentTrackedEntity.Y * 32.0);
+            int posZ = MathHelper.Floor(currentTrackedEntity.Z * 32.0);
+            int rotYaw = MathHelper.Floor(currentTrackedEntity.Yaw * 256.0F / 360.0F);
+            int rotPitch = MathHelper.Floor(currentTrackedEntity.Pitch * 256.0F / 360.0F);
             int deltaX = posX - lastX;
             int deltaY = posY - lastY;
             int deltaZ = posZ - lastZ;
@@ -110,26 +110,26 @@ internal class EntityTrackerEntry
             if (deltaX < -128 || deltaX >= 128 || deltaY < -128 || deltaY >= 128 || deltaZ < -128 || deltaZ >= 128 || ticksSinceLastDismount > 400)
             {
                 ticksSinceLastDismount = 0;
-                currentTrackedEntity.x = posX / 32.0;
-                currentTrackedEntity.y = posY / 32.0;
-                currentTrackedEntity.z = posZ / 32.0;
-                positionPacket = EntityPositionS2CPacket.Get(currentTrackedEntity.id, posX, posY, posZ, (byte)rotYaw, (byte)rotPitch);
+                currentTrackedEntity.X = posX / 32.0;
+                currentTrackedEntity.Y = posY / 32.0;
+                currentTrackedEntity.Z = posZ / 32.0;
+                positionPacket = EntityPositionS2CPacket.Get(currentTrackedEntity.ID, posX, posY, posZ, (byte)rotYaw, (byte)rotPitch);
             }
             else if (currentTrackedEntity is EntityArrow && (hasMoved || hasRotated)) // Special case for arrows to handle water and bounce physics more accurately
             {
-                positionPacket = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.id, (byte)deltaX, (byte)deltaY, (byte)deltaZ, (byte)rotYaw, (byte)rotPitch);
+                positionPacket = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.ID, (byte)deltaX, (byte)deltaY, (byte)deltaZ, (byte)rotYaw, (byte)rotPitch);
             }
             else if (hasMoved && hasRotated)
             {
-                positionPacket = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.id, (byte)deltaX, (byte)deltaY, (byte)deltaZ, (byte)rotYaw, (byte)rotPitch);
+                positionPacket = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.ID, (byte)deltaX, (byte)deltaY, (byte)deltaZ, (byte)rotYaw, (byte)rotPitch);
             }
             else if (hasMoved)
             {
-                positionPacket = EntityMoveRelativeS2CPacket.Get(currentTrackedEntity.id, (byte)deltaX, (byte)deltaY, (byte)deltaZ);
+                positionPacket = EntityMoveRelativeS2CPacket.Get(currentTrackedEntity.ID, (byte)deltaX, (byte)deltaY, (byte)deltaZ);
             }
             else if (hasRotated)
             {
-                positionPacket = EntityRotateS2CPacket.Get(currentTrackedEntity.id, (byte)rotYaw, (byte)rotPitch);
+                positionPacket = EntityRotateS2CPacket.Get(currentTrackedEntity.ID, (byte)rotYaw, (byte)rotPitch);
             }
 
             if (positionPacket != null)
@@ -142,7 +142,7 @@ internal class EntityTrackerEntry
             {
                 var stream = new MemoryStream();
                 dataSync.WriteChanges(stream);
-                sendToAround(EntityTrackerUpdateS2CPacket.Get(currentTrackedEntity.id, stream.ToArray()));
+                sendToAround(EntityTrackerUpdateS2CPacket.Get(currentTrackedEntity.ID, stream.ToArray()));
             }
 
             if (hasMoved)
@@ -159,10 +159,10 @@ internal class EntityTrackerEntry
             }
         }
 
-        if (currentTrackedEntity.velocityModified)
+        if (currentTrackedEntity.VelocityModified)
         {
             sendToAround(EntityVelocityUpdateS2CPacket.Get(currentTrackedEntity));
-            currentTrackedEntity.velocityModified = false;
+            currentTrackedEntity.VelocityModified = false;
         }
     }
 
@@ -190,7 +190,7 @@ internal class EntityTrackerEntry
 
     public void notifyEntityRemoved()
     {
-        sendToListeners(EntityDestroyS2CPacket.Get(currentTrackedEntity.id));
+        sendToListeners(EntityDestroyS2CPacket.Get(currentTrackedEntity.ID));
     }
 
     public void notifyEntityRemoved(ServerPlayerEntity player)
@@ -202,18 +202,18 @@ internal class EntityTrackerEntry
     {
         if (player != currentTrackedEntity)
         {
-            double distX = player.x - lastX / 32.0;
-            double distZ = player.z - lastZ / 32.0;
+            double distX = player.X - lastX / 32.0;
+            double distZ = player.Z - lastZ / 32.0;
             if (distX >= -trackedDistance && distX <= trackedDistance && distZ >= -trackedDistance && distZ <= trackedDistance)
             {
                 if (!listeners.Contains(player))
                 {
-                    if (currentTrackedEntity.world is ServerWorld sw
+                    if (currentTrackedEntity.World is ServerWorld sw
                         && player.dimensionId == sw.Dimension.Id
                         && sw.ChunkMap != null)
                     {
-                        int entityChunkX = MathHelper.Floor(currentTrackedEntity.x / 16.0);
-                        int entityChunkZ = MathHelper.Floor(currentTrackedEntity.z / 16.0);
+                        int entityChunkX = MathHelper.Floor(currentTrackedEntity.X / 16.0);
+                        int entityChunkZ = MathHelper.Floor(currentTrackedEntity.Z / 16.0);
                         if (!ChunkMap.HasPlayerReceivedChunkTerrain(player, entityChunkX, entityChunkZ))
                         {
                             return;
@@ -227,20 +227,20 @@ internal class EntityTrackerEntry
                         player.NetworkHandler
                             .SendPacket(
                                 EntityVelocityUpdateS2CPacket.Get(
-                                    currentTrackedEntity.id,
-                                    currentTrackedEntity.velocityX,
-                                    currentTrackedEntity.velocityY,
-                                    currentTrackedEntity.velocityZ
+                                    currentTrackedEntity.ID,
+                                    currentTrackedEntity.VelocityX,
+                                    currentTrackedEntity.VelocityY,
+                                    currentTrackedEntity.VelocityZ
                                 )
                             );
                     }
 
-                    ItemStack[] equipment = currentTrackedEntity.getEquipment();
+                    ItemStack[] equipment = currentTrackedEntity.GetEquipment();
                     if (equipment != null)
                     {
                         for (int slot = 0; slot < equipment.Length; slot++)
                         {
-                            player.NetworkHandler.SendPacket(EntityEquipmentUpdateS2CPacket.Get(currentTrackedEntity.id, slot, equipment[slot]));
+                            player.NetworkHandler.SendPacket(EntityEquipmentUpdateS2CPacket.Get(currentTrackedEntity.ID, slot, equipment[slot]));
                         }
                     }
 
@@ -253,9 +253,9 @@ internal class EntityTrackerEntry
                                     PlayerSleepUpdateS2CPacket.Get(
                                         currentTrackedEntity,
                                         0,
-                                        MathHelper.Floor(currentTrackedEntity.x),
-                                        MathHelper.Floor(currentTrackedEntity.y),
-                                        MathHelper.Floor(currentTrackedEntity.z)
+                                        MathHelper.Floor(currentTrackedEntity.X),
+                                        MathHelper.Floor(currentTrackedEntity.Y),
+                                        MathHelper.Floor(currentTrackedEntity.Z)
                                     )
                                 );
                         }
@@ -264,7 +264,7 @@ internal class EntityTrackerEntry
             }
             else if (listeners.Remove(player))
             {
-                player.NetworkHandler.SendPacket(EntityDestroyS2CPacket.Get(currentTrackedEntity.id));
+                player.NetworkHandler.SendPacket(EntityDestroyS2CPacket.Get(currentTrackedEntity.ID));
             }
         }
     }
@@ -281,11 +281,11 @@ internal class EntityTrackerEntry
     {
         if (currentTrackedEntity is EntityItem item)
         {
-            var var7 = ItemEntitySpawnS2CPacket.Get(item);
-            item.x = var7.x / 32.0;
-            item.y = var7.y / 32.0;
-            item.z = var7.z / 32.0;
-            return var7;
+            var spawnPacket = ItemEntitySpawnS2CPacket.Get(item);
+            item.X = spawnPacket.x / 32.0;
+            item.Y = spawnPacket.y / 32.0;
+            item.Z = spawnPacket.z / 32.0;
+            return spawnPacket;
         }
         else if (currentTrackedEntity is ServerPlayerEntity p)
         {
@@ -293,19 +293,19 @@ internal class EntityTrackerEntry
         }
         else
         {
-            if (currentTrackedEntity is EntityMinecart var1)
+            if (currentTrackedEntity is EntityMinecart minecartEntity)
             {
-                if (var1.type == 0)
+                if (minecartEntity.type == 0)
                 {
                     return EntitySpawnS2CPacket.Get(currentTrackedEntity, 10);
                 }
 
-                if (var1.type == 1)
+                if (minecartEntity.type == 1)
                 {
                     return EntitySpawnS2CPacket.Get(currentTrackedEntity, 11);
                 }
 
-                if (var1.type == 2)
+                if (minecartEntity.type == 2)
                 {
                     return EntitySpawnS2CPacket.Get(currentTrackedEntity, 12);
                 }
@@ -326,7 +326,7 @@ internal class EntityTrackerEntry
             else if (currentTrackedEntity is EntityArrow arrow)
             {
                 EntityLiving arrowOwner = arrow.owner;
-                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 60, arrowOwner != null ? arrowOwner.id : currentTrackedEntity.id);
+                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 60, arrowOwner != null ? arrowOwner.ID : currentTrackedEntity.ID);
             }
             else if (currentTrackedEntity is EntitySnowball)
             {
@@ -334,7 +334,7 @@ internal class EntityTrackerEntry
             }
             else if (currentTrackedEntity is EntityFireball fireball)
             {
-                var packet = EntitySpawnS2CPacket.Get(fireball, 63, fireball.owner.id);
+                var packet = EntitySpawnS2CPacket.Get(fireball, 63, fireball.owner.ID);
                 packet.velocityX = (int)(fireball.powerX * 8000.0);
                 packet.velocityY = (int)(fireball.powerY * 8000.0);
                 packet.velocityZ = (int)(fireball.powerZ * 8000.0);
@@ -351,14 +351,14 @@ internal class EntityTrackerEntry
             }
             else
             {
-                if (currentTrackedEntity is EntityFallingSand var3)
+                if (currentTrackedEntity is EntityFallingSand fallingSandEntity)
                 {
-                    if (var3.blockId == Block.Sand.ID)
+                    if (fallingSandEntity.blockId == Block.Sand.ID)
                     {
                         return EntitySpawnS2CPacket.Get(currentTrackedEntity, 70);
                     }
 
-                    if (var3.blockId == Block.Gravel.ID)
+                    if (fallingSandEntity.blockId == Block.Gravel.ID)
                     {
                         return EntitySpawnS2CPacket.Get(currentTrackedEntity, 71);
                     }
@@ -380,7 +380,7 @@ internal class EntityTrackerEntry
     {
         if (listeners.Remove(player))
         {
-            player.NetworkHandler.SendPacket(EntityDestroyS2CPacket.Get(currentTrackedEntity.id));
+            player.NetworkHandler.SendPacket(EntityDestroyS2CPacket.Get(currentTrackedEntity.ID));
         }
     }
 }

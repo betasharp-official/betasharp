@@ -3,17 +3,23 @@ using BetaSharp.Blocks.Materials;
 
 namespace BetaSharp.Blocks;
 
-internal class BlockNote(int id) : BlockWithEntity(id, 74, Material.Wood)
+internal class BlockNote(int id) : BlockWithEntity(id, BlockTextures.NoteBlock, Material.Wood)
 {
-    public override int GetTexture(Side side) => TextureId;
+    public override int GetTexture(Side side) => BlockTextures.NoteBlock;
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (!(@event.BlockId > 0 && Blocks[@event.BlockId].CanEmitRedstonePower())) return;
+        if (!(@event.BlockId > 0 && Blocks[@event.BlockId].CanEmitRedstonePower()))
+        {
+            return;
+        }
 
         bool isPowered = @event.World.Redstone.IsStrongPowered(@event.X, @event.Y, @event.Z);
         BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
-        if (blockEntity == null || blockEntity.Powered == isPowered) return;
+        if (blockEntity == null || blockEntity.Powered == isPowered)
+        {
+            return;
+        }
 
         if (isPowered)
         {
@@ -25,10 +31,16 @@ internal class BlockNote(int id) : BlockWithEntity(id, 74, Material.Wood)
 
     public override bool OnUse(OnUseEvent @event)
     {
-        if (@event.World.IsRemote) return true;
+        if (@event.World.IsRemote)
+        {
+            return true;
+        }
 
         BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
-        if (blockEntity == null) return false;
+        if (blockEntity == null)
+        {
+            return false;
+        }
 
         blockEntity.CycleNote();
         blockEntity.PlayNote(@event.World, @event.X, @event.Y, @event.Z);
@@ -37,7 +49,10 @@ internal class BlockNote(int id) : BlockWithEntity(id, 74, Material.Wood)
 
     public override void OnBlockBreakStart(OnBlockBreakStartEvent @event)
     {
-        if (@event.World.IsRemote) return;
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
 
         BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
         blockEntity?.PlayNote(@event.World, @event.X, @event.Y, @event.Z);

@@ -42,21 +42,21 @@ public class ServerWorld : World
         return ChunkCache;
     }
 
-    private void HandleEntityAdded(Entity entity) => entitiesById.TryAdd(entity.id, entity);
+    private void HandleEntityAdded(Entity entity) => entitiesById.TryAdd(entity.ID, entity);
 
-    private void HandleEntityRemoved(Entity entity) => entitiesById.Remove(entity.id);
+    private void HandleEntityRemoved(Entity entity) => entitiesById.Remove(entity.ID);
 
-    private void HandleGlobalEntityAdded(Entity entity) => server.playerManager.sendToAround(entity.x, entity.y, entity.z, 512.0, Dimension.Id, GlobalEntitySpawnS2CPacket.Get(entity));
+    private void HandleGlobalEntityAdded(Entity entity) => server.playerManager.sendToAround(entity.X, entity.Y, entity.Z, 512.0, Dimension.Id, GlobalEntitySpawnS2CPacket.Get(entity));
 
     private bool HandleEntityUpdating(Entity entity)
     {
         if (!server.spawnAnimals && (entity is EntityAnimal || entity is EntityWaterMob))
         {
-            entity.markDead();
+            entity.MarkDead();
             return false;
         }
 
-        if (entity.passenger != null && entity.passenger is EntityPlayer)
+        if (entity.Passenger != null && entity.Passenger is EntityPlayer)
         {
             return false;
         }
@@ -84,14 +84,14 @@ public class ServerWorld : World
 
     public override Explosion CreateExplosion(Entity? source, double x, double y, double z, float power, bool fire)
     {
-        Explosion var10 = new(this, source, x, y, z, power)
+        Explosion explosion = new(this, source, x, y, z, power)
         {
             isFlaming = fire
         };
-        var10.doExplosionA();
-        var10.doExplosionB(false);
-        server.playerManager.sendToAround(x, y, z, 64.0, Dimension.Id, ExplosionS2CPacket.Get(x, y, z, power, var10.destroyedBlockPositions));
-        return var10;
+        explosion.doExplosionA();
+        explosion.doExplosionB(false);
+        server.playerManager.sendToAround(x, y, z, 64.0, Dimension.Id, ExplosionS2CPacket.Get(x, y, z, power, explosion.destroyedBlockPositions));
+        return explosion;
     }
 
     public void forceSave() => Storage.ForceSave();

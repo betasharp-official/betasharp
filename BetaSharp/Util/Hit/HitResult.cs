@@ -32,6 +32,6 @@ public struct HitResult
     {
         Type = HitResultType.ENTITY;
         Entity = entity;
-        Pos = new Vec3D(entity.x, entity.y, entity.z);
+        Pos = new Vec3D(entity.X, entity.Y, entity.Z);
     }
 }

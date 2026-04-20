@@ -110,7 +110,7 @@ public class ClientNetworkHandler : NetHandler
         _context.WorldHost.ChangeWorld(_worldClient);
         _context.PlayerHost.Player.dimensionId = packet.dimensionId;
         _context.Navigator.Navigate(_context.Factory.CreateTerrainScreen(this));
-        _context.PlayerHost.Player.id = packet.protocolVersion;
+        _context.PlayerHost.Player.ID = packet.protocolVersion;
     }
 
     public override void onItemEntitySpawn(ItemEntitySpawnS2CPacket packet)
@@ -120,12 +120,12 @@ public class ClientNetworkHandler : NetHandler
         double z = packet.z / 32.0D;
         EntityItem entityItem = new(_worldClient, x, y, z, new ItemStack(packet.itemRawId, packet.itemCount, packet.itemDamage))
         {
-            velocityX = packet.velocityX / 128.0D,
-            velocityY = packet.velocityY / 128.0D,
-            velocityZ = packet.velocityZ / 128.0D,
-            trackedPosX = packet.x,
-            trackedPosY = packet.y,
-            trackedPosZ = packet.z
+            VelocityX = packet.velocityX / 128.0D,
+            VelocityY = packet.velocityY / 128.0D,
+            VelocityZ = packet.velocityZ / 128.0D,
+            TrackedPosX = packet.x,
+            TrackedPosY = packet.y,
+            TrackedPosZ = packet.z
         };
         _worldClient.ForceEntity(packet.id, entityItem);
     }
@@ -199,12 +199,12 @@ public class ClientNetworkHandler : NetHandler
 
         if (entity != null)
         {
-            ((Entity)entity).trackedPosX = packet.x;
-            ((Entity)entity).trackedPosY = packet.y;
-            ((Entity)entity).trackedPosZ = packet.z;
-            ((Entity)entity).yaw = 0.0F;
-            ((Entity)entity).pitch = 0.0F;
-            ((Entity)entity).id = packet.EntityId;
+            ((Entity)entity).TrackedPosX = packet.x;
+            ((Entity)entity).TrackedPosY = packet.y;
+            ((Entity)entity).TrackedPosZ = packet.z;
+            ((Entity)entity).Yaw = 0.0F;
+            ((Entity)entity).Pitch = 0.0F;
+            ((Entity)entity).ID = packet.EntityId;
             _worldClient.ForceEntity(packet.EntityId, (Entity)entity);
             if (packet.entityData > 0)
             {
@@ -217,7 +217,7 @@ public class ClientNetworkHandler : NetHandler
                     }
                 }
 
-                ((Entity)entity).setVelocityClient(packet.velocityX / 8000.0D, packet.velocityY / 8000.0D, packet.velocityZ / 8000.0D);
+                ((Entity)entity).SetVelocityClient(packet.velocityX / 8000.0D, packet.velocityY / 8000.0D, packet.velocityZ / 8000.0D);
             }
         }
 
@@ -236,12 +236,12 @@ public class ClientNetworkHandler : NetHandler
 
         if (ent != null)
         {
-            ent.trackedPosX = packet.x;
-            ent.trackedPosY = packet.y;
-            ent.trackedPosZ = packet.z;
-            ent.yaw = 0.0F;
-            ent.pitch = 0.0F;
-            ent.id = packet.id;
+            ent.TrackedPosX = packet.x;
+            ent.TrackedPosY = packet.y;
+            ent.TrackedPosZ = packet.z;
+            ent.Yaw = 0.0F;
+            ent.Pitch = 0.0F;
+            ent.ID = packet.id;
             _worldClient.Entities.SpawnGlobalEntity(ent);
         }
 
@@ -256,7 +256,7 @@ public class ClientNetworkHandler : NetHandler
     public override void onEntityVelocityUpdate(EntityVelocityUpdateS2CPacket packet)
     {
         Entity? ent = GetEntityById(packet.EntityId);
-        ent?.setVelocityClient(packet.motionX / 8000.0D, packet.motionY / 8000.0D, packet.motionZ / 8000.0D);
+        ent?.SetVelocityClient(packet.motionX / 8000.0D, packet.motionY / 8000.0D, packet.motionZ / 8000.0D);
     }
 
     public override void onEntityTrackerUpdate(EntityTrackerUpdateS2CPacket packet)
@@ -278,9 +278,9 @@ public class ClientNetworkHandler : NetHandler
         float rotation = packet.rotation * 360 / 256.0F;
         float pitch = packet.pitch * 360 / 256.0F;
         OtherPlayerEntity ent = new(_context.WorldHost.World, packet.name);
-        ent.prevX = ent.lastTickX = ent.trackedPosX = packet.xPosition;
-        ent.prevY = ent.lastTickY = ent.trackedPosY = packet.yPosition;
-        ent.prevZ = ent.lastTickZ = ent.trackedPosZ = packet.zPosition;
+        ent.PrevX = ent.LastTickX = ent.TrackedPosX = packet.xPosition;
+        ent.PrevY = ent.LastTickY = ent.TrackedPosY = packet.yPosition;
+        ent.PrevZ = ent.LastTickZ = ent.TrackedPosZ = packet.zPosition;
         int currentItem = packet.currentItem;
         if (currentItem == 0)
         {
@@ -291,7 +291,7 @@ public class ClientNetworkHandler : NetHandler
             ent.inventory.Main[ent.inventory.SelectedSlot] = new ItemStack(currentItem, 1, 0);
         }
 
-        ent.setPositionAndAngles(x, y, z, rotation, pitch);
+        ent.SetPositionAndAngles(x, y, z, rotation, pitch);
         _worldClient.ForceEntity(packet.entityId, ent);
     }
 
@@ -300,15 +300,15 @@ public class ClientNetworkHandler : NetHandler
         Entity ent = GetEntityById(packet.EntityId);
         if (ent != null)
         {
-            ent.trackedPosX = packet.x;
-            ent.trackedPosY = packet.y;
-            ent.trackedPosZ = packet.z;
-            double posX = ent.trackedPosX / 32.0D;
-            double posY = ent.trackedPosY / 32.0D;
-            double posZ = ent.trackedPosZ / 32.0D;
+            ent.TrackedPosX = packet.x;
+            ent.TrackedPosY = packet.y;
+            ent.TrackedPosZ = packet.z;
+            double posX = ent.TrackedPosX / 32.0D;
+            double posY = ent.TrackedPosY / 32.0D;
+            double posZ = ent.TrackedPosZ / 32.0D;
             float yaw = packet.yaw * 360 / 256.0F;
             float pitch = packet.pitch * 360 / 256.0F;
-            ent.setPositionAndAnglesAvoidEntities(posX, posY, posZ, yaw, pitch, 5);
+            ent.SetPositionAndAnglesAvoidEntities(posX, posY, posZ, yaw, pitch, 5);
         }
     }
 
@@ -317,15 +317,15 @@ public class ClientNetworkHandler : NetHandler
         Entity ent = GetEntityById(packet.EntityId);
         if (ent != null)
         {
-            ent.trackedPosX += packet.deltaX;
-            ent.trackedPosY += packet.deltaY;
-            ent.trackedPosZ += packet.deltaZ;
-            double posX = ent.trackedPosX / 32.0D;
-            double posY = ent.trackedPosY / 32.0D;
-            double posZ = ent.trackedPosZ / 32.0D;
-            float yaw = packet.rotate ? packet.yaw * 360 / 256.0F : ent.yaw;
-            float pitch = packet.rotate ? packet.pitch * 360 / 256.0F : ent.pitch;
-            ent.setPositionAndAnglesAvoidEntities(posX, posY, posZ, yaw, pitch, 5);
+            ent.TrackedPosX += packet.deltaX;
+            ent.TrackedPosY += packet.deltaY;
+            ent.TrackedPosZ += packet.deltaZ;
+            double posX = ent.TrackedPosX / 32.0D;
+            double posY = ent.TrackedPosY / 32.0D;
+            double posZ = ent.TrackedPosZ / 32.0D;
+            float yaw = packet.rotate ? packet.yaw * 360 / 256.0F : ent.Yaw;
+            float pitch = packet.rotate ? packet.pitch * 360 / 256.0F : ent.Pitch;
+            ent.SetPositionAndAnglesAvoidEntities(posX, posY, posZ, yaw, pitch, 5);
         }
     }
 
@@ -337,11 +337,11 @@ public class ClientNetworkHandler : NetHandler
     public override void onPlayerMove(PlayerMovePacket packet)
     {
         ClientPlayerEntity ent = _context.PlayerHost.Player;
-        double x = ent.x;
-        double y = ent.y;
-        double z = ent.z;
-        float yaw = ent.yaw;
-        float pitch = ent.pitch;
+        double x = ent.X;
+        double y = ent.Y;
+        double z = ent.Z;
+        float yaw = ent.Yaw;
+        float pitch = ent.Pitch;
         if (packet.changePosition)
         {
             x = packet.x;
@@ -355,20 +355,20 @@ public class ClientNetworkHandler : NetHandler
             pitch = packet.pitch;
         }
 
-        ent.cameraOffset = 0.0F;
-        ent.velocityX = ent.velocityY = ent.velocityZ = 0.0D;
-        ent.setPositionAndAngles(x, y, z, yaw, pitch);
-        packet.x = ent.x;
-        packet.y = ent.boundingBox.MinY;
-        packet.z = ent.z;
-        packet.eyeHeight = ent.y;
+        ent.CameraOffset = 0.0F;
+        ent.VelocityX = ent.VelocityY = ent.VelocityZ = 0.0D;
+        ent.SetPositionAndAngles(x, y, z, yaw, pitch);
+        packet.x = ent.X;
+        packet.y = ent.BoundingBox.MinY;
+        packet.z = ent.Z;
+        packet.eyeHeight = ent.Y;
         SendPacket(packet);
         if (!_terrainLoaded)
         {
             ClientPlayerEntity player = _context.PlayerHost.Player;
-            player.prevX = player.x;
-            player.prevY = player.y;
-            player.prevZ = player.z;
+            player.PrevX = player.X;
+            player.PrevY = player.Y;
+            player.PrevZ = player.Z;
             _terrainLoaded = true;
             _context.Navigator.Navigate(null);
         }
@@ -475,7 +475,7 @@ public class ClientNetworkHandler : NetHandler
             }
             else if (packet.animationId == 2)
             {
-                ent.animateHurt();
+                ent.AnimateHurt();
             }
             else if (packet.animationId == 3)
             {
@@ -523,15 +523,15 @@ public class ClientNetworkHandler : NetHandler
         float yaw = packet.yaw * 360 / 256.0F;
         float pitch = packet.pitch * 360 / 256.0F;
         EntityLiving ent = (EntityLiving)EntityRegistry.Create(packet.type, _context.WorldHost.World);
-        ent.trackedPosX = packet.xPosition;
-        ent.trackedPosY = packet.yPosition;
-        ent.trackedPosZ = packet.zPosition;
-        ent.id = packet.entityId;
-        ent.setPositionAndAngles(x, y, z, yaw, pitch);
-        ent.lastTickX = ent.x;
-        ent.lastTickY = ent.y;
-        ent.lastTickZ = ent.z;
-        ent.interpolateOnly = true;
+        ent.TrackedPosX = packet.xPosition;
+        ent.TrackedPosY = packet.yPosition;
+        ent.TrackedPosZ = packet.zPosition;
+        ent.ID = packet.entityId;
+        ent.SetPositionAndAngles(x, y, z, yaw, pitch);
+        ent.LastTickX = ent.X;
+        ent.LastTickY = ent.Y;
+        ent.LastTickZ = ent.Z;
+        ent.InterpolateOnly = true;
         _worldClient.ForceEntity(packet.entityId, ent);
         ent.DataSynchronizer.ApplyChanges(new MemoryStream(packet.Data));
     }
@@ -551,21 +551,21 @@ public class ClientNetworkHandler : NetHandler
     {
         object? rider = GetEntityById(packet.EntityId);
         Entity? ent = GetEntityById(packet.VehicleEntityId);
-        if (packet.EntityId == _context.PlayerHost.Player.id)
+        if (packet.EntityId == _context.PlayerHost.Player.ID)
         {
             rider = _context.PlayerHost.Player;
         }
 
         if (rider is Entity riderEntity)
         {
-            riderEntity.setVehicle(ent);
+            riderEntity.SetVehicle(ent);
         }
     }
 
     public override void onEntityStatus(EntityStatusS2CPacket packet)
     {
         Entity? ent = GetEntityById(packet.EntityId);
-        ent?.processServerEntityStatus(packet.EntityStatus);
+        ent?.ProcessServerEntityStatus(packet.EntityStatus);
 
     }
 
@@ -576,7 +576,7 @@ public class ClientNetworkHandler : NetHandler
             return null;
         }
 
-        return entityId == _context.PlayerHost.Player.id ? _context.PlayerHost.Player : _worldClient.GetEntity(entityId);
+        return entityId == _context.PlayerHost.Player.ID ? _context.PlayerHost.Player : _worldClient.GetEntity(entityId);
     }
 
     public override void onHealthUpdate(HealthUpdateS2CPacket packet)
@@ -635,7 +635,7 @@ public class ClientNetworkHandler : NetHandler
         }
         else if (packet.screenHandlerId == 1)
         {
-            player.openCraftingScreen(MathHelper.Floor(player.x), MathHelper.Floor(player.y), MathHelper.Floor(player.z));
+            player.openCraftingScreen(MathHelper.Floor(player.X), MathHelper.Floor(player.Y), MathHelper.Floor(player.Z));
             player.currentScreenHandler.SyncId = packet.syncId;
         }
 
@@ -739,7 +739,7 @@ public class ClientNetworkHandler : NetHandler
     public override void onEntityEquipmentUpdate(EntityEquipmentUpdateS2CPacket packet)
     {
         Entity? ent = GetEntityById(packet.EntityId);
-        ent?.setEquipmentStack(packet.slot, packet.itemRawId, packet.itemDamage);
+        ent?.SetEquipmentStack(packet.slot, packet.itemRawId, packet.itemDamage);
 
     }
 

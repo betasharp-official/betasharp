@@ -18,7 +18,7 @@ public class PlayerSleepUpdateS2CPacket() : Packet(PacketId.PlayerSleepUpdateS2C
         p.x = x;
         p.y = y;
         p.z = z;
-        p.id = player.id;
+        p.id = player.ID;
         return p;
     }
 

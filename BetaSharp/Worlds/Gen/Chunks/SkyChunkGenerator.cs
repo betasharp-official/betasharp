@@ -11,9 +11,8 @@ using BetaSharp.Worlds.Generation.Generators.Features;
 
 namespace BetaSharp.Worlds.Gen.Chunks;
 
-internal class SkyChunkGenerator : IChunkSource
+internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 {
-    private readonly JavaRandom _random;
     private readonly OctavePerlinNoiseSampler _minLimitPerlinNoise;
     private readonly OctavePerlinNoiseSampler _maxLimitPerlinNoise;
     private readonly OctavePerlinNoiseSampler _selectorNoise;
@@ -21,7 +20,6 @@ internal class SkyChunkGenerator : IChunkSource
     private readonly OctavePerlinNoiseSampler _floatingIslandScale;
     private readonly OctavePerlinNoiseSampler _floatingIslandNoise;
     private readonly OctavePerlinNoiseSampler _forestNoise;
-    private readonly IWorldContext _world;
     private double[] _heightMap;
     private double[] _depthBuffer = new double[256];
     private readonly Carver _carver = new CaveCarver();
@@ -32,7 +30,6 @@ internal class SkyChunkGenerator : IChunkSource
     double[] _scaleNoiseBuffer;
     double[] _depthNoiseBuffer;
     private double[] _temperatures;
-    private readonly long _seed;
     private readonly BiomeSource _biomeSource;
 
     private readonly LakeFeature _featureWaterLake = new(Block.Water.ID);
@@ -59,27 +56,14 @@ internal class SkyChunkGenerator : IChunkSource
 
     public IChunkSource CreateParallelInstance() => new SkyChunkGenerator(_world, _seed, new BiomeSource(_world));
 
-    private SkyChunkGenerator(IWorldContext world, long seed, BiomeSource biomeSource)
+    private SkyChunkGenerator(IWorldContext world, long seed, BiomeSource biomeSource) : this(world,seed)
     {
-        _world = world;
-        _seed = seed;
         _biomeSource = biomeSource;
-        _random = new JavaRandom(seed);
-        _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
-        _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
-        _selectorNoise = new OctavePerlinNoiseSampler(_random, 8);
-        _depthNoise = new OctavePerlinNoiseSampler(_random, 4);
-        _floatingIslandScale = new OctavePerlinNoiseSampler(_random, 10);
-        _floatingIslandNoise = new OctavePerlinNoiseSampler(_random, 16);
-        _forestNoise = new OctavePerlinNoiseSampler(_random, 8);
     }
 
-    public SkyChunkGenerator(IWorldContext world, long seed)
+    public SkyChunkGenerator(IWorldContext world, long seed) : base(world, seed)
     {
-        _world = world;
-        _seed = seed;
         _biomeSource = world.Dimension.BiomeSource;
-        _random = new JavaRandom(seed);
         _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
         _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
         _selectorNoise = new OctavePerlinNoiseSampler(_random, 8);
@@ -95,6 +79,7 @@ internal class SkyChunkGenerator : IChunkSource
         int xMax = horiScale + 1;
         byte yMax = 128 / 4 + 1;
         int zMax = horiScale + 1;
+
         _heightMap = GenerateHeightMap(_heightMap, chunkX * horiScale, 0, chunkZ * horiScale, xMax, yMax, zMax);
 
         for (int sampleX = 0; sampleX < horiScale; ++sampleX)
@@ -123,8 +108,7 @@ internal class SkyChunkGenerator : IChunkSource
 
                         for (int subX = 0; subX < 8; ++subX)
                         {
-                            int blockIndex = subX + sampleX * 8 << 11 | 0 + sampleZ * 8 << 7 | sampleY * 4 + subY;
-                            short chunkHeight = 128;
+                            int blockIndex = ChuckFormat.GetIndex(subX + sampleX * 8, sampleY * 4 + subY, sampleZ * 8);
                             double horizontalLerpStepZ = 0.125D;
                             double terrainDensity = terrainX0;
                             double densityStepZ = (terrainX1 - terrainX0) * horizontalLerpStepZ;
@@ -138,7 +122,7 @@ internal class SkyChunkGenerator : IChunkSource
                                 }
 
                                 blocks[blockIndex] = (byte)blockType;
-                                blockIndex += chunkHeight;
+                                blockIndex += ChuckFormat.ChunkHeight;
                                 terrainDensity += densityStepZ;
                             }
 
@@ -223,7 +207,7 @@ internal class SkyChunkGenerator : IChunkSource
     public Chunk GetChunk(int chunkX, int chunkZ)
     {
         _random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
-        byte[] blocks = new byte[32768];
+        byte[] blocks = new byte[ChuckFormat.ChunkSize];
         Chunk chunk = new(_world, blocks, chunkX, chunkZ);
         _biomes = _biomeSource.GetBiomesInArea(_biomes, chunkX * 16, chunkZ * 16, 16, 16);
         BuildTerrain(chunkX, chunkZ, blocks);

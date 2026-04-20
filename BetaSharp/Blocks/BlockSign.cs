@@ -8,9 +8,6 @@ namespace BetaSharp.Blocks;
 
 internal class BlockSign : BlockWithEntity
 {
-    private readonly Type _blockEntityType;
-    private readonly bool _standing;
-
     private const float Width = 0.25F;
     private const float Height = 1.0F;
     private const float TopOffset = 9.0F / 32.0F;
@@ -18,11 +15,13 @@ internal class BlockSign : BlockWithEntity
     private const float MinExtent = 0.0F;
     private const float MaxExtent = 1.0F;
     private const float Thickness = 2.0F / 16.0F;
+    private readonly Type _blockEntityType;
+    private readonly bool _standing;
 
     public BlockSign(int id, Type blockEntityType, bool standing) : base(id, Material.Wood)
     {
         _standing = standing;
-        TextureId = 4;
+        TextureId = BlockTextures.OakPlanks;
         _blockEntityType = blockEntityType;
         SetBoundingBox(0.5F - Width, 0.0F, 0.5F - Width, 0.5F + Width, Height, 0.5F + Width);
     }
@@ -37,7 +36,10 @@ internal class BlockSign : BlockWithEntity
 
     public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
     {
-        if (_standing) return;
+        if (_standing)
+        {
+            return;
+        }
 
         Side facing = blockReader.GetBlockMeta(x, y, z).ToSide();
 

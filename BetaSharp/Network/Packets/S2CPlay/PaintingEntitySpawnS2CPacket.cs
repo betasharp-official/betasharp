@@ -15,7 +15,7 @@ public class PaintingEntitySpawnS2CPacket() : Packet(PacketId.PaintingEntitySpaw
     public static PaintingEntitySpawnS2CPacket Get(EntityPainting paint)
     {
         var p = Get<PaintingEntitySpawnS2CPacket>(PacketId.PaintingEntitySpawnS2C);
-        p.entityId = paint.id;
+        p.entityId = paint.ID;
         p.xPosition = paint.XPosition;
         p.yPosition = paint.YPosition;
         p.zPosition = paint.ZPosition;

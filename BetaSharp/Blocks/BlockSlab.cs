@@ -8,7 +8,7 @@ internal class BlockSlab : Block
     public static readonly string[] Names = ["stone", "sand", "wood", "cobble"];
     private readonly bool _doubleSlab;
 
-    public BlockSlab(int id, bool doubleSlab) : base(id, 6, Material.Stone)
+    public BlockSlab(int id, bool doubleSlab) : base(id, BlockTextures.StoneSlabTop, Material.Stone)
     {
         _doubleSlab = doubleSlab;
         if (!doubleSlab)
@@ -21,16 +21,16 @@ internal class BlockSlab : Block
 
     public override int GetTexture(Side side, int meta) => meta switch
     {
-        0 => side <= Side.Up ? 6 : 5,
+        0 => side <= Side.Up ? BlockTextures.StoneSlabTop : BlockTextures.StoneSlabSide,
         1 => side switch
         {
-            Side.Down => 208,
-            Side.Up => 176,
-            _ => 192
+            Side.Down => BlockTextures.SandstoneBottom,
+            Side.Up => BlockTextures.SandstoneTop,
+            _ => BlockTextures.SandstoneSide
         },
-        2 => 4,
-        3 => 16,
-        _ => 6
+        2 => BlockTextures.OakPlanks,
+        3 => BlockTextures.Cobblestone,
+        _ => BlockTextures.StoneSlabSide
     };
 
     public override int GetTexture(Side side) => GetTexture(side, 0);
@@ -39,13 +39,24 @@ internal class BlockSlab : Block
 
     public override void OnPlaced(OnPlacedEvent etv)
     {
-        if (this != Slab) base.OnPlaced(etv);
+        if (this != Slab)
+        {
+            base.OnPlaced(etv);
+        }
 
         int blockBelowId = etv.World.Reader.GetBlockId(etv.X, etv.Y - 1, etv.Z);
         int slabMeta = etv.World.Reader.GetBlockMeta(etv.X, etv.Y, etv.Z);
         int blockBelowMeta = etv.World.Reader.GetBlockMeta(etv.X, etv.Y - 1, etv.Z);
-        if (slabMeta != blockBelowMeta) return;
-        if (blockBelowId != Slab.ID) return;
+        if (slabMeta != blockBelowMeta)
+        {
+            return;
+        }
+
+        if (blockBelowId != Slab.ID)
+        {
+            return;
+        }
+
         etv.World.Writer.SetBlock(etv.X, etv.Y, etv.Z, 0);
         etv.World.Writer.SetBlock(etv.X, etv.Y - 1, etv.Z, DoubleSlab.ID, slabMeta);
     }
@@ -60,8 +71,11 @@ internal class BlockSlab : Block
 
     public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (this != Slab) base.IsSideVisible(iBlockReader, x, y, z, side);
+        if (this != Slab)
+        {
+            base.IsSideVisible(iBlockReader, x, y, z, side);
+        }
 
-        return side == Side.Up || base.IsSideVisible(iBlockReader, x, y, z, side) && (side == Side.Down || iBlockReader.GetBlockId(x, y, z) != ID);
+        return side == Side.Up || (base.IsSideVisible(iBlockReader, x, y, z, side) && (side == Side.Down || iBlockReader.GetBlockId(x, y, z) != ID));
     }
 }

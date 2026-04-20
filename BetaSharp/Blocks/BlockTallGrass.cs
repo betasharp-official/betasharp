@@ -23,7 +23,10 @@ public class BlockTallGrass : BlockPlant
     public override int GetColorMultiplier(IBlockReader iBlockReader, int x, int y, int z)
     {
         int meta = iBlockReader.GetBlockMeta(x, y, z);
-        if (meta == 0) return 0xFFFFFF;
+        if (meta == 0)
+        {
+            return 0xFFFFFF;
+        }
 
         long positionSeed = x * 3129871 + z * 6129781 + y;
         positionSeed = positionSeed * positionSeed * 42317861L + positionSeed * 11L;
@@ -38,7 +41,10 @@ public class BlockTallGrass : BlockPlant
 
     public override int GetColorMultiplier(IBlockReader iBlockReader, int x, int y, int z, int knownMeta)
     {
-        if (knownMeta == 0) return 0xFFFFFF;
+        if (knownMeta == 0)
+        {
+            return 0xFFFFFF;
+        }
 
         long positionSeed = x * 3129871 + z * 6129781 + y;
         positionSeed = positionSeed * positionSeed * 42317861L + positionSeed * 11L;

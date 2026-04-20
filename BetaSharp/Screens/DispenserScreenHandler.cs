@@ -13,27 +13,27 @@ public class DispenserScreenHandler : ScreenHandler
     {
         dispenserBlockEntity = dispenser;
 
-        int var3;
-        int var4;
-        for (var3 = 0; var3 < 3; ++var3)
+        int row;
+        int column;
+        for (row = 0; row < 3; ++row)
         {
-            for (var4 = 0; var4 < 3; ++var4)
+            for (column = 0; column < 3; ++column)
             {
-                AddSlot(new Slot(dispenser, var4 + var3 * 3, 62 + var4 * 18, 17 + var3 * 18));
+                AddSlot(new Slot(dispenser, column + row * 3, 62 + column * 18, 17 + row * 18));
             }
         }
 
-        for (var3 = 0; var3 < 3; ++var3)
+        for (row = 0; row < 3; ++row)
         {
-            for (var4 = 0; var4 < 9; ++var4)
+            for (column = 0; column < 9; ++column)
             {
-                AddSlot(new Slot(playerInventory, var4 + var3 * 9 + 9, 8 + var4 * 18, 84 + var3 * 18));
+                AddSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 84 + row * 18));
             }
         }
 
-        for (var3 = 0; var3 < 9; ++var3)
+        for (row = 0; row < 9; ++row)
         {
-            AddSlot(new Slot(playerInventory, var3, 8 + var3 * 18, 142));
+            AddSlot(new Slot(playerInventory, row, 8 + row * 18, 142));
         }
 
     }

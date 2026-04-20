@@ -6,7 +6,7 @@ internal class BlockLog : Block
 {
     private const sbyte SearchRadius = 4;
     private const int RegionExtent = SearchRadius + 1;
-    public BlockLog(int id) : base(id, Material.Wood) => TextureId = 20;
+    public BlockLog(int id) : base(id, Material.Wood) => TextureId = BlockTextures.LogOakSide;
 
     public override int GetDroppedItemCount() => 1;
 
@@ -28,7 +28,10 @@ internal class BlockLog : Block
                 for (int offsetZ = -SearchRadius; offsetZ <= SearchRadius; ++offsetZ)
                 {
                     int neighborBlockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    if (neighborBlockId != Leaves.ID) continue;
+                    if (neighborBlockId != Leaves.ID)
+                    {
+                        continue;
+                    }
 
                     int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
                     if ((leavesMeta & 8) == 0)
@@ -42,8 +45,8 @@ internal class BlockLog : Block
 
     public override int GetTexture(Side side, int meta) => side switch
     {
-        Side.Up or Side.Down => 21,
-        _ => meta == 1 ? 116 : meta == 2 ? 117 : 20
+        Side.Up or Side.Down => BlockTextures.LogTop,
+        _ => meta == 1 ? BlockTextures.LogPineSide : meta == 2 ? BlockTextures.LogBirchSide : BlockTextures.LogOakSide
     };
 
 

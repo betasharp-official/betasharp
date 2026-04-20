@@ -70,7 +70,7 @@ public class CreeperEntityRenderer : LivingEntityRenderer
         {
             if (var2 == 1)
             {
-                float var4 = ent.age + var3;
+                float var4 = ent.Age + var3;
                 loadTexture("/armor/power.png");
                 GLManager.GL.MatrixMode(GLEnum.Texture2D); //wtf?
                 GLManager.GL.LoadIdentity();

@@ -14,12 +14,8 @@ internal class BlockDoor : Block
 
     public BlockDoor(int id, Material material) : base(id, material)
     {
-        TextureId = 97;
-        if (material == Material.Metal)
-        {
-            ++TextureId;
-        }
-
+        TextureId = BlockTextures.DoorWood;
+        if (material == Material.Metal) TextureId = BlockTextures.DoorIron;
         SetBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, Height, 0.5F + HalfWidth);
     }
 
@@ -129,7 +125,10 @@ internal class BlockDoor : Block
 
     public void SetOpen(IWorldContext world, int x, int y, int z, bool open)
     {
-        if (world.IsRemote) return;
+        if (world.IsRemote)
+        {
+            return;
+        }
 
         int meta = world.Reader.GetBlockMeta(x, y, z);
 
@@ -146,7 +145,10 @@ internal class BlockDoor : Block
             }
         }
 
-        if (IsOpen(meta) == open) return;
+        if (IsOpen(meta) == open)
+        {
+            return;
+        }
 
         if (world.Reader.GetBlockId(x, y + 1, z) == ID)
         {

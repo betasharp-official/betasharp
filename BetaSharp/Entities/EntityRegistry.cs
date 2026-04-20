@@ -114,7 +114,7 @@ public static class EntityRegistry
         string id = nbt.GetString("id");
         if (TryCreate(id, world, out Entity? entity, skip: Player))
         {
-            entity!.read(nbt);
+            entity!.Read(nbt);
         }
 
         return entity;
@@ -125,8 +125,8 @@ public static class EntityRegistry
         name = name.ToLower();
         if (TryCreate(name, world, out Entity? entity))
         {
-            entity.setPosition(x, y, z);
-            entity.setPositionAndAngles(x, y, z, 0, 0);
+            entity.SetPosition(x, y, z);
+            entity.SetPositionAndAngles(x, y, z, 0, 0);
             if (!world.SpawnEntity(entity))
             {
                 s_logger.LogError($"Entity `{name}` failed to join world.");

@@ -6,7 +6,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <PublishAot>true</PublishAot>
-    <RuntimeIdentifier Condition="'$(NETCoreSdkRuntimeIdentifier)' == 'arch-x64'">linux-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(NETCoreSdkRuntimeIdentifier)' == 'linux-x64'">linux-x64</RuntimeIdentifier>
     <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
     <OptimizationPreference>speed</OptimizationPreference>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>

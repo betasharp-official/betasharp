@@ -113,16 +113,34 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         Vector2D<int> displaySize = getDisplaySize();
         ScaledResolution res = new(_gameOptions, displaySize.X, displaySize.Y);
 
-        int scale = res.ScaleFactor;
-        int scaledWindowHeight = displaySize.Y;
+        float left = x + _translateX;
+        float top = y + _translateY;
+        float right = left + width;
+        float bottom = top + height;
 
-        int physicalX = (int)((x + _translateX) * scale);
-        int physicalWidth = width * scale;
-        int physicalHeight = height * scale;
-        int physicalY = scaledWindowHeight - (int)((y + _translateY) * scale) - physicalHeight;
+        // UI coordinates are in scaled-resolution space; scissor rectangles must use framebuffer pixels.
+        int framebufferWidth = Display.getFramebufferWidth();
+        int framebufferHeight = Display.getFramebufferHeight();
+        float scaleX = framebufferWidth / (float)res.ScaledWidth;
+        float scaleY = framebufferHeight / (float)res.ScaledHeight;
+
+        int physicalLeft = (int)MathF.Floor(left * scaleX);
+        int physicalTop = (int)MathF.Floor(top * scaleY);
+        int physicalRight = (int)MathF.Ceiling(right * scaleX);
+        int physicalBottom = (int)MathF.Ceiling(bottom * scaleY);
+
+        int clampedLeft = Math.Clamp(physicalLeft, 0, framebufferWidth);
+        int clampedTop = Math.Clamp(physicalTop, 0, framebufferHeight);
+        int clampedRight = Math.Clamp(physicalRight, 0, framebufferWidth);
+        int clampedBottom = Math.Clamp(physicalBottom, 0, framebufferHeight);
+
+        int physicalX = clampedLeft;
+        int physicalY = framebufferHeight - clampedBottom;
+        int physicalWidth = clampedRight - clampedLeft;
+        int physicalHeight = clampedBottom - clampedTop;
 
         GLManager.GL.Enable(GLEnum.ScissorTest);
-        GLManager.GL.Scissor(physicalX, physicalY, (uint)physicalWidth, (uint)physicalHeight);
+        GLManager.GL.Scissor(physicalX, physicalY, (uint)Math.Max(0, physicalWidth), (uint)Math.Max(0, physicalHeight));
     }
 
     public void DisableClipping()
@@ -337,9 +355,9 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         GLManager.GL.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
         GLManager.GL.Disable(GLEnum.CullFace);
 
-        float bodyYaw = entity is EntityLiving el ? el.bodyYaw : entity.yaw;
-        float headYaw = entity.yaw;
-        float headPitch = entity.pitch;
+        float bodyYaw = entity is EntityLiving el ? el.BodyYaw : entity.Yaw;
+        float headYaw = entity.Yaw;
+        float headPitch = entity.Pitch;
         float lookX = x + _translateX - mouseX;
         float lookY = y + _translateY - 50 - mouseY;
 
@@ -350,23 +368,23 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
         if (entity is EntityLiving el2)
         {
-            el2.bodyYaw = (float)Math.Atan(lookX / 40.0F) * 20.0F;
+            el2.BodyYaw = (float)Math.Atan(lookX / 40.0F) * 20.0F;
         }
-        entity.yaw = (float)Math.Atan(lookX / 40.0F) * 40.0F;
-        entity.pitch = -(float)Math.Atan(lookY / 40.0F) * 20.0F;
-        entity.minBrightness = 1.0F;
+        entity.Yaw = (float)Math.Atan(lookX / 40.0F) * 40.0F;
+        entity.Pitch = -(float)Math.Atan(lookY / 40.0F) * 20.0F;
+        entity.MinBrightness = 1.0F;
 
-        GLManager.GL.Translate(0.0F, entity.standingEyeHeight, 0.0F);
+        GLManager.GL.Translate(0.0F, entity.StandingEyeHeight, 0.0F);
         EntityRenderDispatcher.Instance.PlayerViewY = 180.0F;
         EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(entity, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F);
 
-        entity.minBrightness = 0.0F;
+        entity.MinBrightness = 0.0F;
         if (entity is EntityLiving el3)
         {
-            el3.bodyYaw = bodyYaw;
+            el3.BodyYaw = bodyYaw;
         }
-        entity.yaw = headYaw;
-        entity.pitch = headPitch;
+        entity.Yaw = headYaw;
+        entity.Pitch = headPitch;
 
         GLManager.GL.PopMatrix();
         Lighting.turnOff();

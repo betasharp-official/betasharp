@@ -8,7 +8,7 @@ internal class BlockCloth() : Block(35, 64, Material.Wool)
     {
         if (meta == 0)
         {
-            return TextureId;
+            return BlockTextures.WoolColoredPaletteBase;
         }
 
         meta = ~(meta & 15);

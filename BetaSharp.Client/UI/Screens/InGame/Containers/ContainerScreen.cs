@@ -65,7 +65,7 @@ public abstract class ContainerScreen(
     public override void Update(float partialTicks)
     {
         base.Update(partialTicks);
-        if (!player.isAlive() || player.dead)
+        if (!player.IsAlive() || player.Dead)
         {
             player.closeHandledScreen();
         }
@@ -154,7 +154,7 @@ public abstract class ContainerScreen(
 
     public override void KeyTyped(int key, char character)
     {
-        if (key == Keyboard.KEY_ESCAPE || key == Context.Options.KeyBindInventory.keyCode)
+        if (key == Keyboard.KEY_ESCAPE || key == Context.Options.KeyBindInventory.scanCode)
         {
             player.closeHandledScreen();
         }

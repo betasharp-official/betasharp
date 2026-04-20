@@ -10,7 +10,7 @@ public class EntityVelocityUpdateS2CPacket() : PacketBaseEntity(PacketId.EntityV
     public int motionZ;
 
     public static EntityVelocityUpdateS2CPacket Get(Entity ent) =>
-        Get(ent.id, ent.velocityX, ent.velocityY, ent.velocityZ);
+        Get(ent.ID, ent.VelocityX, ent.VelocityY, ent.VelocityZ);
 
     public static EntityVelocityUpdateS2CPacket Get(int entityId, double motionX, double motionY, double motionZ)
     {

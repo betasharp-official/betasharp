@@ -20,16 +20,16 @@ public class ItemEntitySpawnS2CPacket() : Packet(PacketId.ItemEntitySpawnS2C)
     public static ItemEntitySpawnS2CPacket Get(EntityItem item)
     {
         var p = Get<ItemEntitySpawnS2CPacket>(PacketId.ItemEntitySpawnS2C);
-        p.id = item.id;
+        p.id = item.ID;
         p.itemRawId = item.stack.ItemId;
         p.itemCount = item.stack.Count;
         p.itemDamage = item.stack.getDamage();
-        p.x = MathHelper.Floor(item.x * 32.0D);
-        p.y = MathHelper.Floor(item.y * 32.0D);
-        p.z = MathHelper.Floor(item.z * 32.0D);
-        p.velocityX = (sbyte)(int)(item.velocityX * 128.0D);
-        p.velocityY = (sbyte)(int)(item.velocityY * 128.0D);
-        p.velocityZ = (sbyte)(int)(item.velocityZ * 128.0D);
+        p.x = MathHelper.Floor(item.X * 32.0D);
+        p.y = MathHelper.Floor(item.Y * 32.0D);
+        p.z = MathHelper.Floor(item.Z * 32.0D);
+        p.velocityX = (sbyte)(int)(item.VelocityX * 128.0D);
+        p.velocityY = (sbyte)(int)(item.VelocityY * 128.0D);
+        p.velocityZ = (sbyte)(int)(item.VelocityZ * 128.0D);
         return p;
     }
 

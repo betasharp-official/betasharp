@@ -96,16 +96,16 @@ public class EntityTracker
             trackedDistance = viewDistance;
         }
 
-        if (entriesById.ContainsKey(entity.id))
+        if (entriesById.ContainsKey(entity.ID))
         {
             throw new InvalidOperationException("Entity is already tracked!");
         }
         else
         {
-            EntityTrackerEntry var5 = new(entity, trackedDistance, tracingFrequency, alwaysUpdateVelocity);
-            entries.Add(var5);
-            entriesById[entity.id] = var5;
-            var5.updateListeners(world.getWorld(dimensionId).Entities.Players.Cast<ServerPlayerEntity>());
+            EntityTrackerEntry trackerEntry = new(entity, trackedDistance, tracingFrequency, alwaysUpdateVelocity);
+            entries.Add(trackerEntry);
+            entriesById[entity.ID] = trackerEntry;
+            trackerEntry.updateListeners(world.getWorld(dimensionId).Entities.Players.Cast<ServerPlayerEntity>());
         }
     }
 
@@ -113,15 +113,15 @@ public class EntityTracker
     {
         if (entity is ServerPlayerEntity)
         {
-            ServerPlayerEntity var2 = (ServerPlayerEntity)entity;
+            ServerPlayerEntity playerEntity = (ServerPlayerEntity)entity;
 
-            foreach (EntityTrackerEntry var4 in entries)
+            foreach (EntityTrackerEntry trackerEntry in entries)
             {
-                var4.notifyEntityRemoved(var2);
+                trackerEntry.notifyEntityRemoved(playerEntity);
             }
         }
 
-        if (entriesById.Remove(entity.id, out EntityTrackerEntry ent))
+        if (entriesById.Remove(entity.ID, out EntityTrackerEntry ent))
         {
             entries.Remove(ent);
             ent.notifyEntityRemoved();
@@ -155,7 +155,7 @@ public class EntityTracker
 
     public void sendToListeners(Entity entity, Packet packet)
     {
-        if (entriesById.TryGetValue(entity.id, out EntityTrackerEntry ent))
+        if (entriesById.TryGetValue(entity.ID, out EntityTrackerEntry ent))
         {
             ent.sendToListeners(packet);
         }
@@ -167,7 +167,7 @@ public class EntityTracker
 
     public void sendToAround(Entity entity, Packet packet)
     {
-        if (entriesById.TryGetValue(entity.id, out EntityTrackerEntry ent))
+        if (entriesById.TryGetValue(entity.ID, out EntityTrackerEntry ent))
         {
             ent.sendToAround(packet);
         }
@@ -183,9 +183,9 @@ public class EntityTracker
         {
             Entity entity = tracker.currentTrackedEntity;
             if (entity != player
-                && !entity.dead
-                && MathHelper.Floor(entity.x / 16.0) == chunkX
-                && MathHelper.Floor(entity.z / 16.0) == chunkZ)
+                && !entity.Dead
+                && MathHelper.Floor(entity.X / 16.0) == chunkX
+                && MathHelper.Floor(entity.Z / 16.0) == chunkZ)
             {
                 tracker.updateListener(player);
             }
@@ -194,9 +194,9 @@ public class EntityTracker
 
     public void removeListener(ServerPlayerEntity player)
     {
-        foreach (EntityTrackerEntry var3 in entries)
+        foreach (EntityTrackerEntry trackerEntry in entries)
         {
-            var3.removeListener(player);
+            trackerEntry.removeListener(player);
         }
     }
 }

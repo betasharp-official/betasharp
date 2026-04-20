@@ -18,7 +18,10 @@ internal class BlockReed : Block
 
     public override void OnTick(OnTickEvent @event)
     {
-        if (!@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z)) return;
+        if (!@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z))
+        {
+            return;
+        }
 
         int heightBelow = 1;
         while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == ID)
@@ -26,7 +29,10 @@ internal class BlockReed : Block
             heightBelow++;
         }
 
-        if (heightBelow >= 3) return;
+        if (heightBelow >= 3)
+        {
+            return;
+        }
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (meta == 15)
@@ -44,18 +50,21 @@ internal class BlockReed : Block
     {
         int blockBelowId = evt.World.Reader.GetBlockId(evt.X, evt.Y - 1, evt.Z);
         return blockBelowId == ID ||
-               (blockBelowId == GrassBlock.ID ||
-                blockBelowId == Dirt.ID) && (evt.World.Reader.GetMaterial(evt.X - 1, evt.Y - 1, evt.Z) == Material.Water ||
-                                             evt.World.Reader.GetMaterial(evt.X + 1, evt.Y - 1, evt.Z) == Material.Water ||
-                                             evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z - 1) == Material.Water ||
-                                             evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z + 1) == Material.Water);
+               ((blockBelowId == GrassBlock.ID ||
+                 blockBelowId == Dirt.ID) && (evt.World.Reader.GetMaterial(evt.X - 1, evt.Y - 1, evt.Z) == Material.Water ||
+                                              evt.World.Reader.GetMaterial(evt.X + 1, evt.Y - 1, evt.Z) == Material.Water ||
+                                              evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z - 1) == Material.Water ||
+                                              evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z + 1) == Material.Water));
     }
 
     public override void NeighborUpdate(OnTickEvent @event) => BreakIfCannotGrow(@event);
 
     protected void BreakIfCannotGrow(OnTickEvent @event)
     {
-        if (CanGrow(@event)) return;
+        if (CanGrow(@event))
+        {
+            return;
+        }
 
         DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);

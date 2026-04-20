@@ -26,10 +26,16 @@ public class BlockPistonExtension : Block
         z += PistonConstants.HeadOffsetZ[oppositeFace.ToInt()];
 
         int blockId = @event.World.Reader.GetBlockId(x, y, z);
-        if (blockId != Piston.ID && blockId != StickyPiston.ID) return;
+        if (blockId != Piston.ID && blockId != StickyPiston.ID)
+        {
+            return;
+        }
 
         int meta = @event.World.Reader.GetBlockMeta(x, y, z);
-        if (!BlockPistonBase.IsExtended(meta)) return;
+        if (!BlockPistonBase.IsExtended(meta))
+        {
+            return;
+        }
 
         Blocks[blockId].DropStacks(new OnDropEvent(@event.World, x, y, z, meta));
         @event.World.Writer.SetBlock(x, y, z, 0);

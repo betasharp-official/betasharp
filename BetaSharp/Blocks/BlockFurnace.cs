@@ -22,7 +22,7 @@ internal class BlockFurnace : BlockWithEntity
     public BlockFurnace(int id, bool lit) : base(id, Material.Stone)
     {
         _lit = lit;
-        TextureId = 45;
+        TextureId = BlockTextures.FurnaceSide;
     }
 
     public override int GetDroppedItemId(int blockMeta) => Furnace.ID;
@@ -33,7 +33,7 @@ internal class BlockFurnace : BlockWithEntity
 
         if (@event.Placer != null)
         {
-            int direction = MathHelper.Floor(@event.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
+            int direction = MathHelper.Floor(@event.Placer.Yaw * 4.0F / 360.0F + 0.5D) & 3;
 
             int meta = direction switch
             {
@@ -59,7 +59,10 @@ internal class BlockFurnace : BlockWithEntity
 
     private static void UpdateDirection(OnPlacedEvent @event)
     {
-        if (@event.World.IsRemote) return;
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
 
         IBlockReader reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
@@ -70,29 +73,43 @@ internal class BlockFurnace : BlockWithEntity
         bool isEastOpaque = BlocksOpaque[reader.GetBlockId(x + 1, y, z)];
 
         byte direction = 3;
-        if (isNorthOpaque && !isSouthOpaque) direction = 3;
-        else if (isSouthOpaque && !isNorthOpaque) direction = 2;
+        if (isNorthOpaque && !isSouthOpaque)
+        {
+            direction = 3;
+        }
+        else if (isSouthOpaque && !isNorthOpaque)
+        {
+            direction = 2;
+        }
 
 
-        if (isWestOpaque && !isEastOpaque) direction = 5;
-        else if (isEastOpaque && !isWestOpaque) direction = 4;
-
+        if (isWestOpaque && !isEastOpaque)
+        {
+            direction = 5;
+        }
+        else if (isEastOpaque && !isWestOpaque)
+        {
+            direction = 4;
+        }
 
         @event.World.Writer.SetBlockMeta(x, y, z, direction);
     }
 
     public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (side is Side.Up or Side.Down) return TextureId + 17;
+        if (side is Side.Up or Side.Down) return BlockTextures.FurnaceTop;
 
         Side meta = iBlockReader.GetBlockMeta(x, y, z).ToSide();
-        return side != meta ? TextureId : _lit ? TextureId + 16 : TextureId - 1;
+        return side != meta ? TextureId : _lit ? BlockTextures.FurnaceFrontLit : BlockTextures.FurnaceFrontUnlit;
     }
 
 
     public override void RandomDisplayTick(OnTickEvent @event)
     {
-        if (!_lit) return;
+        if (!_lit)
+        {
+            return;
+        }
 
         Side rotation = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z).ToSide();
         float particleX = @event.X + 0.5F;
@@ -123,17 +140,23 @@ internal class BlockFurnace : BlockWithEntity
 
     public override int GetTexture(Side side) => side switch
     {
-        Side.Up or Side.Down => TextureId + 17,
-        Side.South => TextureId - 1,
-        _ => TextureId
+        Side.Up or Side.Down => BlockTextures.FurnaceTop,
+        Side.South => BlockTextures.FurnaceFrontUnlit,
+        _ => BlockTextures.FurnaceSide
     };
 
     public override bool OnUse(OnUseEvent @event)
     {
-        if (@event.World.IsRemote) return true;
+        if (@event.World.IsRemote)
+        {
+            return true;
+        }
 
         BlockEntityFurnace? furnace = @event.World.Entities.GetBlockEntity<BlockEntityFurnace>(@event.X, @event.Y, @event.Z);
-        if (furnace == null) return false;
+        if (furnace == null)
+        {
+            return false;
+        }
 
         @event.Player.openFurnaceScreen(furnace);
         return true;
@@ -169,7 +192,10 @@ internal class BlockFurnace : BlockWithEntity
             for (int slotIndex = 0; slotIndex < furnace.Size; ++slotIndex)
             {
                 ItemStack? stack = furnace.GetStack(slotIndex);
-                if (stack == null) continue;
+                if (stack == null)
+                {
+                    continue;
+                }
 
                 float offsetX = s_random.NextFloat() * 0.8F + 0.1F;
                 float offsetY = s_random.NextFloat() * 0.8F + 0.1F;
@@ -178,14 +204,17 @@ internal class BlockFurnace : BlockWithEntity
                 while (stack.Count > 0)
                 {
                     int stackCount = s_random.NextInt(21) + 10;
-                    if (stackCount > stack.Count) stackCount = stack.Count;
+                    if (stackCount > stack.Count)
+                    {
+                        stackCount = stack.Count;
+                    }
 
                     stack.Count -= stackCount;
                     EntityItem droppedItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, stackCount, stack.getDamage()))
                     {
-                        velocityX = (float)s_random.NextGaussian() * DropSpread,
-                        velocityY = (float)s_random.NextGaussian() * DropSpread + 0.2F,
-                        velocityZ = (float)s_random.NextGaussian() * DropSpread
+                        VelocityX = (float)s_random.NextGaussian() * DropSpread,
+                        VelocityY = (float)s_random.NextGaussian() * DropSpread + 0.2F,
+                        VelocityZ = (float)s_random.NextGaussian() * DropSpread
                     };
                     @event.World.SpawnEntity(droppedItem);
                 }

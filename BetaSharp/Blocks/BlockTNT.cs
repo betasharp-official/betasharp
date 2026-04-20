@@ -8,15 +8,18 @@ internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.T
 {
     public override int GetTexture(Side side) => side switch
     {
-        Side.Down => TextureId + 2,
-        Side.Up => TextureId + 1,
-        _ => TextureId
+        Side.Down => BlockTextures.TntBottom,
+        Side.Up => BlockTextures.TntTop,
+        _ => BlockTextures.TntSide
     };
 
     public override void OnPlaced(OnPlacedEvent @event)
     {
         base.OnPlaced(@event);
-        if (!@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z)) return;
+        if (!@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
+        {
+            return;
+        }
 
         OnMetadataChange(new OnMetadataChangeEvent(@event.World, @event.X, @event.Y, @event.Z, 1));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -25,7 +28,9 @@ internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.T
     public override void NeighborUpdate(OnTickEvent @event)
     {
         if (@event.BlockId <= 0 || !Blocks[@event.BlockId].CanEmitRedstonePower() || !@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
+        {
             return;
+        }
 
         OnMetadataChange(new OnMetadataChangeEvent(@event.World, @event.X, @event.Y, @event.Z, 1));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -42,7 +47,10 @@ internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.T
 
     public override void OnMetadataChange(OnMetadataChangeEvent @event)
     {
-        if (@event.World.IsRemote) return;
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
 
         if ((@event.Meta & 1) == 0)
         {

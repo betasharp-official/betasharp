@@ -9,7 +9,7 @@ internal class BlockSapling : BlockPlant
     private static readonly JavaRandom s_random = new ();
     private const float HalfSize = 0.4F;
 
-    public BlockSapling(int i, int j) : base(i, j)
+    public BlockSapling(int id) : base(id, BlockTextures.SaplingOak)
     {
         SetBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, HalfSize * 2.0F, 0.5F + HalfSize);
     }
@@ -37,9 +37,9 @@ internal class BlockSapling : BlockPlant
         meta &= 3;
         return meta switch
         {
-            1 => 63,
-            2 => 79,
-            _ => base.GetTexture(side, meta)
+            1 => BlockTextures.SaplingPine,
+            2 => BlockTextures.SaplingBirch,
+            _ => BlockTextures.SaplingOak
         };
     }
 

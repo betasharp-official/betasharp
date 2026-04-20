@@ -59,7 +59,10 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
             for (verticalOffset = -1; verticalOffset <= 3; ++verticalOffset)
             {
                 bool isFrame = horizontalOffset == -1 || horizontalOffset == 2 || verticalOffset == -1 || verticalOffset == 3;
-                if (horizontalOffset is -1 or 2 && verticalOffset is -1 or 3) continue;
+                if (horizontalOffset is -1 or 2 && verticalOffset is -1 or 3)
+                {
+                    continue;
+                }
 
                 int blockId = reader.GetBlockId(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset);
                 if (isFrame)
@@ -136,7 +139,10 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
 
     public override bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (iBlockReader.GetBlockId(x, y, z) == ID) return false;
+        if (iBlockReader.GetBlockId(x, y, z) == ID)
+        {
+            return false;
+        }
 
         bool edgeWest = iBlockReader.GetBlockId(x - 1, y, z) == ID && iBlockReader.GetBlockId(x - 2, y, z) != ID;
         bool edgeEast = iBlockReader.GetBlockId(x + 1, y, z) == ID && iBlockReader.GetBlockId(x + 2, y, z) != ID;
@@ -144,10 +150,10 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
         bool edgeSouth = iBlockReader.GetBlockId(x, y, z + 1) == ID && iBlockReader.GetBlockId(x, y, z + 2) != ID;
         bool extendsInX = edgeWest || edgeEast;
         bool extendsInZ = edgeNorth || edgeSouth;
-        return extendsInX && side == Side.West ||
-               extendsInX && side == Side.East ||
-               extendsInZ && side == Side.North ||
-               extendsInZ && side == Side.South;
+        return (extendsInX && side == Side.West) ||
+               (extendsInX && side == Side.East) ||
+               (extendsInZ && side == Side.North) ||
+               (extendsInZ && side == Side.South);
     }
 
     public override int GetDroppedItemCount() => 0;
@@ -156,9 +162,9 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
 
     public override void OnEntityCollision(OnEntityCollisionEvent @event)
     {
-        if (@event.Entity.vehicle == null && @event.Entity.passenger == null)
+        if (@event.Entity.Vehicle == null && @event.Entity.Passenger == null)
         {
-            @event.Entity.tickPortalCooldown();
+            @event.Entity.TickPortalCooldown();
         }
     }
 

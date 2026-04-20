@@ -22,13 +22,22 @@ internal class BlockCrops : BlockPlant
     public override void OnTick(OnTickEvent @event)
     {
         base.OnTick(@event);
-        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y + 1, @event.Z) < 9) return;
+        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y + 1, @event.Z) < 9)
+        {
+            return;
+        }
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        if (meta >= 7) return;
+        if (meta >= 7)
+        {
+            return;
+        }
 
         float moisture = getAvailableMoisture(@event.World.Reader, @event.X, @event.Y, @event.Z);
-        if (Random.Shared.Next(100) / moisture != 0) return;
+        if (Random.Shared.Next(100) / moisture != 0)
+        {
+            return;
+        }
 
         ++meta;
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
@@ -98,11 +107,17 @@ internal class BlockCrops : BlockPlant
     public override void DropStacks(OnDropEvent @event)
     {
         base.DropStacks(@event);
-        if (@event.World.IsRemote || !@event.World.Rules.GetBool(DefaultRules.DoTileDrops)) return;
+        if (@event.World.IsRemote || !@event.World.Rules.GetBool(DefaultRules.DoTileDrops))
+        {
+            return;
+        }
 
         for (int attempt = 0; attempt < 3; ++attempt)
         {
-            if (Random.Shared.Next(15) > @event.Meta) continue;
+            if (Random.Shared.Next(15) > @event.Meta)
+            {
+                continue;
+            }
 
             float offsetX = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5F;
             float offsetY = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5F;

@@ -28,64 +28,64 @@ public class EntityFX : Entity
 
     public EntityFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : base(world)
     {
-        setBoundingBoxSpacing(0.2F, 0.2F);
-        standingEyeHeight = height / 2.0F;
-        setPosition(x, y, z);
+        SetBoundingBoxSpacing(0.2F, 0.2F);
+        StandingEyeHeight = Height / 2.0F;
+        SetPosition(x, y, z);
         particleRed = particleGreen = particleBlue = 1.0F;
-        base.velocityX = velocityX + (double)((float)(Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.4F);
-        base.velocityY = velocityY + (double)((float)(Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.4F);
-        base.velocityZ = velocityZ + (double)((float)(Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.4F);
-        float velocityScale = (float)(Random.Shared.NextDouble() + Random.Shared.NextDouble() + 1.0D) * 0.15F;
-        float speed = MathHelper.Sqrt(base.velocityX * base.velocityX + base.velocityY * base.velocityY + base.velocityZ * base.velocityZ);
-        base.velocityX = base.velocityX / (double)speed * (double)velocityScale * (double)0.4F;
-        base.velocityY = base.velocityY / (double)speed * (double)velocityScale * (double)0.4F + (double)0.1F;
-        base.velocityZ = base.velocityZ / (double)speed * (double)velocityScale * (double)0.4F;
-        particleTextureJitterX = random.NextFloat() * 3.0F;
-        particleTextureJitterY = random.NextFloat() * 3.0F;
-        particleScale = (random.NextFloat() * 0.5F + 0.5F) * 2.0F;
-        particleMaxAge = (int)(4.0F / (random.NextFloat() * 0.9F + 0.1F));
+        base.VelocityX = velocityX + (double)((float)(System.Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.4F);
+        base.VelocityY = velocityY + (double)((float)(System.Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.4F);
+        base.VelocityZ = velocityZ + (double)((float)(System.Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.4F);
+        float velocityScale = (float)(System.Random.Shared.NextDouble() + System.Random.Shared.NextDouble() + 1.0D) * 0.15F;
+        float speed = MathHelper.Sqrt(base.VelocityX * base.VelocityX + base.VelocityY * base.VelocityY + base.VelocityZ * base.VelocityZ);
+        base.VelocityX = base.VelocityX / (double)speed * (double)velocityScale * (double)0.4F;
+        base.VelocityY = base.VelocityY / (double)speed * (double)velocityScale * (double)0.4F + (double)0.1F;
+        base.VelocityZ = base.VelocityZ / (double)speed * (double)velocityScale * (double)0.4F;
+        particleTextureJitterX = Random.NextFloat() * 3.0F;
+        particleTextureJitterY = Random.NextFloat() * 3.0F;
+        particleScale = (Random.NextFloat() * 0.5F + 0.5F) * 2.0F;
+        particleMaxAge = (int)(4.0F / (Random.NextFloat() * 0.9F + 0.1F));
         particleAge = 0;
     }
 
     public EntityFX scaleVelocity(float multiplier)
     {
-        velocityX *= (double)multiplier;
-        velocityY = (velocityY - (double)0.1F) * (double)multiplier + (double)0.1F;
-        velocityZ *= (double)multiplier;
+        VelocityX *= (double)multiplier;
+        VelocityY = (VelocityY - (double)0.1F) * (double)multiplier + (double)0.1F;
+        VelocityZ *= (double)multiplier;
         return this;
     }
 
     public EntityFX scaleSize(float scale)
     {
-        setBoundingBoxSpacing(0.2F * scale, 0.2F * scale);
+        SetBoundingBoxSpacing(0.2F * scale, 0.2F * scale);
         particleScale *= scale;
         return this;
     }
 
-    protected override bool bypassesSteppingEffects()
+    protected override bool BypassesSteppingEffects()
     {
         return false;
     }
 
-    public override void tick()
+    public override void Tick()
     {
-        prevX = x;
-        prevY = y;
-        prevZ = z;
+        PrevX = X;
+        PrevY = Y;
+        PrevZ = Z;
         if (particleAge++ >= particleMaxAge)
         {
-            markDead();
+            MarkDead();
         }
 
-        velocityY -= 0.04D * (double)particleGravity;
-        move(velocityX, velocityY, velocityZ);
-        velocityX *= (double)0.98F;
-        velocityY *= (double)0.98F;
-        velocityZ *= (double)0.98F;
-        if (onGround)
+        VelocityY -= 0.04D * (double)particleGravity;
+        Move(VelocityX, VelocityY, VelocityZ);
+        VelocityX *= (double)0.98F;
+        VelocityY *= (double)0.98F;
+        VelocityZ *= (double)0.98F;
+        if (OnGround)
         {
-            velocityX *= (double)0.7F;
-            velocityZ *= (double)0.7F;
+            VelocityX *= (double)0.7F;
+            VelocityZ *= (double)0.7F;
         }
 
     }
@@ -97,10 +97,10 @@ public class EntityFX : Entity
         float minV = (float)(particleTextureIndex / 16) / 16.0F;
         float maxV = minV + 0.999F / 16.0F;
         float size = 0.1F * particleScale;
-        float x = (float)(prevX + (base.x - prevX) * (double)partialTick - interpPosX);
-        float y = (float)(prevY + (base.y - prevY) * (double)partialTick - interpPosY);
-        float z = (float)(prevZ + (base.z - prevZ) * (double)partialTick - interpPosZ);
-        float brightness = getBrightnessAtEyes(partialTick);
+        float x = (float)(PrevX + (base.X - PrevX) * (double)partialTick - interpPosX);
+        float y = (float)(PrevY + (base.Y - PrevY) * (double)partialTick - interpPosY);
+        float z = (float)(PrevZ + (base.Z - PrevZ) * (double)partialTick - interpPosZ);
+        float brightness = GetBrightnessAtEyes(partialTick);
         t.setColorOpaque_F(particleRed * brightness, particleGreen * brightness, particleBlue * brightness);
         t.addVertexWithUV((double)(x - rotX * size - upX * size), (double)(y - rotY * size), (double)(z - rotZ * size - upZ * size), (double)maxU, (double)maxV);
         t.addVertexWithUV((double)(x - rotX * size + upX * size), (double)(y + rotY * size), (double)(z - rotZ * size + upZ * size), (double)maxU, (double)minV);
@@ -113,11 +113,11 @@ public class EntityFX : Entity
         return 0;
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
     }
 }

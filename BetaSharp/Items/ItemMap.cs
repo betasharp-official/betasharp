@@ -59,8 +59,8 @@ public class ItemMap : NetworkSyncedItem
             int blocksPerPixel = 1 << map.Scale;
             int centerX = map.CenterX;
             int centerZ = map.CenterZ;
-            int entityPosX = MathHelper.Floor(entity.x - (double)centerX) / blocksPerPixel + mapWidth / 2;
-            int entityPosZ = MathHelper.Floor(entity.z - (double)centerZ) / blocksPerPixel + mapHeight / 2;
+            int entityPosX = MathHelper.Floor(entity.X - (double)centerX) / blocksPerPixel + mapWidth / 2;
+            int entityPosZ = MathHelper.Floor(entity.Z - (double)centerZ) / blocksPerPixel + mapHeight / 2;
             int scanRadius = 128 / blocksPerPixel;
             if (world.Dimension.HasCeiling)
             {
@@ -134,9 +134,9 @@ public class ItemMap : NetworkSyncedItem
                             }
 
                             fluidDepth /= blocksPerPixel * blocksPerPixel;
-                            int var10000 = redSum / (blocksPerPixel * blocksPerPixel);
-                            var10000 = greenSum / (blocksPerPixel * blocksPerPixel);
-                            var10000 = blueSum / (blocksPerPixel * blocksPerPixel);
+                            int averageRed = redSum / (blocksPerPixel * blocksPerPixel);
+                            int averageGreen = greenSum / (blocksPerPixel * blocksPerPixel);
+                            int averageBlue = blueSum / (blocksPerPixel * blocksPerPixel);
                             sampleX = 0;
                             sampleZ = 0;
 
@@ -291,8 +291,8 @@ public class ItemMap : NetworkSyncedItem
         string mapName = "map_" + itemStack.getDamage();
         MapState mapState = new MapState(mapName);
         world.StateManager.SetData(mapName, mapState);
-        mapState.CenterX = MathHelper.Floor(entityPlayer.x);
-        mapState.CenterZ = MathHelper.Floor(entityPlayer.z);
+        mapState.CenterX = MathHelper.Floor(entityPlayer.X);
+        mapState.CenterZ = MathHelper.Floor(entityPlayer.Z);
         mapState.Scale = 3;
         mapState.Dimension = (sbyte)world.Dimension.Id;
         mapState.MarkDirty();

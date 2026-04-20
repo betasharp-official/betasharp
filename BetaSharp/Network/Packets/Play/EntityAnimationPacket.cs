@@ -11,7 +11,7 @@ public class EntityAnimationPacket() : PacketBaseEntity(PacketId.EntityAnimation
     public static EntityAnimationPacket Get(Entity ent, int animationId)
     {
         var p = Get<EntityAnimationPacket>(PacketId.EntityAnimation);
-        p.EntityId = ent.id;
+        p.EntityId = ent.ID;
         p.animationId = animationId;
         return p;
     }

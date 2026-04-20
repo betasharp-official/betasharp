@@ -24,7 +24,7 @@ internal class CraftingResultSlot : Slot
 
     public override void onTakeItem(ItemStack stack)
     {
-        stack.onCraft(thePlayer.world, thePlayer);
+        stack.onCraft(thePlayer.World, thePlayer);
         if (stack.ItemId == Block.CraftingTable.ID)
         {
             thePlayer.increaseStat(Achievements.BuildWorkbench, 1);

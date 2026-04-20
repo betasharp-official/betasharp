@@ -90,7 +90,7 @@ public class DataCommand : Command.Command
             return 1;
         }
 
-        Entity? entity = GetEntityList(context, kind, player).FirstOrDefault(e => e.id == id);
+        Entity? entity = GetEntityList(context, kind, player).FirstOrDefault(e => e.ID == id);
         if (entity == null)
         {
             context.Source.Output.SendMessage($"{id} not found.");
@@ -149,7 +149,7 @@ public class DataCommand : Command.Command
             foreach (Entity entity in items)
             {
                 // Tiered distance check for faster comparison
-                double d = Math.Abs(entity.x - player.x) + Math.Abs(entity.z - player.z);
+                double d = Math.Abs(entity.X - player.X) + Math.Abs(entity.Z - player.Z);
                 if (d * d * 1.15 > distanceFast)
                 {
                     continue;
@@ -169,7 +169,7 @@ public class DataCommand : Command.Command
                     continue;
                 }
 
-                if (entity.id == player.id)
+                if (entity.ID == player.ID)
                 {
                     continue; // don't get self
                 }
@@ -194,7 +194,7 @@ public class DataCommand : Command.Command
 
             if (listHits && count > 0)
             {
-                output.SendMessage(string.Join(", ", list.Select(e => e.id)));
+                output.SendMessage(string.Join(", ", list.Select(e => e.ID)));
             }
 
             output.SendMessage($"Found {count} {(count == 1 ? $"instance of {displayName}" : $"instances of {displayName}")}");
@@ -216,31 +216,31 @@ public class DataCommand : Command.Command
     private static void LogEntity(Entity e, ICommandOutput output)
     {
         output.SendMessage("type: " + e.GetType().Name);
-        output.SendMessage("id: " + e.id);
-        output.SendMessage("isPersistent: " + e.isPersistent);
+        output.SendMessage("id: " + e.ID);
+        output.SendMessage("isPersistent: " + e.IsPersistent);
         output.SendMessage("pos: " + e.Position.ToString("F2"));
-        output.SendMessage("age: " + e.age);
-        output.SendMessage("dead: " + e.dead);
+        output.SendMessage("age: " + e.Age);
+        output.SendMessage("dead: " + e.Dead);
         if (e is EntityPlayer player)
         {
-            output.SendMessage("deathTime: " + player.deathTime);
-            output.SendMessage("health: " + player.health);
+            output.SendMessage("deathTime: " + player.DeathTime);
+            output.SendMessage("health: " + player.Health);
             output.SendMessage("name: " + player.name);
         }
         else if (e is EntityLiving living)
         {
-            output.SendMessage("deathTime: " + living.deathTime);
-            output.SendMessage("health: " + living.health);
+            output.SendMessage("deathTime: " + living.DeathTime);
+            output.SendMessage("health: " + living.Health);
         }
 
-        if (e.passenger != null)
+        if (e.Passenger != null)
         {
-            output.SendMessage("Passenger: " + e.passenger.id);
+            output.SendMessage("Passenger: " + e.Passenger.ID);
         }
 
-        if (e.vehicle != null)
+        if (e.Vehicle != null)
         {
-            output.SendMessage("Vehicle: " + e.vehicle.id);
+            output.SendMessage("Vehicle: " + e.Vehicle.ID);
         }
     }
 

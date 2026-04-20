@@ -20,7 +20,7 @@ public class ServerChunkCache : IChunkSource
 
     public ServerChunkCache(ServerWorld world, IChunkStorage storage, IChunkSource generator)
     {
-        _empty = new EmptyChunk(world, new byte[32768], 0, 0);
+        _empty = new EmptyChunk(world, new byte[ChuckFormat.ChunkSize], 0, 0);
         _world = world;
         _storage = storage;
         _generator = generator;
@@ -34,11 +34,11 @@ public class ServerChunkCache : IChunkSource
 
     public void isLoaded(int chunkX, int chunkZ)
     {
-        Vec3i var3 = _world.Properties.GetSpawnPos();
-        int var4 = chunkX * 16 + 8 - var3.X;
-        int var5 = chunkZ * 16 + 8 - var3.Z;
-        short var6 = 128;
-        if (var4 < -var6 || var4 > var6 || var5 < -var6 || var5 > var6)
+        Vec3i spawnPos = _world.Properties.GetSpawnPos();
+        int deltaX = chunkX * 16 + 8 - spawnPos.X;
+        int deltaZ = chunkZ * 16 + 8 - spawnPos.Z;
+        short spawnRadius = 128;
+        if (deltaX < -spawnRadius || deltaX > spawnRadius || deltaZ < -spawnRadius || deltaZ > spawnRadius)
         {
             _chunksToUnload.Add(ChunkPos.GetHashCode(chunkX, chunkZ));
         }
@@ -115,15 +115,13 @@ public class ServerChunkCache : IChunkSource
 
     public Chunk GetChunk(int chunkX, int chunkZ)
     {
-        _chunksByPos.TryGetValue(ChunkPos.GetHashCode(chunkX, chunkZ), out Chunk? var3);
-        if (var3 == null)
+        _chunksByPos.TryGetValue(ChunkPos.GetHashCode(chunkX, chunkZ), out Chunk? chunk);
+        if (chunk == null)
         {
             return !_world.EventProcessingEnabled && !forceLoad ? _empty : LoadChunk(chunkX, chunkZ);
         }
-        else
-        {
-            return var3;
-        }
+
+        return chunk;
     }
 
     private Chunk? LoadChunkFromStorage(int chunkX, int chunkZ)
@@ -136,10 +134,10 @@ public class ServerChunkCache : IChunkSource
         {
             try
             {
-                Chunk var3 = _storage.LoadChunk(_world, chunkX, chunkZ);
-                var3?.LastSaveTime = _world.GetTime();
+                Chunk loadedChunk = _storage.LoadChunk(_world, chunkX, chunkZ);
+                loadedChunk?.LastSaveTime = _world.GetTime();
 
-                return var3;
+                return loadedChunk;
             }
             catch (Exception ex)
             {
@@ -183,14 +181,14 @@ public class ServerChunkCache : IChunkSource
 
     public void DecorateTerrain(IChunkSource source, int x, int z)
     {
-        Chunk var4 = GetChunk(x, z);
-        if (!var4.TerrainPopulated)
+        Chunk chunk = GetChunk(x, z);
+        if (!chunk.TerrainPopulated)
         {
-            var4.TerrainPopulated = true;
+            chunk.TerrainPopulated = true;
             if (_generator != null)
             {
                 _generator.DecorateTerrain(source, x, z);
-                var4.MarkDirty();
+                chunk.MarkDirty();
                 _world.ChunkMap.OnChunkDecorated(x, z);
             }
         }
@@ -198,21 +196,21 @@ public class ServerChunkCache : IChunkSource
 
     public bool Save(bool saveEntities, LoadingDisplay display)
     {
-        int var3 = 0;
+        int savedChunkCount = 0;
 
-        for (int var4 = 0; var4 < _chunks.Count; var4++)
+        for (int chunkIndex = 0; chunkIndex < _chunks.Count; chunkIndex++)
         {
-            Chunk var5 = _chunks[var4];
-            if (saveEntities && !var5.Empty)
+            Chunk chunk = _chunks[chunkIndex];
+            if (saveEntities && !chunk.Empty)
             {
-                this.saveEntities(var5);
+                this.saveEntities(chunk);
             }
 
-            if (var5.ShouldSave(saveEntities))
+            if (chunk.ShouldSave(saveEntities))
             {
-                saveChunk(var5);
-                var5.Dirty = false;
-                if (++var3 == 24 && !saveEntities)
+                saveChunk(chunk);
+                chunk.Dirty = false;
+                if (++savedChunkCount == 24 && !saveEntities)
                 {
                     return false;
                 }
@@ -237,18 +235,18 @@ public class ServerChunkCache : IChunkSource
     {
         if (!_world.savingDisabled)
         {
-            for (int var1 = 0; var1 < 100; var1++)
+            for (int unloadIndex = 0; unloadIndex < 100; unloadIndex++)
             {
                 if (_chunksToUnload.Count > 0)
                 {
-                    int var2 = _chunksToUnload.First();
-                    Chunk var3 = _chunksByPos[var2];
-                    var3.Unload();
-                    saveChunk(var3);
-                    saveEntities(var3);
-                    _chunksToUnload.Remove(var2);
-                    _chunksByPos.Remove(var2);
-                    _chunks.Remove(var3);
+                    int chunkHash = _chunksToUnload.First();
+                    Chunk chunk = _chunksByPos[chunkHash];
+                    chunk.Unload();
+                    saveChunk(chunk);
+                    saveEntities(chunk);
+                    _chunksToUnload.Remove(chunkHash);
+                    _chunksByPos.Remove(chunkHash);
+                    _chunks.Remove(chunk);
                 }
             }
 

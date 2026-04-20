@@ -47,7 +47,8 @@ public class ChatScreen(
         {
             Text = prefix,
             MaxLength = 100,
-            CursorPosition = prefix.Length
+            CursorPosition = prefix.Length,
+            SelectionStart = prefix.Length
         };
         _textField.Style.FlexGrow = 1;
         _textField.Style.Height = 12;

@@ -3,16 +3,16 @@ using BetaSharp.NBT;
 namespace BetaSharp.Blocks.Entities;
 
 /// <summary>
-/// Block entity for a record player, storing the record currently playing.
+///     Block entity for a record player, storing the record currently playing.
 /// </summary>
 internal class BlockEntityRecordPlayer : BlockEntity
 {
-    public override BlockEntityType Type => BlockEntity.RecordPlayer;
-
     /// <summary>
-    /// Item ID of the record currently playing, or 0 if no record is playing.
+    ///     Item ID of the record currently playing, or 0 if no record is playing.
     /// </summary>
     public int RecordID;
+
+    public override BlockEntityType Type => RecordPlayer;
 
     public override void ReadNbt(NBTTagCompound nbt)
     {

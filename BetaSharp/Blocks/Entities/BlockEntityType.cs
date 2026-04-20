@@ -1,9 +1,8 @@
-using BetaSharp.Worlds;
-
 namespace BetaSharp.Blocks.Entities;
 
 /// <summary>
-/// Type of a block entity, containing a factory for creating instances of the block entity and the string ID used in NBT data.
+///     Type of a block entity, containing a factory for creating instances of the block entity and the string ID used in
+///     NBT data.
 /// </summary>
 public class BlockEntityType(Func<BlockEntity> factory, string id)
 {

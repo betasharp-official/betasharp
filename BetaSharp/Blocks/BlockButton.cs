@@ -46,7 +46,7 @@ internal class BlockButton : Block
             Side.South when evt.World.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z - 1) => 3,
             Side.West when evt.World.Reader.ShouldSuffocate(evt.X + 1, evt.Y, evt.Z) => 2,
             Side.East when evt.World.Reader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z) => 1,
-            Side.Up or Side.Down => GetPlacementSide(evt.World.Reader, evt.X, evt.Y, evt.Z),
+            Side.Up or Side.Down => GetPlacementSide(evt.World.Reader, evt.X, evt.Y, evt.Z)
         };
 
         evt.World.Writer.SetBlockMeta(evt.X, evt.Y, evt.Z, facing + pressedBit);
@@ -57,15 +57,21 @@ internal class BlockButton : Block
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (!BreakIfCannotPlaceAt(@event)) return;
+        if (!BreakIfCannotPlaceAt(@event))
+        {
+            return;
+        }
 
         int facing = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) & 7;
-        bool shouldBreak = !@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) && facing == 1 ||
-                           !@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) && facing == 2 ||
-                           !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) && facing == 3 ||
-                           !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1) && facing == 4;
+        bool shouldBreak = (!@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) && facing == 1) ||
+                           (!@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) && facing == 2) ||
+                           (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) && facing == 3) ||
+                           (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1) && facing == 4);
 
-        if (!shouldBreak) return;
+        if (!shouldBreak)
+        {
+            return;
+        }
 
         DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -118,7 +124,10 @@ internal class BlockButton : Block
         int meta = level.Reader.GetBlockMeta(x, y, z);
         int facing = meta & 7;
         int pressToggle = 8 - (meta & 8);
-        if (pressToggle == 0) return true;
+        if (pressToggle == 0)
+        {
+            return true;
+        }
 
         level.Writer.SetBlockMeta(x, y, z, facing + pressToggle);
         level.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
@@ -186,14 +195,17 @@ internal class BlockButton : Block
     public override bool IsStrongPoweringSide(IBlockReader read, int x, int y, int z, int side)
     {
         int meta = read.GetBlockMeta(x, y, z);
-        if ((meta & 8) == 0) return false;
+        if ((meta & 8) == 0)
+        {
+            return false;
+        }
 
         int facing = meta & 7;
-        return facing == 5 && side == 1 ||
-            facing == 4 && side == 2 ||
-            facing == 3 && side == 3 ||
-            facing == 2 && side == 4 ||
-            facing == 1 && side == 5;
+        return (facing == 5 && side == 1) ||
+               (facing == 4 && side == 2) ||
+               (facing == 3 && side == 3) ||
+               (facing == 2 && side == 4) ||
+               (facing == 1 && side == 5);
     }
 
     public override bool CanEmitRedstonePower() => true;

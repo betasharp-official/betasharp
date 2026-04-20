@@ -20,10 +20,7 @@ public class BlockBed : Block
     // Offsets to find the other half of the bed based on the direction it is facing.
     private static readonly int[][] s_bedOffsets = [[0, 1], [-1, 0], [0, -1], [1, 0]];
 
-    public BlockBed(int id) : base(id, 134, Material.Wool)
-    {
-        SetDefaultShape();
-    }
+    public BlockBed(int id) : base(id, 134, Material.Wool) => SetDefaultShape();
 
     public override bool OnUse(OnUseEvent e)
     {
@@ -77,7 +74,10 @@ public class BlockBed : Block
             EntityPlayer? occupant = null;
             foreach (EntityPlayer otherPlayer in e.World.Entities.Players)
             {
-                if (!otherPlayer.isSleeping()) continue;
+                if (!otherPlayer.isSleeping())
+                {
+                    continue;
+                }
 
                 Vec3i sleepingPos = otherPlayer.sleepingPos;
                 if (sleepingPos.X == x && sleepingPos.Y == y && sleepingPos.Z == z)
@@ -121,38 +121,46 @@ public class BlockBed : Block
     {
         int direction = GetDirection(meta);
         Side sideFacing = BedFacings[direction][side.ToInt()];
-        if (side == Side.Down) return Planks.TextureId;
+        if (side == Side.Down)
+        {
+            return Planks.TextureId;
+        }
+
         if (IsHeadOfBed(meta))
         {
-            if (sideFacing == Side.North) return TextureId + 2 + 16;
-            if (sideFacing != Side.East && sideFacing != Side.West) return TextureId + 1;
+            if (sideFacing == Side.North)
+            {
+                return TextureId + 2 + 16;
+            }
+
+            if (sideFacing != Side.East && sideFacing != Side.West)
+            {
+                return TextureId + 1;
+            }
+
             return TextureId + 1 + 16;
         }
 
-        if (sideFacing == Side.South) return TextureId - 1 + 16;
-        if (sideFacing != Side.East && sideFacing != Side.West) return TextureId;
+        if (sideFacing == Side.South)
+        {
+            return TextureId - 1 + 16;
+        }
+
+        if (sideFacing != Side.East && sideFacing != Side.West)
+        {
+            return TextureId;
+        }
+
         return TextureId + 16;
     }
 
-    public override BlockRendererType GetRenderType()
-    {
-        return BlockRendererType.Bed;
-    }
+    public override BlockRendererType GetRenderType() => BlockRendererType.Bed;
 
-    public override bool IsFullCube()
-    {
-        return false;
-    }
+    public override bool IsFullCube() => false;
 
-    public override bool IsOpaque()
-    {
-        return false;
-    }
+    public override bool IsOpaque() => false;
 
-    public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
-    {
-        SetDefaultShape();
-    }
+    public override void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => SetDefaultShape();
 
     public override void NeighborUpdate(OnTickEvent ctx)
     {
@@ -176,30 +184,15 @@ public class BlockBed : Block
         }
     }
 
-    public override int GetDroppedItemId(int blockMeta)
-    {
-        return IsHeadOfBed(blockMeta) ? 0 : Item.Bed.id;
-    }
+    public override int GetDroppedItemId(int blockMeta) => IsHeadOfBed(blockMeta) ? 0 : Item.Bed.id;
 
-    private void SetDefaultShape()
-    {
-        SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 9.0F / 16.0F, 1.0F);
-    }
+    private void SetDefaultShape() => SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 9.0F / 16.0F, 1.0F);
 
-    public static int GetDirection(int meta)
-    {
-        return meta & 3;
-    }
+    public static int GetDirection(int meta) => meta & 3;
 
-    public static bool IsHeadOfBed(int meta)
-    {
-        return (meta & 8) != 0;
-    }
+    public static bool IsHeadOfBed(int meta) => (meta & 8) != 0;
 
-    public static bool IsBedOccupied(int meta)
-    {
-        return (meta & 4) != 0;
-    }
+    public static bool IsBedOccupied(int meta) => (meta & 4) != 0;
 
     public static void UpdateState(IBlockWriter worldWriter, int x, int y, int z, int meta, bool occupied)
     {
@@ -240,17 +233,16 @@ public class BlockBed : Block
             {
                 for (int checkZ = searchMinZ; checkZ <= searchMaxZ; ++checkZ)
                 {
-                    if (reader.ShouldSuffocate(checkX, y - 1, checkZ) &&
-                        reader.IsAir(checkX, y, checkZ) &&
-                        reader.IsAir(checkX, y + 1, checkZ))
+                    if (!reader.ShouldSuffocate(checkX, y - 1, checkZ) ||
+                        !reader.IsAir(checkX, y, checkZ) ||
+                        !reader.IsAir(checkX, y + 1, checkZ))
                     {
-                        if (skip <= 0)
-                        {
-                            return new Vec3i(checkX, y, checkZ);
-                        }
-
-                        --skip;
+                        continue;
                     }
+
+                    if (skip <= 0) return new Vec3i(checkX, y, checkZ);
+
+                    --skip;
                 }
             }
         }

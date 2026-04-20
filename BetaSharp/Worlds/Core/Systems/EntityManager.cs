@@ -54,18 +54,18 @@ public class EntityManager
 
     private static bool ShouldSkipStandaloneUpdate(Entity entity)
     {
-        if (entity.vehicle == null)
+        if (entity.Vehicle == null)
         {
             return false;
         }
 
-        if (!entity.dead && !entity.vehicle.dead && ReferenceEquals(entity.vehicle.passenger, entity))
+        if (!entity.Dead && !entity.Vehicle.Dead && ReferenceEquals(entity.Vehicle.Passenger, entity))
         {
             return true;
         }
 
-        entity.vehicle.passenger = null;
-        entity.vehicle = null;
+        entity.Vehicle.Passenger = null;
+        entity.Vehicle = null;
         return false;
     }
 
@@ -79,13 +79,13 @@ public class EntityManager
 
     private void RemoveEntityFromAllKnownChunkLists(Entity entity)
     {
-        RemoveEntityFromChunkList(entity, entity.chunkX, entity.chunkZ, entity.chunkSlice);
+        RemoveEntityFromChunkList(entity, entity.ChunkX, entity.ChunkZ, entity.ChunkSlice);
 
-        int currentChunkX = MathHelper.Floor(entity.x / 16.0D);
-        int currentChunkY = MathHelper.Floor(entity.y / 16.0D);
-        int currentChunkZ = MathHelper.Floor(entity.z / 16.0D);
+        int currentChunkX = MathHelper.Floor(entity.X / 16.0D);
+        int currentChunkY = MathHelper.Floor(entity.Y / 16.0D);
+        int currentChunkZ = MathHelper.Floor(entity.Z / 16.0D);
 
-        if (currentChunkX != entity.chunkX || currentChunkY != entity.chunkSlice || currentChunkZ != entity.chunkZ)
+        if (currentChunkX != entity.ChunkX || currentChunkY != entity.ChunkSlice || currentChunkZ != entity.ChunkZ)
         {
             RemoveEntityFromChunkList(entity, currentChunkX, currentChunkZ, currentChunkY);
         }
@@ -93,14 +93,14 @@ public class EntityManager
 
     private void RemoveEntityNow(Entity entity, bool forceNotify = false)
     {
-        if (entity.passenger != null)
+        if (entity.Passenger != null)
         {
-            entity.passenger.setVehicle(null);
+            entity.Passenger.SetVehicle(null);
         }
 
-        if (entity.vehicle != null)
+        if (entity.Vehicle != null)
         {
-            entity.setVehicle(null);
+            entity.SetVehicle(null);
         }
 
         RemoveEntityFromAllKnownChunkLists(entity);
@@ -117,9 +117,9 @@ public class EntityManager
             wasTracked = true;
         }
 
-        if (_entitiesById.TryGetValue(entity.id, out Entity? current) && ReferenceEquals(current, entity))
+        if (_entitiesById.TryGetValue(entity.ID, out Entity? current) && ReferenceEquals(current, entity))
         {
-            _entitiesById.Remove(entity.id);
+            _entitiesById.Remove(entity.ID);
             wasTracked = true;
         }
 
@@ -166,7 +166,7 @@ public class EntityManager
                 continue;
             }
 
-            if (entity.dead)
+            if (entity.Dead)
             {
                 RemoveEntityNow(entity);
             }
@@ -175,8 +175,8 @@ public class EntityManager
 
     public bool SpawnEntity(Entity entity)
     {
-        int chunkX = MathHelper.Floor(entity.x / 16.0D);
-        int chunkZ = MathHelper.Floor(entity.z / 16.0D);
+        int chunkX = MathHelper.Floor(entity.X / 16.0D);
+        int chunkZ = MathHelper.Floor(entity.Z / 16.0D);
         bool isPlayer = entity is EntityPlayer;
 
         if (!isPlayer && !_world.ChunkHost.ChunkSource.IsChunkLoaded(chunkX, chunkZ))
@@ -191,7 +191,7 @@ public class EntityManager
 
         _world.ChunkHost.GetChunk(chunkX, chunkZ).AddEntity(entity);
         Entities.Add(entity);
-        _entitiesById[entity.id] = entity;
+        _entitiesById[entity.ID] = entity;
 
         NotifyEntityAdded(entity);
         return true;
@@ -199,17 +199,17 @@ public class EntityManager
 
     public void Remove(Entity entity)
     {
-        if (entity.passenger != null)
+        if (entity.Passenger != null)
         {
-            entity.passenger.setVehicle(null);
+            entity.Passenger.SetVehicle(null);
         }
 
-        if (entity.vehicle != null)
+        if (entity.Vehicle != null)
         {
-            entity.setVehicle(null);
+            entity.SetVehicle(null);
         }
 
-        entity.markDead();
+        entity.MarkDead();
 
         if (entity is EntityPlayer player)
         {
@@ -219,7 +219,7 @@ public class EntityManager
 
     public void ServerRemove(Entity entity)
     {
-        entity.markDead();
+        entity.MarkDead();
         RemoveEntityNow(entity);
     }
 
@@ -269,8 +269,8 @@ public class EntityManager
             for (int i = 0; i < GlobalEntities.Count; ++i)
             {
                 Entity globalEntity = GlobalEntities[i];
-                globalEntity.tick();
-                if (globalEntity.dead)
+                globalEntity.Tick();
+                if (globalEntity.Dead)
                 {
                     GlobalEntities.RemoveAt(i--);
                 }
@@ -293,12 +293,12 @@ public class EntityManager
                     continue;
                 }
 
-                if (!entity.dead)
+                if (!entity.Dead)
                 {
                     UpdateEntity(entity, true);
                 }
 
-                if (entity.dead)
+                if (entity.Dead)
                 {
                     RemoveEntityNow(entity);
                 }
@@ -355,92 +355,92 @@ public class EntityManager
             return;
         }
 
-        if (entity.dead)
+        if (entity.Dead)
         {
             return;
         }
 
-        int blockX = MathHelper.Floor(entity.x);
-        int blockZ = MathHelper.Floor(entity.z);
+        int blockX = MathHelper.Floor(entity.X);
+        int blockZ = MathHelper.Floor(entity.Z);
         const byte loadRadius = 32;
 
         if (!requireLoaded || _world.ChunkHost.IsRegionLoaded(blockX - loadRadius, 0, blockZ - loadRadius, blockX + loadRadius, 128, blockZ + loadRadius))
         {
-            entity.lastTickX = entity.x;
-            entity.lastTickY = entity.y;
-            entity.lastTickZ = entity.z;
-            entity.prevYaw = entity.yaw;
-            entity.prevPitch = entity.pitch;
+            entity.LastTickX = entity.X;
+            entity.LastTickY = entity.Y;
+            entity.LastTickZ = entity.Z;
+            entity.PrevYaw = entity.Yaw;
+            entity.PrevPitch = entity.Pitch;
 
-            if (requireLoaded && entity.isPersistent)
+            if (requireLoaded && entity.IsPersistent)
             {
-                if (entity.vehicle != null)
+                if (entity.Vehicle != null)
                 {
-                    entity.tickRiding();
+                    entity.TickRiding();
                 }
                 else
                 {
-                    entity.tick();
+                    entity.Tick();
                 }
             }
 
-            if (double.IsNaN(entity.x) || double.IsInfinity(entity.x))
+            if (double.IsNaN(entity.X) || double.IsInfinity(entity.X))
             {
-                entity.x = entity.lastTickX;
+                entity.X = entity.LastTickX;
             }
 
-            if (double.IsNaN(entity.y) || double.IsInfinity(entity.y))
+            if (double.IsNaN(entity.Y) || double.IsInfinity(entity.Y))
             {
-                entity.y = entity.lastTickY;
+                entity.Y = entity.LastTickY;
             }
 
-            if (double.IsNaN(entity.z) || double.IsInfinity(entity.z))
+            if (double.IsNaN(entity.Z) || double.IsInfinity(entity.Z))
             {
-                entity.z = entity.lastTickZ;
+                entity.Z = entity.LastTickZ;
             }
 
-            if (double.IsNaN(entity.pitch) || double.IsInfinity(entity.pitch))
+            if (double.IsNaN(entity.Pitch) || double.IsInfinity(entity.Pitch))
             {
-                entity.pitch = entity.prevPitch;
+                entity.Pitch = entity.PrevPitch;
             }
 
-            if (double.IsNaN(entity.yaw) || double.IsInfinity(entity.yaw))
+            if (double.IsNaN(entity.Yaw) || double.IsInfinity(entity.Yaw))
             {
-                entity.yaw = entity.prevYaw;
+                entity.Yaw = entity.PrevYaw;
             }
 
-            int newChunkX = MathHelper.Floor(entity.x / 16.0D);
-            int newChunkY = MathHelper.Floor(entity.y / 16.0D);
-            int newChunkZ = MathHelper.Floor(entity.z / 16.0D);
+            int newChunkX = MathHelper.Floor(entity.X / 16.0D);
+            int newChunkY = MathHelper.Floor(entity.Y / 16.0D);
+            int newChunkZ = MathHelper.Floor(entity.Z / 16.0D);
 
-            if (!entity.isPersistent || entity.chunkX != newChunkX || entity.chunkSlice != newChunkY || entity.chunkZ != newChunkZ)
+            if (!entity.IsPersistent || entity.ChunkX != newChunkX || entity.ChunkSlice != newChunkY || entity.ChunkZ != newChunkZ)
             {
-                if (entity.isPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(entity.chunkX, entity.chunkZ))
+                if (entity.IsPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(entity.ChunkX, entity.ChunkZ))
                 {
-                    _world.ChunkHost.GetChunk(entity.chunkX, entity.chunkZ).RemoveEntity(entity, entity.chunkSlice);
+                    _world.ChunkHost.GetChunk(entity.ChunkX, entity.ChunkZ).RemoveEntity(entity, entity.ChunkSlice);
                 }
 
                 if (_world.ChunkHost.ChunkSource.IsChunkLoaded(newChunkX, newChunkZ))
                 {
-                    entity.isPersistent = true;
+                    entity.IsPersistent = true;
                     _world.ChunkHost.GetChunk(newChunkX, newChunkZ).AddEntity(entity);
                 }
                 else
                 {
-                    entity.isPersistent = false;
+                    entity.IsPersistent = false;
                 }
             }
 
-            if (requireLoaded && entity.isPersistent && entity.passenger != null)
+            if (requireLoaded && entity.IsPersistent && entity.Passenger != null)
             {
-                if (!entity.passenger.dead && entity.passenger.vehicle == entity)
+                if (!entity.Passenger.Dead && entity.Passenger.Vehicle == entity)
                 {
-                    UpdateEntity(entity.passenger, true);
+                    UpdateEntity(entity.Passenger, true);
                 }
                 else
                 {
-                    entity.passenger.vehicle = null;
-                    entity.passenger = null;
+                    entity.Passenger.Vehicle = null;
+                    entity.Passenger = null;
                 }
             }
         }
@@ -452,92 +452,92 @@ public class EntityManager
     /// </summary>
     public void TickVehicleBypassingFilter(Entity vehicle, bool requireLoaded)
     {
-        if (vehicle.dead)
+        if (vehicle.Dead)
         {
             return;
         }
 
-        int blockX = MathHelper.Floor(vehicle.x);
-        int blockZ = MathHelper.Floor(vehicle.z);
+        int blockX = MathHelper.Floor(vehicle.X);
+        int blockZ = MathHelper.Floor(vehicle.Z);
         const byte loadRadius = 32;
 
-        if (!requireLoaded || _world.ChunkHost.IsRegionLoaded(blockX - loadRadius, 0, blockZ - loadRadius, blockX + loadRadius, 128, blockZ + loadRadius))
+        if (!requireLoaded || _world.ChunkHost.IsRegionLoaded(blockX - loadRadius, 0, blockZ - loadRadius, blockX + loadRadius, ChuckFormat.WorldHeight, blockZ + loadRadius))
         {
-            vehicle.lastTickX = vehicle.x;
-            vehicle.lastTickY = vehicle.y;
-            vehicle.lastTickZ = vehicle.z;
-            vehicle.prevYaw = vehicle.yaw;
-            vehicle.prevPitch = vehicle.pitch;
+            vehicle.LastTickX = vehicle.X;
+            vehicle.LastTickY = vehicle.Y;
+            vehicle.LastTickZ = vehicle.Z;
+            vehicle.PrevYaw = vehicle.Yaw;
+            vehicle.PrevPitch = vehicle.Pitch;
 
-            if (requireLoaded && vehicle.isPersistent)
+            if (requireLoaded && vehicle.IsPersistent)
             {
-                if (vehicle.vehicle != null)
+                if (vehicle.Vehicle != null)
                 {
-                    vehicle.tickRiding();
+                    vehicle.TickRiding();
                 }
                 else
                 {
-                    vehicle.tick();
+                    vehicle.Tick();
                 }
             }
 
-            if (double.IsNaN(vehicle.x) || double.IsInfinity(vehicle.x))
+            if (double.IsNaN(vehicle.X) || double.IsInfinity(vehicle.X))
             {
-                vehicle.x = vehicle.lastTickX;
+                vehicle.X = vehicle.LastTickX;
             }
 
-            if (double.IsNaN(vehicle.y) || double.IsInfinity(vehicle.y))
+            if (double.IsNaN(vehicle.Y) || double.IsInfinity(vehicle.Y))
             {
-                vehicle.y = vehicle.lastTickY;
+                vehicle.Y = vehicle.LastTickY;
             }
 
-            if (double.IsNaN(vehicle.z) || double.IsInfinity(vehicle.z))
+            if (double.IsNaN(vehicle.Z) || double.IsInfinity(vehicle.Z))
             {
-                vehicle.z = vehicle.lastTickZ;
+                vehicle.Z = vehicle.LastTickZ;
             }
 
-            if (double.IsNaN(vehicle.pitch) || double.IsInfinity(vehicle.pitch))
+            if (double.IsNaN(vehicle.Pitch) || double.IsInfinity(vehicle.Pitch))
             {
-                vehicle.pitch = vehicle.prevPitch;
+                vehicle.Pitch = vehicle.PrevPitch;
             }
 
-            if (double.IsNaN(vehicle.yaw) || double.IsInfinity(vehicle.yaw))
+            if (double.IsNaN(vehicle.Yaw) || double.IsInfinity(vehicle.Yaw))
             {
-                vehicle.yaw = vehicle.prevYaw;
+                vehicle.Yaw = vehicle.PrevYaw;
             }
 
-            int newChunkX = MathHelper.Floor(vehicle.x / 16.0D);
-            int newChunkY = MathHelper.Floor(vehicle.y / 16.0D);
-            int newChunkZ = MathHelper.Floor(vehicle.z / 16.0D);
+            int newChunkX = MathHelper.Floor(vehicle.X / 16.0D);
+            int newChunkY = MathHelper.Floor(vehicle.Y / 16.0D);
+            int newChunkZ = MathHelper.Floor(vehicle.Z / 16.0D);
 
-            if (!vehicle.isPersistent || vehicle.chunkX != newChunkX || vehicle.chunkSlice != newChunkY || vehicle.chunkZ != newChunkZ)
+            if (!vehicle.IsPersistent || vehicle.ChunkX != newChunkX || vehicle.ChunkSlice != newChunkY || vehicle.ChunkZ != newChunkZ)
             {
-                if (vehicle.isPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(vehicle.chunkX, vehicle.chunkZ))
+                if (vehicle.IsPersistent && _world.ChunkHost.ChunkSource.IsChunkLoaded(vehicle.ChunkX, vehicle.ChunkZ))
                 {
-                    _world.ChunkHost.GetChunk(vehicle.chunkX, vehicle.chunkZ).RemoveEntity(vehicle, vehicle.chunkSlice);
+                    _world.ChunkHost.GetChunk(vehicle.ChunkX, vehicle.ChunkZ).RemoveEntity(vehicle, vehicle.ChunkSlice);
                 }
 
                 if (_world.ChunkHost.ChunkSource.IsChunkLoaded(newChunkX, newChunkZ))
                 {
-                    vehicle.isPersistent = true;
+                    vehicle.IsPersistent = true;
                     _world.ChunkHost.GetChunk(newChunkX, newChunkZ).AddEntity(vehicle);
                 }
                 else
                 {
-                    vehicle.isPersistent = false;
+                    vehicle.IsPersistent = false;
                 }
             }
 
-            if (requireLoaded && vehicle.isPersistent && vehicle.passenger != null)
+            if (requireLoaded && vehicle.IsPersistent && vehicle.Passenger != null)
             {
-                if (!vehicle.passenger.dead && vehicle.passenger.vehicle == vehicle)
+                if (!vehicle.Passenger.Dead && vehicle.Passenger.Vehicle == vehicle)
                 {
-                    UpdateEntity(vehicle.passenger, true);
+                    UpdateEntity(vehicle.Passenger, true);
                 }
                 else
                 {
-                    vehicle.passenger.vehicle = null;
-                    vehicle.passenger = null;
+                    vehicle.Passenger.Vehicle = null;
+                    vehicle.Passenger = null;
                 }
             }
         }
@@ -606,7 +606,7 @@ public class EntityManager
         for (int i = 0; i < _tempCollisionEntities.Count; ++i)
         {
             Entity other = _tempCollisionEntities[i];
-            if (other.dead)
+            if (other.Dead)
             {
                 continue;
             }
@@ -616,14 +616,14 @@ public class EntityManager
                 break;
             }
 
-            Box? entityBox = other.getBoundingBox();
+            Box? entityBox = other.GetBoundingBox();
             if (entityBox != null && entityBox.Value.Intersects(area))
             {
                 collidingBoundingBoxes.Add(entityBox.Value);
                 collisionCount++;
             }
 
-            entityBox = entity.getCollisionAgainstShape(other);
+            entityBox = entity.GetCollisionAgainstShape(other);
             if (entityBox != null && entityBox.Value.Intersects(area))
             {
                 collidingBoundingBoxes.Add(entityBox.Value);
@@ -706,7 +706,7 @@ public class EntityManager
         Entities.AddRange(entitiesToAdd);
         for (int i = 0; i < entitiesToAdd.Count; ++i)
         {
-            _entitiesById[entitiesToAdd[i].id] = entitiesToAdd[i];
+            _entitiesById[entitiesToAdd[i].ID] = entitiesToAdd[i];
             NotifyEntityAdded(entitiesToAdd[i]);
         }
     }
@@ -721,7 +721,7 @@ public class EntityManager
         foreach (var player in Players)
         {
             if (!player.GameMode.VisibleToWorld) return null;
-            double distanceSquared = player.getSquaredDistance(x, y, z);
+            double distanceSquared = player.GetSquaredDistance(x, y, z);
 
             bool withinRange = range < 0.0D || distanceSquared < range * range;
             bool isClosestSoFar = minDistanceSquared == -1.0D || distanceSquared < minDistanceSquared;
@@ -744,7 +744,7 @@ public class EntityManager
         foreach (var player in Players)
         {
             if (!player.GameMode.CanBeTargeted) return null;
-            double distanceSquared = player.getSquaredDistance(x, y, z);
+            double distanceSquared = player.GetSquaredDistance(x, y, z);
 
             bool withinRange = range < 0.0D || distanceSquared < range * range;
             bool isClosestSoFar = minDistanceSquared == -1.0D || distanceSquared < minDistanceSquared;
@@ -779,7 +779,7 @@ public class EntityManager
     public bool CanSpawnEntity(Box spawnArea)
     {
         List<Entity> nearbyEntities = GetEntitiesScratch(null, spawnArea);
-        return nearbyEntities.All(entity => entity.dead || !entity.preventEntitySpawning);
+        return nearbyEntities.All(entity => entity.Dead || !entity.PreventEntitySpawning);
     }
 
     public T? GetOrCreateBlockEntity<T>(int x, int y, int z) where T : BlockEntity
@@ -822,8 +822,8 @@ public class EntityManager
 
     public void LoadChunksNearEntity(Entity entity)
     {
-        int chunkX = MathHelper.Floor(entity.x / 16.0D);
-        int chunkZ = MathHelper.Floor(entity.z / 16.0D);
+        int chunkX = MathHelper.Floor(entity.X / 16.0D);
+        int chunkZ = MathHelper.Floor(entity.Z / 16.0D);
         const byte loadRadius = 2;
 
         for (int x = chunkX - loadRadius; x <= chunkX + loadRadius; ++x)

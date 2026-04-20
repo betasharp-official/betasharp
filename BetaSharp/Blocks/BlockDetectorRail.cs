@@ -15,7 +15,10 @@ internal class BlockDetectorRail : BlockRail
 
     public override void OnEntityCollision(OnEntityCollisionEvent @event)
     {
-        if (@event.World.IsRemote) return;
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((meta & 8) == 0)
@@ -26,7 +29,10 @@ internal class BlockDetectorRail : BlockRail
 
     public override void OnTick(OnTickEvent @event)
     {
-        if (@event.World.IsRemote) return;
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((meta & 8) != 0)
@@ -45,7 +51,10 @@ internal class BlockDetectorRail : BlockRail
         bool hasMinecart = false;
 
         List<EntityMinecart> minecartsOnRail = context.Entities.CollectEntitiesOfType<EntityMinecart>(new Box(x + DetectionInset, y, z + DetectionInset, x + 1 - DetectionInset, y + 0.25D, z + 1 - DetectionInset));
-        if (minecartsOnRail.Count > 0) hasMinecart = true;
+        if (minecartsOnRail.Count > 0)
+        {
+            hasMinecart = true;
+        }
 
         if (hasMinecart && !isPowered)
         {

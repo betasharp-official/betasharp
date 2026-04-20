@@ -131,7 +131,7 @@ public class ModelWolf : ModelBase
         wolfTail.rotateAngleZ = var5.getShakeAngle(var4, -0.2F);
         if (var5.getWolfShaking())
         {
-            float var7 = var5.getBrightnessAtEyes(var4) * var5.getShadingWhileShaking(var4);
+            float var7 = var5.GetBrightnessAtEyes(var4) * var5.getShadingWhileShaking(var4);
             GLManager.GL.Color3(var7, var7, var7);
         }
 

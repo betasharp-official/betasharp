@@ -5,16 +5,16 @@ using BetaSharp.Network.Packets.Play;
 namespace BetaSharp.Blocks.Entities;
 
 /// <summary>
-/// Block entity for a sign, storing the text on the sign and whether it is editable.
+///     Block entity for a sign, storing the text on the sign and whether it is editable.
 /// </summary>
 public class BlockEntitySign : BlockEntity
 {
-    public override BlockEntityType Type => BlockEntity.Sign;
+    public override BlockEntityType Type => Sign;
 
     public bool Editable { get; set; } = true;
 
     /// <summary>
-    /// The text on the sign, with a maximum of 15 characters per line and 4 lines total.
+    ///     The text on the sign, with a maximum of 15 characters per line and 4 lines total.
     /// </summary>
     public string[] Texts { get; set; } = ["", "", "", ""];
 

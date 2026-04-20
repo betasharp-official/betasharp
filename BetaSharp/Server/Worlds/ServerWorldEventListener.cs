@@ -47,7 +47,7 @@ internal class ServerWorldEventListener : IWorldEventListener
 
     public void BroadcastEntityEvent(Entity entity, byte @event)
     {
-        EntityStatusS2CPacket packet = EntityStatusS2CPacket.Get(entity.id, @event);
+        EntityStatusS2CPacket packet = EntityStatusS2CPacket.Get(entity.ID, @event);
         server.getEntityTracker(world.Dimension.Id).sendToAround(entity, packet);
     }
 

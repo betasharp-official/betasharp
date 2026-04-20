@@ -13,6 +13,7 @@ using BetaSharp.Server.Network;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
@@ -60,17 +61,17 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             }
             else
             {
-                x += random.NextInt(20) - 10;
+                x += Random.NextInt(20) - 10;
                 z = world.Reader.GetSpawnPositionValidityY(x, y);
-                y += random.NextInt(20) - 10;
+                y += Random.NextInt(20) - 10;
             }
         }
 
-        setPositionAndAnglesKeepPrevAngles(x + 0.5, z, y + 0.5, 0.0F, 0.0F);
+        SetPositionAndAnglesKeepPrevAngles(x + 0.5, z, y + 0.5, 0.0F, 0.0F);
         this.server = server;
-        stepHeight = 0.0F;
+        StepHeight = 0.0F;
         this.name = name;
-        standingEyeHeight = 0.0F;
+        StandingEyeHeight = 0.0F;
     }
 
 
@@ -95,23 +96,23 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public void onPropertyUpdate(ScreenHandler handler, int syncId, int trackedValue) => NetworkHandler.SendPacket(ScreenHandlerPropertyUpdateS2CPacket.Get(handler.SyncId, syncId, trackedValue));
 
 
-    public override void setWorld(IWorldContext world)
+    public override void SetWorld(IWorldContext world)
     {
-        base.setWorld(world);
+        base.SetWorld(world);
         interactionManager = new ServerPlayerInteractionManager((ServerWorld)world);
         interactionManager.player = this;
     }
 
     public void initScreenHandler() => currentScreenHandler.AddListener(this);
 
-    public override ItemStack[] getEquipment() => equipment;
+    public override ItemStack[] GetEquipment() => equipment;
 
-    protected override void resetEyeHeight() => standingEyeHeight = 0.0F;
+    protected override void resetEyeHeight() => StandingEyeHeight = 0.0F;
 
 
-    public override float getEyeHeight() => 1.62F;
+    public override float GetEyeHeight() => 1.62F;
 
-    public override void tick()
+    public override void Tick()
     {
         TickSleep();
 
@@ -124,7 +125,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             ItemStack itemStack = getEquipment(i);
             if (itemStack != equipment[i])
             {
-                server.getEntityTracker(dimensionId).sendToListeners(this, EntityEquipmentUpdateS2CPacket.Get(id, i, itemStack));
+                server.getEntityTracker(dimensionId).sendToListeners(this, EntityEquipmentUpdateS2CPacket.Get(ID, i, itemStack));
                 equipment[i] = itemStack;
             }
         }
@@ -132,7 +133,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public ItemStack getEquipment(int slot) => slot == 0 ? inventory.GetItemInHand() : inventory.Armor[slot - 1];
 
-    public override bool damage(Entity? damageSource, int amount)
+    public override bool Damage(Entity? damageSource, int amount)
     {
         if (joinInvulnerabilityTicks > 0)
         {
@@ -155,7 +156,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             }
         }
 
-        return base.damage(damageSource, amount);
+        return base.Damage(damageSource, amount);
     }
 
     protected override bool isPvpEnabled() => server.pvpEnabled;
@@ -168,7 +169,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void IdleTick()
     {
-        base.baseTick();
+        base.BaseTick();
         AfterLivingTickCosmetics();
         PickupAndInventorySubtick();
         CollideWithPickupEntities();
@@ -182,7 +183,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             ItemStack? itemStack = inventory.GetStack(slotIndex);
             if (itemStack != null && Item.ITEMS[itemStack.ItemId].isNetworkSynced() && NetworkHandler.getBlockDataSendQueueSize() <= 2)
             {
-                Packet? packet = ((NetworkSyncedItem)Item.ITEMS[itemStack.ItemId]).getUpdatePacket(itemStack, world, this);
+                Packet? packet = ((NetworkSyncedItem)Item.ITEMS[itemStack.ItemId]).getUpdatePacket(itemStack, World, this);
                 if (packet != null)
                 {
                     NetworkHandler.SendPacket(packet);
@@ -204,9 +205,9 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
                     closeHandledScreen();
                 }
 
-                if (vehicle != null)
+                if (Vehicle != null)
                 {
-                    setVehicle(vehicle);
+                    SetVehicle(Vehicle);
                 }
                 else
                 {
@@ -240,10 +241,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             portalCooldown--;
         }
 
-        if (health != lastHealthScore)
+        if (Health != lastHealthScore)
         {
-            NetworkHandler.SendPacket(HealthUpdateS2CPacket.Get(health));
-            lastHealthScore = health;
+            NetworkHandler.SendPacket(HealthUpdateS2CPacket.Get(Health));
+            lastHealthScore = Health;
         }
     }
 
@@ -297,8 +298,8 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     internal ChunkPriority GetChunkPriority(ChunkPos chunkPos, long sequence)
     {
-        int playerChunkX = (int)x >> 4;
-        int playerChunkZ = (int)z >> 4;
+        int playerChunkX = (int)X >> 4;
+        int playerChunkZ = (int)Z >> 4;
         int deltaX = chunkPos.X - playerChunkX;
         int deltaZ = chunkPos.Z - playerChunkZ;
         int ring = Math.Max(Math.Abs(deltaX), Math.Abs(deltaZ));
@@ -317,7 +318,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         int worldX = chunkPos.X * 16;
         int worldZ = chunkPos.Z * 16;
-        NetworkHandler.SendPacket(ChunkDataS2CPacket.Get(worldX, 0, worldZ, 16, 128, 16, world));
+        NetworkHandler.SendPacket(ChunkDataS2CPacket.Get(worldX, 0, worldZ, 16, ChuckFormat.WorldHeight, 16, world));
     }
 
     private void SendBlockEntityUpdates(IWorldContext world, ChunkPos chunkPos)
@@ -327,7 +328,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         int endX = startX + 16;
         int endZ = startZ + 16;
 
-        var blockEntities = world.Entities.GetBlockEntities(startX, 0, startZ, endX, 128, endZ);
+        var blockEntities = world.Entities.GetBlockEntities(startX, 0, startZ, endX, ChuckFormat.WorldHeight, endZ);
         foreach (BlockEntity blockEntity in blockEntities)
         {
             updateBlockEntity(blockEntity);
@@ -349,17 +350,17 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public override void sendPickup(Entity item, int count)
     {
         if (!GameMode.CanPickup) return;
-        if (!item.dead)
+        if (!item.Dead)
         {
             EntityTracker et = server.getEntityTracker(dimensionId);
             if (item is EntityItem)
             {
-                et.sendToListeners(item, ItemPickupAnimationS2CPacket.Get(item.id, id));
+                et.sendToListeners(item, ItemPickupAnimationS2CPacket.Get(item.ID, ID));
             }
 
             if (item is EntityArrow)
             {
-                et.sendToListeners(item, ItemPickupAnimationS2CPacket.Get(item.id, id));
+                et.sendToListeners(item, ItemPickupAnimationS2CPacket.Get(item.ID, ID));
             }
         }
 
@@ -386,7 +387,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             EntityTracker et = server.getEntityTracker(dimensionId);
             PlayerSleepUpdateS2CPacket packet = PlayerSleepUpdateS2CPacket.Get(this, 0, x, y, z);
             et.sendToAround(this, packet);
-            NetworkHandler.teleport(x, y, z, yaw, pitch);
+            NetworkHandler.teleport(x, y, z, Yaw, Pitch);
         }
 
         return sleepAttemptResult;
@@ -403,24 +404,24 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         base.wakeUp(resetSleepTimer, updateSleepingPlayers, setSpawnPos);
         if (NetworkHandler != null)
         {
-            NetworkHandler.teleport(x, y, z, yaw, pitch);
+            NetworkHandler.teleport(X, Y, Z, Yaw, Pitch);
         }
     }
 
 
-    public override void setVehicle(Entity entity)
+    public override void SetVehicle(Entity entity)
     {
-        base.setVehicle(entity);
-        NetworkHandler.SendPacket(EntityVehicleSetS2CPacket.Get(this, vehicle));
-        NetworkHandler.teleport(x, y, z, yaw, pitch);
+        base.SetVehicle(entity);
+        NetworkHandler.SendPacket(EntityVehicleSetS2CPacket.Get(this, Vehicle));
+        NetworkHandler.teleport(X, Y, Z, Yaw, Pitch);
     }
 
 
-    protected override void fall(double heightDifference, bool onGround)
+    protected override void Fall(double heightDifference, bool onGround)
     {
     }
 
-    public void handleFall(double heightDifference, bool onGround) => base.fall(heightDifference, onGround);
+    public void handleFall(double heightDifference, bool onGround) => base.Fall(heightDifference, onGround);
 
     private void incrementScreenHandlerSyncId() => screenHandlerSyncId = screenHandlerSyncId % 100 + 1;
 
@@ -429,7 +430,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         incrementScreenHandlerSyncId();
         NetworkHandler.SendPacket(OpenScreenS2CPacket.Get(screenHandlerSyncId, 1, "Crafting", 9));
-        currentScreenHandler = new CraftingScreenHandler(inventory, world, x, y, z);
+        currentScreenHandler = new CraftingScreenHandler(inventory, World, x, y, z);
         currentScreenHandler.SyncId = screenHandlerSyncId;
         currentScreenHandler.AddListener(this);
     }
@@ -492,31 +493,31 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void updateInput(float sidewaysSpeed, float forwardSpeed, bool jumping, bool sneaking, float pitch, float yaw)
     {
-        this.sidewaysSpeed = sidewaysSpeed;
-        this.forwardSpeed = forwardSpeed;
-        this.jumping = jumping;
-        setSneaking(sneaking);
-        this.pitch = pitch;
-        this.yaw = yaw;
+        this.SidewaysSpeed = sidewaysSpeed;
+        this.ForwardSpeed = forwardSpeed;
+        this.Jumping = jumping;
+        SetSneaking(sneaking);
+        this.Pitch = pitch;
+        this.Yaw = yaw;
     }
 
     public void updateInput(PlayerInputC2SPacket packet)
     {
         if (GameMode is { CanWalk: false, DisallowFlying: true })
         {
-            sidewaysSpeed = packet.getSideways();
-            forwardSpeed = packet.getForward();
+            SidewaysSpeed = packet.getSideways();
+            ForwardSpeed = packet.getForward();
         }
         else
         {
-            sidewaysSpeed = 0;
-            forwardSpeed = 0;
+            SidewaysSpeed = 0;
+            ForwardSpeed = 0;
         }
 
-        jumping = packet.isJumping();
-        setSneaking(packet.isSneaking());
-        pitch = packet.getPitch();
-        yaw = packet.getYaw();
+        Jumping = packet.isJumping();
+        SetSneaking(packet.isSneaking());
+        Pitch = packet.getPitch();
+        Yaw = packet.getYaw();
     }
 
 
@@ -544,14 +545,14 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void onDisconnect()
     {
-        if (vehicle != null)
+        if (Vehicle != null)
         {
-            setVehicle(vehicle);
+            SetVehicle(Vehicle);
         }
 
-        if (passenger != null)
+        if (Passenger != null)
         {
-            passenger.setVehicle(this);
+            Passenger.SetVehicle(this);
         }
 
         if (sleeping)

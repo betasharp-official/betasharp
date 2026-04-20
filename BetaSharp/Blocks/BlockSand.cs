@@ -5,9 +5,8 @@ namespace BetaSharp.Blocks;
 
 internal class BlockSand(int id, int textureId) : Block(id, textureId, Material.Sand)
 {
-    private static readonly ThreadLocal<bool> s_fallInstantly = new(() => false);
-
     private const sbyte CheckRadius = 32;
+    private static readonly ThreadLocal<bool> s_fallInstantly = new(() => false);
 
     public static bool FallInstantly
     {
@@ -24,7 +23,10 @@ internal class BlockSand(int id, int textureId) : Block(id, textureId, Material.
     private void ProcessFall(OnTickEvent @event)
     {
         (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
-        if (y <= 0 || !CanFallThrough(new OnTickEvent(@event.World, x, y - 1, z, 0, @event.BlockId))) return;
+        if (y <= 0 || !CanFallThrough(new OnTickEvent(@event.World, x, y - 1, z, 0, @event.BlockId)))
+        {
+            return;
+        }
 
         if (!FallInstantly && @event.World.ChunkHost.IsRegionLoaded(x - CheckRadius, y - CheckRadius, z - CheckRadius, x + CheckRadius, y + CheckRadius, z + CheckRadius))
         {
@@ -52,8 +54,15 @@ internal class BlockSand(int id, int textureId) : Block(id, textureId, Material.
     public static bool CanFallThrough(OnTickEvent ctx)
     {
         int blockId = ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z);
-        if (blockId == 0) return true;
-        if (blockId == Fire.ID) return true;
+        if (blockId == 0)
+        {
+            return true;
+        }
+
+        if (blockId == Fire.ID)
+        {
+            return true;
+        }
 
         Material material = Blocks[blockId].Material;
         return material == Material.Water || material == Material.Lava;

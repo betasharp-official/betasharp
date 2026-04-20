@@ -452,6 +452,8 @@ public partial class BetaSharp :
         ));
 
         FramebufferManager = new FramebufferManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
+
+        EntityRenderDispatcher.Instance.SkinManager.RequestDownload(Session.username, true);
     }
 
     private void LoadVersion()
@@ -637,7 +639,7 @@ public partial class BetaSharp :
                         }
                     }
 
-                    if (Player != null && Player.isInsideWall())
+                    if (Player != null && Player.IsInsideWall())
                     {
                         Options.CameraMode = EnumCameraMode.FirstPerson;
                     }
@@ -878,7 +880,7 @@ public partial class BetaSharp :
 
         if (CurrentScreen == null && Player != null)
         {
-            if (Player.health <= 0)
+            if (Player.Health <= 0)
             {
                 Navigate(null);
             }
@@ -965,7 +967,7 @@ public partial class BetaSharp :
 
             if (!IsGamePaused && World != null)
             {
-                World.displayTick(MathHelper.Floor(Player.x), MathHelper.Floor(Player.y), MathHelper.Floor(Player.z));
+                World.displayTick(MathHelper.Floor(Player.X), MathHelper.Floor(Player.Y), MathHelper.Floor(Player.Z));
             }
 
             if (!IsGamePaused)
@@ -1001,7 +1003,7 @@ public partial class BetaSharp :
                     IsControllerMode = false;
                     Mouse.setCursorVisible(true);
 
-                    bool zoomHeld = CurrentScreen == null && InGameHasFocus && Keyboard.isKeyDown(Options.KeyBindZoom.keyCode);
+                    bool zoomHeld = CurrentScreen == null && InGameHasFocus && Keyboard.isKeyDown(Options.KeyBindZoom.scanCode);
                     if (zoomHeld)
                     {
                         int mouseWheelDirection = mouseWheelDelta > 0 ? 1 : -1;
@@ -1117,19 +1119,19 @@ public partial class BetaSharp :
                     if (Keyboard.getEventKey() == Keyboard.KEY_F8) Options.SmoothCamera = !Options.SmoothCamera;
                     if (Keyboard.getEventKey() == Keyboard.KEY_F7) ShowChunkBorders = !ShowChunkBorders;
 
-                    if (Keyboard.getEventKey() == Options.KeyBindInventory.keyCode)
+                    if (Keyboard.getEventKey() == Options.KeyBindInventory.scanCode)
                     {
                         Navigate(new InventoryScreen(UIContext, Player, PlayerController, () => CurrentScreen));
                     }
 
-                    if (Keyboard.getEventKey() == Options.KeyBindDrop.keyCode) Player.DropSelectedItem();
+                    if (Keyboard.getEventKey() == Options.KeyBindDrop.scanCode) Player.DropSelectedItem();
 
-                    if (Keyboard.getEventKey() == Options.KeyBindChat.keyCode)
+                    if (Keyboard.getEventKey() == Options.KeyBindChat.scanCode)
                     {
                         Navigate(new ChatScreen(UIContext, HUD.Chat, Player));
                     }
 
-                    if (Keyboard.getEventKey() == Options.KeyBindCommand.keyCode)
+                    if (Keyboard.getEventKey() == Options.KeyBindCommand.scanCode)
                     {
                         Navigate(new ChatScreen(UIContext, HUD.Chat, Player, "/"));
                     }
@@ -1143,7 +1145,7 @@ public partial class BetaSharp :
                     }
                 }
 
-                if (Keyboard.getEventKey() == Options.KeyBindToggleFog.keyCode)
+                if (Keyboard.getEventKey() == Options.KeyBindToggleFog.scanCode)
                 {
                     Options.RenderDistanceOption.Value = Math.Clamp(
                         Options.RenderDistanceOption.Value + (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) ? 1.0f / 28.0f : -1.0f / 28.0f),
@@ -1333,14 +1335,14 @@ public partial class BetaSharp :
             }
             else if (Player != null)
             {
-                Player.teleportToTop();
+                Player.TeleportToTop();
                 newWorld?.Entities.SpawnEntity(Player);
             }
 
             if (Player == null)
             {
                 Player = (ClientPlayerEntity)PlayerController.createPlayer(newWorld);
-                Player.teleportToTop();
+                Player.TeleportToTop();
                 PlayerController.flipPlayer(Player);
             }
 
@@ -1400,18 +1402,18 @@ public partial class BetaSharp :
 
         if (Player is not null)
         {
-            previousPlayerId = Player.id;
+            previousPlayerId = Player.ID;
             World.Entities.Remove(Player);
         }
 
         Player = (ClientPlayerEntity)PlayerController.createPlayer(World);
         Player.dimensionId = newDimensionId;
-        Player.teleportToTop();
+        Player.TeleportToTop();
 
         if (useBedSpawn)
         {
             Player.setSpawnPos(playerSpawnPos);
-            Player.setPositionAndAnglesKeepPrevAngles(
+            Player.SetPositionAndAnglesKeepPrevAngles(
                 finalRespawnPos.X + 0.5,
                 finalRespawnPos.Y + 0.1,
                 finalRespawnPos.Z + 0.5,
@@ -1422,7 +1424,7 @@ public partial class BetaSharp :
         PlayerController.flipPlayer(Player);
         World.AddPlayer(Player);
         Player.movementInput = new MovementInputFromOptions(Options);
-        Player.id = previousPlayerId;
+        Player.ID = previousPlayerId;
         Player.spawn();
         PlayerController.fillHotbar(Player);
 
@@ -1472,8 +1474,8 @@ public partial class BetaSharp :
 
         if (Player != null)
         {
-            centerPos.X = (int)Player.x;
-            centerPos.Z = (int)Player.z;
+            centerPos.X = (int)Player.X;
+            centerPos.Z = (int)Player.Z;
         }
 
         for (int xOffset = -loadingRadius; xOffset <= loadingRadius; xOffset += 16)
@@ -1518,7 +1520,7 @@ public partial class BetaSharp :
         {
             newScreen = CreateMainMenuScreen();
         }
-        else if (newScreen == null && Player.health <= 0)
+        else if (newScreen == null && Player.Health <= 0)
         {
             newScreen = new GameOverScreen(UIContext, (int)Player.getScore(), Player.respawn, canRespawn: Session != null, exitToTitle: () => ChangeWorld(null!));
         }

@@ -2,7 +2,7 @@ using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.PathFinding;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Generation.Biomes;
 
@@ -41,8 +41,8 @@ internal static class NaturalSpawner
 
         foreach (var p in world.Entities.Players)
         {
-            int chunkX = MathHelper.Floor(p.x / 16.0D);
-            int chunkZ = MathHelper.Floor(p.z / 16.0D);
+            int chunkX = MathHelper.Floor(p.X / 16.0D);
+            int chunkZ = MathHelper.Floor(p.Z / 16.0D);
 
             for (int x = -SpawnMaxRadius; x <= SpawnMaxRadius; ++x)
             {
@@ -95,7 +95,7 @@ internal static class NaturalSpawner
 
                                 EntityLiving entity = toSpawn.Factory(world);
 
-                                entity.setPositionAndAnglesKeepPrevAngles(entityPos.x, entityPos.y, entityPos.z,
+                                entity.SetPositionAndAnglesKeepPrevAngles(entityPos.x, entityPos.y, entityPos.z,
                                     world.Random.NextFloat() * 360.0F, 0.0F);
 
                                 if (entity.canSpawn())
@@ -126,16 +126,16 @@ internal static class NaturalSpawner
         {
             for (int i = 0; i < 20; ++i)
             {
-                int spawnX = MathHelper.Floor(player.x) + world.Random.NextInt(32) - world.Random.NextInt(32);
-                int spawnZ = MathHelper.Floor(player.z) + world.Random.NextInt(32) - world.Random.NextInt(32);
-                int spawnY = MathHelper.Floor(player.y) + world.Random.NextInt(16) - world.Random.NextInt(16);
+                int spawnX = MathHelper.Floor(player.X) + world.Random.NextInt(32) - world.Random.NextInt(32);
+                int spawnZ = MathHelper.Floor(player.Z) + world.Random.NextInt(32) - world.Random.NextInt(32);
+                int spawnY = MathHelper.Floor(player.Y) + world.Random.NextInt(16) - world.Random.NextInt(16);
                 if (spawnY < 1)
                 {
                     spawnY = 1;
                 }
-                else if (spawnY > 128)
+                else if (spawnY > ChuckFormat.WorldHeight)
                 {
-                    spawnY = 128;
+                    spawnY = ChuckFormat.WorldHeight;
                 }
 
                 int r = world.Random.NextInt(Monsters.Length);
@@ -147,18 +147,18 @@ internal static class NaturalSpawner
                 }
 
                 while (!CreatureKind.Monster.CanSpawnAtLocation(world.Reader, spawnX, newSpawnY, spawnZ) &&
-                       newSpawnY < spawnY + 16 && newSpawnY < 128)
+                       newSpawnY < spawnY + 16 && newSpawnY < ChuckFormat.WorldHeight)
                 {
                     ++newSpawnY;
                 }
 
-                if (newSpawnY < spawnY + 16 && newSpawnY < 128)
+                if (newSpawnY < spawnY + 16 && newSpawnY < ChuckFormat.WorldHeight)
                 {
                     EntityLiving entity = Monsters[r](world);
 
                     // Feet must be on the validated air column (newSpawnY), not random spawnY — spawnY
                     // can be inside stone and collision resolution rockets mobs to the surface.
-                    entity.setPositionAndAnglesKeepPrevAngles(spawnX + 0.5D, newSpawnY, spawnZ + 0.5D,
+                    entity.SetPositionAndAnglesKeepPrevAngles(spawnX + 0.5D, newSpawnY, spawnZ + 0.5D,
                         world.Random.NextFloat() * 360.0F, 0.0F);
                     if (entity.canSpawn())
                     {
@@ -166,15 +166,15 @@ internal static class NaturalSpawner
                         if (pathEntity != null && pathEntity.PathLength > 1)
                         {
                             PathPoint? pathPoint = pathEntity.GetFinalPoint();
-                            if (Math.Abs(pathPoint.X - player.x) < 1.5D && Math.Abs(pathPoint.Z - player.z) < 1.5D &&
-                                Math.Abs(pathPoint.Y - player.y) < 1.5D)
+                            if (Math.Abs(pathPoint.X - player.X) < 1.5D && Math.Abs(pathPoint.Z - player.Z) < 1.5D &&
+                                Math.Abs(pathPoint.Y - player.Y) < 1.5D)
                             {
                                 Vec3i wakeUpPos =
-                                    BlockBed.FindWakeUpPosition(world.Reader, MathHelper.Floor(player.x),
-                                        MathHelper.Floor(player.y), MathHelper.Floor(player.z), 1) ??
+                                    BlockBed.FindWakeUpPosition(world.Reader, MathHelper.Floor(player.X),
+                                        MathHelper.Floor(player.Y), MathHelper.Floor(player.Z), 1) ??
                                     new Vec3i(spawnX, newSpawnY + 1, spawnZ);
 
-                                entity.setPositionAndAnglesKeepPrevAngles(wakeUpPos.X + 0.5F, wakeUpPos.Y, wakeUpPos.Z + 0.5F, 0.0F, 0.0F);
+                                entity.SetPositionAndAnglesKeepPrevAngles(wakeUpPos.X + 0.5F, wakeUpPos.Y, wakeUpPos.Z + 0.5F, 0.0F, 0.0F);
                                 world.Entities.SpawnEntity(entity);
                                 entity.PostSpawn();
                                 player.wakeUp(true, false, false);

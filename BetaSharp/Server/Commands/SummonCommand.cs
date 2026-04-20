@@ -32,7 +32,7 @@ public class SummonCommand : Command.Command
 
         for (int i = 0; i < count; i++)
         {
-            Entity? entity = EntityRegistry.CreateEntityAt(entityName, world, (float)player.x, (float)player.y, (float)player.z);
+            Entity? entity = EntityRegistry.CreateEntityAt(entityName, world, (float)player.X, (float)player.Y, (float)player.Z);
             if (entity != null)
             {
                 summoned++;

@@ -35,24 +35,24 @@ public class ClientPlayerEntity : EntityPlayer
         base.tickLiving();
         if (GameMode is { CanWalk: false, DisallowFlying: true })
         {
-            sidewaysSpeed = 0;
-            forwardSpeed = 0;
+            SidewaysSpeed = 0;
+            ForwardSpeed = 0;
         }
         else if (!GameMode.DisallowFlying)
         {
-            sidewaysSpeed = movementInput.moveStrafe * AirFlySpeedMult;
-            forwardSpeed = movementInput.moveForward * AirFlySpeedMult;
+            SidewaysSpeed = movementInput.moveStrafe * AirFlySpeedMult;
+            ForwardSpeed = movementInput.moveForward * AirFlySpeedMult;
         }
         else
         {
-            sidewaysSpeed = movementInput.moveStrafe;
-            forwardSpeed = movementInput.moveForward;
+            SidewaysSpeed = movementInput.moveStrafe;
+            ForwardSpeed = movementInput.moveForward;
         }
 
-        if (jumping != movementInput.jump)
+        if (Jumping != movementInput.jump)
         {
-            jumping = movementInput.jump;
-            if (jumping)
+            Jumping = movementInput.jump;
+            if (Jumping)
             {
                 // double jump
                 if (!GameMode.DisallowFlying && _lastJump <= 2)
@@ -78,9 +78,9 @@ public class ClientPlayerEntity : EntityPlayer
         lastScreenDistortion = changeDimensionCooldown;
         if (inTeleportationState)
         {
-            if (!world.IsRemote && vehicle != null)
+            if (!World.IsRemote && Vehicle != null)
             {
-                setVehicle((Entity)null);
+                SetVehicle((Entity)null);
             }
 
             if (Game.CurrentScreen != null)
@@ -90,7 +90,7 @@ public class ClientPlayerEntity : EntityPlayer
 
             if (changeDimensionCooldown == 0.0F)
             {
-                Game.SoundManager.PlaySoundFX("portal.trigger", 1.0F, random.NextFloat() * 0.4F + 0.8F);
+                Game.SoundManager.PlaySoundFX("portal.trigger", 1.0F, Random.NextFloat() * 0.4F + 0.8F);
             }
 
             changeDimensionCooldown += 0.0125F;
@@ -123,44 +123,44 @@ public class ClientPlayerEntity : EntityPlayer
 
         if (!GameMode.DisallowFlying && (_isFlying || !GameMode.CanWalk))
         {
-            _isFlying &= !onGround;
+            _isFlying &= !OnGround;
 
             if (!movementInput.sneak)
             {
                 if (movementInput.jump)
                 {
                     // flying up
-                    velocityY += 0.1;
+                    VelocityY += 0.1;
                 }
                 else
                 {
                     // hold height, but smoothly
-                    velocityY = velocityY < -0.15 ? velocityY + 0.15 : Math.Max(0, velocityY);
+                    VelocityY = VelocityY < -0.15 ? VelocityY + 0.15 : Math.Max(0, VelocityY);
                 }
 
             }
             else if (movementInput.jump)
             {
                 // shift + space = hold height
-                velocityY = 0;
+                VelocityY = 0;
             }
             else
             {
                 // limit flying decent speed
-                velocityY = Math.Max(velocityY, -0.5);
+                VelocityY = Math.Max(VelocityY, -0.5);
             }
 
         }
 
-        if (movementInput.sneak && cameraOffset < 0.2F)
+        if (movementInput.sneak && CameraOffset < 0.2F)
         {
-            cameraOffset = 0.2F;
+            CameraOffset = 0.2F;
         }
 
-        pushOutOfBlocks(x - (double)width * 0.35D, boundingBox.MinY + 0.5D, z + (double)width * 0.35D);
-        pushOutOfBlocks(x - (double)width * 0.35D, boundingBox.MinY + 0.5D, z - (double)width * 0.35D);
-        pushOutOfBlocks(x + (double)width * 0.35D, boundingBox.MinY + 0.5D, z - (double)width * 0.35D);
-        pushOutOfBlocks(x + (double)width * 0.35D, boundingBox.MinY + 0.5D, z + (double)width * 0.35D);
+        PushOutOfBlocks(X - (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z + (double)Width * 0.35D);
+        PushOutOfBlocks(X - (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z - (double)Width * 0.35D);
+        PushOutOfBlocks(X + (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z - (double)Width * 0.35D);
+        PushOutOfBlocks(X + (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z + (double)Width * 0.35D);
         base.tickMovement();
     }
 
@@ -169,20 +169,20 @@ public class ClientPlayerEntity : EntityPlayer
         movementInput.resetKeyState();
     }
 
-    public void handleKeyPress(int key, bool isPressed)
+    public void handleKeyPress(int scanCode, bool isPressed)
     {
-        movementInput.checkKeyForMovementInput(key, isPressed);
+        movementInput.checkKeyForMovementInput(scanCode, isPressed);
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
         nbt.SetInteger("Score", score);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
         score = nbt.GetInteger("Score");
     }
 
@@ -209,7 +209,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void openCraftingScreen(int x, int y, int z)
     {
-        Game.Navigate(new CraftingScreen(Game.UIContext, this, Game.PlayerController, inventory, (IWorldContext)world, x, y, z));
+        Game.Navigate(new CraftingScreen(Game.UIContext, this, Game.PlayerController, inventory, (IWorldContext)World, x, y, z));
     }
 
     public override void openFurnaceScreen(BlockEntityFurnace furnace)
@@ -237,28 +237,28 @@ public class ClientPlayerEntity : EntityPlayer
         Game.HUD.AddChatMessage($"<{name}> {message}");
     }
 
-    public override bool isSneaking()
+    public override bool IsSneaking()
     {
         return movementInput.sneak && !sleeping;
     }
 
     public virtual void setHealth(int newHealth)
     {
-        int damageAmount = health - newHealth;
+        int damageAmount = Health - newHealth;
         if (damageAmount <= 0)
         {
-            health = newHealth;
+            Health = newHealth;
             if (damageAmount < 0)
             {
-                hearts = maxHealth / 2;
+                Hearts = MaxHealth / 2;
             }
         }
         else
         {
             if (!GameMode.CanReceiveDamage) return;
-            damageForDisplay = damageAmount;
-            lastHealth = health;
-            hearts = maxHealth;
+            DamageForDisplay = damageAmount;
+            LastHealth = Health;
+            Hearts = MaxHealth;
             applyDamage(damageAmount);
         }
     }
@@ -306,10 +306,10 @@ public class ClientPlayerEntity : EntityPlayer
 
     private bool isBlockTranslucent(int x, int y, int z)
     {
-        return world.Reader.ShouldSuffocate(x, y, z);
+        return World.Reader.ShouldSuffocate(x, y, z);
     }
 
-    protected override bool pushOutOfBlocks(double posX, double posY, double posZ)
+    protected override bool PushOutOfBlocks(double posX, double posY, double posZ)
     {
         int floorX = MathHelper.Floor(posX);
         int floorY = MathHelper.Floor(posY);
@@ -351,32 +351,32 @@ public class ClientPlayerEntity : EntityPlayer
             float pushStrength = 0.1F;
             if (pushDirection == 0)
             {
-                velocityX = (double)(-pushStrength);
+                VelocityX = (double)(-pushStrength);
             }
 
             if (pushDirection == 1)
             {
-                velocityX = (double)pushStrength;
+                VelocityX = (double)pushStrength;
             }
 
             if (pushDirection == 4)
             {
-                velocityZ = (double)(-pushStrength);
+                VelocityZ = (double)(-pushStrength);
             }
 
             if (pushDirection == 5)
             {
-                velocityZ = (double)pushStrength;
+                VelocityZ = (double)pushStrength;
             }
         }
 
         return false;
     }
 
-    public override void markDead()
+    public override void MarkDead()
     {
         _isFlying = false;
-        base.markDead();
+        base.MarkDead();
     }
 
     protected override float AirSpeed() => GameMode.DisallowFlying || !_isFlying ? 0.02f : AirFlySpeedMult * 0.02f;

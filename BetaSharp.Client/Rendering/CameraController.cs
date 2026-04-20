@@ -48,7 +48,7 @@ public class CameraController
         _prevCameraRoll = _cameraRoll;
         _prevCameraRollAmount = _cameraRollAmount;
 
-        float luminance = _game.World.GetLuminance(MathHelper.Floor(_game.Camera.x), MathHelper.Floor(_game.Camera.y), MathHelper.Floor(_game.Camera.z));
+        float luminance = _game.World.GetLuminance(MathHelper.Floor(_game.Camera.X), MathHelper.Floor(_game.Camera.Y), MathHelper.Floor(_game.Camera.Z));
         float renderDistFactor = System.Math.Clamp((_game.Options.renderDistance - 4.0F) / 28.0F, 0.0F, 1.0F);
         float targetBob = luminance * (1.0F - renderDistFactor) + renderDistFactor;
         ViewBob += (targetBob - ViewBob) * 0.1F;
@@ -66,14 +66,14 @@ public class CameraController
         EntityLiving cameraEntity = _game.Camera;
         float fov = isHand ? 70.0F : (30.0F + _game.Options.Fov * 90.0F);
 
-        if (cameraEntity.isInFluid(Material.Water))
+        if (cameraEntity.IsInFluid(Material.Water))
         {
             fov -= 10.0F;
         }
 
-        if (cameraEntity.health <= 0)
+        if (cameraEntity.Health <= 0)
         {
-            float deathTimeF = cameraEntity.deathTime + tickDelta;
+            float deathTimeF = cameraEntity.DeathTime + tickDelta;
             fov /= (1.0F - 500.0F / (deathTimeF + 500.0F)) * 2.0F + 1.0F;
         }
 
@@ -90,19 +90,19 @@ public class CameraController
     public void ApplyDamageTiltEffect(float tickDelta)
     {
         EntityLiving cameraEntity = _game.Camera;
-        float hurtTimeF = cameraEntity.hurtTime - tickDelta;
+        float hurtTimeF = cameraEntity.HurtTime - tickDelta;
 
-        if (cameraEntity.health <= 0)
+        if (cameraEntity.Health <= 0)
         {
-            float deathTimeF = cameraEntity.deathTime + tickDelta;
+            float deathTimeF = cameraEntity.DeathTime + tickDelta;
             GLManager.GL.Rotate(40.0F - 8000.0F / (deathTimeF + 200.0F), 0.0F, 0.0F, 1.0F);
         }
 
         if (hurtTimeF >= 0.0F)
         {
-            hurtTimeF /= cameraEntity.maxHurtTime;
+            hurtTimeF /= cameraEntity.MaxHurtTime;
             hurtTimeF = MathHelper.Sin(hurtTimeF * hurtTimeF * hurtTimeF * hurtTimeF * (float)Math.PI);
-            float attackedYaw = cameraEntity.attackedAtYaw;
+            float attackedYaw = cameraEntity.AttackedAtYaw;
             GLManager.GL.Rotate(-attackedYaw, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(-hurtTimeF * 14.0F, 0.0F, 0.0F, 1.0F);
             GLManager.GL.Rotate(attackedYaw, 0.0F, 1.0F, 0.0F);
@@ -113,10 +113,10 @@ public class CameraController
     {
         if (_game.Camera is EntityPlayer player)
         {
-            float speedDelta = player.horizontalSpeed - player.prevHorizontalSpeed;
-            float speed = -(player.horizontalSpeed + speedDelta * tickDelta);
+            float speedDelta = player.HorizontalSpeed - player.PrevHorizontalSpeed;
+            float speed = -(player.HorizontalSpeed + speedDelta * tickDelta);
             float bobAmount = player.prevStepBobbingAmount + (player.stepBobbingAmount - player.prevStepBobbingAmount) * tickDelta;
-            float pitch = player.cameraPitch + (player.tilt - player.cameraPitch) * tickDelta;
+            float pitch = player.CameraPitch + (player.Tilt - player.CameraPitch) * tickDelta;
 
             GLManager.GL.Translate(MathHelper.Sin(speed * (float)Math.PI) * bobAmount * 0.5F, -Math.Abs(MathHelper.Cos(speed * (float)Math.PI) * bobAmount), 0.0F);
             GLManager.GL.Rotate(MathHelper.Sin(speed * (float)Math.PI) * bobAmount * 3.0F, 0.0F, 0.0F, 1.0F);
@@ -128,10 +128,10 @@ public class CameraController
     public void ApplyCameraTransform(float tickDelta)
     {
         EntityLiving cameraEntity = _game.Camera;
-        float eyeHeightOffset = cameraEntity.standingEyeHeight - 1.62F;
-        double x = cameraEntity.prevX + (cameraEntity.x - cameraEntity.prevX) * (double)tickDelta;
-        double y = cameraEntity.prevY + (cameraEntity.y - cameraEntity.prevY) * (double)tickDelta - (double)eyeHeightOffset;
-        double z = cameraEntity.prevZ + (cameraEntity.z - cameraEntity.prevZ) * (double)tickDelta;
+        float eyeHeightOffset = cameraEntity.StandingEyeHeight - 1.62F;
+        double x = cameraEntity.PrevX + (cameraEntity.X - cameraEntity.PrevX) * (double)tickDelta;
+        double y = cameraEntity.PrevY + (cameraEntity.Y - cameraEntity.PrevY) * (double)tickDelta - (double)eyeHeightOffset;
+        double z = cameraEntity.PrevZ + (cameraEntity.Z - cameraEntity.PrevZ) * (double)tickDelta;
 
         GLManager.GL.Rotate(_prevCameraRollAmount + (_cameraRollAmount - _prevCameraRollAmount) * tickDelta, 0.0F, 0.0F, 1.0F);
 
@@ -141,16 +141,16 @@ public class CameraController
             GLManager.GL.Translate(0.0F, 0.3F, 0.0F);
             if (!_game.Options.DebugCamera)
             {
-                int blockId = _game.World.Reader.GetBlockId(MathHelper.Floor(cameraEntity.x), MathHelper.Floor(cameraEntity.y), MathHelper.Floor(cameraEntity.z));
+                int blockId = _game.World.Reader.GetBlockId(MathHelper.Floor(cameraEntity.X), MathHelper.Floor(cameraEntity.Y), MathHelper.Floor(cameraEntity.Z));
                 if (blockId == Block.Bed.ID)
                 {
-                    int meta = _game.World.Reader.GetBlockMeta(MathHelper.Floor(cameraEntity.x), MathHelper.Floor(cameraEntity.y), MathHelper.Floor(cameraEntity.z));
+                    int meta = _game.World.Reader.GetBlockMeta(MathHelper.Floor(cameraEntity.X), MathHelper.Floor(cameraEntity.Y), MathHelper.Floor(cameraEntity.Z));
                     int rotation = meta & 3;
                     GLManager.GL.Rotate(rotation * 90, 0.0F, 1.0F, 0.0F);
                 }
 
-                GLManager.GL.Rotate(cameraEntity.prevYaw + (cameraEntity.yaw - cameraEntity.prevYaw) * tickDelta + 180.0F, 0.0F, -1.0F, 0.0F);
-                GLManager.GL.Rotate(cameraEntity.prevPitch + (cameraEntity.pitch - cameraEntity.prevPitch) * tickDelta, -1.0F, 0.0F, 0.0F);
+                GLManager.GL.Rotate(cameraEntity.PrevYaw + (cameraEntity.Yaw - cameraEntity.PrevYaw) * tickDelta + 180.0F, 0.0F, -1.0F, 0.0F);
+                GLManager.GL.Rotate(cameraEntity.PrevPitch + (cameraEntity.Pitch - cameraEntity.PrevPitch) * tickDelta, -1.0F, 0.0F, 0.0F);
             }
         }
         else if (_game.Options.CameraMode == EnumCameraMode.ThirdPerson || _game.Options.CameraMode == EnumCameraMode.FrontThirdPerson)
@@ -178,8 +178,8 @@ public class CameraController
             }
             else
             {
-                targetYaw = cameraEntity.yaw;
-                targetPitch = cameraEntity.pitch;
+                targetYaw = cameraEntity.Yaw;
+                targetPitch = cameraEntity.Pitch;
 
                 double vecX = (double)(-MathHelper.Sin(targetYaw / 180.0F * (float)Math.PI) * MathHelper.Cos(targetPitch / 180.0F * (float)Math.PI)) * currentDistance;
                 double vecZ = (double)(MathHelper.Cos(targetYaw / 180.0F * (float)Math.PI) * MathHelper.Cos(targetPitch / 180.0F * (float)Math.PI)) * currentDistance;
@@ -218,15 +218,15 @@ public class CameraController
                     }
                 }
 
-                GLManager.GL.Rotate(cameraEntity.pitch - targetPitch, 1.0F, 0.0F, 0.0F);
-                GLManager.GL.Rotate(cameraEntity.yaw - targetYaw, 0.0F, 1.0F, 0.0F);
+                GLManager.GL.Rotate(cameraEntity.Pitch - targetPitch, 1.0F, 0.0F, 0.0F);
+                GLManager.GL.Rotate(cameraEntity.Yaw - targetYaw, 0.0F, 1.0F, 0.0F);
                 GLManager.GL.Translate(0.0F, 0.0F, (float)-currentDistance);
                 if (_game.Options.CameraMode == EnumCameraMode.FrontThirdPerson)
                 {
                     GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
                 }
-                GLManager.GL.Rotate(targetYaw - cameraEntity.yaw, 0.0F, 1.0F, 0.0F);
-                GLManager.GL.Rotate(targetPitch - cameraEntity.pitch, 1.0F, 0.0F, 0.0F);
+                GLManager.GL.Rotate(targetYaw - cameraEntity.Yaw, 0.0F, 1.0F, 0.0F);
+                GLManager.GL.Rotate(targetPitch - cameraEntity.Pitch, 1.0F, 0.0F, 0.0F);
             }
         }
         else
@@ -236,8 +236,8 @@ public class CameraController
 
         if (!_game.Options.DebugCamera)
         {
-            GLManager.GL.Rotate(cameraEntity.prevPitch + (cameraEntity.pitch - cameraEntity.prevPitch) * tickDelta, 1.0F, 0.0F, 0.0F);
-            GLManager.GL.Rotate(cameraEntity.prevYaw + (cameraEntity.yaw - cameraEntity.prevYaw) * tickDelta + 180.0F, 0.0F, 1.0F, 0.0F);
+            GLManager.GL.Rotate(cameraEntity.PrevPitch + (cameraEntity.Pitch - cameraEntity.PrevPitch) * tickDelta, 1.0F, 0.0F, 0.0F);
+            GLManager.GL.Rotate(cameraEntity.PrevYaw + (cameraEntity.Yaw - cameraEntity.PrevYaw) * tickDelta + 180.0F, 0.0F, 1.0F, 0.0F);
         }
 
         GLManager.GL.Translate(0.0F, eyeHeightOffset, 0.0F);

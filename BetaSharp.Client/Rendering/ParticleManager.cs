@@ -57,17 +57,17 @@ public class ParticleManager
     public void renderParticles(Entity camera, float partialTick)
     {
         ParticleRenderer.Render(_layers,
-            camera.yaw, camera.pitch,
-            camera.x, camera.y, camera.z,
-            camera.lastTickX, camera.lastTickY, camera.lastTickZ,
+            camera.Yaw, camera.Pitch,
+            camera.X, camera.Y, camera.Z,
+            camera.LastTickX, camera.LastTickY, camera.LastTickZ,
             partialTick, _textureManager, worldObj);
     }
 
     public void renderSpecialParticles(Entity camera, float partialTick)
     {
         ParticleRenderer.RenderSpecial(_specialParticles,
-            camera.x, camera.y, camera.z,
-            camera.lastTickX, camera.lastTickY, camera.lastTickZ,
+            camera.X, camera.Y, camera.Z,
+            camera.LastTickX, camera.LastTickY, camera.LastTickZ,
             partialTick);
     }
 

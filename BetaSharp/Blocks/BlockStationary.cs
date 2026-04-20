@@ -8,13 +8,19 @@ internal class BlockStationary : BlockFluid
     public BlockStationary(int id, Material material) : base(id, material)
     {
         SetTickRandomly(false);
-        if (material == Material.Lava) SetTickRandomly(true);
+        if (material == Material.Lava)
+        {
+            SetTickRandomly(true);
+        }
     }
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
         base.NeighborUpdate(@event);
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) != ID) return;
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) != ID)
+        {
+            return;
+        }
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, ID - 1, meta, false);
@@ -32,9 +38,15 @@ internal class BlockStationary : BlockFluid
     public override void OnTick(OnTickEvent @event)
     {
         (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
-        if (@event.World.Reader.GetBlockId(x, y, z) == ID) ConvertToFlowing(@event);
+        if (@event.World.Reader.GetBlockId(x, y, z) == ID)
+        {
+            ConvertToFlowing(@event);
+        }
 
-        if (Material != Material.Lava) return;
+        if (Material != Material.Lava)
+        {
+            return;
+        }
 
         int attempts = @event.World.Random.NextInt(3);
 
@@ -63,5 +75,5 @@ internal class BlockStationary : BlockFluid
         }
     }
 
-    private static bool IsFlammable(IBlockReader world, int x, int y, int z) => world.GetMaterial(x, y, z).IsBurnable;
+    public override bool IsFlammable(IBlockReader reader, int x, int y, int z) => reader.GetMaterial(x, y, z).IsBurnable;
 }

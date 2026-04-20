@@ -23,14 +23,14 @@ public class BlockEntityMobSpawnerRenderer : BlockEntitySpecialRenderer
 
         if (ent != null)
         {
-            ent.setWorld(spawner.World);
+            ent.SetWorld(spawner.World);
             float scale = 7.0F / 16.0F;
             GLManager.GL.Translate(0.0F, 0.4F, 0.0F);
             GLManager.GL.Rotate((float)(spawner.LastRotation + (spawner.Rotation - spawner.LastRotation) * (double)tickDelta) * 10.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(-30.0F, 1.0F, 0.0F, 0.0F);
             GLManager.GL.Translate(0.0F, -0.4F, 0.0F);
             GLManager.GL.Scale(scale, scale, scale);
-            ent.setPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
+            ent.SetPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
             EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(ent, 0.0D, 0.0D, 0.0D, 0.0F, tickDelta);
         }
 

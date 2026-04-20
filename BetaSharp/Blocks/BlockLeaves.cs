@@ -7,14 +7,13 @@ namespace BetaSharp.Blocks;
 
 public class BlockLeaves : BlockLeavesBase
 {
-    private readonly ThreadLocal<int[]?> s_decayRegion = new(() => null);
+    private const sbyte DecayRadius = 4;
+    private const sbyte RegionSize = 32;
+    private const int LoadCheckExtent = DecayRadius + 1;
+    private const int PlaneSize = RegionSize * RegionSize;
+    private const int CenterOffset = RegionSize / 2;
     private readonly int _spriteIndex;
-
-    const sbyte DecayRadius = 4;
-    const sbyte RegionSize = 32;
-    const int LoadCheckExtent = DecayRadius + 1;
-    const int PlaneSize = RegionSize * RegionSize;
-    const int CenterOffset = RegionSize / 2;
+    private readonly ThreadLocal<int[]?> s_decayRegion = new(() => null);
 
     public BlockLeaves(int id, int textureId) : base(id, textureId, Material.Leaves, false)
     {
@@ -27,8 +26,16 @@ public class BlockLeaves : BlockLeavesBase
     public override int GetColorMultiplier(IBlockReader reader, int x, int y, int z)
     {
         int meta = reader.GetBlockMeta(x, y, z);
-        if ((meta & 1) == 1) return FoliageColors.getSpruceColor();
-        if ((meta & 2) == 2) return FoliageColors.getBirchColor();
+        if ((meta & 1) == 1)
+        {
+            return FoliageColors.getSpruceColor();
+        }
+
+        if ((meta & 2) == 2)
+        {
+            return FoliageColors.getBirchColor();
+        }
+
         reader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
         double temperature = reader.GetBiomeSource().TemperatureMap[0];
         double downfall = reader.GetBiomeSource().DownfallMap[0];
@@ -51,7 +58,10 @@ public class BlockLeaves : BlockLeavesBase
                 for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                 {
                     int blockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    if (blockId != Leaves.ID) continue;
+                    if (blockId != Leaves.ID)
+                    {
+                        continue;
+                    }
 
                     int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
                     @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, leavesMeta | 8);
@@ -62,9 +72,17 @@ public class BlockLeaves : BlockLeavesBase
 
     public override void OnTick(OnTickEvent @event)
     {
-        if (@event.World.IsRemote) return;
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
+
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        if ((meta & 8) == 0) return;
+        if ((meta & 8) == 0)
+        {
+            return;
+        }
+
         s_decayRegion.Value ??= new int[RegionSize * RegionSize * RegionSize];
 
         int[] decayRegion = s_decayRegion.Value;

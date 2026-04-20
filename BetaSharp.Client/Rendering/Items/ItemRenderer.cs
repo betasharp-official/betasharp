@@ -27,8 +27,8 @@ public class ItemRenderer : EntityRenderer
         random.SetSeed(187L);
         ItemStack var10 = var1.stack;
         GLManager.GL.PushMatrix();
-        float var11 = MathHelper.Sin((var1.age + var9) / 10.0F + var1.bobPhase) * 0.1F + 0.1F;
-        float var12 = ((var1.age + var9) / 20.0F + var1.bobPhase) * (180.0F / (float)Math.PI);
+        float var11 = MathHelper.Sin((var1.Age + var9) / 10.0F + var1.bobPhase) * 0.1F + 0.1F;
+        float var12 = ((var1.Age + var9) / 20.0F + var1.bobPhase) * (180.0F / (float)Math.PI);
         byte var13 = 1;
         if (var1.stack.Count > 1)
         {
@@ -74,7 +74,7 @@ public class ItemRenderer : EntityRenderer
                     GLManager.GL.Translate(var16, var17, var18);
                 }
 
-                BlockRenderer.RenderBlockOnInventory(Block.Blocks[var10.ItemId], var10.getDamage(), var1.getBrightnessAtEyes(var9), Tessellator.instance);
+                BlockRenderer.RenderBlockOnInventory(Block.Blocks[var10.ItemId], var10.getDamage(), var1.GetBrightnessAtEyes(var9), Tessellator.instance);
                 GLManager.GL.PopMatrix();
             }
         }
@@ -109,7 +109,7 @@ public class ItemRenderer : EntityRenderer
                 var24 = (var23 >> 16 & 255) / 255.0F;
                 var25 = (var23 >> 8 & 255) / 255.0F;
                 var26 = (var23 & 255) / 255.0F;
-                float var27 = var1.getBrightnessAtEyes(var9);
+                float var27 = var1.GetBrightnessAtEyes(var9);
                 GLManager.GL.Color4(var24 * var27, var25 * var27, var26 * var27, 1.0F);
             }
 

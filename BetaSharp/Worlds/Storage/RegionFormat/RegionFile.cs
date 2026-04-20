@@ -22,15 +22,15 @@ internal class RegionFile
         {
             _dataFile = new FileStream(input, FileMode.OpenOrCreate);
 
-            int var2;
+            int headerIndex;
             if (_dataFile.Length < 4096L)
             {
-                for (var2 = 0; var2 < 1024; ++var2)
+                for (headerIndex = 0; headerIndex < 1024; ++headerIndex)
                 {
                     _dataFile.WriteInt(0);
                 }
 
-                for (var2 = 0; var2 < 1024; ++var2)
+                for (headerIndex = 0; headerIndex < 1024; ++headerIndex)
                 {
                     _dataFile.WriteInt(0);
                 }
@@ -40,17 +40,17 @@ internal class RegionFile
 
             if ((_dataFile.Length & 4095L) != 0L)
             {
-                for (var2 = 0; var2 < (_dataFile.Length & 4095L); ++var2)
+                for (headerIndex = 0; headerIndex < (_dataFile.Length & 4095L); ++headerIndex)
                 {
                     _dataFile.WriteByte(0);
                 }
             }
 
-            var2 = (int)_dataFile.Length / 4096;
-            _sectorFree = new List<bool>(var2);
+            headerIndex = (int)_dataFile.Length / 4096;
+            _sectorFree = new List<bool>(headerIndex);
 
-            int var3;
-            for (var3 = 0; var3 < var2; ++var3)
+            int sectorIndex;
+            for (sectorIndex = 0; sectorIndex < headerIndex; ++sectorIndex)
             {
                 _sectorFree.Add(true);
             }
@@ -59,24 +59,24 @@ internal class RegionFile
             _sectorFree[1] = false;
             _dataFile.Seek(0L, SeekOrigin.Begin);
 
-            int var4;
-            for (var3 = 0; var3 < 1024; ++var3)
+            int offset;
+            for (sectorIndex = 0; sectorIndex < 1024; ++sectorIndex)
             {
-                var4 = _dataFile.ReadInt();
-                _offsets[var3] = var4;
-                if (var4 != 0 && (var4 >> 8) + (var4 & 255) <= _sectorFree.Count())
+                offset = _dataFile.ReadInt();
+                _offsets[sectorIndex] = offset;
+                if (offset != 0 && (offset >> 8) + (offset & 255) <= _sectorFree.Count())
                 {
-                    for (int var5 = 0; var5 < (var4 & 255); ++var5)
+                    for (int usedSectorIndex = 0; usedSectorIndex < (offset & 255); ++usedSectorIndex)
                     {
-                        _sectorFree[(var4 >> 8) + var5] = false;
+                        _sectorFree[(offset >> 8) + usedSectorIndex] = false;
                     }
                 }
             }
 
-            for (var3 = 0; var3 < 1024; ++var3)
+            for (sectorIndex = 0; sectorIndex < 1024; ++sectorIndex)
             {
-                var4 = _dataFile.ReadInt();
-                _chunkSaveTimes[var3] = var4;
+                offset = _dataFile.ReadInt();
+                _chunkSaveTimes[sectorIndex] = offset;
             }
         }
         catch (IOException ex)
@@ -89,54 +89,54 @@ internal class RegionFile
     {
         lock (this)
         {
-            int var1 = _sizeDelta;
+            int delta = _sizeDelta;
             _sizeDelta = 0;
-            return var1;
+            return delta;
         }
     }
 
-    public ChunkDataStream GetChunkDataInputStream(int var1, int var2)
+    public ChunkDataStream GetChunkDataInputStream(int chunkX, int chunkZ)
     {
         lock (this)
         {
-            if (OutOfBounds(var1, var2))
+            if (OutOfBounds(chunkX, chunkZ))
             {
                 return null;
             }
 
             try
             {
-                int var3 = GetOffset(var1, var2);
-                if (var3 == 0)
+                int offset = GetOffset(chunkX, chunkZ);
+                if (offset == 0)
                 {
                     return null;
                 }
 
-                int var4 = var3 >> 8;
-                int var5 = var3 & 255;
+                int sectorNumber = offset >> 8;
+                int sectorCount = offset & 255;
 
-                if (var4 + var5 > _sectorFree.Count())
+                if (sectorNumber + sectorCount > _sectorFree.Count())
                 {
                     return null;
                 }
 
-                _dataFile.Seek(var4 * 4096, SeekOrigin.Begin);
-                int var6 = _dataFile.ReadInt();
-                if (var6 > 4096 * var5)
+                _dataFile.Seek(sectorNumber * 4096, SeekOrigin.Begin);
+                int compressedLength = _dataFile.ReadInt();
+                if (compressedLength > 4096 * sectorCount)
                 {
                     return null;
                 }
 
-                CompressionType var7 = (CompressionType)_dataFile.ReadByte();
-                byte[] var8;
-                Stream var9;
+                CompressionType compressionType = (CompressionType)_dataFile.ReadByte();
+                byte[] compressedData;
+                Stream stream;
 
-                if (var7 == CompressionType.ZLibDeflate)
+                if (compressionType == CompressionType.ZLibDeflate)
                 {
-                    var8 = new byte[var6 - 1];
-                    _dataFile.ReadExactly(var8);
-                    var9 = new ZLibStream(new MemoryStream(var8), CompressionMode.Decompress);
-                    return new ChunkDataStream(var9, var7);
+                    compressedData = new byte[compressedLength - 1];
+                    _dataFile.ReadExactly(compressedData);
+                    stream = new ZLibStream(new MemoryStream(compressedData), CompressionMode.Decompress);
+                    return new ChunkDataStream(stream, compressionType);
                 }
 
                 return null;
@@ -148,137 +148,137 @@ internal class RegionFile
         }
     }
 
-    public Stream GetChunkDataOutputStream(int var1, int var2)
+    public Stream GetChunkDataOutputStream(int chunkX, int chunkZ)
     {
-        if (OutOfBounds(var1, var2))
+        if (OutOfBounds(chunkX, chunkZ))
         {
             return null;
         }
 
-        RegionFileChunkBuffer buffer = new(this, var1, var2);
+        RegionFileChunkBuffer buffer = new(this, chunkX, chunkZ);
         return new ZLibStream(buffer, CompressionMode.Compress);
     }
 
-    public void Write(int var1, int var2, byte[] var3, int var4)
+    public void Write(int chunkX, int chunkZ, byte[] data, int length)
     {
         lock (this)
         {
             try
             {
-                int var5 = GetOffset(var1, var2);
-                int var6 = var5 >> 8;
-                int var7 = var5 & 255;
-                int var8 = (var4 + 5) / 4096 + 1;
-                if (var8 >= 256)
+                int offset = GetOffset(chunkX, chunkZ);
+                int sectorNumber = offset >> 8;
+                int allocatedSectorCount = offset & 255;
+                int requiredSectorCount = (length + 5) / 4096 + 1;
+                if (requiredSectorCount >= 256)
                 {
                     return;
                 }
 
-                if (var6 != 0 && var7 == var8)
+                if (sectorNumber != 0 && allocatedSectorCount == requiredSectorCount)
                 {
-                    Write(var6, var3, var4);
+                    Write(sectorNumber, data, length);
                 }
                 else
                 {
-                    int var9;
-                    for (var9 = 0; var9 < var7; ++var9)
+                    int freeRunStart;
+                    for (freeRunStart = 0; freeRunStart < allocatedSectorCount; ++freeRunStart)
                     {
-                        _sectorFree[var6 + var9] = true;
+                        _sectorFree[sectorNumber + freeRunStart] = true;
                     }
 
-                    var9 = _sectorFree.IndexOf(true);
-                    int var10 = 0;
-                    int var11;
-                    if (var9 != -1)
+                    freeRunStart = _sectorFree.IndexOf(true);
+                    int freeRunLength = 0;
+                    int sectorIndex;
+                    if (freeRunStart != -1)
                     {
-                        for (var11 = var9; var11 < _sectorFree.Count(); ++var11)
+                        for (sectorIndex = freeRunStart; sectorIndex < _sectorFree.Count(); ++sectorIndex)
                         {
-                            if (var10 != 0)
+                            if (freeRunLength != 0)
                             {
-                                if (_sectorFree[var11])
+                                if (_sectorFree[sectorIndex])
                                 {
-                                    ++var10;
+                                    ++freeRunLength;
                                 }
                                 else
                                 {
-                                    var10 = 0;
+                                    freeRunLength = 0;
                                 }
                             }
-                            else if (_sectorFree[var11])
+                            else if (_sectorFree[sectorIndex])
                             {
-                                var9 = var11;
-                                var10 = 1;
+                                freeRunStart = sectorIndex;
+                                freeRunLength = 1;
                             }
 
-                            if (var10 >= var8)
+                            if (freeRunLength >= requiredSectorCount)
                             {
                                 break;
                             }
                         }
                     }
 
-                    if (var10 >= var8)
+                    if (freeRunLength >= requiredSectorCount)
                     {
-                        var6 = var9;
-                        SetOffset(var1, var2, (var9 << 8) | var8);
+                        sectorNumber = freeRunStart;
+                        SetOffset(chunkX, chunkZ, (freeRunStart << 8) | requiredSectorCount);
 
-                        for (var11 = 0; var11 < var8; ++var11)
+                        for (sectorIndex = 0; sectorIndex < requiredSectorCount; ++sectorIndex)
                         {
-                            _sectorFree[var6 + var11] = false;
+                            _sectorFree[sectorNumber + sectorIndex] = false;
                         }
 
-                        Write(var6, var3, var4);
+                        Write(sectorNumber, data, length);
                     }
                     else
                     {
                         _dataFile.Seek(_dataFile.Length, SeekOrigin.Begin);
-                        var6 = _sectorFree.Count();
+                        sectorNumber = _sectorFree.Count();
 
-                        for (var11 = 0; var11 < var8; ++var11)
+                        for (sectorIndex = 0; sectorIndex < requiredSectorCount; ++sectorIndex)
                         {
                             _dataFile.Write(s_emptySector);
                             _sectorFree.Add(false);
                         }
 
-                        _sizeDelta += 4096 * var8;
-                        Write(var6, var3, var4);
-                        SetOffset(var1, var2, (var6 << 8) | var8);
+                        _sizeDelta += 4096 * requiredSectorCount;
+                        Write(sectorNumber, data, length);
+                        SetOffset(chunkX, chunkZ, (sectorNumber << 8) | requiredSectorCount);
                     }
                 }
 
-                func_22208_b(var1, var2, (int)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000L));
+                func_22208_b(chunkX, chunkZ, (int)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000L));
             }
-            catch (IOException var12)
+            catch (IOException ex)
             {
-                _logger.LogError(var12, "Exception");
+                _logger.LogError(ex, "Exception");
             }
         }
     }
 
-    private void Write(int var1, byte[] var2, int var3)
+    private void Write(int sectorNumber, byte[] data, int length)
     {
-        _dataFile.Seek(var1 * 4096, SeekOrigin.Begin);
-        _dataFile.WriteInt(var3 + 1);
+        _dataFile.Seek(sectorNumber * 4096, SeekOrigin.Begin);
+        _dataFile.WriteInt(length + 1);
         _dataFile.WriteByte((byte)CompressionType.ZLibDeflate);
-        _dataFile.Write(var2, 0, var3);
+        _dataFile.Write(data, 0, length);
     }
 
-    private static bool OutOfBounds(int var1, int var2) => var1 < 0 || var1 >= 32 || var2 < 0 || var2 >= 32;
+    private static bool OutOfBounds(int chunkX, int chunkZ) => chunkX < 0 || chunkX >= 32 || chunkZ < 0 || chunkZ >= 32;
 
-    private int GetOffset(int var1, int var2) => _offsets[var1 + var2 * 32];
+    private int GetOffset(int chunkX, int chunkZ) => _offsets[chunkX + chunkZ * 32];
 
-    private void SetOffset(int var1, int var2, int var3)
+    private void SetOffset(int chunkX, int chunkZ, int offset)
     {
-        _offsets[var1 + var2 * 32] = var3;
-        _dataFile.Seek((var1 + var2 * 32) * 4, SeekOrigin.Begin);
-        _dataFile.WriteInt(var3);
+        _offsets[chunkX + chunkZ * 32] = offset;
+        _dataFile.Seek((chunkX + chunkZ * 32) * 4, SeekOrigin.Begin);
+        _dataFile.WriteInt(offset);
     }
 
-    private void func_22208_b(int var1, int var2, int var3)
+    private void func_22208_b(int chunkX, int chunkZ, int timestamp)
     {
-        _chunkSaveTimes[var1 + var2 * 32] = var3;
-        _dataFile.Seek(4096 + (var1 + var2 * 32) * 4, SeekOrigin.Begin);
-        _dataFile.WriteInt(var3);
+        _chunkSaveTimes[chunkX + chunkZ * 32] = timestamp;
+        _dataFile.Seek(4096 + (chunkX + chunkZ * 32) * 4, SeekOrigin.Begin);
+        _dataFile.WriteInt(timestamp);
     }
 
     public void Flush()

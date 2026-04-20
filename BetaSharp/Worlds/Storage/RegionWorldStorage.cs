@@ -234,7 +234,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         try
         {
             NBTTagCompound tag = new();
-            player.write(tag);
+            player.Write(tag);
 
             string tempFile = Path.Combine(_playersDirectory.FullName, "_tmp_.dat");
             string finalFile = Path.Combine(_playersDirectory.FullName, $"{player.name}.dat");
@@ -257,7 +257,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         NBTTagCompound tag = loadPlayerData(player.name);
         if (tag != null)
         {
-            player.read(tag);
+            player.Read(tag);
         }
     }
 

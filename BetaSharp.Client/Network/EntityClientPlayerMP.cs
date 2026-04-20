@@ -29,7 +29,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         sendQueue = clientNetworkHandler;
     }
 
-    public override bool damage(Entity ent, int amount)
+    public override bool Damage(Entity ent, int amount)
     {
         return false;
     }
@@ -38,11 +38,11 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     {
     }
 
-    public override void tick()
+    public override void Tick()
     {
-        if (world.Reader.IsPosLoaded(MathHelper.Floor(x), 64, MathHelper.Floor(z)))
+        if (World.Reader.IsPosLoaded(MathHelper.Floor(X), 64, MathHelper.Floor(Z)))
         {
-            base.tick();
+            base.Tick();
             func_4056_N();
         }
     }
@@ -55,7 +55,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
             inventorySyncTickCounter = 0;
         }
 
-        bool isSneaking = base.isSneaking();
+        bool isSneaking = base.IsSneaking();
         if (isSneaking != wasSneaking)
         {
             if (isSneaking)
@@ -70,57 +70,57 @@ public class EntityClientPlayerMP : ClientPlayerEntity
             wasSneaking = isSneaking;
         }
 
-        double dx = x - oldPosX;
-        double dMinY = boundingBox.MinY - lastSentMinY;
-        double dy = y - oldPosY;
-        double dz = z - oldPosZ;
-        double dYaw = (double)(yaw - oldRotationYaw);
-        double yPitch = (double)(pitch - oldRotationPitch);
+        double dx = X - oldPosX;
+        double dMinY = BoundingBox.MinY - lastSentMinY;
+        double dy = Y - oldPosY;
+        double dz = Z - oldPosZ;
+        double dYaw = (double)(Yaw - oldRotationYaw);
+        double yPitch = (double)(Pitch - oldRotationPitch);
         bool positionChanged = dMinY != 0.0D || dy != 0.0D || dx != 0.0D || dz != 0.0D;
         bool rotationChanged = dYaw != 0.0D || yPitch != 0.0D;
-        if (vehicle != null)
+        if (Vehicle != null)
         {
             if (rotationChanged)
             {
-                sendQueue.AddToSendQueue(PlayerMovePositionAndOnGroundPacket.Get(velocityX, -999.0D, -999.0D, velocityZ, onGround));
+                sendQueue.AddToSendQueue(PlayerMovePositionAndOnGroundPacket.Get(VelocityX, -999.0D, -999.0D, VelocityZ, OnGround));
             }
             else
             {
-                sendQueue.AddToSendQueue(PlayerMoveFullPacket.Get(velocityX, -999.0D, -999.0D, velocityZ, yaw, pitch, onGround));
+                sendQueue.AddToSendQueue(PlayerMoveFullPacket.Get(VelocityX, -999.0D, -999.0D, VelocityZ, Yaw, Pitch, OnGround));
             }
 
             positionChanged = false;
         }
         else if (positionChanged && rotationChanged)
         {
-            sendQueue.AddToSendQueue(PlayerMoveFullPacket.Get(x, boundingBox.MinY, y, z, yaw, pitch, onGround));
+            sendQueue.AddToSendQueue(PlayerMoveFullPacket.Get(X, BoundingBox.MinY, Y, Z, Yaw, Pitch, OnGround));
         }
         else if (positionChanged)
         {
-            sendQueue.AddToSendQueue(PlayerMovePositionAndOnGroundPacket.Get(x, boundingBox.MinY, y, z, onGround));
+            sendQueue.AddToSendQueue(PlayerMovePositionAndOnGroundPacket.Get(X, BoundingBox.MinY, Y, Z, OnGround));
         }
         else if (rotationChanged)
         {
-            sendQueue.AddToSendQueue(PlayerMoveLookAndOnGroundPacket.Get(yaw, pitch, onGround));
+            sendQueue.AddToSendQueue(PlayerMoveLookAndOnGroundPacket.Get(Yaw, Pitch, OnGround));
         }
-        else if (lastOnGround != onGround)
+        else if (lastOnGround != OnGround)
         {
-            sendQueue.AddToSendQueue(PlayerMovePacket.Get(onGround));
+            sendQueue.AddToSendQueue(PlayerMovePacket.Get(OnGround));
         }
 
-        lastOnGround = onGround;
+        lastOnGround = OnGround;
         if (positionChanged)
         {
-            oldPosX = x;
-            lastSentMinY = boundingBox.MinY;
-            oldPosY = y;
-            oldPosZ = z;
+            oldPosX = X;
+            lastSentMinY = BoundingBox.MinY;
+            oldPosY = Y;
+            oldPosZ = Z;
         }
 
         if (rotationChanged)
         {
-            oldRotationYaw = yaw;
-            oldRotationPitch = pitch;
+            oldRotationYaw = Yaw;
+            oldRotationPitch = Pitch;
         }
 
     }
@@ -164,7 +164,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
 
     protected override void applyDamage(int amount)
     {
-        health -= amount;
+        Health -= amount;
     }
 
     public override void closeHandledScreen()
@@ -182,7 +182,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         }
         else
         {
-            health = amount;
+            Health = amount;
             hasReceivedInitialHealth = true;
         }
 

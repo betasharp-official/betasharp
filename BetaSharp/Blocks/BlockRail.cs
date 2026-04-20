@@ -54,12 +54,12 @@ public class BlockRail : Block
         {
             if (ID == PoweredRail.ID && (meta & 8) == 0)
             {
-                return TextureId - 16;
+                return BlockTextures.PoweredRailOff;
             }
         }
         else if (meta >= 6)
         {
-            return TextureId - 16;
+            return BlockTextures.PoweredRailOff;
         }
 
         return TextureId;
@@ -86,7 +86,10 @@ public class BlockRail : Block
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (@event.World.IsRemote) return;
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         int railMeta = meta;
@@ -96,10 +99,10 @@ public class BlockRail : Block
         }
 
         bool shouldBreak = !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) ||
-                           railMeta == 2 && !@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) ||
-                           railMeta == 3 && !@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) ||
-                           railMeta == 4 && !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) ||
-                           railMeta == 5 && !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1);
+                           (railMeta == 2 && !@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z)) ||
+                           (railMeta == 3 && !@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z)) ||
+                           (railMeta == 4 && !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1)) ||
+                           (railMeta == 5 && !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1));
 
         if (shouldBreak)
         {
@@ -122,11 +125,17 @@ public class BlockRail : Block
                 stateChanged = true;
             }
 
-            if (!stateChanged) return;
+            if (!stateChanged)
+            {
+                return;
+            }
 
             @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, ID);
 
-            if (railMeta is 2 or 3 or 4 or 5) @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, ID);
+            if (railMeta is 2 or 3 or 4 or 5)
+            {
+                @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, ID);
+            }
 
             @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, ID);
         }
@@ -141,7 +150,10 @@ public class BlockRail : Block
 
     private void UpdateShape(IWorldContext level, int x, int y, int z, bool force)
     {
-        if (!level.IsRemote) new RailLogic(this, level, new Vec3i(x, y, z)).UpdateState(level.Redstone.IsPowered(x, y, z), force);
+        if (!level.IsRemote)
+        {
+            new RailLogic(this, level, new Vec3i(x, y, z)).UpdateState(level.Redstone.IsPowered(x, y, z), force);
+        }
     }
 
     private bool IsPoweredByConnectedRails(IWorldContext level, int x, int y, int z, int meta, bool towardsNegative, int depth)
@@ -236,21 +248,34 @@ public class BlockRail : Block
         }
 
         return IsPoweredByRail(level, x, y, z, towardsNegative, depth, shape) ||
-               isSameY && IsPoweredByRail(level, x, y - 1, z, towardsNegative, depth, shape);
+               (isSameY && IsPoweredByRail(level, x, y - 1, z, towardsNegative, depth, shape));
     }
 
     private bool IsPoweredByRail(IWorldContext level, int x, int y, int z, bool towardsNegative, int depth, int shape)
     {
         int blockId = level.Reader.GetBlockId(x, y, z);
-        if (blockId != PoweredRail.ID) return false;
+        if (blockId != PoweredRail.ID)
+        {
+            return false;
+        }
 
         int meta = level.Reader.GetBlockMeta(x, y, z);
         int railMeta = meta & 7;
 
-        if (shape == 1 && railMeta is 0 or 4 or 5) return false;
-        if (shape == 0 && railMeta is 1 or 2 or 3) return false;
+        if (shape == 1 && railMeta is 0 or 4 or 5)
+        {
+            return false;
+        }
 
-        if ((meta & 8) == 0) return false;
+        if (shape == 0 && railMeta is 1 or 2 or 3)
+        {
+            return false;
+        }
+
+        if ((meta & 8) == 0)
+        {
+            return false;
+        }
 
         if (!level.Redstone.IsPowered(x, y, z) && !level.Redstone.IsPowered(x, y + 1, z))
         {

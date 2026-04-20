@@ -105,7 +105,7 @@ public class PlayerController
     {
         int targetId = world.Reader.GetBlockId(blockX, blockY, blockZ);
 
-        if (targetId > 0 && !player.isSneaking())
+        if (targetId > 0 && !player.IsSneaking())
         {
             if (!player.GameMode.CanInteract) return false;
             bool used = Block.Blocks[targetId].OnUse(new OnUseEvent(world, player, blockX, blockY, blockZ));

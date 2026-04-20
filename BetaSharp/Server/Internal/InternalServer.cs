@@ -13,7 +13,8 @@ public class InternalServer : BetaSharpServer
 
     private int _lastDifficulty;
 
-    public InternalServer(string worldPath, string levelName, WorldSettings settings, int viewDistance, int initialDifficulty) : base(new InternalServerConfiguration(levelName, settings.TerrainType.Name, settings.Seed.ToString(), settings.GeneratorOptions, viewDistance))
+    public InternalServer(string worldPath, string levelName, WorldSettings settings, int viewDistance, int initialDifficulty) :
+        base(new InternalServerConfiguration(levelName, settings.TerrainType.Name, settings.Seed.ToString(), settings.GeneratorOptions, viewDistance))
     {
         _worldPath = worldPath;
         logHelp = false;

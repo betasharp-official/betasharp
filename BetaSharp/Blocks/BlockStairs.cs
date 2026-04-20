@@ -98,7 +98,7 @@ internal class BlockStairs : Block
         int meta = 0;
         if (evt.Placer != null)
         {
-            int facing = MathHelper.Floor(evt.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
+            int facing = MathHelper.Floor(evt.Placer.Yaw * 4.0F / 360.0F + 0.5D) & 3;
 
             if (facing == 0)
             {

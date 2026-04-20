@@ -12,12 +12,21 @@ internal class BlockCactus : Block
 
     public override void OnTick(OnTickEvent @event)
     {
-        if (!@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z)) return;
+        if (!@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z))
+        {
+            return;
+        }
 
         int heightBelow = 1;
-        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == ID) heightBelow++;
+        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == ID)
+        {
+            heightBelow++;
+        }
 
-        if (heightBelow >= 3) return;
+        if (heightBelow >= 3)
+        {
+            return;
+        }
 
         int growthStage = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (growthStage == 15)
@@ -37,9 +46,9 @@ internal class BlockCactus : Block
 
     public override int GetTexture(Side side) => side switch
     {
-        Side.Up => TextureId - 1,
-        Side.Down => TextureId + 1,
-        _ => TextureId
+        Side.Up => BlockTextures.CactusTop,
+        Side.Down => BlockTextures.CactusBottom,
+        _ => BlockTextures.CactusSide
     };
 
     public override bool IsFullCube() => false;
@@ -53,7 +62,11 @@ internal class BlockCactus : Block
 
     public override void NeighborUpdate(OnTickEvent @event)
     {
-        if (CanGrow(@event)) return;
+        if (CanGrow(@event))
+        {
+            return;
+        }
+
         DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
@@ -62,13 +75,29 @@ internal class BlockCactus : Block
 
     private static bool CanGrow(IBlockReader world, int x, int y, int z)
     {
-        if (world.GetMaterial(x - 1, y, z).IsSolid) return false;
-        if (world.GetMaterial(x + 1, y, z).IsSolid) return false;
-        if (world.GetMaterial(x, y, z - 1).IsSolid) return false;
-        if (world.GetMaterial(x, y, z + 1).IsSolid) return false;
+        if (world.GetMaterial(x - 1, y, z).IsSolid)
+        {
+            return false;
+        }
+
+        if (world.GetMaterial(x + 1, y, z).IsSolid)
+        {
+            return false;
+        }
+
+        if (world.GetMaterial(x, y, z - 1).IsSolid)
+        {
+            return false;
+        }
+
+        if (world.GetMaterial(x, y, z + 1).IsSolid)
+        {
+            return false;
+        }
+
         int blockBelowId = world.GetBlockId(x, y - 1, z);
         return blockBelowId == Cactus.ID || blockBelowId == Sand.ID;
     }
 
-    public override void OnEntityCollision(OnEntityCollisionEvent ctx) => ctx.Entity.damage(null, 1);
+    public override void OnEntityCollision(OnEntityCollisionEvent ctx) => ctx.Entity.Damage(null, 1);
 }

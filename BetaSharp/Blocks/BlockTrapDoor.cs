@@ -10,10 +10,11 @@ internal class BlockTrapDoor : Block
     private const float HalfWidth = 0.5F;
     private const float FullHeight = 1.0F;
     private const float Thickness = 3.0F / 16.0F;
+
     public BlockTrapDoor(int id, Material material) : base(id, material)
     {
-        TextureId = 84;
-        if (material == Material.Metal) ++TextureId;
+        TextureId = BlockTextures.TrapdoorWood;
+        if (material == Material.Metal) TextureId = BlockTextures.TrapdoorIron;
         SetBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, FullHeight, 0.5F + HalfWidth);
     }
 
@@ -47,18 +48,43 @@ internal class BlockTrapDoor : Block
     {
         SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, Thickness, 1.0F);
 
-        if (!IsOpen(meta)) return;
+        if (!IsOpen(meta))
+        {
+            return;
+        }
 
-        if ((meta & 3) == 0) SetBoundingBox(0.0F, 0.0F, 1.0F - Thickness, 1.0F, 1.0F, 1.0F);
-        if ((meta & 3) == 1) SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, Thickness);
-        if ((meta & 3) == 2) SetBoundingBox(1.0F - Thickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-        if ((meta & 3) == 3) SetBoundingBox(0.0F, 0.0F, 0.0F, Thickness, 1.0F, 1.0F);
+        if ((meta & 3) == 0)
+        {
+            SetBoundingBox(0.0F, 0.0F, 1.0F - Thickness, 1.0F, 1.0F, 1.0F);
+        }
+
+        if ((meta & 3) == 1)
+        {
+            SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, Thickness);
+        }
+
+        if ((meta & 3) == 2)
+        {
+            SetBoundingBox(1.0F - Thickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+        }
+
+        if ((meta & 3) == 3)
+        {
+            SetBoundingBox(0.0F, 0.0F, 0.0F, Thickness, 1.0F, 1.0F);
+        }
     }
 
     private bool UpdateState(IWorldContext world, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        if (world.IsRemote) return true;
-        if (Material == Material.Metal) return true;
+        if (world.IsRemote)
+        {
+            return true;
+        }
+
+        if (Material == Material.Metal)
+        {
+            return true;
+        }
 
         int meta = world.Reader.GetBlockMeta(x, y, z);
         world.Writer.SetBlockMeta(x, y, z, meta ^ 4);
@@ -73,13 +99,19 @@ internal class BlockTrapDoor : Block
 
     private static void SetOpen(OnTickEvent ctx, bool open)
     {
-        if (ctx.World.IsRemote) return;
+        if (ctx.World.IsRemote)
+        {
+            return;
+        }
 
         (int x, int y, int z) = (ctx.X, ctx.Y, ctx.Z);
         int meta = ctx.World.Reader.GetBlockMeta(x, y, z);
 
         bool isOpen = (meta & 4) > 0;
-        if (isOpen == open) return;
+        if (isOpen == open)
+        {
+            return;
+        }
 
         ctx.World.Writer.SetBlockMeta(x, y, z, meta ^ 4);
         ctx.World.Broadcaster.WorldEvent(1003, x, y, z, 0);
@@ -87,7 +119,10 @@ internal class BlockTrapDoor : Block
 
     public override void NeighborUpdate(OnTickEvent ctx)
     {
-        if (ctx.World.IsRemote) return;
+        if (ctx.World.IsRemote)
+        {
+            return;
+        }
 
         int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         int xPos = ctx.X;

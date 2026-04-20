@@ -60,8 +60,8 @@ internal class ClayOreFeature : Feature
                         double dz = (blockZ + 0.5D - centerZ) / (radiusH / 2.0D);
                         if (dx * dx + dy * dy + dz * dz < 1.0D)
                         {
-                            int var47 = level.Reader.GetBlockId(blockX, blockY, blockZ);
-                            if (var47 == Block.Sand.ID)
+                            int blockId = level.Reader.GetBlockId(blockX, blockY, blockZ);
+                            if (blockId == Block.Sand.ID)
                             {
                                 level.Writer.SetBlockWithoutNotifyingNeighbors(blockX, blockY, blockZ, _clayBlockId, 0, false);
                             }

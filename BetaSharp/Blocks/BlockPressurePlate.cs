@@ -41,7 +41,10 @@ internal class BlockPressurePlate : Block
     {
         bool shouldBreak = !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
 
-        if (!shouldBreak) return;
+        if (!shouldBreak)
+        {
+            return;
+        }
 
         DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -95,6 +98,7 @@ internal class BlockPressurePlate : Block
                 {
                     ctx.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.1D, z + 0.5D, "random.click", 0.3F, 0.6F);
                 }
+
                 break;
 
             case false when wasPressed:
@@ -109,6 +113,7 @@ internal class BlockPressurePlate : Block
                 {
                     ctx.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.1D, z + 0.5D, "random.click", 0.3F, 0.5F);
                 }
+
                 break;
         }
 
