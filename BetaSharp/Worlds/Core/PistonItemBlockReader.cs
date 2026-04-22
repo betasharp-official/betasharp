@@ -26,7 +26,7 @@ public sealed class PistonItemBlockReader : IBlockReader
 
     public int GetBlockId(int x, int y, int z) => x == 0 && y == 0 && z == 0 ? _blockId : 0;
 
-    public BlockEntity? GetBlockEntity(int x, int y, int z) => null;
+    public static BlockEntity? GetBlockEntity(int x, int y, int z) => null;
 
     public bool IsOpaque(int x, int y, int z) => false;
 
@@ -49,11 +49,11 @@ public sealed class PistonItemBlockReader : IBlockReader
     public bool UpdateMovementInFluid(Box entityBox, Material fluidMaterial, Entity entity) => throw new NotImplementedException();
     public bool IsPosLoaded(int x, int y, int z) => throw new NotImplementedException();
 
-    public float GetNaturalBrightness(int x, int y, int z, int blockLight) => 1.0f;
+    public static float GetNaturalBrightness(int x, int y, int z, int blockLight) => 1.0f;
 
-    public float GetLuminance(int x, int y, int z) => 1.0f;
+    public static float GetLuminance(int x, int y, int z) => 1.0f;
 
     public int getBlockMeta(int x, int y, int z) => x == 0 && y == 0 && z == 0 ? _metadata : 0;
 
-    public Material getMaterial(int x, int y, int z) => Material.Air;
+    public static Material getMaterial(int x, int y, int z) => Material.Air;
 }

@@ -31,9 +31,9 @@ internal class PathEntity
     {
         PathPoint currentPoint = _points[_pathIndex];
 
-        double x = currentPoint.X + (int)(entity.width + 1.0f) * 0.5;
+        double x = currentPoint.X + (int)(entity.Width + 1.0f) * 0.5;
         double y = currentPoint.Y;
-        double z = currentPoint.Z + (int)(entity.width + 1.0f) * 0.5;
+        double z = currentPoint.Z + (int)(entity.Width + 1.0f) * 0.5;
 
         return new Vec3D(x, y, z);
     }

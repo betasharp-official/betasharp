@@ -20,13 +20,13 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
         if (var9 == Block.Sign)
         {
             GLManager.GL.Translate((float)var2 + 0.5F, (float)var4 + 12.0F / 16.0F * var10, (float)var6 + 0.5F);
-            float var11 = var1.getPushedBlockData() * 360 / 16.0F;
+            float var11 = var1.PushedBlockData * 360 / 16.0F;
             GLManager.GL.Rotate(-var11, 0.0F, 1.0F, 0.0F);
             signModel.signStick.visible = true;
         }
         else
         {
-            int var16 = var1.getPushedBlockData();
+            int var16 = var1.PushedBlockData;
             var12 = 0.0F;
             if (var16 == 2)
             {

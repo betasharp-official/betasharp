@@ -23,7 +23,7 @@ public class PlayerScreenHandler : ScreenHandler
         craftingResult = new InventoryCraftResult();
         this.isLocal = false;
         this.isLocal = isLocal;
-        AddSlot(new CraftingResultSlot(inventoryPlayer.player, craftingInput, craftingResult, 0, 144, 36));
+        AddSlot(new CraftingResultSlot(inventoryPlayer.Player, craftingInput, craftingResult, 0, 144, 36));
 
         int row;
         int column;
@@ -37,7 +37,7 @@ public class PlayerScreenHandler : ScreenHandler
 
         for (int armorSlot = 0; armorSlot < 4; ++armorSlot)
         {
-            AddSlot(new SlotArmor(this, inventoryPlayer, inventoryPlayer.size() - 1 - armorSlot, 8, 8 + armorSlot * 18, armorSlot));
+            AddSlot(new SlotArmor(this, inventoryPlayer, inventoryPlayer.Size - 1 - armorSlot, 8, 8 + armorSlot * 18, armorSlot));
         }
 
         for (row = 0; row < 3; ++row)
@@ -58,7 +58,7 @@ public class PlayerScreenHandler : ScreenHandler
 
     public override void onSlotUpdate(IInventory inv)
     {
-        craftingResult.setStack(0, CraftingManager.getInstance().FindMatchingRecipe(craftingInput));
+        craftingResult.SetStack(0, CraftingManager.getInstance().FindMatchingRecipe(craftingInput));
     }
 
     public override void onClosed(EntityPlayer player)
@@ -67,11 +67,11 @@ public class PlayerScreenHandler : ScreenHandler
 
         for (int slotIndex = 0; slotIndex < 4; ++slotIndex)
         {
-            ItemStack craftingStack = craftingInput.getStack(slotIndex);
+            ItemStack craftingStack = craftingInput.GetStack(slotIndex);
             if (craftingStack != null)
             {
                 player.inventory.AddItemStackToInventory(craftingStack);
-                craftingInput.setStack(slotIndex, null);
+                craftingInput.SetStack(slotIndex, null);
             }
         }
 
@@ -103,9 +103,9 @@ public class PlayerScreenHandler : ScreenHandler
                 if (slotStack.getItem() is ItemArmor armor)
                 {
                     int targetSlot = 5 + armor.armorType;
-                    int countBefore = slotStack.count;
+                    int countBefore = slotStack.Count;
                     insertItem(slotStack, targetSlot, targetSlot + 1, false);
-                    if (slotStack.count == countBefore)
+                    if (slotStack.Count == countBefore)
                     {
                         if (slotNumber < 36)
                         {
@@ -131,7 +131,7 @@ public class PlayerScreenHandler : ScreenHandler
                 insertItem(slotStack, 9, 45, false);
             }
 
-            if (slotStack.count == 0)
+            if (slotStack.Count == 0)
             {
                 slot.setStack(null);
             }
@@ -140,7 +140,7 @@ public class PlayerScreenHandler : ScreenHandler
                 slot.markDirty();
             }
 
-            if (slotStack.count == movedStack.count)
+            if (slotStack.Count == movedStack.Count)
             {
                 return null;
             }

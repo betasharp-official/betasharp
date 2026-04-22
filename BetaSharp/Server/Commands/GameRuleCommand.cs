@@ -1,78 +1,93 @@
 using BetaSharp.Entities;
 using BetaSharp.Rules;
-using BetaSharp.Server.Command;
 using BetaSharp.Worlds.Core;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class GameRuleCommand : ICommand
+public class GameRuleCommand : Command.Command
 {
-    public string Usage => "gamerule [rule name] [value]";
-    public string Description => "Gets or sets a game rule";
-    public string[] Names => ["gamerule"];
+    public override string Usage => "gamerule [rule name] [value]";
+    public override string Description => "Gets or sets a game rule";
+    public override string[] Names => ["gamerule"];
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder
+            .Executes(ListRules)
+            .Then(ArgumentString("rule")
+                .Executes(GetRule)
+                .Then(ArgumentString("value").Executes(SetRule)));
+
+    private static int ListRules(CommandContext<CommandSource> context)
     {
-        ServerPlayerEntity? player = c.Server.playerManager.getPlayer(c.SenderName);
-        ServerWorld world = player != null ? c.Server.getWorld(player.dimensionId) : c.Server.worlds[0];
-        RuleSet rules = world.Rules;
-        RuleRegistry registry = RuleRegistry.Instance;
-
-        if (c.Args.Length == 0)
+        (RuleSet rules, RuleRegistry registry) = GetContext(context);
+        context.Source.Output.SendMessage("Available Game Rules:");
+        foreach (IGameRule rule in registry.All)
         {
-            c.Output.SendMessage("Available Game Rules:");
-            foreach (IGameRule rule in registry.All)
-            {
-                IRuleValue val = rules.Get(rule.Key);
-                c.Output.SendMessage($"  {rule.Key} = {rule.Serialize(val)}");
-            }
-            return;
+            IRuleValue val = rules.Get(rule.Key);
+            context.Source.Output.SendMessage($"  {rule.Key} = {rule.Serialize(val)}");
         }
 
-        if (c.Args.Length == 1)
+        return 1;
+    }
+
+    private static int GetRule(CommandContext<CommandSource> context)
+    {
+        (RuleSet rules, RuleRegistry registry) = GetContext(context);
+        string ruleName = context.GetArgument<string>("rule");
+        ResourceLocation key = ResourceLocation.Parse(ruleName);
+
+        if (registry.TryGet(key, out IGameRule? rule))
         {
-            string ruleName = c.Args[0];
-            ResourceLocation key = ResourceLocation.Parse(ruleName);
-            if (registry.TryGet(key, out IGameRule? rule))
+            IRuleValue val = rules.Get(key);
+            context.Source.Output.SendMessage($"{ruleName} = {rule.Serialize(val)}");
+        }
+        else
+        {
+            context.Source.Output.SendMessage($"Unknown game rule: {ruleName}");
+        }
+
+        return 1;
+    }
+
+    private static int SetRule(CommandContext<CommandSource> context)
+    {
+        (RuleSet rules, RuleRegistry registry) = GetContext(context);
+        string ruleName = context.GetArgument<string>("rule");
+        string valueStr = context.GetArgument<string>("value");
+        ResourceLocation key = ResourceLocation.Parse(ruleName);
+
+        if (!registry.TryGet(key, out IGameRule? _))
+        {
+            context.Source.Output.SendMessage($"Unknown game rule: {ruleName}");
+            return 1;
+        }
+
+        try
+        {
+            if (rules.TrySet(key, valueStr))
             {
-                IRuleValue val = rules.Get(key);
-                c.Output.SendMessage($"{ruleName} = {rule.Serialize(val)}");
+                context.Source.Output.SendMessage($"Game rule {ruleName} has been updated to {valueStr}");
+                context.Source.LogOp($"Set game rule {ruleName} to {valueStr}");
             }
             else
             {
-                c.Output.SendMessage($"Unknown game rule: {ruleName}");
+                context.Source.Output.SendMessage($"Failed to parse value '{valueStr}' for game rule {ruleName}");
             }
-            return;
         }
-
-        if (c.Args.Length >= 2)
+        catch (Exception ex)
         {
-            string ruleName = c.Args[0];
-            string valueStr = c.Args[1];
-            ResourceLocation key = ResourceLocation.Parse(ruleName);
-
-            if (!registry.TryGet(key, out IGameRule? _))
-            {
-                c.Output.SendMessage($"Unknown game rule: {ruleName}");
-                return;
-            }
-
-            try
-            {
-                if (rules.TrySet(key, valueStr))
-                {
-                    c.Output.SendMessage($"Game rule {ruleName} has been updated to {valueStr}");
-                    c.LogOp($"Set game rule {ruleName} to {valueStr}");
-                }
-                else
-                {
-                    c.Output.SendMessage($"Failed to parse value '{valueStr}' for game rule {ruleName}");
-                }
-            }
-            catch (Exception ex)
-            {
-                c.Output.SendMessage($"Error setting game rule: {ex.Message}");
-            }
+            context.Source.Output.SendMessage($"Error setting game rule: {ex.Message}");
         }
+
+        return 1;
+    }
+
+    private static (RuleSet rules, RuleRegistry registry) GetContext(CommandContext<CommandSource> context)
+    {
+        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
+        ServerWorld world = player != null ? context.Source.Server.getWorld(player.dimensionId) : context.Source.Server.worlds[0];
+        return (world.Rules, RuleRegistry.Instance);
     }
 }

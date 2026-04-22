@@ -126,7 +126,7 @@ public static class ControllerManager
         // Jump
         if (jumpHeld != s_wasJumpDown)
         {
-            s_game.Player.movementInput.checkKeyForMovementInput(s_game.Options.KeyBindJump.keyCode, jumpHeld);
+            s_game.Player.movementInput.checkKeyForMovementInput(s_game.Options.KeyBindJump.scanCode, jumpHeld);
         }
 
         // Attack
@@ -198,8 +198,8 @@ public static class ControllerManager
         }
         else
         {
-            if (lbHeld && !s_wasHotbarLeftDown) s_game.Player.inventory.changeCurrentItem(1);
-            if (rbHeld && !s_wasHotbarRightDown) s_game.Player.inventory.changeCurrentItem(-1);
+            if (lbHeld && !s_wasHotbarLeftDown) s_game.Player.inventory.ChangeCurrentItem(1);
+            if (rbHeld && !s_wasHotbarRightDown) s_game.Player.inventory.ChangeCurrentItem(-1);
             s_nextZoomInAdjustAtMs = 0L;
             s_nextZoomOutAdjustAtMs = 0L;
         }

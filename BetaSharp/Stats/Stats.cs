@@ -68,12 +68,12 @@ public static class Stats
 
             foreach (IRecipe recipe in CraftingManager.getInstance().Recipes)
             {
-                craftedIds.Add(recipe.GetRecipeOutput().itemId);
+                craftedIds.Add(recipe.GetRecipeOutput().ItemId);
             }
 
             foreach (ItemStack itemStack in SmeltingRecipeManager.getInstance().GetSmeltingList().Values)
             {
-                craftedIds.Add(itemStack.itemId);
+                craftedIds.Add(itemStack.ItemId);
             }
 
             Crafted = new StatBase[32000];

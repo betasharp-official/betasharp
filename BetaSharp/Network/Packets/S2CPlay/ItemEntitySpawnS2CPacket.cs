@@ -20,20 +20,20 @@ public class ItemEntitySpawnS2CPacket() : Packet(PacketId.ItemEntitySpawnS2C)
     public static ItemEntitySpawnS2CPacket Get(EntityItem item)
     {
         var p = Get<ItemEntitySpawnS2CPacket>(PacketId.ItemEntitySpawnS2C);
-        p.id = item.id;
-        p.itemRawId = item.stack.itemId;
-        p.itemCount = item.stack.count;
+        p.id = item.ID;
+        p.itemRawId = item.stack.ItemId;
+        p.itemCount = item.stack.Count;
         p.itemDamage = item.stack.getDamage();
-        p.x = MathHelper.Floor(item.x * 32.0D);
-        p.y = MathHelper.Floor(item.y * 32.0D);
-        p.z = MathHelper.Floor(item.z * 32.0D);
-        p.velocityX = (sbyte)(int)(item.velocityX * 128.0D);
-        p.velocityY = (sbyte)(int)(item.velocityY * 128.0D);
-        p.velocityZ = (sbyte)(int)(item.velocityZ * 128.0D);
+        p.x = MathHelper.Floor(item.X * 32.0D);
+        p.y = MathHelper.Floor(item.Y * 32.0D);
+        p.z = MathHelper.Floor(item.Z * 32.0D);
+        p.velocityX = (sbyte)(int)(item.VelocityX * 128.0D);
+        p.velocityY = (sbyte)(int)(item.VelocityY * 128.0D);
+        p.velocityZ = (sbyte)(int)(item.VelocityZ * 128.0D);
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         id = stream.ReadInt();
         itemRawId = stream.ReadShort();
@@ -47,7 +47,7 @@ public class ItemEntitySpawnS2CPacket() : Packet(PacketId.ItemEntitySpawnS2C)
         velocityZ = (sbyte)stream.ReadByte();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(id);
         stream.WriteShort((short)itemRawId);

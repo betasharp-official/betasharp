@@ -1,24 +1,23 @@
-using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class BanIpCommand : ICommand
+public class BanIpCommand : Command.Command
 {
-    public string Usage => "ban-ip <ip>";
-    public string Description => "Bans an IP address";
-    public string[] Names => ["ban-ip"];
-    public bool DisallowInternalServer => true;
+    public override string Usage => "ban-ip <ip>";
+    public override string Description => "Bans an IP address";
+    public override string[] Names => ["ban-ip"];
+    public override bool DisallowInternalServer => true;
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder.Then(ArgumentString("ip").Executes(Execute));
+
+    private static int Execute(CommandContext<CommandSource> context)
     {
-        if (c.Args.Length < 1)
-        {
-            c.Output.SendMessage("Usage: ban-ip <ip>");
-            return;
-        }
-
-        string ip = c.Args[0];
-        c.Server.playerManager.banIp(ip);
-        c.LogOp("Banning ip " + ip);
+        string ip = context.GetArgument<string>("ip");
+        context.Source.Server.playerManager.banIp(ip);
+        context.Source.LogOp("Banning ip " + ip);
+        return 1;
     }
 }

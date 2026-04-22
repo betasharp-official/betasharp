@@ -5,30 +5,25 @@ using BetaSharp.NBT;
 
 namespace BetaSharp.Inventorys;
 
-public class InventoryPlayer : IInventory
+public class InventoryPlayer(EntityPlayer player) : IInventory
 {
-    public ItemStack?[] main = new ItemStack[36];
-    public ItemStack?[] armor = new ItemStack[4];
-    public int selectedSlot;
-    public EntityPlayer player;
-    private ItemStack? cursorStack;
-    public bool dirty;
-
-    public InventoryPlayer(EntityPlayer player)
-    {
-        this.player = player;
-    }
+    public ItemStack?[] Main = new ItemStack[36];
+    public ItemStack?[] Armor = new ItemStack[4];
+    public int SelectedSlot;
+    public EntityPlayer Player => player;
+    private ItemStack? _cursorStack;
 
     public static int HotbarSize => 9;
 
     public ItemStack? GetItemInHand() =>
-        selectedSlot < HotbarSize && selectedSlot >= 0 ? main[selectedSlot] : null;
+        SelectedSlot < HotbarSize && SelectedSlot >= 0 ? Main[SelectedSlot] : null;
 
     private int FindSlotByItemId(int itemId)
     {
-        for (int slotIndex = 0; slotIndex < main.Length; ++slotIndex)
+        for (int slotIndex = 0; slotIndex < Main.Length; ++slotIndex)
         {
-            if (main[slotIndex] != null && main[slotIndex].itemId == itemId)
+            ItemStack? stack = Main[slotIndex];
+            if (stack != null && stack.ItemId == itemId)
             {
                 return slotIndex;
             }
@@ -39,9 +34,10 @@ public class InventoryPlayer : IInventory
 
     private int StoreItemStack(ItemStack itemStack)
     {
-        for (int slotIndex = 0; slotIndex < main.Length; ++slotIndex)
+        for (int slotIndex = 0; slotIndex < Main.Length; ++slotIndex)
         {
-            if (main[slotIndex] != null && main[slotIndex].itemId == itemStack.itemId && main[slotIndex].isStackable() && main[slotIndex].count < main[slotIndex].getMaxCount() && main[slotIndex].count < getMaxCountPerStack() && (!main[slotIndex].getHasSubtypes() || main[slotIndex].getDamage() == itemStack.getDamage()))
+            ItemStack? stack = Main[slotIndex];
+            if (stack != null && stack.ItemId == itemStack.ItemId && stack.isStackable() && stack.Count < stack.getMaxCount() && stack.Count < MaxCountPerStack && (!stack.getHasSubtypes() || stack.getDamage() == itemStack.getDamage()))
             {
                 return slotIndex;
             }
@@ -52,11 +48,11 @@ public class InventoryPlayer : IInventory
 
     private int GetFreeSlot(bool preferHandSlot = true)
     {
-        if (preferHandSlot && main[selectedSlot] == null) return selectedSlot;
+        if (preferHandSlot && Main[SelectedSlot] == null) return SelectedSlot;
 
-        for (int slotIndex = 0; slotIndex < main.Length; ++slotIndex)
+        for (int slotIndex = 0; slotIndex < Main.Length; ++slotIndex)
         {
-            if (main[slotIndex] == null)
+            if (Main[slotIndex] == null)
             {
                 return slotIndex;
             }
@@ -67,11 +63,11 @@ public class InventoryPlayer : IInventory
 
     private int GetFreeHotbarSlot(bool preferHandSlot = true)
     {
-        if (preferHandSlot && main[selectedSlot] == null) return selectedSlot;
+        if (preferHandSlot && Main[SelectedSlot] == null) return SelectedSlot;
 
         for (int slotIndex = 0; slotIndex < HotbarSize; ++slotIndex)
         {
-            if (main[slotIndex] == null)
+            if (Main[slotIndex] == null)
             {
                 return slotIndex;
             }
@@ -85,28 +81,28 @@ public class InventoryPlayer : IInventory
         int slotIndex = FindSlotByItemId(itemId);
         if (slotIndex < 0)
         {
-            if (player.GameMode.FiniteResources)
+            if (Player.GameMode.FiniteResources)
             {
                 if (backupId > 0) SetCurrentItem(backupId);
                 return;
             }
 
             // move cursor to the next free so that item appears in hand.
-            if (main[selectedSlot] != null)
+            if (Main[SelectedSlot] != null)
             {
                 int h = GetFreeHotbarSlot();
-                if (h >= 0) selectedSlot = h;
+                if (h >= 0) SelectedSlot = h;
             }
 
-            player.sendChatMessage("/give " + itemId);
+            Player.sendChatMessage("/give " + itemId);
         }
         else if (slotIndex < HotbarSize)
         {
-            selectedSlot = slotIndex;
+            SelectedSlot = slotIndex;
         }
     }
 
-    public void changeCurrentItem(int scrollDirection)
+    public void ChangeCurrentItem(int scrollDirection)
     {
         if (scrollDirection > 0)
         {
@@ -118,18 +114,18 @@ public class InventoryPlayer : IInventory
             scrollDirection = -1;
         }
 
-        for (selectedSlot -= scrollDirection; selectedSlot < 0; selectedSlot += HotbarSize) { }
+        for (SelectedSlot -= scrollDirection; SelectedSlot < 0; SelectedSlot += HotbarSize) { }
 
-        while (selectedSlot >= HotbarSize)
+        while (SelectedSlot >= HotbarSize)
         {
-            selectedSlot -= HotbarSize;
+            SelectedSlot -= HotbarSize;
         }
     }
 
-    private int storePartialItemStack(ItemStack itemStack)
+    private int StorePartialItemStack(ItemStack itemStack)
     {
-        int itemId = itemStack.itemId;
-        int remainingCount = itemStack.count;
+        int itemId = itemStack.ItemId;
+        int remainingCount = itemStack.Count;
         int slotIndex = StoreItemStack(itemStack);
         if (slotIndex < 0)
         {
@@ -141,17 +137,17 @@ public class InventoryPlayer : IInventory
             return remainingCount;
         }
 
-        main[slotIndex] ??= new ItemStack(itemId, 0, itemStack.getDamage());
+        ItemStack stack = Main[slotIndex] ??= new ItemStack(itemId, 0, itemStack.getDamage());
 
         int spaceAvailable = remainingCount;
-        if (remainingCount > main[slotIndex].getMaxCount() - main[slotIndex].count)
+        if (remainingCount > stack.getMaxCount() - stack.Count)
         {
-            spaceAvailable = main[slotIndex].getMaxCount() - main[slotIndex].count;
+            spaceAvailable = stack.getMaxCount() - stack.Count;
         }
 
-        if (spaceAvailable > getMaxCountPerStack() - main[slotIndex].count)
+        if (spaceAvailable > MaxCountPerStack - stack.Count)
         {
-            spaceAvailable = getMaxCountPerStack() - main[slotIndex].count;
+            spaceAvailable = MaxCountPerStack - stack.Count;
         }
 
         if (spaceAvailable == 0)
@@ -160,23 +156,20 @@ public class InventoryPlayer : IInventory
         }
 
         remainingCount -= spaceAvailable;
-        main[slotIndex].count += spaceAvailable;
-        main[slotIndex].bobbingAnimationTime = 5;
+        stack.Count += spaceAvailable;
+        stack.AnimationTime = 5;
         return remainingCount;
     }
 
-    public void inventoryTick()
+    public void Tick()
     {
-        for (int slotIndex = 0; slotIndex < main.Length; ++slotIndex)
+        for (int slotIndex = 0; slotIndex < Main.Length; ++slotIndex)
         {
-            if (main[slotIndex] != null)
-            {
-                main[slotIndex].inventoryTick(player.world, player, slotIndex, selectedSlot == slotIndex);
-            }
+            Main[slotIndex]?.inventoryTick(Player.World, Player, slotIndex, SelectedSlot == slotIndex);
         }
     }
 
-    public bool consumeInventoryItem(int itemId)
+    public bool ConsumeInventoryItem(int itemId)
     {
         int slotIndex = FindSlotByItemId(itemId);
         if (slotIndex < 0)
@@ -185,9 +178,10 @@ public class InventoryPlayer : IInventory
         }
         else
         {
-            if (--main[slotIndex].count <= 0)
+            ItemStack? stack = Main[slotIndex];
+            if (stack is not null && --stack.Count <= 0)
             {
-                main[slotIndex] = null;
+                Main[slotIndex] = null;
             }
 
             return true;
@@ -202,9 +196,9 @@ public class InventoryPlayer : IInventory
             slotIndex = GetFreeSlot();
             if (slotIndex >= 0)
             {
-                main[slotIndex] = ItemStack.clone(itemStack);
-                main[slotIndex].bobbingAnimationTime = 5;
-                itemStack.count = 0;
+                ItemStack stack = Main[slotIndex] = ItemStack.clone(itemStack);
+                stack.AnimationTime = 5;
+                itemStack.Count = 0;
                 return true;
             }
             else
@@ -216,42 +210,49 @@ public class InventoryPlayer : IInventory
         {
             do
             {
-                slotIndex = itemStack.count;
-                itemStack.count = storePartialItemStack(itemStack);
-            } while (itemStack.count > 0 && itemStack.count < slotIndex);
+                slotIndex = itemStack.Count;
+                itemStack.Count = StorePartialItemStack(itemStack);
+            } while (itemStack.Count > 0 && itemStack.Count < slotIndex);
 
-            return itemStack.count < slotIndex;
+            return itemStack.Count < slotIndex;
         }
     }
 
     public void AddItemStackToInventoryOrDrop(ItemStack itemStack)
     {
         if (AddItemStackToInventory(itemStack)) return;
-        player.DropItem(itemStack);
+        Player.DropItem(itemStack);
     }
 
-    public ItemStack? removeStack(int slotIndex, int amount)
+    public ItemStack? RemoveStack(int slotIndex, int amount)
     {
-        ItemStack[] targetArray = main;
-        if (slotIndex >= main.Length)
+        ItemStack?[] targetArray = Main;
+        if (slotIndex >= Main.Length)
         {
-            targetArray = armor;
-            slotIndex -= main.Length;
+            targetArray = Armor;
+            slotIndex -= Main.Length;
         }
 
         if (targetArray[slotIndex] != null)
         {
             ItemStack removeStack;
-            if (targetArray[slotIndex].count <= amount)
+            ItemStack? stack = targetArray[slotIndex];
+
+            if (stack is null)
             {
-                removeStack = targetArray[slotIndex];
+                return null;
+            }
+
+            if (stack.Count <= amount)
+            {
+                removeStack = stack;
                 targetArray[slotIndex] = null;
                 return removeStack;
             }
             else
             {
-                removeStack = targetArray[slotIndex].split(amount);
-                if (targetArray[slotIndex].count == 0)
+                removeStack = stack.Split(amount);
+                if (stack.Count == 0)
                 {
                     targetArray[slotIndex] = null;
                 }
@@ -265,51 +266,55 @@ public class InventoryPlayer : IInventory
         }
     }
 
-    public void setStack(int slotIndex, ItemStack? itemStack)
+    public void SetStack(int slotIndex, ItemStack? itemStack)
     {
-        ItemStack[] targetArray = main;
+        ItemStack?[] targetArray = Main;
         if (slotIndex >= targetArray.Length)
         {
             slotIndex -= targetArray.Length;
-            targetArray = armor;
+            targetArray = Armor;
         }
 
         targetArray[slotIndex] = itemStack;
     }
 
-    public float getStrVsBlock(Block block)
+    public float GetStrVsBlock(Block block)
     {
         float miningSpeed = 1.0F;
-        if (main[selectedSlot] != null)
+        ItemStack? stack = Main[SelectedSlot];
+        if (stack != null)
         {
-            miningSpeed *= main[selectedSlot].getMiningSpeedMultiplier(block);
+            miningSpeed *= stack.getMiningSpeedMultiplier(block);
         }
 
         return miningSpeed;
     }
 
-    public NBTTagList writeToNBT(NBTTagList nbt)
+    public NBTTagList WriteToNBT(NBTTagList nbt)
     {
         int slotIndex;
         NBTTagCompound itemTag;
-        for (slotIndex = 0; slotIndex < main.Length; ++slotIndex)
+        for (slotIndex = 0; slotIndex < Main.Length; ++slotIndex)
         {
-            if (main[slotIndex] != null)
+            ItemStack? stack = Main[slotIndex];
+            if (stack != null)
             {
                 itemTag = new NBTTagCompound();
                 itemTag.SetByte("Slot", (sbyte)slotIndex);
-                main[slotIndex].writeToNBT(itemTag);
+                stack.writeToNBT(itemTag);
                 nbt.SetTag(itemTag);
             }
         }
 
-        for (slotIndex = 0; slotIndex < armor.Length; ++slotIndex)
+        for (slotIndex = 0; slotIndex < Armor.Length; ++slotIndex)
         {
-            if (armor[slotIndex] != null)
+            ItemStack? stack = Armor[slotIndex];
+
+            if (stack != null)
             {
                 itemTag = new NBTTagCompound();
                 itemTag.SetByte("Slot", (sbyte)(slotIndex + 100));
-                armor[slotIndex].writeToNBT(itemTag);
+                stack.writeToNBT(itemTag);
                 nbt.SetTag(itemTag);
             }
         }
@@ -317,10 +322,10 @@ public class InventoryPlayer : IInventory
         return nbt;
     }
 
-    public void readFromNBT(NBTTagList nbt)
+    public void ReadFromNBT(NBTTagList nbt)
     {
-        main = new ItemStack[36];
-        armor = new ItemStack[4];
+        Main = new ItemStack[36];
+        Armor = new ItemStack[4];
 
         for (int i = 0; i < nbt.TagCount(); ++i)
         {
@@ -329,49 +334,40 @@ public class InventoryPlayer : IInventory
             ItemStack itemStack = new ItemStack(itemTag);
             if (itemStack.getItem() != null)
             {
-                if (slotIndex >= 0 && slotIndex < main.Length)
+                if (slotIndex >= 0 && slotIndex < Main.Length)
                 {
-                    main[slotIndex] = itemStack;
+                    Main[slotIndex] = itemStack;
                 }
 
-                if (slotIndex >= 100 && slotIndex < armor.Length + 100)
+                if (slotIndex >= 100 && slotIndex < Armor.Length + 100)
                 {
-                    armor[slotIndex - 100] = itemStack;
+                    Armor[slotIndex - 100] = itemStack;
                 }
             }
         }
     }
 
-    public int size()
-    {
-        return main.Length + 4;
-    }
+    public int Size => Main.Length + 4;
 
-    public ItemStack getStack(int slotIndex)
+    public ItemStack? GetStack(int slotIndex)
     {
-        ItemStack[] targetArray = main;
+        ItemStack?[] targetArray = Main;
         if (slotIndex >= targetArray.Length)
         {
             slotIndex -= targetArray.Length;
-            targetArray = armor;
+            targetArray = Armor;
         }
 
         return targetArray[slotIndex];
     }
 
-    public string getName()
-    {
-        return "Inventory";
-    }
+    public string Name => "Inventory";
 
-    public int getMaxCountPerStack()
-    {
-        return 64;
-    }
+    public int MaxCountPerStack => 64;
 
     public int GetDamageVsEntity(Entity entity)
     {
-        ItemStack itemStack = getStack(selectedSlot);
+        ItemStack? itemStack = GetStack(SelectedSlot);
         return itemStack != null ? itemStack.getAttackDamage(entity) : 1;
     }
 
@@ -383,14 +379,14 @@ public class InventoryPlayer : IInventory
         }
         else
         {
-            ItemStack itemStack = getStack(selectedSlot);
-            return itemStack != null ? itemStack.isSuitableFor(block) : false;
+            ItemStack? itemStack = GetStack(SelectedSlot);
+            return itemStack != null && itemStack.isSuitableFor(block);
         }
     }
 
     public ItemStack? ArmorItemBySlot(int slotIndex)
     {
-        return armor[slotIndex];
+        return Armor[slotIndex];
     }
 
     public int GetTotalArmorValue()
@@ -399,16 +395,17 @@ public class InventoryPlayer : IInventory
         int durabilitySum = 0;
         int totalMaxDurability = 0;
 
-        for (int slotIndex = 0; slotIndex < armor.Length; ++slotIndex)
+        for (int slotIndex = 0; slotIndex < Armor.Length; ++slotIndex)
         {
-            if (armor[slotIndex] != null && armor[slotIndex].getItem() is ItemArmor)
+            ItemStack? stack = Armor[slotIndex];
+            if (stack != null && stack.getItem() is ItemArmor armor)
             {
-                int maxDurability = armor[slotIndex].getMaxDamage();
-                int pieceDamage = armor[slotIndex].getDamage2();
+                int maxDurability = stack.getMaxDamage();
+                int pieceDamage = stack.getDamage2();
                 int remainingDurability = maxDurability - pieceDamage;
                 durabilitySum += remainingDurability;
                 totalMaxDurability += maxDurability;
-                int armorValue = ((ItemArmor)armor[slotIndex].getItem()).damageReduceAmount;
+                int armorValue = armor.damageReduceAmount;
                 totalArmor += armorValue;
             }
         }
@@ -425,15 +422,16 @@ public class InventoryPlayer : IInventory
 
     public void DamageArmor(int durabilityLoss)
     {
-        for (int slotIndex = 0; slotIndex < armor.Length; ++slotIndex)
+        for (int slotIndex = 0; slotIndex < Armor.Length; ++slotIndex)
         {
-            if (armor[slotIndex] != null && armor[slotIndex].getItem() is ItemArmor)
+            ItemStack? stack = Armor[slotIndex];
+            if (stack != null && stack.getItem() is ItemArmor)
             {
-                armor[slotIndex].DamageItem(durabilityLoss, player);
-                if (armor[slotIndex].count == 0)
+                stack.DamageItem(durabilityLoss, Player);
+                if (stack.Count == 0)
                 {
-                    armor[slotIndex].onRemoved(player);
-                    armor[slotIndex] = null;
+                    ItemStack.onRemoved(Player);
+                    Armor[slotIndex] = null;
                 }
             }
         }
@@ -442,60 +440,62 @@ public class InventoryPlayer : IInventory
     public void DropInventory()
     {
         int slotIndex;
-        for (slotIndex = 0; slotIndex < main.Length; ++slotIndex)
+        for (slotIndex = 0; slotIndex < Main.Length; ++slotIndex)
         {
-            if (main[slotIndex] != null)
+            if (Main[slotIndex] != null)
             {
-                player.DropItem(main[slotIndex], true);
-                main[slotIndex] = null;
+                Player.DropItem(Main[slotIndex], true);
+                Main[slotIndex] = null;
             }
         }
 
-        for (slotIndex = 0; slotIndex < armor.Length; ++slotIndex)
+        for (slotIndex = 0; slotIndex < Armor.Length; ++slotIndex)
         {
-            if (armor[slotIndex] != null)
+            if (Armor[slotIndex] != null)
             {
-                player.DropItem(armor[slotIndex], true);
-                armor[slotIndex] = null;
+                Player.DropItem(Armor[slotIndex], true);
+                Armor[slotIndex] = null;
             }
         }
     }
 
-    public void markDirty()
+    public void MarkDirty()
     {
-        dirty = true;
     }
 
     public void SetCursorStack(ItemStack? itemStack)
     {
-        cursorStack = itemStack;
-        player.onCursorStackChanged(itemStack);
+        _cursorStack = itemStack;
+        Player.onCursorStackChanged(itemStack);
     }
 
     public ItemStack? GetCursorStack()
     {
-        return cursorStack;
+        return _cursorStack;
     }
 
-    public bool canPlayerUse(EntityPlayer entityPlayer)
+    public bool CanPlayerUse(EntityPlayer entityPlayer)
     {
-        return !player.dead && entityPlayer.getSquaredDistance(player) <= 64.0D;
+        return !Player.Dead && entityPlayer.GetSquaredDistance(Player) <= 64.0D;
     }
 
     public bool Contains(ItemStack itemStack)
     {
         int slotIndex;
-        for (slotIndex = 0; slotIndex < armor.Length; ++slotIndex)
+        for (slotIndex = 0; slotIndex < Armor.Length; ++slotIndex)
         {
-            if (armor[slotIndex] != null && armor[slotIndex].Equals(itemStack))
+            ItemStack? stack = Armor[slotIndex];
+            if (stack != null && stack.Equals(itemStack))
             {
                 return true;
             }
         }
 
-        for (slotIndex = 0; slotIndex < main.Length; ++slotIndex)
+        for (slotIndex = 0; slotIndex < Main.Length; ++slotIndex)
         {
-            if (main[slotIndex] != null && main[slotIndex].Equals(itemStack))
+            ItemStack? stack = Main[slotIndex];
+
+            if (stack != null && stack.Equals(itemStack))
             {
                 return true;
             }

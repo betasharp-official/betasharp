@@ -7,13 +7,13 @@ internal class BlockIce : BlockBreakable
 {
     public BlockIce(int id, int textureId) : base(id, textureId, Material.Ice, false)
     {
-        slipperiness = 0.98F;
+        Slipperiness = 0.98F;
         setTickRandomly(true);
     }
 
     public override int getRenderLayer() => 1;
 
-    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side) => base.isSideVisible(iBlockReader, x, y, z, 1 - side);
+    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side) => base.isSideVisible(iBlockReader, x, y, z, 1 - side);
 
     public override void onAfterBreak(OnAfterBreakEvent @event)
     {
@@ -29,11 +29,13 @@ internal class BlockIce : BlockBreakable
 
     public override void onTick(OnTickEvent @event)
     {
-        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y, @event.Z) > 11 - BlockLightOpacity[id])
+        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y, @event.Z) <= 11 - BlockLightOpacity[id])
         {
-            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Water.id);
+            return;
         }
+
+        dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Water.id);
     }
 
     public override int getPistonBehavior() => 0;

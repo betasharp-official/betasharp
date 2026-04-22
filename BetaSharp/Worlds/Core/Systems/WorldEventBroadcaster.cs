@@ -16,7 +16,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
     {
         foreach (IWorldEventListener t in eventListeners)
         {
-            t.PlaySound(sound, entity.x, entity.y - entity.standingEyeHeight, entity.z, volume, pitch);
+            t.PlaySound(sound, entity.X, entity.Y - entity.StandingEyeHeight, entity.Z, volume, pitch);
         }
     }
 

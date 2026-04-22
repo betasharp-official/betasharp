@@ -21,8 +21,8 @@ public class PlayerControllerSP : PlayerController
 
     public override void flipPlayer(EntityPlayer playerEntity)
     {
-        playerEntity.yaw = -180.0F;
-        playerEntity.prevYaw = -180.0F;
+        playerEntity.Yaw = -180.0F;
+        playerEntity.PrevYaw = -180.0F;
     }
 
     public override bool sendBlockRemoved(int x, int y, int z, int direction)
@@ -36,9 +36,9 @@ public class PlayerControllerSP : PlayerController
         if (itemStackInHand != null)
         {
             itemStackInHand.postMine(blockId, x, y, z, Game.Player);
-            if (itemStackInHand.count == 0)
+            if (itemStackInHand.Count == 0)
             {
-                itemStackInHand.onRemoved(Game.Player);
+                ItemStack.onRemoved(Game.Player);
                 Game.Player.clearStackInHand();
             }
         }
@@ -98,7 +98,7 @@ public class PlayerControllerSP : PlayerController
                 curBlockDamage += block.getHardness(Game.Player);
                 if (_mineSoundTimer % 4 == 0 && block != null)
                 {
-                    Game.SoundManager.PlaySound(block.soundGroup.StepSound, x + 0.5F, y + 0.5F, z + 0.5F, (block.soundGroup.Volume + 1.0F) / 8.0F, block.soundGroup.Pitch * 0.5F);
+                    Game.SoundManager.PlaySound(block.SoundGroup.StepSound, x + 0.5F, y + 0.5F, z + 0.5F, (block.SoundGroup.Volume + 1.0F) / 8.0F, block.SoundGroup.Pitch * 0.5F);
                 }
 
                 ++_mineSoundTimer;

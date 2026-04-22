@@ -21,7 +21,7 @@ public class WorldEventS2CPacket() : Packet(PacketId.WorldEventS2C)
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         eventId = stream.ReadInt();
         x = stream.ReadInt();
@@ -30,7 +30,7 @@ public class WorldEventS2CPacket() : Packet(PacketId.WorldEventS2C)
         data = stream.ReadInt();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(eventId);
         stream.WriteInt(x);

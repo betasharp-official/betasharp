@@ -22,10 +22,10 @@ internal class CraftingManager
         new RecipesTools().AddRecipes(this);
         new RecipesWeapons().AddRecipes(this);
         new RecipesIngots().AddRecipes(this);
-        new RecipesFood().AddRecipes(this);
-        new RecipesCrafting().AddRecipes(this);
+        RecipesFood.AddRecipes(this);
+        RecipesCrafting.AddRecipes(this);
         new RecipesArmor().AddRecipes(this);
-        new RecipesDyes().AddRecipes(this);
+        RecipesDyes.AddRecipes(this);
         AddRecipe(new ItemStack(Item.Paper, 3), ["###", '#', Item.SugarCane]);
         AddRecipe(new ItemStack(Item.Book, 1), ["#", "#", "#", '#', Item.Paper]);
         AddRecipe(new ItemStack(Block.Fence, 2), ["###", "###", '#', Item.Stick]);
@@ -122,10 +122,10 @@ internal class CraftingManager
 
             ItemStack? value = input switch
             {
-                Item item       => new ItemStack(item),
-                Block block     => new ItemStack(block, 1, -1),
+                Item item => new ItemStack(item),
+                Block block => new ItemStack(block, 1, -1),
                 ItemStack stack => stack,
-                _               => null // Thowing some Exception here would be ideal, but the original game does not do this
+                _ => null // Thowing some Exception here would be ideal, but the original game does not do this
             };
 
             ingredients[key] = value;

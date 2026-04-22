@@ -11,18 +11,18 @@ public class ClientCommandC2SPacket() : Packet(PacketId.ClientCommandC2S)
     public static ClientCommandC2SPacket Get(Entity ent, int mode)
     {
         var p = Get<ClientCommandC2SPacket>(PacketId.ClientCommandC2S);
-        p.entityId = ent.id;
+        p.entityId = ent.ID;
         p.mode = mode;
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         entityId = stream.ReadInt();
         mode = (sbyte)stream.ReadByte();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(entityId);
         stream.WriteByte((byte)mode);

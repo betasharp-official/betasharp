@@ -33,7 +33,7 @@ internal class ServerWorldEventListener : IWorldEventListener
 
     public void UpdateBlockEntity(int x, int y, int z, BlockEntity blockEntity)
     {
-        server.playerManager.updateBlockEntity(x, y, z, blockEntity);
+        PlayerManager.updateBlockEntity(x, y, z, blockEntity);
     }
 
     public void WorldEvent(EntityPlayer? player, int @event, int x, int y, int z, int data)
@@ -41,13 +41,13 @@ internal class ServerWorldEventListener : IWorldEventListener
         server.playerManager.sendToAround(player, x, y, z, 64.0, world.Dimension.Id, WorldEventS2CPacket.Get(@event, x, y, z, data));
         if (player is ServerPlayerEntity serverPlayer && serverPlayer.dimensionId == world.Dimension.Id)
         {
-            serverPlayer.networkHandler.sendPacket(WorldEventS2CPacket.Get(@event, x, y, z, data));
+            serverPlayer.NetworkHandler.SendPacket(WorldEventS2CPacket.Get(@event, x, y, z, data));
         }
     }
 
     public void BroadcastEntityEvent(Entity entity, byte @event)
     {
-        EntityStatusS2CPacket packet = EntityStatusS2CPacket.Get(entity.id, @event);
+        EntityStatusS2CPacket packet = EntityStatusS2CPacket.Get(entity.ID, @event);
         server.getEntityTracker(world.Dimension.Id).sendToAround(entity, packet);
     }
 
@@ -57,12 +57,12 @@ internal class ServerWorldEventListener : IWorldEventListener
     }
 
     public void SpawnParticle(string particle, double x, double y, double z, double velocityX, double velocityY, double velocityZ) { }
-    
+
     public void PlaySound(string sound, double x, double y, double z, float volume, float pitch) { }
 
     public void PlayStreaming(string stream, int x, int y, int z) { }
-    
+
     public void SetBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) { }
-    
+
     public void NotifyAmbientDarknessChanged() { }
 }

@@ -12,13 +12,13 @@ public sealed class ChunkHost(IChunkSource chunkSource)
 
     public Chunk GetChunk(int chunkX, int chunkZ) => chunkSource.GetChunk(chunkX, chunkZ);
 
-    public bool IsPosLoaded(int x, int y, int z) => y is >= 0 and < 128 && HasChunk(x >> 4, z >> 4);
+    public bool IsPosLoaded(int x, int y, int z) => y is >= 0 && y < ChuckFormat.WorldHeight && HasChunk(x >> 4, z >> 4);
 
     public bool IsRegionLoaded(int x, int y, int z, int range) => IsRegionLoaded(x - range, y - range, z - range, x + range, y + range, z + range);
 
     public bool IsRegionLoaded(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
-        if (maxY >= 0 && minY < 128)
+        if (maxY >= 0 && minY < ChuckFormat.WorldHeight)
         {
             minX >>= 4;
             minZ >>= 4;
@@ -53,7 +53,7 @@ public sealed class ChunkHost(IChunkSource chunkSource)
 
         int currentBufferOffset = 0;
         int minY = Math.Max(0, y);
-        int maxY = Math.Min(128, y + sizeY);
+        int maxY = Math.Min(ChuckFormat.WorldHeight, y + sizeY);
 
         for (int chunkX = startChunkX; chunkX <= endChunkX; chunkX++)
         {

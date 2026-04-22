@@ -1,16 +1,21 @@
-using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class SeedCommand : ICommand
+public class SeedCommand : Command.Command
 {
-    public string Usage => "seed";
-    public string Description => "Prints the world seed";
-    public string[] Names => ["seed"];
+    public override string Usage => "seed";
+    public override string Description => "Prints the world seed";
+    public override string[] Names => ["seed"];
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder.Executes(Execute);
+
+    private static int Execute(CommandContext<CommandSource> context)
     {
-        long seed = c.Server.worlds[0].Seed;
-        c.Output.SendMessage($"Seed: {seed}");
+        long seed = context.Source.Server.worlds[0].Seed;
+        context.Source.Output.SendMessage($"Seed: {seed}");
+        return 1;
     }
 }

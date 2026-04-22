@@ -58,14 +58,14 @@ public class PlayerController
 
     public virtual bool sendUseItem(EntityPlayer var1, World var2, ItemStack var3)
     {
-        int var4 = var3.count;
+        int var4 = var3.Count;
         ItemStack var5 = var3.use(var2, var1);
-        if (var5 != var3 || var5 != null && var5.count != var4)
+        if (var5 != var3 || var5 != null && var5.Count != var4)
         {
-            var1.inventory.main[var1.inventory.selectedSlot] = var5;
-            if (var5.count == 0)
+            var1.inventory.Main[var1.inventory.SelectedSlot] = var5;
+            if (var5.Count == 0)
             {
-                var1.inventory.main[var1.inventory.selectedSlot] = null;
+                var1.inventory.Main[var1.inventory.SelectedSlot] = null;
             }
 
             return true;
@@ -105,7 +105,7 @@ public class PlayerController
     {
         int targetId = world.Reader.GetBlockId(blockX, blockY, blockZ);
 
-        if (targetId > 0 && !player.isSneaking())
+        if (targetId > 0 && !player.IsSneaking())
         {
             if (!player.GameMode.CanInteract) return false;
             bool used = Block.Blocks[targetId].onUse(new OnUseEvent(world, player, blockX, blockY, blockZ));

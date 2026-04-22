@@ -5,7 +5,7 @@ namespace BetaSharp.Recipes;
 
 internal class RecipesDyes
 {
-    public void AddRecipes(CraftingManager m)
+    public static void AddRecipes(CraftingManager m)
     {
         for (int colorIndex = 0; colorIndex < 16; ++colorIndex)
         {

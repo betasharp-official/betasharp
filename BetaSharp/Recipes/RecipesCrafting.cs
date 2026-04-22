@@ -5,7 +5,7 @@ namespace BetaSharp.Recipes;
 
 internal class RecipesCrafting
 {
-    public void AddRecipes(CraftingManager manager)
+    public static void AddRecipes(CraftingManager manager)
     {
         manager.AddRecipe(new ItemStack(Block.Chest), "###", "# #", "###", '#', Block.Planks);
         manager.AddRecipe(new ItemStack(Block.Furnace), "###", "# #", "###", '#', Block.Cobblestone);

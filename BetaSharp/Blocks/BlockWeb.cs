@@ -11,7 +11,7 @@ internal class BlockWeb : Block
     {
     }
 
-    public override void onEntityCollision(OnEntityCollisionEvent ctx) => ctx.Entity.slowed = true;
+    public override void onEntityCollision(OnEntityCollisionEvent ctx) => ctx.Entity.Slowed = true;
 
     public override bool isOpaque() => false;
 

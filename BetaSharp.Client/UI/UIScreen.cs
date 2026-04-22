@@ -552,6 +552,7 @@ public abstract class UIScreen
                 };
 
                 FocusedElement.OnKeyDown?.Invoke(evt);
+                if (evt.Handled) return;
             }
 
             KeyTyped(Keyboard.getEventKey(), Keyboard.getEventCharacter());

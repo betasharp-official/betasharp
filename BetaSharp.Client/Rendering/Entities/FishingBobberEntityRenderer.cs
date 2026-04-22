@@ -39,32 +39,32 @@ public class FishingBobberEntityRenderer : EntityRenderer
         GLManager.GL.PopMatrix();
         if (var1.angler != null)
         {
-            float var20 = (var1.angler.prevYaw + (var1.angler.yaw - var1.angler.prevYaw) * tickDelta) * (float)Math.PI / 180.0F;
+            float var20 = (var1.angler.PrevYaw + (var1.angler.Yaw - var1.angler.PrevYaw) * tickDelta) * (float)Math.PI / 180.0F;
             double var21 = (double)MathHelper.Sin(var20);
             double var23 = (double)MathHelper.Cos(var20);
             float var25 = var1.angler.getSwingProgress(tickDelta);
             float var26 = MathHelper.Sin(MathHelper.Sqrt(var25) * (float)Math.PI);
             Vec3D var27 = new(-0.5D, 0.03D, 0.8D);
-            var27.rotateAroundX(-(var1.angler.prevPitch + (var1.angler.pitch - var1.angler.prevPitch) * tickDelta) * (float)Math.PI / 180.0F);
-            var27.rotateAroundY(-(var1.angler.prevYaw + (var1.angler.yaw - var1.angler.prevYaw) * tickDelta) * (float)Math.PI / 180.0F);
+            var27.rotateAroundX(-(var1.angler.PrevPitch + (var1.angler.Pitch - var1.angler.PrevPitch) * tickDelta) * (float)Math.PI / 180.0F);
+            var27.rotateAroundY(-(var1.angler.PrevYaw + (var1.angler.Yaw - var1.angler.PrevYaw) * tickDelta) * (float)Math.PI / 180.0F);
             var27.rotateAroundY(var26 * 0.5F);
             var27.rotateAroundX(-var26 * 0.7F);
-            double var28 = var1.angler.prevX + (var1.angler.x - var1.angler.prevX) * (double)tickDelta + var27.x;
-            double var30 = var1.angler.prevY + (var1.angler.y - var1.angler.prevY) * (double)tickDelta + var27.y;
-            double var32 = var1.angler.prevZ + (var1.angler.z - var1.angler.prevZ) * (double)tickDelta + var27.z;
+            double var28 = var1.angler.PrevX + (var1.angler.X - var1.angler.PrevX) * (double)tickDelta + var27.x;
+            double var30 = var1.angler.PrevY + (var1.angler.Y - var1.angler.PrevY) * (double)tickDelta + var27.y;
+            double var32 = var1.angler.PrevZ + (var1.angler.Z - var1.angler.PrevZ) * (double)tickDelta + var27.z;
             if (Dispatcher.Options.CameraMode != EnumCameraMode.FirstPerson)
             {
-                var20 = (var1.angler.lastBodyYaw + (var1.angler.bodyYaw - var1.angler.lastBodyYaw) * tickDelta) * (float)Math.PI / 180.0F;
+                var20 = (var1.angler.LastBodyYaw + (var1.angler.BodyYaw - var1.angler.LastBodyYaw) * tickDelta) * (float)Math.PI / 180.0F;
                 var21 = (double)MathHelper.Sin(var20);
                 var23 = (double)MathHelper.Cos(var20);
-                var28 = var1.angler.prevX + (var1.angler.x - var1.angler.prevX) * (double)tickDelta - var23 * 0.35D - var21 * 0.85D;
-                var30 = var1.angler.prevY + (var1.angler.y - var1.angler.prevY) * (double)tickDelta - 0.45D;
-                var32 = var1.angler.prevZ + (var1.angler.z - var1.angler.prevZ) * (double)tickDelta - var21 * 0.35D + var23 * 0.85D;
+                var28 = var1.angler.PrevX + (var1.angler.X - var1.angler.PrevX) * (double)tickDelta - var23 * 0.35D - var21 * 0.85D;
+                var30 = var1.angler.PrevY + (var1.angler.Y - var1.angler.PrevY) * (double)tickDelta - 0.45D;
+                var32 = var1.angler.PrevZ + (var1.angler.Z - var1.angler.PrevZ) * (double)tickDelta - var21 * 0.35D + var23 * 0.85D;
             }
 
-            double var34 = var1.prevX + (var1.x - var1.prevX) * (double)tickDelta;
-            double var36 = var1.prevY + (var1.y - var1.prevY) * (double)tickDelta + 0.25D;
-            double var38 = var1.prevZ + (var1.z - var1.prevZ) * (double)tickDelta;
+            double var34 = var1.PrevX + (var1.X - var1.PrevX) * (double)tickDelta;
+            double var36 = var1.PrevY + (var1.Y - var1.PrevY) * (double)tickDelta + 0.25D;
+            double var38 = var1.PrevZ + (var1.Z - var1.PrevZ) * (double)tickDelta;
             double var40 = (double)(float)(var28 - var34);
             double var42 = (double)(float)(var30 - var36);
             double var44 = (double)(float)(var32 - var38);

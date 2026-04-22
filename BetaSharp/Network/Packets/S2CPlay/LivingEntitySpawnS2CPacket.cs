@@ -18,20 +18,20 @@ public class LivingEntitySpawnS2CPacket() : Packet(PacketId.LivingEntitySpawnS2C
     public static LivingEntitySpawnS2CPacket Get(EntityLiving ent)
     {
         var p = Get<LivingEntitySpawnS2CPacket>(PacketId.LivingEntitySpawnS2C);
-        p.entityId = ent.id;
+        p.entityId = ent.ID;
         p.type = (sbyte)EntityRegistry.GetRawId(ent);
-        p.xPosition = MathHelper.Floor(ent.x * 32.0D);
-        p.yPosition = MathHelper.Floor(ent.y * 32.0D);
-        p.zPosition = MathHelper.Floor(ent.z * 32.0D);
-        p.yaw = (sbyte)(int)(ent.yaw * 256.0F / 360.0F);
-        p.pitch = (sbyte)(int)(ent.pitch * 256.0F / 360.0F);
+        p.xPosition = MathHelper.Floor(ent.X * 32.0D);
+        p.yPosition = MathHelper.Floor(ent.Y * 32.0D);
+        p.zPosition = MathHelper.Floor(ent.Z * 32.0D);
+        p.yaw = (sbyte)(int)(ent.Yaw * 256.0F / 360.0F);
+        p.pitch = (sbyte)(int)(ent.Pitch * 256.0F / 360.0F);
         var stream = new MemoryStream();
         ent.DataSynchronizer.WriteAll(stream);
         p.Data = stream.ToArray();
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         entityId = stream.ReadInt();
         type = (sbyte)stream.ReadByte();
@@ -43,7 +43,7 @@ public class LivingEntitySpawnS2CPacket() : Packet(PacketId.LivingEntitySpawnS2C
         Data = stream.ReadUntil(127);
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(entityId);
         stream.WriteByte((byte)type);

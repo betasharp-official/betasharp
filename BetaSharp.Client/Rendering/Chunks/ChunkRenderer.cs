@@ -4,6 +4,7 @@ using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Profiling;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core;
 using Silk.NET.Maths;
 
@@ -530,7 +531,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
             Vector3D<int> chunkPos = (currentChunk + offset) * SubChunkRenderer.Size;
 
-            if (chunkPos.Y < 0 || chunkPos.Y >= 128)
+            if (chunkPos.Y < 0 || chunkPos.Y >= ChuckFormat.WorldHeight)
                 continue;
 
             if (_renderers.ContainsKey(chunkPos) || _chunkVersions.ContainsKey(chunkPos))

@@ -16,7 +16,7 @@ public class EntityFootStepFX : EntityFX
     public EntityFootStepFX(TextureManager textureManager, World world, double x, double y, double z) : base(world, x, y, z, 0.0D, 0.0D, 0.0D)
     {
         this.textureManager = textureManager;
-        velocityX = velocityY = velocityZ = 0.0D;
+        VelocityX = VelocityY = VelocityZ = 0.0D;
         maxAge = 200;
     }
 
@@ -33,10 +33,10 @@ public class EntityFootStepFX : EntityFX
         alpha *= 0.2F;
         GLManager.GL.Disable(GLEnum.Lighting);
         float footprintSize = 2.0F / 16.0F;
-        float renderX = (float)(x - interpPosX);
-        float renderY = (float)(y - interpPosY);
-        float renderZ = (float)(z - interpPosZ);
-        float brightness = world.Lighting.GetLuminance(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z));
+        float renderX = (float)(X - interpPosX);
+        float renderY = (float)(Y - interpPosY);
+        float renderZ = (float)(Z - interpPosZ);
+        float brightness = World.Lighting.GetLuminance(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
         textureManager.BindTexture(textureManager.GetTextureId("/misc/footprint.png"));
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
@@ -51,12 +51,12 @@ public class EntityFootStepFX : EntityFX
         GLManager.GL.Enable(GLEnum.Lighting);
     }
 
-    public override void tick()
+    public override void Tick()
     {
         ++localAge;
         if (localAge == maxAge)
         {
-            markDead();
+            MarkDead();
         }
 
     }

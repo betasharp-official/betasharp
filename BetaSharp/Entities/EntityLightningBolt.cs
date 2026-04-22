@@ -16,10 +16,10 @@ public class EntityLightningBolt : EntityWeatherEffect
     public EntityLightningBolt(IWorldContext world) : this(world, 0, 0, 0) { }
     public EntityLightningBolt(IWorldContext world, double x, double y, double z) : base(world)
     {
-        setPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
+        SetPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
         flashTimer = 2;
-        renderSeed = random.NextLong();
-        flashCount = random.NextInt(3) + 1;
+        renderSeed = Random.NextLong();
+        flashCount = Random.NextInt(3) + 1;
         if (world.Difficulty >= 2 && world.ChunkHost.IsRegionLoaded(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z), 10))
         {
             int strikeX = MathHelper.Floor(x);
@@ -32,9 +32,9 @@ public class EntityLightningBolt : EntityWeatherEffect
 
             for (strikeX = 0; strikeX < 4; ++strikeX)
             {
-                strikeY = MathHelper.Floor(x) + random.NextInt(3) - 1;
-                strikeZ = MathHelper.Floor(y) + random.NextInt(3) - 1;
-                int fireZ = MathHelper.Floor(z) + random.NextInt(3) - 1;
+                strikeY = MathHelper.Floor(x) + Random.NextInt(3) - 1;
+                strikeZ = MathHelper.Floor(y) + Random.NextInt(3) - 1;
+                int fireZ = MathHelper.Floor(z) + Random.NextInt(3) - 1;
                 if (world.Reader.GetBlockId(strikeY, strikeZ, fireZ) == 0 && Block.Fire.canPlaceAt(new CanPlaceAtContext(world, 0, strikeY, strikeZ, fireZ)))
                 {
                     world.Writer.SetBlock(strikeY, strikeZ, fireZ, Block.Fire.id);
@@ -44,13 +44,13 @@ public class EntityLightningBolt : EntityWeatherEffect
 
     }
 
-    public override void tick()
+    public override void Tick()
     {
-        base.tick();
+        base.Tick();
         if (flashTimer == 2)
         {
-            world.Broadcaster.PlaySoundAtPos(x, y, z, "ambient.weather.thunder", 10000.0F, 0.8F + random.NextFloat() * 0.2F);
-            world.Broadcaster.PlaySoundAtPos(x, y, z, "random.explode", 2.0F, 0.5F + random.NextFloat() * 0.2F);
+            World.Broadcaster.PlaySoundAtPos(X, Y, Z, "ambient.weather.thunder", 10000.0F, 0.8F + Random.NextFloat() * 0.2F);
+            World.Broadcaster.PlaySoundAtPos(X, Y, Z, "random.explode", 2.0F, 0.5F + Random.NextFloat() * 0.2F);
         }
 
         --flashTimer;
@@ -58,21 +58,21 @@ public class EntityLightningBolt : EntityWeatherEffect
         {
             if (flashCount == 0)
             {
-                markDead();
+                MarkDead();
             }
-            else if (flashTimer < -random.NextInt(10))
+            else if (flashTimer < -Random.NextInt(10))
             {
                 --flashCount;
                 flashTimer = 1;
-                renderSeed = random.NextLong();
-                if (world.ChunkHost.IsRegionLoaded(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z), 10))
+                renderSeed = Random.NextLong();
+                if (World.ChunkHost.IsRegionLoaded(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z), 10))
                 {
-                    int floorX = MathHelper.Floor(x);
-                    int floorY = MathHelper.Floor(y);
-                    int floorZ = MathHelper.Floor(z);
-                    if (world.Reader.GetBlockId(floorX, floorY, floorZ) == 0 && Block.Fire.canPlaceAt(new CanPlaceAtContext(world, 0, floorX, floorY, floorZ)))
+                    int floorX = MathHelper.Floor(X);
+                    int floorY = MathHelper.Floor(Y);
+                    int floorZ = MathHelper.Floor(Z);
+                    if (World.Reader.GetBlockId(floorX, floorY, floorZ) == 0 && Block.Fire.canPlaceAt(new CanPlaceAtContext(World, 0, floorX, floorY, floorZ)))
                     {
-                        world.Writer.SetBlock(floorX, floorY, floorZ, Block.Fire.id);
+                        World.Writer.SetBlock(floorX, floorY, floorZ, Block.Fire.id);
                     }
                 }
             }
@@ -81,29 +81,29 @@ public class EntityLightningBolt : EntityWeatherEffect
         if (flashTimer >= 0)
         {
             double searchRadius = 3.0D;
-            var entities = world.Entities.GetEntities(this, new Box(x - searchRadius, y - searchRadius, z - searchRadius, x + searchRadius, y + 6.0D + searchRadius, z + searchRadius));
+            var entities = World.Entities.GetEntities(this, new Box(X - searchRadius, Y - searchRadius, Z - searchRadius, X + searchRadius, Y + 6.0D + searchRadius, Z + searchRadius));
 
             for (int i = 0; i < entities.Count; ++i)
             {
                 Entity entity = entities[i];
-                entity.onStruckByLightning(this);
+                entity.OnStruckByLightning(this);
             }
 
-            world.Environment.LightningTicksLeft = 2;
+            World.Environment.LightningTicksLeft = 2;
         }
 
     }
 
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
     }
 
-    public override bool shouldRender(Vec3D cameraPos)
+    public override bool ShouldRender(Vec3D cameraPos)
     {
         return flashTimer >= 0;
     }

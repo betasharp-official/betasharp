@@ -54,7 +54,7 @@ internal class ItemReed : Item
             }
         }
 
-        if (itemStack.count == 0)
+        if (itemStack.Count == 0)
         {
             return false;
         }
@@ -65,8 +65,8 @@ internal class ItemReed : Item
                 Block block = Block.Blocks[field_320_a];
                 if (world.Writer.SetBlock(x, y, z, field_320_a))
                 {
-                    Block.Blocks[field_320_a].onPlaced(new OnPlacedEvent(world, entityPlayer, meta, meta, x, y, z));
-                    world.Broadcaster.PlaySoundAtEntity(entityPlayer, block.soundGroup.StepSound, (block.soundGroup.Volume + 1.0F) / 2.0F, block.soundGroup.Pitch * 0.8F);
+                    Block.Blocks[field_320_a].onPlaced(new OnPlacedEvent(world, entityPlayer, meta.ToSide(), meta.ToSide(), x, y, z));
+                    world.Broadcaster.PlaySoundAtEntity(entityPlayer, block.SoundGroup.StepSound, (block.SoundGroup.Volume + 1.0F) / 2.0F, block.SoundGroup.Pitch * 0.8F);
                     itemStack.ConsumeItem(entityPlayer);
                 }
             }

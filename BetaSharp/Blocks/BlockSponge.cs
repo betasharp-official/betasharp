@@ -4,17 +4,16 @@ namespace BetaSharp.Blocks;
 
 internal class BlockSponge : Block
 {
-    public BlockSponge(int id) : base(id, Material.Sponge) => textureId = 48;
+    private const sbyte AbsorbRadius = 2;
+    public BlockSponge(int id) : base(id, Material.Sponge) => TextureId = BlockTextures.Sponge;
 
     public override void onPlaced(OnPlacedEvent @event)
     {
-        sbyte radius = 2;
-
-        for (int checkX = @event.X - radius; checkX <= @event.X + radius; ++checkX)
+        for (int checkX = @event.X - AbsorbRadius; checkX <= @event.X + AbsorbRadius; ++checkX)
         {
-            for (int checkY = @event.Y - radius; checkY <= @event.Y + radius; ++checkY)
+            for (int checkY = @event.Y - AbsorbRadius; checkY <= @event.Y + AbsorbRadius; ++checkY)
             {
-                for (int checkZ = @event.Z - radius; checkZ <= @event.Z + radius; ++checkZ)
+                for (int checkZ = @event.Z - AbsorbRadius; checkZ <= @event.Z + AbsorbRadius; ++checkZ)
                 {
                     if (@event.World.Reader.GetMaterial(checkX, checkY, checkZ) == Material.Water)
                     {
@@ -26,13 +25,12 @@ internal class BlockSponge : Block
 
     public override void onBreak(OnBreakEvent @event)
     {
-        sbyte radius = 2;
 
-        for (int checkX = @event.X - radius; checkX <= @event.X + radius; ++checkX)
+        for (int checkX = @event.X - AbsorbRadius; checkX <= @event.X + AbsorbRadius; ++checkX)
         {
-            for (int checkY = @event.Y - radius; checkY <= @event.Y + radius; ++checkY)
+            for (int checkY = @event.Y - AbsorbRadius; checkY <= @event.Y + AbsorbRadius; ++checkY)
             {
-                for (int checkZ = @event.Z - radius; checkZ <= @event.Z + radius; ++checkZ)
+                for (int checkZ = @event.Z - AbsorbRadius; checkZ <= @event.Z + AbsorbRadius; ++checkZ)
                 {
                     @event.World.Broadcaster.NotifyNeighbors(checkX, checkY, checkZ, @event.World.Reader.GetBlockId(checkX, checkY, checkZ));
                 }

@@ -29,7 +29,7 @@ public sealed class ItemRenderBlockAccess : IBlockReader, ILightProvider
     public int getBlockId(int x, int y, int z)
         => x == 0 && y == 0 && z == 0 ? _blockId : 0;
 
-    public BlockEntity? getBlockEntity(int x, int y, int z) => null;
+    public static BlockEntity? getBlockEntity(int x, int y, int z) => null;
 
     public float getNaturalBrightness(int x, int y, int z, int blockLight) => _brightness;
 
@@ -40,13 +40,13 @@ public sealed class ItemRenderBlockAccess : IBlockReader, ILightProvider
         return x == 0 && y == 0 && z == 0 ? _metadata : 0;
     }
 
-    public Material getMaterial(int x, int y, int z) => Material.Air;
+    public static Material getMaterial(int x, int y, int z) => Material.Air;
 
-    public bool isOpaque(int x, int y, int z) => false;
+    public static bool isOpaque(int x, int y, int z) => false;
 
-    public bool shouldSuffocate(int x, int y, int z) => false;
+    public static bool shouldSuffocate(int x, int y, int z) => false;
 
-    public BiomeSource getBiomeSource() => null!;
+    public static BiomeSource getBiomeSource() => null!;
     public int GetBlockId(int x, int y, int z) => getBlockId(x, y, z);
     public int GetBlockMeta(int x, int y, int z) => GetMeta(x, y, z);
     public BlockEntity? GetBlockEntity(int x, int y, int z) => getBlockEntity(x, y, z);

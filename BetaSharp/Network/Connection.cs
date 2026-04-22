@@ -28,8 +28,6 @@ public class Connection
 
     private int _timeout;
     private readonly ConcurrentQueue<Packet> _sendQueue = [];
-    private readonly ConcurrentQueue<Packet> _delayedSendQueue = [];
-    private int _delay;
     private Socket? _socket;
     private NetworkStream? _networkStream;
 
@@ -64,14 +62,7 @@ public class Connection
         if (!closed)
         {
             Interlocked.Increment(ref packet.UseCount);
-            if (Packet.Registry[packet.Id]!.WorldPacket)
-            {
-                _delayedSendQueue.Enqueue(packet);
-            }
-            else
-            {
-                _sendQueue.Enqueue(packet);
-            }
+            _sendQueue.Enqueue(packet);
         }
     }
 
@@ -107,7 +98,7 @@ public class Connection
 
     public virtual void tick()
     {
-        if (_sendQueue.Count > 1048576 || _delayedSendQueue.Count > 1048576)
+        if (_sendQueue.Count > 1048576)
         {
             disconnect("disconnect.overflow");
         }
@@ -161,7 +152,7 @@ public class Connection
 
     public int getWorldPacketBacklog()
     {
-        return _delayedSendQueue.Count;
+        return 0;
     }
 
     private void Reading()
@@ -208,23 +199,6 @@ public class Connection
                 while (_sendQueue.TryDequeue(out packet))
                 {
                     Interlocked.Increment(ref packet.UseCount);
-                    int pSize = packet.Size();
-                    Packet.Write(packet, _networkStream);
-                    packet.Return();
-                    BytesWritten += pSize;
-                    PacketsWritten++;
-                    wrotePacket = true;
-                }
-
-                while (!_delayedSendQueue.IsEmpty && _delay-- <= 0)
-                {
-                    if (!_delayedSendQueue.TryDequeue(out packet))
-                    {
-                        break;
-                    }
-
-                    Interlocked.Increment(ref packet.UseCount);
-                    _delay = 0;
                     int pSize = packet.Size();
                     Packet.Write(packet, _networkStream);
                     packet.Return();

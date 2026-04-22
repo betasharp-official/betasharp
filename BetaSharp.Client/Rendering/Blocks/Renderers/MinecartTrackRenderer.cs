@@ -12,7 +12,7 @@ public class MinecartTrackRenderer : IBlockRenderer
 
         int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
 
-        int textureId = rail.getTexture(0, metadata);
+        int textureId = rail.GetTexture(0, metadata);
         if (ctx.OverrideTexture >= 0)
         {
             textureId = ctx.OverrideTexture;

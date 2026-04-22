@@ -3,12 +3,8 @@ using BetaSharp.Blocks.Materials;
 
 namespace BetaSharp.Blocks;
 
-internal class BlockMobSpawner : BlockWithEntity
+internal class BlockMobSpawner(int id, int textureId) : BlockWithEntity(id, textureId, Material.Stone)
 {
-    public BlockMobSpawner(int id, int textureId) : base(id, textureId, Material.Stone)
-    {
-    }
-
     public override BlockEntity getBlockEntity() => new BlockEntityMobSpawner();
 
     public override int getDroppedItemId(int blockMeta) => 0;

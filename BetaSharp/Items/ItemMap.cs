@@ -3,8 +3,8 @@ using BetaSharp.Entities;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Chunks;
+using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Maps;
 
@@ -31,7 +31,7 @@ public class ItemMap : NetworkSyncedItem
         return mapState;
     }
 
-    public MapState getSavedMapState(ItemStack stack, IWorldContext world)
+    public static MapState getSavedMapState(ItemStack stack, IWorldContext world)
     {
         string mapName = "map_" + stack.getDamage();
         MapState? mapState = (MapState?)world.StateManager.LoadData(typeof(MapState), mapName);
@@ -59,8 +59,8 @@ public class ItemMap : NetworkSyncedItem
             int blocksPerPixel = 1 << map.Scale;
             int centerX = map.CenterX;
             int centerZ = map.CenterZ;
-            int entityPosX = MathHelper.Floor(entity.x - (double)centerX) / blocksPerPixel + mapWidth / 2;
-            int entityPosZ = MathHelper.Floor(entity.z - (double)centerZ) / blocksPerPixel + mapHeight / 2;
+            int entityPosX = MathHelper.Floor(entity.X - (double)centerX) / blocksPerPixel + mapWidth / 2;
+            int entityPosZ = MathHelper.Floor(entity.Z - (double)centerZ) / blocksPerPixel + mapHeight / 2;
             int scanRadius = 128 / blocksPerPixel;
             if (world.Dimension.HasCeiling)
             {
@@ -134,9 +134,9 @@ public class ItemMap : NetworkSyncedItem
                             }
 
                             fluidDepth /= blocksPerPixel * blocksPerPixel;
-                            int var10000 = redSum / (blocksPerPixel * blocksPerPixel);
-                            var10000 = greenSum / (blocksPerPixel * blocksPerPixel);
-                            var10000 = blueSum / (blocksPerPixel * blocksPerPixel);
+                            int averageRed = redSum / (blocksPerPixel * blocksPerPixel);
+                            int averageGreen = greenSum / (blocksPerPixel * blocksPerPixel);
+                            int averageBlue = blueSum / (blocksPerPixel * blocksPerPixel);
                             sampleX = 0;
                             sampleZ = 0;
 
@@ -216,7 +216,7 @@ public class ItemMap : NetworkSyncedItem
         }
     }
 
-    private void processBlockHeight(Chunk chunk, int chunkX, int dx, int chunkZ, int dz, ref int scanY, out int blockId, ref int fluidDepth)
+    private static void processBlockHeight(Chunk chunk, int chunkX, int dx, int chunkZ, int dz, ref int scanY, out int blockId, ref int fluidDepth)
     {
         bool foundSurface = false;
         blockId = 0;
@@ -291,8 +291,8 @@ public class ItemMap : NetworkSyncedItem
         string mapName = "map_" + itemStack.getDamage();
         MapState mapState = new MapState(mapName);
         world.StateManager.SetData(mapName, mapState);
-        mapState.CenterX = MathHelper.Floor(entityPlayer.x);
-        mapState.CenterZ = MathHelper.Floor(entityPlayer.z);
+        mapState.CenterX = MathHelper.Floor(entityPlayer.X);
+        mapState.CenterZ = MathHelper.Floor(entityPlayer.Z);
         mapState.Scale = 3;
         mapState.Dimension = (sbyte)world.Dimension.Id;
         mapState.MarkDirty();

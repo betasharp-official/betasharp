@@ -9,10 +9,7 @@ internal static class ItemLookup
     private static readonly Dictionary<string, int> s_itemNameToId = [];
     private static bool s_lookupTablesBuilt;
 
-    public static void Initialize()
-    {
-        BuildItemLookupTables();
-    }
+    public static void Initialize() => BuildItemLookupTables();
 
     internal static bool TryResolveItemId(string input, out int itemId)
     {
@@ -25,7 +22,7 @@ internal static class ItemLookup
     }
 
     internal static string ResolveItemName(ItemStack item) =>
-        s_itemNameToId.FirstOrDefault(kvp => kvp.Value == item.itemId).Key ?? item.getItemName();
+        s_itemNameToId.FirstOrDefault(kvp => kvp.Value == item.ItemId).Key ?? item.getItemName();
 
     /// <summary>
     /// Gets all available item names that start with the given prefix (with underscores)
@@ -45,12 +42,16 @@ internal static class ItemLookup
 
     private static void BuildItemLookupTables()
     {
-        if (s_lookupTablesBuilt) return;
+        if (s_lookupTablesBuilt)
+        {
+            return;
+        }
+
         s_lookupTablesBuilt = true;
 
-        var blockFields = typeof(Block).GetFields(BindingFlags.Static | BindingFlags.Public)
+        IEnumerable<FieldInfo> blockFields = typeof(Block).GetFields(BindingFlags.Static | BindingFlags.Public)
             .Where(f => f.FieldType.IsAssignableTo(typeof(Block)));
-        foreach (var field in blockFields)
+        foreach (FieldInfo field in blockFields)
         {
             if (field.GetValue(null) is Block block)
             {
@@ -58,9 +59,9 @@ internal static class ItemLookup
             }
         }
 
-        var itemFields = typeof(Item).GetFields(BindingFlags.Static | BindingFlags.Public)
+        IEnumerable<FieldInfo> itemFields = typeof(Item).GetFields(BindingFlags.Static | BindingFlags.Public)
             .Where(f => f.FieldType.IsAssignableTo(typeof(Item)));
-        foreach (var field in itemFields)
+        foreach (FieldInfo field in itemFields)
         {
             if (field.GetValue(null) is Item item)
             {

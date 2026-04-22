@@ -1,14 +1,14 @@
+using System.Buffers;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Resource.Pack;
+using BetaSharp.Registries.Data;
+using Microsoft.Extensions.Logging;
+using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using static BetaSharp.Client.Rendering.Core.Textures.TextureAtlasMipmapGenerator;
-using Microsoft.Extensions.Logging;
-using System.Buffers;
-using BetaSharp.DataAsset;
-using Silk.NET.OpenGL;
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
 
@@ -271,9 +271,6 @@ public class TextureManager : IDisposable
 
     public void Reload()
     {
-        DataAssetLoader.ResetResourcepackAssets();
-        DataAssetLoader.LoadResourcepackAssets(BetaSharp.BetaSharpDir);
-
         _atlasTileSizes.Clear();
         foreach (KeyValuePair<string, TextureHandle> entry in _textures)
         {

@@ -1,24 +1,23 @@
-using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class PardonIpCommand : ICommand
+public class PardonIpCommand : Command.Command
 {
-    public string Usage => "pardon-ip <ip>";
-    public string Description => "Pardons an IP address";
-    public string[] Names => ["pardon-ip"];
-    public bool DisallowInternalServer => true;
+    public override string Usage => "pardon-ip <ip>";
+    public override string Description => "Pardons an IP address";
+    public override string[] Names => ["pardon-ip"];
+    public override bool DisallowInternalServer => true;
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder.Then(ArgumentString("ip").Executes(Execute));
+
+    private static int Execute(CommandContext<CommandSource> context)
     {
-        if (c.Args.Length < 1)
-        {
-            c.Output.SendMessage("Usage: pardon-ip <ip>");
-            return;
-        }
-
-        string ip = c.Args[0];
-        c.Server.playerManager.unbanIp(ip);
-        c.LogOp("Pardoning ip " + ip);
+        string ip = context.GetArgument<string>("ip");
+        context.Source.Server.playerManager.unbanIp(ip);
+        context.Source.LogOp("Pardoning ip " + ip);
+        return 1;
     }
 }

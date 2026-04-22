@@ -5,19 +5,19 @@ namespace BetaSharp.Inventorys;
 
 public interface IInventory
 {
-    int size();
+    int Size { get; }
 
-    ItemStack getStack(int slotIndex);
+    ItemStack? GetStack(int slotIndex);
 
-    ItemStack? removeStack(int slotIndex, int amount);
+    ItemStack? RemoveStack(int slotIndex, int amount);
 
-    void setStack(int slotIndex, ItemStack? itemStack);
+    void SetStack(int slotIndex, ItemStack? itemStack);
 
-    string getName();
+    string Name { get; }
 
-    int getMaxCountPerStack();
+    int MaxCountPerStack { get; }
 
-    void markDirty();
+    void MarkDirty();
 
-    bool canPlayerUse(EntityPlayer entityPlayer);
+    bool CanPlayerUse(EntityPlayer entityPlayer);
 }

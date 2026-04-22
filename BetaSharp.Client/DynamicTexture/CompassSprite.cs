@@ -70,7 +70,7 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,"Error loading compass sprite");
+            _logger.LogError(ex, "Error loading compass sprite");
         }
     }
 
@@ -94,10 +94,10 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
         if (_game.World != null && _game.Player != null)
         {
             Vec3i spawnPos = _game.World.Properties.GetSpawnPos();
-            double deltaX = spawnPos.X - _game.Player.x;
-            double deltaZ = spawnPos.Z - _game.Player.z;
+            double deltaX = spawnPos.X - _game.Player.X;
+            double deltaZ = spawnPos.Z - _game.Player.Z;
 
-            targetAngle = (_game.Player.yaw - 90.0F) * Math.PI / 180.0D - Math.Atan2(deltaZ, deltaX);
+            targetAngle = (_game.Player.Yaw - 90.0F) * Math.PI / 180.0D - Math.Atan2(deltaZ, deltaX);
 
             if (_game.World.Dimension.IsNether)
             {

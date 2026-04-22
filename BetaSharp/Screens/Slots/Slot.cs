@@ -29,9 +29,9 @@ public class Slot
         return true;
     }
 
-    public ItemStack getStack()
+    public ItemStack? getStack()
     {
-        return inventory.getStack(slotIndex);
+        return inventory.GetStack(slotIndex);
     }
 
     public bool hasStack()
@@ -41,28 +41,28 @@ public class Slot
 
     public void setStack(ItemStack? stack)
     {
-        inventory.setStack(slotIndex, stack);
+        inventory.SetStack(slotIndex, stack);
         markDirty();
     }
 
     public void markDirty()
     {
-        inventory.markDirty();
+        inventory.MarkDirty();
     }
 
     public virtual int getMaxItemCount()
     {
-        return inventory.getMaxCountPerStack();
+        return inventory.MaxCountPerStack;
     }
 
-    public int getBackgroundTextureId()
+    public static int getBackgroundTextureId()
     {
         return -1;
     }
 
-    public ItemStack takeStack(int amount)
+    public ItemStack? takeStack(int amount)
     {
-        return inventory.removeStack(slotIndex, amount);
+        return inventory.RemoveStack(slotIndex, amount);
     }
 
     public bool Equals(IInventory inventory, int index)

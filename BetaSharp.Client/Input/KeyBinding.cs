@@ -1,13 +1,17 @@
+using Silk.NET.GLFW;
+
 namespace BetaSharp.Client.Input;
 
 public class KeyBinding
 {
     public string keyDescription;
-    public int keyCode;
+    public int scanCode;
+    public Keys defaultLogicalKey;
 
-    public KeyBinding(string desc, int code)
+    public KeyBinding(string desc, Keys logicalDefault)
     {
         keyDescription = desc;
-        keyCode = code;
+        defaultLogicalKey = logicalDefault;
+        scanCode = Keyboard.KEY_NONE;
     }
 }

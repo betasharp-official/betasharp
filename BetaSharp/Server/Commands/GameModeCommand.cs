@@ -1,79 +1,77 @@
 using BetaSharp.Entities;
-using BetaSharp.GameMode;
 using BetaSharp.Network.Packets.S2CPlay;
-using BetaSharp.Server.Command;
+using BetaSharp.Registries;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Commands;
 
-public class GameModeCommand : ICommand
+public class GameModeCommand : Command.Command
 {
     private static readonly ILogger s_logger = Log.Instance.For(nameof(GameModeCommand));
 
     // ReSharper disable once StringLiteralTypo
-    public string Usage => "gamemode <player> <mode>";
-    public string Description => "Broadcasts a message";
+    public override string Usage => "gamemode <player> <gamemode>";
+    public override string Description => "Sets player gamemode";
 
     // ReSharper disable once StringLiteralTypo
-    public string[] Names => ["gamemode", "gm"];
+    public override string[] Names => ["gamemode", "gm"];
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder
+            .Executes(ShowGamemode)
+            .Then(Literal("list").Executes(ListCommands))
+            .Then(ArgumentString("gamemode").Executes(SetSendersGm))
+            .Then(ArgumentPlayer("player").Then(ArgumentString("gamemode").Executes(SetTargetGm)));
+
+    private static int ListCommands(CommandContext<CommandSource> context)
     {
-        if (c.Args.Length == 0)
+        IReadableRegistry<GameMode> registry = context.Source.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes);
+        foreach (ResourceLocation key in registry.Keys)
         {
-            var p = c.Server.playerManager.getPlayer(c.SenderName)!;
-            c.Output.SendMessage(p.GameMode.Name);
-            return;
+            context.Source.Output.SendMessage(key.ToString());
         }
 
-        if (c.Args.Length == 1)
-        {
-            if (c.Args[0].Equals("list", StringComparison.OrdinalIgnoreCase))
-            {
-                ListGameModes(c);
-                return;
-            }
-
-            var p = c.Server.playerManager.getPlayer(c.SenderName)!;
-            SetGameMode(p, c.Args[0], c);
-        }
-        else
-        {
-            var p = c.Server.playerManager.getPlayer(c.Args[1]);
-            if (p == null)
-            {
-                c.Output.SendMessage("Player not found.");
-                return;
-            }
-
-            SetGameMode(p, c.Args[1], c);
-        }
+        return 1;
     }
 
-    private void ListGameModes(ICommand.CommandContext c)
+    private static int SetSendersGm(CommandContext<CommandSource> context)
     {
-        foreach (var assetRef in GameModes.GameModesLoader.Assets)
-        {
-            c.Output.SendMessage(assetRef.Value.ToString()!);
-        }
+        SetGameMode(context.Source.Server.playerManager.getPlayer(context.Source.SenderName)!, context.GetArgument<string>("gamemode"), context.Source);
+        return 1;
     }
 
-    private void SetGameMode(ServerPlayerEntity p, string arg, ICommand.CommandContext c)
+    private static int SetTargetGm(CommandContext<CommandSource> context)
     {
-        if (GameModes.TryGet(arg, out var gameMode, true))
+        ServerPlayerEntity p = context.GetArgument<ServerPlayerEntity>("player");
+        SetGameMode(p, context.GetArgument<string>("gamemode"), context.Source);
+        return 1;
+    }
+
+    private static int ShowGamemode(CommandContext<CommandSource> context)
+    {
+        ServerPlayerEntity p = context.Source.Server.playerManager.getPlayer(context.Source.SenderName)!;
+        context.Source.Output.SendMessage(p.GameMode.Name);
+        return 1;
+    }
+
+    private static void SetGameMode(ServerPlayerEntity p, string arg, CommandSource c)
+    {
+        if (c.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader().TryGetHolderByPrefix(arg, out Holder<GameMode>? holder))
         {
-            SetGameMode(p, gameMode, c);
+            SetGameMode(p, holder, c);
             return;
         }
 
         c.Output.SendMessage("Gamemode not found.");
     }
 
-    private void SetGameMode(ServerPlayerEntity p, GameMode.GameMode gameMode, ICommand.CommandContext c)
+    private static void SetGameMode(ServerPlayerEntity p, Holder<GameMode> holder, CommandSource c)
     {
-        p.networkHandler.sendPacket(PlayerGameModeUpdateS2CPacket.Get(gameMode));
-        p.GameMode = gameMode;
-        string s = $"{p.name} game mode set to {gameMode.Name}.";
+        p.GameModeHolder = holder;
+        p.NetworkHandler.SendPacket(PlayerGameModeUpdateS2CPacket.Get(holder.Value));
+        string s = $"{p.name} game mode set to {holder.Value.Name}.";
         s_logger.LogInformation(s);
         c.Output.SendMessage(s);
     }

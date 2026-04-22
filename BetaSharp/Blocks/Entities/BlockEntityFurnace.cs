@@ -10,38 +10,39 @@ namespace BetaSharp.Blocks.Entities;
 
 public class BlockEntityFurnace : BlockEntity, IInventory
 {
-    public override BlockEntityType Type => BlockEntity.Furnace;
-    private ItemStack[] inventory = new ItemStack[3];
-    public int burnTime;
-    public int cookTime;
-    public int fuelTime;
+    public override BlockEntityType Type => Furnace;
+    private ItemStack?[] _inventory = new ItemStack[3];
+    public int BurnTime { get; set; }
+    public int CookTime { get; set; }
+    public int FuelTime { get; set; }
 
-    public int size()
+    public int Size => _inventory.Length;
+
+    public ItemStack? GetStack(int slot)
     {
-        return inventory.Length;
+        return _inventory[slot];
     }
 
-    public ItemStack getStack(int slot)
+    public ItemStack? RemoveStack(int slot, int stack)
     {
-        return inventory[slot];
-    }
-
-    public ItemStack? removeStack(int slot, int stack)
-    {
-        if (inventory[slot] != null)
+        if (_inventory[slot] != null)
         {
             ItemStack removedStack;
-            if (inventory[slot].count <= stack)
+            ItemStack? iStack = _inventory[slot];
+
+            if (iStack is null) return null;
+
+            if (iStack.Count <= stack)
             {
-                removedStack = inventory[slot];
-                inventory[slot] = null;
+                removedStack = iStack;
+                _inventory[slot] = null;
                 return removedStack;
             }
 
-            removedStack = inventory[slot].split(stack);
-            if (inventory[slot].count == 0)
+            removedStack = iStack.Split(stack);
+            if (iStack.Count == 0)
             {
-                inventory[slot] = null;
+                _inventory[slot] = null;
             }
 
             return removedStack;
@@ -50,65 +51,60 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         return null;
     }
 
-    public void setStack(int slot, ItemStack? stack)
+    public void SetStack(int slot, ItemStack? stack)
     {
-        inventory[slot] = stack;
-        if (stack != null && stack.count > getMaxCountPerStack())
+        _inventory[slot] = stack;
+        if (stack != null && stack.Count > MaxCountPerStack)
         {
-            stack.count = getMaxCountPerStack();
+            stack.Count = MaxCountPerStack;
         }
     }
 
-    public string getName()
-    {
-        return "Furnace";
-    }
+    public string Name => "Furnace";
 
-    public int getMaxCountPerStack()
-    {
-        return 64;
-    }
+    public int MaxCountPerStack => 64;
 
-    public bool canPlayerUse(EntityPlayer player)
+    public bool CanPlayerUse(EntityPlayer player)
     {
-        return World.Entities.GetBlockEntity<BlockEntityFurnace>(X, Y, Z) == this && player.getSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
+        return World.Entities.GetBlockEntity<BlockEntityFurnace>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
     }
 
     public override void readNbt(NBTTagCompound nbt)
     {
         base.readNbt(nbt);
         NBTTagList itemList = nbt.GetTagList("Items");
-        inventory = new ItemStack[size()];
+        _inventory = new ItemStack[Size];
 
         for (int itemIndex = 0; itemIndex < itemList.TagCount(); ++itemIndex)
         {
             NBTTagCompound itemTag = (NBTTagCompound)itemList.TagAt(itemIndex);
             sbyte slot = itemTag.GetByte("Slot");
-            if (slot >= 0 && slot < inventory.Length)
+            if (slot >= 0 && slot < _inventory.Length)
             {
-                inventory[slot] = new ItemStack(itemTag);
+                _inventory[slot] = new ItemStack(itemTag);
             }
         }
 
-        burnTime = nbt.GetShort("BurnTime");
-        cookTime = nbt.GetShort("CookTime");
-        fuelTime = getFuelTime(inventory[1]);
+        BurnTime = nbt.GetShort("BurnTime");
+        CookTime = nbt.GetShort("CookTime");
+        FuelTime = GetFuelTime(_inventory[1]);
     }
 
     public override void writeNbt(NBTTagCompound nbt)
     {
         base.writeNbt(nbt);
-        nbt.SetShort("BurnTime", (short)burnTime);
-        nbt.SetShort("CookTime", (short)cookTime);
+        nbt.SetShort("BurnTime", (short)BurnTime);
+        nbt.SetShort("CookTime", (short)CookTime);
         NBTTagList itemList = new();
 
-        for (int slotIndex = 0; slotIndex < inventory.Length; ++slotIndex)
+        for (int slotIndex = 0; slotIndex < _inventory.Length; ++slotIndex)
         {
-            if (inventory[slotIndex] != null)
+            ItemStack? stack = _inventory[slotIndex];
+            if (stack != null)
             {
                 NBTTagCompound slotTag = new();
                 slotTag.SetByte("Slot", (sbyte)slotIndex);
-                inventory[slotIndex].writeToNBT(slotTag);
+                stack.writeToNBT(slotTag);
                 itemList.SetTag(slotTag);
             }
         }
@@ -116,119 +112,149 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         nbt.SetTag("Items", itemList);
     }
 
-    public int getCookTimeDelta(int multiplier)
+    public int GetCookTimeDelta(int multiplier)
     {
-        return cookTime * multiplier / 200;
+        return CookTime * multiplier / 200;
     }
 
-    public int getFuelTimeDelta(int multiplier)
+    public int GetFuelTimeDelta(int multiplier)
     {
-        if (fuelTime == 0)
+        if (FuelTime == 0)
         {
-            fuelTime = 200;
+            FuelTime = 200;
         }
 
-        return burnTime * multiplier / fuelTime;
+        return BurnTime * multiplier / FuelTime;
     }
 
-    public bool isBurning()
-    {
-        return burnTime > 0;
-    }
+    public bool IsBurning => BurnTime > 0;
 
     public override void tick(EntityManager entities)
     {
-        bool wasBurning = burnTime > 0;
+        bool wasBurning = BurnTime > 0;
         bool stateChanged = false;
-        if (burnTime > 0)
+        if (BurnTime > 0)
         {
-            --burnTime;
+            --BurnTime;
         }
 
         if (!World.IsRemote)
         {
-            if (burnTime == 0 && canAcceptRecipeOutput())
+            if (BurnTime == 0 && CanAcceptRecipeOutput())
             {
-                fuelTime = burnTime = getFuelTime(inventory[1]);
-                if (burnTime > 0)
+                FuelTime = BurnTime = GetFuelTime(_inventory[1]);
+                if (BurnTime > 0)
                 {
                     stateChanged = true;
-                    if (inventory[1] != null)
+                    ItemStack? inv1 = _inventory[1];
+                    if (inv1 != null)
                     {
-                        --inventory[1].count;
-                        if (inventory[1].count == 0)
+                        --inv1.Count;
+                        if (inv1.Count == 0)
                         {
-                            inventory[1] = null;
+                            _inventory[1] = null;
                         }
                     }
                 }
             }
 
-            if (isBurning() && canAcceptRecipeOutput())
+            if (IsBurning && CanAcceptRecipeOutput())
             {
-                ++cookTime;
-                if (cookTime == 200)
+                ++CookTime;
+                if (CookTime == 200)
                 {
-                    cookTime = 0;
-                    craftRecipe();
+                    CookTime = 0;
+                    CraftRecipe();
                     stateChanged = true;
                 }
             }
             else
             {
-                cookTime = 0;
+                CookTime = 0;
             }
 
-            if (wasBurning != burnTime > 0)
+            if (wasBurning != BurnTime > 0)
             {
                 stateChanged = true;
-                BlockFurnace.updateLitState(burnTime > 0, World, X, Y, Z);
+                BlockFurnace.updateLitState(BurnTime > 0, World, X, Y, Z);
             }
         }
 
         if (stateChanged)
         {
-            markDirty();
+            MarkDirty();
         }
     }
 
-    private bool canAcceptRecipeOutput()
+    private bool CanAcceptRecipeOutput()
     {
-        if (inventory[0] == null)
+        ItemStack? input = _inventory[0];
+        if (input is null)
         {
             return false;
         }
 
-        ItemStack outputStack = SmeltingRecipeManager.getInstance().Craft(inventory[0].getItem().id);
-        return outputStack == null ? false :
-            inventory[2] == null ? true :
-            !inventory[2].isItemEqual(outputStack) ? false :
-            inventory[2].count < getMaxCountPerStack() && inventory[2].count < inventory[2].getMaxCount() ? true : inventory[2].count < outputStack.getMaxCount();
+        ItemStack? output = SmeltingRecipeManager.getInstance().Craft(input.getItem().id);
+        if (output is null)
+        {
+            return false;
+        }
+
+        ItemStack? slot2 = _inventory[2];
+
+        if (slot2 is null)
+        {
+            return true;
+        }
+
+        if (!slot2.isItemEqual(output))
+        {
+            return false;
+        }
+
+        return slot2.Count < MaxCountPerStack &&
+               slot2.Count < slot2.getMaxCount() &&
+               slot2.Count < output.getMaxCount();
     }
 
-    public void craftRecipe()
+    private void CraftRecipe()
     {
-        if (canAcceptRecipeOutput())
+        if (CanAcceptRecipeOutput())
         {
-            ItemStack outputStack = SmeltingRecipeManager.getInstance().Craft(inventory[0].getItem().id);
-            if (inventory[2] == null)
+            ItemStack? inv0 = _inventory[0];
+
+            if (inv0 is null) return;
+
+            ItemStack? outputStack = SmeltingRecipeManager.getInstance().Craft(inv0.getItem().id);
+
+            if (outputStack == null) return;
+
+            if (_inventory[2] == null)
             {
-                inventory[2] = outputStack.copy();
+                _inventory[2] = outputStack.copy();
             }
-            else if (inventory[2].itemId == outputStack.itemId)
+            else
             {
-                ++inventory[2].count;
+                ItemStack? inv2 = _inventory[2];
+                if (inv2 != null && inv2.ItemId == outputStack.ItemId)
+                {
+                    inv2.Count++;
+                }
             }
 
-            --inventory[0].count;
-            if (inventory[0].count <= 0)
+            inv0 = _inventory[0];
+
+            if (inv0 is null) return;
+
+            inv0.Count--;
+            if (inv0.Count <= 0)
             {
-                inventory[0] = null;
+                _inventory[0] = null;
             }
         }
     }
 
-    private int getFuelTime(ItemStack itemStack)
+    private static int GetFuelTime(ItemStack? itemStack)
     {
         if (itemStack == null)
         {

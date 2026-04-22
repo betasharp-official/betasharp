@@ -14,22 +14,27 @@ internal class BlockDoor : Block
 
     public BlockDoor(int id, Material material) : base(id, material)
     {
-        textureId = 97;
-        if (material == Material.Metal) ++textureId;
-
+        TextureId = BlockTextures.DoorWood;
+        if (material == Material.Metal) TextureId = BlockTextures.DoorIron;
         setBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, Height, 0.5F + HalfWidth);
     }
 
-    public override int getTexture(int side, int meta)
+    public override int GetTexture(Side side, int meta)
     {
-        if (side is 0 or 1) return textureId;
+        if (side is Side.Up or Side.Down)
+        {
+            return TextureId;
+        }
 
         int facing = SetOpen(meta);
-        if (facing is 0 or 2 ^ (side <= 3)) return textureId;
+        if (facing is 0 or 2 ^ (side <= Side.South))
+        {
+            return TextureId;
+        }
 
-        int textureIndex = facing / 2 + ((side & 1) ^ facing);
+        int textureIndex = facing / 2 + ((side.ToInt() & 1) ^ facing);
         textureIndex += (meta & 4) / 4;
-        int texture = textureId - (meta & 8) * 2;
+        int texture = TextureId - (meta & 8) * 2;
         if ((textureIndex & 1) != 0)
         {
             texture = -texture;
@@ -82,8 +87,15 @@ internal class BlockDoor : Block
 
     private bool updateDorState(IWorldContext world, int x, int y, int z)
     {
-        if (world.IsRemote) return true;
-        if (material == Material.Metal) return true;
+        if (world.IsRemote)
+        {
+            return true;
+        }
+
+        if (material == Material.Metal)
+        {
+            return true;
+        }
 
         int meta = world.Reader.GetBlockMeta(x, y, z);
         if ((meta & 8) != 0)
@@ -109,7 +121,7 @@ internal class BlockDoor : Block
 
 
     public override bool onUse(OnUseEvent @event) => updateDorState(@event.World, @event.X, @event.Y, @event.Z);
-    public int SetOpen(int meta) => (meta & 4) == 0 ? (meta - 1) & 3 : meta & 3;
+    public static int SetOpen(int meta) => (meta & 4) == 0 ? (meta - 1) & 3 : meta & 3;
 
     public void SetOpen(IWorldContext world, int x, int y, int z, bool open)
     {
@@ -190,7 +202,7 @@ internal class BlockDoor : Block
                 bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
                                  @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
 
-                SetOpen(@event.World, @event.X, @event.Y, @event.Z ,isPowered);
+                SetOpen(@event.World, @event.X, @event.Y, @event.Z, isPowered);
             }
         }
     }

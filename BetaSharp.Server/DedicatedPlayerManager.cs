@@ -67,7 +67,7 @@ internal class DedicatedPlayerManager : PlayerManager
         try
         {
             fileContent.Clear();
-            StreamReader reader = new (file.Open(FileMode.OpenOrCreate));
+            StreamReader reader = new(file.Open(FileMode.OpenOrCreate));
 
             while (reader.ReadLine() is { } entry)
             {

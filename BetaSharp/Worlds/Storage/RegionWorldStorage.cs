@@ -1,3 +1,4 @@
+using System.Linq;
 using BetaSharp.Entities;
 using BetaSharp.NBT;
 using BetaSharp.Server.Worlds;
@@ -6,7 +7,6 @@ using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Dimensions;
 using BetaSharp.Worlds.Storage.RegionFormat;
 using Microsoft.Extensions.Logging;
-using System.Linq;
 
 namespace BetaSharp.Worlds.Storage;
 
@@ -21,7 +21,8 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
     private readonly ILogger<RegionWorldStorage> _logger = Log.Instance.For<RegionWorldStorage>();
 
     public RegionWorldStorage(string baseDir, string worldName, bool createPlayersDir) :
-        this( new DirectoryInfo(Path.Combine(baseDir, worldName)), createPlayersDir) { }
+        this(new DirectoryInfo(Path.Combine(baseDir, worldName)), createPlayersDir)
+    { }
 
     public RegionWorldStorage(DirectoryInfo saveDirectory, bool createPlayersDir)
     {
@@ -122,7 +123,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         WriteLevelDat(rootTag);
     }
 
-    private void AdjustPlayerYForSingleplayer(NBTTagCompound? player)
+    private static void AdjustPlayerYForSingleplayer(NBTTagCompound? player)
     {
         if (player != null && player.HasKey("Pos"))
         {
@@ -233,7 +234,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         try
         {
             NBTTagCompound tag = new();
-            player.write(tag);
+            player.Write(tag);
 
             string tempFile = Path.Combine(_playersDirectory.FullName, "_tmp_.dat");
             string finalFile = Path.Combine(_playersDirectory.FullName, $"{player.name}.dat");
@@ -256,7 +257,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         NBTTagCompound tag = loadPlayerData(player.name);
         if (tag != null)
         {
-            player.read(tag);
+            player.Read(tag);
         }
     }
 

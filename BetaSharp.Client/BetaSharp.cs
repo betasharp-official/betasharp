@@ -19,7 +19,6 @@ using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Client.Resource;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.Sound;
-using BetaSharp.DataAsset;
 using BetaSharp.Client.UI;
 using BetaSharp.Client.UI.Screens;
 using BetaSharp.Client.UI.Screens.InGame;
@@ -30,6 +29,7 @@ using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Profiling;
+using BetaSharp.Registries;
 using BetaSharp.Server.Internal;
 using BetaSharp.Stats;
 using BetaSharp.Util;
@@ -80,6 +80,7 @@ public partial class BetaSharp :
     public GameOptions Options { get; private set; }
     public IWorldStorageSource SaveLoader { get; private set; }
     public InternalServer? InternalServer { get; private set; }
+    public RegistryAccess RegistryAccess { get; private set; } = RegistryAccess.Empty;
 
     #endregion
 
@@ -268,7 +269,7 @@ public partial class BetaSharp :
             Display.MSAA_Samples = msaaValues[Options.MSAALevel];
 
             Display.create();
-            Display.getGlfw().SetWindowSizeLimits(Display.getWindowHandle(), 850, 480, maximumWidth, maximumHeight);
+            Display.getGlfw().SetWindowSizeLimits(Display.GetWindowHandle(), 850, 480, maximumWidth, maximumHeight);
 
             GLManager.Init(Display.getGL()!);
             if (GLManager.GL is LegacyGL legacyGl)
@@ -283,7 +284,7 @@ public partial class BetaSharp :
             Display.getGlfw().SwapInterval(Options.VSync ? 1 : 0);
 
 #if DEBUG
-                _glErrorHandler = new();
+            _glErrorHandler = new();
 #endif
         }
         catch (Exception ex)
@@ -366,11 +367,11 @@ public partial class BetaSharp :
         io->ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard | ImGuiConfigFlags.DockingEnable;
 
         // Install game input callbacks first so the ImGui GLFW backend can chain to them.
-        Keyboard.create(Display.getGlfw(), Display.getWindowHandle());
-        Mouse.create(Display.getGlfw(), Display.getWindowHandle(), Display.getWidth(), Display.getHeight());
-        Controller.Create(Display.getGlfw(), Display.getWindowHandle());
+        Keyboard.create(Display.getGlfw(), Display.GetWindowHandle());
+        Mouse.create(Display.getGlfw(), Display.GetWindowHandle(), Display.getWidth(), Display.getHeight());
+        Controller.Create(Display.getGlfw(), Display.GetWindowHandle());
 
-        ImGuiImplGLFW.InitForOpenGL((GLFWwindow*)Display.getWindowHandle(), true);
+        ImGuiImplGLFW.InitForOpenGL((GLFWwindow*)Display.GetWindowHandle(), true);
         ImGuiImplOpenGL3.Init("#version 330 core");
         DebugWindowManager.ApplyStyle();
 
@@ -411,8 +412,7 @@ public partial class BetaSharp :
 
     private void SetupResourcesAndPostProcessing()
     {
-        // Start loading base data assets
-        DataAssetLoader.LoadBaseAssets();
+        RegistryAccess = RegistryAccess.Build();
 
         SoundManager.LoadSoundSettings(Options);
         DefaultMusicCategories.Register(SoundManager);
@@ -453,8 +453,7 @@ public partial class BetaSharp :
 
         FramebufferManager = new FramebufferManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
 
-        // placed further down to give AssetLoader.LoadBaseAssets() a head start to reduce possible blocking waiting that have to be done.
-        DataAssetLoader.LoadDatapackAssets(_gameDataDir);
+        EntityRenderDispatcher.Instance.SkinManager.RequestDownload(Session.username, true);
     }
 
     private void LoadVersion()
@@ -640,7 +639,7 @@ public partial class BetaSharp :
                         }
                     }
 
-                    if (Player != null && Player.isInsideWall())
+                    if (Player != null && Player.IsInsideWall())
                     {
                         Options.CameraMode = EnumCameraMode.FirstPerson;
                     }
@@ -881,7 +880,7 @@ public partial class BetaSharp :
 
         if (CurrentScreen == null && Player != null)
         {
-            if (Player.health <= 0)
+            if (Player.Health <= 0)
             {
                 Navigate(null);
             }
@@ -968,7 +967,7 @@ public partial class BetaSharp :
 
             if (!IsGamePaused && World != null)
             {
-                World.displayTick(MathHelper.Floor(Player.x), MathHelper.Floor(Player.y), MathHelper.Floor(Player.z));
+                World.displayTick(MathHelper.Floor(Player.X), MathHelper.Floor(Player.Y), MathHelper.Floor(Player.Z));
             }
 
             if (!IsGamePaused)
@@ -1004,7 +1003,7 @@ public partial class BetaSharp :
                     IsControllerMode = false;
                     Mouse.setCursorVisible(true);
 
-                    bool zoomHeld = CurrentScreen == null && InGameHasFocus && Keyboard.isKeyDown(Options.KeyBindZoom.keyCode);
+                    bool zoomHeld = CurrentScreen == null && InGameHasFocus && Keyboard.isKeyDown(Options.KeyBindZoom.scanCode);
                     if (zoomHeld)
                     {
                         int mouseWheelDirection = mouseWheelDelta > 0 ? 1 : -1;
@@ -1021,7 +1020,7 @@ public partial class BetaSharp :
                     }
                     else
                     {
-                        Player.inventory.changeCurrentItem(mouseWheelDelta);
+                        Player.inventory.ChangeCurrentItem(mouseWheelDelta);
                         if (Options.InvertScrolling)
                         {
                             if (mouseWheelDelta > 0) mouseWheelDelta = 1;
@@ -1120,19 +1119,19 @@ public partial class BetaSharp :
                     if (Keyboard.getEventKey() == Keyboard.KEY_F8) Options.SmoothCamera = !Options.SmoothCamera;
                     if (Keyboard.getEventKey() == Keyboard.KEY_F7) ShowChunkBorders = !ShowChunkBorders;
 
-                    if (Keyboard.getEventKey() == Options.KeyBindInventory.keyCode)
+                    if (Keyboard.getEventKey() == Options.KeyBindInventory.scanCode)
                     {
                         Navigate(new InventoryScreen(UIContext, Player, PlayerController, () => CurrentScreen));
                     }
 
-                    if (Keyboard.getEventKey() == Options.KeyBindDrop.keyCode) Player.DropSelectedItem();
+                    if (Keyboard.getEventKey() == Options.KeyBindDrop.scanCode) Player.DropSelectedItem();
 
-                    if (Keyboard.getEventKey() == Options.KeyBindChat.keyCode)
+                    if (Keyboard.getEventKey() == Options.KeyBindChat.scanCode)
                     {
                         Navigate(new ChatScreen(UIContext, HUD.Chat, Player));
                     }
 
-                    if (Keyboard.getEventKey() == Options.KeyBindCommand.keyCode)
+                    if (Keyboard.getEventKey() == Options.KeyBindCommand.scanCode)
                     {
                         Navigate(new ChatScreen(UIContext, HUD.Chat, Player, "/"));
                     }
@@ -1142,11 +1141,11 @@ public partial class BetaSharp :
                 {
                     if (Keyboard.getEventKey() == Keyboard.KEY_1 + slotIndex)
                     {
-                        Player.inventory.selectedSlot = slotIndex;
+                        Player.inventory.SelectedSlot = slotIndex;
                     }
                 }
 
-                if (Keyboard.getEventKey() == Options.KeyBindToggleFog.keyCode)
+                if (Keyboard.getEventKey() == Options.KeyBindToggleFog.scanCode)
                 {
                     Options.RenderDistanceOption.Value = Math.Clamp(
                         Options.RenderDistanceOption.Value + (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) ? 1.0f / 28.0f : -1.0f / 28.0f),
@@ -1220,7 +1219,7 @@ public partial class BetaSharp :
                 else
                 {
                     ItemStack selectedItem = Player.inventory.GetItemInHand();
-                    int itemCountBefore = selectedItem != null ? selectedItem.count : 0;
+                    int itemCountBefore = selectedItem != null ? selectedItem.Count : 0;
                     if (PlayerController.sendPlaceBlock(Player, World, selectedItem, blockX, blockY, blockZ, blockSide))
                     {
                         shouldPerformSecondaryAction = false;
@@ -1232,11 +1231,11 @@ public partial class BetaSharp :
                         return;
                     }
 
-                    if (selectedItem.count == 0)
+                    if (selectedItem.Count == 0)
                     {
-                        Player.inventory.main[Player.inventory.selectedSlot] = null;
+                        Player.inventory.Main[Player.inventory.SelectedSlot] = null;
                     }
-                    else if (selectedItem.count != itemCountBefore)
+                    else if (selectedItem.Count != itemCountBefore)
                     {
                         GameRenderer.itemRenderer.ResetEquippedProgress();
                     }
@@ -1331,19 +1330,19 @@ public partial class BetaSharp :
             {
                 if (targetEntity == null)
                 {
-                    Player = (ClientPlayerEntity?)newWorld.GetPlayerForProxy(typeof(ClientPlayerEntity));
+                    Player = (ClientPlayerEntity?)World.GetPlayerForProxy(typeof(ClientPlayerEntity));
                 }
             }
             else if (Player != null)
             {
-                Player.teleportToTop();
+                Player.TeleportToTop();
                 newWorld?.Entities.SpawnEntity(Player);
             }
 
             if (Player == null)
             {
                 Player = (ClientPlayerEntity)PlayerController.createPlayer(newWorld);
-                Player.teleportToTop();
+                Player.TeleportToTop();
                 PlayerController.flipPlayer(Player);
             }
 
@@ -1354,7 +1353,7 @@ public partial class BetaSharp :
             PlayerController.fillHotbar(Player);
             if (targetEntity != null)
             {
-                newWorld.SaveWorldData();
+                World.SaveWorldData();
             }
 
             newWorld.AddPlayer(Player);
@@ -1403,18 +1402,18 @@ public partial class BetaSharp :
 
         if (Player is not null)
         {
-            previousPlayerId = Player.id;
+            previousPlayerId = Player.ID;
             World.Entities.Remove(Player);
         }
 
         Player = (ClientPlayerEntity)PlayerController.createPlayer(World);
         Player.dimensionId = newDimensionId;
-        Player.teleportToTop();
+        Player.TeleportToTop();
 
         if (useBedSpawn)
         {
             Player.setSpawnPos(playerSpawnPos);
-            Player.setPositionAndAnglesKeepPrevAngles(
+            Player.SetPositionAndAnglesKeepPrevAngles(
                 finalRespawnPos.X + 0.5,
                 finalRespawnPos.Y + 0.1,
                 finalRespawnPos.Z + 0.5,
@@ -1425,7 +1424,7 @@ public partial class BetaSharp :
         PlayerController.flipPlayer(Player);
         World.AddPlayer(Player);
         Player.movementInput = new MovementInputFromOptions(Options);
-        Player.id = previousPlayerId;
+        Player.ID = previousPlayerId;
         Player.spawn();
         PlayerController.fillHotbar(Player);
 
@@ -1440,6 +1439,7 @@ public partial class BetaSharp :
     public void StartInternalServer(string worldDir, WorldSettings worldSettings)
     {
         InternalServer = new InternalServer(Path.Combine(BetaSharpDir, "saves"), worldDir, worldSettings, Options.renderDistance, Options.Difficulty);
+        InternalServer.RegistryAccess = RegistryAccess;
         InternalServer.RunThreaded("Internal Server");
     }
 
@@ -1474,8 +1474,8 @@ public partial class BetaSharp :
 
         if (Player != null)
         {
-            centerPos.X = (int)Player.x;
-            centerPos.Z = (int)Player.z;
+            centerPos.X = (int)Player.X;
+            centerPos.Z = (int)Player.Z;
         }
 
         for (int xOffset = -loadingRadius; xOffset <= loadingRadius; xOffset += 16)
@@ -1520,7 +1520,7 @@ public partial class BetaSharp :
         {
             newScreen = CreateMainMenuScreen();
         }
-        else if (newScreen == null && Player.health <= 0)
+        else if (newScreen == null && Player.Health <= 0)
         {
             newScreen = new GameOverScreen(UIContext, (int)Player.getScore(), Player.respawn, canRespawn: Session != null, exitToTitle: () => ChangeWorld(null!));
         }

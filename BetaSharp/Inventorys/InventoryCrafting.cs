@@ -6,34 +6,31 @@ namespace BetaSharp.Inventorys;
 
 public class InventoryCrafting : IInventory
 {
-    private ItemStack[] stackList;
-    private int gridWidth;
-    private ScreenHandler eventHandler;
+    private readonly ItemStack?[] _stacks;
+    private readonly int _width;
+    private readonly ScreenHandler _handler;
 
-    public InventoryCrafting(ScreenHandler eventHandler, int gridWidth, int gridHeight)
+    public InventoryCrafting(ScreenHandler eventHandler, int width, int height)
     {
-        int gridSize = gridWidth * gridHeight;
-        stackList = new ItemStack[gridSize];
-        this.eventHandler = eventHandler;
-        this.gridWidth = gridWidth;
+        int gridSize = width * height;
+        _stacks = new ItemStack[gridSize];
+        _handler = eventHandler;
+        _width = width;
     }
 
-    public int size()
+    public int Size => _stacks.Length;
+
+    public ItemStack? GetStack(int slotIndex)
     {
-        return stackList.Length;
+        return slotIndex >= Size ? null : _stacks[slotIndex];
     }
 
-    public ItemStack getStack(int slotIndex)
+    public ItemStack? GetStackAt(int x, int y)
     {
-        return slotIndex >= size() ? null : stackList[slotIndex];
-    }
-
-    public ItemStack getStackAt(int x, int y)
-    {
-        if (x >= 0 && x < gridWidth)
+        if (x >= 0 && x < _width)
         {
-            int slotIndex = x + y * gridWidth;
-            return getStack(slotIndex);
+            int slotIndex = x + y * _width;
+            return GetStack(slotIndex);
         }
         else
         {
@@ -41,32 +38,31 @@ public class InventoryCrafting : IInventory
         }
     }
 
-    public string getName()
-    {
-        return "Crafting";
-    }
+    public string Name => "Crafting";
 
-    public ItemStack? removeStack(int slotIndex, int amount)
+    public ItemStack? RemoveStack(int slotIndex, int amount)
     {
-        if (stackList[slotIndex] != null)
+        ItemStack? stack = _stacks[slotIndex];
+
+        if (stack != null)
         {
             ItemStack removeStack;
-            if (stackList[slotIndex].count <= amount)
+            if (stack.Count <= amount)
             {
-                removeStack = stackList[slotIndex];
-                stackList[slotIndex] = null;
-                eventHandler.onSlotUpdate(this);
+                removeStack = stack;
+                _stacks[slotIndex] = null;
+                _handler.onSlotUpdate(this);
                 return removeStack;
             }
             else
             {
-                removeStack = stackList[slotIndex].split(amount);
-                if (stackList[slotIndex].count == 0)
+                removeStack = stack.Split(amount);
+                if (stack.Count == 0)
                 {
-                    stackList[slotIndex] = null;
+                    _stacks[slotIndex] = null;
                 }
 
-                eventHandler.onSlotUpdate(this);
+                _handler.onSlotUpdate(this);
                 return removeStack;
             }
         }
@@ -76,22 +72,19 @@ public class InventoryCrafting : IInventory
         }
     }
 
-    public void setStack(int slotIndex, ItemStack? itemStack)
+    public void SetStack(int slotIndex, ItemStack? itemStack)
     {
-        stackList[slotIndex] = itemStack;
-        eventHandler.onSlotUpdate(this);
+        _stacks[slotIndex] = itemStack;
+        _handler.onSlotUpdate(this);
     }
 
-    public int getMaxCountPerStack()
-    {
-        return 64;
-    }
+    public int MaxCountPerStack => 64;
 
-    public void markDirty()
+    public void MarkDirty()
     {
     }
 
-    public bool canPlayerUse(EntityPlayer entityPlayer)
+    public bool CanPlayerUse(EntityPlayer entityPlayer)
     {
         return true;
     }

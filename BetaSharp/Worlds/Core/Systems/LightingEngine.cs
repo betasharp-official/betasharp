@@ -39,12 +39,17 @@ public class LightingEngine : ILightProvider
 
     public int GetBrightness(int x, int y, int z)
     {
-        return y switch
+        if (y < 0)
         {
-            < 0 => 0,
-            >= 128 => !_world.Dimension.HasCeiling ? 15 : 0,
-            _ => _world.ChunkHost.GetChunk(x >> 4, z >> 4).GetLight(x & 15, y, z & 15, 0)
-        };
+            return 0;
+        }
+
+        if (y >= ChuckFormat.WorldHeight)
+        {
+            return !_world.Dimension.HasCeiling ? 15 : 0;
+        }
+
+        return _world.ChunkHost.GetChunk(x >> 4, z >> 4).GetLight(x & 15, y, z & 15, 0);
     }
 
     public int GetLightLevel(int x, int y, int z) => GetLightLevel(x, y, z, true);
@@ -92,18 +97,18 @@ public class LightingEngine : ILightProvider
             }
         }
 
-        switch (y)
+        if (y < 0)
         {
-            case < 0:
-                return 0;
-            case >= 128:
-                return !_world.Dimension.HasCeiling ? 15 - _world.Environment.AmbientDarkness : 0;
-            default:
-                {
-                    Chunk chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
-                    return chunk.GetLight(x & 15, y, z & 15, _world.Environment.AmbientDarkness);
-                }
+            return 0;
         }
+
+        if (y >= ChuckFormat.WorldHeight)
+        {
+            return !_world.Dimension.HasCeiling ? 15 - _world.Environment.AmbientDarkness : 0;
+        }
+
+        Chunk chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
+        return chunk.GetLight(x & 15, y, z & 15, _world.Environment.AmbientDarkness);
     }
 
     public void UpdateLight(LightType lightType, int x, int y, int z, int targetLuminance)
@@ -145,32 +150,32 @@ public class LightingEngine : ILightProvider
             y = 0;
         }
 
-        switch (y)
+        if (y >= ChuckFormat.WorldHeight)
         {
-            case >= 128:
-                return type.lightValue;
-            case >= 0 and < 128 when x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000:
-                {
-                    int chunkX = x >> 4;
-                    int chunkZ = z >> 4;
-                    if (!_world.ChunkHost.HasChunk(chunkX, chunkZ))
-                    {
-                        return 0;
-                    }
-
-                    Chunk chunk = _world.ChunkHost.GetChunk(chunkX, chunkZ);
-                    return chunk.GetLight(type, x & 15, y, z & 15);
-                }
-            default:
-                return type.lightValue;
+            return type.lightValue;
         }
+
+        if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000)
+        {
+            int chunkX = x >> 4;
+            int chunkZ = z >> 4;
+            if (!_world.ChunkHost.HasChunk(chunkX, chunkZ))
+            {
+                return 0;
+            }
+
+            Chunk chunk = _world.ChunkHost.GetChunk(chunkX, chunkZ);
+            return chunk.GetLight(type, x & 15, y, z & 15);
+        }
+
+        return type.lightValue;
     }
 
     public void SetLight(LightType lightType, int x, int y, int z, int value)
     {
         if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000)
         {
-            if (y >= 0 && y < 128)
+            if (y >= 0 && y < ChuckFormat.WorldHeight)
             {
                 if (_world.ChunkHost.HasChunk(x >> 4, z >> 4))
                 {

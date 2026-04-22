@@ -60,7 +60,7 @@ internal class ItemSign : Item
             {
                 if (meta == 1)
                 {
-                    world.Writer.SetBlock(x, y, z, Block.Sign.id, MathHelper.Floor((double)((entityPlayer.yaw + 180.0F) * 16.0F / 360.0F) + 0.5D) & 15);
+                    world.Writer.SetBlock(x, y, z, Block.Sign.id, MathHelper.Floor((double)((entityPlayer.Yaw + 180.0F) * 16.0F / 360.0F) + 0.5D) & 15);
                 }
                 else
                 {

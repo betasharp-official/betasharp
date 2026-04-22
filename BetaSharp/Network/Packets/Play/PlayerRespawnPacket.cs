@@ -18,12 +18,12 @@ public class PlayerRespawnPacket() : Packet(PacketId.PlayerRespawn)
         handler.onPlayerRespawn(this);
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         dimensionId = (sbyte)stream.ReadByte();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteByte((byte)dimensionId);
     }

@@ -1,61 +1,57 @@
 using BetaSharp.Entities;
-using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class TeleportDimensionCommand : ICommand
+public class TeleportDimensionCommand : Command.Command
 {
-    public string Usage => "tpdim <id> [player]";
-    public string Description => "Teleports to a dimension";
-    public string[] Names => ["tpdim"];
+    public override string Usage => "tpdim <id> <player>";
+    public override string Description => "Teleports to a dimension";
+    public override string[] Names => ["tpdim"];
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder
+            .Then(ArgumentInt("dim")
+                .Executes(TpdimSelf)
+                .Then(ArgumentPlayer("player").Executes(TpdimPlayer)));
+
+    private static int TpdimSelf(CommandContext<CommandSource> context)
     {
-        if (c.Args.Length < 1)
+        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
+        if (player == null)
         {
-            c.Output.SendMessage("Usage: /tpdim <dimension id> [player]");
-            return;
+            context.Source.Output.SendMessage("Could not find your player.");
+            return 0;
         }
 
-        if (!int.TryParse(c.Args[0], out int dim))
-        {
-            c.Output.SendMessage("Invalid dimension ID.");
-            return;
-        }
+        return TeleportToDimension(context, player);
+    }
+
+    private static int TpdimPlayer(CommandContext<CommandSource> context)
+    {
+        ServerPlayerEntity player = context.GetArgument<ServerPlayerEntity>("player");
+        return TeleportToDimension(context, player);
+    }
+
+    private static int TeleportToDimension(CommandContext<CommandSource> context, ServerPlayerEntity player)
+    {
+        int dim = context.GetArgument<int>("dim");
 
         if (dim != 0 && dim != -1)
         {
-            c.Output.SendMessage("Dimension " + dim + " does not exist.");
-            return;
+            context.Source.Output.SendMessage("Dimension " + dim + " does not exist.");
+            return 0;
         }
 
-        ServerPlayerEntity? targetPlayer;
-        if (c.Args.Length >= 2)
+        if (player.dimensionId == dim)
         {
-            targetPlayer = c.Server.playerManager.getPlayer(c.Args[1]);
-            if (targetPlayer == null)
-            {
-                c.Output.SendMessage("Player " + c.Args[1] + " not found.");
-                return;
-            }
-        }
-        else
-        {
-            targetPlayer = c.Server.playerManager.getPlayer(c.SenderName);
-            if (targetPlayer == null)
-            {
-                c.Output.SendMessage("Could not find your player.");
-                return;
-            }
+            context.Source.Output.SendMessage("Player is already in dimension " + dim);
+            return 0;
         }
 
-        if (targetPlayer.dimensionId == dim)
-        {
-            c.Output.SendMessage("Player is already in dimension " + dim);
-            return;
-        }
-
-        c.Server.playerManager.sendPlayerToDimension(targetPlayer, dim);
-        c.Output.SendMessage("Teleported " + targetPlayer.name + " to dimension " + dim);
+        context.Source.Server.playerManager.sendPlayerToDimension(player, dim);
+        context.Source.Output.SendMessage("Teleported " + player.name + " to dimension " + dim);
+        return 1;
     }
 }

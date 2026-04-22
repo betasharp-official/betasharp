@@ -1,7 +1,7 @@
 using BetaSharp.NBT;
 using BetaSharp.Network.Packets;
-using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Registries;
+using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Blocks.Entities;
@@ -78,9 +78,9 @@ public abstract class BlockEntity
         }
     }
 
-    public virtual int getPushedBlockData() => World.Reader.GetBlockMeta(X, Y, Z);
+    public int PushedBlockData => World.Reader.GetBlockMeta(X, Y, Z);
 
-    public void markDirty()
+    public void MarkDirty()
     {
         if (World == null || World.IsRemote)
         {

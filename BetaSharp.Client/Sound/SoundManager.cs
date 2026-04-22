@@ -274,10 +274,10 @@ public class SoundManager : IDisposable
         if (!s_started || _options.SoundVolume == 0.0F || player == null) return;
 
 
-        float yaw = player.prevYaw + (player.yaw - player.prevYaw) * partialTicks;
-        double x = player.prevX + (player.x - player.prevX) * (double)partialTicks;
-        double y = player.prevY + (player.y - player.prevY) * (double)partialTicks;
-        double z = player.prevZ + (player.z - player.prevZ) * (double)partialTicks;
+        float yaw = player.PrevYaw + (player.Yaw - player.PrevYaw) * partialTicks;
+        double x = player.PrevX + (player.X - player.PrevX) * (double)partialTicks;
+        double y = player.PrevY + (player.Y - player.PrevY) * (double)partialTicks;
+        double z = player.PrevZ + (player.Z - player.PrevZ) * (double)partialTicks;
 
         float lookX = MathHelper.Cos(-yaw * ((float)Math.PI / 180.0F) - (float)Math.PI);
         float lookY = MathHelper.Sin(-yaw * ((float)Math.PI / 180.0F) - (float)Math.PI);

@@ -1,3 +1,5 @@
+using BetaSharp.Worlds.Storage.RegionFormat;
+
 namespace BetaSharp.Worlds.Chunks.Storage;
 
 internal sealed class RegionFileChunkBuffer(RegionFile region, int chunkX, int chunkZ) : MemoryStream(8096)
@@ -10,9 +12,9 @@ internal sealed class RegionFileChunkBuffer(RegionFile region, int chunkX, int c
             {
                 return;
             }
-            
+
             var buffer = ToArray();
-            region.write(chunkX, chunkZ, buffer, buffer.Length);
+            region.Write(chunkX, chunkZ, buffer, buffer.Length);
         }
         finally
         {

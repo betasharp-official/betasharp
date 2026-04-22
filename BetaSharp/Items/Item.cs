@@ -19,7 +19,7 @@ public class Item
     }
 
     protected static JavaRandom itemRand = new();
-    public static Item[] ITEMS = new Item[32000];
+    public static Item?[] ITEMS = new Item[32000];
     public static Item IronShovel = (new ItemSpade(0, EnumToolMaterial.IRON)).setTexturePosition(2, 5).setItemName("shovelIron");
     public static Item IronPickaxe = (new ItemPickaxe(1, EnumToolMaterial.IRON)).setTexturePosition(2, 6).setItemName("pickaxeIron");
     public static Item IronAxe = (new ItemAxe(2, EnumToolMaterial.IRON)).setTexturePosition(2, 7).setItemName("hatchetIron");

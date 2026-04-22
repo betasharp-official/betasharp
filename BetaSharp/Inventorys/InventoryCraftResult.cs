@@ -6,29 +6,25 @@ namespace BetaSharp.Inventorys;
 internal class InventoryCraftResult : IInventory
 {
 
-    private ItemStack[] stackResult = new ItemStack[1];
+    private readonly ItemStack?[] _result = new ItemStack[1];
 
-    public int size()
+    public int Size => 1;
+
+    public ItemStack? GetStack(int slotIndex)
     {
-        return 1;
+        return _result[slotIndex];
     }
 
-    public ItemStack getStack(int slotIndex)
-    {
-        return stackResult[slotIndex];
-    }
+    public string Name => "Result";
 
-    public string getName()
+    public ItemStack? RemoveStack(int slotIndex, int amount)
     {
-        return "Result";
-    }
+        ItemStack? stack = _result[slotIndex];
 
-    public ItemStack? removeStack(int slotIndex, int amount)
-    {
-        if (stackResult[slotIndex] != null)
+        if (stack != null)
         {
-            ItemStack removeStack = stackResult[slotIndex];
-            stackResult[slotIndex] = null;
+            ItemStack removeStack = stack;
+            _result[slotIndex] = null;
             return removeStack;
         }
         else
@@ -37,21 +33,18 @@ internal class InventoryCraftResult : IInventory
         }
     }
 
-    public void setStack(int slotIndex, ItemStack? itemStack)
+    public void SetStack(int slotIndex, ItemStack? itemStack)
     {
-        stackResult[slotIndex] = itemStack;
+        _result[slotIndex] = itemStack;
     }
 
-    public int getMaxCountPerStack()
-    {
-        return 64;
-    }
+    public int MaxCountPerStack => 64;
 
-    public void markDirty()
+    public void MarkDirty()
     {
     }
 
-    public bool canPlayerUse(EntityPlayer entityPlayer)
+    public bool CanPlayerUse(EntityPlayer entityPlayer)
     {
         return true;
     }

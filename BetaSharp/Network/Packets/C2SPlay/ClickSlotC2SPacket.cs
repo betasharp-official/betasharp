@@ -29,7 +29,7 @@ public class ClickSlotC2SPacket() : Packet(PacketId.ClickSlotC2S)
         handler.onClickSlot(this);
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         syncId = (sbyte)stream.ReadByte();
         slot = stream.ReadShort();
@@ -50,7 +50,7 @@ public class ClickSlotC2SPacket() : Packet(PacketId.ClickSlotC2S)
 
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteByte((byte)syncId);
         stream.WriteShort((short)slot);
@@ -63,8 +63,8 @@ public class ClickSlotC2SPacket() : Packet(PacketId.ClickSlotC2S)
         }
         else
         {
-            stream.WriteShort((short)stack.itemId);
-            stream.WriteByte((byte)stack.count);
+            stream.WriteShort((short)stack.ItemId);
+            stream.WriteByte((byte)stack.Count);
             stream.WriteShort((short)stack.getDamage());
         }
 

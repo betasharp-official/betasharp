@@ -19,7 +19,7 @@ internal class ItemLeaves : ItemBlock
 
     public override int getTextureId(int meta)
     {
-        return Block.Leaves.getTexture(0, meta);
+        return Block.Leaves.GetTexture(0, meta);
     }
 
     public override int getColorMultiplier(int leafType)

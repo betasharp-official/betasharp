@@ -15,7 +15,7 @@ public class EntityPickupFX : EntityFX
     private readonly int maxAge;
     private readonly float yOffset;
 
-    public EntityPickupFX(IWorldContext world, Entity target, Entity source, float yOffset) : base(world, target.x, target.y, target.z, target.velocityX, target.velocityY, target.velocityZ)
+    public EntityPickupFX(IWorldContext world, Entity target, Entity source, float yOffset) : base(world, target.X, target.Y, target.Z, target.VelocityX, target.VelocityY, target.VelocityZ)
     {
         this.target = target;
         this.source = source;
@@ -27,32 +27,32 @@ public class EntityPickupFX : EntityFX
     {
         float lifeProgress = ((float)currentAge + partialTick) / (float)maxAge;
         lifeProgress *= lifeProgress;
-        double targetX = target.x;
-        double targetY = target.y;
-        double targetZ = target.z;
-        double sourceX = source.lastTickX + (source.x - source.lastTickX) * (double)partialTick;
-        double sourceY = source.lastTickY + (source.y - source.lastTickY) * (double)partialTick + (double)yOffset;
-        double sourceZ = source.lastTickZ + (source.z - source.lastTickZ) * (double)partialTick;
+        double targetX = target.X;
+        double targetY = target.Y;
+        double targetZ = target.Z;
+        double sourceX = source.LastTickX + (source.X - source.LastTickX) * (double)partialTick;
+        double sourceY = source.LastTickY + (source.Y - source.LastTickY) * (double)partialTick + (double)yOffset;
+        double sourceZ = source.LastTickZ + (source.Z - source.LastTickZ) * (double)partialTick;
         double renderX = targetX + (sourceX - targetX) * (double)lifeProgress;
         double renderY = targetY + (sourceY - targetY) * (double)lifeProgress;
         double renderZ = targetZ + (sourceZ - targetZ) * (double)lifeProgress;
         int itemX = MathHelper.Floor(renderX);
-        int itemY = MathHelper.Floor(renderY + (double)(standingEyeHeight / 2.0F));
+        int itemY = MathHelper.Floor(renderY + (double)(StandingEyeHeight / 2.0F));
         int itemZ = MathHelper.Floor(renderZ);
-        float luminance = world.Lighting.GetLuminance(itemX, itemY, itemZ);
+        float luminance = World.Lighting.GetLuminance(itemX, itemY, itemZ);
         renderX -= interpPosX;
         renderY -= interpPosY;
         renderZ -= interpPosZ;
         GLManager.GL.Color4(luminance, luminance, luminance, 1.0F);
-        EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(target, (double)((float)renderX), (double)((float)renderY), (double)((float)renderZ), target.yaw, partialTick);
+        EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(target, (double)((float)renderX), (double)((float)renderY), (double)((float)renderZ), target.Yaw, partialTick);
     }
 
-    public override void tick()
+    public override void Tick()
     {
         ++currentAge;
         if (currentAge == maxAge)
         {
-            markDead();
+            MarkDead();
         }
 
     }

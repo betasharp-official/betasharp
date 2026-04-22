@@ -9,29 +9,26 @@ namespace BetaSharp.Blocks;
 
 internal class BlockDispenser : BlockWithEntity
 {
+    private const float LaunchSpread = 0.05F;
+
     private static readonly ThreadLocal<JavaRandom> s_random = new(() => new JavaRandom());
 
-    public BlockDispenser(int id) : base(id, Material.Stone)
-    {
-        textureId = 45;
-    }
+    public BlockDispenser(int id) : base(id, Material.Stone) => TextureId = BlockTextures.FurnaceSide;
 
-    public override int getTickRate()
-    {
-        return 4;
-    }
+    public override int getTickRate() => 4;
 
-    public override int getDroppedItemId(int blockMeta)
-    {
-        return Dispenser.id;
-    }
+    public override int getDroppedItemId(int blockMeta) => Dispenser.id;
 
     public override void onPlaced(OnPlacedEvent @event)
     {
         base.onPlaced(@event);
-        if (@event.Placer != null)
+        if (@event.Placer == null)
         {
-            int direction = MathHelper.Floor(@event.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
+            updateDirection(@event);
+        }
+        else
+        {
+            int direction = MathHelper.Floor(@event.Placer.Yaw * 4.0F / 360.0F + 0.5D) & 3;
             int meta = direction switch
             {
                 0 => 2,
@@ -46,17 +43,13 @@ internal class BlockDispenser : BlockWithEntity
                 @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
             }
         }
-        else
-        {
-            updateDirection(@event);
-        }
     }
 
-    private void updateDirection(OnPlacedEvent @event)
+    private static void updateDirection(OnPlacedEvent @event)
     {
         if (@event.World.IsRemote) return;
 
-        var reader = @event.World.Reader;
+        IBlockReader reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
 
         bool isNorthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z - 1)];
@@ -65,57 +58,37 @@ internal class BlockDispenser : BlockWithEntity
         bool isEastOpaque = BlocksOpaque[reader.GetBlockId(x + 1, y, z)];
 
         byte direction = 3;
-        if (isNorthOpaque && !isSouthOpaque)
-        {
-            direction = 3;
-        }
-        else if (isSouthOpaque && !isNorthOpaque)
-        {
-            direction = 2;
-        }
-
-        if (isWestOpaque && !isEastOpaque)
-        {
-            direction = 5;
-        }
-        else if (isEastOpaque && !isWestOpaque)
-        {
-            direction = 4;
-        }
+        if (isNorthOpaque && !isSouthOpaque) direction = 3;
+        else if (isSouthOpaque && !isNorthOpaque) direction = 2;
+        if (isWestOpaque && !isEastOpaque) direction = 5;
+        else if (isEastOpaque && !isWestOpaque) direction = 4;
 
         @event.World.Writer.SetBlockMeta(x, y, z, direction);
     }
 
-    public override int getTextureId(IBlockReader iBlockReader, int x, int y, int z, int side)
+    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (side is 1 or 0)
-        {
-            return textureId + 17;
-        }
-
-        int meta = iBlockReader.GetBlockMeta(x, y, z);
-        return side != meta ? textureId : textureId + 1;
+        if (side is Side.Up or Side.Down) return TextureId + 17;
+        Side meta = iBlockReader.GetBlockMeta(x, y, z).ToSide();
+        return side != meta ? TextureId : TextureId + 1;
     }
 
-    public override int getTexture(int side) => side == 1 ? textureId + 17 : side == 0 ? textureId + 17 : side == 3 ? textureId + 1 : textureId;
+    public override int GetTexture(Side side) => side switch
+    {
+        Side.Up or 0 => BlockTextures.FurnaceTop,
+        Side.South => BlockTextures.DispenserFront,
+        _ => BlockTextures.FurnaceSide
+    };
 
     public override bool onUse(OnUseEvent @event)
     {
-        if (@event.World.IsRemote)
-        {
-            return true;
-        }
-
+        if (@event.World.IsRemote) return true;
         BlockEntityDispenser? dispenser = @event.World.Entities.GetBlockEntity<BlockEntityDispenser>(@event.X, @event.Y, @event.Z);
-        if (dispenser != null)
-        {
-            @event.Player.openDispenserScreen(dispenser);
-        }
-
+        if (dispenser != null) @event.Player.openDispenserScreen(dispenser);
         return true;
     }
 
-    private void dispense(OnTickEvent @event)
+    private static void dispense(OnTickEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         int dirX = 0;
@@ -138,10 +111,7 @@ internal class BlockDispenser : BlockWithEntity
         }
 
         BlockEntityDispenser? dispenser = @event.World.Entities.GetBlockEntity<BlockEntityDispenser>(@event.X, @event.Y, @event.Z);
-        if (dispenser == null)
-        {
-            return;
-        }
+        if (dispenser == null) return;
 
         ItemStack? itemStack = dispenser.getItemToDispose();
         double spawnX = @event.X + dirX * 0.6D + 0.5D;
@@ -154,7 +124,7 @@ internal class BlockDispenser : BlockWithEntity
             return;
         }
 
-        if (itemStack.itemId == Item.ARROW.id)
+        if (itemStack.ItemId == Item.ARROW.id)
         {
             EntityArrow arrow = new(@event.World, spawnX, spawnY, spawnZ);
             arrow.setArrowHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
@@ -162,14 +132,14 @@ internal class BlockDispenser : BlockWithEntity
             @event.World.Entities.SpawnEntity(arrow);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }
-        else if (itemStack.itemId == Item.Egg.id)
+        else if (itemStack.ItemId == Item.Egg.id)
         {
             EntityEgg egg = new(@event.World, spawnX, spawnY, spawnZ);
             egg.setHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
             @event.World.Entities.SpawnEntity(egg);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }
-        else if (itemStack.itemId == Item.Snowball.id)
+        else if (itemStack.ItemId == Item.Snowball.id)
         {
             EntitySnowball snowball = new(@event.World, spawnX, spawnY, spawnZ);
             snowball.setHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
@@ -180,13 +150,13 @@ internal class BlockDispenser : BlockWithEntity
         {
             EntityItem item = new(@event.World, spawnX, spawnY - 0.3D, spawnZ, itemStack);
             double randomVelocity = Random.Shared.NextDouble() * 0.1D + 0.2D;
-            item.velocityX = dirX * randomVelocity;
-            item.velocityY = 0.2F;
-            item.velocityZ = dirZ * randomVelocity;
+            item.VelocityX = dirX * randomVelocity;
+            item.VelocityY = 0.2F;
+            item.VelocityZ = dirZ * randomVelocity;
 
-            item.velocityX += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
-            item.velocityY += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
-            item.velocityZ += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
+            item.VelocityX += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
+            item.VelocityY += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
+            item.VelocityZ += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
 
             @event.World.Entities.SpawnEntity(item);
             @event.World.Broadcaster.WorldEvent(1000, @event.X, @event.Y, @event.Z, 0);
@@ -197,14 +167,15 @@ internal class BlockDispenser : BlockWithEntity
 
     public override void neighborUpdate(OnTickEvent @event)
     {
-        if (@event.BlockId > 0 && Blocks[@event.BlockId].canEmitRedstonePower())
-        {
-            bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
-            if (isPowered)
-            {
-                @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id, getTickRate());
-            }
-        }
+        bool emits = @event.BlockId > 0 && Blocks[@event.BlockId].canEmitRedstonePower();
+        bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
+                         @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
+
+        Console.WriteLine($"[Dispenser Check] Triggered By ID: {@event.BlockId} | Emits Power: {emits} | Grid Powered: {isPowered}");
+
+        if (@event.BlockId <= 0 || !Blocks[@event.BlockId].canEmitRedstonePower()) return;
+
+        if (isPowered) @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id, getTickRate());
     }
 
     public override void onTick(OnTickEvent @event)
@@ -225,30 +196,30 @@ internal class BlockDispenser : BlockWithEntity
         {
             JavaRandom random = s_random.Value!;
 
-            for (int slotIndex = 0; slotIndex < dispenser.size(); ++slotIndex)
+            for (int slotIndex = 0; slotIndex < dispenser.Size; ++slotIndex)
             {
-                ItemStack? stack = dispenser.getStack(slotIndex);
+                ItemStack? stack = dispenser.GetStack(slotIndex);
                 if (stack == null) continue;
 
                 float offsetX = random.NextFloat() * 0.8F + 0.1F;
                 float offsetY = random.NextFloat() * 0.8F + 0.1F;
                 float offsetZ = random.NextFloat() * 0.8F + 0.1F;
 
-                while (stack.count > 0)
+                while (stack.Count > 0)
                 {
                     int amount = random.NextInt(21) + 10;
-                    if (amount > stack.count)
+                    if (amount > stack.Count)
                     {
-                        amount = stack.count;
+                        amount = stack.Count;
                     }
 
-                    stack.count -= amount;
-                    EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, amount, stack.getDamage()));
-                    float floatVar = 0.05F;
-
-                    entityItem.velocityX = (float)random.NextGaussian() * floatVar;
-                    entityItem.velocityY = (float)random.NextGaussian() * floatVar + 0.2F;
-                    entityItem.velocityZ = (float)random.NextGaussian() * floatVar;
+                    stack.Count -= amount;
+                    EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.getDamage()))
+                    {
+                        VelocityX = (float)random.NextGaussian() * LaunchSpread,
+                        VelocityY = (float)random.NextGaussian() * LaunchSpread + 0.2F,
+                        VelocityZ = (float)random.NextGaussian() * LaunchSpread
+                    };
 
                     @event.World.Entities.SpawnEntity(entityItem);
                 }

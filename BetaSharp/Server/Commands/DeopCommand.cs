@@ -1,25 +1,24 @@
-using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class DeopCommand : ICommand
+public class DeopCommand : Command.Command
 {
-    public string Usage => "deop <player>";
-    public string Description => "Removes operator status";
-    public string[] Names => ["deop"];
-    public bool DisallowInternalServer => true;
+    public override string Usage => "deop <player>";
+    public override string Description => "Removes operator status";
+    public override string[] Names => ["deop"];
+    public override bool DisallowInternalServer => true;
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder.Then(ArgumentString("player").Executes(Execute));
+
+    private static int Execute(CommandContext<CommandSource> context)
     {
-        if (c.Args.Length < 1)
-        {
-            c.Output.SendMessage("Usage: deop <player>");
-            return;
-        }
-
-        string target = c.Args[0];
-        c.Server.playerManager.removeFromOperators(target);
-        c.Server.playerManager.messagePlayer(target, "§eYou are no longer op!");
-        c.LogOp("De-opping " + target);
+        string target = context.GetArgument<string>("player");
+        context.Source.Server.playerManager.removeFromOperators(target);
+        context.Source.Server.playerManager.messagePlayer(target, "§eYou are no longer op!");
+        context.Source.LogOp("De-opping " + target);
+        return 1;
     }
 }

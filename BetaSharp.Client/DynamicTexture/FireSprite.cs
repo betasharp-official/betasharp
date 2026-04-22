@@ -2,7 +2,7 @@ using BetaSharp.Blocks;
 
 namespace BetaSharp.Client.DynamicTexture;
 
-internal class FireSprite(int index) : Rendering.Core.Textures.DynamicTexture(Block.Fire.textureId + index * 16)
+internal class FireSprite(int index) : Rendering.Core.Textures.DynamicTexture(Block.Fire.TextureId + index * 16)
 {
     private float[] _current = new float[320];
     private float[] _next = new float[320];

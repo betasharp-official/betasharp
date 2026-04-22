@@ -22,14 +22,14 @@ internal class EntityRotateS2CPacket : EntityS2CPacket
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         base.Read(stream);
         yaw = (sbyte)stream.ReadByte();
         pitch = (sbyte)stream.ReadByte();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         base.Write(stream);
         stream.WriteByte((byte)yaw);

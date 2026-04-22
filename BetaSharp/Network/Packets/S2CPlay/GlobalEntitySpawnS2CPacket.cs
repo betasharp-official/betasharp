@@ -15,10 +15,10 @@ public class GlobalEntitySpawnS2CPacket() : Packet(PacketId.GlobalEntitySpawnS2C
     public static GlobalEntitySpawnS2CPacket Get(Entity ent)
     {
         var p = Get<GlobalEntitySpawnS2CPacket>(PacketId.GlobalEntitySpawnS2C);
-        p.id = ent.id;
-        p.x = MathHelper.Floor(ent.x * 32.0D);
-        p.y = MathHelper.Floor(ent.y * 32.0D);
-        p.z = MathHelper.Floor(ent.z * 32.0D);
+        p.id = ent.ID;
+        p.x = MathHelper.Floor(ent.X * 32.0D);
+        p.y = MathHelper.Floor(ent.Y * 32.0D);
+        p.z = MathHelper.Floor(ent.Z * 32.0D);
         if (ent is EntityLightningBolt)
         {
             p.type = 1;
@@ -27,7 +27,7 @@ public class GlobalEntitySpawnS2CPacket() : Packet(PacketId.GlobalEntitySpawnS2C
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         id = stream.ReadInt();
         type = (byte)stream.ReadByte();
@@ -36,7 +36,7 @@ public class GlobalEntitySpawnS2CPacket() : Packet(PacketId.GlobalEntitySpawnS2C
         z = stream.ReadInt();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(id);
         stream.WriteByte(type);

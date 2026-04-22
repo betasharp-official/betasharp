@@ -1,15 +1,21 @@
-using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class ListCommand : ICommand
+public class ListCommand : Command.Command
 {
-    public string Usage => "list";
-    public string Description => "Lists connected players";
-    public string[] Names => ["list"];
+    public override string Usage => "list";
+    public override string Description => "Lists connected players";
+    public override string[] Names => ["list"];
+    public override byte PermissionLevel => 0;
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder.Executes(Execute);
+
+    private static int Execute(CommandContext<CommandSource> context)
     {
-        c.Output.SendMessage("Connected players: " + c.Server.playerManager.getPlayerList());
+        context.Source.Output.SendMessage("Connected players: " + context.Source.Server.playerManager.getPlayerList());
+        return 1;
     }
 }

@@ -21,7 +21,7 @@ public class PlayNoteSoundS2CPacket() : Packet(PacketId.PlayNoteSoundS2C)
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         xLocation = stream.ReadInt();
         yLocation = stream.ReadShort();
@@ -30,7 +30,7 @@ public class PlayNoteSoundS2CPacket() : Packet(PacketId.PlayNoteSoundS2C)
         pitch = stream.ReadByte();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(xLocation);
         stream.WriteShort((short)yLocation);

@@ -8,12 +8,12 @@ internal class BlockStairs : Block
 {
     private readonly Block _baseBlock;
 
-    public BlockStairs(int id, Block block) : base(id, block.textureId, block.material)
+    public BlockStairs(int id, Block block) : base(id, block.TextureId, block.material)
     {
         _baseBlock = block;
         setHardness(block.hardness);
         setResistance(block.resistance / 3.0F);
-        setSoundGroup(block.soundGroup);
+        setSoundGroup(block.SoundGroup);
         setOpacity(255);
     }
 
@@ -28,33 +28,32 @@ internal class BlockStairs : Block
     public override void addIntersectingBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z, Box box, List<Box> boxes)
     {
         int meta = world.GetBlockMeta(x, y, z);
-        if (meta == 0)
+        switch (meta)
         {
-            setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F);
-            base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
-            setBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-            base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
-        }
-        else if (meta == 1)
-        {
-            setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 1.0F, 1.0F);
-            base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
-            setBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F);
-            base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
-        }
-        else if (meta == 2)
-        {
-            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.5F);
-            base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
-            setBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 1.0F, 1.0F);
-            base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
-        }
-        else if (meta == 3)
-        {
-            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F);
-            base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
-            setBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F);
-            base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+            case 0:
+                setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F);
+                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                setBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                break;
+            case 1:
+                setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 1.0F, 1.0F);
+                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                setBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F);
+                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                break;
+            case 2:
+                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.5F);
+                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                setBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 1.0F, 1.0F);
+                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                break;
+            case 3:
+                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F);
+                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                setBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F);
+                base.addIntersectingBoundingBox(world, entities, x, y, z, box, boxes);
+                break;
         }
 
         setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
@@ -76,11 +75,11 @@ internal class BlockStairs : Block
 
     public override int getDroppedItemCount() => _baseBlock.getDroppedItemCount();
 
-    public override int getTexture(int side, int meta) => _baseBlock.getTexture(side, meta);
+    public override int GetTexture(Side side, int meta) => _baseBlock.GetTexture(side, meta);
 
-    public override int getTexture(int side) => _baseBlock.getTexture(side);
+    public override int GetTexture(Side side) => _baseBlock.GetTexture(side);
 
-    public override int getTextureId(IBlockReader iBlockReader, int x, int y, int z, int side) => _baseBlock.getTextureId(iBlockReader, x, y, z, side);
+    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side) => _baseBlock.GetTextureId(iBlockReader, x, y, z, side);
 
     public override int getTickRate() => _baseBlock.getTickRate();
 
@@ -99,7 +98,7 @@ internal class BlockStairs : Block
         int meta = 0;
         if (evt.Placer != null)
         {
-            int facing = MathHelper.Floor(evt.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
+            int facing = MathHelper.Floor(evt.Placer.Yaw * 4.0F / 360.0F + 0.5D) & 3;
 
             if (facing == 0)
             {

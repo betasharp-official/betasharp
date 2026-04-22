@@ -8,12 +8,17 @@ namespace BetaSharp.Blocks;
 
 public class BlockBed : Block
 {
+    public static readonly Side[][] BedFacings =
+    [
+        [Side.Up, Side.Down, Side.South, Side.North, Side.East, Side.West],
+        [Side.Up, Side.Down, Side.East, Side.West, Side.North, Side.South],
+        [Side.Up, Side.Down, Side.North, Side.South, Side.West, Side.East],
+        [Side.Up, Side.Down, Side.West, Side.East, Side.South, Side.North]
+    ];
+
     private static readonly int[][] s_bedOffsets = [[0, 1], [-1, 0], [0, -1], [1, 0]];
 
-    public BlockBed(int id) : base(id, 134, Material.Wool)
-    {
-        setDefaultShape();
-    }
+    public BlockBed(int id) : base(id, BlockTextures.BedTopFoot, Material.Wool) => setDefaultShape();
 
     public override bool onUse(OnUseEvent @event)
     {
@@ -22,9 +27,7 @@ public class BlockBed : Block
             return true;
         }
 
-        int x = @event.X;
-        int y = @event.Y;
-        int z = @event.Z;
+        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
 
         int meta = @event.World.Reader.GetBlockMeta(x, y, z);
         if (!isHeadOfBed(meta))
@@ -69,7 +72,10 @@ public class BlockBed : Block
             EntityPlayer? occupant = null;
             foreach (EntityPlayer otherPlayer in @event.World.Entities.Players)
             {
-                if (!otherPlayer.isSleeping()) continue;
+                if (!otherPlayer.isSleeping())
+                {
+                    continue;
+                }
 
                 Vec3i sleepingPos = otherPlayer.sleepingPos;
                 if (sleepingPos.X == x && sleepingPos.Y == y && sleepingPos.Z == z)
@@ -109,39 +115,50 @@ public class BlockBed : Block
         return true;
     }
 
-    public override int getTexture(int side, int meta)
+    public override int GetTexture(Side side, int meta)
     {
-        if (side == 0)
+        int direction = getDirection(meta);
+        Side sideFacing = BedFacings[direction][side.ToInt()];
+        if (side == Side.Down)
         {
-            return Planks.textureId;
+            return BlockTextures.OakPlanks;
         }
 
-        int direction = getDirection(meta);
-        int sideFacing = Facings.BED_FACINGS[direction][side];
-        return isHeadOfBed(meta) ? sideFacing == 2 ? textureId + 2 + 16 : sideFacing != 5 && sideFacing != 4 ? textureId + 1 : textureId + 1 + 16 :
-            sideFacing == 3 ? textureId - 1 + 16 :
-            sideFacing != 5 && sideFacing != 4 ? textureId : textureId + 16;
+        if (isHeadOfBed(meta))
+        {
+            if (sideFacing == Side.North)
+            {
+                return BlockTextures.BedEndHead;
+            }
+
+            if (sideFacing != Side.East && sideFacing != Side.West)
+            {
+                return BlockTextures.BedTopHead;
+            }
+
+            return BlockTextures.BedSideHead;
+        }
+
+        if (sideFacing == Side.South)
+        {
+            return BlockTextures.BedEndFoot;
+        }
+
+        if (sideFacing != Side.East && sideFacing != Side.West)
+        {
+            return BlockTextures.BedTopFoot;
+        }
+
+        return BlockTextures.BedSideFoot;
     }
 
-    public override BlockRendererType getRenderType()
-    {
-        return BlockRendererType.Bed;
-    }
+    public override BlockRendererType getRenderType() => BlockRendererType.Bed;
 
-    public override bool isFullCube()
-    {
-        return false;
-    }
+    public override bool isFullCube() => false;
 
-    public override bool isOpaque()
-    {
-        return false;
-    }
+    public override bool isOpaque() => false;
 
-    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
-    {
-        setDefaultShape();
-    }
+    public override void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => setDefaultShape();
 
     public override void neighborUpdate(OnTickEvent ctx)
     {
@@ -165,30 +182,15 @@ public class BlockBed : Block
         }
     }
 
-    public override int getDroppedItemId(int blockMeta)
-    {
-        return isHeadOfBed(blockMeta) ? 0 : Item.Bed.id;
-    }
+    public override int getDroppedItemId(int blockMeta) => isHeadOfBed(blockMeta) ? 0 : Item.Bed.id;
 
-    private void setDefaultShape()
-    {
-        setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 9.0F / 16.0F, 1.0F);
-    }
+    private void setDefaultShape() => setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 9.0F / 16.0F, 1.0F);
 
-    public static int getDirection(int meta)
-    {
-        return meta & 3;
-    }
+    public static int getDirection(int meta) => meta & 3;
 
-    public static bool isHeadOfBed(int meta)
-    {
-        return (meta & 8) != 0;
-    }
+    public static bool isHeadOfBed(int meta) => (meta & 8) != 0;
 
-    public static bool isBedOccupied(int meta)
-    {
-        return (meta & 4) != 0;
-    }
+    public static bool isBedOccupied(int meta) => (meta & 4) != 0;
 
     public static void updateState(IBlockWriter worldWriter, int x, int y, int z, int meta, bool occupied)
     {
@@ -229,17 +231,16 @@ public class BlockBed : Block
             {
                 for (int checkZ = searchMinZ; checkZ <= searchMaxZ; ++checkZ)
                 {
-                    if (reader.ShouldSuffocate(checkX, y - 1, checkZ) &&
-                        reader.IsAir(checkX, y, checkZ) &&
-                        reader.IsAir(checkX, y + 1, checkZ))
+                    if (!reader.ShouldSuffocate(checkX, y - 1, checkZ) ||
+                        !reader.IsAir(checkX, y, checkZ) ||
+                        !reader.IsAir(checkX, y + 1, checkZ))
                     {
-                        if (skip <= 0)
-                        {
-                            return new Vec3i(checkX, y, checkZ);
-                        }
-
-                        --skip;
+                        continue;
                     }
+
+                    if (skip <= 0) return new Vec3i(checkX, y, checkZ);
+
+                    --skip;
                 }
             }
         }
@@ -249,14 +250,8 @@ public class BlockBed : Block
 
     public override void dropStacks(OnDropEvent @event)
     {
-        if (!isHeadOfBed(@event.Meta))
-        {
-            base.dropStacks(@event);
-        }
+        if (!isHeadOfBed(@event.Meta)) base.dropStacks(@event);
     }
 
-    public override int getPistonBehavior()
-    {
-        return 1;
-    }
+    public override int getPistonBehavior() => 1;
 }

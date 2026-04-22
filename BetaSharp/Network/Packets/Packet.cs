@@ -84,9 +84,9 @@ public abstract class Packet
         return packetR.Get();
     }
 
-    public static Packet? Read(NetworkStream stream, bool server)
+    public static Packet? Read(Stream stream, bool server)
     {
-        Packet packet = null;
+        Packet? packet;
         int rawId;
         try
         {
@@ -131,7 +131,7 @@ public abstract class Packet
         return packet;
     }
 
-    public static void Write(Packet packet, NetworkStream stream)
+    public static void Write(Packet packet, Stream stream)
     {
 #if DEBUG
         if (packet.IsReturned)
@@ -144,9 +144,9 @@ public abstract class Packet
         packet.Return();
     }
 
-    public abstract void Read(NetworkStream stream);
+    public abstract void Read(Stream stream);
 
-    public abstract void Write(NetworkStream stream);
+    public abstract void Write(Stream stream);
 
     public abstract void Apply(NetHandler handler);
 
@@ -214,6 +214,9 @@ public abstract class Packet
             New(PacketId.MapUpdateS2C, true, false, true, () => new MapUpdateS2CPacket()),
             New(PacketId.PlayerConnectionUpdateS2C, true, false, false, () => new PlayerConnectionUpdateS2CPacket()),
             New(PacketId.PlayerGameModeUpdateS2C, true, false, false, () => new PlayerGameModeUpdateS2CPacket()),
+            New(PacketId.RegistryDataS2C, true, false, false, () => new RegistryDataS2CPacket()),
+            New(PacketId.FinishConfigurationS2C, true, false, false, () => new FinishConfigurationS2CPacket()),
+            New(PacketId.BundleS2C, true, false, false, () => new BundleS2CPacket()),
             New(PacketId.IncreaseStatS2C, true, false, false, () => new IncreaseStatS2CPacket()),
             New(PacketId.Disconnect, true, true, false, () => new DisconnectPacket())
         ]);
@@ -223,34 +226,13 @@ public abstract class Packet
     {
         private static int PoolSize(byte rawId)
         {
-            switch (rawId)
+            return rawId switch
             {
-                case (byte)PacketId.EntityRotateAndMoveRelativeS2C:
-                case (byte)PacketId.EntityMoveRelativeS2C:
-                case (byte)PacketId.EntityPositionS2C:
-                    return 256;
-                case (byte)PacketId.ChunkStatusUpdateS2C:
-                case (byte)PacketId.BlockUpdateS2C:
-                case (byte)PacketId.PlayerActionC2S:
-                case (byte)PacketId.ChunkDataS2C:
-                case (byte)PacketId.LivingEntitySpawnS2C:
-                case (byte)PacketId.EntityDestroyS2C:
-                    return 64;
-                case (byte)PacketId.KeepAlive:
-                case (byte)PacketId.UpdateSign:
-                case (byte)PacketId.PlayerConnectionUpdateS2C:
-                case (byte)PacketId.PlayerGameModeUpdateS2C:
-                case (byte)PacketId.Disconnect:
-                case (byte)PacketId.LoginHello:
-                case (byte)PacketId.Handshake:
-                case (byte)PacketId.ChatMessage:
-                case (byte)PacketId.EntityEquipmentUpdateS2C:
-                case (byte)PacketId.PlayerSpawnPositionS2C:
-                case (byte)PacketId.PaintingEntitySpawnS2C:
-                    return 16;
-                default:
-                    return 32;
-            }
+                (byte)PacketId.EntityRotateAndMoveRelativeS2C or (byte)PacketId.EntityMoveRelativeS2C or (byte)PacketId.EntityPositionS2C => 256,
+                (byte)PacketId.ChunkStatusUpdateS2C or (byte)PacketId.BlockUpdateS2C or (byte)PacketId.PlayerActionC2S or (byte)PacketId.ChunkDataS2C or (byte)PacketId.LivingEntitySpawnS2C or (byte)PacketId.EntityDestroyS2C => 64,
+                (byte)PacketId.KeepAlive or (byte)PacketId.UpdateSign or (byte)PacketId.PlayerConnectionUpdateS2C or (byte)PacketId.PlayerGameModeUpdateS2C or (byte)PacketId.Disconnect or (byte)PacketId.LoginHello or (byte)PacketId.Handshake or (byte)PacketId.ChatMessage or (byte)PacketId.EntityEquipmentUpdateS2C or (byte)PacketId.PlayerSpawnPositionS2C or (byte)PacketId.PaintingEntitySpawnS2C => 16,
+                _ => 32,
+            };
         }
 
         public override Packet Get()

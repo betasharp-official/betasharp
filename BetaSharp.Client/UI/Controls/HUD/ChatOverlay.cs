@@ -5,15 +5,20 @@ namespace BetaSharp.Client.UI.Controls.HUD;
 
 public class ChatOverlay : UIElement
 {
+    private const int LineHeight = 9;
+    private const int MaxHistoryLines = 20;
+    private const int ChatWidth = 320;
+
     private readonly List<ChatLine> _messages = [];
     private string? _recordPlaying;
     private int _recordPlayingTimer;
     public int ScrollOffset { get; set; }
     public string? HoveredItemName { get; set; }
+    public bool IsOpen { get; set; }
 
     public ChatOverlay()
     {
-        Style.Width = 320;
+        Style.Width = ChatWidth;
         Style.Height = null; // Auto wrap
     }
 
@@ -35,7 +40,8 @@ public class ChatOverlay : UIElement
     {
         ScrollOffset += amount;
         if (ScrollOffset < 0) ScrollOffset = 0;
-        if (ScrollOffset > _messages.Count - 10) ScrollOffset = Math.Max(0, _messages.Count - 10);
+        int maxScroll = Math.Max(0, _messages.Count - MaxHistoryLines);
+        if (ScrollOffset > maxScroll) ScrollOffset = maxScroll;
     }
 
     public override void Update(float partialTicks)
@@ -47,7 +53,26 @@ public class ChatOverlay : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        // Render chat messages
+        if (IsOpen)
+        {
+            RenderHistory(renderer);
+        }
+        else
+        {
+            RenderFading(renderer);
+        }
+
+        // Render record playing
+        if (_recordPlayingTimer > 0 && _recordPlaying != null)
+        {
+            renderer.DrawCenteredText(_recordPlaying, 160, -40, Color.White, shadow: true);
+        }
+
+        base.Render(renderer);
+    }
+
+    private void RenderFading(UIRenderer renderer)
+    {
         int yOffset = 0;
         for (int i = 0; i < _messages.Count && i < 10; i++)
         {
@@ -58,19 +83,32 @@ public class ChatOverlay : UIElement
                 float alpha = Math.Clamp((1.0f - progress) * 10.0f, 0, 1);
                 alpha *= alpha; // Non-linear fade out
 
-                renderer.DrawRect(0, yOffset - 9, 320, 9, new Color(0, 0, 0, (byte)(100 * alpha)));
-                renderer.DrawText(msg.Message, 0, yOffset - 9, new Color(255, 255, 255, (byte)(255 * alpha)));
-                yOffset -= 9;
+                renderer.DrawRect(0, yOffset - LineHeight, ChatWidth, LineHeight, new Color(0, 0, 0, (byte)(100 * alpha)));
+                renderer.DrawText(msg.Message, 0, yOffset - LineHeight, new Color(255, 255, 255, (byte)(255 * alpha)));
+                yOffset -= LineHeight;
             }
         }
+    }
 
-        // Render record playing
-        if (_recordPlayingTimer > 0 && _recordPlaying != null)
+    private void RenderHistory(UIRenderer renderer)
+    {
+        int visibleCount = Math.Min(MaxHistoryLines, _messages.Count - ScrollOffset);
+        if (visibleCount <= 0) return;
+
+        // Render messages bottom-up
+        int yOffset = 0;
+        for (int i = ScrollOffset; i < ScrollOffset + visibleCount; i++)
         {
-            renderer.DrawCenteredText(_recordPlaying, 160, -40, Color.White, shadow: true);
+            renderer.DrawRect(0, yOffset - LineHeight, ChatWidth, LineHeight, new Color(0, 0, 0, 100));
+            renderer.DrawText(_messages[i].Message, 0, yOffset - LineHeight, Color.White);
+            yOffset -= LineHeight;
         }
 
-        base.Render(renderer);
+        // Scroll indicator when not at the bottom
+        if (ScrollOffset > 0)
+        {
+            renderer.DrawText("^  ^  ^", ChatWidth / 2 - 20, yOffset - LineHeight, new Color(255, 255, 255, 180), shadow: false);
+        }
     }
 
     private class ChatLine(string message)

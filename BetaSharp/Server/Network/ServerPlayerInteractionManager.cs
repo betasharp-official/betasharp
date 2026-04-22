@@ -162,16 +162,16 @@ public class ServerPlayerInteractionManager
         if (success && player.GameMode.BlockDrops && player.canHarvest(Block.Blocks[blockId]))
         {
             Block.Blocks[blockId].onAfterBreak(new OnAfterBreakEvent(world, player, blockMeta, x, y, z));
-            ((ServerPlayerEntity)player).networkHandler.sendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+            ((ServerPlayerEntity)player).NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
         }
 
         ItemStack itemStack = player.getHand();
         if (itemStack != null)
         {
             itemStack.postMine(blockId, x, y, z, player);
-            if (itemStack.count == 0)
+            if (itemStack.Count == 0)
             {
-                itemStack.onRemoved(player);
+                ItemStack.onRemoved(player);
                 player.clearStackInHand();
             }
         }
@@ -181,14 +181,14 @@ public class ServerPlayerInteractionManager
 
     public bool interactItem(EntityPlayer player, IWorldContext world, ItemStack stack)
     {
-        int count = stack.count;
+        int count = stack.Count;
         ItemStack itemStack = stack.use(world, player);
-        if (itemStack != stack || itemStack != null && itemStack.count != count)
+        if (itemStack != stack || itemStack != null && itemStack.Count != count)
         {
-            player.inventory.main[player.inventory.selectedSlot] = itemStack;
-            if (itemStack.count == 0)
+            player.inventory.Main[player.inventory.SelectedSlot] = itemStack;
+            if (itemStack.Count == 0)
             {
-                player.inventory.main[player.inventory.selectedSlot] = null;
+                player.inventory.Main[player.inventory.SelectedSlot] = null;
             }
 
             miningProgress = -1;
@@ -203,7 +203,8 @@ public class ServerPlayerInteractionManager
 
     public bool interactBlock(EntityPlayer player, World world, ItemStack? stack, int x, int y, int z, int side)
     {
-        if (!player.isSneaking()) {
+        if (!player.IsSneaking())
+        {
             if (!player.GameMode.CanInteract) return false;
             int blockId = world.Reader.GetBlockId(x, y, z);
             if (blockId > 0 && Block.Blocks[blockId].onUse(new OnUseEvent(world, player, x, y, z)))

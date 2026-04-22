@@ -27,7 +27,7 @@ internal class ShapelessRecipes : IRecipe
         {
             for (int col = 0; col < 3; ++col)
             {
-                ItemStack gridStack = craftingInventory.getStackAt(col, row);
+                ItemStack gridStack = craftingInventory.GetStackAt(col, row);
                 if (gridStack != null)
                 {
                     bool foundMatch = false;
@@ -36,7 +36,7 @@ internal class ShapelessRecipes : IRecipe
                     while (iterator.MoveNext())
                     {
                         ItemStack recipeItem = iterator.Current;
-                        if (gridStack.itemId == recipeItem.itemId && (recipeItem.getDamage() == -1 || gridStack.getDamage() == recipeItem.getDamage()))
+                        if (gridStack.ItemId == recipeItem.ItemId && (recipeItem.getDamage() == -1 || gridStack.getDamage() == recipeItem.getDamage()))
                         {
                             foundMatch = true;
                             remainingIngredients.Remove(recipeItem);

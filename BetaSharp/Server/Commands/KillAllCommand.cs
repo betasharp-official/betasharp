@@ -1,37 +1,50 @@
 using BetaSharp.Entities;
-using BetaSharp.Server.Command;
+using BetaSharp.Worlds.Core;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class KillAllCommand : ICommand
+public class KillAllCommand : Command.Command
 {
-    public string Usage => "killall [filter]";
-    public string Description => "Kills entities by type";
-    public string[] Names => ["killall"];
+    public override string Usage => "killall <all|mob|hostile|friendly|item|tnt> <filter>";
+    public override string Description => "Kills entities by type";
+    public override string[] Names => ["killall"];
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder
+            .Executes(ctx => KillAll(ctx, (byte)TypeFilter.All, ""))
+            .Then(ArgumentEnum<TypeFilter>("type")
+                .Executes(ctx => KillAll(ctx, (byte)ctx.GetArgument<TypeFilter>("type"), ""))
+                .Then(ArgumentString("filter")).Executes(ctx => KillAll(ctx, (byte)ctx.GetArgument<TypeFilter>("type"), ctx.GetArgument<string>("filter")))
+            );
+
+    private static int KillAll(CommandContext<CommandSource> context, byte type, string filter)
     {
-        string filter = c.Args.Length > 0 ? c.Args[0].ToLower() : "all";
+        filter = filter.ToLower();
         int count = 0;
 
-        for (int w = 0; w < c.Server.worlds.Length; w++)
+        for (int w = 0; w < context.Source.Server.worlds.Length; w++)
         {
-            var world = c.Server.worlds[w];
-            var entities = new List<Entity>(world.Entities.Entities);
+            ServerWorld world = context.Source.Server.worlds[w];
+            List<Entity> entities = new(world.Entities.Entities);
 
             foreach (Entity entity in entities)
             {
-                if (entity is EntityPlayer) continue;
-
-                bool shouldKill = filter switch
+                if (entity is EntityPlayer)
                 {
-                    "all" => true,
-                    "living" or "mob" => entity is EntityLiving,
-                    "monster" => entity is EntityMonster,
-                    "animal" => entity is EntityAnimal,
-                    "item" => entity is EntityItem,
-                    "tnt" => entity is EntityTNTPrimed,
-                    _ => EntityRegistry.GetId(entity)?.Equals(filter, System.StringComparison.OrdinalIgnoreCase) ?? false
+                    continue;
+                }
+
+                bool shouldKill = type switch
+                {
+                    (byte)TypeFilter.All => true,
+                    (byte)TypeFilter.Mob => entity is EntityLiving,
+                    (byte)TypeFilter.Hostile => entity is EntityMonster,
+                    (byte)TypeFilter.Friendly => entity is EntityAnimal,
+                    (byte)TypeFilter.Item => entity is EntityItem,
+                    (byte)TypeFilter.Tnt => entity is EntityTNTPrimed,
+                    _ => EntityRegistry.GetId(entity)?.Equals(filter, StringComparison.OrdinalIgnoreCase) ?? false
                 };
 
                 if (shouldKill)
@@ -42,6 +55,38 @@ public class KillAllCommand : ICommand
             }
         }
 
-        c.Output.SendMessage($"Killed {count} entities (filter: {filter}).");
+        if (type == 255)
+        {
+            context.Source.Output.SendMessage($"Killed {count} entities (filter: {filter}).");
+        }
+        else if (type == (byte)TypeFilter.All)
+        {
+            context.Source.Output.SendMessage($"Killed {count} entities.");
+        }
+        else
+        {
+            context.Source.Output.SendMessage($"Killed {count} {(TypeFilter)type}s.");
+        }
+
+        return 1;
+    }
+
+    private enum TypeFilter : byte
+    {
+        All = 0,
+        A = 0,
+        Mob = 1,
+        M = 1,
+        Living = 1,
+        Hostile = 2,
+        H = 2,
+        Monster = 2,
+        Friendly = 3,
+        F = 3,
+        Animal = 3,
+        Item = 4,
+        I = 4,
+        Tnt = 5,
+        T = 5
     }
 }

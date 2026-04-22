@@ -1,85 +1,82 @@
 using System.IO.Compression;
-using BetaSharp.Worlds.Storage.RegionFormat;
+using BetaSharp.Worlds.Chunks.Storage;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Worlds.Chunks.Storage;
+namespace BetaSharp.Worlds.Storage.RegionFormat;
 
 internal class RegionFile
 {
-    private static readonly byte[] emptySector = new byte[4096];
+    private static readonly byte[] s_emptySector = new byte[4096];
     private readonly ILogger<RegionFile> _logger = Log.Instance.For<RegionFile>();
-    private readonly int[] chunkSaveTimes = new int[1024];
-    private readonly FileStream dataFile;
-    private readonly string fileName;
-    private readonly int[] offsets = new int[1024];
-    private readonly List<bool> sectorFree;
-    private int sizeDelta;
+    private readonly int[] _chunkSaveTimes = new int[1024];
+    private readonly FileStream _dataFile;
+    private readonly int[] _offsets = new int[1024];
+    private readonly List<bool> _sectorFree;
+    private int _sizeDelta;
 
     public RegionFile(string input)
     {
-        fileName = input;
-        debugln("REGION LOAD " + fileName);
-        sizeDelta = 0;
+        _sizeDelta = 0;
 
         try
         {
-            dataFile = new FileStream(input, FileMode.OpenOrCreate);
+            _dataFile = new FileStream(input, FileMode.OpenOrCreate);
 
-            int var2;
-            if (dataFile.Length < 4096L)
+            int headerIndex;
+            if (_dataFile.Length < 4096L)
             {
-                for (var2 = 0; var2 < 1024; ++var2)
+                for (headerIndex = 0; headerIndex < 1024; ++headerIndex)
                 {
-                    dataFile.WriteInt(0);
+                    _dataFile.WriteInt(0);
                 }
 
-                for (var2 = 0; var2 < 1024; ++var2)
+                for (headerIndex = 0; headerIndex < 1024; ++headerIndex)
                 {
-                    dataFile.WriteInt(0);
+                    _dataFile.WriteInt(0);
                 }
 
-                sizeDelta += 8192;
+                _sizeDelta += 8192;
             }
 
-            if ((dataFile.Length & 4095L) != 0L)
+            if ((_dataFile.Length & 4095L) != 0L)
             {
-                for (var2 = 0; var2 < (dataFile.Length & 4095L); ++var2)
+                for (headerIndex = 0; headerIndex < (_dataFile.Length & 4095L); ++headerIndex)
                 {
-                    dataFile.WriteByte(0);
+                    _dataFile.WriteByte(0);
                 }
             }
 
-            var2 = (int)dataFile.Length / 4096;
-            sectorFree = new List<bool>(var2);
+            headerIndex = (int)_dataFile.Length / 4096;
+            _sectorFree = new List<bool>(headerIndex);
 
-            int var3;
-            for (var3 = 0; var3 < var2; ++var3)
+            int sectorIndex;
+            for (sectorIndex = 0; sectorIndex < headerIndex; ++sectorIndex)
             {
-                sectorFree.Add(true);
+                _sectorFree.Add(true);
             }
 
-            sectorFree[0] = false;
-            sectorFree[1] = false;
-            dataFile.Seek(0L, SeekOrigin.Begin);
+            _sectorFree[0] = false;
+            _sectorFree[1] = false;
+            _dataFile.Seek(0L, SeekOrigin.Begin);
 
-            int var4;
-            for (var3 = 0; var3 < 1024; ++var3)
+            int offset;
+            for (sectorIndex = 0; sectorIndex < 1024; ++sectorIndex)
             {
-                var4 = dataFile.ReadInt();
-                offsets[var3] = var4;
-                if (var4 != 0 && (var4 >> 8) + (var4 & 255) <= sectorFree.Count())
+                offset = _dataFile.ReadInt();
+                _offsets[sectorIndex] = offset;
+                if (offset != 0 && (offset >> 8) + (offset & 255) <= _sectorFree.Count())
                 {
-                    for (int var5 = 0; var5 < (var4 & 255); ++var5)
+                    for (int usedSectorIndex = 0; usedSectorIndex < (offset & 255); ++usedSectorIndex)
                     {
-                        sectorFree[(var4 >> 8) + var5] = false;
+                        _sectorFree[(offset >> 8) + usedSectorIndex] = false;
                     }
                 }
             }
 
-            for (var3 = 0; var3 < 1024; ++var3)
+            for (sectorIndex = 0; sectorIndex < 1024; ++sectorIndex)
             {
-                var4 = dataFile.ReadInt();
-                chunkSaveTimes[var3] = var4;
+                offset = _dataFile.ReadInt();
+                _chunkSaveTimes[sectorIndex] = offset;
             }
         }
         catch (IOException ex)
@@ -92,225 +89,202 @@ internal class RegionFile
     {
         lock (this)
         {
-            int var1 = sizeDelta;
-            sizeDelta = 0;
-            return var1;
+            int delta = _sizeDelta;
+            _sizeDelta = 0;
+            return delta;
         }
     }
 
-    private void func_22211_a(string var1)
-    {
-    }
-
-    private void debugln(string var1) => func_22211_a(var1 + "\n");
-
-    private void func_22199_a(string var1, int var2, int var3, string var4) => func_22211_a("REGION " + var1 + " " + fileName + "[" + var2 + "," + var3 + "] = " + var4);
-
-    private void func_22197_a(string var1, int var2, int var3, int var4, string var5) => func_22211_a("REGION " + var1 + " " + fileName + "[" + var2 + "," + var3 + "] " + var4 + "B = " + var5);
-
-    private void debugln(string var1, int var2, int var3, string var4) => func_22199_a(var1, var2, var3, var4 + "\n");
-
-    public ChunkDataStream GetChunkDataInputStream(int var1, int var2)
+    public ChunkDataStream GetChunkDataInputStream(int chunkX, int chunkZ)
     {
         lock (this)
         {
-            if (outOfBounds(var1, var2))
+            if (OutOfBounds(chunkX, chunkZ))
             {
-                debugln("READ", var1, var2, "out of bounds");
                 return null;
             }
 
             try
             {
-                int var3 = getOffset(var1, var2);
-                if (var3 == 0)
+                int offset = GetOffset(chunkX, chunkZ);
+                if (offset == 0)
                 {
                     return null;
                 }
 
-                int var4 = var3 >> 8;
-                int var5 = var3 & 255;
+                int sectorNumber = offset >> 8;
+                int sectorCount = offset & 255;
 
-                if (var4 + var5 > sectorFree.Count())
+                if (sectorNumber + sectorCount > _sectorFree.Count())
                 {
-                    debugln("READ", var1, var2, "invalid sector");
                     return null;
                 }
 
-                dataFile.Seek(var4 * 4096, SeekOrigin.Begin);
-                int var6 = dataFile.ReadInt();
-                if (var6 > 4096 * var5)
+                _dataFile.Seek(sectorNumber * 4096, SeekOrigin.Begin);
+                int compressedLength = _dataFile.ReadInt();
+                if (compressedLength > 4096 * sectorCount)
                 {
-                    debugln("READ", var1, var2, "invalid length: " + var6 + " > 4096 * " + var5);
                     return null;
                 }
 
-                CompressionType var7 = (CompressionType)dataFile.ReadByte();
-                byte[] var8;
-                Stream var9;
+                CompressionType compressionType = (CompressionType)_dataFile.ReadByte();
+                byte[] compressedData;
+                Stream stream;
 
-                if (var7 == CompressionType.ZLibDeflate)
+                if (compressionType == CompressionType.ZLibDeflate)
                 {
-                    var8 = new byte[var6 - 1];
-                    dataFile.Read(var8);
-                    var9 = new ZLibStream(new MemoryStream(var8), CompressionMode.Decompress);
-                    return new ChunkDataStream(var9, var7);
+                    compressedData = new byte[compressedLength - 1];
+                    _dataFile.ReadExactly(compressedData);
+                    stream = new ZLibStream(new MemoryStream(compressedData), CompressionMode.Decompress);
+                    return new ChunkDataStream(stream, compressionType);
                 }
 
-                debugln("READ", var1, var2, "unknown version " + var7);
                 return null;
             }
             catch (IOException)
             {
-                debugln("READ", var1, var2, "exception");
                 return null;
             }
         }
     }
 
-    public Stream GetChunkDataOutputStream(int var1, int var2)
+    public Stream GetChunkDataOutputStream(int chunkX, int chunkZ)
     {
-        if (outOfBounds(var1, var2))
+        if (OutOfBounds(chunkX, chunkZ))
         {
             return null;
         }
 
-        RegionFileChunkBuffer buffer = new(this, var1, var2);
+        RegionFileChunkBuffer buffer = new(this, chunkX, chunkZ);
         return new ZLibStream(buffer, CompressionMode.Compress);
     }
 
-    public void write(int var1, int var2, byte[] var3, int var4)
+    public void Write(int chunkX, int chunkZ, byte[] data, int length)
     {
         lock (this)
         {
             try
             {
-                int var5 = getOffset(var1, var2);
-                int var6 = var5 >> 8;
-                int var7 = var5 & 255;
-                int var8 = (var4 + 5) / 4096 + 1;
-                if (var8 >= 256)
+                int offset = GetOffset(chunkX, chunkZ);
+                int sectorNumber = offset >> 8;
+                int allocatedSectorCount = offset & 255;
+                int requiredSectorCount = (length + 5) / 4096 + 1;
+                if (requiredSectorCount >= 256)
                 {
                     return;
                 }
 
-                if (var6 != 0 && var7 == var8)
+                if (sectorNumber != 0 && allocatedSectorCount == requiredSectorCount)
                 {
-                    func_22197_a("SAVE", var1, var2, var4, "rewrite");
-                    write(var6, var3, var4);
+                    Write(sectorNumber, data, length);
                 }
                 else
                 {
-                    int var9;
-                    for (var9 = 0; var9 < var7; ++var9)
+                    int freeRunStart;
+                    for (freeRunStart = 0; freeRunStart < allocatedSectorCount; ++freeRunStart)
                     {
-                        sectorFree[var6 + var9] = true;
+                        _sectorFree[sectorNumber + freeRunStart] = true;
                     }
 
-                    var9 = sectorFree.IndexOf(true);
-                    int var10 = 0;
-                    int var11;
-                    if (var9 != -1)
+                    freeRunStart = _sectorFree.IndexOf(true);
+                    int freeRunLength = 0;
+                    int sectorIndex;
+                    if (freeRunStart != -1)
                     {
-                        for (var11 = var9; var11 < sectorFree.Count(); ++var11)
+                        for (sectorIndex = freeRunStart; sectorIndex < _sectorFree.Count(); ++sectorIndex)
                         {
-                            if (var10 != 0)
+                            if (freeRunLength != 0)
                             {
-                                if (sectorFree[var11])
+                                if (_sectorFree[sectorIndex])
                                 {
-                                    ++var10;
+                                    ++freeRunLength;
                                 }
                                 else
                                 {
-                                    var10 = 0;
+                                    freeRunLength = 0;
                                 }
                             }
-                            else if (sectorFree[var11])
+                            else if (_sectorFree[sectorIndex])
                             {
-                                var9 = var11;
-                                var10 = 1;
+                                freeRunStart = sectorIndex;
+                                freeRunLength = 1;
                             }
 
-                            if (var10 >= var8)
+                            if (freeRunLength >= requiredSectorCount)
                             {
                                 break;
                             }
                         }
                     }
 
-                    if (var10 >= var8)
+                    if (freeRunLength >= requiredSectorCount)
                     {
-                        func_22197_a("SAVE", var1, var2, var4, "reuse");
-                        var6 = var9;
-                        setOffset(var1, var2, (var9 << 8) | var8);
+                        sectorNumber = freeRunStart;
+                        SetOffset(chunkX, chunkZ, (freeRunStart << 8) | requiredSectorCount);
 
-                        for (var11 = 0; var11 < var8; ++var11)
+                        for (sectorIndex = 0; sectorIndex < requiredSectorCount; ++sectorIndex)
                         {
-                            sectorFree[var6 + var11] = false;
+                            _sectorFree[sectorNumber + sectorIndex] = false;
                         }
 
-                        write(var6, var3, var4);
+                        Write(sectorNumber, data, length);
                     }
                     else
                     {
-                        func_22197_a("SAVE", var1, var2, var4, "grow");
-                        dataFile.Seek(dataFile.Length, SeekOrigin.Begin);
-                        var6 = sectorFree.Count();
+                        _dataFile.Seek(_dataFile.Length, SeekOrigin.Begin);
+                        sectorNumber = _sectorFree.Count();
 
-                        for (var11 = 0; var11 < var8; ++var11)
+                        for (sectorIndex = 0; sectorIndex < requiredSectorCount; ++sectorIndex)
                         {
-                            dataFile.Write(emptySector);
-                            sectorFree.Add(false);
+                            _dataFile.Write(s_emptySector);
+                            _sectorFree.Add(false);
                         }
 
-                        sizeDelta += 4096 * var8;
-                        write(var6, var3, var4);
-                        setOffset(var1, var2, (var6 << 8) | var8);
+                        _sizeDelta += 4096 * requiredSectorCount;
+                        Write(sectorNumber, data, length);
+                        SetOffset(chunkX, chunkZ, (sectorNumber << 8) | requiredSectorCount);
                     }
                 }
 
-                func_22208_b(var1, var2, (int)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000L));
+                func_22208_b(chunkX, chunkZ, (int)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000L));
             }
-            catch (IOException var12)
+            catch (IOException ex)
             {
-                _logger.LogError(var12, "Exception");
+                _logger.LogError(ex, "Exception");
             }
         }
     }
 
-    private void write(int var1, byte[] var2, int var3)
+    private void Write(int sectorNumber, byte[] data, int length)
     {
-        debugln(" " + var1);
-        dataFile.Seek(var1 * 4096, SeekOrigin.Begin);
-        dataFile.WriteInt(var3 + 1);
-        dataFile.WriteByte((byte)CompressionType.ZLibDeflate);
-        dataFile.Write(var2, 0, var3);
+        _dataFile.Seek(sectorNumber * 4096, SeekOrigin.Begin);
+        _dataFile.WriteInt(length + 1);
+        _dataFile.WriteByte((byte)CompressionType.ZLibDeflate);
+        _dataFile.Write(data, 0, length);
     }
 
-    private bool outOfBounds(int var1, int var2) => var1 < 0 || var1 >= 32 || var2 < 0 || var2 >= 32;
+    private static bool OutOfBounds(int chunkX, int chunkZ) => chunkX < 0 || chunkX >= 32 || chunkZ < 0 || chunkZ >= 32;
 
-    private int getOffset(int var1, int var2) => offsets[var1 + var2 * 32];
+    private int GetOffset(int chunkX, int chunkZ) => _offsets[chunkX + chunkZ * 32];
 
-    public bool func_22202_c(int var1, int var2) => getOffset(var1, var2) != 0;
-
-    private void setOffset(int var1, int var2, int var3)
+    private void SetOffset(int chunkX, int chunkZ, int offset)
     {
-        offsets[var1 + var2 * 32] = var3;
-        dataFile.Seek((var1 + var2 * 32) * 4, SeekOrigin.Begin);
-        dataFile.WriteInt(var3);
+        _offsets[chunkX + chunkZ * 32] = offset;
+        _dataFile.Seek((chunkX + chunkZ * 32) * 4, SeekOrigin.Begin);
+        _dataFile.WriteInt(offset);
     }
 
-    private void func_22208_b(int var1, int var2, int var3)
+    private void func_22208_b(int chunkX, int chunkZ, int timestamp)
     {
-        chunkSaveTimes[var1 + var2 * 32] = var3;
-        dataFile.Seek(4096 + (var1 + var2 * 32) * 4, SeekOrigin.Begin);
-        dataFile.WriteInt(var3);
+        _chunkSaveTimes[chunkX + chunkZ * 32] = timestamp;
+        _dataFile.Seek(4096 + (chunkX + chunkZ * 32) * 4, SeekOrigin.Begin);
+        _dataFile.WriteInt(timestamp);
     }
 
     public void Flush()
     {
-        dataFile.Flush();
-        dataFile.Dispose();
+        _dataFile.Flush();
+        _dataFile.Dispose();
     }
 
     internal enum CompressionType : byte

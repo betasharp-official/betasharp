@@ -6,12 +6,13 @@ namespace BetaSharp.Blocks;
 
 public class BlockPlant : Block
 {
+    private const float HalfSize = 0.2F;
+
     public BlockPlant(int id, int textureId) : base(id, Material.Plant)
     {
-        this.textureId = textureId;
+        TextureId = textureId;
         setTickRandomly(true);
-        float halfSize = 0.2F;
-        setBoundingBox(0.5F - halfSize, 0.0F, 0.5F - halfSize, 0.5F + halfSize, halfSize * 3.0F, 0.5F + halfSize);
+        setBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, HalfSize * 3.0F, 0.5F + HalfSize);
     }
 
     public override bool canPlaceAt(CanPlaceAtContext context) => base.canPlaceAt(context) && canPlantOnTop(context.World.Reader.GetBlockId(context.X, context.Y - 1, context.Z));
@@ -28,11 +29,10 @@ public class BlockPlant : Block
 
     protected void breakIfCannotGrow(IWorldContext level, int x, int y, int z)
     {
-        if (!canGrow(new OnTickEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z), level.Reader.GetBlockId(x, y, z))))
-        {
-            dropStacks(new OnDropEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z)));
-            level.Writer.SetBlock(x, y, z, 0);
-        }
+        if (canGrow(new OnTickEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z), level.Reader.GetBlockId(x, y, z)))) return;
+
+        dropStacks(new OnDropEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z)));
+        level.Writer.SetBlock(x, y, z, 0);
     }
 
     public override bool canGrow(OnTickEvent ctx) =>

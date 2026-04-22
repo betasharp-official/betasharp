@@ -1,8 +1,8 @@
+using System.Runtime.InteropServices;
 using Silk.NET.GLFW;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
-using System.Runtime.InteropServices;
 
 namespace BetaSharp.Client;
 
@@ -642,7 +642,7 @@ public static unsafe class Display
         return _gl;
     }
 
-    public static WindowHandle* getWindowHandle()
+    public static WindowHandle* GetWindowHandle()
     {
         if (!isCreated())
         {
@@ -660,6 +660,18 @@ public static unsafe class Display
     public static IWindow getWindow()
     {
         return _window!;
+    }
+
+    public static string GetClipboardString()
+    {
+        if (_glfw == null || _window == null) return "";
+        return _glfw.GetClipboardString(GetWindowHandle());
+    }
+
+    public static void SetClipboardString(string text)
+    {
+        if (_glfw == null || _window == null) return;
+        _glfw.SetClipboardString(GetWindowHandle(), text);
     }
 }
 

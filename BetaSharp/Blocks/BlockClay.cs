@@ -3,19 +3,9 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Blocks;
 
-internal class BlockClay : Block
+internal class BlockClay(int id, int textureId) : Block(id, textureId, Material.Clay)
 {
-    public BlockClay(int id, int textureId) : base(id, textureId, Material.Clay)
-    {
-    }
+    public override int getDroppedItemId(int blockMeta) => Item.Clay.id;
 
-    public override int getDroppedItemId(int blockMeta)
-    {
-        return Item.Clay.id;
-    }
-
-    public override int getDroppedItemCount()
-    {
-        return 4;
-    }
+    public override int getDroppedItemCount() => 4;
 }

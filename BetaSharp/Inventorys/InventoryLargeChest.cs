@@ -1,68 +1,46 @@
-using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 
 namespace BetaSharp.Inventorys;
 
-internal class InventoryLargeChest : IInventory
+internal class InventoryLargeChest(string name, IInventory upperChest, IInventory lowerChest) : IInventory
 {
-    private string name;
-    private IInventory upperChest;
-    private IInventory lowerChest;
+    public int Size => upperChest.Size + lowerChest.Size;
 
-    public InventoryLargeChest(string name, IInventory upperChest, IInventory lowerChest)
+    public string Name { get; } = name;
+
+    public ItemStack? GetStack(int slotIndex)
     {
-        this.name = name;
-        this.upperChest = upperChest;
-        this.lowerChest = lowerChest;
+        return slotIndex >= upperChest.Size ? lowerChest.GetStack(slotIndex - upperChest.Size) : upperChest.GetStack(slotIndex);
     }
 
-    public int size()
+    public ItemStack? RemoveStack(int slotIndex, int amount)
     {
-        return upperChest.size() + lowerChest.size();
+        return slotIndex >= upperChest.Size ? lowerChest.RemoveStack(slotIndex - upperChest.Size, amount) : upperChest.RemoveStack(slotIndex, amount);
     }
 
-    public string getName()
+    public void SetStack(int slotIndex, ItemStack? itemStack)
     {
-        return name;
-    }
-
-    public ItemStack getStack(int slotIndex)
-    {
-        return slotIndex >= upperChest.size() ? lowerChest.getStack(slotIndex - upperChest.size()) : upperChest.getStack(slotIndex);
-    }
-
-    public ItemStack? removeStack(int slotIndex, int amount)
-    {
-        return slotIndex >= upperChest.size() ? lowerChest.removeStack(slotIndex - upperChest.size(), amount) : upperChest.removeStack(slotIndex, amount);
-    }
-
-    public void setStack(int slotIndex, ItemStack? itemStack)
-    {
-        if (slotIndex >= upperChest.size())
+        if (slotIndex >= upperChest.Size)
         {
-            lowerChest.setStack(slotIndex - upperChest.size(), itemStack);
+            lowerChest.SetStack(slotIndex - upperChest.Size, itemStack);
         }
         else
         {
-            upperChest.setStack(slotIndex, itemStack);
+            upperChest.SetStack(slotIndex, itemStack);
         }
 
     }
+    public int MaxCountPerStack => upperChest.MaxCountPerStack;
 
-    public int getMaxCountPerStack()
+    public void MarkDirty()
     {
-        return upperChest.getMaxCountPerStack();
+        upperChest.MarkDirty();
+        lowerChest.MarkDirty();
     }
 
-    public void markDirty()
+    public bool CanPlayerUse(EntityPlayer entityPlayer)
     {
-        upperChest.markDirty();
-        lowerChest.markDirty();
-    }
-
-    public bool canPlayerUse(EntityPlayer entityPlayer)
-    {
-        return upperChest.canPlayerUse(entityPlayer) && lowerChest.canPlayerUse(entityPlayer);
+        return upperChest.CanPlayerUse(entityPlayer) && lowerChest.CanPlayerUse(entityPlayer);
     }
 }

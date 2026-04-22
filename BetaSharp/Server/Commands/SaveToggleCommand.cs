@@ -1,37 +1,50 @@
-using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class SaveOnCommand : ICommand
+public class SaveOnCommand : Command.Command
 {
-    public string Usage => "save-on";
-    public string Description => "Enables level saving";
-    public string[] Names => ["save-on"];
-    public byte PermissionLevel => 4;
+    public override string Usage => "save-on";
+    public override string Description => "Enables level saving";
+    public override string[] Names => ["save-on"];
+    public override byte PermissionLevel => 4;
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder.Executes(Execute);
+
+    private static int Execute(CommandContext<CommandSource> context)
     {
-        c.LogOp( "Enabling level saving..");
+        CommandSource c = context.Source;
+        c.LogOp("Enabling level saving..");
         for (int i = 0; i < c.Server.worlds.Length; i++)
         {
             c.Server.worlds[i].savingDisabled = false;
         }
+
+        return 1;
     }
 }
 
-public class SaveOffCommand : ICommand
+public class SaveOffCommand : Command.Command
 {
-    public string Usage => "save-off";
-    public string Description => "Disables level saving";
-    public string[] Names => ["save-off"];
-    public byte PermissionLevel => 4;
+    public override string Usage => "save-off";
+    public override string Description => "Disables level saving";
+    public override string[] Names => ["save-off"];
+    public override byte PermissionLevel => 4;
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder.Executes(Execute);
+
+    private static int Execute(CommandContext<CommandSource> context)
     {
-        c.LogOp( "Disabling level saving..");
+        CommandSource c = context.Source;
+        c.LogOp("Disabling level saving..");
         for (int i = 0; i < c.Server.worlds.Length; i++)
         {
             c.Server.worlds[i].savingDisabled = true;
         }
+
+        return 1;
     }
 }

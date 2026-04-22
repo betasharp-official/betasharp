@@ -14,7 +14,7 @@ internal class ItemBow : Item
 
     public override ItemStack use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
     {
-        if (entityPlayer.inventory.consumeInventoryItem(Item.ARROW.id))
+        if (entityPlayer.inventory.ConsumeInventoryItem(Item.ARROW.id))
         {
             world.Broadcaster.PlaySoundAtEntity(entityPlayer, "random.bow", 1.0F, 1.0F / (itemRand.NextFloat() * 0.4F + 0.8F));
             if (!world.IsRemote)

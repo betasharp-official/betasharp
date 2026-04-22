@@ -13,12 +13,12 @@ public class HealthUpdateS2CPacket() : Packet(PacketId.HealthUpdateS2C)
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         healthMP = stream.ReadShort();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteShort((short)healthMP);
     }

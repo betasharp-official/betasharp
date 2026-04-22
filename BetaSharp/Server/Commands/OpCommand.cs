@@ -1,25 +1,24 @@
-using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class OpCommand : ICommand
+public class OpCommand : Command.Command
 {
-    public string Usage => "op <player>";
-    public string Description => "Makes a player operator";
-    public string[] Names => ["op"];
-    public bool DisallowInternalServer => true;
+    public override string Usage => "op <player>";
+    public override string Description => "Makes a player operator";
+    public override string[] Names => ["op"];
+    public override bool DisallowInternalServer => true;
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder.Then(ArgumentString("player").Executes(Execute));
+
+    private static int Execute(CommandContext<CommandSource> context)
     {
-        if (c.Args.Length < 1)
-        {
-            c.Output.SendMessage("Usage: op <player>");
-            return;
-        }
-
-        string target = c.Args[0];
-        c.Server.playerManager.addToOperators(target);
-        c.LogOp("Opping " + target);
-        c.Server.playerManager.messagePlayer(target, "§eYou are now op!");
+        string target = context.GetArgument<string>("player");
+        context.Source.Server.playerManager.addToOperators(target);
+        context.Source.LogOp("Opping " + target);
+        context.Source.Server.playerManager.messagePlayer(target, "§eYou are now op!");
+        return 1;
     }
 }

@@ -15,7 +15,7 @@ internal struct ChunkSnapshot : IDisposable
 
     public ChunkSnapshot(Chunk toSnapshot)
     {
-        _blocks = ArrayPool<byte>.Shared.Rent(32768);
+        _blocks = ArrayPool<byte>.Shared.Rent(toSnapshot.Blocks.Length);
         Buffer.BlockCopy(toSnapshot.Blocks, 0, _blocks, 0, toSnapshot.Blocks.Length);
 
         _data = MakeNibbleArray(toSnapshot.Meta.Bytes);
@@ -32,7 +32,7 @@ internal struct ChunkSnapshot : IDisposable
 
     public readonly int GetBlockID(int x, int y, int z)
     {
-        return _blocks[x << 11 | z << 7 | y] & 255;
+        return _blocks[ChuckFormat.GetIndex(x, y, z)];
     }
 
     public readonly int GetBlockMetadata(int x, int y, int z)

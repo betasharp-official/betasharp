@@ -67,7 +67,7 @@ internal class BlockRedstoneOre : Block
         }
     }
 
-    private void spawnParticles(IBlockReader reader, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    private static void spawnParticles(IBlockReader reader, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         double faceOffset = 1.0D / 16.0D;
         for (int direction = 0; direction < 6; ++direction)

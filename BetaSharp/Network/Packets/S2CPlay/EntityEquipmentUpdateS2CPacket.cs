@@ -21,14 +21,14 @@ public class EntityEquipmentUpdateS2CPacket() : PacketBaseEntity(PacketId.Entity
         }
         else
         {
-            p.itemRawId = itemStack.itemId;
+            p.itemRawId = itemStack.ItemId;
             p.itemDamage = itemStack.getDamage();
         }
 
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         base.Read(stream);
         slot = stream.ReadShort();
@@ -36,7 +36,7 @@ public class EntityEquipmentUpdateS2CPacket() : PacketBaseEntity(PacketId.Entity
         itemDamage = stream.ReadShort();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         base.Write(stream);
         stream.WriteShort((short)slot);

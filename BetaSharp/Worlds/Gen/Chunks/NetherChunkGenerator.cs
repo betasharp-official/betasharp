@@ -8,7 +8,7 @@ using BetaSharp.Worlds.Generation.Generators.Features;
 
 namespace BetaSharp.Worlds.Gen.Chunks;
 
-internal class NetherChunkGenerator : IChunkSource
+internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
 {
     private readonly Carver _cave = new NetherCaveCarver();
     private readonly OctavePerlinNoiseSampler _depthNoise;
@@ -18,9 +18,6 @@ internal class NetherChunkGenerator : IChunkSource
     private readonly OctavePerlinNoiseSampler _perlinNoise2;
     private readonly OctavePerlinNoiseSampler _perlinNoise3;
     private readonly OctavePerlinNoiseSampler _scaleNoise;
-    private readonly long _seed;
-    private readonly IWorldContext _world;
-    private readonly JavaRandom random;
     private double[] _depthBuffer = new double[256];
     private double[] _depthNoiseBuffer;
     private PlantPatchFeature _featureBrownMushroom;
@@ -37,18 +34,15 @@ internal class NetherChunkGenerator : IChunkSource
     private double[] _sandBuffer = new double[256];
     private double[] _scaleNoiseBuffer;
 
-    public NetherChunkGenerator(IWorldContext world, long seed)
+    public NetherChunkGenerator(IWorldContext world, long seed) : base(world, seed)
     {
-        _world = world;
-        random = new JavaRandom(seed);
-        _minLimitPerlinNoise = new OctavePerlinNoiseSampler(random, 16);
-        _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(random, 16);
-        _perlinNoise1 = new OctavePerlinNoiseSampler(random, 8);
-        _perlinNoise2 = new OctavePerlinNoiseSampler(random, 4);
-        _perlinNoise3 = new OctavePerlinNoiseSampler(random, 4);
-        _scaleNoise = new OctavePerlinNoiseSampler(random, 10);
-        _depthNoise = new OctavePerlinNoiseSampler(random, 16);
-        _seed = seed;
+        _minLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
+        _maxLimitPerlinNoise = new OctavePerlinNoiseSampler(_random, 16);
+        _perlinNoise1 = new OctavePerlinNoiseSampler(_random, 8);
+        _perlinNoise2 = new OctavePerlinNoiseSampler(_random, 4);
+        _perlinNoise3 = new OctavePerlinNoiseSampler(_random, 4);
+        _scaleNoise = new OctavePerlinNoiseSampler(_random, 10);
+        _depthNoise = new OctavePerlinNoiseSampler(_random, 16);
         InitFeatures();
     }
 
@@ -58,8 +52,8 @@ internal class NetherChunkGenerator : IChunkSource
 
     public Chunk GetChunk(int chunkX, int chunkZ)
     {
-        random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
-        byte[] blocks = new byte[-short.MinValue];
+        _random.SetSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
+        byte[] blocks = new byte[ChuckFormat.ChunkSize];
         BuildTerrain(chunkX, chunkZ, blocks);
         BuildSurfaces(chunkX, chunkZ, blocks);
         _cave.carve(this, _world, chunkX, chunkZ, blocks);
@@ -71,7 +65,7 @@ internal class NetherChunkGenerator : IChunkSource
 
     public void DecorateTerrain(IChunkSource source, int x, int z)
     {
-        BlockSand.fallInstantly = true;
+        BlockSand.FallInstantly = true;
         int blockX = x * 16;
         int blockZ = z * 16;
 
@@ -81,58 +75,58 @@ internal class NetherChunkGenerator : IChunkSource
         int featureZ;
         for (numIterations = 0; numIterations < 8; ++numIterations)
         {
-            featureX = blockX + random.NextInt(16) + 8;
-            featureY = random.NextInt(120) + 4;
-            featureZ = blockZ + random.NextInt(16) + 8;
-            _featureNetherLavaSpring.Generate(_world, random, featureX, featureY, featureZ);
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(120) + 4;
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featureNetherLavaSpring.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        numIterations = random.NextInt(random.NextInt(10) + 1) + 1;
+        numIterations = _random.NextInt(_random.NextInt(10) + 1) + 1;
 
         int featureZFallback;
         for (featureX = 0; featureX < numIterations; ++featureX)
         {
-            featureY = blockX + random.NextInt(16) + 8;
-            featureZ = random.NextInt(120) + 4;
-            featureZFallback = blockZ + random.NextInt(16) + 8;
-            _featureNetherFire.Generate(_world, random, featureY, featureZ, featureZFallback);
+            featureY = blockX + _random.NextInt(16) + 8;
+            featureZ = _random.NextInt(120) + 4;
+            featureZFallback = blockZ + _random.NextInt(16) + 8;
+            _featureNetherFire.Generate(_world, _random, featureY, featureZ, featureZFallback);
         }
 
-        numIterations = random.NextInt(random.NextInt(10) + 1);
+        numIterations = _random.NextInt(_random.NextInt(10) + 1);
 
         for (featureX = 0; featureX < numIterations; ++featureX)
         {
-            featureY = blockX + random.NextInt(16) + 8;
-            featureZ = random.NextInt(120) + 4;
-            featureZFallback = blockZ + random.NextInt(16) + 8;
-            _featureGlowstoneFull.Generate(_world, random, featureY, featureZ, featureZFallback);
+            featureY = blockX + _random.NextInt(16) + 8;
+            featureZ = _random.NextInt(120) + 4;
+            featureZFallback = blockZ + _random.NextInt(16) + 8;
+            _featureGlowstoneFull.Generate(_world, _random, featureY, featureZ, featureZFallback);
         }
 
         for (featureX = 0; featureX < 10; ++featureX)
         {
-            featureY = blockX + random.NextInt(16) + 8;
-            featureZ = random.NextInt(128);
-            featureZFallback = blockZ + random.NextInt(16) + 8;
-            _featureGlowstoneRare.Generate(_world, random, featureY, featureZ, featureZFallback);
+            featureY = blockX + _random.NextInt(16) + 8;
+            featureZ = _random.NextInt(128);
+            featureZFallback = blockZ + _random.NextInt(16) + 8;
+            _featureGlowstoneRare.Generate(_world, _random, featureY, featureZ, featureZFallback);
         }
 
-        if (random.NextInt(1) == 0)
+        if (_random.NextInt(1) == 0)
         {
-            featureX = blockX + random.NextInt(16) + 8;
-            featureY = random.NextInt(128);
-            featureZ = blockZ + random.NextInt(16) + 8;
-            _featureBrownMushroom.Generate(_world, random, featureX, featureY, featureZ);
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featureBrownMushroom.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        if (random.NextInt(1) == 0)
+        if (_random.NextInt(1) == 0)
         {
-            featureX = blockX + random.NextInt(16) + 8;
-            featureY = random.NextInt(128);
-            featureZ = blockZ + random.NextInt(16) + 8;
-            _featureRedMushroom.Generate(_world, random, featureX, featureY, featureZ);
+            featureX = blockX + _random.NextInt(16) + 8;
+            featureY = _random.NextInt(128);
+            featureZ = blockZ + _random.NextInt(16) + 8;
+            _featureRedMushroom.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        BlockSand.fallInstantly = false;
+        BlockSand.FallInstantly = false;
     }
 
     public bool Save(bool bl, LoadingDisplay display) => true;
@@ -157,6 +151,7 @@ internal class NetherChunkGenerator : IChunkSource
         int xMax = horiScale + 1;
         byte yMax = 17;
         int zMax = horiScale + 1;
+
         _heightMap = GenerateHeightMap(_heightMap, chunkX * horiScale, 0, chunkZ * horiScale, xMax, yMax, zMax);
 
         for (int sampleX = 0; sampleX < horiScale; ++sampleX)
@@ -185,8 +180,7 @@ internal class NetherChunkGenerator : IChunkSource
 
                         for (int subX = 0; subX < 4; ++subX)
                         {
-                            int blockIndex = ((subX + sampleX * 4) << 11) | ((0 + sampleZ * 4) << 7) | (sampleY * 8 + subY);
-                            short chunkHeight = 128;
+                            int blockIndex = ChuckFormat.GetIndex(subX + sampleX * 4, sampleY * 8 + subY, sampleZ * 4);
                             double horizontalLerpStepZ = 0.25D;
                             double terrainDensity = terrainX0;
                             double densityStepZ = (terrainX1 - terrainX0) * horizontalLerpStepZ;
@@ -205,7 +199,7 @@ internal class NetherChunkGenerator : IChunkSource
                                 }
 
                                 blocks[blockIndex] = (byte)blockType;
-                                blockIndex += chunkHeight;
+                                blockIndex += ChuckFormat.ChunkHeight;
                                 terrainDensity += densityStepZ;
                             }
 
@@ -235,9 +229,9 @@ internal class NetherChunkGenerator : IChunkSource
         {
             for (int localZ = 0; localZ < 16; ++localZ)
             {
-                bool isSoulsand = _sandBuffer[localX + localZ * 16] + random.NextDouble() * 0.2D > 0.0D;
-                bool isGravel = _gravelBuffer[localX + localZ * 16] + random.NextDouble() * 0.2D > 0.0D;
-                int surfaceDepth = (int)(_depthBuffer[localX + localZ * 16] / 3.0D + 3.0D + random.NextDouble() * 0.25D);
+                bool isSoulsand = _sandBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 0.0D;
+                bool isGravel = _gravelBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 0.0D;
+                int surfaceDepth = (int)(_depthBuffer[localX + localZ * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
                 int currentDepth = -1;
                 byte topBlock = (byte)Block.Netherrack.id;
                 byte soilBlock = (byte)Block.Netherrack.id;
@@ -245,11 +239,11 @@ internal class NetherChunkGenerator : IChunkSource
                 for (int blockY = 127; blockY >= 0; --blockY)
                 {
                     int blockIndex = (localZ * 16 + localX) * 128 + blockY;
-                    if (blockY >= 127 - random.NextInt(5))
+                    if (blockY >= 127 - _random.NextInt(5))
                     {
                         blocks[blockIndex] = (byte)Block.Bedrock.id;
                     }
-                    else if (blockY <= 0 + random.NextInt(5))
+                    else if (blockY <= 0 + _random.NextInt(5))
                     {
                         blocks[blockIndex] = (byte)Block.Bedrock.id;
                     }
@@ -453,7 +447,7 @@ internal class NetherChunkGenerator : IChunkSource
         return heightMap;
     }
 
-    public void markChunksForUnload(int _)
+    public static void markChunksForUnload(int _)
     {
     }
 }

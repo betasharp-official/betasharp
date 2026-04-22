@@ -11,7 +11,7 @@ public class PlayerInputC2SPacket() : Packet(PacketId.PlayerInputC2S)
     private float pitch;
     private float yaw;
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         sideways = stream.ReadFloat();
         forward = stream.ReadFloat();
@@ -21,7 +21,7 @@ public class PlayerInputC2SPacket() : Packet(PacketId.PlayerInputC2S)
         sneaking = stream.ReadBoolean();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteFloat(sideways);
         stream.WriteFloat(forward);

@@ -24,7 +24,7 @@ public class ChestScreen : ContainerScreen
     {
         _upperInventory = upperInventory;
         _lowerInventory = lowerInventory;
-        _inventoryRows = lowerInventory.size() / 9;
+        _inventoryRows = lowerInventory.Size / 9;
         _ySize = 114 + _inventoryRows * 18;
     }
 
@@ -64,7 +64,7 @@ public class ChestScreen : ContainerScreen
         // Labels
         var lblUpper = new Label
         {
-            Text = _lowerInventory.getName(),
+            Text = _lowerInventory.Name,
             HasShadow = false,
             TextColor = Color.Gray40
         };
@@ -75,7 +75,7 @@ public class ChestScreen : ContainerScreen
 
         var lblLower = new Label
         {
-            Text = _upperInventory.getName(),
+            Text = _upperInventory.Name,
             HasShadow = false,
             TextColor = Color.Gray40
         };

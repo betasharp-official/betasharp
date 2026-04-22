@@ -2,24 +2,24 @@ namespace BetaSharp.Server.Internal;
 
 internal class InternalServerConfiguration : IServerConfiguration
 {
-    private string levelName;
-    private string levelType;
-    private string seed;
-    private string levelOptions;
-    private int viewDistance;
+    private readonly string _levelName;
+    private readonly string _levelType;
+    private readonly string _seed;
+    private readonly string _levelOptions;
+    private int _viewDistance;
 
     public InternalServerConfiguration(string levelName, string levelType, string seed, string levelOptions, int viewDistance)
     {
-        this.levelName = levelName;
-        this.levelType = levelType;
-        this.seed = seed;
-        this.levelOptions = levelOptions;
-        this.viewDistance = viewDistance;
+        _levelName = levelName;
+        _levelType = levelType;
+        _seed = seed;
+        _levelOptions = levelOptions;
+        _viewDistance = viewDistance;
     }
 
     public void SetViewDistance(int distance)
     {
-        viewDistance = distance;
+        _viewDistance = distance;
     }
 
     public bool GetAllowFlight(bool fallback)
@@ -34,22 +34,22 @@ internal class InternalServerConfiguration : IServerConfiguration
 
     public string GetLevelName(string fallback)
     {
-        return levelName;
+        return _levelName;
     }
 
     public string GetLevelType(string fallback)
     {
-        return levelType ?? fallback;
+        return _levelType ?? fallback;
     }
 
     public string GetLevelSeed(string fallback)
     {
-        return seed;
+        return _seed;
     }
 
     public string GetLevelOptions(string fallback)
     {
-        return levelOptions ?? fallback;
+        return _levelOptions ?? fallback;
     }
 
     public int GetMaxPlayers(int fallback)
@@ -109,7 +109,7 @@ internal class InternalServerConfiguration : IServerConfiguration
 
     public int GetViewDistance(int fallback)
     {
-        return viewDistance;
+        return _viewDistance;
     }
 
     public bool GetWhiteList(bool fallback)

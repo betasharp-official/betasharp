@@ -3,7 +3,7 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.DynamicTexture;
 
-internal class LavaSprite() : Rendering.Core.Textures.DynamicTexture(Block.FlowingLava.textureId)
+internal class LavaSprite() : Rendering.Core.Textures.DynamicTexture(Block.FlowingLava.TextureId)
 {
     private readonly float[] _heat = new float[256];
     private readonly float[] _heatDelta = new float[256];

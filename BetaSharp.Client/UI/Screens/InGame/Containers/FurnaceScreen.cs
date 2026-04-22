@@ -87,9 +87,9 @@ public class FurnaceFireProgress(BlockEntityFurnace furnace) : UIElement
 {
     public override void Render(UIRenderer renderer)
     {
-        if (furnace.isBurning())
+        if (furnace.IsBurning)
         {
-            int progress = furnace.getFuelTimeDelta(12);
+            int progress = furnace.GetFuelTimeDelta(12);
             TextureHandle texture = renderer.TextureManager.GetTextureId("/gui/furnace.png");
             renderer.DrawTexturedModalRect(texture, 0, 12 - progress, 176, 12 - progress, 14, progress + 2);
         }
@@ -101,7 +101,7 @@ public class FurnaceSmeltProgress(BlockEntityFurnace furnace) : UIElement
 {
     public override void Render(UIRenderer renderer)
     {
-        int progress = furnace.getCookTimeDelta(24);
+        int progress = furnace.GetCookTimeDelta(24);
         TextureHandle texture = renderer.TextureManager.GetTextureId("/gui/furnace.png");
         renderer.DrawTexturedModalRect(texture, 0, 0, 176, 14, progress + 1, 16);
         base.Render(renderer);

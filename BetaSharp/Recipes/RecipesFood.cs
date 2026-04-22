@@ -5,7 +5,7 @@ namespace BetaSharp.Recipes;
 
 internal class RecipesFood
 {
-    public void AddRecipes(CraftingManager m)
+    public static void AddRecipes(CraftingManager m)
     {
         m.AddRecipe(new ItemStack(Item.MushroomStew), "Y", "X", "#", 'X', Block.BrownMushroom, 'Y', Block.RedMushroom, '#', Item.Bowl);
         m.AddRecipe(new ItemStack(Item.MushroomStew), "Y", "X", "#", 'X', Block.RedMushroom, 'Y', Block.BrownMushroom, '#', Item.Bowl);

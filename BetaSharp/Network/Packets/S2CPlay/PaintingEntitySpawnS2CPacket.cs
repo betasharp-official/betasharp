@@ -15,7 +15,7 @@ public class PaintingEntitySpawnS2CPacket() : Packet(PacketId.PaintingEntitySpaw
     public static PaintingEntitySpawnS2CPacket Get(EntityPainting paint)
     {
         var p = Get<PaintingEntitySpawnS2CPacket>(PacketId.PaintingEntitySpawnS2C);
-        p.entityId = paint.id;
+        p.entityId = paint.ID;
         p.xPosition = paint.XPosition;
         p.yPosition = paint.YPosition;
         p.zPosition = paint.ZPosition;
@@ -24,17 +24,17 @@ public class PaintingEntitySpawnS2CPacket() : Packet(PacketId.PaintingEntitySpaw
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         entityId = stream.ReadInt();
-        title = stream.ReadLongString((ushort) EnumArt.MaxArtTitleLength);
+        title = stream.ReadLongString((ushort)EnumArt.MaxArtTitleLength);
         xPosition = stream.ReadInt();
         yPosition = stream.ReadInt();
         zPosition = stream.ReadInt();
         direction = stream.ReadInt();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         stream.WriteInt(entityId);
         stream.WriteLongString(title);

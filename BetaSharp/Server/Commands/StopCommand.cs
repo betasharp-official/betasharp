@@ -1,18 +1,23 @@
-using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class StopCommand : ICommand
+public class StopCommand : Command.Command
 {
-    public string Usage => "stop";
-    public string Description => "Stops the server";
-    public string[] Names => ["stop"];
-    public byte PermissionLevel => 4;
-    public bool DisallowInternalServer => true;
+    public override string Usage => "stop";
+    public override string Description => "Stops the server";
+    public override string[] Names => ["stop"];
+    public override byte PermissionLevel => 4;
+    public override bool DisallowInternalServer => true;
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder.Executes(Execute);
+
+    private static int Execute(CommandContext<CommandSource> context)
     {
-        c.LogOp("Stopping the server..");
-        c.Server.Stop();
+        context.Source.LogOp("Stopping the server..");
+        context.Source.Server.Stop();
+        return 1;
     }
 }

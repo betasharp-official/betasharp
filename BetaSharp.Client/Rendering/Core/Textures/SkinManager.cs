@@ -10,13 +10,16 @@ namespace BetaSharp.Client.Rendering.Core.Textures;
 
 public sealed class SkinManager : IDisposable
 {
-    private readonly ILogger _logger = Log.Instance.For<SkinManager>();
-    private readonly TextureManager _textureManager;
-    private readonly HttpClient _httpClient;
+    private const string SkinCacheDirectoryName = "SkinCache";
+    private const int CacheValidForDays = 14;
+    private const string CapeTextureKeySuffix = "#cape";
 
     private readonly ConcurrentDictionary<string, Image<Rgba32>> _downloadedImages = new();
-    private readonly ConcurrentDictionary<string, TextureHandle> _textureHandles = new();
     private readonly ConcurrentDictionary<string, bool> _downloading = new();
+    private readonly HttpClient _httpClient;
+    private readonly ILogger _logger = Log.Instance.For<SkinManager>();
+    private readonly ConcurrentDictionary<string, TextureHandle> _textureHandles = new();
+    private readonly TextureManager _textureManager;
 
     public SkinManager(TextureManager textureManager)
     {
@@ -27,9 +30,52 @@ public sealed class SkinManager : IDisposable
         };
 
         _httpClient.DefaultRequestHeaders.Add("User-Agent", nameof(BetaSharp));
+
+        InvalidateCache();
     }
 
-    public void RequestDownload(string? username)
+    public void Dispose()
+    {
+        _httpClient.Dispose();
+
+        foreach (Image<Rgba32> image in _downloadedImages.Values)
+        {
+            image.Dispose();
+        }
+
+        _downloadedImages.Clear();
+
+        foreach (TextureHandle handle in _textureHandles.Values)
+        {
+            _textureManager.Delete(handle);
+        }
+
+        _textureHandles.Clear();
+    }
+
+    private void InvalidateCache()
+    {
+        string path = Path.Combine(Path.GetTempPath(), "BetaSharp", SkinCacheDirectoryName);
+        if (!Directory.Exists(path)) return;
+
+        DateTime cacheAgeLimit = DateTime.Now.AddDays(-CacheValidForDays);
+        foreach (string file in Directory.GetFiles(path))
+        {
+            if (File.GetCreationTime(file) >= cacheAgeLimit) continue;
+
+            try
+            {
+                File.Delete(file);
+                _logger.LogInformation("Deleted old cached skin for {name}", Path.GetFileNameWithoutExtension(file));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete old cached skin for {name}", Path.GetFileNameWithoutExtension(file));
+            }
+        }
+    }
+
+    public void RequestDownload(string? username, bool cache = false)
     {
         if (string.IsNullOrWhiteSpace(username) || _textureHandles.ContainsKey(username)
                                                 || _downloadedImages.ContainsKey(username)
@@ -38,36 +84,38 @@ public sealed class SkinManager : IDisposable
             return;
         }
 
-        Task.Run(async () =>
+        _ = DownloadTask(username, cache);
+    }
+
+    private async Task DownloadTask(string username, bool cache = false)
+    {
+        try
         {
-            try
+            bool skinLoadedFromCache = await TryLoadTextureFromCache(username, username + ".png");
+            bool capeLoadedFromCache = await TryLoadTextureFromCache(GetCapeTextureKey(username), username + ".cape.png");
+
+            if (skinLoadedFromCache) _logger.LogInformation("Skin loaded from cache for {Name}", username);
+            if (capeLoadedFromCache) _logger.LogInformation("Cape loaded from cache for {Name}", username);
+
+            _logger.LogInformation("Downloading skin for {Url}", username);
+
+            string? id = await GetProfileIdFromName(username);
+            if (id == null) throw new ProfileException();
+
+            string? value = await GetProfilePropertiesFromId(id);
+            ArgumentException.ThrowIfNullOrWhiteSpace(value);
+
+            JsonNode? node = JsonNode.Parse(Encoding.UTF8.GetString(Convert.FromBase64String(value)));
+            string? texture = node?["textures"]?["SKIN"]?["url"]?.GetValue<string>();
+            string? capeTexture = node?["textures"]?["CAPE"]?["url"]?.GetValue<string>();
+
+            ArgumentException.ThrowIfNullOrWhiteSpace(texture);
+
+            if (!skinLoadedFromCache)
             {
-                _logger.LogInformation("Downloading skin for {Url}", username);
+                await using Stream textureStream = await _httpClient.GetStreamAsync(texture);
 
-                var profileResponse = await _httpClient.GetAsync($"https://api.mojang.com/minecraft/profile/lookup/name/{username}");
-                await using var profileStream = await profileResponse.Content.ReadAsStreamAsync();
-                var profileNode = await JsonNode.ParseAsync(profileStream);
-
-                string? id = profileNode?["id"]?.GetValue<string>();
-
-                ArgumentException.ThrowIfNullOrWhiteSpace(id);
-
-                var skinResponse = await _httpClient.GetAsync($"https://sessionserver.mojang.com/session/minecraft/profile/{id}");
-                await using var skinStream = await skinResponse.Content.ReadAsStreamAsync();
-                var skinNode = await JsonNode.ParseAsync(skinStream);
-
-                string? value = skinNode?["properties"]?[0]?["value"]?.GetValue<string>();
-
-                ArgumentException.ThrowIfNullOrWhiteSpace(value);
-
-                var node = JsonNode.Parse(Encoding.UTF8.GetString(Convert.FromBase64String(value)));
-                string? texture = node?["textures"]?["SKIN"]?["url"]?.GetValue<string>();
-
-                ArgumentException.ThrowIfNullOrWhiteSpace(texture);
-
-                await using var textureStream = await _httpClient.GetStreamAsync(texture);
-
-                var image = await Image.LoadAsync<Rgba32>(textureStream);
+                Image<Rgba32> image = await Image.LoadAsync<Rgba32>(textureStream);
 
                 if (image is { Height: 64, Width: 64 })
                 {
@@ -77,16 +125,90 @@ public sealed class SkinManager : IDisposable
                 _downloadedImages[username] = image;
 
                 _logger.LogInformation("Skin downloaded successfully for {Name}: ({W}x{H})", username, image.Width, image.Height);
+
+                if (cache)
+                {
+                    await SaveTextureToCache(username + ".png", image);
+                    _logger.LogInformation("Skin saved in cache for {Name}", username);
+                }
             }
-            catch (Exception ex)
+
+            if (!string.IsNullOrWhiteSpace(capeTexture) && !capeLoadedFromCache)
             {
-                _logger.LogWarning(ex, "Failed to download skin for {Name}", username);
+                await using Stream capeTextureStream = await _httpClient.GetStreamAsync(capeTexture);
+
+                Image<Rgba32> capeImage = await Image.LoadAsync<Rgba32>(capeTextureStream);
+
+                string capeTextureKey = GetCapeTextureKey(username);
+                _downloadedImages[capeTextureKey] = capeImage;
+
+                _logger.LogInformation("Cape downloaded successfully for {Name}: ({W}x{H})", username, capeImage.Width, capeImage.Height);
+
+                if (cache)
+                {
+                    await SaveTextureToCache(username + ".cape.png", capeImage);
+                    _logger.LogInformation("Cape saved in cache for {Name}", username);
+                }
             }
-            finally
-            {
-                _downloading.TryRemove(username, out _);
-            }
-        });
+        }
+        catch (ProfileException)
+        {
+            _logger.LogWarning("Failed to download skin for {Name}{br}Profile not found.", username, Environment.NewLine);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to download skin for {Name}", username);
+        }
+        finally
+        {
+            _downloading.TryRemove(username, out _);
+        }
+    }
+
+    private static string GetCapeTextureKey(string username) => username + CapeTextureKeySuffix;
+
+    private async Task<bool> TryLoadTextureFromCache(string textureKey, string cacheFileName)
+    {
+        string skinCachePath = Path.Combine(Path.GetTempPath(), "BetaSharp", SkinCacheDirectoryName, cacheFileName);
+        if (!File.Exists(skinCachePath)) return false;
+
+        Image<Rgba32> cachedImage = await Image.LoadAsync<Rgba32>(skinCachePath);
+        _downloadedImages[textureKey] = cachedImage;
+
+        return true;
+    }
+
+    private async Task SaveTextureToCache(string cacheFileName, Image image)
+    {
+        string path = Path.Combine(Path.GetTempPath(), "BetaSharp", SkinCacheDirectoryName);
+        if (!Directory.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+        }
+
+        path = Path.Combine(path, cacheFileName);
+
+        await using FileStream cacheStream = new(path, FileMode.Create, FileAccess.Write);
+        await image.SaveAsPngAsync(cacheStream);
+        cacheStream.Close();
+    }
+
+    private async Task<string?> GetProfileIdFromName(string username)
+    {
+        HttpResponseMessage profileResponse = await _httpClient.GetAsync($"https://api.mojang.com/minecraft/profile/lookup/name/{username}");
+        await using Stream profileStream = await profileResponse.Content.ReadAsStreamAsync();
+        JsonNode? profileNode = await JsonNode.ParseAsync(profileStream);
+
+        return profileNode?["id"]?.GetValue<string>();
+    }
+
+    private async Task<string?> GetProfilePropertiesFromId(string id)
+    {
+        HttpResponseMessage skinResponse = await _httpClient.GetAsync($"https://sessionserver.mojang.com/session/minecraft/profile/{id}");
+        await using Stream skinStream = await skinResponse.Content.ReadAsStreamAsync();
+        JsonNode? skinNode = await JsonNode.ParseAsync(skinStream);
+
+        return skinNode?["properties"]?[0]?["value"]?.GetValue<string>();
     }
 
     public TextureHandle? GetTextureHandle(string? url)
@@ -116,38 +238,10 @@ public sealed class SkinManager : IDisposable
 
     public void Release(string? url)
     {
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            return;
-        }
-
-        if (_downloadedImages.TryRemove(url, out Image<Rgba32>? image))
-        {
-            image.Dispose();
-        }
-
-        if (_textureHandles.TryRemove(url, out TextureHandle? handle))
-        {
-            _textureManager.Delete(handle);
-        }
+        if (string.IsNullOrWhiteSpace(url)) return;
+        if (_downloadedImages.TryRemove(url, out Image<Rgba32>? image)) image.Dispose();
+        if (_textureHandles.TryRemove(url, out TextureHandle? handle)) _textureManager.Delete(handle);
     }
 
-    public void Dispose()
-    {
-        _httpClient.Dispose();
-
-        foreach (Image<Rgba32> image in _downloadedImages.Values)
-        {
-            image.Dispose();
-        }
-
-        _downloadedImages.Clear();
-
-        foreach (TextureHandle handle in _textureHandles.Values)
-        {
-            _textureManager.Delete(handle);
-        }
-
-        _textureHandles.Clear();
-    }
+    private class ProfileException : Exception;
 }

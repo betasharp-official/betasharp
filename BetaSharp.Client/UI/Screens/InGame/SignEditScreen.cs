@@ -86,7 +86,7 @@ public class SignEditScreen(UIContext context, BlockEntitySign sign, Action? edi
     private void CloseAndSave()
     {
         _sign.CurrentRow = -1; // Reset cursor
-        _sign.markDirty();
+        _sign.MarkDirty();
         Context.Navigator.Navigate(null);
     }
 

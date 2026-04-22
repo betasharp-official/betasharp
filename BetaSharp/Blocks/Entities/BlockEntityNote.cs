@@ -34,7 +34,7 @@ internal class BlockEntityNote : BlockEntity
     public void cycleNote()
     {
         note = (sbyte)((note + 1) % 25);
-        markDirty();
+        MarkDirty();
     }
 
     public void playNote(IWorldContext level, int x, int y, int z)

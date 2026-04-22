@@ -31,7 +31,7 @@ internal class PathFinder
         PathEntity? result;
         using (Profiler.Begin("FindPathToTarget"))
         {
-            result = CreateEntityPathTo(entity, target.x, target.boundingBox.MinY, target.z, range);
+            result = CreateEntityPathTo(entity, target.X, target.BoundingBox.MinY, target.Z, range);
         }
         return result;
     }
@@ -61,13 +61,13 @@ internal class PathFinder
 
         _poolIndex = 0;
 
-        PathPoint startPoint = OpenPoint(MathHelper.Floor(entity.boundingBox.MinX),
-            MathHelper.Floor(entity.boundingBox.MinY), MathHelper.Floor(entity.boundingBox.MinZ));
-        PathPoint targetPoint = OpenPoint(MathHelper.Floor(targetX - (entity.width / 2.0f)), MathHelper.Floor(targetY),
-            MathHelper.Floor(targetZ - (entity.width / 2.0f)));
+        PathPoint startPoint = OpenPoint(MathHelper.Floor(entity.BoundingBox.MinX),
+            MathHelper.Floor(entity.BoundingBox.MinY), MathHelper.Floor(entity.BoundingBox.MinZ));
+        PathPoint targetPoint = OpenPoint(MathHelper.Floor(targetX - (entity.Width / 2.0f)), MathHelper.Floor(targetY),
+            MathHelper.Floor(targetZ - (entity.Width / 2.0f)));
 
-        PathPoint sizePoint = new(MathHelper.Floor(entity.width + 1.0f), MathHelper.Floor(entity.height + 1.0f),
-            MathHelper.Floor(entity.width + 1.0f));
+        PathPoint sizePoint = new(MathHelper.Floor(entity.Width + 1.0f), MathHelper.Floor(entity.Height + 1.0f),
+            MathHelper.Floor(entity.Width + 1.0f));
 
         return AddToPath(entity, startPoint, targetPoint, sizePoint, maxDistance);
     }
@@ -283,7 +283,7 @@ internal class PathFinder
         return 1;
     }
 
-    private PathEntity CreateEntityPath(PathPoint start, PathPoint end)
+    private static PathEntity CreateEntityPath(PathPoint start, PathPoint end)
     {
         int length = 1;
         PathPoint current = end;

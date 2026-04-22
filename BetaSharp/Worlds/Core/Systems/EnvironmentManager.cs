@@ -200,8 +200,8 @@ public class EnvironmentManager
         float sunIntensity = MathHelper.Cos(timeOfDay * (float)Math.PI * 2.0F) * 2.0F + 0.5F;
         sunIntensity = Math.Clamp(sunIntensity, 0.0F, 1.0F);
 
-        int blockX = MathHelper.Floor(entity.x);
-        int blockZ = MathHelper.Floor(entity.z);
+        int blockX = MathHelper.Floor(entity.X);
+        int blockZ = MathHelper.Floor(entity.Z);
         float temperature = (float)_world.Dimension.BiomeSource.GetTemperature(blockX, blockZ);
         int biomeSkyColorInt = _world.Dimension.BiomeSource.GetBiome(blockX, blockZ).GetSkyColorByTemp(temperature);
 

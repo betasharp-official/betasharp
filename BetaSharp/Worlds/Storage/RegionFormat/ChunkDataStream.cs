@@ -1,5 +1,3 @@
-using BetaSharp.Worlds.Chunks.Storage;
-
 namespace BetaSharp.Worlds.Storage.RegionFormat;
 
 internal class ChunkDataStream(Stream stream, RegionFile.CompressionType compressionType) : IDisposable

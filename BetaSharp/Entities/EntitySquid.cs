@@ -26,19 +26,19 @@ public class EntitySquid : EntityWaterMob
 
     public EntitySquid(IWorldContext world) : base(world)
     {
-        texture = "/mob/squid.png";
-        setBoundingBoxSpacing(0.95F, 0.95F);
-        animationSpeed = 1.0F / (random.NextFloat() + 1.0F) * 0.2F;
+        Texture = "/mob/squid.png";
+        SetBoundingBoxSpacing(0.95F, 0.95F);
+        animationSpeed = 1.0F / (Random.NextFloat() + 1.0F) * 0.2F;
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
     }
 
     protected override String getLivingSound()
@@ -68,23 +68,23 @@ public class EntitySquid : EntityWaterMob
 
     protected override void dropFewItems()
     {
-        int dropCount = random.NextInt(3) + 1;
+        int dropCount = Random.NextInt(3) + 1;
 
         for (int _ = 0; _ < dropCount; ++_)
         {
-            dropItem(new ItemStack(Item.Dye, 1, 0), 0.0F);
+            DropItem(new ItemStack(Item.Dye, 1, 0), 0.0F);
         }
 
     }
 
-    public override bool interact(EntityPlayer player)
+    public override bool Interact(EntityPlayer player)
     {
         return false;
     }
 
-    public override bool isInWater()
+    public override bool IsInWater()
     {
-        return world.Reader.UpdateMovementInFluid(boundingBox.Expand(0.0D, (double)-0.6F, 0.0D), Material.Water, this);
+        return World.Reader.UpdateMovementInFluid(BoundingBox.Expand(0.0D, (double)-0.6F, 0.0D), Material.Water, this);
     }
 
     public override void tickMovement()
@@ -98,13 +98,13 @@ public class EntitySquid : EntityWaterMob
         if (swimPhase > (float)Math.PI * 2.0F)
         {
             swimPhase -= (float)Math.PI * 2.0F;
-            if (random.NextInt(10) == 0)
+            if (Random.NextInt(10) == 0)
             {
-                animationSpeed = 1.0F / (random.NextFloat() + 1.0F) * 0.2F;
+                animationSpeed = 1.0F / (Random.NextFloat() + 1.0F) * 0.2F;
             }
         }
 
-        if (isInWater())
+        if (IsInWater())
         {
             float phaseProgress;
             if (swimPhase < (float)Math.PI)
@@ -128,28 +128,28 @@ public class EntitySquid : EntityWaterMob
                 squidRotation *= 0.99F;
             }
 
-            if (!interpolateOnly)
+            if (!InterpolateOnly)
             {
-                velocityX = (double)(randomMotionVecX * randomMotionSpeed);
-                velocityY = (double)(randomMotionVecY * randomMotionSpeed);
-                velocityZ = (double)(randomMotionVecZ * randomMotionSpeed);
+                VelocityX = (double)(randomMotionVecX * randomMotionSpeed);
+                VelocityY = (double)(randomMotionVecY * randomMotionSpeed);
+                VelocityZ = (double)(randomMotionVecZ * randomMotionSpeed);
             }
 
-            phaseProgress = MathHelper.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
-            bodyYaw += (-((float)System.Math.Atan2(velocityX, velocityZ)) * 180.0F / (float)Math.PI - bodyYaw) * 0.1F;
-            yaw = bodyYaw;
+            phaseProgress = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
+            BodyYaw += (-((float)System.Math.Atan2(VelocityX, VelocityZ)) * 180.0F / (float)Math.PI - BodyYaw) * 0.1F;
+            Yaw = BodyYaw;
             tentaclePhase += (float)Math.PI * squidRotation * 1.5F;
-            tiltAngle += (-((float)System.Math.Atan2((double)phaseProgress, velocityY)) * 180.0F / (float)Math.PI - tiltAngle) * 0.1F;
+            tiltAngle += (-((float)System.Math.Atan2((double)phaseProgress, VelocityY)) * 180.0F / (float)Math.PI - tiltAngle) * 0.1F;
         }
         else
         {
             tentacleSpread = MathHelper.Abs(MathHelper.Sin(swimPhase)) * (float)Math.PI * 0.25F;
-            if (!interpolateOnly)
+            if (!InterpolateOnly)
             {
-                velocityX = 0.0D;
-                velocityY -= 0.08D;
-                velocityY *= (double)0.98F;
-                velocityZ = 0.0D;
+                VelocityX = 0.0D;
+                VelocityY -= 0.08D;
+                VelocityY *= (double)0.98F;
+                VelocityZ = 0.0D;
             }
 
             tiltAngle = (float)((double)tiltAngle + (double)(-90.0F - tiltAngle) * 0.02D);
@@ -159,16 +159,16 @@ public class EntitySquid : EntityWaterMob
 
     public override void travel(float strafe, float forward)
     {
-        move(velocityX, velocityY, velocityZ);
+        Move(VelocityX, VelocityY, VelocityZ);
     }
 
     public override void tickLiving()
     {
-        if (random.NextInt(50) == 0 || !inWater || randomMotionVecX == 0.0F && randomMotionVecY == 0.0F && randomMotionVecZ == 0.0F)
+        if (Random.NextInt(50) == 0 || !InWater || randomMotionVecX == 0.0F && randomMotionVecY == 0.0F && randomMotionVecZ == 0.0F)
         {
-            float randomAngle = random.NextFloat() * (float)Math.PI * 2.0F;
+            float randomAngle = Random.NextFloat() * (float)Math.PI * 2.0F;
             randomMotionVecX = MathHelper.Cos(randomAngle) * 0.2F;
-            randomMotionVecY = -0.1F + random.NextFloat() * 0.2F;
+            randomMotionVecY = -0.1F + Random.NextFloat() * 0.2F;
             randomMotionVecZ = MathHelper.Sin(randomAngle) * 0.2F;
         }
 

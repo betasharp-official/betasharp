@@ -20,7 +20,7 @@ public class UISlot : UIElement
     public override void Render(UIRenderer renderer)
     {
         ItemStack stack = Slot.getStack();
-        
+
         if (stack == null)
         {
             int iconIdx = Slot.getBackgroundTextureId();

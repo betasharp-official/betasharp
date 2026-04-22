@@ -9,9 +9,9 @@ public class KeepAlivePacket() : Packet(PacketId.KeepAlive)
 
     public override void Apply(NetHandler handler) { }
 
-    public override void Read(NetworkStream stream) { }
+    public override void Read(Stream stream) { }
 
-    public override void Write(NetworkStream stream) { }
+    public override void Write(Stream stream) { }
 
     public override int Size()
     {

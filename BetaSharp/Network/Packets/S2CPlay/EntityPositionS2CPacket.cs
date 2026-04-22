@@ -27,16 +27,16 @@ public class EntityPositionS2CPacket() : PacketBaseEntity(PacketId.EntityPositio
     public static EntityPositionS2CPacket Get(Entity entity)
     {
         var p = Get<EntityPositionS2CPacket>(PacketId.EntityPositionS2C);
-        p.EntityId = entity.id;
-        p.x = MathHelper.Floor(entity.x * 32.0D);
-        p.y = MathHelper.Floor(entity.y * 32.0D);
-        p.z = MathHelper.Floor(entity.z * 32.0D);
-        p.yaw = (sbyte)(int)(entity.yaw * 256.0F / 360.0F);
-        p.pitch = (sbyte)(int)(entity.pitch * 256.0F / 360.0F);
+        p.EntityId = entity.ID;
+        p.x = MathHelper.Floor(entity.X * 32.0D);
+        p.y = MathHelper.Floor(entity.Y * 32.0D);
+        p.z = MathHelper.Floor(entity.Z * 32.0D);
+        p.yaw = (sbyte)(int)(entity.Yaw * 256.0F / 360.0F);
+        p.pitch = (sbyte)(int)(entity.Pitch * 256.0F / 360.0F);
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         base.Read(stream);
         x = stream.ReadInt();
@@ -46,7 +46,7 @@ public class EntityPositionS2CPacket() : PacketBaseEntity(PacketId.EntityPositio
         pitch = (sbyte)stream.ReadByte();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         base.Write(stream);
         stream.WriteInt(x);

@@ -1,82 +1,32 @@
 using System.Net.Sockets;
-using BetaSharp.GameMode;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
 public class PlayerGameModeUpdateS2CPacket() : ExtendedProtocolPacket(PacketId.PlayerGameModeUpdateS2C)
 {
-    public GameMode.GameMode GameMode { get; private set; } = GameModes.DefaultGameMode;
+    public Namespace Namespace { get; private set; } = Namespace.BetaSharp;
+    public string GameModeName { get; private set; } = "";
 
-    public static PlayerGameModeUpdateS2CPacket Get(GameMode.GameMode mode)
+    public static PlayerGameModeUpdateS2CPacket Get(GameMode mode)
     {
-        var p = Get<PlayerGameModeUpdateS2CPacket>(PacketId.PlayerGameModeUpdateS2C);
-        p.GameMode = mode;
+        PlayerGameModeUpdateS2CPacket p = Get<PlayerGameModeUpdateS2CPacket>(PacketId.PlayerGameModeUpdateS2C);
+        p.Namespace = mode.Namespace;
+        p.GameModeName = mode.Name;
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
-        float breakSpeed = stream.ReadFloat();
-        int bits = stream.ReadInt();
-
-        GameMode = new GameMode.GameMode()
-        {
-            Name = "remote",
-            BrakeSpeed = breakSpeed,
-            CanBreak = Bits(0, bits),
-            CanPlace = Bits(1, bits),
-            CanInteract = Bits(2, bits),
-            CanReceiveDamage = Bits(3, bits),
-            CanInflictDamage = Bits(4, bits),
-            CanBeTargeted = Bits(5, bits),
-            CanExhaustFire = Bits(6, bits),
-            CanPickup = Bits(7, bits),
-            FiniteResources = Bits(8, bits),
-            VisibleToWorld = Bits(9, bits),
-            BlockDrops = Bits(10, bits),
-            CanDrop = Bits(11, bits),
-            CanWalk =  Bits(12, bits),
-            DisallowFlying =  Bits(13, bits),
-            NeedsAir =  Bits(14, bits),
-        };
+        Namespace = stream.ReadNamespace();
+        GameModeName = stream.ReadString();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
-        int bits = 0;
-        bits |= Bits(0, GameMode.CanBreak);
-        bits |= Bits(1, GameMode.CanPlace);
-        bits |= Bits(2, GameMode.CanInteract);
-        bits |= Bits(3, GameMode.CanReceiveDamage);
-        bits |= Bits(4, GameMode.CanInflictDamage);
-        bits |= Bits(5, GameMode.CanBeTargeted);
-        bits |= Bits(6, GameMode.CanExhaustFire);
-        bits |= Bits(7, GameMode.CanPickup);
-        bits |= Bits(8, GameMode.FiniteResources);
-        bits |= Bits(9, GameMode.VisibleToWorld);
-        bits |= Bits(10, GameMode.BlockDrops);
-        bits |= Bits(11, GameMode.CanDrop);
-        bits |= Bits(12, GameMode.CanWalk);
-        bits |= Bits(13, GameMode.DisallowFlying);
-        bits |= Bits(14, GameMode.NeedsAir);
-
-        stream.WriteFloat(GameMode.BrakeSpeed);
-        stream.WriteInt(bits);
+        stream.WriteNamespace(Namespace);
+        stream.WriteString(GameModeName);
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.onPlayerGameModeUpdate(this);
-    }
-
-    public override int Size()
-    {
-        return 8;
-    }
-
-    private static int Bits(byte pos, bool value) =>
-        value ? (1 << pos) : 0;
-
-    private static bool Bits(byte pos, int value) =>
-        (value & (1 << pos)) != 0;
+    public override void Apply(NetHandler handler) => handler.onPlayerGameModeUpdate(this);
+    public override int Size() => 1 + GameModeName.Length + (Namespace.GetHashCode() == 0 ? 1 : Namespace.ToString().Length);
 }

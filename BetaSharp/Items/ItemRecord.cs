@@ -26,7 +26,7 @@ public class ItemRecord : Item
             }
             else
             {
-                ((BlockJukeBox)Block.Jukebox).insertRecord(world, x, y, z, id);
+                BlockJukeBox.insertRecord(world, x, y, z, id);
                 world.Broadcaster.WorldEvent(1005, x, y, z, id);
                 itemStack.ConsumeItem(entityPlayer);
                 return true;

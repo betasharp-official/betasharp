@@ -65,7 +65,7 @@ public abstract class ContainerScreen(
     public override void Update(float partialTicks)
     {
         base.Update(partialTicks);
-        if (!player.isAlive() || player.dead)
+        if (!player.IsAlive() || player.Dead)
         {
             player.closeHandledScreen();
         }
@@ -120,7 +120,7 @@ public abstract class ContainerScreen(
             {
                 tips.Add(new ActionTip(ControlIcon.A, "Move"));
                 tips.Add(new ActionTip(ControlIcon.Y, "Quick Move"));
-                if (slotStack.count > 1)
+                if (slotStack.Count > 1)
                     tips.Add(new ActionTip(ControlIcon.X, "Take Half"));
             }
             else if (cursorStack != null)
@@ -154,7 +154,7 @@ public abstract class ContainerScreen(
 
     public override void KeyTyped(int key, char character)
     {
-        if (key == Keyboard.KEY_ESCAPE || key == Context.Options.KeyBindInventory.keyCode)
+        if (key == Keyboard.KEY_ESCAPE || key == Context.Options.KeyBindInventory.scanCode)
         {
             player.closeHandledScreen();
         }

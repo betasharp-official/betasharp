@@ -1,47 +1,55 @@
-using BetaSharp.Server.Command;
 using BetaSharp.Worlds.Core;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class WeatherCommand : ICommand
+public class WeatherCommand : Command.Command
 {
-    public string Usage => "weather <clear|rain|storm>";
-    public string Description => "Sets the weather";
-    public string[] Names => ["weather"];
+    public override string Usage => "weather <clear|rain|storm>";
+    public override string Description => "Sets the weather";
+    public override string[] Names => ["weather"];
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder
+            .Then(Literal("clear").Executes(SetClear))
+            .Then(Literal("rain").Executes(SetRain))
+            .Then(Literal("storm").Executes(SetStorm));
+
+    private static int SetClear(CommandContext<CommandSource> context)
     {
-        if (c.Args.Length < 1)
+        foreach (ServerWorld world in context.Source.Server.worlds)
         {
-            c.Output.SendMessage("Usage: weather <clear|rain|storm>");
-            return;
+            world.Entities.GlobalEntities.Clear();
+            world.Properties.IsRaining = false;
+            world.Properties.IsThundering = false;
         }
 
-        string weather = c.Args[0].ToLower();
-        for (int i = 0; i < c.Server.worlds.Length; i++)
+        context.Source.Output.SendMessage("Weather set to clear.");
+        return 1;
+    }
+
+    private static int SetRain(CommandContext<CommandSource> context)
+    {
+        foreach (ServerWorld world in context.Source.Server.worlds)
         {
-            ServerWorld world = c.Server.worlds[i];
-            switch (weather)
-            {
-                case "clear":
-                    world.Entities.GlobalEntities.Clear();
-                    world.Properties.IsRaining = false;
-                    world.Properties.IsThundering = false;
-                    break;
-                case "rain":
-                    world.Properties.IsRaining = true;
-                    world.Properties.IsThundering = false;
-                    break;
-                case "storm":
-                    world.Properties.IsRaining = true;
-                    world.Properties.IsThundering = true;
-                    break;
-                default:
-                    c.Output.SendMessage("Unknown weather type. Use: clear, rain, or storm");
-                    return;
-            }
+            world.Properties.IsRaining = true;
+            world.Properties.IsThundering = false;
         }
 
-        c.Output.SendMessage($"Weather set to {weather}.");
+        context.Source.Output.SendMessage("Weather set to rain.");
+        return 1;
+    }
+
+    private static int SetStorm(CommandContext<CommandSource> context)
+    {
+        foreach (ServerWorld world in context.Source.Server.worlds)
+        {
+            world.Properties.IsRaining = true;
+            world.Properties.IsThundering = true;
+        }
+
+        context.Source.Output.SendMessage("Weather set to storm.");
+        return 1;
     }
 }

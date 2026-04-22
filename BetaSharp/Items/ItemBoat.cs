@@ -18,11 +18,11 @@ internal class ItemBoat : Item
     public override ItemStack use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
     {
         float partialTick = 1.0F;
-        float pitch = entityPlayer.prevPitch + (entityPlayer.pitch - entityPlayer.prevPitch) * partialTick;
-        float yaw = entityPlayer.prevYaw + (entityPlayer.yaw - entityPlayer.prevYaw) * partialTick;
-        double x = entityPlayer.prevX + (entityPlayer.x - entityPlayer.prevX) * (double)partialTick;
-        double y = entityPlayer.prevY + (entityPlayer.y - entityPlayer.prevY) * (double)partialTick + 1.62D - (double)entityPlayer.standingEyeHeight;
-        double z = entityPlayer.prevZ + (entityPlayer.z - entityPlayer.prevZ) * (double)partialTick;
+        float pitch = entityPlayer.PrevPitch + (entityPlayer.Pitch - entityPlayer.PrevPitch) * partialTick;
+        float yaw = entityPlayer.PrevYaw + (entityPlayer.Yaw - entityPlayer.PrevYaw) * partialTick;
+        double x = entityPlayer.PrevX + (entityPlayer.X - entityPlayer.PrevX) * (double)partialTick;
+        double y = entityPlayer.PrevY + (entityPlayer.Y - entityPlayer.PrevY) * (double)partialTick + 1.62D - (double)entityPlayer.StandingEyeHeight;
+        double z = entityPlayer.PrevZ + (entityPlayer.Z - entityPlayer.PrevZ) * (double)partialTick;
         Vec3D rayStart = new Vec3D(x, y, z);
         float cosYaw = MathHelper.Cos(-yaw * ((float)Math.PI / 180.0F) - (float)Math.PI);
         float sinYaw = MathHelper.Sin(-yaw * ((float)Math.PI / 180.0F) - (float)Math.PI);

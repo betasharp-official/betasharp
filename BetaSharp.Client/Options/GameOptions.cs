@@ -115,18 +115,18 @@ public class GameOptions
 
 
     public string Skin = "Default";
-    public KeyBinding KeyBindForward = new("key.forward", 17);
-    public KeyBinding KeyBindLeft = new("key.left", 30);
-    public KeyBinding KeyBindBack = new("key.back", 31);
-    public KeyBinding KeyBindRight = new("key.right", 32);
-    public KeyBinding KeyBindJump = new("key.jump", 57);
-    public KeyBinding KeyBindInventory = new("key.inventory", 18);
-    public KeyBinding KeyBindDrop = new("key.drop", 16);
-    public KeyBinding KeyBindChat = new("key.chat", 20);
-    public KeyBinding KeyBindCommand = new("key.command", Keyboard.KEY_SLASH);
-    public KeyBinding KeyBindToggleFog = new("key.fog", 33);
-    public KeyBinding KeyBindSneak = new("key.sneak", 42);
-    public KeyBinding KeyBindZoom = new("key.zoom", Keyboard.KEY_NONE);
+    public KeyBinding KeyBindForward = new("key.forward", Keys.W);
+    public KeyBinding KeyBindLeft = new("key.left", Keys.A);
+    public KeyBinding KeyBindBack = new("key.back", Keys.S);
+    public KeyBinding KeyBindRight = new("key.right", Keys.D);
+    public KeyBinding KeyBindJump = new("key.jump", Keys.Space);
+    public KeyBinding KeyBindInventory = new("key.inventory", Keys.E);
+    public KeyBinding KeyBindDrop = new("key.drop", Keys.Q);
+    public KeyBinding KeyBindChat = new("key.chat", Keys.T);
+    public KeyBinding KeyBindCommand = new("key.command", Keys.Slash);
+    public KeyBinding KeyBindToggleFog = new("key.fog", Keys.F);
+    public KeyBinding KeyBindSneak = new("key.sneak", Keys.ShiftLeft);
+    public KeyBinding KeyBindZoom = new("key.zoom", Keys.Unknown);
     public KeyBinding[] KeyBindings;
     public ControllerBinding[] ControllerBindings;
 
@@ -393,12 +393,12 @@ public class GameOptions
 
     public string GetOptionDisplayString(KeyBinding binding)
     {
-        return Keyboard.getKeyName(binding.keyCode);
+        return Keyboard.getKeyName(binding.scanCode);
     }
 
     public void SetKeyBinding(KeyBinding binding, int keyCode)
     {
-        binding.keyCode = keyCode;
+        binding.scanCode = keyCode;
         SaveOptions();
     }
 
@@ -475,7 +475,7 @@ public class GameOptions
                     {
                         if (KeyBindings[i].keyDescription == bindName)
                         {
-                            KeyBindings[i].keyCode = int.Parse(value);
+                            KeyBindings[i].scanCode = int.Parse(value);
                             break;
                         }
                     }
@@ -503,7 +503,7 @@ public class GameOptions
 
             foreach (KeyBinding bind in KeyBindings)
             {
-                writer.WriteLine($"key_{bind.keyDescription}:{bind.keyCode}");
+                writer.WriteLine($"key_{bind.keyDescription}:{bind.scanCode}");
             }
 
             if (ControllerBindings != null)

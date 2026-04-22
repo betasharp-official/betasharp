@@ -2,17 +2,19 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Blocks.Entities;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using Silk.NET.Maths;
+using Silk.NET.OpenGL;
+using SixLabors.Fonts;
+using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
+using TextRenderer = BetaSharp.Client.Rendering.TextRenderer;
 
 namespace BetaSharp.Client.UI.Rendering;
 
@@ -77,7 +79,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void ClearDepth()
     {
-        GLManager.GL.Clear((Silk.NET.OpenGL.ClearBufferMask)GLEnum.DepthBufferBit);
+        GLManager.GL.Clear((ClearBufferMask)GLEnum.DepthBufferBit);
     }
 
     public void PushTranslate(float x, float y)
@@ -111,16 +113,34 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         Vector2D<int> displaySize = getDisplaySize();
         ScaledResolution res = new(_gameOptions, displaySize.X, displaySize.Y);
 
-        int scale = res.ScaleFactor;
-        int scaledWindowHeight = displaySize.Y;
+        float left = x + _translateX;
+        float top = y + _translateY;
+        float right = left + width;
+        float bottom = top + height;
 
-        int physicalX = (int)((x + _translateX) * scale);
-        int physicalWidth = width * scale;
-        int physicalHeight = height * scale;
-        int physicalY = scaledWindowHeight - (int)((y + _translateY) * scale) - physicalHeight;
+        // UI coordinates are in scaled-resolution space; scissor rectangles must use framebuffer pixels.
+        int framebufferWidth = Display.getFramebufferWidth();
+        int framebufferHeight = Display.getFramebufferHeight();
+        float scaleX = framebufferWidth / (float)res.ScaledWidth;
+        float scaleY = framebufferHeight / (float)res.ScaledHeight;
+
+        int physicalLeft = (int)MathF.Floor(left * scaleX);
+        int physicalTop = (int)MathF.Floor(top * scaleY);
+        int physicalRight = (int)MathF.Ceiling(right * scaleX);
+        int physicalBottom = (int)MathF.Ceiling(bottom * scaleY);
+
+        int clampedLeft = Math.Clamp(physicalLeft, 0, framebufferWidth);
+        int clampedTop = Math.Clamp(physicalTop, 0, framebufferHeight);
+        int clampedRight = Math.Clamp(physicalRight, 0, framebufferWidth);
+        int clampedBottom = Math.Clamp(physicalBottom, 0, framebufferHeight);
+
+        int physicalX = clampedLeft;
+        int physicalY = framebufferHeight - clampedBottom;
+        int physicalWidth = clampedRight - clampedLeft;
+        int physicalHeight = clampedBottom - clampedTop;
 
         GLManager.GL.Enable(GLEnum.ScissorTest);
-        GLManager.GL.Scissor(physicalX, physicalY, (uint)physicalWidth, (uint)physicalHeight);
+        GLManager.GL.Scissor(physicalX, physicalY, (uint)Math.Max(0, physicalWidth), (uint)Math.Max(0, physicalHeight));
     }
 
     public void DisableClipping()
@@ -190,7 +210,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
             }
             else
             {
-                TextRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color, SixLabors.Fonts.HorizontalAlignment.Center);
+                TextRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color, HorizontalAlignment.Center);
             }
             return;
         }
@@ -206,7 +226,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         }
         else
         {
-            TextRenderer.DrawString(text, 0, 0, color, SixLabors.Fonts.HorizontalAlignment.Center);
+            TextRenderer.DrawString(text, 0, 0, color, HorizontalAlignment.Center);
         }
 
         GLManager.GL.PopMatrix();
@@ -286,7 +306,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
     {
         if (stack == null) return;
 
-        bool isBlock = stack.itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[stack.itemId].getRenderType());
+        bool isBlock = stack.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[stack.ItemId].getRenderType());
 
         if (isBlock)
         {
@@ -335,9 +355,9 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         GLManager.GL.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
         GLManager.GL.Disable(GLEnum.CullFace);
 
-        float bodyYaw = entity is EntityLiving el ? el.bodyYaw : entity.yaw;
-        float headYaw = entity.yaw;
-        float headPitch = entity.pitch;
+        float bodyYaw = entity is EntityLiving el ? el.BodyYaw : entity.Yaw;
+        float headYaw = entity.Yaw;
+        float headPitch = entity.Pitch;
         float lookX = x + _translateX - mouseX;
         float lookY = y + _translateY - 50 - mouseY;
 
@@ -348,23 +368,23 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
         if (entity is EntityLiving el2)
         {
-            el2.bodyYaw = (float)Math.Atan(lookX / 40.0F) * 20.0F;
+            el2.BodyYaw = (float)Math.Atan(lookX / 40.0F) * 20.0F;
         }
-        entity.yaw = (float)Math.Atan(lookX / 40.0F) * 40.0F;
-        entity.pitch = -(float)Math.Atan(lookY / 40.0F) * 20.0F;
-        entity.minBrightness = 1.0F;
+        entity.Yaw = (float)Math.Atan(lookX / 40.0F) * 40.0F;
+        entity.Pitch = -(float)Math.Atan(lookY / 40.0F) * 20.0F;
+        entity.MinBrightness = 1.0F;
 
-        GLManager.GL.Translate(0.0F, entity.standingEyeHeight, 0.0F);
+        GLManager.GL.Translate(0.0F, entity.StandingEyeHeight, 0.0F);
         EntityRenderDispatcher.Instance.PlayerViewY = 180.0F;
         EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(entity, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F);
 
-        entity.minBrightness = 0.0F;
+        entity.MinBrightness = 0.0F;
         if (entity is EntityLiving el3)
         {
-            el3.bodyYaw = bodyYaw;
+            el3.BodyYaw = bodyYaw;
         }
-        entity.yaw = headYaw;
-        entity.pitch = headPitch;
+        entity.Yaw = headYaw;
+        entity.Pitch = headPitch;
 
         GLManager.GL.PopMatrix();
         Lighting.turnOff();
@@ -437,13 +457,13 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         Block signBlock = sign.getBlock();
         if (signBlock == Block.Sign)
         {
-            float rotation = sign.getPushedBlockData() * 360 / 16.0F;
+            float rotation = sign.PushedBlockData * 360 / 16.0F;
             GLManager.GL.Rotate(rotation, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Translate(0.0F, -1.0625F, 0.0F);
         }
         else
         {
-            int rotationIndex = sign.getPushedBlockData();
+            int rotationIndex = sign.PushedBlockData;
             float angle = 0.0F;
             if (rotationIndex == 2) angle = 180.0F;
             if (rotationIndex == 4) angle = 90.0F;

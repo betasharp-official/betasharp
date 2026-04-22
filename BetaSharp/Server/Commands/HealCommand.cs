@@ -1,30 +1,62 @@
 using BetaSharp.Entities;
-using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class HealCommand : ICommand
+public class HealCommand : Command.Command
 {
-    public string Usage => "heal [amount]";
-    public string Description => "Heals yourself";
-    public string[] Names => ["heal"];
+    public override string Usage => "heal <player> <amount>";
+    public override string Description => "Heals yourself";
+    public override string[] Names => ["heal"];
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder
+            .Executes(HealFull)
+            .Then(ArgumentInt("amount").Executes(HealAmount))
+            .Then(ArgumentPlayer("player")
+                .Executes(HealFullOther)
+                .Then(ArgumentInt("amount").Executes(HealAmountOther)));
+
+    private static int HealFull(CommandContext<CommandSource> context) => Heal(context, 255);
+
+    private static int HealAmount(CommandContext<CommandSource> context) => Heal(context, context.GetArgument<int>("amount"));
+
+    private static int HealFullOther(CommandContext<CommandSource> context) => Heal(context, context.GetArgument<ServerPlayerEntity>("player"), 255);
+    private static int HealAmountOther(CommandContext<CommandSource> context) => Heal(context, context.GetArgument<ServerPlayerEntity>("player"), context.GetArgument<int>("amount"));
+
+    private static int Heal(CommandContext<CommandSource> context, int amount)
     {
-        ServerPlayerEntity? player = c.Server.playerManager.getPlayer(c.SenderName);
+        if (amount <= 0)
+        {
+            context.Source.Output.SendMessage("Heal must be a positive number.");
+            return 1;
+        }
+
+        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
         if (player == null)
         {
-            c.Output.SendMessage("Could not find your player.");
-            return;
+            context.Source.Output.SendMessage("Could not find your player.");
+            return 1;
         }
 
-        int amount = 20;
-        if (c.Args.Length > 0 && int.TryParse(c.Args[0], out int parsed))
-        {
-            amount = parsed;
-        }
-
+        int old = player.Health;
         player.heal(amount);
-        c.Output.SendMessage($"Healed for {amount} health.");
+        context.Source.Output.SendMessage($"Healed for {player.Health - old} health.");
+        return 1;
+    }
+
+    private static int Heal(CommandContext<CommandSource> context, ServerPlayerEntity player, int amount)
+    {
+        if (amount <= 0)
+        {
+            context.Source.Output.SendMessage("Heal must be a positive number.");
+            return 1;
+        }
+
+        int old = player.Health;
+        player.heal(amount);
+        context.Source.Output.SendMessage($"Healed {player.name} for {player.Health - old} health.");
+        return 1;
     }
 }

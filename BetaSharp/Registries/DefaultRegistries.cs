@@ -29,6 +29,12 @@ public static class DefaultRegistries
 
         MetricRegistry.Bootstrap(typeof(ServerMetrics));
 
+        RegistryAccess.AddBuiltIn(RegistryKeys.EntityTypes, EntityTypes);
+        RegistryAccess.AddBuiltIn(RegistryKeys.Biomes, Biomes);
+        RegistryAccess.AddBuiltIn(RegistryKeys.BlockEntityTypes, BlockEntityTypes);
+        RegistryAccess.AddBuiltIn(RegistryKeys.GameRules, GameRules);
+        RegistryAccess.AddDynamic(RegistryDefinitions.GameModes);
+
         FreezeAll();
     }
 

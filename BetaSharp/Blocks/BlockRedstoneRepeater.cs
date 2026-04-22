@@ -8,61 +8,70 @@ namespace BetaSharp.Blocks;
 public class BlockRedstoneRepeater : Block
 {
     public static readonly float[] RenderOffset = [-0.0625f, 1.0f / 16.0f, 0.1875f, 0.3125f];
-    private static readonly int[] DELAY = [1, 2, 3, 4];
-    private readonly bool lit;
+    private static readonly int[] s_delay = [1, 2, 3, 4];
+    private readonly bool _lit;
 
     public BlockRedstoneRepeater(int id, bool lit) : base(id, 6, Material.PistonBreakable)
     {
-        this.lit = lit;
+        _lit = lit;
         setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
     }
 
     public override bool isFullCube() => false;
 
-    public override bool canPlaceAt(CanPlaceAtContext context) => !context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z) ? false : base.canPlaceAt(context);
+    public override bool canPlaceAt(CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z) && base.canPlaceAt(context);
 
-    public override bool canGrow(OnTickEvent @event) => !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) ? false : base.canGrow(@event);
+    public override bool canGrow(OnTickEvent @event) => @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && base.canGrow(@event);
 
     public override void onTick(OnTickEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         bool powered = isPowered(@event.World.Reader, @event.World.Redstone, @event.X, @event.Y, @event.Z, meta);
 
-        if (lit && !powered)
+        switch (_lit)
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Repeater.id, meta);
-        }
-        else if (!lit)
-        {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, PoweredRepeater.id, meta);
+            case true when !powered:
+                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Repeater.id, meta);
+                break;
+            case false:
+                {
+                    @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, PoweredRepeater.id, meta);
 
-            if (!powered)
-            {
-                int delaySetting = (meta & 12) >> 2;
-                @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, PoweredRepeater.id, DELAY[delaySetting] * 2);
-            }
+                    if (!powered)
+                    {
+                        int delaySetting = (meta & 12) >> 2;
+                        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, PoweredRepeater.id, s_delay[delaySetting] * 2);
+                    }
+
+                    break;
+                }
         }
     }
 
-    public override int getTexture(int side, int meta) => side == 0 ? lit ? 99 : 115 : side == 1 ? lit ? 147 : 131 : 5;
+    public override int GetTexture(Side side, int meta) => side switch
+    {
+        Side.Down => _lit ? BlockTextures.RedstoneTorchLit : BlockTextures.RedstoneTorchUnlit,
+        Side.Up => _lit ? BlockTextures.RepeaterTopLit : BlockTextures.RepeaterTopUnlit,
+        _ => BlockTextures.StoneSlabSide
+    };
 
-    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, int side) => side != 0 && side != 1;
+    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side) => side != 0 && side != Side.Up;
 
     public override BlockRendererType getRenderType() => BlockRendererType.Repeater;
 
-    public override int getTexture(int side) => getTexture(side, 0);
+    public override int GetTexture(Side side) => GetTexture(side, 0);
 
     public override bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => isPoweringSide(world, x, y, z, side);
 
     public override bool isPoweringSide(IBlockReader reader, int x, int y, int z, int side)
     {
-        if (!lit)
-        {
-            return false;
-        }
+        if (!_lit) return false;
 
         int facing = reader.GetBlockMeta(x, y, z) & 3;
-        return facing == 0 && side == 3 ? true : facing == 1 && side == 4 ? true : facing == 2 && side == 2 ? true : facing == 3 && side == 5;
+        return facing == 0 && side == 3 ||
+               facing == 1 && side == 4 ||
+               facing == 2 && side == 2 ||
+               facing == 3 && side == 5;
     }
 
     public override void neighborUpdate(OnTickEvent @event)
@@ -77,33 +86,33 @@ public class BlockRedstoneRepeater : Block
             int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             bool powered = isPowered(@event.World.Reader, @event.World.Redstone, @event.X, @event.Y, @event.Z, meta);
             int delaySetting = (meta & 12) >> 2;
-            if (lit && !powered)
+            if (_lit && !powered || !_lit && powered)
             {
-                @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id, DELAY[delaySetting] * 2);
-            }
-            else if (!lit && powered)
-            {
-                @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id, DELAY[delaySetting] * 2);
+                @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id, s_delay[delaySetting] * 2);
             }
         }
     }
 
-    private bool isPowered(IBlockReader world, RedstoneEngine redstoneEngine, int x, int y, int z, int meta)
+    public override void onBreak(OnBreakEvent @event)
+    {
+        base.onBreak(@event);
+        if (@event.World.IsRemote) return;
+
+        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        NotifyTargetNeighbors(@event.World, @event.X, @event.Y, @event.Z, meta);
+    }
+
+    private static bool isPowered(IBlockReader world, RedstoneEngine redstoneEngine, int x, int y, int z, int meta)
     {
         int facing = meta & 3;
-        switch (facing)
+        return facing switch
         {
-            case 0:
-                return redstoneEngine.IsPoweringSide(x, y, z + 1, 3) || (world.GetBlockId(x, y, z + 1) == RedstoneWire.id && world.GetBlockMeta(x, y, z + 1) > 0);
-            case 1:
-                return redstoneEngine.IsPoweringSide(x - 1, y, z, 4) || (world.GetBlockId(x - 1, y, z) == RedstoneWire.id && world.GetBlockMeta(x - 1, y, z) > 0);
-            case 2:
-                return redstoneEngine.IsPoweringSide(x, y, z - 1, 2) || (world.GetBlockId(x, y, z - 1) == RedstoneWire.id && world.GetBlockMeta(x, y, z - 1) > 0);
-            case 3:
-                return redstoneEngine.IsPoweringSide(x + 1, y, z, 5) || (world.GetBlockId(x + 1, y, z) == RedstoneWire.id && world.GetBlockMeta(x + 1, y, z) > 0);
-            default:
-                return false;
-        }
+            0 => redstoneEngine.IsPoweringSide(x, y, z + 1, 3) || (world.GetBlockId(x, y, z + 1) == RedstoneWire.id && world.GetBlockMeta(x, y, z + 1) > 0),
+            1 => redstoneEngine.IsPoweringSide(x - 1, y, z, 4) || (world.GetBlockId(x - 1, y, z) == RedstoneWire.id && world.GetBlockMeta(x - 1, y, z) > 0),
+            2 => redstoneEngine.IsPoweringSide(x, y, z - 1, 2) || (world.GetBlockId(x, y, z - 1) == RedstoneWire.id && world.GetBlockMeta(x, y, z - 1) > 0),
+            3 => redstoneEngine.IsPoweringSide(x + 1, y, z, 5) || (world.GetBlockId(x + 1, y, z) == RedstoneWire.id && world.GetBlockMeta(x + 1, y, z) > 0),
+            _ => false
+        };
     }
 
     public override bool onUse(OnUseEvent ctx)
@@ -121,7 +130,7 @@ public class BlockRedstoneRepeater : Block
     {
         if (@event.Placer != null)
         {
-            float yaw = @event.Placer.yaw;
+            float yaw = @event.Placer.Yaw;
             int facing = ((MathHelper.Floor(yaw * 4.0F / 360.0F + 0.5D) & 3) + 2) % 4;
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, facing);
         }
@@ -140,6 +149,25 @@ public class BlockRedstoneRepeater : Block
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z - 1, id);
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, id);
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, id);
+
+        if (!@event.World.IsRemote) NotifyTargetNeighbors(@event.World, @event.X, @event.Y, @event.Z, meta);
+    }
+
+    private void NotifyTargetNeighbors(IWorldContext ctx, int x, int y, int z, int meta)
+    {
+        int facing = meta & 3;
+        int targetX = x;
+        int targetZ = z;
+
+        switch (facing)
+        {
+            case 0: targetZ--; break;
+            case 1: targetX++; break;
+            case 2: targetZ++; break;
+            case 3: targetX--; break;
+        }
+
+        ctx.Broadcaster.NotifyNeighbors(targetX, y, targetZ, id);
     }
 
     public override bool isOpaque() => false;
@@ -148,10 +176,7 @@ public class BlockRedstoneRepeater : Block
 
     public override void randomDisplayTick(OnTickEvent ctx)
     {
-        if (!lit)
-        {
-            return;
-        }
+        if (!_lit) return;
 
         int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         double particleX = ctx.X + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;

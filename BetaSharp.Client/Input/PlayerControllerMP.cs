@@ -31,8 +31,8 @@ public class PlayerControllerMP : PlayerController
 
     public override void flipPlayer(EntityPlayer playerEntity)
     {
-        playerEntity.yaw = -180.0F;
-        playerEntity.prevYaw = -180.0F;
+        playerEntity.Yaw = -180.0F;
+        playerEntity.PrevYaw = -180.0F;
     }
 
     public override bool sendBlockRemoved(int x, int y, int z, int direction)
@@ -45,9 +45,9 @@ public class PlayerControllerMP : PlayerController
         if (hand != null)
         {
             hand.postMine(blockId, x, y, z, Game.Player);
-            if (hand.count == 0)
+            if (hand.Count == 0)
             {
-                hand.onRemoved(Game.Player);
+                ItemStack.onRemoved(Game.Player);
                 Game.Player.clearStackInHand();
             }
         }
@@ -116,7 +116,7 @@ public class PlayerControllerMP : PlayerController
                     curBlockDamageMP += var6.getHardness(Game.Player);
                     if (_mineSoundTimer % 4 == 0 && var6 != null)
                     {
-                        Game.SoundManager.PlaySound(var6.soundGroup.StepSound, (float)x + 0.5F, (float)y + 0.5F, (float)z + 0.5F, (var6.soundGroup.Volume + 1.0F) / 8.0F, var6.soundGroup.Pitch * 0.5F);
+                        Game.SoundManager.PlaySound(var6.SoundGroup.StepSound, (float)x + 0.5F, (float)y + 0.5F, (float)z + 0.5F, (var6.SoundGroup.Volume + 1.0F) / 8.0F, var6.SoundGroup.Pitch * 0.5F);
                     }
 
                     ++_mineSoundTimer;
@@ -168,7 +168,7 @@ public class PlayerControllerMP : PlayerController
 
     private void syncCurrentPlayItem()
     {
-        int var1 = Game.Player.inventory.selectedSlot;
+        int var1 = Game.Player.inventory.SelectedSlot;
         if (var1 != currentPlayerItem)
         {
             currentPlayerItem = var1;
@@ -209,14 +209,14 @@ public class PlayerControllerMP : PlayerController
     public override void attackEntity(EntityPlayer var1, Entity var2)
     {
         syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.id, var2.id, 1));
+        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.ID, var2.ID, 1));
         var1.attack(var2);
     }
 
     public override void interactWithEntity(EntityPlayer var1, Entity var2)
     {
         syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.id, var2.id, 0));
+        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.ID, var2.ID, 0));
         var1.interact(var2);
     }
 

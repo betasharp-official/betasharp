@@ -14,111 +14,111 @@ public class EntityItem : Entity
     public int itemAge;
     public int delayBeforeCanPickup;
     private int health = 5;
-    public float bobPhase = Random.Shared.NextSingle() * ((float)Math.PI) * 2.0f;
+    public float bobPhase = System.Random.Shared.NextSingle() * ((float)Math.PI) * 2.0f;
 
     public EntityItem(IWorldContext world, double x, double y, double z, ItemStack stack) : base(world)
     {
-        setBoundingBoxSpacing(0.25F, 0.25F);
-        standingEyeHeight = height / 2.0F;
-        setPosition(x, y, z);
+        SetBoundingBoxSpacing(0.25F, 0.25F);
+        StandingEyeHeight = Height / 2.0F;
+        SetPosition(x, y, z);
         this.stack = stack;
-        yaw = Random.Shared.NextSingle() * 360.0f;
-        velocityX = Random.Shared.NextDouble() * 0.2f - 0.1f;
-        velocityY = 0.2F;
-        velocityZ = Random.Shared.NextDouble() * 0.2f - 0.1f;
+        Yaw = System.Random.Shared.NextSingle() * 360.0f;
+        VelocityX = System.Random.Shared.NextDouble() * 0.2f - 0.1f;
+        VelocityY = 0.2F;
+        VelocityZ = System.Random.Shared.NextDouble() * 0.2f - 0.1f;
     }
 
-    protected override bool bypassesSteppingEffects()
+    protected override bool BypassesSteppingEffects()
     {
         return false;
     }
 
     public EntityItem(IWorldContext world) : base(world)
     {
-        setBoundingBoxSpacing(0.25F, 0.25F);
-        standingEyeHeight = height / 2.0F;
+        SetBoundingBoxSpacing(0.25F, 0.25F);
+        StandingEyeHeight = Height / 2.0F;
     }
 
 
-    public override void tick()
+    public override void Tick()
     {
-        base.tick();
+        base.Tick();
         if (delayBeforeCanPickup > 0)
         {
             --delayBeforeCanPickup;
         }
 
-        prevX = x;
-        prevY = y;
-        prevZ = z;
-        velocityY -= (double)0.04F;
-        if (world.Reader.GetMaterial(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z)) == Material.Lava)
+        PrevX = X;
+        PrevY = Y;
+        PrevZ = Z;
+        VelocityY -= (double)0.04F;
+        if (World.Reader.GetMaterial(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z)) == Material.Lava)
         {
-            velocityY = (double)0.2F;
-            velocityX = (double)((random.NextFloat() - random.NextFloat()) * 0.2F);
-            velocityZ = (double)((random.NextFloat() - random.NextFloat()) * 0.2F);
-            world.Broadcaster.PlaySoundAtEntity(this, "random.fizz", 0.4F, 2.0F + random.NextFloat() * 0.4F);
+            VelocityY = (double)0.2F;
+            VelocityX = (double)((Random.NextFloat() - Random.NextFloat()) * 0.2F);
+            VelocityZ = (double)((Random.NextFloat() - Random.NextFloat()) * 0.2F);
+            World.Broadcaster.PlaySoundAtEntity(this, "random.fizz", 0.4F, 2.0F + Random.NextFloat() * 0.4F);
         }
 
-        pushOutOfBlocks(x, (boundingBox.MinY + boundingBox.MaxY) / 2.0D, z);
-        move(velocityX, velocityY, velocityZ);
+        PushOutOfBlocks(X, (BoundingBox.MinY + BoundingBox.MaxY) / 2.0D, Z);
+        Move(VelocityX, VelocityY, VelocityZ);
         float friction = 0.98F;
-        if (onGround)
+        if (OnGround)
         {
             friction = 0.1F * 0.1F * 58.8F;
-            int groundBlockId = world.Reader.GetBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
+            int groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY) - 1, MathHelper.Floor(Z));
             if (groundBlockId > 0)
             {
-                friction = Block.Blocks[groundBlockId].slipperiness * 0.98F;
+                friction = Block.Blocks[groundBlockId].Slipperiness * 0.98F;
             }
         }
 
-        velocityX *= (double)friction;
-        velocityY *= (double)0.98F;
-        velocityZ *= (double)friction;
-        if (onGround)
+        VelocityX *= (double)friction;
+        VelocityY *= (double)0.98F;
+        VelocityZ *= (double)friction;
+        if (OnGround)
         {
-            velocityY *= -0.5D;
+            VelocityY *= -0.5D;
         }
 
         ++itemAge;
         if (itemAge >= 6000)
         {
-            markDead();
+            MarkDead();
         }
 
     }
 
-    public override bool checkWaterCollisions()
+    public override bool CheckWaterCollisions()
     {
-        return world.Reader.UpdateMovementInFluid(boundingBox, Material.Water, this);
+        return World.Reader.UpdateMovementInFluid(BoundingBox, Material.Water, this);
     }
 
-    protected override void damage(int amount)
+    protected override void Damage(int amount)
     {
-        damage((Entity)null, amount);
+        Damage((Entity)null, amount);
     }
 
-    public override bool damage(Entity entity, int amount)
+    public override bool Damage(Entity entity, int amount)
     {
-        scheduleVelocityUpdate();
+        ScheduleVelocityUpdate();
         health -= amount;
         if (health <= 0)
         {
-            markDead();
+            MarkDead();
         }
 
         return false;
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
         nbt.SetShort("Health", (short)((byte)health));
         nbt.SetShort("Age", (short)itemAge);
         nbt.SetCompoundTag("Item", stack.writeToNBT(new NBTTagCompound()));
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
         health = nbt.GetShort("Health") & 255;
         itemAge = nbt.GetShort("Age");
@@ -126,28 +126,28 @@ public class EntityItem : Entity
         stack = new ItemStack(itemTag);
     }
 
-    public override void onPlayerInteraction(EntityPlayer player)
+    public override void OnPlayerInteraction(EntityPlayer player)
     {
-        if (!world.IsRemote && player.GameMode.CanPickup)
+        if (!World.IsRemote && player.GameMode.CanPickup)
         {
-            int pickedUpCount = stack.count;
+            int pickedUpCount = stack.Count;
             if (delayBeforeCanPickup == 0 && player.inventory.AddItemStackToInventory(stack))
             {
-                if (stack.itemId == Block.Log.id)
+                if (stack.ItemId == Block.Log.id)
                 {
                     player.incrementStat(Achievements.MineWood);
                 }
 
-                if (stack.itemId == Item.Leather.id)
+                if (stack.ItemId == Item.Leather.id)
                 {
                     player.incrementStat(Achievements.KillCow);
                 }
 
-                world.Broadcaster.PlaySoundAtEntity(this, "random.pop", 0.2F, ((random.NextFloat() - random.NextFloat()) * 0.7F + 1.0F) * 2.0F);
+                World.Broadcaster.PlaySoundAtEntity(this, "random.pop", 0.2F, ((Random.NextFloat() - Random.NextFloat()) * 0.7F + 1.0F) * 2.0F);
                 player.sendPickup(this, pickedUpCount);
-                if (stack.count <= 0)
+                if (stack.Count <= 0)
                 {
-                    markDead();
+                    MarkDead();
                 }
             }
 

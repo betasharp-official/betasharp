@@ -10,18 +10,18 @@ public class EntityVehicleSetS2CPacket() : PacketBaseEntity(PacketId.EntityVehic
     public static EntityVehicleSetS2CPacket Get(Entity entity, Entity vehicle)
     {
         var p = Get<EntityVehicleSetS2CPacket>(PacketId.EntityVehicleSetS2C);
-        p.EntityId = entity.id;
-        p.VehicleEntityId = vehicle != null ? vehicle.id : -1;
+        p.EntityId = entity.ID;
+        p.VehicleEntityId = vehicle != null ? vehicle.ID : -1;
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         base.Read(stream);
         VehicleEntityId = stream.ReadInt();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         base.Write(stream);
         stream.WriteInt(VehicleEntityId);

@@ -46,7 +46,7 @@ public class Hotbar : UIElement
 
         // Selection highlight
         InventoryPlayer inventory = player.inventory;
-        renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/gui.png"), inventory.selectedSlot * 20 - 1, -1, 0, 22, 24, 22);
+        renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/gui.png"), inventory.SelectedSlot * 20 - 1, -1, 0, 22, 24, 22);
 
         RenderStats(renderer);
 
@@ -67,9 +67,9 @@ public class Hotbar : UIElement
         renderer.TextureManager.BindTexture(renderer.TextureManager.GetTextureId("/gui/icons.png"));
 
         int armorValue = player.getPlayerArmorValue();
-        int health = player.health;
-        int lastHealth = player.lastHealth;
-        bool heartBlink = player.hearts / 3 % 2 == 1 && player.hearts >= 10;
+        int health = player.Health;
+        int lastHealth = player.LastHealth;
+        bool heartBlink = player.Hearts / 3 % 2 == 1 && player.Hearts >= 10;
 
         _rand.SetSeed(_updateCounter * 312871);
 
@@ -108,9 +108,9 @@ public class Hotbar : UIElement
         }
 
         // --- Air ---
-        if (player.isInFluid(Material.Water) && player.GameMode.NeedsAir)
+        if (player.IsInFluid(Material.Water) && player.GameMode.NeedsAir)
         {
-            int air = player.air;
+            int air = player.Air;
             int fullBubbles = (int)Math.Ceiling((air - 2) * 10.0D / 300.0D);
             int partialBubbles = (int)Math.Ceiling(air * 10.0D / 300.0D) - fullBubbles;
 
@@ -124,7 +124,7 @@ public class Hotbar : UIElement
 
     private void RenderSlot(UIRenderer renderer, int slotIndex, int x, int y)
     {
-        ItemStack? stack = _getPlayer()?.inventory.main[slotIndex];
+        ItemStack? stack = _getPlayer()?.inventory.Main[slotIndex];
         if (stack == null) return;
 
         renderer.DrawItem(stack, x, y);

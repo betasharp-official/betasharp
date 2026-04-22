@@ -17,7 +17,7 @@ public class SheepEntityRenderer : LivingEntityRenderer
         if (var2 == 0 && !var1.getSheared())
         {
             loadTexture("/mob/sheep_fur.png");
-            float var4 = var1.getBrightnessAtEyes(var3);
+            float var4 = var1.GetBrightnessAtEyes(var3);
             int var5 = var1.getFleeceColor();
             GLManager.GL.Color3(var4 * EntitySheep.fleeceColorTable[var5][0], var4 * EntitySheep.fleeceColorTable[var5][1], var4 * EntitySheep.fleeceColorTable[var5][2]);
             return true;

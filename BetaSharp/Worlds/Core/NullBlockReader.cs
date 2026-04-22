@@ -23,7 +23,7 @@ public sealed class NullBlockReader : IBlockReader
 
     public int GetBlockId(int x, int y, int z) => 0;
 
-    public BlockEntity? GetBlockEntity(int x, int y, int z) => null;
+    public static BlockEntity? GetBlockEntity(int x, int y, int z) => null;
 
     public bool IsOpaque(int x, int y, int z) => false;
 
@@ -58,11 +58,11 @@ public sealed class NullBlockReader : IBlockReader
 
     public bool IsPosLoaded(int x, int y, int z) => true;
 
-    public float GetNaturalBrightness(int x, int y, int z, int blockLight) => 1.0f;
+    public static float GetNaturalBrightness(int x, int y, int z, int blockLight) => 1.0f;
 
-    public float GetLuminance(int x, int y, int z) => 1.0f;
+    public static float GetLuminance(int x, int y, int z) => 1.0f;
 
-    public int getBlockMeta(int x, int y, int z) => 0;
+    public static int getBlockMeta(int x, int y, int z) => 0;
 
-    public Material getMaterial(int x, int y, int z) => Material.Air;
+    public static Material getMaterial(int x, int y, int z) => Material.Air;
 }

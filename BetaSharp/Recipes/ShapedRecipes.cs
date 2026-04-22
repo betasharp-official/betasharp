@@ -13,7 +13,7 @@ internal class ShapedRecipes : IRecipe
 
     public ShapedRecipes(int width, int height, ItemStack?[] items, ItemStack output)
     {
-        RecipeOutputItemID = output.itemId;
+        RecipeOutputItemID = output.ItemId;
         _width = width;
         _height = height;
         _items = items;
@@ -58,7 +58,7 @@ internal class ShapedRecipes : IRecipe
                         expected = _items[recipeX + recipeY * _width];
                 }
 
-                ItemStack actual = craftingInventory.getStackAt(gridX, gridY);
+                ItemStack actual = craftingInventory.GetStackAt(gridX, gridY);
                 if (actual != null || expected != null)
                 {
                     if (actual == null && expected != null || actual != null && expected == null)
@@ -66,7 +66,7 @@ internal class ShapedRecipes : IRecipe
                         return false;
                     }
 
-                    if (expected.itemId != actual.itemId)
+                    if (expected.ItemId != actual.ItemId)
                     {
                         return false;
                     }
@@ -84,7 +84,7 @@ internal class ShapedRecipes : IRecipe
 
     public ItemStack GetCraftingResult(InventoryCrafting craftingInventory)
     {
-        return new ItemStack(_output.itemId, _output.count, _output.getDamage());
+        return new ItemStack(_output.ItemId, _output.Count, _output.getDamage());
     }
 
     public int GetRecipeSize()

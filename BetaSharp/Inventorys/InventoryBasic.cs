@@ -3,46 +3,38 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Inventorys;
 
-public class InventoryBasic : IInventory
+public class InventoryBasic(string inventoryTitle, int slotsCount) : IInventory
 {
+    private readonly ItemStack?[] _inventoryContents = new ItemStack[slotsCount];
 
-    private string inventoryTitle;
-    private int slotsCount;
-    private ItemStack[] inventoryContents;
-
-    public InventoryBasic(string inventoryTitle, int slotsCount)
+    public ItemStack? GetStack(int slotIndex)
     {
-        this.inventoryTitle = inventoryTitle;
-        this.slotsCount = slotsCount;
-        inventoryContents = new ItemStack[slotsCount];
+        return _inventoryContents[slotIndex];
     }
 
-    public ItemStack getStack(int slotIndex)
+    public ItemStack? RemoveStack(int slotIndex, int amount)
     {
-        return inventoryContents[slotIndex];
-    }
+        ItemStack? inSlot = _inventoryContents[slotIndex];
 
-    public ItemStack? removeStack(int slotIndex, int amount)
-    {
-        if (inventoryContents[slotIndex] != null)
+        if (inSlot != null)
         {
             ItemStack removeStack;
-            if (inventoryContents[slotIndex].count <= amount)
+            if (inSlot.Count <= amount)
             {
-                removeStack = inventoryContents[slotIndex];
-                inventoryContents[slotIndex] = null;
-                markDirty();
+                removeStack = inSlot;
+                _inventoryContents[slotIndex] = null;
+                MarkDirty();
                 return removeStack;
             }
             else
             {
-                removeStack = inventoryContents[slotIndex].split(amount);
-                if (inventoryContents[slotIndex].count == 0)
+                removeStack = inSlot.Split(amount);
+                if (inSlot.Count == 0)
                 {
-                    inventoryContents[slotIndex] = null;
+                    _inventoryContents[slotIndex] = null;
                 }
 
-                markDirty();
+                MarkDirty();
                 return removeStack;
             }
         }
@@ -52,37 +44,28 @@ public class InventoryBasic : IInventory
         }
     }
 
-    public void setStack(int slotIndex, ItemStack? itemStack)
+    public void SetStack(int slotIndex, ItemStack? itemStack)
     {
-        inventoryContents[slotIndex] = itemStack;
-        if (itemStack != null && itemStack.count > getMaxCountPerStack())
+        _inventoryContents[slotIndex] = itemStack;
+        if (itemStack != null && itemStack.Count > MaxCountPerStack)
         {
-            itemStack.count = getMaxCountPerStack();
+            itemStack.Count = MaxCountPerStack;
         }
 
-        markDirty();
+        MarkDirty();
     }
 
-    public int size()
-    {
-        return slotsCount;
-    }
+    public int Size { get; } = slotsCount;
 
-    public string getName()
-    {
-        return inventoryTitle;
-    }
+    public string Name { get; } = inventoryTitle;
 
-    public int getMaxCountPerStack()
-    {
-        return 64;
-    }
+    public int MaxCountPerStack => 64;
 
-    public void markDirty()
+    public void MarkDirty()
     {
     }
 
-    public bool canPlayerUse(EntityPlayer entityPlayer)
+    public bool CanPlayerUse(EntityPlayer entityPlayer)
     {
         return true;
     }

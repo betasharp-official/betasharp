@@ -20,7 +20,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
     private readonly float[] _lightTable;
     private readonly int _skylightSubtracted;
 
-    public WorldRegionSnapshot(IWorldContext world, int minX, int var3, int minZ, int maxX, int var6, int maxZ)
+    public WorldRegionSnapshot(IWorldContext world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
         _biomeSource = world.Dimension.BiomeSource.Clone();
 
@@ -49,7 +49,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
     public int GetBlockId(int x, int y, int z)
     {
-        if (y is < 0 or >= 128)
+        if (y < 0 || y >= ChuckFormat.WorldHeight)
         {
             return 0;
         }
@@ -82,7 +82,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
     public int GetBlockMeta(int x, int y, int z)
     {
-        if (y is < 0 or >= 128)
+        if (y < 0 || y >= ChuckFormat.WorldHeight)
         {
             return 0;
         }
@@ -147,7 +147,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
             return 0;
         }
 
-        if (y >= 128)
+        if (y >= ChuckFormat.WorldHeight)
         {
             return Math.Max(0, 15 - _skylightSubtracted);
         }

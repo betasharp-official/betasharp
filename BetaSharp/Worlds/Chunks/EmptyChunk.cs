@@ -27,6 +27,7 @@ public class EmptyChunk : Chunk
     public override void PopulateBlockLight() { }
 
     public override int GetBlockId(int x, int y, int z) => 0;
+    public override int this[int x, int y, int z] { get => 0; set { } }
 
     public override bool SetBlock(int x, int y, int z, int blockId, int meta, bool notifyBlockPlaced = true) => true;
     public override bool SetBlock(int x, int y, int z, int blockId, bool notifyBlockPlaced = true) => true;

@@ -22,11 +22,11 @@ public class WorldReader : IBlockReader
 
     public int AmbientDarkness => _context.Environment?.AmbientDarkness ?? 0;
 
-    public bool IsPosLoaded(int x, int y, int z) => y >= 0 && y < 128 && _context.ChunkHost.HasChunk(x >> 4, z >> 4);
+    public bool IsPosLoaded(int x, int y, int z) => y >= 0 && y < ChuckFormat.WorldHeight && _context.ChunkHost.HasChunk(x >> 4, z >> 4);
 
     public int GetBlockId(int x, int y, int z)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= ChuckFormat.WorldHeight)
         {
             return 0;
         }
@@ -36,7 +36,7 @@ public class WorldReader : IBlockReader
 
     public int GetBlockMeta(int x, int y, int z)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128)
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= ChuckFormat.WorldHeight)
         {
             return 0;
         }
@@ -78,7 +78,7 @@ public class WorldReader : IBlockReader
             return 0;
         }
 
-        if (y >= 128)
+        if (y >= ChuckFormat.WorldHeight)
         {
             return !_dimension.HasCeiling ? 15 : 0;
         }
@@ -88,14 +88,16 @@ public class WorldReader : IBlockReader
 
     public bool IsTopY(int x, int y, int z)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000)            return false;
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000) return false;
 
-        switch (y)
+        if (y < 0)
         {
-            case < 0:
-                return false;
-            case >= 128:
-                return true;
+            return false;
+        }
+
+        if (y >= ChuckFormat.WorldHeight)
+        {
+            return true;
         }
 
         if (!_context.ChunkHost.HasChunk(x >> 4, z >> 4))
@@ -127,7 +129,7 @@ public class WorldReader : IBlockReader
     public int GetTopSolidBlockY(int x, int z)
     {
         Chunk chunk = _context.ChunkHost.GetChunkFromPos(x, z);
-        int currentY = 127;
+        int currentY = ChuckFormat.WorldHeight - 1;
         int localX = x & 15;
         int localZ = z & 15;
 
@@ -148,7 +150,7 @@ public class WorldReader : IBlockReader
     public int GetSpawnPositionValidityY(int x, int z)
     {
         Chunk chunk = _context.ChunkHost.GetChunkFromPos(x, z);
-        int currentY = 127;
+        int currentY = ChuckFormat.WorldHeight - 1;
         int localX = x & 15;
         int localZ = z & 15;
 
@@ -445,9 +447,9 @@ public class WorldReader : IBlockReader
         {
             flowVector = flowVector.normalize();
             const double flowStrength = 0.014D;
-            entity.velocityX += flowVector.x * flowStrength;
-            entity.velocityY += flowVector.y * flowStrength;
-            entity.velocityZ += flowVector.z * flowStrength;
+            entity.VelocityX += flowVector.x * flowStrength;
+            entity.VelocityY += flowVector.y * flowStrength;
+            entity.VelocityZ += flowVector.z * flowStrength;
         }
 
         return isSubmerged;

@@ -1,59 +1,68 @@
 using BetaSharp.Server.Commands;
 using BetaSharp.Server.Internal;
-using Microsoft.Extensions.Logging;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Exceptions;
 
 namespace BetaSharp.Server.Command;
 
-internal class ServerCommandHandler
+public interface ICommandHandler
 {
-    private static readonly ILogger<ServerCommandHandler> s_logger = Log.Instance.For<ServerCommandHandler>();
+    public BetaSharpServer Server { get; }
+    public CommandDispatcher<Command.CommandSource> Dispatcher { get; }
+}
 
-    private readonly BetaSharpServer _server;
-
-    private readonly Dictionary<string, ICommand> _commands = new();
+internal class ServerCommandHandler : ICommandHandler
+{
     private readonly HelpCommand _helpCommand = new();
 
     public ServerCommandHandler(BetaSharpServer server)
     {
-        _server = server;
+        Server = server;
         ItemLookup.Initialize();
         RegisterAllCommands();
     }
 
+    public BetaSharpServer Server { get; }
+    public CommandDispatcher<Command.CommandSource> Dispatcher { get; } = new();
+
     public void ExecuteCommand(PendingCommand pendingCommand)
     {
-        string input = pendingCommand.CommandAndArgs;
         ICommandOutput output = pendingCommand.Output;
-        string senderName = output.Name;
-
-        string[] parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 0) return;
-
-        string commandName = parts[0].ToLower();
-        string[] args = parts.Length > 1 ? parts[1..] : [];
-
-        bool isInternalServer = _server is InternalServer;
-
-        if (_commands.TryGetValue(commandName, out var command))
+        int code = 0;
+        try
         {
-            if (isInternalServer && command.DisallowInternalServer)
+            code = Dispatcher.Execute(pendingCommand.CommandAndArgs, new Command.CommandSource(this, output.Name, output));
+        }
+        catch (CommandSyntaxException e)
+        {
+            if (e.Type == CommandSyntaxException.BuiltInExceptions.DispatcherUnknownCommand())
             {
-                output.SendMessage("This command is not available in singleplayer.");
-            }
-            else if (command.PermissionLevel == 0 || isInternalServer || command.PermissionLevel <= pendingCommand.Output.PermissionLevel)
-            {
-                command.Execute(new ICommand.CommandContext(_server, senderName, args, output));
+                code = 0;
             }
             else
             {
-                s_logger.LogInformation($"{senderName} tried command: {input}");
-                output.SendMessage($"§cYou do not have permission to use this command.");
+                output.SendMessage(e.Message);
+                output.SendMessage("Try /help " + GetCommandFromError(e));
+                code = -1;
             }
         }
-        else
+
+        if (code == 0)
         {
-            output.SendMessage("Unknown command. Type \"help\" for help.");
+            output.SendMessage("Unknown command. Type \"/help\" for help.");
         }
+    }
+
+    private static string GetCommandFromError(CommandSyntaxException e)
+    {
+        if (e.Input == null || e.Cursor < 0)
+        {
+            return "";
+        }
+
+        int num = Math.Min(e.Input.Length, e.Cursor);
+        return e.Input.Substring(0, num);
     }
 
     private void RegisterAllCommands()
@@ -85,6 +94,9 @@ internal class ServerCommandHandler
         Register(new SayCommand());
         Register(new TellCommand());
 
+        // Data commands
+        Register(new ReloadCommand());
+
         // Admin commands
         Register(new StopCommand());
         Register(new SaveAllCommand());
@@ -100,21 +112,25 @@ internal class ServerCommandHandler
         Register(new WhitelistCommand());
     }
 
-    public void Register(ICommand command)
+    public void Register(Command command)
     {
-        foreach (string name in command.Names)
+        foreach (string commandName in command.Names)
         {
-            _commands[name] = command;
+            Dispatcher.Register(l => command.Register(l.Literal(commandName).Requires(ctx => Requirement(command, ctx))));
         }
 
         _helpCommand.Add(command);
     }
 
-    /// <summary>
-    /// Gets all available command names
-    /// </summary>
-    public List<string> GetAvailableCommandNames()
+    private static bool Requirement(Command cmd, Command.CommandSource ctx)
     {
-        return _commands.Keys.ToList();
+        bool isInternalServer = ctx.Server is InternalServer;
+
+        if (isInternalServer && cmd.DisallowInternalServer)
+        {
+            return false;
+        }
+
+        return cmd.PermissionLevel == 0 || isInternalServer || cmd.PermissionLevel <= ctx.Output.PermissionLevel;
     }
 }

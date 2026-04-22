@@ -1,4 +1,4 @@
-﻿namespace BetaSharp.DataAsset;
+namespace BetaSharp.Registries.Data;
 
 [Flags]
 public enum LoadLocations : byte
@@ -11,5 +11,4 @@ public enum LoadLocations : byte
 
     AllInit = Assets | GameDatapack,
     AllData = AllInit | WorldDatapack,
-    All = AllData | Resourcepack,
 }

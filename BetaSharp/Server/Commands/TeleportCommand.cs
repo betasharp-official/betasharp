@@ -1,65 +1,49 @@
-using System.Globalization;
 using BetaSharp.Entities;
-using BetaSharp.Server.Command;
+using BetaSharp.Util.Maths;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class TeleportCommand : ICommand
+public class TeleportCommand : Command.Command
 {
-    public string Usage => "tp <x> <y> <z> / <p1> <p2>";
-    public string Description => "Teleport";
-    public string[] Names => ["tp", "teleport"];
+    public override string Usage => "tp <player> <position|target>";
+    public override string Description => "Teleport";
+    public override string[] Names => ["tp", "teleport"];
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder
+            .Then(ArgumentPos("position")
+                .Executes(TpPos))
+            .Then(ArgumentPlayer("player")
+                .Then(ArgumentPos("position")
+                    .Executes(TpPlayerPos)));
+
+    private static int TpPos(CommandContext<CommandSource> context)
     {
-        if (c.Args.Length == 3)
-        {
-            ServerPlayerEntity? sender = c.Server.playerManager.getPlayer(c.SenderName);
-            if (sender == null)
-            {
-                c.Output.SendMessage("Could not find your player.");
-                return;
-            }
+        Vec3D pos = context.GetArgument<Vec3D>("position");
 
-            if (float.TryParse(c.Args[0], CultureInfo.InvariantCulture, out float x) &&
-                float.TryParse(c.Args[1], CultureInfo.InvariantCulture, out float y) &&
-                float.TryParse(c.Args[2], CultureInfo.InvariantCulture, out float z))
-            {
-                sender.networkHandler.teleport(x, y, z, sender.yaw, sender.pitch);
-                c.Output.SendMessage($"Teleported to {x}, {y}, {z}");
-            }
-            else
-            {
-                c.Output.SendMessage("Invalid coordinates. Usage: tp <x> <y> <z>");
-            }
-            return;
+        ServerPlayerEntity? sender = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
+        if (sender == null)
+        {
+            context.Source.Output.SendMessage("Could not find your player.");
+            return 1;
         }
 
-        if (c.Args.Length == 2)
-        {
-            ServerPlayerEntity? source = c.Server.playerManager.getPlayer(c.Args[0]);
-            ServerPlayerEntity? target = c.Server.playerManager.getPlayer(c.Args[1]);
+        sender.NetworkHandler.teleport(pos.x, pos.y, pos.z, sender.Yaw, sender.Pitch);
+        context.Source.Output.SendMessage($"Teleported to {pos}");
 
-            if (source == null)
-            {
-                c.Output.SendMessage("Can't find user " + c.Args[0] + ". No tp.");
-            }
-            else if (target == null)
-            {
-                c.Output.SendMessage("Can't find user " + c.Args[1] + ". No tp.");
-            }
-            else if (source.dimensionId != target.dimensionId)
-            {
-                c.Output.SendMessage("User " + c.Args[0] + " and " + c.Args[1] + " are in different dimensions. No tp.");
-            }
-            else
-            {
-                source.networkHandler.teleport(target.x, target.y, target.z, target.yaw, target.pitch);
-                c.LogOp("Teleporting " + c.Args[0] + " to " + c.Args[1] + ".");
-            }
-            return;
-        }
+        return 1;
+    }
 
-        c.Output.SendMessage("Usage: tp <x> <y> <z>  or  tp <player1> <player2>");
+    private static int TpPlayerPos(CommandContext<CommandSource> context)
+    {
+        ServerPlayerEntity a1 = context.GetArgument<ServerPlayerEntity>("player");
+        Vec3D pos = context.GetArgument<Vec3D>("position");
+
+        a1.NetworkHandler.teleport(pos.x, pos.y, pos.z, a1.Yaw, a1.Pitch);
+        context.Source.Output.SendMessage($"Teleported to {pos}");
+
+        return 1;
     }
 }

@@ -1,30 +1,35 @@
 using BetaSharp.Entities;
 using BetaSharp.Items;
-using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class ClearCommand : ICommand
+public class ClearCommand : Command.Command
 {
-    public string Usage => "clear";
-    public string Description => "Clears your inventory";
-    public string[] Names => ["clear"];
+    public override string Usage => "clear";
+    public override string Description => "Clears your inventory";
+    public override string[] Names => ["clear"];
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder.Executes(Execute);
+
+    private static int Execute(CommandContext<CommandSource> context)
     {
-        ServerPlayerEntity? player = c.Server.playerManager.getPlayer(c.SenderName);
+        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
         if (player == null)
         {
-            c.Output.SendMessage("Could not find your player.");
-            return;
+            context.Source.Output.SendMessage("Could not find your player.");
+            return 1;
         }
 
-        ItemStack[] inventory = player.inventory.main;
+        ItemStack[] inventory = player.inventory.Main;
         for (int i = 0; i < inventory.Length; i++)
         {
             inventory[i] = null;
         }
 
-        c.Output.SendMessage("Inventory cleared.");
+        context.Source.Output.SendMessage("Inventory cleared.");
+        return 1;
     }
 }

@@ -22,72 +22,104 @@ public class ModelPart
     public bool visible = true;
     public bool hidden = false;
 
-    public ModelPart(int var1, int var2)
+    public ModelPart(int textureOffsetX, int textureOffsetY)
     {
-        textureOffsetX = var1;
-        textureOffsetY = var2;
+        this.textureOffsetX = textureOffsetX;
+        this.textureOffsetY = textureOffsetY;
     }
 
-    public void addBox(float var1, float var2, float var3, int var4, int var5, int var6)
+    public void addBox(float x, float y, float z, int width, int height, int depth)
     {
-        addBox(var1, var2, var3, var4, var5, var6, 0.0F);
+        addBox(x, y, z, width, height, depth, 0.0F);
     }
 
-    public void addBox(float var1, float var2, float var3, int var4, int var5, int var6, float var7)
+    public void addBox(float x, float y, float z, int width, int height, int depth, float inflation)
     {
         corners = new PositionTextureVertex[8];
         faces = new Quad[6];
-        float var8 = var1 + var4;
-        float var9 = var2 + var5;
-        float var10 = var3 + var6;
-        var1 -= var7;
-        var2 -= var7;
-        var3 -= var7;
-        var8 += var7;
-        var9 += var7;
-        var10 += var7;
+
+        float minX = x - inflation;
+        float minY = y - inflation;
+        float minZ = z - inflation;
+        float maxX = x + width + inflation;
+        float maxY = y + height + inflation;
+        float maxZ = z + depth + inflation;
+
         if (mirror)
         {
-            (var8, var1) = (var1, var8);
+            (maxX, minX) = (minX, maxX);
         }
 
-        PositionTextureVertex var20 = new(var1, var2, var3, 0.0F, 0.0F);
-        PositionTextureVertex var12 = new(var8, var2, var3, 0.0F, 8.0F);
-        PositionTextureVertex var13 = new(var8, var9, var3, 8.0F, 8.0F);
-        PositionTextureVertex var14 = new(var1, var9, var3, 8.0F, 0.0F);
-        PositionTextureVertex var15 = new(var1, var2, var10, 0.0F, 0.0F);
-        PositionTextureVertex var16 = new(var8, var2, var10, 0.0F, 8.0F);
-        PositionTextureVertex var17 = new(var8, var9, var10, 8.0F, 8.0F);
-        PositionTextureVertex var18 = new(var1, var9, var10, 8.0F, 0.0F);
-        corners[0] = var20;
-        corners[1] = var12;
-        corners[2] = var13;
-        corners[3] = var14;
-        corners[4] = var15;
-        corners[5] = var16;
-        corners[6] = var17;
-        corners[7] = var18;
-        faces[0] = new Quad([var16, var12, var13, var17], textureOffsetX + var6 + var4, textureOffsetY + var6, textureOffsetX + var6 + var4 + var6, textureOffsetY + var6 + var5);
-        faces[1] = new Quad([var20, var15, var18, var14], textureOffsetX + 0, textureOffsetY + var6, textureOffsetX + var6, textureOffsetY + var6 + var5);
-        faces[2] = new Quad([var16, var15, var20, var12], textureOffsetX + var6, textureOffsetY + 0, textureOffsetX + var6 + var4, textureOffsetY + var6);
-        faces[3] = new Quad([var13, var14, var18, var17], textureOffsetX + var6 + var4, textureOffsetY + 0, textureOffsetX + var6 + var4 + var4, textureOffsetY + var6);
-        faces[4] = new Quad([var12, var20, var14, var13], textureOffsetX + var6, textureOffsetY + var6, textureOffsetX + var6 + var4, textureOffsetY + var6 + var5);
-        faces[5] = new Quad([var15, var16, var17, var18], textureOffsetX + var6 + var4 + var6, textureOffsetY + var6, textureOffsetX + var6 + var4 + var6 + var4, textureOffsetY + var6 + var5);
+
+        PositionTextureVertex frontTopLeft = new(minX, minY, minZ, 0.0F, 0.0F);
+        PositionTextureVertex frontTopRight = new(maxX, minY, minZ, 0.0F, 8.0F);
+        PositionTextureVertex frontBottomRight = new(maxX, maxY, minZ, 8.0F, 8.0F);
+        PositionTextureVertex frontBottomLeft = new(minX, maxY, minZ, 8.0F, 0.0F);
+        PositionTextureVertex backTopLeft = new(minX, minY, maxZ, 0.0F, 0.0F);
+        PositionTextureVertex backTopRight = new(maxX, minY, maxZ, 0.0F, 8.0F);
+        PositionTextureVertex backBottomRight = new(maxX, maxY, maxZ, 8.0F, 8.0F);
+        PositionTextureVertex backBottomLeft = new(minX, maxY, maxZ, 8.0F, 0.0F);
+
+        corners[0] = frontTopLeft;
+        corners[1] = frontTopRight;
+        corners[2] = frontBottomRight;
+        corners[3] = frontBottomLeft;
+        corners[4] = backTopLeft;
+        corners[5] = backTopRight;
+        corners[6] = backBottomRight;
+        corners[7] = backBottomLeft;
+
+        faces[0] = new Quad(
+            [backTopRight, frontTopRight, frontBottomRight, backBottomRight],
+            this.textureOffsetX + depth + width,
+            this.textureOffsetY + depth,
+            this.textureOffsetX + depth + width + depth,
+            this.textureOffsetY + depth + height);
+        faces[1] = new Quad(
+            [frontTopLeft, backTopLeft, backBottomLeft, frontBottomLeft],
+            this.textureOffsetX,
+            this.textureOffsetY + depth,
+            this.textureOffsetX + depth,
+            this.textureOffsetY + depth + height);
+        faces[2] = new Quad(
+            [backTopRight, backTopLeft, frontTopLeft, frontTopRight],
+            this.textureOffsetX + depth,
+            this.textureOffsetY,
+            this.textureOffsetX + depth + width,
+            this.textureOffsetY + depth);
+        faces[3] = new Quad(
+            [backBottomRight, backBottomLeft, frontBottomLeft, frontBottomRight],
+            this.textureOffsetX + depth + width,
+            this.textureOffsetY,
+            this.textureOffsetX + depth + width + width,
+            this.textureOffsetY + depth);
+        faces[4] = new Quad(
+            [frontTopRight, frontTopLeft, frontBottomLeft, frontBottomRight],
+            this.textureOffsetX + depth,
+            this.textureOffsetY + depth,
+            this.textureOffsetX + depth + width,
+            this.textureOffsetY + depth + height);
+        faces[5] = new Quad(
+            [backTopLeft, backTopRight, backBottomRight, backBottomLeft],
+            this.textureOffsetX + depth + width + depth,
+            this.textureOffsetY + depth,
+            this.textureOffsetX + depth + width + depth + width,
+            this.textureOffsetY + depth + height);
+
         if (mirror)
         {
-            for (int var19 = 0; var19 < faces.Length; ++var19)
+            for (int faceIndex = 0; faceIndex < faces.Length; ++faceIndex)
             {
-                faces[var19].flipFace();
+                faces[faceIndex].flipFace();
             }
         }
-
     }
 
-    public void setRotationPoint(float var1, float var2, float var3)
+    public void setRotationPoint(float x, float y, float z)
     {
-        rotationPointX = var1;
-        rotationPointY = var2;
-        rotationPointZ = var3;
+        rotationPointX = x;
+        rotationPointY = y;
+        rotationPointZ = z;
     }
 
     public void render(float var1)
@@ -136,7 +168,6 @@ public class ModelPart
                     GLManager.GL.CallList(displayList);
                     GLManager.GL.PopMatrix();
                 }
-
             }
         }
     }
@@ -211,20 +242,19 @@ public class ModelPart
                         GLManager.GL.Rotate(rotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
                     }
                 }
-
             }
         }
     }
 
-    private void compileDisplayList(float var1)
+    private void compileDisplayList(float scale)
     {
         displayList = (uint)GLAllocation.generateDisplayLists(1);
         GLManager.GL.NewList(displayList, GLEnum.Compile);
-        Tessellator var2 = Tessellator.instance;
+        Tessellator tessellator = Tessellator.instance;
 
-        for (int var3 = 0; var3 < faces.Length; ++var3)
+        for (int faceIndex = 0; faceIndex < faces.Length; ++faceIndex)
         {
-            faces[var3].draw(var2, var1);
+            faces[faceIndex].draw(tessellator, scale);
         }
 
         GLManager.GL.EndList();

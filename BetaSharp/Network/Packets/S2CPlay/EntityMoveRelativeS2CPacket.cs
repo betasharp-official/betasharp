@@ -18,7 +18,7 @@ internal class EntityMoveRelativeS2CPacket() : EntityS2CPacket(PacketId.EntityMo
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         base.Read(stream);
         deltaX = (sbyte)stream.ReadByte();
@@ -26,7 +26,7 @@ internal class EntityMoveRelativeS2CPacket() : EntityS2CPacket(PacketId.EntityMo
         deltaZ = (sbyte)stream.ReadByte();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         base.Write(stream);
         stream.WriteByte((byte)deltaX);

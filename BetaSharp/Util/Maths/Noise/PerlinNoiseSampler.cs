@@ -70,22 +70,22 @@ internal class PerlinNoiseSampler : NoiseSampler
         int b = _permutations[xMod255 + 1] + yMod255;
         int ba = _permutations[b] + zMod255;
         int bb = _permutations[b + 1] + zMod255;
-        return lerp(sZ, lerp(sY,    lerp(sX,    grad(_permutations[aa],     x,      y,      z),
-                                                grad(_permutations[ba],     x-1,    y,      z)),
-                                    lerp(sX,    grad(_permutations[ab],     x,      y-1,    z),
-                                                grad(_permutations[bb],     x-1,    y-1,    z))),
-                        lerp(sY,    lerp(sX,    grad(_permutations[aa+1],   x,      y,      z-1),
-                                                grad(_permutations[ba+1],   x-1,    y,      z-1)),
-                                    lerp(sX,    grad(_permutations[ab+1],   x,      y-1,    z-1),
-                                                grad(_permutations[bb+1],   x-1,    y-1,    z-1))));
+        return lerp(sZ, lerp(sY, lerp(sX, grad(_permutations[aa], x, y, z),
+                                                grad(_permutations[ba], x - 1, y, z)),
+                                    lerp(sX, grad(_permutations[ab], x, y - 1, z),
+                                                grad(_permutations[bb], x - 1, y - 1, z))),
+                        lerp(sY, lerp(sX, grad(_permutations[aa + 1], x, y, z - 1),
+                                                grad(_permutations[ba + 1], x - 1, y, z - 1)),
+                                    lerp(sX, grad(_permutations[ab + 1], x, y - 1, z - 1),
+                                                grad(_permutations[bb + 1], x - 1, y - 1, z - 1))));
     }
 
-    public double lerp(double t, double a, double b)
+    public static double lerp(double t, double a, double b)
     {
         return a + t * (b - a);
     }
 
-    public double grad(int hash, double x, double y)
+    public static double grad(int hash, double x, double y)
     {
         int h = hash & 15;
         double u = (1 - ((h & 8) >> 3)) * x;
@@ -93,7 +93,7 @@ internal class PerlinNoiseSampler : NoiseSampler
         return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
     }
 
-    public double grad(int hash, double x, double y, double z)
+    public static double grad(int hash, double x, double y, double z)
     {
         int h = hash & 15;
         double u = h < 8 ? x : y;
@@ -155,10 +155,10 @@ internal class PerlinNoiseSampler : NoiseSampler
                     int ab = _permutations[aa] + zMod255;
                     int ba = _permutations[xMod255 + 1];
                     int bb = _permutations[ba] + zMod255;
-                    double xLerpZ0 = lerp(xFinal,   grad(_permutations[ab],     xCoord,         zCoord),
-                                                    grad(_permutations[bb],     xCoord-1,   0,  zCoord));
-                    double xLerpZ1 = lerp(xFinal,   grad(_permutations[ab+1],   xCoord,     0,  zCoord-1),
-                                                    grad(_permutations[bb+1],   xCoord-1,   0,  zCoord-1));
+                    double xLerpZ0 = lerp(xFinal, grad(_permutations[ab], xCoord, zCoord),
+                                                    grad(_permutations[bb], xCoord - 1, 0, zCoord));
+                    double xLerpZ1 = lerp(xFinal, grad(_permutations[ab + 1], xCoord, 0, zCoord - 1),
+                                                    grad(_permutations[bb + 1], xCoord - 1, 0, zCoord - 1));
                     double finalNoise = lerp(zFinal, xLerpZ0, xLerpZ1);
                     buffer[counter++] += finalNoise * amplitude;
                 }
@@ -226,17 +226,17 @@ internal class PerlinNoiseSampler : NoiseSampler
                             int ba = _permutations[b] + zMod255;
                             int bb = _permutations[b + 1] + zMod255;
                             xLerpY0Z0 = lerp(xFinal,
-                                        grad(_permutations[aa],     xCoord,     yCoord,     zCoord),
-                                        grad(_permutations[ba],     xCoord-1,   yCoord,     zCoord));
+                                        grad(_permutations[aa], xCoord, yCoord, zCoord),
+                                        grad(_permutations[ba], xCoord - 1, yCoord, zCoord));
                             xLerpY1Z0 = lerp(xFinal,
-                                        grad(_permutations[ab],     xCoord,     yCoord-1,   zCoord),
-                                        grad(_permutations[bb],     xCoord-1,   yCoord-1,   zCoord));
+                                        grad(_permutations[ab], xCoord, yCoord - 1, zCoord),
+                                        grad(_permutations[bb], xCoord - 1, yCoord - 1, zCoord));
                             xLerpY0Z1 = lerp(xFinal,
-                                        grad(_permutations[aa+1],   xCoord,     yCoord,     zCoord-1),
-                                        grad(_permutations[ba+1],   xCoord-1,   yCoord,     zCoord-1));
+                                        grad(_permutations[aa + 1], xCoord, yCoord, zCoord - 1),
+                                        grad(_permutations[ba + 1], xCoord - 1, yCoord, zCoord - 1));
                             xLerpY1Z1 = lerp(xFinal,
-                                        grad(_permutations[ab+1],   xCoord,     yCoord-1,   zCoord-1),
-                                        grad(_permutations[bb+1],   xCoord-1,   yCoord-1,   zCoord-1));
+                                        grad(_permutations[ab + 1], xCoord, yCoord - 1, zCoord - 1),
+                                        grad(_permutations[bb + 1], xCoord - 1, yCoord - 1, zCoord - 1));
                         }
 
                         double yLerpZ0 = lerp(yFinal, xLerpY0Z0, xLerpY1Z0);

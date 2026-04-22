@@ -108,17 +108,17 @@ public class PaintingEntityRenderer : EntityRenderer
 
     private void UpdateLighting(EntityPainting painting, float offsetX, float offsetY)
     {
-        int checkX = MathHelper.Floor(painting.x);
-        int checkY = MathHelper.Floor(painting.y + (offsetY / 16.0F));
-        int checkZ = MathHelper.Floor(painting.z);
+        int checkX = MathHelper.Floor(painting.X);
+        int checkY = MathHelper.Floor(painting.Y + (offsetY / 16.0F));
+        int checkZ = MathHelper.Floor(painting.Z);
 
         // Offset the light check based on orientation to ensure we aren't sampling inside the wall
         switch (painting.Direction)
         {
-            case 0: checkX = MathHelper.Floor(painting.x + (offsetX / 16.0F)); break;
-            case 1: checkZ = MathHelper.Floor(painting.z - (offsetX / 16.0F)); break;
-            case 2: checkX = MathHelper.Floor(painting.x - (offsetX / 16.0F)); break;
-            case 3: checkZ = MathHelper.Floor(painting.z + (offsetX / 16.0F)); break;
+            case 0: checkX = MathHelper.Floor(painting.X + (offsetX / 16.0F)); break;
+            case 1: checkZ = MathHelper.Floor(painting.Z - (offsetX / 16.0F)); break;
+            case 2: checkX = MathHelper.Floor(painting.X - (offsetX / 16.0F)); break;
+            case 3: checkZ = MathHelper.Floor(painting.Z + (offsetX / 16.0F)); break;
         }
 
         float light = Dispatcher.World.GetLuminance(checkX, checkY, checkZ);

@@ -22,7 +22,7 @@ internal class ItemBed : Item
 
         ++y;
 
-        int dir = MathHelper.Floor((double)(entityPlayer.yaw * 4.0F / 360.0F) + 0.5D) & 3;
+        int dir = MathHelper.Floor((double)(entityPlayer.Yaw * 4.0F / 360.0F) + 0.5D) & 3;
         int offsetX = 0;
         int offsetZ = 0;
         if (dir == 0) offsetZ = 1;

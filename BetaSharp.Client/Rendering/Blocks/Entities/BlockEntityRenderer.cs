@@ -62,11 +62,11 @@ public class BlockEntityRenderer
         TextureManager = var2;
         PlayerEntity = var4;
         _fontRenderer = var3;
-        PlayerYaw = var4.prevYaw + (var4.yaw - var4.prevYaw) * var5;
-        PlayerPitch = var4.prevPitch + (var4.pitch - var4.prevPitch) * var5;
-        PlayerX = var4.lastTickX + (var4.x - var4.lastTickX) * (double)var5;
-        PlayerY = var4.lastTickY + (var4.y - var4.lastTickY) * (double)var5;
-        PlayerZ = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)var5;
+        PlayerYaw = var4.PrevYaw + (var4.Yaw - var4.PrevYaw) * var5;
+        PlayerPitch = var4.PrevPitch + (var4.Pitch - var4.PrevPitch) * var5;
+        PlayerX = var4.LastTickX + (var4.X - var4.LastTickX) * (double)var5;
+        PlayerY = var4.LastTickY + (var4.Y - var4.LastTickY) * (double)var5;
+        PlayerZ = var4.LastTickZ + (var4.Z - var4.LastTickZ) * (double)var5;
     }
 
     public void RenderTileEntity(BlockEntity var1, float var2)

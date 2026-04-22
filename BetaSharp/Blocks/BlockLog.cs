@@ -4,7 +4,9 @@ namespace BetaSharp.Blocks;
 
 internal class BlockLog : Block
 {
-    public BlockLog(int id) : base(id, Material.Wood) => textureId = 20;
+    private const sbyte SearchRadius = 4;
+    private const int RegionExtent = SearchRadius + 1;
+    public BlockLog(int id) : base(id, Material.Wood) => TextureId = BlockTextures.LogOakSide;
 
     public override int getDroppedItemCount() => 1;
 
@@ -14,32 +16,36 @@ internal class BlockLog : Block
 
     public override void onBreak(OnBreakEvent @event)
     {
-        sbyte searchRadius = 4;
-        int regionExtent = searchRadius + 1;
-        if (@event.World.ChunkHost.IsRegionLoaded(@event.X - regionExtent, @event.Y - regionExtent, @event.Z - regionExtent, @event.X + regionExtent, @event.Y + regionExtent, @event.Z + regionExtent))
+        if (!@event.World.ChunkHost.IsRegionLoaded(@event.X - RegionExtent, @event.Y - RegionExtent, @event.Z - RegionExtent, @event.X + RegionExtent, @event.Y + RegionExtent, @event.Z + RegionExtent))
         {
-            for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
+            return;
+        }
+
+        for (int offsetX = -SearchRadius; offsetX <= SearchRadius; ++offsetX)
+        {
+            for (int offsetY = -SearchRadius; offsetY <= SearchRadius; ++offsetY)
             {
-                for (int offsetY = -searchRadius; offsetY <= searchRadius; ++offsetY)
+                for (int offsetZ = -SearchRadius; offsetZ <= SearchRadius; ++offsetZ)
                 {
-                    for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
+                    int neighborBlockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
+                    if (neighborBlockId != Leaves.id) continue;
+
+                    int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
+                    if ((leavesMeta & 8) == 0)
                     {
-                        int neighborBlockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                        if (neighborBlockId == Leaves.id)
-                        {
-                            int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                            if ((leavesMeta & 8) == 0)
-                            {
-                                @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, leavesMeta | 8);
-                            }
-                        }
+                        @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, leavesMeta | 8);
                     }
                 }
             }
         }
     }
 
-    public override int getTexture(int side, int meta) => side == 1 ? 21 : side == 0 ? 21 : meta == 1 ? 116 : meta == 2 ? 117 : 20;
+    public override int GetTexture(Side side, int meta) => side switch
+    {
+        Side.Up or Side.Down => BlockTextures.LogTop,
+        _ => meta == 1 ? BlockTextures.LogPineSide : meta == 2 ? BlockTextures.LogBirchSide : BlockTextures.LogOakSide
+    };
+
 
     protected override int getDroppedItemMeta(int blockMeta) => blockMeta;
 }

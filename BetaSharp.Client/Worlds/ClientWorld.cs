@@ -6,8 +6,8 @@ using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Dimensions;
 using BetaSharp.Worlds.Core.Systems;
+using BetaSharp.Worlds.Dimensions;
 using BetaSharp.Worlds.Storage;
 
 namespace BetaSharp.Client.Worlds;
@@ -114,7 +114,7 @@ public class ClientWorld : World
 
         if (!load)
         {
-            setBlocksDirty(chunkX * 16, 0, chunkZ * 16, chunkX * 16 + 15, 128, chunkZ * 16 + 15);
+            setBlocksDirty(chunkX * 16, 0, chunkZ * 16, chunkX * 16 + 15, ChuckFormat.WorldHeight, chunkZ * 16 + 15);
         }
     }
 
@@ -167,7 +167,7 @@ public class ClientWorld : World
         }
 
         forcedEntities.Add(ent);
-        ent.id = networkId;
+        ent.ID = networkId;
 
         if (!SpawnEntity(ent))
         {
@@ -188,6 +188,7 @@ public class ClientWorld : World
             forcedEntities.Remove(ent);
             Remove(ent);
         }
+
         return ent;
     }
 
@@ -204,6 +205,4 @@ public class ClientWorld : World
     }
 
     public override void Disconnect() => _networkHandler.SendPacketAndDisconnect(DisconnectPacket.Get("Quitting"));
-
-
 }

@@ -1,34 +1,26 @@
 using BetaSharp.Entities;
-using BetaSharp.Server.Command;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class KickCommand : ICommand
+public class KickCommand : Command.Command
 {
-    public string Usage => "kick <player>";
-    public string Description => "Kicks a player";
-    public string[] Names => ["kick"];
-    public bool DisallowInternalServer => true;
+    public override string Usage => "kick <player>";
+    public override string Description => "Kicks a player";
+    public override string[] Names => ["kick"];
+    public override bool DisallowInternalServer => true;
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder.Then(ArgumentPlayer("player").Executes(Execute));
+
+    private static int Execute(CommandContext<CommandSource> context)
     {
-        if (c.Args.Length < 1)
-        {
-            c.Output.SendMessage("Usage: kick <player>");
-            return;
-        }
+        ServerPlayerEntity targetPlayer = context.GetArgument<ServerPlayerEntity>("player");
 
-        string target = c.Args[0];
-        ServerPlayerEntity? targetPlayer = c.Server.playerManager.getPlayer(target);
+        targetPlayer.NetworkHandler.disconnect("Kicked by admin");
+        context.Source.LogOp("Kicking " + targetPlayer.name);
 
-        if (targetPlayer != null)
-        {
-            targetPlayer.networkHandler.disconnect("Kicked by admin");
-            c.LogOp("Kicking " + targetPlayer.name);
-        }
-        else
-        {
-            c.Output.SendMessage("Can't find user " + target + ". No kick.");
-        }
+        return 1;
     }
 }

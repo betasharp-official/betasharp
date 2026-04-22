@@ -10,7 +10,7 @@ public class EntityVelocityUpdateS2CPacket() : PacketBaseEntity(PacketId.EntityV
     public int motionZ;
 
     public static EntityVelocityUpdateS2CPacket Get(Entity ent) =>
-        Get(ent.id, ent.velocityX, ent.velocityY, ent.velocityZ);
+        Get(ent.ID, ent.VelocityX, ent.VelocityY, ent.VelocityZ);
 
     public static EntityVelocityUpdateS2CPacket Get(int entityId, double motionX, double motionY, double motionZ)
     {
@@ -53,7 +53,7 @@ public class EntityVelocityUpdateS2CPacket() : PacketBaseEntity(PacketId.EntityV
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         base.Read(stream);
         motionX = stream.ReadShort();
@@ -61,7 +61,7 @@ public class EntityVelocityUpdateS2CPacket() : PacketBaseEntity(PacketId.EntityV
         motionZ = stream.ReadShort();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         base.Write(stream);
         stream.WriteShort((short)motionX);

@@ -7,13 +7,15 @@ namespace BetaSharp.Blocks.Entities;
 
 public class BlockEntityPiston : BlockEntity
 {
-    public override BlockEntityType Type => BlockEntity.Piston;
-    private int _pushedBlockId;
-    private int _pushedBlockData;
-    private int _facing;
-    private bool _extending;
-    private readonly bool _source;
-    private float _lastProgess;
+    public override BlockEntityType Type => Piston;
+    public int PushedBlockId { get; private set; }
+    public new int PushedBlockData { get; private set; }
+    public bool IsExtending { get; private set; }
+    public int Facing { get; private set; }
+    public bool IsSource { get; }
+    public bool IsExtensionIncomplete => IsExtending && _progress < 1.0F;
+
+    private float _lastProgress;
     private float _progress;
 
     public BlockEntityPiston()
@@ -22,57 +24,29 @@ public class BlockEntityPiston : BlockEntity
 
     public BlockEntityPiston(int pushedBlockId, int pushedBlockData, int facing, bool extending, bool source)
     {
-        _pushedBlockId = pushedBlockId;
-        _pushedBlockData = pushedBlockData;
-        _facing = facing;
-        _extending = extending;
-        _source = source;
-    }
-
-    public int getPushedBlockId()
-    {
-        return _pushedBlockId;
-    }
-
-    public override int getPushedBlockData()
-    {
-        return _pushedBlockData;
-    }
-
-    public bool isExtending()
-    {
-        return _extending;
-    }
-
-    public int getFacing()
-    {
-        return _facing;
-    }
-
-    public bool isSource()
-    {
-        return _source;
+        PushedBlockId = pushedBlockId;
+        PushedBlockData = pushedBlockData;
+        Facing = facing;
+        IsExtending = extending;
+        IsSource = source;
     }
 
     public float getProgress(float tickDelta)
     {
-        if (tickDelta > 1.0F)
-        {
-            tickDelta = 1.0F;
-        }
+        if (tickDelta > 1.0F) tickDelta = 1.0F;
 
-        return _progress + (_lastProgess - _progress) * tickDelta;
+        return _progress + (_lastProgress - _progress) * tickDelta;
     }
 
-    public float getRenderOffsetX(float tickDelta) => _extending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HEAD_OFFSET_X[_facing] : (1.0F - getProgress(tickDelta)) * PistonConstants.HEAD_OFFSET_X[_facing];
+    public float GetRenderOffsetX(float tickDelta) => IsExtending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetX[Facing] : (1.0F - getProgress(tickDelta)) * PistonConstants.HeadOffsetX[Facing];
 
-    public float getRenderOffsetY(float tickDelta) => _extending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HEAD_OFFSET_Y[_facing] : (1.0F - getProgress(tickDelta)) * PistonConstants.HEAD_OFFSET_Y[_facing];
+    public float GetRenderOffsetY(float tickDelta) => IsExtending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetY[Facing] : (1.0F - getProgress(tickDelta)) * PistonConstants.HeadOffsetY[Facing];
 
-    public float getRenderOffsetZ(float tickDelta) => _extending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HEAD_OFFSET_Z[_facing] : (1.0F - getProgress(tickDelta)) * PistonConstants.HEAD_OFFSET_Z[_facing];
+    public float GetRenderOffsetZ(float tickDelta) => IsExtending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetZ[Facing] : (1.0F - getProgress(tickDelta)) * PistonConstants.HeadOffsetZ[Facing];
 
-    private void pushEntities( EntityManager entities,float collisionShapeSizeMultiplier, float entityMoveMultiplier)
+    private void PushEntities(EntityManager entities, float collisionShapeSizeMultiplier, float entityMoveMultiplier)
     {
-        if (!_extending)
+        if (!IsExtending)
         {
             --collisionShapeSizeMultiplier;
         }
@@ -81,66 +55,76 @@ public class BlockEntityPiston : BlockEntity
             collisionShapeSizeMultiplier = 1.0F - collisionShapeSizeMultiplier;
         }
 
-        Box? pushCollisionBox = Block.MovingPiston.getPushedBlockCollisionShape(World.Reader, entities, X, Y, Z, _pushedBlockId, collisionShapeSizeMultiplier, _facing);
-        if (pushCollisionBox != null)
+        Box? pushCollisionBox = Block.MovingPiston.getPushedBlockCollisionShape(World.Reader, entities, X, Y, Z, PushedBlockId, collisionShapeSizeMultiplier, Facing);
+        if (pushCollisionBox == null) return;
+
+        List<Entity> entitiesToPush = World.Entities.GetEntities(null!, pushCollisionBox.Value);
+        if (entitiesToPush.Count <= 0) return;
+
+        List<Entity> pushedEntities = [];
+        pushedEntities.AddRange(entitiesToPush);
+        foreach (Entity entity in pushedEntities)
         {
-            List<Entity> entitiesToPush = World.Entities.GetEntities(null!, pushCollisionBox.Value);
-            if (entitiesToPush.Count > 0)
+            entity.Move(
+                entityMoveMultiplier * PistonConstants.HeadOffsetX[Facing],
+                entityMoveMultiplier * PistonConstants.HeadOffsetY[Facing],
+                entityMoveMultiplier * PistonConstants.HeadOffsetZ[Facing]
+            );
+        }
+
+        pushedEntities.Clear();
+    }
+
+    private void FinalizeBlock()
+    {
+        if (World.Reader.GetBlockId(X, Y, Z) == Block.MovingPiston.id)
+        {
+            World.Writer.SetBlock(X, Y, Z, PushedBlockId, PushedBlockData);
+            if (!World.IsRemote)
             {
-                List<Entity> pushedEntities = [];
-                pushedEntities.AddRange(entitiesToPush);
-                foreach (Entity entity in pushedEntities)
+                World.Broadcaster.NotifyNeighbors(X, Y, Z, PushedBlockId);
+                World.Broadcaster.BlockUpdateEvent(X, Y, Z);
+
+                if (PushedBlockId == Block.Piston.id || PushedBlockId == Block.StickyPiston.id)
                 {
-                    entity.move(
-                        entityMoveMultiplier * PistonConstants.HEAD_OFFSET_X[_facing],
-                        entityMoveMultiplier * PistonConstants.HEAD_OFFSET_Y[_facing],
-                        entityMoveMultiplier * PistonConstants.HEAD_OFFSET_Z[_facing]
-                    );
+                    World.TickScheduler.ScheduleBlockUpdate(X, Y, Z, PushedBlockId, 1);
                 }
-
-                pushedEntities.Clear();
             }
         }
+
+        World.Entities.RemoveBlockEntity(X, Y, Z);
+        markRemoved();
     }
 
-    public void finish()
+    public void AbandonExtensionToStaticBlock() => FinalizeBlock();
+
+    public void Finish()
     {
-        if (_progress < 1.0F)
-        {
-            _progress = _lastProgess = 1.0F;
-            World.Entities.RemoveBlockEntity(X, Y, Z);
-            markRemoved();
-            if (World.Reader.GetBlockId(X, Y, Z) == Block.MovingPiston.id)
-            {
-                World.Writer.SetBlock(X, Y, Z, _pushedBlockId, _pushedBlockData);
-            }
-        }
+        if (!(_progress < 1.0F)) return;
+
+        _progress = _lastProgress = 1.0F;
+        FinalizeBlock();
     }
 
-    public override void tick( EntityManager entities)
+    public override void tick(EntityManager entities)
     {
-        _progress = _lastProgess;
+        _progress = _lastProgress;
         if (_progress >= 1.0F)
         {
-            pushEntities(entities, 1.0F, 0.25F);
-            World.Entities.RemoveBlockEntity(X, Y, Z);
-            markRemoved();
-            if (World.Reader.GetBlockId(X, Y, Z) == Block.MovingPiston.id)
-            {
-                World.Writer.SetBlock(X, Y, Z, _pushedBlockId, _pushedBlockData);
-            }
+            PushEntities(entities, 1.0F, 0.25F);
+            FinalizeBlock();
         }
         else
         {
-            _lastProgess += 0.5F;
-            if (_lastProgess >= 1.0F)
+            _lastProgress += 0.5F;
+            if (_lastProgress >= 1.0F)
             {
-                _lastProgess = 1.0F;
+                _lastProgress = 1.0F;
             }
 
-            if (_extending)
+            if (IsExtending)
             {
-                pushEntities(entities, _lastProgess, _lastProgess - _progress + 1.0F / 16.0F);
+                PushEntities(entities, _lastProgress, _lastProgress - _progress + 1.0F / 16.0F);
             }
         }
     }
@@ -148,20 +132,20 @@ public class BlockEntityPiston : BlockEntity
     public override void readNbt(NBTTagCompound nbt)
     {
         base.readNbt(nbt);
-        _pushedBlockId = nbt.GetInteger("blockId");
-        _pushedBlockData = nbt.GetInteger("blockData");
-        _facing = nbt.GetInteger("facing");
-        _progress = _lastProgess = nbt.GetFloat("progress");
-        _extending = nbt.GetBoolean("extending");
+        PushedBlockId = nbt.GetInteger("blockId");
+        PushedBlockData = nbt.GetInteger("blockData");
+        Facing = nbt.GetInteger("facing");
+        _progress = _lastProgress = nbt.GetFloat("progress");
+        IsExtending = nbt.GetBoolean("extending");
     }
 
     public override void writeNbt(NBTTagCompound nbt)
     {
         base.writeNbt(nbt);
-        nbt.SetInteger("blockId", _pushedBlockId);
-        nbt.SetInteger("blockData", _pushedBlockData);
-        nbt.SetInteger("facing", _facing);
+        nbt.SetInteger("blockId", PushedBlockId);
+        nbt.SetInteger("blockData", PushedBlockData);
+        nbt.SetInteger("facing", Facing);
         nbt.SetFloat("progress", _progress);
-        nbt.SetBoolean("extending", _extending);
+        nbt.SetBoolean("extending", IsExtending);
     }
 }

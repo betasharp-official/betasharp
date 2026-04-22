@@ -1,26 +1,19 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.NBT;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
 public class ItemStack
 {
-    public int count;
-    public int bobbingAnimationTime;
-    public int itemId;
-    private int damage;
+    public int Count;
+    public int AnimationTime;
+    public int ItemId;
+    private int _damage;
 
     public ItemStack(Block block) : this((Block)block, 1)
     {
-    }
-
-    public ItemStack(int id, int count)
-    {
-        itemId = id;
-        this.count = count;
     }
 
     public ItemStack(Block block, int count) : this(block.id, count, 0)
@@ -45,27 +38,27 @@ public class ItemStack
 
     public ItemStack(int itemId, int count, int damage)
     {
-        this.count = 0;
-        this.itemId = itemId;
-        this.count = count;
-        this.damage = damage;
+        Count = 0;
+        ItemId = itemId;
+        Count = count;
+        _damage = damage;
     }
 
     public ItemStack(NBTTagCompound nbt)
     {
-        count = 0;
+        Count = 0;
         readFromNBT(nbt);
     }
 
-    public ItemStack split(int splitAmount)
+    public ItemStack Split(int splitAmount)
     {
-        count -= splitAmount;
-        return new ItemStack(itemId, splitAmount, damage);
+        Count -= splitAmount;
+        return new ItemStack(ItemId, splitAmount, _damage);
     }
 
     public Item getItem()
     {
-        return Item.ITEMS[itemId];
+        return Item.ITEMS[ItemId];
     }
 
     public int getTextureId()
@@ -78,7 +71,7 @@ public class ItemStack
         bool item = getItem().useOnBlock(this, entityPlayer, world, x, y, z, meta);
         if (item)
         {
-            entityPlayer.increaseStat(Stats.Stats.Used[itemId], 1);
+            entityPlayer.increaseStat(Stats.Stats.Used[ItemId], 1);
         }
 
         return item;
@@ -96,17 +89,17 @@ public class ItemStack
 
     public NBTTagCompound writeToNBT(NBTTagCompound nbt)
     {
-        nbt.SetShort("id", (short)itemId);
-        nbt.SetByte("Count", (sbyte)count);
-        nbt.SetShort("Damage", (short)damage);
+        nbt.SetShort("id", (short)ItemId);
+        nbt.SetByte("Count", (sbyte)Count);
+        nbt.SetShort("Damage", (short)_damage);
         return nbt;
     }
 
     public void readFromNBT(NBTTagCompound nbt)
     {
-        itemId = nbt.GetShort("id");
-        count = nbt.GetByte("Count");
-        damage = nbt.GetShort("Damage");
+        ItemId = nbt.GetShort("id");
+        Count = nbt.GetByte("Count");
+        _damage = nbt.GetShort("Damage");
     }
 
     public int getMaxCount()
@@ -121,43 +114,43 @@ public class ItemStack
 
     public bool isDamageable()
     {
-        return Item.ITEMS[itemId].getMaxDamage() > 0;
+        return Item.ITEMS[ItemId].getMaxDamage() > 0;
     }
 
     public bool getHasSubtypes()
     {
-        return Item.ITEMS[itemId].getHasSubtypes();
+        return Item.ITEMS[ItemId].getHasSubtypes();
     }
 
     public bool isDamaged()
     {
-        return isDamageable() && damage > 0;
+        return isDamageable() && _damage > 0;
     }
 
     public int getDamage2()
     {
-        return damage;
+        return _damage;
     }
 
     public int getDamage()
     {
-        return damage;
+        return _damage;
     }
 
     public void setDamage(int damage)
     {
-        this.damage = damage;
+        _damage = damage;
     }
 
     public int getMaxDamage()
     {
-        return Item.ITEMS[itemId].getMaxDamage();
+        return Item.ITEMS[ItemId].getMaxDamage();
     }
 
     public void ConsumeItem(EntityPlayer player)
     {
         if (!player.GameMode.FiniteResources) return;
-        count--;
+        Count--;
     }
 
     public void DamageItem(int damageAmount, Entity entity)
@@ -170,7 +163,7 @@ public class ItemStack
         }
         else
         {
-            damage += damageAmount;
+            _damage += damageAmount;
             UpdateBroken();
         }
     }
@@ -185,20 +178,20 @@ public class ItemStack
     {
         if (!player.GameMode.FiniteResources) return;
 
-        damage += damageAmount;
+        _damage += damageAmount;
         if (UpdateBroken())
         {
-            player.increaseStat(Stats.Stats.Broken[itemId], 1);
+            player.increaseStat(Stats.Stats.Broken[ItemId], 1);
         }
     }
 
     private bool UpdateBroken()
     {
-        if (damage > getMaxDamage())
+        if (_damage > getMaxDamage())
         {
-            --count;
-            if (count < 0) count = 0;
-            damage = 0;
+            --Count;
+            if (Count < 0) Count = 0;
+            _damage = 0;
             return true;
         }
 
@@ -207,46 +200,46 @@ public class ItemStack
 
     public void postHit(EntityLiving entityLiving, EntityPlayer entityPlayer)
     {
-        bool hit = Item.ITEMS[itemId].postHit(this, entityLiving, entityPlayer);
+        bool hit = Item.ITEMS[ItemId].postHit(this, entityLiving, entityPlayer);
         if (hit)
         {
-            entityPlayer.increaseStat(Stats.Stats.Used[itemId], 1);
+            entityPlayer.increaseStat(Stats.Stats.Used[ItemId], 1);
         }
 
     }
 
     public void postMine(int blockId, int x, int y, int z, EntityPlayer entityPlayer)
     {
-        bool mined = Item.ITEMS[itemId].postMine(this, blockId, x, y, z, entityPlayer);
+        bool mined = Item.ITEMS[ItemId].postMine(this, blockId, x, y, z, entityPlayer);
         if (mined)
         {
-            entityPlayer.increaseStat(Stats.Stats.Used[itemId], 1);
+            entityPlayer.increaseStat(Stats.Stats.Used[ItemId], 1);
         }
 
     }
 
     public int getAttackDamage(Entity entity)
     {
-        return Item.ITEMS[itemId].getAttackDamage(entity);
+        return Item.ITEMS[ItemId].getAttackDamage(entity);
     }
 
     public bool isSuitableFor(Block block)
     {
-        return Item.ITEMS[itemId].isSuitableFor(block);
+        return Item.ITEMS[ItemId].isSuitableFor(block);
     }
 
-    public void onRemoved(EntityPlayer entityPlayer)
+    public static void onRemoved(EntityPlayer entityPlayer)
     {
     }
 
     public void useOnEntity(EntityLiving entityLiving, EntityPlayer entityPlayer)
     {
-        Item.ITEMS[itemId].useOnEntity(this, entityLiving, entityPlayer);
+        Item.ITEMS[ItemId].useOnEntity(this, entityLiving, entityPlayer);
     }
 
     public ItemStack copy()
     {
-        return new ItemStack(itemId, count, damage);
+        return new ItemStack(ItemId, Count, _damage);
     }
 
     public static bool areEqual(ItemStack? a, ItemStack? b)
@@ -256,17 +249,17 @@ public class ItemStack
 
     private bool equals2(ItemStack itemStack)
     {
-        return count != itemStack.count ? false : (itemId != itemStack.itemId ? false : damage == itemStack.damage);
+        return Count != itemStack.Count ? false : (ItemId != itemStack.ItemId ? false : _damage == itemStack._damage);
     }
 
     public bool isItemEqual(ItemStack itemStack)
     {
-        return itemId == itemStack.itemId && damage == itemStack.damage;
+        return ItemId == itemStack.ItemId && _damage == itemStack._damage;
     }
 
     public string getItemName()
     {
-        return Item.ITEMS[itemId].getItemNameIS(this);
+        return Item.ITEMS[ItemId].getItemNameIS(this);
     }
 
     public static ItemStack clone(ItemStack itemStack)
@@ -276,27 +269,27 @@ public class ItemStack
 
     public override string ToString()
     {
-        return count + "x" + Item.ITEMS[itemId].getItemName() + "@" + damage;
+        return Count + "x" + Item.ITEMS[ItemId].getItemName() + "@" + _damage;
     }
 
     public void inventoryTick(IWorldContext world, Entity entity, int slotIndex, bool shouldUpdate)
     {
-        if (bobbingAnimationTime > 0)
+        if (AnimationTime > 0)
         {
-            --bobbingAnimationTime;
+            --AnimationTime;
         }
 
-        Item.ITEMS[itemId].inventoryTick(this, world, entity, slotIndex, shouldUpdate);
+        Item.ITEMS[ItemId].inventoryTick(this, world, entity, slotIndex, shouldUpdate);
     }
 
     public void onCraft(IWorldContext world, EntityPlayer entityPlayer)
     {
-        entityPlayer.increaseStat(Stats.Stats.Crafted[itemId], count);
-        Item.ITEMS[itemId].onCraft(this, world, entityPlayer);
+        entityPlayer.increaseStat(Stats.Stats.Crafted[ItemId], Count);
+        Item.ITEMS[ItemId].onCraft(this, world, entityPlayer);
     }
 
     public bool Equals(ItemStack itemStack)
     {
-        return itemId == itemStack.itemId && count == itemStack.count && damage == itemStack.damage;
+        return ItemId == itemStack.ItemId && Count == itemStack.Count && _damage == itemStack._damage;
     }
 }

@@ -150,11 +150,12 @@ public class Keyboard
 
     private static readonly bool[] keyDownBuffer = new bool[KEYBOARD_SIZE];
     private static readonly Queue<KeyEvent> eventQueue = new();
+    private static readonly Queue<char> charQueue = new();
     private static KeyEvent current_event = new();
     private static bool repeat_enabled;
 
-    private static Dictionary<Keys, int> keyMap;
-    private static string[] keyNames;
+    private static Dictionary<Keys, int> keyMap = null!;
+    private static string[] keyNames = null!;
 
     public static unsafe void create(Glfw glfwApi, WindowHandle* windowHandle)
     {
@@ -181,7 +182,7 @@ public class Keyboard
         {
             if (field.IsLiteral && !field.IsInitOnly && field.Name.StartsWith("KEY_"))
             {
-                int keyCode = (int)field.GetValue(null);
+                int keyCode = (int)field.GetValue(null)!;
                 string keyName = field.Name[4..];
 
                 if (keyCode >= 0 && keyCode < keyNames.Length)
@@ -204,7 +205,8 @@ public class Keyboard
 
     private static void InitializeKeyMap()
     {
-        keyMap = new Dictionary<Keys, int> {
+        keyMap = new Dictionary<Keys, int>
+        {
             { Keys.Escape, KEY_ESCAPE },
             { Keys.Number1, KEY_1 },
             { Keys.Number2, KEY_2 },
@@ -339,40 +341,34 @@ public class Keyboard
         bool pressed = action == InputAction.Press || action == InputAction.Repeat;
         bool isRepeat = action == InputAction.Repeat;
 
-        if (lwjglKey > 0 && lwjglKey < KEYBOARD_SIZE) keyDownBuffer[lwjglKey] = pressed;
-
-
-        char character = '\0';
-        if (pressed)
+        if (lwjglKey > 0 && lwjglKey < KEYBOARD_SIZE)
         {
-            // Get name of keyboard key and assign it (this feels stupid)
-            string? name = glfw.GetKeyName((int)key, scancode);
-            if (!string.IsNullOrEmpty(name)) character = name[0];
-
-            // Shift the char if shifted. TODO Missing caps lock check but can't find how to check
-            bool shifted = mods.HasFlag(KeyModifiers.Shift);
-            if (shifted) character = ShiftUp(character);
-            if (key == Keys.Space) character = ' ';
+            keyDownBuffer[lwjglKey] = pressed;
         }
 
         eventQueue.Enqueue(new KeyEvent
         {
             Key = lwjglKey,
-            Character = character,
+            Character = CHAR_NONE,
             State = pressed,
             Repeat = isRepeat,
             Nanos = GetNanos()
         });
-
-        // pendingChar = null;
     }
 
-    private static unsafe void OnChar(WindowHandle* window, uint codepoint)
+    private static unsafe void OnChar(WindowHandle* _, uint codepoint)
     {
         if (!created) return;
 
-        char character = (char)codepoint;
-        OnCharacterTyped?.Invoke(character);
+        if (codepoint <= char.MaxValue)
+        {
+            char character = (char)codepoint;
+            if (!char.IsSurrogate(character))
+            {
+                charQueue.Enqueue(character);
+                OnCharacterTyped?.Invoke(character);
+            }
+        }
     }
 
     public static event Action<char>? OnCharacterTyped;
@@ -387,6 +383,11 @@ public class Keyboard
 
             if (evt.Repeat && !repeat_enabled)
                 continue;
+
+            if (evt.State && evt.Character == CHAR_NONE && charQueue.Count > 0)
+            {
+                evt.Character = charQueue.Dequeue();
+            }
 
             current_event = evt;
             return true;
@@ -422,6 +423,7 @@ public class Keyboard
         if (!created) return;
         created = false;
         eventQueue.Clear();
+        charQueue.Clear();
     }
 
     private static long GetNanos()

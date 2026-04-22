@@ -7,7 +7,7 @@ public class FireRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int textureId = block.getTexture(0);
+        int textureId = block.GetTexture(0);
         if (ctx.OverrideTexture >= 0) textureId = ctx.OverrideTexture;
 
         float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);

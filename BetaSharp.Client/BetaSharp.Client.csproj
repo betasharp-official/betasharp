@@ -7,10 +7,15 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+    <RuntimeIdentifier Condition="'$(NETCoreSdkRuntimeIdentifier)' == 'linux-x64'">linux-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BetaSharp\BetaSharp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="BetaSharp.Tests" />
   </ItemGroup>
 
   <ItemGroup>

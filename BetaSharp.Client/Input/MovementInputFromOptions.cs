@@ -17,32 +17,32 @@ public class MovementInputFromOptions : MovementInput
     public override void checkKeyForMovementInput(int var1, bool var2)
     {
         int var3 = -1;
-        if (var1 == _gameSettings.KeyBindForward.keyCode)
+        if (var1 == _gameSettings.KeyBindForward.scanCode)
         {
             var3 = 0;
         }
 
-        if (var1 == _gameSettings.KeyBindBack.keyCode)
+        if (var1 == _gameSettings.KeyBindBack.scanCode)
         {
             var3 = 1;
         }
 
-        if (var1 == _gameSettings.KeyBindLeft.keyCode)
+        if (var1 == _gameSettings.KeyBindLeft.scanCode)
         {
             var3 = 2;
         }
 
-        if (var1 == _gameSettings.KeyBindRight.keyCode)
+        if (var1 == _gameSettings.KeyBindRight.scanCode)
         {
             var3 = 3;
         }
 
-        if (var1 == _gameSettings.KeyBindJump.keyCode)
+        if (var1 == _gameSettings.KeyBindJump.scanCode)
         {
             var3 = 4;
         }
 
-        if (var1 == _gameSettings.KeyBindSneak.keyCode)
+        if (var1 == _gameSettings.KeyBindSneak.scanCode)
         {
             var3 = 5;
         }

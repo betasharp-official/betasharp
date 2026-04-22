@@ -126,7 +126,7 @@ internal class DungeonFeature : Feature
                         ItemStack? loot = PickCheckLootItem(rand);
                         if (loot != null)
                         {
-                            chest!.setStack(rand.NextInt(chest!.size()), loot);
+                            chest!.SetStack(rand.NextInt(chest!.Size), loot);
                         }
                     }
                 }
@@ -139,7 +139,7 @@ internal class DungeonFeature : Feature
         return true;
     }
 
-    private ItemStack? PickCheckLootItem(JavaRandom rand)
+    private static ItemStack? PickCheckLootItem(JavaRandom rand)
     {
         int chance = rand.NextInt(11);
 
@@ -160,7 +160,7 @@ internal class DungeonFeature : Feature
         };
     }
 
-    private string PickMobSpawner(JavaRandom rand) =>
+    private static string PickMobSpawner(JavaRandom rand) =>
         rand.NextInt(4) switch
         {
             0 => "Skeleton",

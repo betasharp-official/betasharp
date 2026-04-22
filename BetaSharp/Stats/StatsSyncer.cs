@@ -55,7 +55,7 @@ internal class StatsSynchronizer
         ReceiveStats();
     }
 
-    private void EnsureStatFileIsLowercase(string statsFolder, string fileNameNotLowercase, string targetFile)
+    private static void EnsureStatFileIsLowercase(string statsFolder, string fileNameNotLowercase, string targetFile)
     {
         string otherFile = System.IO.Path.Combine(statsFolder, fileNameNotLowercase);
         if (File.Exists(otherFile) && !File.Exists(targetFile))
@@ -72,7 +72,7 @@ internal class StatsSynchronizer
         return null;
     }
 
-    private Dictionary<StatBase, int> CreateStatsMapFromFile(string filePath)
+    private static Dictionary<StatBase, int> CreateStatsMapFromFile(string filePath)
     {
         try
         {

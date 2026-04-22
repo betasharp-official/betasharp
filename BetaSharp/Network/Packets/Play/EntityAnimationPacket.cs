@@ -11,18 +11,18 @@ public class EntityAnimationPacket() : PacketBaseEntity(PacketId.EntityAnimation
     public static EntityAnimationPacket Get(Entity ent, int animationId)
     {
         var p = Get<EntityAnimationPacket>(PacketId.EntityAnimation);
-        p.EntityId = ent.id;
+        p.EntityId = ent.ID;
         p.animationId = animationId;
         return p;
     }
 
-    public override void Read(NetworkStream stream)
+    public override void Read(Stream stream)
     {
         base.Read(stream);
         animationId = (sbyte)stream.ReadByte();
     }
 
-    public override void Write(NetworkStream stream)
+    public override void Write(Stream stream)
     {
         base.Write(stream);
         stream.WriteByte((byte)animationId);

@@ -27,20 +27,20 @@ public class ItemRenderer : EntityRenderer
         random.SetSeed(187L);
         ItemStack var10 = var1.stack;
         GLManager.GL.PushMatrix();
-        float var11 = MathHelper.Sin((var1.age + var9) / 10.0F + var1.bobPhase) * 0.1F + 0.1F;
-        float var12 = ((var1.age + var9) / 20.0F + var1.bobPhase) * (180.0F / (float)Math.PI);
+        float var11 = MathHelper.Sin((var1.Age + var9) / 10.0F + var1.bobPhase) * 0.1F + 0.1F;
+        float var12 = ((var1.Age + var9) / 20.0F + var1.bobPhase) * (180.0F / (float)Math.PI);
         byte var13 = 1;
-        if (var1.stack.count > 1)
+        if (var1.stack.Count > 1)
         {
             var13 = 2;
         }
 
-        if (var1.stack.count > 5)
+        if (var1.stack.Count > 5)
         {
             var13 = 3;
         }
 
-        if (var1.stack.count > 20)
+        if (var1.stack.Count > 20)
         {
             var13 = 4;
         }
@@ -50,13 +50,13 @@ public class ItemRenderer : EntityRenderer
         float var16;
         float var17;
         float var18;
-        if (var10.itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[var10.itemId].getRenderType()))
+        if (var10.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[var10.ItemId].getRenderType()))
         {
             GLManager.GL.Rotate(var12, 0.0F, 1.0F, 0.0F);
             loadTexture("/terrain.png");
             float var28 = 0.25F;
-            if (!Block.Blocks[var10.itemId].isFullCube() && var10.itemId != Block.Slab.id
-                && Block.Blocks[var10.itemId].getRenderType() != BlockRendererType.PistonBase)
+            if (!Block.Blocks[var10.ItemId].isFullCube() && var10.ItemId != Block.Slab.id
+                && Block.Blocks[var10.ItemId].getRenderType() != BlockRendererType.PistonBase)
             {
                 var28 = 0.5F;
             }
@@ -74,7 +74,7 @@ public class ItemRenderer : EntityRenderer
                     GLManager.GL.Translate(var16, var17, var18);
                 }
 
-                BlockRenderer.RenderBlockOnInventory(Block.Blocks[var10.itemId], var10.getDamage(), var1.getBrightnessAtEyes(var9), Tessellator.instance);
+                BlockRenderer.RenderBlockOnInventory(Block.Blocks[var10.ItemId], var10.getDamage(), var1.GetBrightnessAtEyes(var9), Tessellator.instance);
                 GLManager.GL.PopMatrix();
             }
         }
@@ -82,7 +82,7 @@ public class ItemRenderer : EntityRenderer
         {
             GLManager.GL.Scale(0.5F, 0.5F, 0.5F);
             int var14 = var10.getTextureId();
-            if (var10.itemId < 256)
+            if (var10.ItemId < 256)
             {
                 loadTexture("/terrain.png");
             }
@@ -105,11 +105,11 @@ public class ItemRenderer : EntityRenderer
             float var26;
             if (useCustomDisplayColor)
             {
-                var23 = Item.ITEMS[var10.itemId].getColorMultiplier(var10.getDamage());
+                var23 = Item.ITEMS[var10.ItemId].getColorMultiplier(var10.getDamage());
                 var24 = (var23 >> 16 & 255) / 255.0F;
                 var25 = (var23 >> 8 & 255) / 255.0F;
                 var26 = (var23 & 255) / 255.0F;
-                float var27 = var1.getBrightnessAtEyes(var9);
+                float var27 = var1.GetBrightnessAtEyes(var9);
                 GLManager.GL.Color4(var24 * var27, var25 * var27, var26 * var27, 1.0F);
             }
 
@@ -196,7 +196,7 @@ public class ItemRenderer : EntityRenderer
     {
         if (var3 != null)
         {
-            drawItemIntoGui(var1, var2, var3.itemId, var3.getDamage(), var3.getTextureId(), var4, var5);
+            drawItemIntoGui(var1, var2, var3.ItemId, var3.getDamage(), var3.getTextureId(), var4, var5);
         }
     }
 
@@ -204,9 +204,9 @@ public class ItemRenderer : EntityRenderer
     {
         if (var3 != null)
         {
-            if (var3.count > 1)
+            if (var3.Count > 1)
             {
-                string var6 = "" + var3.count;
+                string var6 = "" + var3.Count;
                 GLManager.GL.Disable(GLEnum.Lighting);
                 GLManager.GL.Disable(GLEnum.DepthTest);
                 var1.DrawStringWithShadow(var6, var4 + 19 - 2 - var1.GetStringWidth(var6), var5 + 6 + 3, Color.White);

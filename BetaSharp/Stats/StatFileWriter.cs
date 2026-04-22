@@ -46,7 +46,7 @@ public class StatFileWriter
         _statsExist = true;
     }
 
-    private void WriteStatToMap(Dictionary<StatBase, int> map, StatBase stat, int increment)
+    private static void WriteStatToMap(Dictionary<StatBase, int> map, StatBase stat, int increment)
     {
         map.TryGetValue(stat, out int current);
         map[stat] = current + increment;
@@ -195,7 +195,7 @@ public class StatFileWriter
         return _statsData.TryGetValue(stat, out int val) ? val : 0;
     }
 
-    public void Tick()
+    public static void Tick()
     {
     }
 

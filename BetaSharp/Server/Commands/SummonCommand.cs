@@ -1,47 +1,38 @@
 using BetaSharp.Entities;
-using BetaSharp.Server.Command;
+using BetaSharp.Worlds.Core;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class SummonCommand : ICommand
+public class SummonCommand : Command.Command
 {
-    public string Usage => "summon <entity>";
-    public string Description => "Spawns an entity at your location";
-    public string[] Names => ["summon", "spawn"];
+    public override string Usage => "summon <entity> <count>";
+    public override string Description => "Spawns an entity at your location";
+    public override string[] Names => ["summon", "spawn"];
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder
+            .Then(ArgumentString("entity")
+                .Executes(ctx => Summon(ctx, 1))
+                .Then(ArgumentInt("count").Executes(ctx => Summon(ctx, ctx.GetArgument<int>("count")))));
+
+    private static int Summon(CommandContext<CommandSource> context, int count)
     {
-        if (c.Args.Length < 1)
-        {
-            c.Output.SendMessage("Usage: summon <entity_name> [count]");
-            return;
-        }
-
-        ServerPlayerEntity? player = c.Server.playerManager.getPlayer(c.SenderName);
+        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
         if (player == null)
         {
-            c.Output.SendMessage("Could not find your player.");
-            return;
+            context.Source.Output.SendMessage("Could not find your player.");
+            return 0;
         }
 
-        string entityName = c.Args[0];
-
-        int count = 1;
-        if (c.Args.Length >= 2)
-        {
-            if (!int.TryParse(c.Args[1], out count) || count < 1)
-            {
-                c.Output.SendMessage("Invalid count. Must be a positive number.");
-                return;
-            }
-        }
-
-        var world = c.Server.getWorld(player.dimensionId);
+        string entityName = context.GetArgument<string>("entity");
+        ServerWorld world = context.Source.Server.getWorld(player.dimensionId);
         int summoned = 0;
 
         for (int i = 0; i < count; i++)
         {
-            Entity? entity = EntityRegistry.CreateEntityAt(entityName, world, (float)player.x, (float)player.y, (float)player.z);
+            Entity? entity = EntityRegistry.CreateEntityAt(entityName, world, (float)player.X, (float)player.Y, (float)player.Z);
             if (entity != null)
             {
                 summoned++;
@@ -50,11 +41,13 @@ public class SummonCommand : ICommand
 
         if (summoned > 0)
         {
-            c.Output.SendMessage($"Summoned {summoned}x {entityName}");
+            context.Source.Output.SendMessage($"Summoned {summoned}x {entityName}");
         }
         else
         {
-            c.Output.SendMessage($"Unknown entity: {entityName}");
+            context.Source.Output.SendMessage($"Unknown entity: {entityName}");
         }
+
+        return 1;
     }
 }

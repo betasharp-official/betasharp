@@ -1,88 +1,66 @@
-using BetaSharp.Server.Command;
 using BetaSharp.Worlds.Core;
+using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 
 namespace BetaSharp.Server.Commands;
 
-public class TimeCommand : ICommand
+public class TimeCommand : Command.Command
 {
-    public string Usage => "time <set|add> <value>";
-    public string Description => "Sets the world time";
-    public string[] Names => ["time", "settime"];
+    public override string Usage => "time <set|add> <value>";
+    public override string Description => "Sets the world time";
+    public override string[] Names => ["time", "settime"];
 
-    public void Execute(ICommand.CommandContext c)
+    public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
+        argBuilder
+            .Then(Literal("set")
+                .Then(ArgumentInt("value").Executes(c => TimeSet(c, c.GetArgument<int>("value"))))
+                .Then(ArgumentEnum<Time>("time of day").Executes(c => TimeSet(c, (int)c.GetArgument<Time>("time of day"))))
+            )
+            .Then(Literal("add")
+                .Then(ArgumentInt("value").Executes(c => TimeAdd(c, c.GetArgument<int>("value"))))
+                .Then(ArgumentEnum<Time>("time of day").Executes(c => TimeAdd(c, (int)c.GetArgument<Time>("time of day"))))
+            )
+            .Then(ArgumentInt("value").Executes(c => TimeSet(c, c.GetArgument<int>("value"))))
+            .Then(ArgumentEnum<Time>("time of day").Executes(c => TimeSet(c, (int)c.GetArgument<Time>("time of day"))));
+
+
+    private static int TimeSet(CommandContext<CommandSource> context, int time)
     {
-        if (c.Args.Length < 1)
+        foreach (ServerWorld world in context.Source.Server.worlds)
         {
-            c.Output.SendMessage("Usage: time <set|add> <value>  or  time <named_time>");
-            return;
+            world.SetTime(time);
         }
 
-        if (c.Args.Length >= 2 && (c.Args[0].Equals("set", StringComparison.OrdinalIgnoreCase) ||
-                                 c.Args[0].Equals("add", StringComparison.OrdinalIgnoreCase)))
-        {
-            string mode = c.Args[0].ToLower();
-            if (!TryParseTimeValue(c.Args[1], out long timeValue))
-            {
-                c.Output.SendMessage("Invalid time value: " + c.Args[1]);
-                return;
-            }
-
-            for (int i = 0; i < c.Server.worlds.Length; i++)
-            {
-                ServerWorld world = c.Server.worlds[i];
-                if (mode == "add")
-                {
-                    world.SetTime(world.GetTime() + timeValue);
-                }
-                else
-                {
-                    world.SetTime(timeValue);
-                }
-            }
-
-            string message = mode == "add" ? $"Added {timeValue} to time" : $"Set time to {timeValue}";
-            c.Output.SendMessage(message);
-            c.LogOp( message);
-            return;
-        }
-
-        if (c.Args.Length == 1 && TryParseTimeValue(c.Args[0], out long namedTime))
-        {
-            for (int i = 0; i < c.Server.worlds.Length; i++)
-            {
-                c.Server.worlds[i].SetTime(namedTime);
-            }
-
-            c.Output.SendMessage($"Time set to {c.Args[0]} ({namedTime})");
-            c.LogOp( $"Set time to {namedTime}");
-            return;
-        }
-
-        c.Output.SendMessage("Usage: time <set|add> <value>  or  time <named_time>");
-        c.Output.SendMessage("Named values: sunrise, morning, noon, sunset, night, midnight");
+        string msg = $"Set time to {time}";
+        context.Source.Output.SendMessage(msg);
+        context.Source.LogOp(msg);
+        return 1;
     }
 
-    internal static bool TryParseTimeValue(string input, out long time)
+
+    private static int TimeAdd(CommandContext<CommandSource> context, int time)
     {
-        time = input.ToLower() switch
+        foreach (ServerWorld world in context.Source.Server.worlds)
         {
-            "sunrise" or "dawn" => 0,
-            "morning" => 1000,
-            "noon" or "day" => 6000,
-            "sunset" or "dusk" => 12000,
-            "night" => 13000,
-            "midnight" => 18000,
-            _ => -1
-        };
-
-        if (time >= 0) return true;
-
-        if (long.TryParse(input, out time))
-        {
-            return true;
+            world.SetTime(world.GetTime() + time);
         }
 
-        time = 0;
-        return false;
+        string msg = $"Added {time} to time";
+        context.Source.Output.SendMessage(msg);
+        context.Source.LogOp(msg);
+        return 1;
+    }
+
+    private enum Time
+    {
+        Dawn = 0,
+        Sunrise = 0,
+        Morning = 1000,
+        Day = 6000,
+        Noon = 6000,
+        Sunset = 12000,
+        Dusk = 12000,
+        Night = 13000,
+        Midnight = 18000
     }
 }

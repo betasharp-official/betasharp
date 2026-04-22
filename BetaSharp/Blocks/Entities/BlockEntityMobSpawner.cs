@@ -90,7 +90,7 @@ public class BlockEntityMobSpawner : BlockEntity
                         double posX = X + (World.Random.NextDouble() - World.Random.NextDouble()) * 4.0D;
                         double posY = Y + World.Random.NextInt(3) - 1;
                         double posZ = Z + (World.Random.NextDouble() - World.Random.NextDouble()) * 4.0D;
-                        entityLiving.setPositionAndAnglesKeepPrevAngles(posX, posY, posZ, World.Random.NextFloat() * 360.0F, 0.0F);
+                        entityLiving.SetPositionAndAnglesKeepPrevAngles(posX, posY, posZ, World.Random.NextFloat() * 360.0F, 0.0F);
                         if (entityLiving.canSpawn())
                         {
                             World.SpawnEntity(entityLiving);

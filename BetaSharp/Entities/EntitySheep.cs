@@ -16,21 +16,21 @@ public class EntitySheep : EntityAnimal
 
     public EntitySheep(IWorldContext world) : base(world)
     {
-        texture = "/mob/sheep.png";
-        setBoundingBoxSpacing(0.9F, 1.3F);
+        Texture = "/mob/sheep.png";
+        SetBoundingBoxSpacing(0.9F, 1.3F);
         SheepData = DataSynchronizer.MakeProperty<byte>(16, 0);
     }
 
     public override void PostSpawn()
     {
-        setFleeceColor(getRandomFleeceColor(world.Random));
+        setFleeceColor(getRandomFleeceColor(World.Random));
     }
 
     protected override void dropFewItems()
     {
         if (!getSheared())
         {
-            dropItem(new ItemStack(Block.Wool.id, 1, getFleeceColor()), 0.0F);
+            DropItem(new ItemStack(Block.Wool.id, 1, getFleeceColor()), 0.0F);
         }
 
     }
@@ -40,22 +40,22 @@ public class EntitySheep : EntityAnimal
         return Block.Wool.id;
     }
 
-    public override bool interact(EntityPlayer player)
+    public override bool Interact(EntityPlayer player)
     {
         ItemStack heldItem = player.inventory.GetItemInHand();
-        if (heldItem != null && heldItem.itemId == Item.Shears.id && !getSheared())
+        if (heldItem != null && heldItem.ItemId == Item.Shears.id && !getSheared())
         {
-            if (!world.IsRemote)
+            if (!World.IsRemote)
             {
                 setSheared(true);
-                int woolCount = 2 + random.NextInt(3);
+                int woolCount = 2 + Random.NextInt(3);
 
                 for (int i = 0; i < woolCount; ++i)
                 {
-                    EntityItem woolItem = dropItem(new ItemStack(Block.Wool.id, 1, getFleeceColor()), 1.0F);
-                    woolItem.velocityY += (double)(random.NextFloat() * 0.05F);
-                    woolItem.velocityX += (double)((random.NextFloat() - random.NextFloat()) * 0.1F);
-                    woolItem.velocityZ += (double)((random.NextFloat() - random.NextFloat()) * 0.1F);
+                    EntityItem woolItem = DropItem(new ItemStack(Block.Wool.id, 1, getFleeceColor()), 1.0F);
+                    woolItem.VelocityY += (double)(Random.NextFloat() * 0.05F);
+                    woolItem.VelocityX += (double)((Random.NextFloat() - Random.NextFloat()) * 0.1F);
+                    woolItem.VelocityZ += (double)((Random.NextFloat() - Random.NextFloat()) * 0.1F);
                 }
             }
 
@@ -65,16 +65,16 @@ public class EntitySheep : EntityAnimal
         return false;
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
         nbt.SetBoolean("Sheared", getSheared());
         nbt.SetByte("Color", (sbyte)getFleeceColor());
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
         setSheared(nbt.GetBoolean("Sheared"));
         setFleeceColor(nbt.GetByte("Color"));
     }

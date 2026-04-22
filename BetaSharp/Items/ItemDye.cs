@@ -81,7 +81,7 @@ internal class ItemDye : Item
             {
                 if (!world.IsRemote)
                 {
-                    ((BlockCrops)Block.Wheat).applyFullGrowth(world, x, y, z);
+                    BlockCrops.applyFullGrowth(world, x, y, z);
                     itemStack.ConsumeItem(entityPlayer);
                 }
                 return true;

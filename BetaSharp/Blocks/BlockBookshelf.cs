@@ -2,19 +2,9 @@ using BetaSharp.Blocks.Materials;
 
 namespace BetaSharp.Blocks;
 
-internal class BlockBookshelf : Block
+internal class BlockBookshelf(int id, int textureId) : Block(id, textureId, Material.Wood)
 {
-    public BlockBookshelf(int id, int textureId) : base(id, textureId, Material.Wood)
-    {
-    }
+    public override int GetTexture(Side side) => side <= Side.Up ? BlockTextures.OakPlanks : BlockTextures.Bookshelf;
 
-    public override int getTexture(int side)
-    {
-        return side <= 1 ? 4 : textureId;
-    }
-
-    public override int getDroppedItemCount()
-    {
-        return 0;
-    }
+    public override int getDroppedItemCount() => 0;
 }

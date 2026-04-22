@@ -29,7 +29,7 @@ public class EntityMinecart : Entity, IInventory
 
     private readonly ILogger<EntityMinecart> _logger = Log.Instance.For<EntityMinecart>();
 
-    private ItemStack[] cargoItems;
+    private ItemStack?[] _cargoItems;
 
     // Kept with original names for external compatibility.
     public int minecartCurrentDamage;
@@ -55,117 +55,114 @@ public class EntityMinecart : Entity, IInventory
 
     public EntityMinecart(IWorldContext world) : base(world)
     {
-        cargoItems = new ItemStack[36];
+        _cargoItems = new ItemStack[36];
         minecartCurrentDamage = 0;
         minecartTimeSinceHit = 0;
         minecartRockDirection = 1;
         yawFlipped = false;
-        preventEntitySpawning = true;
-        setBoundingBoxSpacing(0.98F, 0.7F);
-        standingEyeHeight = height / 2.0F;
+        PreventEntitySpawning = true;
+        SetBoundingBoxSpacing(0.98F, 0.7F);
+        StandingEyeHeight = Height / 2.0F;
     }
 
     public EntityMinecart(IWorldContext world, double x, double y, double z, int type) : this(world)
     {
         setTrackAlignedPosition(x, y, z);
-        velocityX = 0.0D;
-        velocityY = 0.0D;
-        velocityZ = 0.0D;
-        prevX = x;
-        prevY = y;
-        prevZ = z;
+        VelocityX = 0.0D;
+        VelocityY = 0.0D;
+        VelocityZ = 0.0D;
+        PrevX = x;
+        PrevY = y;
+        PrevZ = z;
         this.type = type;
     }
 
-    protected override bool bypassesSteppingEffects()
+    protected override bool BypassesSteppingEffects()
     {
         return false;
     }
 
-    public override Box? getCollisionAgainstShape(Entity entity)
+    public override Box? GetCollisionAgainstShape(Entity entity)
     {
-        return entity.boundingBox;
+        return entity.BoundingBox;
     }
 
-    public override Box? getBoundingBox()
+    public override Box? GetBoundingBox()
     {
-        return boundingBox;
+        return BoundingBox;
     }
 
-    public override bool isPushable()
+    public override bool IsPushable()
     {
         return true;
     }
 
-    public override double getPassengerRidingHeight()
+    public override double GetPassengerRidingHeight()
     {
-        return (double)height * 0.0D - 0.3D;
+        return (double)Height * 0.0D - 0.3D;
     }
 
-    public override bool damage(Entity entity, int amount)
+    public override bool Damage(Entity entity, int amount)
     {
-        if (!world.IsRemote && !dead)
+        if (!World.IsRemote && !Dead)
         {
             minecartRockDirection = -minecartRockDirection;
             minecartTimeSinceHit = 10;
-            scheduleVelocityUpdate();
+            ScheduleVelocityUpdate();
             minecartCurrentDamage += amount * 10;
 
             if (minecartCurrentDamage > 40)
             {
-                if (passenger != null)
-                {
-                    passenger.setVehicle(this);
-                }
+                Passenger?.SetVehicle(this);
 
-                markDead();
-                dropItem(Item.Minecart.id, 1, 0.0F);
+                MarkDead();
+                DropItem(Item.Minecart.id, 1, 0.0F);
 
                 if (type == 1)
                 {
                     EntityMinecart minecart = this;
 
-                    for (int slotIndex = 0; slotIndex < minecart.size(); ++slotIndex)
+                    for (int slotIndex = 0; slotIndex < minecart.Size; ++slotIndex)
                     {
-                        ItemStack itemStack = minecart.getStack(slotIndex);
+                        ItemStack? itemStack = minecart.GetStack(slotIndex);
                         if (itemStack != null)
                         {
-                            float offsetX = random.NextFloat() * 0.8F + 0.1F;
-                            float offsetY = random.NextFloat() * 0.8F + 0.1F;
-                            float offsetZ = random.NextFloat() * 0.8F + 0.1F;
+                            float offsetX = Random.NextFloat() * 0.8F + 0.1F;
+                            float offsetY = Random.NextFloat() * 0.8F + 0.1F;
+                            float offsetZ = Random.NextFloat() * 0.8F + 0.1F;
 
-                            while (itemStack.count > 0)
+                            while (itemStack.Count > 0)
                             {
-                                int dropCount = random.NextInt(21) + 10;
-                                if (dropCount > itemStack.count)
+                                int dropCount = Random.NextInt(21) + 10;
+                                if (dropCount > itemStack.Count)
                                 {
-                                    dropCount = itemStack.count;
+                                    dropCount = itemStack.Count;
                                 }
 
-                                itemStack.count -= dropCount;
+                                itemStack.Count -= dropCount;
 
-                                EntityItem droppedItem = new EntityItem(
-                                    world,
-                                    x + offsetX,
-                                    y + offsetY,
-                                    z + offsetZ,
-                                    new ItemStack(itemStack.itemId, dropCount, itemStack.getDamage())
+                                EntityItem droppedItem = new(
+                                    World,
+                                    X + offsetX,
+                                    Y + offsetY,
+                                    Z + offsetZ,
+                                    new ItemStack(itemStack.ItemId, dropCount, itemStack.getDamage())
                                 );
 
                                 float scatterSpeed = 0.05F;
-                                droppedItem.velocityX = (float)random.NextGaussian() * scatterSpeed;
-                                droppedItem.velocityY = (float)random.NextGaussian() * scatterSpeed + 0.2F;
-                                droppedItem.velocityZ = (float)random.NextGaussian() * scatterSpeed;
-                                world.SpawnEntity(droppedItem);
+                                droppedItem.VelocityX = (float)Random.NextGaussian() * scatterSpeed;
+                                droppedItem.VelocityY = (float)Random.NextGaussian() * scatterSpeed + 0.2F;
+                                droppedItem.VelocityZ = (float)Random.NextGaussian() * scatterSpeed;
+                                World.SpawnEntity(droppedItem);
                             }
                         }
                     }
 
-                    dropItem(Block.Chest.id, 1, 0.0F);
+                    DropItem(Block.Chest.id, 1, 0.0F);
                 }
                 else if (type == 2)
                 {
-                    dropItem(Block.Furnace.id, 1, 0.0F);
+                    DropItem(Block.Furnace.id, 1, 0.0F);
                 }
             }
 
@@ -175,7 +172,7 @@ public class EntityMinecart : Entity, IInventory
         return true;
     }
 
-    public override void animateHurt()
+    public override void AnimateHurt()
     {
         _logger.LogInformation("Animating hurt");
         minecartRockDirection = -minecartRockDirection;
@@ -183,53 +180,53 @@ public class EntityMinecart : Entity, IInventory
         minecartCurrentDamage += minecartCurrentDamage * 10;
     }
 
-    public override bool isCollidable()
+    public override bool IsCollidable()
     {
-        return !dead;
+        return !Dead;
     }
 
-    public override void markDead()
+    public override void MarkDead()
     {
-        for (int slotIndex = 0; slotIndex < size(); ++slotIndex)
+        for (int slotIndex = 0; slotIndex < Size; ++slotIndex)
         {
-            ItemStack itemStack = getStack(slotIndex);
+            ItemStack? itemStack = GetStack(slotIndex);
             if (itemStack != null)
             {
-                float offsetX = random.NextFloat() * 0.8F + 0.1F;
-                float offsetY = random.NextFloat() * 0.8F + 0.1F;
-                float offsetZ = random.NextFloat() * 0.8F + 0.1F;
+                float offsetX = Random.NextFloat() * 0.8F + 0.1F;
+                float offsetY = Random.NextFloat() * 0.8F + 0.1F;
+                float offsetZ = Random.NextFloat() * 0.8F + 0.1F;
 
-                while (itemStack.count > 0)
+                while (itemStack.Count > 0)
                 {
-                    int dropCount = random.NextInt(21) + 10;
-                    if (dropCount > itemStack.count)
+                    int dropCount = Random.NextInt(21) + 10;
+                    if (dropCount > itemStack.Count)
                     {
-                        dropCount = itemStack.count;
+                        dropCount = itemStack.Count;
                     }
 
-                    itemStack.count -= dropCount;
+                    itemStack.Count -= dropCount;
 
-                    EntityItem droppedItem = new EntityItem(
-                        world,
-                        x + offsetX,
-                        y + offsetY,
-                        z + offsetZ,
-                        new ItemStack(itemStack.itemId, dropCount, itemStack.getDamage())
+                    EntityItem droppedItem = new(
+                        World,
+                        X + offsetX,
+                        Y + offsetY,
+                        Z + offsetZ,
+                        new ItemStack(itemStack.ItemId, dropCount, itemStack.getDamage())
                     );
 
                     float scatterSpeed = 0.05F;
-                    droppedItem.velocityX = (float)random.NextGaussian() * scatterSpeed;
-                    droppedItem.velocityY = (float)random.NextGaussian() * scatterSpeed + 0.2F;
-                    droppedItem.velocityZ = (float)random.NextGaussian() * scatterSpeed;
-                    world.SpawnEntity(droppedItem);
+                    droppedItem.VelocityX = (float)Random.NextGaussian() * scatterSpeed;
+                    droppedItem.VelocityY = (float)Random.NextGaussian() * scatterSpeed + 0.2F;
+                    droppedItem.VelocityZ = (float)Random.NextGaussian() * scatterSpeed;
+                    World.SpawnEntity(droppedItem);
                 }
             }
         }
 
-        base.markDead();
+        base.MarkDead();
     }
 
-    public override void tick()
+    public override void Tick()
     {
         if (minecartTimeSinceHit > 0)
         {
@@ -241,13 +238,13 @@ public class EntityMinecart : Entity, IInventory
             --minecartCurrentDamage;
         }
 
-        if (world.IsRemote && clientInterpolationSteps > 0)
+        if (World.IsRemote && clientInterpolationSteps > 0)
         {
-            double interpolatedX = x + (clientTargetX - x) / clientInterpolationSteps;
-            double interpolatedY = y + (clientTargetY - y) / clientInterpolationSteps;
-            double interpolatedZ = z + (clientTargetZ - z) / clientInterpolationSteps;
+            double interpolatedX = X + (clientTargetX - X) / clientInterpolationSteps;
+            double interpolatedY = Y + (clientTargetY - Y) / clientInterpolationSteps;
+            double interpolatedZ = Z + (clientTargetZ - Z) / clientInterpolationSteps;
 
-            double yawDelta = clientTargetYaw - yaw;
+            double yawDelta = clientTargetYaw - Yaw;
             while (yawDelta < -180.0D)
             {
                 yawDelta += 360.0D;
@@ -258,33 +255,33 @@ public class EntityMinecart : Entity, IInventory
                 yawDelta -= 360.0D;
             }
 
-            yaw = (float)(yaw + yawDelta / clientInterpolationSteps);
-            pitch = (float)(pitch + (clientTargetPitch - pitch) / clientInterpolationSteps);
+            Yaw = (float)(Yaw + yawDelta / clientInterpolationSteps);
+            Pitch = (float)(Pitch + (clientTargetPitch - Pitch) / clientInterpolationSteps);
             --clientInterpolationSteps;
 
-            setPosition(interpolatedX, interpolatedY, interpolatedZ);
-            setRotation(yaw, pitch);
+            SetPosition(interpolatedX, interpolatedY, interpolatedZ);
+            SetRotation(Yaw, Pitch);
             return;
         }
 
-        if (world.IsRemote)
+        if (World.IsRemote)
         {
-            setPosition(x, y, z);
-            setRotation(yaw, pitch);
+            SetPosition(X, Y, Z);
+            SetRotation(Yaw, Pitch);
             return;
         }
 
-        prevX = x;
-        prevY = y;
-        prevZ = z;
+        PrevX = X;
+        PrevY = Y;
+        PrevZ = Z;
 
-        velocityY -= 0.04D;
+        VelocityY -= 0.04D;
 
-        int blockX = MathHelper.Floor(x);
-        int blockY = MathHelper.Floor(y);
-        int blockZ = MathHelper.Floor(z);
+        int blockX = MathHelper.Floor(X);
+        int blockY = MathHelper.Floor(Y);
+        int blockZ = MathHelper.Floor(Z);
 
-        if (BlockRail.isRail(world, blockX, blockY - 1, blockZ))
+        if (BlockRail.isRail(World, blockX, blockY - 1, blockZ))
         {
             --blockY;
         }
@@ -293,11 +290,11 @@ public class EntityMinecart : Entity, IInventory
         bool shouldEmitSmoke = false;
         double slopeAcceleration = 1.0D / 128.0D;
 
-        int railBlockId = world.Reader.GetBlockId(blockX, blockY, blockZ);
+        int railBlockId = World.Reader.GetBlockId(blockX, blockY, blockZ);
         if (BlockRail.isRail(railBlockId))
         {
-            Vec3D? previousTrackPosition = getTrackPosition(x, y, z);
-            int railMeta = world.Reader.GetBlockMeta(blockX, blockY, blockZ);
+            Vec3D? previousTrackPosition = getTrackPosition(X, Y, Z);
+            int railMeta = World.Reader.GetBlockMeta(blockX, blockY, blockZ);
 
             double trackY = blockY;
             bool poweredRailActive = false;
@@ -321,29 +318,29 @@ public class EntityMinecart : Entity, IInventory
 
             if (railMeta == 2)
             {
-                velocityX -= slopeAcceleration;
+                VelocityX -= slopeAcceleration;
             }
 
             if (railMeta == 3)
             {
-                velocityX += slopeAcceleration;
+                VelocityX += slopeAcceleration;
             }
 
             if (railMeta == 4)
             {
-                velocityZ += slopeAcceleration;
+                VelocityZ += slopeAcceleration;
             }
 
             if (railMeta == 5)
             {
-                velocityZ -= slopeAcceleration;
+                VelocityZ -= slopeAcceleration;
             }
 
             int[][] railEnds = RailShapeVectors[railMeta];
             double railDirX = railEnds[1][0] - railEnds[0][0];
             double railDirZ = railEnds[1][2] - railEnds[0][2];
             double railDirLength = System.Math.Sqrt(railDirX * railDirX + railDirZ * railDirZ);
-            double velocityDotRail = velocityX * railDirX + velocityZ * railDirZ;
+            double velocityDotRail = VelocityX * railDirX + VelocityZ * railDirZ;
 
             if (velocityDotRail < 0.0D)
             {
@@ -351,24 +348,24 @@ public class EntityMinecart : Entity, IInventory
                 railDirZ = -railDirZ;
             }
 
-            double horizontalSpeed = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
-            velocityX = horizontalSpeed * railDirX / railDirLength;
-            velocityZ = horizontalSpeed * railDirZ / railDirLength;
+            double horizontalSpeed = System.Math.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
+            VelocityX = horizontalSpeed * railDirX / railDirLength;
+            VelocityZ = horizontalSpeed * railDirZ / railDirLength;
 
             if (poweredRailBraking)
             {
-                double brakingSpeed = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
+                double brakingSpeed = System.Math.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
                 if (brakingSpeed < 0.03D)
                 {
-                    velocityX = 0.0D;
-                    velocityY = 0.0D;
-                    velocityZ = 0.0D;
+                    VelocityX = 0.0D;
+                    VelocityY = 0.0D;
+                    VelocityZ = 0.0D;
                 }
                 else
                 {
-                    velocityX *= 0.5D;
-                    velocityY = 0.0D;
-                    velocityZ *= 0.5D;
+                    VelocityX *= 0.5D;
+                    VelocityY = 0.0D;
+                    VelocityZ *= 0.5D;
                 }
             }
 
@@ -383,30 +380,30 @@ public class EntityMinecart : Entity, IInventory
 
             if (railDirX == 0.0D)
             {
-                x = blockX + 0.5D;
-                positionAlongRail = z - blockZ;
+                X = blockX + 0.5D;
+                positionAlongRail = Z - blockZ;
             }
             else if (railDirZ == 0.0D)
             {
-                z = blockZ + 0.5D;
-                positionAlongRail = x - blockX;
+                Z = blockZ + 0.5D;
+                positionAlongRail = X - blockX;
             }
             else
             {
-                double offsetFromRailStartX = x - railStartX;
-                double offsetFromRailStartZ = z - railStartZ;
+                double offsetFromRailStartX = X - railStartX;
+                double offsetFromRailStartZ = Z - railStartZ;
                 positionAlongRail = (offsetFromRailStartX * railDirX + offsetFromRailStartZ * railDirZ) * 2.0D;
             }
 
-            x = railStartX + railDirX * positionAlongRail;
-            z = railStartZ + railDirZ * positionAlongRail;
+            X = railStartX + railDirX * positionAlongRail;
+            Z = railStartZ + railDirZ * positionAlongRail;
 
-            setTrackAlignedPosition(x, trackY, z);
+            setTrackAlignedPosition(X, trackY, Z);
 
-            double moveX = velocityX;
-            double moveZ = velocityZ;
+            double moveX = VelocityX;
+            double moveZ = VelocityZ;
 
-            if (passenger != null)
+            if (Passenger != null)
             {
                 moveX *= 0.75D;
                 moveZ *= 0.75D;
@@ -432,26 +429,26 @@ public class EntityMinecart : Entity, IInventory
                 moveZ = maxSpeed;
             }
 
-            move(moveX, 0.0D, moveZ);
+            Move(moveX, 0.0D, moveZ);
 
             if (railEnds[0][1] != 0 &&
-                MathHelper.Floor(x) - blockX == railEnds[0][0] &&
-                MathHelper.Floor(z) - blockZ == railEnds[0][2])
+                MathHelper.Floor(X) - blockX == railEnds[0][0] &&
+                MathHelper.Floor(Z) - blockZ == railEnds[0][2])
             {
-                setTrackAlignedPosition(x, trackY + railEnds[0][1], z);
+                setTrackAlignedPosition(X, trackY + railEnds[0][1], Z);
             }
             else if (railEnds[1][1] != 0 &&
-                     MathHelper.Floor(x) - blockX == railEnds[1][0] &&
-                     MathHelper.Floor(z) - blockZ == railEnds[1][2])
+                     MathHelper.Floor(X) - blockX == railEnds[1][0] &&
+                     MathHelper.Floor(Z) - blockZ == railEnds[1][2])
             {
-                setTrackAlignedPosition(x, trackY + railEnds[1][1], z);
+                setTrackAlignedPosition(X, trackY + railEnds[1][1], Z);
             }
 
-            if (passenger != null)
+            if (Passenger != null)
             {
-                velocityX *= 0.997F;
-                velocityY = 0.0D;
-                velocityZ *= 0.997F;
+                VelocityX *= 0.997F;
+                VelocityY = 0.0D;
+                VelocityZ *= 0.997F;
             }
             else
             {
@@ -465,157 +462,157 @@ public class EntityMinecart : Entity, IInventory
                         pushZ /= furnacePushMagnitude;
 
                         double furnaceAcceleration = 0.04D;
-                        velocityX *= 0.8F;
-                        velocityY = 0.0D;
-                        velocityZ *= 0.8F;
-                        velocityX += pushX * furnaceAcceleration;
-                        velocityZ += pushZ * furnaceAcceleration;
+                        VelocityX *= 0.8F;
+                        VelocityY = 0.0D;
+                        VelocityZ *= 0.8F;
+                        VelocityX += pushX * furnaceAcceleration;
+                        VelocityZ += pushZ * furnaceAcceleration;
                     }
                     else
                     {
-                        velocityX *= 0.9F;
-                        velocityY = 0.0D;
-                        velocityZ *= 0.9F;
+                        VelocityX *= 0.9F;
+                        VelocityY = 0.0D;
+                        VelocityZ *= 0.9F;
                     }
                 }
 
-                velocityX *= 0.96F;
-                velocityY = 0.0D;
-                velocityZ *= 0.96F;
+                VelocityX *= 0.96F;
+                VelocityY = 0.0D;
+                VelocityZ *= 0.96F;
             }
 
-            Vec3D? currentTrackPosition = getTrackPosition(x, y, z);
+            Vec3D? currentTrackPosition = getTrackPosition(X, Y, Z);
             if (currentTrackPosition != null && previousTrackPosition != null)
             {
                 double railHeightDeltaForce = (previousTrackPosition.Value.y - currentTrackPosition.Value.y) * 0.05D;
-                horizontalSpeed = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
+                horizontalSpeed = System.Math.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
                 if (horizontalSpeed > 0.0D)
                 {
-                    velocityX = velocityX / horizontalSpeed * (horizontalSpeed + railHeightDeltaForce);
-                    velocityZ = velocityZ / horizontalSpeed * (horizontalSpeed + railHeightDeltaForce);
+                    VelocityX = VelocityX / horizontalSpeed * (horizontalSpeed + railHeightDeltaForce);
+                    VelocityZ = VelocityZ / horizontalSpeed * (horizontalSpeed + railHeightDeltaForce);
                 }
 
                 // Important fix:
                 // Always keep rail snapping on the same Y convention used everywhere else.
-                setTrackAlignedPosition(x, currentTrackPosition.Value.y, z);
+                setTrackAlignedPosition(X, currentTrackPosition.Value.y, Z);
             }
 
-            int currentBlockX = MathHelper.Floor(x);
-            int currentBlockZ = MathHelper.Floor(z);
+            int currentBlockX = MathHelper.Floor(X);
+            int currentBlockZ = MathHelper.Floor(Z);
             if (currentBlockX != blockX || currentBlockZ != blockZ)
             {
-                horizontalSpeed = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
-                velocityX = horizontalSpeed * (currentBlockX - blockX);
-                velocityZ = horizontalSpeed * (currentBlockZ - blockZ);
+                horizontalSpeed = System.Math.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
+                VelocityX = horizontalSpeed * (currentBlockX - blockX);
+                VelocityZ = horizontalSpeed * (currentBlockZ - blockZ);
             }
 
             if (type == 2)
             {
                 double pushMagnitude = MathHelper.Sqrt(pushX * pushX + pushZ * pushZ);
-                if (pushMagnitude > 0.01D && velocityX * velocityX + velocityZ * velocityZ > 0.001D)
+                if (pushMagnitude > 0.01D && VelocityX * VelocityX + VelocityZ * VelocityZ > 0.001D)
                 {
                     pushX /= pushMagnitude;
                     pushZ /= pushMagnitude;
 
-                    if (pushX * velocityX + pushZ * velocityZ < 0.0D)
+                    if (pushX * VelocityX + pushZ * VelocityZ < 0.0D)
                     {
                         pushX = 0.0D;
                         pushZ = 0.0D;
                     }
                     else
                     {
-                        pushX = velocityX;
-                        pushZ = velocityZ;
+                        pushX = VelocityX;
+                        pushZ = VelocityZ;
                     }
                 }
             }
 
             if (poweredRailActive)
             {
-                double speedMagnitude = System.Math.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
+                double speedMagnitude = System.Math.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
                 if (speedMagnitude > 0.01D)
                 {
                     double poweredRailBoost = 0.06D;
-                    velocityX += velocityX / speedMagnitude * poweredRailBoost;
-                    velocityZ += velocityZ / speedMagnitude * poweredRailBoost;
+                    VelocityX += VelocityX / speedMagnitude * poweredRailBoost;
+                    VelocityZ += VelocityZ / speedMagnitude * poweredRailBoost;
                 }
                 else if (railMeta == 1)
                 {
-                    if (world.Reader.ShouldSuffocate(blockX - 1, blockY, blockZ))
+                    if (World.Reader.ShouldSuffocate(blockX - 1, blockY, blockZ))
                     {
-                        velocityX = 0.02D;
+                        VelocityX = 0.02D;
                     }
-                    else if (world.Reader.ShouldSuffocate(blockX + 1, blockY, blockZ))
+                    else if (World.Reader.ShouldSuffocate(blockX + 1, blockY, blockZ))
                     {
-                        velocityX = -0.02D;
+                        VelocityX = -0.02D;
                     }
                 }
                 else if (railMeta == 0)
                 {
-                    if (world.Reader.ShouldSuffocate(blockX, blockY, blockZ - 1))
+                    if (World.Reader.ShouldSuffocate(blockX, blockY, blockZ - 1))
                     {
-                        velocityZ = 0.02D;
+                        VelocityZ = 0.02D;
                     }
-                    else if (world.Reader.ShouldSuffocate(blockX, blockY, blockZ + 1))
+                    else if (World.Reader.ShouldSuffocate(blockX, blockY, blockZ + 1))
                     {
-                        velocityZ = -0.02D;
+                        VelocityZ = -0.02D;
                     }
                 }
             }
         }
         else
         {
-            if (velocityX < -maxSpeed)
+            if (VelocityX < -maxSpeed)
             {
-                velocityX = -maxSpeed;
+                VelocityX = -maxSpeed;
             }
 
-            if (velocityX > maxSpeed)
+            if (VelocityX > maxSpeed)
             {
-                velocityX = maxSpeed;
+                VelocityX = maxSpeed;
             }
 
-            if (velocityZ < -maxSpeed)
+            if (VelocityZ < -maxSpeed)
             {
-                velocityZ = -maxSpeed;
+                VelocityZ = -maxSpeed;
             }
 
-            if (velocityZ > maxSpeed)
+            if (VelocityZ > maxSpeed)
             {
-                velocityZ = maxSpeed;
+                VelocityZ = maxSpeed;
             }
 
-            if (onGround)
+            if (OnGround)
             {
-                velocityX *= 0.5D;
-                velocityY *= 0.5D;
-                velocityZ *= 0.5D;
+                VelocityX *= 0.5D;
+                VelocityY *= 0.5D;
+                VelocityZ *= 0.5D;
             }
 
-            move(velocityX, velocityY, velocityZ);
+            Move(VelocityX, VelocityY, VelocityZ);
 
-            if (!onGround)
+            if (!OnGround)
             {
-                velocityX *= 0.95F;
-                velocityY *= 0.95F;
-                velocityZ *= 0.95F;
+                VelocityX *= 0.95F;
+                VelocityY *= 0.95F;
+                VelocityZ *= 0.95F;
             }
         }
 
-        pitch = 0.0F;
+        Pitch = 0.0F;
 
-        double deltaX = prevX - x;
-        double deltaZ = prevZ - z;
+        double deltaX = PrevX - X;
+        double deltaZ = PrevZ - Z;
         if (deltaX * deltaX + deltaZ * deltaZ > 0.001D)
         {
-            yaw = (float)(System.Math.Atan2(deltaZ, deltaX) * 180.0D / System.Math.PI);
+            Yaw = (float)(System.Math.Atan2(deltaZ, deltaX) * 180.0D / System.Math.PI);
             if (yawFlipped)
             {
-                yaw += 180.0F;
+                Yaw += 180.0F;
             }
         }
 
-        double yawChange = yaw - prevYaw;
+        double yawChange = Yaw - PrevYaw;
         while (yawChange >= 180.0D)
         {
             yawChange -= 360.0D;
@@ -628,31 +625,31 @@ public class EntityMinecart : Entity, IInventory
 
         if (yawChange < -170.0D || yawChange >= 170.0D)
         {
-            yaw += 180.0F;
+            Yaw += 180.0F;
             yawFlipped = !yawFlipped;
         }
 
-        setRotation(yaw, pitch);
+        SetRotation(Yaw, Pitch);
 
-        var nearbyEntities = world.Entities.GetEntities(this, boundingBox.Expand(0.2D, 0.0D, 0.2D));
+        var nearbyEntities = World.Entities.GetEntities(this, BoundingBox.Expand(0.2D, 0.0D, 0.2D));
         if (nearbyEntities != null && nearbyEntities.Count > 0)
         {
             for (int i = 0; i < nearbyEntities.Count; ++i)
             {
                 Entity otherEntity = nearbyEntities[i];
-                if (otherEntity != passenger && otherEntity.isPushable() && otherEntity is EntityMinecart)
+                if (otherEntity != Passenger && otherEntity.IsPushable() && otherEntity is EntityMinecart)
                 {
-                    otherEntity.onCollision(this);
+                    otherEntity.OnCollision(this);
                 }
             }
         }
 
-        if (passenger != null && passenger.dead)
+        if (Passenger != null && Passenger.Dead)
         {
-            passenger = null;
+            Passenger = null;
         }
 
-        if (shouldEmitSmoke && random.NextInt(4) == 0)
+        if (shouldEmitSmoke && Random.NextInt(4) == 0)
         {
             --fuel;
             if (fuel < 0)
@@ -661,13 +658,13 @@ public class EntityMinecart : Entity, IInventory
                 pushZ = 0.0D;
             }
 
-            world.Broadcaster.AddParticle("largesmoke", x, y + 0.8D, z, 0.0D, 0.0D, 0.0D);
+            World.Broadcaster.AddParticle("largesmoke", X, Y + 0.8D, Z, 0.0D, 0.0D, 0.0D);
         }
     }
 
     private void setTrackAlignedPosition(double x, double trackY, double z)
     {
-        setPosition(x, trackY + standingEyeHeight, z);
+        SetPosition(x, trackY + StandingEyeHeight, z);
     }
 
     public Vec3D? getTrackPositionOffset(double x, double y, double z, double distanceAlongTrack)
@@ -676,18 +673,18 @@ public class EntityMinecart : Entity, IInventory
         int blockY = MathHelper.Floor(y);
         int blockZ = MathHelper.Floor(z);
 
-        if (BlockRail.isRail(world, blockX, blockY - 1, blockZ))
+        if (BlockRail.isRail(World, blockX, blockY - 1, blockZ))
         {
             --blockY;
         }
 
-        int blockId = world.Reader.GetBlockId(blockX, blockY, blockZ);
+        int blockId = World.Reader.GetBlockId(blockX, blockY, blockZ);
         if (!BlockRail.isRail(blockId))
         {
             return null;
         }
 
-        int railMeta = world.Reader.GetBlockMeta(blockX, blockY, blockZ);
+        int railMeta = World.Reader.GetBlockMeta(blockX, blockY, blockZ);
         if (((BlockRail)Block.Blocks[blockId]).isAlwaysStraight())
         {
             railMeta &= 7;
@@ -732,18 +729,18 @@ public class EntityMinecart : Entity, IInventory
         int blockY = MathHelper.Floor(y);
         int blockZ = MathHelper.Floor(z);
 
-        if (BlockRail.isRail(world, blockX, blockY - 1, blockZ))
+        if (BlockRail.isRail(World, blockX, blockY - 1, blockZ))
         {
             --blockY;
         }
 
-        int blockId = world.Reader.GetBlockId(blockX, blockY, blockZ);
+        int blockId = World.Reader.GetBlockId(blockX, blockY, blockZ);
         if (!BlockRail.isRail(blockId))
         {
             return null;
         }
 
-        int railMeta = world.Reader.GetBlockMeta(blockX, blockY, blockZ);
+        int railMeta = World.Reader.GetBlockMeta(blockX, blockY, blockZ);
         y = blockY;
 
         if (((BlockRail)Block.Blocks[blockId]).isAlwaysStraight())
@@ -806,9 +803,9 @@ public class EntityMinecart : Entity, IInventory
     }
 
     // Compatibility wrappers for any external code still calling the old names.
-    public Vec3D? func_515_a(double x, double y, double z, double var7)
+    public Vec3D? func_515_a(double x, double y, double z, double trackOffset)
     {
-        return getTrackPositionOffset(x, y, z, var7);
+        return getTrackPositionOffset(x, y, z, trackOffset);
     }
 
     public Vec3D? func_514_g(double x, double y, double z)
@@ -816,7 +813,7 @@ public class EntityMinecart : Entity, IInventory
         return getTrackPosition(x, y, z);
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
         nbt.SetInteger("Type", type);
 
@@ -828,15 +825,16 @@ public class EntityMinecart : Entity, IInventory
         }
         else if (type == 1)
         {
-            NBTTagList items = new NBTTagList();
+            NBTTagList items = new();
 
-            for (int slotIndex = 0; slotIndex < cargoItems.Length; ++slotIndex)
+            for (int slotIndex = 0; slotIndex < _cargoItems.Length; ++slotIndex)
             {
-                if (cargoItems[slotIndex] != null)
+                ItemStack? stack = _cargoItems[slotIndex];
+                if (stack != null)
                 {
-                    NBTTagCompound itemTag = new NBTTagCompound();
+                    NBTTagCompound itemTag = new();
                     itemTag.SetByte("Slot", (sbyte)slotIndex);
-                    cargoItems[slotIndex].writeToNBT(itemTag);
+                    stack.writeToNBT(itemTag);
                     items.SetTag(itemTag);
                 }
             }
@@ -845,7 +843,7 @@ public class EntityMinecart : Entity, IInventory
         }
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
         type = nbt.GetInteger("Type");
 
@@ -858,33 +856,33 @@ public class EntityMinecart : Entity, IInventory
         else if (type == 1)
         {
             NBTTagList items = nbt.GetTagList("Items");
-            cargoItems = new ItemStack[size()];
+            _cargoItems = new ItemStack[Size];
 
             for (int i = 0; i < items.TagCount(); ++i)
             {
                 NBTTagCompound itemTag = (NBTTagCompound)items.TagAt(i);
                 int slotIndex = itemTag.GetByte("Slot") & 255;
-                if (slotIndex >= 0 && slotIndex < cargoItems.Length)
+                if (slotIndex >= 0 && slotIndex < _cargoItems.Length)
                 {
-                    cargoItems[slotIndex] = new ItemStack(itemTag);
+                    _cargoItems[slotIndex] = new ItemStack(itemTag);
                 }
             }
         }
     }
 
-    public override float getShadowRadius()
+    public override float GetShadowRadius()
     {
         return 0.0F;
     }
 
-    public override void onCollision(Entity entity)
+    public override void OnCollision(Entity entity)
     {
-        if (world.IsRemote)
+        if (World.IsRemote)
         {
             return;
         }
 
-        if (entity == passenger)
+        if (entity == Passenger)
         {
             return;
         }
@@ -892,15 +890,15 @@ public class EntityMinecart : Entity, IInventory
         if (entity is EntityLiving &&
             entity is not EntityPlayer &&
             type == 0 &&
-            velocityX * velocityX + velocityZ * velocityZ > 0.01D &&
-            passenger == null &&
-            entity.vehicle == null)
+            VelocityX * VelocityX + VelocityZ * VelocityZ > 0.01D &&
+            Passenger == null &&
+            entity.Vehicle == null)
         {
-            entity.setVehicle(this);
+            entity.SetVehicle(this);
         }
 
-        double deltaX = entity.x - x;
-        double deltaZ = entity.z - z;
+        double deltaX = entity.X - X;
+        double deltaZ = entity.Z - Z;
         double distanceSq = deltaX * deltaX + deltaZ * deltaZ;
 
         if (distanceSq < 1.0E-4D)
@@ -924,19 +922,19 @@ public class EntityMinecart : Entity, IInventory
         deltaX *= 0.1F;
         deltaZ *= 0.1F;
 
-        deltaX *= 1.0F - pushSpeedReduction;
-        deltaZ *= 1.0F - pushSpeedReduction;
+        deltaX *= 1.0F - PushSpeedReduction;
+        deltaZ *= 1.0F - PushSpeedReduction;
 
         deltaX *= 0.5D;
         deltaZ *= 0.5D;
 
         if (entity is EntityMinecart otherCart)
         {
-            double otherDeltaX = entity.x - x;
-            double otherDeltaZ = entity.z - z;
+            double otherDeltaX = entity.X - X;
+            double otherDeltaZ = entity.Z - Z;
 
             // Preserved gameplay logic, but with readable names.
-            double collisionAlignment = otherDeltaX * entity.velocityZ + otherDeltaZ * entity.prevX;
+            double collisionAlignment = otherDeltaX * entity.VelocityZ + otherDeltaZ * entity.PrevX;
             collisionAlignment *= collisionAlignment;
 
             if (collisionAlignment > 5.0D)
@@ -944,145 +942,140 @@ public class EntityMinecart : Entity, IInventory
                 return;
             }
 
-            double averageVelocityX = entity.velocityX + velocityX;
-            double averageVelocityZ = entity.velocityZ + velocityZ;
+            double averageVelocityX = entity.VelocityX + VelocityX;
+            double averageVelocityZ = entity.VelocityZ + VelocityZ;
 
             if (otherCart.type == 2 && type != 2)
             {
-                velocityX *= 0.2F;
-                velocityZ *= 0.2F;
-                addVelocity(entity.velocityX - deltaX, 0.0D, entity.velocityZ - deltaZ);
-                entity.velocityX *= 0.7F;
-                entity.velocityZ *= 0.7F;
+                VelocityX *= 0.2F;
+                VelocityZ *= 0.2F;
+                AddVelocity(entity.VelocityX - deltaX, 0.0D, entity.VelocityZ - deltaZ);
+                entity.VelocityX *= 0.7F;
+                entity.VelocityZ *= 0.7F;
             }
             else if (otherCart.type != 2 && type == 2)
             {
-                entity.velocityX *= 0.2F;
-                entity.velocityZ *= 0.2F;
-                entity.addVelocity(velocityX + deltaX, 0.0D, velocityZ + deltaZ);
-                velocityX *= 0.7F;
-                velocityZ *= 0.7F;
+                entity.VelocityX *= 0.2F;
+                entity.VelocityZ *= 0.2F;
+                entity.AddVelocity(VelocityX + deltaX, 0.0D, VelocityZ + deltaZ);
+                VelocityX *= 0.7F;
+                VelocityZ *= 0.7F;
             }
             else
             {
                 averageVelocityX /= 2.0D;
                 averageVelocityZ /= 2.0D;
 
-                velocityX *= 0.2F;
-                velocityZ *= 0.2F;
-                addVelocity(averageVelocityX - deltaX, 0.0D, averageVelocityZ - deltaZ);
+                VelocityX *= 0.2F;
+                VelocityZ *= 0.2F;
+                AddVelocity(averageVelocityX - deltaX, 0.0D, averageVelocityZ - deltaZ);
 
-                entity.velocityX *= 0.2F;
-                entity.velocityZ *= 0.2F;
-                entity.addVelocity(averageVelocityX + deltaX, 0.0D, averageVelocityZ + deltaZ);
+                entity.VelocityX *= 0.2F;
+                entity.VelocityZ *= 0.2F;
+                entity.AddVelocity(averageVelocityX + deltaX, 0.0D, averageVelocityZ + deltaZ);
             }
         }
         else
         {
-            addVelocity(-deltaX, 0.0D, -deltaZ);
-            entity.addVelocity(deltaX / 4.0D, 0.0D, deltaZ / 4.0D);
+            AddVelocity(-deltaX, 0.0D, -deltaZ);
+            entity.AddVelocity(deltaX / 4.0D, 0.0D, deltaZ / 4.0D);
         }
     }
 
-    public int size()
+    public int Size => 27;
+
+    public ItemStack? GetStack(int slotIndex)
     {
-        return 27;
+        return _cargoItems[slotIndex];
     }
 
-    public ItemStack getStack(int slotIndex)
+    public ItemStack? RemoveStack(int slotIndex, int amount)
     {
-        return cargoItems[slotIndex];
-    }
-
-    public ItemStack? removeStack(int slotIndex, int amount)
-    {
-        if (cargoItems[slotIndex] == null)
+        if (_cargoItems[slotIndex] == null)
         {
             return null;
         }
 
         ItemStack itemStack;
-        if (cargoItems[slotIndex].count <= amount)
+        ItemStack? stack = _cargoItems[slotIndex];
+
+        if (stack is null) return null;
+
+        if (stack.Count <= amount)
         {
-            itemStack = cargoItems[slotIndex];
-            cargoItems[slotIndex] = null;
+            itemStack = stack;
+            _cargoItems[slotIndex] = null;
             return itemStack;
         }
 
-        itemStack = cargoItems[slotIndex].split(amount);
-        if (cargoItems[slotIndex].count == 0)
+        itemStack = stack.Split(amount);
+        if (stack.Count == 0)
         {
-            cargoItems[slotIndex] = null;
+            _cargoItems[slotIndex] = null;
         }
 
         return itemStack;
     }
 
-    public void setStack(int slotIndex, ItemStack? itemStack)
+    public void SetStack(int slotIndex, ItemStack? itemStack)
     {
-        cargoItems[slotIndex] = itemStack;
-        if (itemStack != null && itemStack.count > getMaxCountPerStack())
+        _cargoItems[slotIndex] = itemStack;
+        if (itemStack != null && itemStack.Count > MaxCountPerStack)
         {
-            itemStack.count = getMaxCountPerStack();
+            itemStack.Count = MaxCountPerStack;
         }
     }
 
-    public string getName()
-    {
-        return "Minecart";
-    }
+    public string Name => "Minecart";
 
-    public int getMaxCountPerStack()
-    {
-        return 64;
-    }
+    public int MaxCountPerStack => 64;
 
-    public void markDirty()
+    public void MarkDirty()
     {
     }
 
-    public override bool interact(EntityPlayer player)
+    public override bool Interact(EntityPlayer player)
     {
         if (type == 0)
         {
-            if (passenger != null && passenger is EntityPlayer && passenger != player)
+            if (Passenger != null && Passenger is EntityPlayer && Passenger != player)
             {
                 return true;
             }
 
-            if (!world.IsRemote)
+            if (!World.IsRemote)
             {
-                player.setVehicle(this);
+                player.SetVehicle(this);
             }
         }
         else if (type == 1)
         {
-            if (!world.IsRemote)
+            if (!World.IsRemote)
             {
                 player.openChestScreen(this);
             }
         }
         else if (type == 2)
         {
-            ItemStack heldItem = player.inventory.GetItemInHand();
-            if (heldItem != null && heldItem.itemId == Item.Coal.id)
+            ItemStack? heldItem = player.inventory.GetItemInHand();
+            if (heldItem != null && heldItem.ItemId == Item.Coal.id)
             {
-                if (--heldItem.count == 0)
+                if (--heldItem.Count == 0)
                 {
-                    player.inventory.setStack(player.inventory.selectedSlot, (ItemStack)null);
+                    player.inventory.SetStack(player.inventory.SelectedSlot, null);
                 }
 
                 fuel += 1200;
             }
 
-            pushX = x - player.x;
-            pushZ = z - player.z;
+            pushX = X - player.X;
+            pushZ = Z - player.Z;
         }
 
         return true;
     }
 
-    public override void setPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch, int interpolationSteps)
+    public override void SetPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch, int interpolationSteps)
     {
         clientTargetX = x;
         clientTargetY = y;
@@ -1091,20 +1084,20 @@ public class EntityMinecart : Entity, IInventory
         clientTargetPitch = pitch;
         clientInterpolationSteps = interpolationSteps + 2;
 
-        velocityX = clientVelocityX;
-        velocityY = clientVelocityY;
-        velocityZ = clientVelocityZ;
+        VelocityX = clientVelocityX;
+        VelocityY = clientVelocityY;
+        VelocityZ = clientVelocityZ;
     }
 
-    public override void setVelocityClient(double velocityX, double velocityY, double velocityZ)
+    public override void SetVelocityClient(double velocityX, double velocityY, double velocityZ)
     {
-        clientVelocityX = base.velocityX = velocityX;
-        clientVelocityY = base.velocityY = velocityY;
-        clientVelocityZ = base.velocityZ = velocityZ;
+        clientVelocityX = base.VelocityX = velocityX;
+        clientVelocityY = base.VelocityY = velocityY;
+        clientVelocityZ = base.VelocityZ = velocityZ;
     }
 
-    public bool canPlayerUse(EntityPlayer player)
+    public bool CanPlayerUse(EntityPlayer player)
     {
-        return !dead && player.getSquaredDistance(this) <= 64.0D;
+        return !Dead && player.GetSquaredDistance(this) <= 64.0D;
     }
 }

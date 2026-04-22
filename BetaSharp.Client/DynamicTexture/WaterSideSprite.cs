@@ -10,7 +10,7 @@ internal class WaterSideSprite : Rendering.Core.Textures.DynamicTexture
     private float[] _next = new float[256];
     private int _ticks;
 
-    public WaterSideSprite() : base(Block.FlowingWater.textureId + 1) => Replicate = 2;
+    public WaterSideSprite() : base(Block.FlowingWater.TextureId + 1) => Replicate = 2;
 
     public override void Setup(BetaSharp game) => TryLoadCustomTexture(game, "custom_water_flowing.png");
 

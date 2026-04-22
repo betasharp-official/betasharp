@@ -133,9 +133,9 @@ public static class ControlTooltip
     private static bool IsItemUsable(ItemStack stack)
     {
         if (stack == null) return false;
-        if (stack.itemId < 256) return true;
+        if (stack.ItemId < 256) return true;
 
-        if (s_usabilityCache.TryGetValue(stack.itemId, out bool usable))
+        if (s_usabilityCache.TryGetValue(stack.ItemId, out bool usable))
             return usable;
 
         Item item = stack.getItem();
@@ -152,14 +152,14 @@ public static class ControlTooltip
             }
         }
 
-        s_usabilityCache[stack.itemId] = usable;
+        s_usabilityCache[stack.ItemId] = usable;
         return usable;
     }
 
     private static string GetItemActionLabel(ItemStack stack)
     {
         if (stack == null) return "Use";
-        if (stack.itemId < 256) return "Place";
+        if (stack.ItemId < 256) return "Place";
 
         Item item = stack.getItem();
         if (item == null) return "Use";

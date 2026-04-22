@@ -87,10 +87,10 @@ public class MapState(string id) : PersistentState(id)
 
         foreach (MapUpdateTracker mapInfo in _updateTrackers.Values.ToList())
         {
-            if (!mapInfo.Player.dead && mapInfo.Player.inventory.Contains(mapItem))
+            if (!mapInfo.Player.Dead && mapInfo.Player.inventory.Contains(mapItem))
             {
-                float relX = (float)(mapInfo.Player.x - CenterX) / (1 << Scale);
-                float relZ = (float)(mapInfo.Player.z - CenterZ) / (1 << Scale);
+                float relX = (float)(mapInfo.Player.X - CenterX) / (1 << Scale);
+                float relZ = (float)(mapInfo.Player.Z - CenterZ) / (1 << Scale);
                 byte limitX = 64;
                 byte limitZ = 64;
 
@@ -99,7 +99,7 @@ public class MapState(string id) : PersistentState(id)
                     byte iconType = 0;
                     byte iconX = (byte)(int)(relX * 2.0F + 0.5D);
                     byte iconZ = (byte)(int)(relZ * 2.0F + 0.5D);
-                    byte iconRot = (byte)(int)(viewer.yaw * 16.0F / 360.0F + 0.5D);
+                    byte iconRot = (byte)(int)(viewer.Yaw * 16.0F / 360.0F + 0.5D);
 
                     if (Dimension < 0)
                     {

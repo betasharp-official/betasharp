@@ -98,10 +98,10 @@ public class EntityRenderDispatcher
         _fontRenderer = textRenderer;
         if (camera.isSleeping())
         {
-            int blockId = world.Reader.GetBlockId(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
+            int blockId = world.Reader.GetBlockId(MathHelper.Floor(camera.X), MathHelper.Floor(camera.Y), MathHelper.Floor(camera.Z));
             if (blockId == Block.Bed.id)
             {
-                int var8 = world.Reader.GetBlockMeta(MathHelper.Floor(camera.x), MathHelper.Floor(camera.y), MathHelper.Floor(camera.z));
+                int var8 = world.Reader.GetBlockMeta(MathHelper.Floor(camera.X), MathHelper.Floor(camera.Y), MathHelper.Floor(camera.Z));
                 int var9 = var8 & 3;
                 PlayerViewY = var9 * 90 + 180;
                 PlayerViewX = 0.0F;
@@ -109,22 +109,22 @@ public class EntityRenderDispatcher
         }
         else
         {
-            PlayerViewY = camera.prevYaw + (camera.yaw - camera.prevYaw) * tickDelta;
-            PlayerViewX = camera.prevPitch + (camera.pitch - camera.prevPitch) * tickDelta;
+            PlayerViewY = camera.PrevYaw + (camera.Yaw - camera.PrevYaw) * tickDelta;
+            PlayerViewX = camera.PrevPitch + (camera.Pitch - camera.PrevPitch) * tickDelta;
         }
 
-        _x = camera.lastTickX + (camera.x - camera.lastTickX) * (double)tickDelta;
-        _y = camera.lastTickY + (camera.y - camera.lastTickY) * (double)tickDelta;
-        _z = camera.lastTickZ + (camera.z - camera.lastTickZ) * (double)tickDelta;
+        _x = camera.LastTickX + (camera.X - camera.LastTickX) * (double)tickDelta;
+        _y = camera.LastTickY + (camera.Y - camera.LastTickY) * (double)tickDelta;
+        _z = camera.LastTickZ + (camera.Z - camera.LastTickZ) * (double)tickDelta;
     }
 
     public void RenderEntity(Entity target, float tickDelta)
     {
-        double x = target.lastTickX + (target.x - target.lastTickX) * (double)tickDelta;
-        double y = target.lastTickY + (target.y - target.lastTickY) * (double)tickDelta;
-        double z = target.lastTickZ + (target.z - target.lastTickZ) * (double)tickDelta;
-        float yaw = target.prevYaw + (target.yaw - target.prevYaw) * tickDelta;
-        float brightness = target.getBrightnessAtEyes(tickDelta);
+        double x = target.LastTickX + (target.X - target.LastTickX) * (double)tickDelta;
+        double y = target.LastTickY + (target.Y - target.LastTickY) * (double)tickDelta;
+        double z = target.LastTickZ + (target.Z - target.LastTickZ) * (double)tickDelta;
+        float yaw = target.PrevYaw + (target.Yaw - target.PrevYaw) * tickDelta;
+        float brightness = target.GetBrightnessAtEyes(tickDelta);
         GLManager.GL.Color3(brightness, brightness, brightness);
         RenderEntityWithPosYaw(target, x - OffsetX, y - OffsetY, z - OffsetZ, yaw, tickDelta);
     }

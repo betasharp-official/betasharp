@@ -13,10 +13,9 @@ internal class BlockSnowBlock : Block
 
     public override void onTick(OnTickEvent @event)
     {
-        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y, @event.Z) > 11)
-        {
-            dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-        }
+        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y, @event.Z) <= 11) return;
+
+        dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 }
