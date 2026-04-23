@@ -45,6 +45,7 @@ public abstract partial class Command
     protected static RequiredArgumentBuilder<CommandSource, int> ArgumentInt(string name) => RequiredArgumentBuilder<CommandSource, int>.RequiredArgument(name, Arguments.Integer());
     protected static RequiredArgumentBuilder<CommandSource, string> ArgumentGreedy(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.GreedyString());
     protected static RequiredArgumentBuilder<CommandSource, string> ArgumentString(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.Word());
+    protected static RequiredArgumentBuilder<CommandSource, string> ArgumentItem(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, new ArgItem());
 
 
     public class CommandSource(ICommandHandler handler, string senderName, ICommandOutput output)

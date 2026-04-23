@@ -1,0 +1,16 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "Y",
+    "X",
+    "#"
+  ],
+  "key": {
+    "X": "BrownMushroom",
+    "Y": "RedMushroom",
+    "#": "Bowl"
+  },
+  "result": {
+    "id": "MushroomStew"
+  }
+}

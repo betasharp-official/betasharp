@@ -1,0 +1,14 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "XXX",
+    "X X",
+    "X X"
+  ],
+  "key": {
+    "X": "IronIngot"
+  },
+  "result": {
+    "id": "IronLeggings"
+  }
+}

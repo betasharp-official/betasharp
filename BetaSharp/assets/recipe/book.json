@@ -1,0 +1,14 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "#",
+    "#",
+    "#"
+  ],
+  "key": {
+    "#": "Paper"
+  },
+  "result": {
+    "id": "Book"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "X X",
+    "X#X",
+    "X X"
+  ],
+  "key": {
+    "X": "IronIngot",
+    "#": "Stick"
+  },
+  "result": {
+    "id": "Rail",
+    "count": 16
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "#"
+  ],
+  "key": {
+    "#": "GoldBlock"
+  },
+  "result": {
+    "id": "GoldIngot",
+    "count": 9
+  }
+}

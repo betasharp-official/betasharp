@@ -1,0 +1,14 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "#X#"
+  ],
+  "key": {
+    "X": "Dye:3",
+    "#": "Wheat"
+  },
+  "result": {
+    "id": "Cookie",
+    "count": 8
+  }
+}

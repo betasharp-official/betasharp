@@ -1,0 +1,13 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "#"
+  ],
+  "key": {
+    "#": "LapisBlock"
+  },
+  "result": {
+    "id": "Dye:4",
+    "count": 9
+  }
+}

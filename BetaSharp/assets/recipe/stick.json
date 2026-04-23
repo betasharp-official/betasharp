@@ -1,0 +1,14 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "#",
+    "#"
+  ],
+  "key": {
+    "#": "Planks"
+  },
+  "result": {
+    "id": "Stick",
+    "count": 4
+  }
+}

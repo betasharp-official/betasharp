@@ -1,0 +1,13 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": "Sandstone"
+  },
+  "result": {
+    "id": "Slab:1",
+    "count": 3
+  }
+}

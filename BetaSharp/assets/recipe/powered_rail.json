@@ -1,0 +1,17 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "X X",
+    "X#X",
+    "XRX"
+  ],
+  "key": {
+    "X": "GoldIngot",
+    "#": "Stick",
+    "R": "Redstone"
+  },
+  "result": {
+    "id": "PoweredRail",
+    "count": 6
+  }
+}

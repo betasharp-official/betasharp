@@ -1,0 +1,13 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "X X",
+    "X X"
+  ],
+  "key": {
+    "X": "Leather"
+  },
+  "result": {
+    "id": "LeatherBoots"
+  }
+}

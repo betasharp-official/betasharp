@@ -1,0 +1,13 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": "GlowstoneDust"
+  },
+  "result": {
+    "id": "Glowstone"
+  }
+}

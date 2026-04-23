@@ -1,0 +1,17 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "X X",
+    "X#X",
+    "XRX"
+  ],
+  "key": {
+    "X": "IronIngot",
+    "#": "StonePressurePlate",
+    "R": "Redstone"
+  },
+  "result": {
+    "id": "DetectorRail",
+    "count": 6
+  }
+}

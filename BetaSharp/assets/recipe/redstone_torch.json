@@ -1,0 +1,14 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "X",
+    "#"
+  ],
+  "key": {
+    "#": "Stick",
+    "X": "Redstone"
+  },
+  "result": {
+    "id": "LitRedstoneTorch"
+  }
+}

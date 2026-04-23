@@ -1,0 +1,17 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "TTT",
+    "#X#",
+    "#R#"
+  ],
+  "key": {
+    "#": "Cobblestone",
+    "X": "IronIngot",
+    "R": "Redstone",
+    "T": "Planks"
+  },
+  "result": {
+    "id": "Piston"
+  }
+}

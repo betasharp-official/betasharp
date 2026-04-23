@@ -1,0 +1,15 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "#X#",
+    "III"
+  ],
+  "key": {
+    "#": "LitRedstoneTorch",
+    "X": "Redstone",
+    "I": "Stone"
+  },
+  "result": {
+    "id": "Repeater"
+  }
+}

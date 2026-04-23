@@ -1,0 +1,13 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "#"
+  ],
+  "key": {
+    "#": "IronBlock"
+  },
+  "result": {
+    "id": "IronIngot",
+    "count": 9
+  }
+}

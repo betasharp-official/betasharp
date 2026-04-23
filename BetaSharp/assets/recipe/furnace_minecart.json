@@ -1,0 +1,14 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "A",
+    "B"
+  ],
+  "key": {
+    "A": "Furnace",
+    "B": "Minecart"
+  },
+  "result": {
+    "id": "FurnaceMinecart"
+  }
+}

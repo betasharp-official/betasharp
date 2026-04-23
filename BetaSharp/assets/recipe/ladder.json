@@ -1,0 +1,15 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "# #",
+    "###",
+    "# #"
+  ],
+  "key": {
+    "#": "Stick"
+  },
+  "result": {
+    "id": "Ladder",
+    "count": 2
+  }
+}

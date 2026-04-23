@@ -1,0 +1,13 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "#"
+  ],
+  "key": {
+    "#": "DiamondBlock"
+  },
+  "result": {
+    "id": "Diamond",
+    "count": 9
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "#"
+  ],
+  "key": {
+    "#": "SugarCane"
+  },
+  "result": {
+    "id": "Sugar"
+  }
+}

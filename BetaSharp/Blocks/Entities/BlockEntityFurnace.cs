@@ -194,7 +194,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             return false;
         }
 
-        ItemStack? output = SmeltingRecipeManager.getInstance().Craft(input.getItem().id);
+        ItemStack? output = RecipesSmelting.Craft(input.getItem().id);
         if (output is null)
         {
             return false;
@@ -225,7 +225,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
 
             if (inv0 is null) return;
 
-            ItemStack? outputStack = SmeltingRecipeManager.getInstance().Craft(inv0.getItem().id);
+            ItemStack? outputStack = RecipesSmelting.Craft(inv0.getItem().id);
 
             if (outputStack == null) return;
 

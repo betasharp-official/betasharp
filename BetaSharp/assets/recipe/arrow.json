@@ -1,0 +1,17 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "X",
+    "#",
+    "Y"
+  ],
+  "key": {
+    "X": "Flint",
+    "#": "Stick",
+    "Y": "Feather"
+  },
+  "result": {
+    "id": "ARROW",
+    "count": 4
+  }
+}

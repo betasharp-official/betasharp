@@ -4,6 +4,7 @@ using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Profiling;
+using BetaSharp.Recipes;
 using BetaSharp.Registries;
 using BetaSharp.Registries.Data;
 using BetaSharp.Server.Command;
@@ -574,6 +575,7 @@ public abstract class BetaSharpServer : ICommandOutput
         try
         {
             RegistryAccess = RegistryAccess.Rebuild();
+            RecipeManager.Initialize(RegistryAccess.GetOrThrow(RegistryKeys.Recipes));
 
             RegistryReloadPipeline.SyncToPlayers(RegistryAccess, _reloadListeners, playerManager.players);
 

@@ -1,0 +1,10 @@
+{
+  "type": "shapeless",
+  "ingredients": [
+    "Dye:3",
+    "Wool:0"
+  ],
+  "result": {
+    "id": "Wool:12"
+  }
+}

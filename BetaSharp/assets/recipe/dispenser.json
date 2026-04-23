@@ -1,0 +1,16 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "###",
+    "#X#",
+    "#R#"
+  ],
+  "key": {
+    "#": "Cobblestone",
+    "X": "BOW",
+    "R": "Redstone"
+  },
+  "result": {
+    "id": "Dispenser"
+  }
+}

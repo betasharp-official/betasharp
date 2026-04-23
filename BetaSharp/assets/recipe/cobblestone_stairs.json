@@ -1,0 +1,15 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": "Cobblestone"
+  },
+  "result": {
+    "id": "CobblestoneStairs",
+    "count": 4
+  }
+}

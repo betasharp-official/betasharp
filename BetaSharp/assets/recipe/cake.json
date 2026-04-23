@@ -1,0 +1,17 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "AAA",
+    "BEB",
+    "CCC"
+  ],
+  "key": {
+    "A": "MilkBucket",
+    "B": "Sugar",
+    "C": "Wheat",
+    "E": "Egg"
+  },
+  "result": {
+    "id": "Cake"
+  }
+}

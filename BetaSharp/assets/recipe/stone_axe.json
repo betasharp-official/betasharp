@@ -1,0 +1,15 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "XX",
+    "X#",
+    " #"
+  ],
+  "key": {
+    "X": "Cobblestone",
+    "#": "Stick"
+  },
+  "result": {
+    "id": "StoneAxe"
+  }
+}

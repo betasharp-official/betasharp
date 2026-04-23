@@ -1,0 +1,12 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "##"
+  ],
+  "key": {
+    "#": "Planks"
+  },
+  "result": {
+    "id": "WoodenPressurePlate"
+  }
+}

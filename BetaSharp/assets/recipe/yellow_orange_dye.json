@@ -1,0 +1,11 @@
+{
+  "type": "shapeless",
+  "ingredients": [
+    "Dye:1",
+    "Dye:11"
+  ],
+  "result": {
+    "id": "Dye:14",
+    "count": 2
+  }
+}

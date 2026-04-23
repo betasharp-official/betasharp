@@ -1,0 +1,15 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "###",
+    "XXX",
+    "###"
+  ],
+  "key": {
+    "#": "Planks",
+    "X": "Book"
+  },
+  "result": {
+    "id": "Bookshelf"
+  }
+}

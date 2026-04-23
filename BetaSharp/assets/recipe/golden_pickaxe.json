@@ -1,0 +1,15 @@
+{
+  "type": "shaped",
+  "pattern": [
+    "XXX",
+    " # ",
+    " # "
+  ],
+  "key": {
+    "X": "GoldIngot",
+    "#": "Stick"
+  },
+  "result": {
+    "id": "GoldenPickaxe"
+  }
+}
