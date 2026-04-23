@@ -17,7 +17,7 @@ internal class ItemSpade : ItemTool
         Block.Farmland,
     ];
 
-    public ItemSpade(int id, EnumToolMaterial enumToolMaterial) : base(id, 1, enumToolMaterial, blocksEffectiveAgainst)
+    public ItemSpade(int id, ToolMaterial toolMaterial) : base(id, 1, toolMaterial, blocksEffectiveAgainst)
     {
     }
 

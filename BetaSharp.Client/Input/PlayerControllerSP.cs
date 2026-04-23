@@ -15,7 +15,7 @@ public class PlayerControllerSP : PlayerController
     private byte _mineSoundTimer;
     private int blockHitWait;
 
-    public PlayerControllerSP(BetaSharp var1) : base(var1)
+    public PlayerControllerSP(BetaSharp game) : base(game)
     {
     }
 
@@ -124,7 +124,7 @@ public class PlayerControllerSP : PlayerController
         }
     }
 
-    public override void setPartialTime(float var1)
+    public override void setPartialTime(float tickDelta)
     {
         if (curBlockDamage <= 0.0F)
         {
@@ -132,8 +132,8 @@ public class PlayerControllerSP : PlayerController
         }
         else
         {
-            float var2 = prevBlockDamage + (curBlockDamage - prevBlockDamage) * var1;
-            Game.WorldRenderer.DamagePartialTime = var2;
+            float partialDamage = prevBlockDamage + (curBlockDamage - prevBlockDamage) * tickDelta;
+            Game.WorldRenderer.DamagePartialTime = partialDamage;
         }
 
     }

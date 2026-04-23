@@ -11,50 +11,50 @@ public class SquidEntityRenderer : LivingEntityRenderer
     {
     }
 
-    public void func_21008_a(EntitySquid var1, double var2, double var4, double var6, float var8, float var9)
+    public void func_21008_a(EntitySquid squidEntity, double x, double y, double z, float yaw, float tickDelta)
     {
-        base.DoRenderLiving(var1, var2, var4, var6, var8, var9);
+        base.DoRenderLiving(squidEntity, x, y, z, yaw, tickDelta);
     }
 
-    protected void func_21007_a(EntitySquid var1, float var2, float var3, float var4)
+    protected void func_21007_a(EntitySquid squidEntity, float deathTime, float bodyYaw, float tickDelta)
     {
-        float var5 = var1.prevTiltAngle + (var1.tiltAngle - var1.prevTiltAngle) * var4;
-        float var6 = var1.prevTentaclePhase + (var1.tentaclePhase - var1.prevTentaclePhase) * var4;
+        float tiltAngle = squidEntity.prevTiltAngle + (squidEntity.tiltAngle - squidEntity.prevTiltAngle) * tickDelta;
+        float tentacleYaw = squidEntity.prevTentaclePhase + (squidEntity.tentaclePhase - squidEntity.prevTentaclePhase) * tickDelta;
         GLManager.GL.Translate(0.0F, 0.5F, 0.0F);
-        GLManager.GL.Rotate(180.0F - var3, 0.0F, 1.0F, 0.0F);
-        GLManager.GL.Rotate(var5, 1.0F, 0.0F, 0.0F);
-        GLManager.GL.Rotate(var6, 0.0F, 1.0F, 0.0F);
+        GLManager.GL.Rotate(180.0F - bodyYaw, 0.0F, 1.0F, 0.0F);
+        GLManager.GL.Rotate(tiltAngle, 1.0F, 0.0F, 0.0F);
+        GLManager.GL.Rotate(tentacleYaw, 0.0F, 1.0F, 0.0F);
         GLManager.GL.Translate(0.0F, -1.2F, 0.0F);
     }
 
-    protected void func_21005_a(EntitySquid var1, float var2)
+    protected void func_21005_a(EntitySquid squidEntity, float tickDelta)
     {
     }
 
-    protected float func_21006_b(EntitySquid var1, float var2)
+    protected float func_21006_b(EntitySquid squidEntity, float tickDelta)
     {
-        float var3 = var1.prevTentacleSpread + (var1.tentacleSpread - var1.prevTentacleSpread) * var2;
-        return var3;
+        float tentacleSpread = squidEntity.prevTentacleSpread + (squidEntity.tentacleSpread - squidEntity.prevTentacleSpread) * tickDelta;
+        return tentacleSpread;
     }
 
-    protected override void PreRenderCallback(EntityLiving var1, float var2)
+    protected override void PreRenderCallback(EntityLiving entity, float tickDelta)
     {
-        func_21005_a((EntitySquid)var1, var2);
+        func_21005_a((EntitySquid)entity, tickDelta);
     }
 
-    protected override float getAnimationProgress(EntityLiving var1, float var2)
+    protected override float getAnimationProgress(EntityLiving entity, float tickDelta)
     {
-        return func_21006_b((EntitySquid)var1, var2);
+        return func_21006_b((EntitySquid)entity, tickDelta);
     }
 
-    protected override void RotateCorpse(EntityLiving var1, float var2, float var3, float var4)
+    protected override void RotateCorpse(EntityLiving entity, float deathTime, float bodyYaw, float tickDelta)
     {
-        func_21007_a((EntitySquid)var1, var2, var3, var4);
+        func_21007_a((EntitySquid)entity, deathTime, bodyYaw, tickDelta);
     }
 
-    public override void DoRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
+    public override void DoRenderLiving(EntityLiving entity, double x, double y, double z, float yaw, float tickDelta)
     {
-        func_21008_a((EntitySquid)var1, var2, var4, var6, var8, var9);
+        func_21008_a((EntitySquid)entity, x, y, z, yaw, tickDelta);
     }
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)

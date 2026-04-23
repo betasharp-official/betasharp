@@ -7,19 +7,19 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class SheepEntityRenderer : LivingEntityRenderer
 {
 
-    public SheepEntityRenderer(ModelBase mainModel, ModelBase var2, float var3) : base(mainModel, var3)
+    public SheepEntityRenderer(ModelBase mainModel, ModelBase furModel, float shadowRadius) : base(mainModel, shadowRadius)
     {
-        setRenderPassModel(var2);
+        setRenderPassModel(furModel);
     }
 
-    protected bool setWoolColorAndRender(EntitySheep var1, int var2, float var3)
+    protected bool setWoolColorAndRender(EntitySheep sheepEntity, int renderPass, float tickDelta)
     {
-        if (var2 == 0 && !var1.getSheared())
+        if (renderPass == 0 && !sheepEntity.getSheared())
         {
             loadTexture("/mob/sheep_fur.png");
-            float var4 = var1.GetBrightnessAtEyes(var3);
-            int var5 = var1.getFleeceColor();
-            GLManager.GL.Color3(var4 * EntitySheep.fleeceColorTable[var5][0], var4 * EntitySheep.fleeceColorTable[var5][1], var4 * EntitySheep.fleeceColorTable[var5][2]);
+            float brightness = sheepEntity.GetBrightnessAtEyes(tickDelta);
+            int fleeceColor = sheepEntity.getFleeceColor();
+            GLManager.GL.Color3(brightness * EntitySheep.fleeceColorTable[fleeceColor][0], brightness * EntitySheep.fleeceColorTable[fleeceColor][1], brightness * EntitySheep.fleeceColorTable[fleeceColor][2]);
             return true;
         }
         else
@@ -28,8 +28,8 @@ public class SheepEntityRenderer : LivingEntityRenderer
         }
     }
 
-    protected override bool ShouldRenderPass(EntityLiving var1, int var2, float var3)
+    protected override bool ShouldRenderPass(EntityLiving entity, int renderPass, float tickDelta)
     {
-        return setWoolColorAndRender((EntitySheep)var1, var2, var3);
+        return setWoolColorAndRender((EntitySheep)entity, renderPass, tickDelta);
     }
 }

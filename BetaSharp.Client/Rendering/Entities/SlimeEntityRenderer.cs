@@ -10,14 +10,14 @@ public class SlimeEntityRenderer : LivingEntityRenderer
 
     private readonly ModelBase scaleAmount;
 
-    public SlimeEntityRenderer(ModelBase mainModel, ModelBase var2, float var3) : base(mainModel, var3)
+    public SlimeEntityRenderer(ModelBase mainModel, ModelBase slimeOverlayModel, float shadowRadius) : base(mainModel, shadowRadius)
     {
-        scaleAmount = var2;
+        scaleAmount = slimeOverlayModel;
     }
 
-    protected bool renderSlimePassModel(EntitySlime var1, int var2, float var3)
+    protected bool renderSlimePassModel(EntitySlime slimeEntity, int renderPass, float tickDelta)
     {
-        if (var2 == 0)
+        if (renderPass == 0)
         {
             setRenderPassModel(scaleAmount);
             //GLManager.GL.Enable(GLEnum.Normalize);
@@ -27,7 +27,7 @@ public class SlimeEntityRenderer : LivingEntityRenderer
         }
         else
         {
-            if (var2 == 1)
+            if (renderPass == 1)
             {
                 GLManager.GL.Disable(GLEnum.Blend);
                 GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
@@ -37,22 +37,22 @@ public class SlimeEntityRenderer : LivingEntityRenderer
         }
     }
 
-    protected void scaleSlime(EntitySlime var1, float var2)
+    protected void scaleSlime(EntitySlime slimeEntity, float tickDelta)
     {
-        int var3 = var1.getSlimeSize();
-        float var4 = (var1.prevSquishAmount + (var1.squishAmount - var1.prevSquishAmount) * var2) / (var3 * 0.5F + 1.0F);
-        float var5 = 1.0F / (var4 + 1.0F);
-        float var6 = var3;
-        GLManager.GL.Scale(var5 * var6, 1.0F / var5 * var6, var5 * var6);
+        int slimeSize = slimeEntity.getSlimeSize();
+        float squish = (slimeEntity.prevSquishAmount + (slimeEntity.squishAmount - slimeEntity.prevSquishAmount) * tickDelta) / (slimeSize * 0.5F + 1.0F);
+        float inverseSquish = 1.0F / (squish + 1.0F);
+        float baseScale = slimeSize;
+        GLManager.GL.Scale(inverseSquish * baseScale, 1.0F / inverseSquish * baseScale, inverseSquish * baseScale);
     }
 
-    protected override void PreRenderCallback(EntityLiving var1, float var2)
+    protected override void PreRenderCallback(EntityLiving entity, float tickDelta)
     {
-        scaleSlime((EntitySlime)var1, var2);
+        scaleSlime((EntitySlime)entity, tickDelta);
     }
 
-    protected override bool ShouldRenderPass(EntityLiving var1, int var2, float var3)
+    protected override bool ShouldRenderPass(EntityLiving entity, int renderPass, float tickDelta)
     {
-        return renderSlimePassModel((EntitySlime)var1, var2, var3);
+        return renderSlimePassModel((EntitySlime)entity, renderPass, tickDelta);
     }
 }

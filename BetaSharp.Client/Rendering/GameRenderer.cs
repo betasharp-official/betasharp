@@ -56,11 +56,11 @@ public class GameRenderer
         renderRain();
     }
 
-    public void tick(float var1)
+    public void tick(float tickDelta)
     {
         if (_client.WorldRenderer != null)
         {
-            _client.WorldRenderer.Tick(_client.Camera, var1);
+            _client.WorldRenderer.Tick(_client.Camera, tickDelta);
         }
     }
 
@@ -117,11 +117,11 @@ public class GameRenderer
                 }
                 else if (hit.Type != HitResultType.MISS)
                 {
-                    double var18 = cameraPosition.distanceTo(hit.Pos);
-                    if (var18 < closestDistance || closestDistance == 0.0D)
+                    double hitDistance = cameraPosition.distanceTo(hit.Pos);
+                    if (hitDistance < closestDistance || closestDistance == 0.0D)
                     {
                         _targetedEntity = ent;
-                        closestDistance = var18;
+                        closestDistance = hitDistance;
                     }
                 }
             }
@@ -160,13 +160,13 @@ public class GameRenderer
             cameraController.ApplyViewBobbing(tickDelta);
         }
 
-        float var4 = _client.Player.lastScreenDistortion + (_client.Player.changeDimensionCooldown - _client.Player.lastScreenDistortion) * tickDelta;
-        if (var4 > 0.0F)
+        float screenDistortion = _client.Player.lastScreenDistortion + (_client.Player.changeDimensionCooldown - _client.Player.lastScreenDistortion) * tickDelta;
+        if (screenDistortion > 0.0F)
         {
-            float var5 = 5.0F / (var4 * var4 + 5.0F) - var4 * 0.04F;
-            var5 *= var5;
+            float distortionScale = 5.0F / (screenDistortion * screenDistortion + 5.0F) - screenDistortion * 0.04F;
+            distortionScale *= distortionScale;
             GLManager.GL.Rotate((_ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
-            GLManager.GL.Scale(1.0F / var5, 1.0F, 1.0F);
+            GLManager.GL.Scale(1.0F / distortionScale, 1.0F, 1.0F);
             GLManager.GL.Rotate(-(_ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
         }
 
@@ -194,13 +194,13 @@ public class GameRenderer
             cameraController.ApplyViewBobbing(tickDelta);
         }
 
-        if (_client.Options.CameraMode == EnumCameraMode.FirstPerson && !_client.Camera.isSleeping() && !_client.Options.HideGUI)
+        if (_client.Options.CameraMode == CameraMode.FirstPerson && !_client.Camera.isSleeping() && !_client.Options.HideGUI)
         {
             itemRenderer.renderItemInFirstPerson(tickDelta);
         }
 
         GLManager.GL.PopMatrix();
-        if (_client.Options.CameraMode == EnumCameraMode.FirstPerson && !_client.Camera.isSleeping())
+        if (_client.Options.CameraMode == CameraMode.FirstPerson && !_client.Camera.isSleeping())
         {
             itemRenderer.renderOverlays(tickDelta);
             cameraController.ApplyDamageTiltEffect(tickDelta);
@@ -229,10 +229,10 @@ public class GameRenderer
         if (_client.InGameHasFocus)
         {
             _client.MouseHelper.MouseXYChange();
-            float var2 = _client.Options.MouseSensitivity * 0.6F + 0.2F;
-            float var3 = var2 * var2 * var2 * 8.0F;
-            float var4 = _client.MouseHelper.DeltaX * var3;
-            float var5 = _client.MouseHelper.DeltaY * var3;
+            float baseSensitivity = _client.Options.MouseSensitivity * 0.6F + 0.2F;
+            float lookScale = baseSensitivity * baseSensitivity * baseSensitivity * 8.0F;
+            float yawDelta = _client.MouseHelper.DeltaX * lookScale;
+            float pitchDelta = _client.MouseHelper.DeltaY * lookScale;
 
             bool zoomHeldForSensitivity = _client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.scanCode);
             if (zoomHeldForSensitivity)
@@ -240,23 +240,23 @@ public class GameRenderer
                 float zoomProgress = 1.0F / System.Math.Clamp(_client.Options.ZoomScale, 1.25F, 20.0F);
                 float sensitivityFloor = 0.4F;
                 float zoomSensitivityMultiplier = sensitivityFloor + (1.0F - sensitivityFloor) * zoomProgress;
-                var4 *= zoomSensitivityMultiplier;
-                var5 *= zoomSensitivityMultiplier;
+                yawDelta *= zoomSensitivityMultiplier;
+                pitchDelta *= zoomSensitivityMultiplier;
             }
 
-            ControllerManager.HandleLook(ref var4, ref var5, var3, _client.Timer.DeltaTime);
-            int var6 = -1;
+            ControllerManager.HandleLook(ref yawDelta, ref pitchDelta, lookScale, _client.Timer.DeltaTime);
+            int invertMultiplier = -1;
             if (_client.Options.InvertMouse)
             {
-                var6 = 1;
+                invertMultiplier = 1;
             }
 
             if (_client.Options.SmoothCamera)
             {
-                var4 = _mouseFilterXAxis.Smooth(var4, 0.05F * var3);
-                var5 = _mouseFilterYAxis.Smooth(var5, 0.05F * var3);
+                yawDelta = _mouseFilterXAxis.Smooth(yawDelta, 0.05F * lookScale);
+                pitchDelta = _mouseFilterYAxis.Smooth(pitchDelta, 0.05F * lookScale);
             }
-            _client.Player.ChangeLookDirection(var4, var5 * var6);
+            _client.Player.ChangeLookDirection(yawDelta, pitchDelta * invertMultiplier);
         }
 
         bool zoomHeld = (_client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.scanCode)) || ControllerManager.IsZoomHeld();
@@ -264,9 +264,9 @@ public class GameRenderer
 
         if (!_client.SkipRenderWorld)
         {
-            ScaledResolution var13 = new(_client.Options, _client.DisplayWidth, _client.DisplayHeight);
-            int scaledWidth = var13.ScaledWidth;
-            int scaledHeight = var13.ScaledHeight;
+            ScaledResolution scaledResolution = new(_client.Options, _client.DisplayWidth, _client.DisplayHeight);
+            int scaledWidth = scaledResolution.ScaledWidth;
+            int scaledHeight = scaledResolution.ScaledHeight;
             int scaledMouseX;
             int scaledMouseY;
             int vpOffsetX = (int)_client.DebugViewportOffset.X;
@@ -281,8 +281,8 @@ public class GameRenderer
                 scaledMouseX = (Mouse.getX() - vpOffsetX) * scaledWidth / _client.DisplayWidth;
                 scaledMouseY = scaledHeight - (Mouse.getY() - vpOffsetY) * scaledHeight / _client.DisplayHeight - 1;
             }
-            int var7 = 30 + (int)(_client.Options.LimitFramerate * 210.0f);
-            bool desiredVSync = _client.Options.VSync && var7 >= 240;
+            int targetFps = 30 + (int)(_client.Options.LimitFramerate * 210.0f);
+            bool desiredVSync = _client.Options.VSync && targetFps >= 240;
 
             if (_appliedVSyncState != desiredVSync)
             {
@@ -334,10 +334,10 @@ public class GameRenderer
             _client.FramebufferManager.End();
 
 
-            if (var7 < 240)
+            if (targetFps < 240)
             {
                 //frametime in milliseconds
-                double targetMs = 1000.0 / var7;
+                double targetMs = 1000.0 / targetFps;
 
                 double elapsedMs = _fpsTimer.Elapsed.TotalMilliseconds;
                 double waitTime = targetMs - elapsedMs;
@@ -593,64 +593,64 @@ public class GameRenderer
 
     private void renderRain()
     {
-        float var1 = _client.World.Environment.GetRainGradient(1.0F);
+        float rainGradient = _client.World.Environment.GetRainGradient(1.0F);
 
-        if (var1 != 0.0F)
+        if (rainGradient != 0.0F)
         {
             _random.SetSeed(_ticks * 312987231L);
-            EntityLiving var2 = _client.Camera;
-            World var3 = _client.World;
-            int var4 = MathHelper.Floor(var2.X);
-            int var5 = MathHelper.Floor(var2.Y);
-            int var6 = MathHelper.Floor(var2.Z);
-            byte var7 = 10;
-            double var8 = 0.0D;
-            double var10 = 0.0D;
-            double var12 = 0.0D;
-            int var14 = 0;
+            EntityLiving camera = _client.Camera;
+            World world = _client.World;
+            int cameraBlockX = MathHelper.Floor(camera.X);
+            int cameraBlockY = MathHelper.Floor(camera.Y);
+            int cameraBlockZ = MathHelper.Floor(camera.Z);
+            byte searchRadius = 10;
+            double rainSoundX = 0.0D;
+            double rainSoundY = 0.0D;
+            double rainSoundZ = 0.0D;
+            int validDropCount = 0;
 
-            for (int var15 = 0; var15 < (int)(100.0F * var1 * var1); ++var15)
+            for (int sampleIndex = 0; sampleIndex < (int)(100.0F * rainGradient * rainGradient); ++sampleIndex)
             {
-                int var16 = var4 + _random.NextInt(var7) - _random.NextInt(var7);
-                int var17 = var6 + _random.NextInt(var7) - _random.NextInt(var7);
-                int var18 = var3.Reader.GetTopSolidBlockY(var16, var17);
-                int var19 = var3.Reader.GetBlockId(var16, var18 - 1, var17);
-                if (var18 <= var5 + var7 && var18 >= var5 - var7 && var3.GetBiomeSource().GetBiome(var16, var17).CanSpawnLightningBolt())
+                int sampleX = cameraBlockX + _random.NextInt(searchRadius) - _random.NextInt(searchRadius);
+                int sampleZ = cameraBlockZ + _random.NextInt(searchRadius) - _random.NextInt(searchRadius);
+                int topSolidY = world.Reader.GetTopSolidBlockY(sampleX, sampleZ);
+                int blockBelowId = world.Reader.GetBlockId(sampleX, topSolidY - 1, sampleZ);
+                if (topSolidY <= cameraBlockY + searchRadius && topSolidY >= cameraBlockY - searchRadius && world.GetBiomeSource().GetBiome(sampleX, sampleZ).CanSpawnLightningBolt())
                 {
-                    float var20 = _random.NextFloat();
-                    float var21 = _random.NextFloat();
-                    if (var19 > 0)
+                    float xOffset = _random.NextFloat();
+                    float zOffset = _random.NextFloat();
+                    if (blockBelowId > 0)
                     {
-                        if (Block.Blocks[var19].material == Material.Lava)
+                        if (Block.Blocks[blockBelowId].material == Material.Lava)
                         {
-                            _client.ParticleManager.AddSmoke(var16 + var20, var18 + 0.1F - Block.Blocks[var19].BoundingBox.MinY, var17 + var21, 0.0, 0.0, 0.0);
+                            _client.ParticleManager.AddSmoke(sampleX + xOffset, topSolidY + 0.1F - Block.Blocks[blockBelowId].BoundingBox.MinY, sampleZ + zOffset, 0.0, 0.0, 0.0);
                         }
                         else
                         {
-                            ++var14;
-                            if (_random.NextInt(var14) == 0)
+                            ++validDropCount;
+                            if (_random.NextInt(validDropCount) == 0)
                             {
-                                var8 = (double)(var16 + var20);
-                                var10 = (double)(var18 + 0.1F) - Block.Blocks[var19].BoundingBox.MinY;
-                                var12 = (double)(var17 + var21);
+                                rainSoundX = (double)(sampleX + xOffset);
+                                rainSoundY = (double)(topSolidY + 0.1F) - Block.Blocks[blockBelowId].BoundingBox.MinY;
+                                rainSoundZ = (double)(sampleZ + zOffset);
                             }
 
-                            _client.ParticleManager.AddRain(var16 + var20, var18 + 0.1F - Block.Blocks[var19].BoundingBox.MinY, var17 + var21);
+                            _client.ParticleManager.AddRain(sampleX + xOffset, topSolidY + 0.1F - Block.Blocks[blockBelowId].BoundingBox.MinY, sampleZ + zOffset);
                         }
                     }
                 }
             }
 
-            if (var14 > 0 && _random.NextInt(3) < _rainSoundCounter++)
+            if (validDropCount > 0 && _random.NextInt(3) < _rainSoundCounter++)
             {
                 _rainSoundCounter = 0;
-                if (var10 > var2.Y + 1.0D && var3.Reader.GetTopSolidBlockY(MathHelper.Floor(var2.X), MathHelper.Floor(var2.Z)) > MathHelper.Floor(var2.Y))
+                if (rainSoundY > camera.Y + 1.0D && world.Reader.GetTopSolidBlockY(MathHelper.Floor(camera.X), MathHelper.Floor(camera.Z)) > MathHelper.Floor(camera.Y))
                 {
-                    _client.World.Broadcaster.PlaySoundAtPos(var8, var10, var12, "ambient.weather.rain", 0.1F, 0.5F);
+                    _client.World.Broadcaster.PlaySoundAtPos(rainSoundX, rainSoundY, rainSoundZ, "ambient.weather.rain", 0.1F, 0.5F);
                 }
                 else
                 {
-                    _client.World.Broadcaster.PlaySoundAtPos(var8, var10, var12, "ambient.weather.rain", 0.2F, 1.0F);
+                    _client.World.Broadcaster.PlaySoundAtPos(rainSoundX, rainSoundY, rainSoundZ, "ambient.weather.rain", 0.2F, 1.0F);
                 }
             }
         }
@@ -658,145 +658,145 @@ public class GameRenderer
 
     protected void renderSnow(float tickDelta)
     {
-        float var2 = _client.World.Environment.GetRainGradient(tickDelta);
-        if (var2 > 0.0F)
+        float rainGradient = _client.World.Environment.GetRainGradient(tickDelta);
+        if (rainGradient > 0.0F)
         {
-            EntityLiving var3 = _client.Camera;
-            World var4 = _client.World;
-            int var5 = MathHelper.Floor(var3.X);
-            int var6 = MathHelper.Floor(var3.Y);
-            int var7 = MathHelper.Floor(var3.Z);
-            Tessellator var8 = Tessellator.instance;
+            EntityLiving camera = _client.Camera;
+            World world = _client.World;
+            int cameraBlockX = MathHelper.Floor(camera.X);
+            int cameraBlockY = MathHelper.Floor(camera.Y);
+            int cameraBlockZ = MathHelper.Floor(camera.Z);
+            Tessellator tessellator = Tessellator.instance;
             GLManager.GL.Disable(GLEnum.CullFace);
             GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
             GLManager.GL.AlphaFunc(GLEnum.Greater, 0.01F);
             _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/environment/snow.png"));
-            double var9 = var3.LastTickX + (var3.X - var3.LastTickX) * (double)tickDelta;
-            double var11 = var3.LastTickY + (var3.Y - var3.LastTickY) * (double)tickDelta;
-            double var13 = var3.LastTickZ + (var3.Z - var3.LastTickZ) * (double)tickDelta;
-            int var15 = MathHelper.Floor(var11);
-            byte var16 = 10;
+            double renderX = camera.LastTickX + (camera.X - camera.LastTickX) * (double)tickDelta;
+            double renderY = camera.LastTickY + (camera.Y - camera.LastTickY) * (double)tickDelta;
+            double renderZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * (double)tickDelta;
+            int cameraYFloor = MathHelper.Floor(renderY);
+            byte renderRadius = 10;
 
-            Biome[] var17 = var4.GetBiomeSource().GetBiomesInArea(var5 - var16, var7 - var16, var16 * 2 + 1, var16 * 2 + 1);
-            int var18 = 0;
+            Biome[] biomes = world.GetBiomeSource().GetBiomesInArea(cameraBlockX - renderRadius, cameraBlockZ - renderRadius, renderRadius * 2 + 1, renderRadius * 2 + 1);
+            int biomeIndex = 0;
 
-            int var19;
-            int var20;
-            Biome var21;
-            int var22;
-            int var23;
-            int var24;
-            float var26;
-            for (var19 = var5 - var16; var19 <= var5 + var16; ++var19)
+            int sampleX;
+            int sampleZ;
+            Biome biome;
+            int topSolidY;
+            int minY;
+            int maxY;
+            float textureScroll;
+            for (sampleX = cameraBlockX - renderRadius; sampleX <= cameraBlockX + renderRadius; ++sampleX)
             {
-                for (var20 = var7 - var16; var20 <= var7 + var16; ++var20)
+                for (sampleZ = cameraBlockZ - renderRadius; sampleZ <= cameraBlockZ + renderRadius; ++sampleZ)
                 {
-                    var21 = var17[var18++];
-                    if (var21.GetEnableSnow())
+                    biome = biomes[biomeIndex++];
+                    if (biome.GetEnableSnow())
                     {
-                        var22 = var4.Reader.GetTopSolidBlockY(var19, var20);
-                        if (var22 < 0)
+                        topSolidY = world.Reader.GetTopSolidBlockY(sampleX, sampleZ);
+                        if (topSolidY < 0)
                         {
-                            var22 = 0;
+                            topSolidY = 0;
                         }
 
-                        var23 = var22;
-                        if (var22 < var15)
+                        minY = topSolidY;
+                        if (topSolidY < cameraYFloor)
                         {
-                            var23 = var15;
+                            minY = cameraYFloor;
                         }
 
-                        var24 = var6 - var16;
-                        int var25 = var6 + var16;
-                        if (var24 < var22)
+                        maxY = cameraBlockY - renderRadius;
+                        int maxRenderY = cameraBlockY + renderRadius;
+                        if (maxY < topSolidY)
                         {
-                            var24 = var22;
+                            maxY = topSolidY;
                         }
 
-                        if (var25 < var22)
+                        if (maxRenderY < topSolidY)
                         {
-                            var25 = var22;
+                            maxRenderY = topSolidY;
                         }
 
-                        var26 = 1.0F;
-                        if (var24 != var25)
+                        textureScroll = 1.0F;
+                        if (maxY != maxRenderY)
                         {
-                            _random.SetSeed(var19 * var19 * 3121 + var19 * 45238971 + var20 * var20 * 418711 + var20 * 13761);
-                            float var27 = _ticks + tickDelta;
-                            float var28 = ((_ticks & 511) + tickDelta) / 512.0F;
-                            float var29 = _random.NextFloat() + var27 * 0.01F * (float)_random.NextGaussian();
-                            float var30 = _random.NextFloat() + var27 * (float)_random.NextGaussian() * 0.001F;
-                            double var31 = (double)(var19 + 0.5F) - var3.X;
-                            double var33 = (double)(var20 + 0.5F) - var3.Z;
-                            float var35 = MathHelper.Sqrt(var31 * var31 + var33 * var33) / var16;
-                            var8.startDrawingQuads();
-                            float var36 = var4.GetLuminance(var19, var23, var20);
-                            GLManager.GL.Color4(var36, var36, var36, ((1.0F - var35 * var35) * 0.3F + 0.5F) * var2);
-                            var8.setTranslationD(-var9 * 1.0D, -var11 * 1.0D, -var13 * 1.0D);
-                            var8.addVertexWithUV(var19 + 0, var24, var20 + 0.5D, (double)(0.0F * var26 + var29), (double)(var24 * var26 / 4.0F + var28 * var26 + var30));
-                            var8.addVertexWithUV(var19 + 1, var24, var20 + 0.5D, (double)(1.0F * var26 + var29), (double)(var24 * var26 / 4.0F + var28 * var26 + var30));
-                            var8.addVertexWithUV(var19 + 1, var25, var20 + 0.5D, (double)(1.0F * var26 + var29), (double)(var25 * var26 / 4.0F + var28 * var26 + var30));
-                            var8.addVertexWithUV(var19 + 0, var25, var20 + 0.5D, (double)(0.0F * var26 + var29), (double)(var25 * var26 / 4.0F + var28 * var26 + var30));
-                            var8.addVertexWithUV(var19 + 0.5D, var24, var20 + 0, (double)(0.0F * var26 + var29), (double)(var24 * var26 / 4.0F + var28 * var26 + var30));
-                            var8.addVertexWithUV(var19 + 0.5D, var24, var20 + 1, (double)(1.0F * var26 + var29), (double)(var24 * var26 / 4.0F + var28 * var26 + var30));
-                            var8.addVertexWithUV(var19 + 0.5D, var25, var20 + 1, (double)(1.0F * var26 + var29), (double)(var25 * var26 / 4.0F + var28 * var26 + var30));
-                            var8.addVertexWithUV(var19 + 0.5D, var25, var20 + 0, (double)(0.0F * var26 + var29), (double)(var25 * var26 / 4.0F + var28 * var26 + var30));
-                            var8.setTranslationD(0.0D, 0.0D, 0.0D);
-                            var8.draw();
+                            _random.SetSeed(sampleX * sampleX * 3121 + sampleX * 45238971 + sampleZ * sampleZ * 418711 + sampleZ * 13761);
+                            float animationTime = _ticks + tickDelta;
+                            float textureVOffset = ((_ticks & 511) + tickDelta) / 512.0F;
+                            float textureUDrift = _random.NextFloat() + animationTime * 0.01F * (float)_random.NextGaussian();
+                            float textureVDrift = _random.NextFloat() + animationTime * (float)_random.NextGaussian() * 0.001F;
+                            double dx = (double)(sampleX + 0.5F) - camera.X;
+                            double dz = (double)(sampleZ + 0.5F) - camera.Z;
+                            float distanceFactor = MathHelper.Sqrt(dx * dx + dz * dz) / renderRadius;
+                            tessellator.startDrawingQuads();
+                            float brightness = world.GetLuminance(sampleX, minY, sampleZ);
+                            GLManager.GL.Color4(brightness, brightness, brightness, ((1.0F - distanceFactor * distanceFactor) * 0.3F + 0.5F) * rainGradient);
+                            tessellator.setTranslationD(-renderX * 1.0D, -renderY * 1.0D, -renderZ * 1.0D);
+                            tessellator.addVertexWithUV(sampleX + 0, maxY, sampleZ + 0.5D, (double)(0.0F * textureScroll + textureUDrift), (double)(maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 1, maxY, sampleZ + 0.5D, (double)(1.0F * textureScroll + textureUDrift), (double)(maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 1, maxRenderY, sampleZ + 0.5D, (double)(1.0F * textureScroll + textureUDrift), (double)(maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 0, maxRenderY, sampleZ + 0.5D, (double)(0.0F * textureScroll + textureUDrift), (double)(maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 0, (double)(0.0F * textureScroll + textureUDrift), (double)(maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 1, (double)(1.0F * textureScroll + textureUDrift), (double)(maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxRenderY, sampleZ + 1, (double)(1.0F * textureScroll + textureUDrift), (double)(maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxRenderY, sampleZ + 0, (double)(0.0F * textureScroll + textureUDrift), (double)(maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
+                            tessellator.draw();
                         }
                     }
                 }
             }
 
             _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/environment/rain.png"));
-            var16 = 10;
+            renderRadius = 10;
 
-            var18 = 0;
+            biomeIndex = 0;
 
-            for (var19 = var5 - var16; var19 <= var5 + var16; ++var19)
+            for (sampleX = cameraBlockX - renderRadius; sampleX <= cameraBlockX + renderRadius; ++sampleX)
             {
-                for (var20 = var7 - var16; var20 <= var7 + var16; ++var20)
+                for (sampleZ = cameraBlockZ - renderRadius; sampleZ <= cameraBlockZ + renderRadius; ++sampleZ)
                 {
-                    var21 = var17[var18++];
-                    if (var21.CanSpawnLightningBolt())
+                    biome = biomes[biomeIndex++];
+                    if (biome.CanSpawnLightningBolt())
                     {
-                        var22 = var4.Reader.GetTopSolidBlockY(var19, var20);
-                        var23 = var6 - var16;
-                        var24 = var6 + var16;
-                        if (var23 < var22)
+                        topSolidY = world.Reader.GetTopSolidBlockY(sampleX, sampleZ);
+                        minY = cameraBlockY - renderRadius;
+                        maxY = cameraBlockY + renderRadius;
+                        if (minY < topSolidY)
                         {
-                            var23 = var22;
+                            minY = topSolidY;
                         }
 
-                        if (var24 < var22)
+                        if (maxY < topSolidY)
                         {
-                            var24 = var22;
+                            maxY = topSolidY;
                         }
 
-                        float var37 = 1.0F;
-                        if (var23 != var24)
+                        float rainUvScale = 1.0F;
+                        if (minY != maxY)
                         {
-                            _random.SetSeed(var19 * var19 * 3121 + var19 * 45238971 + var20 * var20 * 418711 + var20 * 13761);
-                            var26 = ((_ticks + var19 * var19 * 3121 + var19 * 45238971 + var20 * var20 * 418711 + var20 * 13761 & 31) + tickDelta) / 32.0F * (3.0F + _random.NextFloat());
-                            double var38 = (double)(var19 + 0.5F) - var3.X;
-                            double var39 = (double)(var20 + 0.5F) - var3.Z;
-                            float var40 = MathHelper.Sqrt(var38 * var38 + var39 * var39) / var16;
-                            var8.startDrawingQuads();
-                            float var32 = var4.GetLuminance(var19, 128, var20) * 0.85F + 0.15F;
-                            GLManager.GL.Color4(var32, var32, var32, ((1.0F - var40 * var40) * 0.5F + 0.5F) * var2);
-                            var8.setTranslationD(-var9 * 1.0D, -var11 * 1.0D, -var13 * 1.0D);
-                            var8.addVertexWithUV(var19 + 0, var23, var20 + 0.5D, (double)(0.0F * var37), (double)(var23 * var37 / 4.0F + var26 * var37));
-                            var8.addVertexWithUV(var19 + 1, var23, var20 + 0.5D, (double)(1.0F * var37), (double)(var23 * var37 / 4.0F + var26 * var37));
-                            var8.addVertexWithUV(var19 + 1, var24, var20 + 0.5D, (double)(1.0F * var37), (double)(var24 * var37 / 4.0F + var26 * var37));
-                            var8.addVertexWithUV(var19 + 0, var24, var20 + 0.5D, (double)(0.0F * var37), (double)(var24 * var37 / 4.0F + var26 * var37));
-                            var8.addVertexWithUV(var19 + 0.5D, var23, var20 + 0, (double)(0.0F * var37), (double)(var23 * var37 / 4.0F + var26 * var37));
-                            var8.addVertexWithUV(var19 + 0.5D, var23, var20 + 1, (double)(1.0F * var37), (double)(var23 * var37 / 4.0F + var26 * var37));
-                            var8.addVertexWithUV(var19 + 0.5D, var24, var20 + 1, (double)(1.0F * var37), (double)(var24 * var37 / 4.0F + var26 * var37));
-                            var8.addVertexWithUV(var19 + 0.5D, var24, var20 + 0, (double)(0.0F * var37), (double)(var24 * var37 / 4.0F + var26 * var37));
-                            var8.setTranslationD(0.0D, 0.0D, 0.0D);
-                            var8.draw();
+                            _random.SetSeed(sampleX * sampleX * 3121 + sampleX * 45238971 + sampleZ * sampleZ * 418711 + sampleZ * 13761);
+                            textureScroll = ((_ticks + sampleX * sampleX * 3121 + sampleX * 45238971 + sampleZ * sampleZ * 418711 + sampleZ * 13761 & 31) + tickDelta) / 32.0F * (3.0F + _random.NextFloat());
+                            double rainDx = (double)(sampleX + 0.5F) - camera.X;
+                            double rainDz = (double)(sampleZ + 0.5F) - camera.Z;
+                            float rainDistanceFactor = MathHelper.Sqrt(rainDx * rainDx + rainDz * rainDz) / renderRadius;
+                            tessellator.startDrawingQuads();
+                            float rainBrightness = world.GetLuminance(sampleX, 128, sampleZ) * 0.85F + 0.15F;
+                            GLManager.GL.Color4(rainBrightness, rainBrightness, rainBrightness, ((1.0F - rainDistanceFactor * rainDistanceFactor) * 0.5F + 0.5F) * rainGradient);
+                            tessellator.setTranslationD(-renderX * 1.0D, -renderY * 1.0D, -renderZ * 1.0D);
+                            tessellator.addVertexWithUV(sampleX + 0, minY, sampleZ + 0.5D, (double)(0.0F * rainUvScale), (double)(minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 1, minY, sampleZ + 0.5D, (double)(1.0F * rainUvScale), (double)(minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 1, maxY, sampleZ + 0.5D, (double)(1.0F * rainUvScale), (double)(maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 0, maxY, sampleZ + 0.5D, (double)(0.0F * rainUvScale), (double)(maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, minY, sampleZ + 0, (double)(0.0F * rainUvScale), (double)(minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, minY, sampleZ + 1, (double)(1.0F * rainUvScale), (double)(minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 1, (double)(1.0F * rainUvScale), (double)(maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 0, (double)(0.0F * rainUvScale), (double)(maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
+                            tessellator.draw();
                         }
                     }
                 }
@@ -855,74 +855,74 @@ public class GameRenderer
 
     private void updateSkyAndFogColors(float tickDelta)
     {
-        World var2 = _client.World;
-        EntityLiving var3 = _client.Camera;
-        float var4 = 4.0F / _client.Options.renderDistance;
-        var4 = System.Math.Clamp(var4, 0.25f, 1.0f);
-        var4 = 1.0F - (float)Math.Pow(var4, 0.25D);
-        Vector3D<double> var5 = var2.Environment.GetSkyColor(_client.Camera, tickDelta);
-        float var6 = (float)var5.X;
-        float var7 = (float)var5.Y;
-        float var8 = (float)var5.Z;
-        Vector3D<double> var9 = var2.GetFogColor(tickDelta);
-        _fogColorRed = (float)var9.X;
-        _fogColorGreen = (float)var9.Y;
-        _fogColorBlue = (float)var9.Z;
-        _fogColorRed += (var6 - _fogColorRed) * var4;
-        _fogColorGreen += (var7 - _fogColorGreen) * var4;
-        _fogColorBlue += (var8 - _fogColorBlue) * var4;
-        float var10 = var2.Environment.GetRainGradient(tickDelta);
-        float var11;
-        float var12;
-        if (var10 > 0.0F)
+        World world = _client.World;
+        EntityLiving camera = _client.Camera;
+        float fogBlend = 4.0F / _client.Options.renderDistance;
+        fogBlend = System.Math.Clamp(fogBlend, 0.25f, 1.0f);
+        fogBlend = 1.0F - (float)Math.Pow(fogBlend, 0.25D);
+        Vector3D<double> skyColor = world.Environment.GetSkyColor(_client.Camera, tickDelta);
+        float skyRed = (float)skyColor.X;
+        float skyGreen = (float)skyColor.Y;
+        float skyBlue = (float)skyColor.Z;
+        Vector3D<double> fogColor = world.GetFogColor(tickDelta);
+        _fogColorRed = (float)fogColor.X;
+        _fogColorGreen = (float)fogColor.Y;
+        _fogColorBlue = (float)fogColor.Z;
+        _fogColorRed += (skyRed - _fogColorRed) * fogBlend;
+        _fogColorGreen += (skyGreen - _fogColorGreen) * fogBlend;
+        _fogColorBlue += (skyBlue - _fogColorBlue) * fogBlend;
+        float rainGradient = world.Environment.GetRainGradient(tickDelta);
+        float rainDarken;
+        float fogBrightness;
+        if (rainGradient > 0.0F)
         {
-            var11 = 1.0F - var10 * 0.5F;
-            var12 = 1.0F - var10 * 0.4F;
-            _fogColorRed *= var11;
-            _fogColorGreen *= var11;
-            _fogColorBlue *= var12;
+            rainDarken = 1.0F - rainGradient * 0.5F;
+            fogBrightness = 1.0F - rainGradient * 0.4F;
+            _fogColorRed *= rainDarken;
+            _fogColorGreen *= rainDarken;
+            _fogColorBlue *= fogBrightness;
         }
 
-        var11 = var2.Environment.GetThunderGradient(tickDelta);
-        if (var11 > 0.0F)
+        rainDarken = world.Environment.GetThunderGradient(tickDelta);
+        if (rainDarken > 0.0F)
         {
-            var12 = 1.0F - var11 * 0.5F;
-            _fogColorRed *= var12;
-            _fogColorGreen *= var12;
-            _fogColorBlue *= var12;
+            fogBrightness = 1.0F - rainDarken * 0.5F;
+            _fogColorRed *= fogBrightness;
+            _fogColorGreen *= fogBrightness;
+            _fogColorBlue *= fogBrightness;
         }
 
         if (_cloudFog)
         {
-            Vector3D<double> var16 = var2.Environment.GetCloudColor(tickDelta);
-            _fogColorRed = (float)var16.X;
-            _fogColorGreen = (float)var16.Y;
-            _fogColorBlue = (float)var16.Z;
+            Vector3D<double> cloudColor = world.Environment.GetCloudColor(tickDelta);
+            _fogColorRed = (float)cloudColor.X;
+            _fogColorGreen = (float)cloudColor.Y;
+            _fogColorBlue = (float)cloudColor.Z;
         }
-        else if (var3.IsInFluid(Material.Water))
+        else if (camera.IsInFluid(Material.Water))
         {
             _fogColorRed = 0.02F;
             _fogColorGreen = 0.02F;
             _fogColorBlue = 0.2F;
         }
-        else if (var3.IsInFluid(Material.Lava))
+        else if (camera.IsInFluid(Material.Lava))
         {
             _fogColorRed = 0.6F;
             _fogColorGreen = 0.1F;
             _fogColorBlue = 0.0F;
         }
 
-        var12 = cameraController.LastViewBob + (cameraController.ViewBob - cameraController.LastViewBob) * tickDelta;
-        _fogColorRed *= var12;
-        _fogColorGreen *= var12;
-        _fogColorBlue *= var12;
+        fogBrightness = cameraController.LastViewBob + (cameraController.ViewBob - cameraController.LastViewBob) * tickDelta;
+        _fogColorRed *= fogBrightness;
+        _fogColorGreen *= fogBrightness;
+        _fogColorBlue *= fogBrightness;
 
         GLManager.GL.ClearColor(_fogColorRed, _fogColorGreen, _fogColorBlue, 0.0F);
     }
 
     private void applyFog(int mode)
     {
-        EntityLiving var3 = _client.Camera;
+        EntityLiving camera = _client.Camera;
         GLManager.GL.Fog(GLEnum.FogColor, updateFogColorBuffer(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0F));
         _client.WorldRenderer.ChunkRenderer.SetFogColor(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
         GLManager.GL.Normal3(0.0F, -1.0F, 0.0F);
@@ -934,14 +934,14 @@ public class GameRenderer
             _client.WorldRenderer.ChunkRenderer.SetFogMode(1);
             _client.WorldRenderer.ChunkRenderer.SetFogDensity(0.1f);
         }
-        else if (var3.IsInFluid(Material.Water))
+        else if (camera.IsInFluid(Material.Water))
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
             GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
             _client.WorldRenderer.ChunkRenderer.SetFogMode(1);
             _client.WorldRenderer.ChunkRenderer.SetFogDensity(0.1f);
         }
-        else if (var3.IsInFluid(Material.Lava))
+        else if (camera.IsInFluid(Material.Lava))
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
             GLManager.GL.Fog(GLEnum.FogDensity, 2.0F);
@@ -975,12 +975,12 @@ public class GameRenderer
         GLManager.GL.ColorMaterial(GLEnum.Front, GLEnum.Ambient);
     }
 
-    private float[] updateFogColorBuffer(float var1, float var2, float var3, float var4)
+    private float[] updateFogColorBuffer(float red, float green, float blue, float alpha)
     {
-        _fogColorBuffer[0] = var1;
-        _fogColorBuffer[1] = var2;
-        _fogColorBuffer[2] = var3;
-        _fogColorBuffer[3] = var4;
+        _fogColorBuffer[0] = red;
+        _fogColorBuffer[1] = green;
+        _fogColorBuffer[2] = blue;
+        _fogColorBuffer[3] = alpha;
         return _fogColorBuffer;
     }
 }

@@ -8,13 +8,13 @@ public class ModelSlime : ModelBase
     private readonly ModelPart slimeMouth;
 
 
-    public ModelSlime(int var1)
+    public ModelSlime(int textureOffsetY)
     {
-        slimeBodies = new ModelPart(0, var1);
+        slimeBodies = new ModelPart(0, textureOffsetY);
         slimeBodies.addBox(-4.0F, 16.0F, -4.0F, 8, 8, 8);
-        if (var1 > 0)
+        if (textureOffsetY > 0)
         {
-            slimeBodies = new ModelPart(0, var1);
+            slimeBodies = new ModelPart(0, textureOffsetY);
             slimeBodies.addBox(-3.0F, 17.0F, -3.0F, 6, 6, 6);
             slimeRightEye = new ModelPart(32, 0);
             slimeRightEye.addBox(-3.25F, 18.0F, -3.5F, 2, 2, 2);
@@ -26,19 +26,19 @@ public class ModelSlime : ModelBase
 
     }
 
-    public override void setRotationAngles(float var1, float var2, float var3, float var4, float var5, float var6)
+    public override void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
     {
     }
 
-    public override void render(float var1, float var2, float var3, float var4, float var5, float var6)
+    public override void render(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
     {
-        setRotationAngles(var1, var2, var3, var4, var5, var6);
-        slimeBodies.render(var6);
+        setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
+        slimeBodies.render(scale);
         if (slimeRightEye != null)
         {
-            slimeRightEye.render(var6);
-            slimeLeftEye.render(var6);
-            slimeMouth.render(var6);
+            slimeRightEye.render(scale);
+            slimeLeftEye.render(scale);
+            slimeMouth.render(scale);
         }
 
     }

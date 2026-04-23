@@ -14,7 +14,7 @@ public class EntityPainting : Entity
     public int XPosition;
     public int YPosition;
     public int ZPosition;
-    public EnumArt Art;
+    public Painting Art;
 
     public EntityPainting(IWorldContext world) : base(world)
     {
@@ -30,9 +30,9 @@ public class EntityPainting : Entity
         YPosition = yPosition;
         ZPosition = zPosition;
 
-        List<EnumArt> validPaintings = new();
+        List<Painting> validPaintings = new();
 
-        foreach (var art in EnumArt.Values)
+        foreach (var art in Painting.Values)
         {
             Art = art;
             SetFacing(direction);
@@ -56,7 +56,7 @@ public class EntityPainting : Entity
         YPosition = y;
         ZPosition = z;
 
-        Art = EnumArt.Values.FirstOrDefault(art => art.Title == title) ?? EnumArt.Kebab;
+        Art = Painting.Values.FirstOrDefault(art => art.Title == title) ?? Painting.Kebab;
 
         SetFacing(direction);
     }
@@ -224,7 +224,7 @@ public class EntityPainting : Entity
         ZPosition = nbt.GetInteger("TileZ");
 
         string motiveTitle = nbt.GetString("Motive");
-        Art = EnumArt.Values.FirstOrDefault(art => art.Title == motiveTitle) ?? EnumArt.Kebab;
+        Art = Painting.Values.FirstOrDefault(art => art.Title == motiveTitle) ?? Painting.Kebab;
 
         SetFacing(Direction);
     }

@@ -35,7 +35,7 @@ public class EntityRenderDispatcher
     {
         RegisterRenderer(typeof(EntitySpider), new SpiderEntityRenderer());
         RegisterRenderer(typeof(EntityPig), new PigEntityRenderer(new ModelPig(), new ModelPig(0.5F), 0.7F));
-        RegisterRenderer(typeof(EntitySheep), new SheepEntityRenderer(new ModelSheep2(), new ModelSheep1(), 0.7F));
+        RegisterRenderer(typeof(EntitySheep), new SheepEntityRenderer(new SheepModel(), new SheepFurModel(), 0.7F));
         RegisterRenderer(typeof(EntityCow), new CowEntityRenderer(new ModelCow(), 0.7F));
         RegisterRenderer(typeof(EntityWolf), new WolfEntityRenderer(new ModelWolf(), 0.5F));
         RegisterRenderer(typeof(EntityChicken), new ChickenEntityRenderer(new ModelChicken(), 0.3F));
@@ -101,9 +101,9 @@ public class EntityRenderDispatcher
             int blockId = world.Reader.GetBlockId(MathHelper.Floor(camera.X), MathHelper.Floor(camera.Y), MathHelper.Floor(camera.Z));
             if (blockId == Block.Bed.id)
             {
-                int var8 = world.Reader.GetBlockMeta(MathHelper.Floor(camera.X), MathHelper.Floor(camera.Y), MathHelper.Floor(camera.Z));
-                int var9 = var8 & 3;
-                PlayerViewY = var9 * 90 + 180;
+                int bedMeta = world.Reader.GetBlockMeta(MathHelper.Floor(camera.X), MathHelper.Floor(camera.Y), MathHelper.Floor(camera.Z));
+                int bedFacing = bedMeta & 3;
+                PlayerViewY = bedFacing * 90 + 180;
                 PlayerViewX = 0.0F;
             }
         }

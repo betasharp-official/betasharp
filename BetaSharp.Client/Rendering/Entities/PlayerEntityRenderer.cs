@@ -24,24 +24,24 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         _modelBipedMain = (ModelBiped)mainModel;
     }
 
-    protected bool SetArmorModel(EntityPlayer player, int var2, float var3)
+    protected bool SetArmorModel(EntityPlayer playerEntity, int renderPass, float tickDelta)
     {
-        ItemStack var4 = player.inventory.ArmorItemBySlot(3 - var2);
-        if (var4 != null)
+        ItemStack armorStack = playerEntity.inventory.ArmorItemBySlot(3 - renderPass);
+        if (armorStack != null)
         {
-            Item var5 = var4.getItem();
-            if (var5 is ItemArmor var6)
+            Item armorItem = armorStack.getItem();
+            if (armorItem is ItemArmor armor)
             {
-                loadTexture("/armor/" + s_armorFilenamePrefix[var6.renderIndex] + "_" + (var2 == 2 ? 2 : 1) + ".png");
-                ModelBiped var7 = var2 == 2 ? _modelArmor : _modelArmorChestplate;
-                var7.bipedHead.visible = var2 == 0;
-                var7.bipedHeadwear.visible = var2 == 0;
-                var7.bipedBody.visible = var2 == 1 || var2 == 2;
-                var7.bipedRightArm.visible = var2 == 1;
-                var7.bipedLeftArm.visible = var2 == 1;
-                var7.bipedRightLeg.visible = var2 == 2 || var2 == 3;
-                var7.bipedLeftLeg.visible = var2 == 2 || var2 == 3;
-                setRenderPassModel(var7);
+                loadTexture("/armor/" + s_armorFilenamePrefix[armor.renderIndex] + "_" + (renderPass == 2 ? 2 : 1) + ".png");
+                ModelBiped armorModel = renderPass == 2 ? _modelArmor : _modelArmorChestplate;
+                armorModel.bipedHead.visible = renderPass == 0;
+                armorModel.bipedHeadwear.visible = renderPass == 0;
+                armorModel.bipedBody.visible = renderPass == 1 || renderPass == 2;
+                armorModel.bipedRightArm.visible = renderPass == 1;
+                armorModel.bipedLeftArm.visible = renderPass == 1;
+                armorModel.bipedRightLeg.visible = renderPass == 2 || renderPass == 3;
+                armorModel.bipedLeftLeg.visible = renderPass == 2 || renderPass == 3;
+                setRenderPassModel(armorModel);
                 return true;
             }
         }
@@ -49,71 +49,71 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         return false;
     }
 
-    public void RenderPlayer(EntityPlayer var1, double var2, double var4, double var6, float var8, float var9)
+    public void RenderPlayer(EntityPlayer playerEntity, double x, double y, double z, float yaw, float tickDelta)
     {
-        ItemStack var10 = var1.inventory.GetItemInHand();
-        _modelArmorChestplate.field_1278_i = _modelArmor.field_1278_i = _modelBipedMain.field_1278_i = var10 != null;
-        _modelArmorChestplate.isSneak = _modelArmor.isSneak = _modelBipedMain.isSneak = var1.IsSneaking();
-        double var11 = var4 - var1.StandingEyeHeight;
-        if (var1.IsSneaking() && var1 is not ClientPlayerEntity)
+        ItemStack heldItem = playerEntity.inventory.GetItemInHand();
+        _modelArmorChestplate.field_1278_i = _modelArmor.field_1278_i = _modelBipedMain.field_1278_i = heldItem != null;
+        _modelArmorChestplate.isSneak = _modelArmor.isSneak = _modelBipedMain.isSneak = playerEntity.IsSneaking();
+        double renderY = y - playerEntity.StandingEyeHeight;
+        if (playerEntity.IsSneaking() && playerEntity is not ClientPlayerEntity)
         {
-            var11 -= 0.125D;
+            renderY -= 0.125D;
         }
 
-        base.DoRenderLiving(var1, var2, var11, var6, var8, var9);
+        base.DoRenderLiving(playerEntity, x, renderY, z, yaw, tickDelta);
         _modelArmorChestplate.isSneak = _modelArmor.isSneak = _modelBipedMain.isSneak = false;
         _modelArmorChestplate.field_1278_i = _modelArmor.field_1278_i = _modelBipedMain.field_1278_i = false;
     }
 
-    protected void RenderName(EntityPlayer var1, double var2, double var4, double var6)
+    protected void RenderName(EntityPlayer playerEntity, double x, double y, double z)
     {
-        if (Dispatcher.Options.HideGUI && var1 != Dispatcher.CameraEntity)
+        if (Dispatcher.Options.HideGUI && playerEntity != Dispatcher.CameraEntity)
         {
-            float var8 = 1.6F;
-            float var9 = (float)(1.0D / 60.0D) * var8;
-            float var10 = var1.GetDistance(Dispatcher.CameraEntity);
-            float var11 = var1.IsSneaking() ? 32.0F : 64.0F;
-            if (var10 < var11)
+            float nameScale = 1.6F;
+            float renderScale = (float)(1.0D / 60.0D) * nameScale;
+            float distance = playerEntity.GetDistance(Dispatcher.CameraEntity);
+            float maxDistance = playerEntity.IsSneaking() ? 32.0F : 64.0F;
+            if (distance < maxDistance)
             {
-                string var12 = var1.name;
-                if (!var1.IsSneaking())
+                string displayName = playerEntity.name;
+                if (!playerEntity.IsSneaking())
                 {
-                    if (var1.isSleeping())
+                    if (playerEntity.isSleeping())
                     {
-                        renderLivingLabel(var1, var12, var2, var4 - 1.5D, var6, 64);
+                        renderLivingLabel(playerEntity, displayName, x, y - 1.5D, z, 64);
                     }
                     else
                     {
-                        renderLivingLabel(var1, var12, var2, var4, var6, 64);
+                        renderLivingLabel(playerEntity, displayName, x, y, z, 64);
                     }
                 }
                 else
                 {
-                    TextRenderer var13 = TextRenderer;
+                    TextRenderer fontRenderer = TextRenderer;
                     GLManager.GL.PushMatrix();
-                    GLManager.GL.Translate((float)var2 + 0.0F, (float)var4 + 2.3F, (float)var6);
+                    GLManager.GL.Translate((float)x + 0.0F, (float)y + 2.3F, (float)z);
                     GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
                     GLManager.GL.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
                     GLManager.GL.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
-                    GLManager.GL.Scale(-var9, -var9, var9);
+                    GLManager.GL.Scale(-renderScale, -renderScale, renderScale);
                     GLManager.GL.Disable(GLEnum.Lighting);
-                    GLManager.GL.Translate(0.0F, 0.25F / var9, 0.0F);
+                    GLManager.GL.Translate(0.0F, 0.25F / renderScale, 0.0F);
                     GLManager.GL.DepthMask(false);
                     GLManager.GL.Enable(GLEnum.Blend);
                     GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-                    Tessellator var14 = Tessellator.instance;
+                    Tessellator tessellator = Tessellator.instance;
                     GLManager.GL.Disable(GLEnum.Texture2D);
-                    var14.startDrawingQuads();
-                    int var15 = var13.GetStringWidth(var12) / 2;
-                    var14.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
-                    var14.addVertex(-var15 - 1, -1.0D, 0.0D);
-                    var14.addVertex(-var15 - 1, 8.0D, 0.0D);
-                    var14.addVertex(var15 + 1, 8.0D, 0.0D);
-                    var14.addVertex(var15 + 1, -1.0D, 0.0D);
-                    var14.draw();
+                    tessellator.startDrawingQuads();
+                    int nameHalfWidth = fontRenderer.GetStringWidth(displayName) / 2;
+                    tessellator.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
+                    tessellator.addVertex(-nameHalfWidth - 1, -1.0D, 0.0D);
+                    tessellator.addVertex(-nameHalfWidth - 1, 8.0D, 0.0D);
+                    tessellator.addVertex(nameHalfWidth + 1, 8.0D, 0.0D);
+                    tessellator.addVertex(nameHalfWidth + 1, -1.0D, 0.0D);
+                    tessellator.draw();
                     GLManager.GL.Enable(GLEnum.Texture2D);
                     GLManager.GL.DepthMask(true);
-                    var13.DrawString(var12, -var13.GetStringWidth(var12) / 2, 0, Color.WhiteAlpha20);
+                    fontRenderer.DrawString(displayName, -fontRenderer.GetStringWidth(displayName) / 2, 0, Color.WhiteAlpha20);
                     GLManager.GL.Enable(GLEnum.Lighting);
                     GLManager.GL.Disable(GLEnum.Blend);
                     GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
@@ -124,143 +124,143 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     }
 
-    protected void RenderSpecials(EntityPlayer var1, float var2)
+    protected void RenderSpecials(EntityPlayer playerEntity, float tickDelta)
     {
-        ItemStack var3 = var1.inventory.ArmorItemBySlot(3);
-        if (var3 != null && var3.getItem().id < 256)
+        ItemStack helmetStack = playerEntity.inventory.ArmorItemBySlot(3);
+        if (helmetStack != null && helmetStack.getItem().id < 256)
         {
             GLManager.GL.PushMatrix();
             _modelBipedMain.bipedHead.transform(1.0F / 16.0F);
-            if (BlockRenderer.IsSideLit(Block.Blocks[var3.ItemId].getRenderType()))
+            if (BlockRenderer.IsSideLit(Block.Blocks[helmetStack.ItemId].getRenderType()))
             {
-                float var4 = 10.0F / 16.0F;
+                float helmetScale = 10.0F / 16.0F;
                 GLManager.GL.Translate(0.0F, -0.25F, 0.0F);
                 GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
-                GLManager.GL.Scale(var4, -var4, var4);
+                GLManager.GL.Scale(helmetScale, -helmetScale, helmetScale);
             }
 
-            Dispatcher.HeldItemRenderer.renderItem(var1, var3);
+            Dispatcher.HeldItemRenderer.renderItem(playerEntity, helmetStack);
             GLManager.GL.PopMatrix();
         }
 
-        float var5;
-        if (var1.name.Equals("deadmau5") && LoadDownloadableImageTexture(var1.name, null))
+        float heldItemScale;
+        if (playerEntity.name.Equals("deadmau5") && LoadDownloadableImageTexture(playerEntity.name, null))
         {
-            for (int var19 = 0; var19 < 2; ++var19)
+            for (int earIndex = 0; earIndex < 2; ++earIndex)
             {
-                var5 = var1.PrevYaw + (var1.Yaw - var1.PrevYaw) * var2 - (var1.LastBodyYaw + (var1.BodyYaw - var1.LastBodyYaw) * var2);
-                float var6 = var1.PrevPitch + (var1.Pitch - var1.PrevPitch) * var2;
+                heldItemScale = playerEntity.PrevYaw + (playerEntity.Yaw - playerEntity.PrevYaw) * tickDelta - (playerEntity.LastBodyYaw + (playerEntity.BodyYaw - playerEntity.LastBodyYaw) * tickDelta);
+                float headPitchDelta = playerEntity.PrevPitch + (playerEntity.Pitch - playerEntity.PrevPitch) * tickDelta;
                 GLManager.GL.PushMatrix();
-                GLManager.GL.Rotate(var5, 0.0F, 1.0F, 0.0F);
-                GLManager.GL.Rotate(var6, 1.0F, 0.0F, 0.0F);
-                GLManager.GL.Translate(6.0F / 16.0F * (var19 * 2 - 1), 0.0F, 0.0F);
+                GLManager.GL.Rotate(heldItemScale, 0.0F, 1.0F, 0.0F);
+                GLManager.GL.Rotate(headPitchDelta, 1.0F, 0.0F, 0.0F);
+                GLManager.GL.Translate(6.0F / 16.0F * (earIndex * 2 - 1), 0.0F, 0.0F);
                 GLManager.GL.Translate(0.0F, -(6.0F / 16.0F), 0.0F);
-                GLManager.GL.Rotate(-var6, 1.0F, 0.0F, 0.0F);
-                GLManager.GL.Rotate(-var5, 0.0F, 1.0F, 0.0F);
-                float var7 = 4.0F / 3.0F;
-                GLManager.GL.Scale(var7, var7, var7);
+                GLManager.GL.Rotate(-headPitchDelta, 1.0F, 0.0F, 0.0F);
+                GLManager.GL.Rotate(-heldItemScale, 0.0F, 1.0F, 0.0F);
+                float earScale = 4.0F / 3.0F;
+                GLManager.GL.Scale(earScale, earScale, earScale);
                 _modelBipedMain.renderEars(1.0F / 16.0F);
                 GLManager.GL.PopMatrix();
             }
         }
 
-        if (LoadDownloadableImageTexture(var1.playerCloakUrl, null))
+        if (LoadDownloadableImageTexture(playerEntity.playerCloakUrl, null))
         {
             GLManager.GL.PushMatrix();
             GLManager.GL.Translate(0.0F, 0.0F, 2.0F / 16.0F);
-            double var20 = var1.prevCapeX + (var1.capeX - var1.prevCapeX) * (double)var2 - (var1.PrevX + (var1.X - var1.PrevX) * (double)var2);
-            double var22 = var1.prevCapeY + (var1.capeY - var1.prevCapeY) * (double)var2 - (var1.PrevY + (var1.Y - var1.PrevY) * (double)var2);
-            double var8 = var1.prevCapeZ + (var1.capeZ - var1.prevCapeZ) * (double)var2 - (var1.PrevZ + (var1.Z - var1.PrevZ) * (double)var2);
-            float var10 = var1.LastBodyYaw + (var1.BodyYaw - var1.LastBodyYaw) * var2;
-            double var11 = (double)MathHelper.Sin(var10 * (float)Math.PI / 180.0F);
-            double var13 = (double)-MathHelper.Cos(var10 * (float)Math.PI / 180.0F);
-            float var15 = (float)var22 * 10.0F;
-            if (var15 < -6.0F)
+            double capeOffsetX = playerEntity.prevCapeX + (playerEntity.capeX - playerEntity.prevCapeX) * (double)tickDelta - (playerEntity.PrevX + (playerEntity.X - playerEntity.PrevX) * (double)tickDelta);
+            double capeOffsetY = playerEntity.prevCapeY + (playerEntity.capeY - playerEntity.prevCapeY) * (double)tickDelta - (playerEntity.PrevY + (playerEntity.Y - playerEntity.PrevY) * (double)tickDelta);
+            double capeOffsetZ = playerEntity.prevCapeZ + (playerEntity.capeZ - playerEntity.prevCapeZ) * (double)tickDelta - (playerEntity.PrevZ + (playerEntity.Z - playerEntity.PrevZ) * (double)tickDelta);
+            float bodyYaw = playerEntity.LastBodyYaw + (playerEntity.BodyYaw - playerEntity.LastBodyYaw) * tickDelta;
+            double sinBodyYaw = (double)MathHelper.Sin(bodyYaw * (float)Math.PI / 180.0F);
+            double cosBodyYaw = (double)-MathHelper.Cos(bodyYaw * (float)Math.PI / 180.0F);
+            float capeLift = (float)capeOffsetY * 10.0F;
+            if (capeLift < -6.0F)
             {
-                var15 = -6.0F;
+                capeLift = -6.0F;
             }
 
-            if (var15 > 32.0F)
+            if (capeLift > 32.0F)
             {
-                var15 = 32.0F;
+                capeLift = 32.0F;
             }
 
-            float var16 = (float)(var20 * var11 + var8 * var13) * 100.0F;
-            float var17 = (float)(var20 * var13 - var8 * var11) * 100.0F;
-            if (var16 < 0.0F)
+            float capeSwingForward = (float)(capeOffsetX * sinBodyYaw + capeOffsetZ * cosBodyYaw) * 100.0F;
+            float capeSwingSide = (float)(capeOffsetX * cosBodyYaw - capeOffsetZ * sinBodyYaw) * 100.0F;
+            if (capeSwingForward < 0.0F)
             {
-                var16 = 0.0F;
+                capeSwingForward = 0.0F;
             }
 
-            float var18 = var1.prevStepBobbingAmount + (var1.stepBobbingAmount - var1.prevStepBobbingAmount) * var2;
-            var15 += MathHelper.Sin((var1.PrevHorizontalSpeed + (var1.HorizontalSpeed - var1.PrevHorizontalSpeed) * var2) * 6.0F) * 32.0F * var18;
-            if (var1.IsSneaking())
+            float bobbingAmount = playerEntity.prevStepBobbingAmount + (playerEntity.stepBobbingAmount - playerEntity.prevStepBobbingAmount) * tickDelta;
+            capeLift += MathHelper.Sin((playerEntity.PrevHorizontalSpeed + (playerEntity.HorizontalSpeed - playerEntity.PrevHorizontalSpeed) * tickDelta) * 6.0F) * 32.0F * bobbingAmount;
+            if (playerEntity.IsSneaking())
             {
-                var15 += 25.0F;
+                capeLift += 25.0F;
             }
 
-            GLManager.GL.Rotate(6.0F + var16 / 2.0F + var15, 1.0F, 0.0F, 0.0F);
-            GLManager.GL.Rotate(var17 / 2.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Rotate(-var17 / 2.0F, 0.0F, 1.0F, 0.0F);
+            GLManager.GL.Rotate(6.0F + capeSwingForward / 2.0F + capeLift, 1.0F, 0.0F, 0.0F);
+            GLManager.GL.Rotate(capeSwingSide / 2.0F, 0.0F, 0.0F, 1.0F);
+            GLManager.GL.Rotate(-capeSwingSide / 2.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
             _modelBipedMain.renderCloak(1.0F / 16.0F);
             GLManager.GL.PopMatrix();
         }
 
-        ItemStack var21 = var1.inventory.GetItemInHand();
-        if (var21 != null)
+        ItemStack heldItem = playerEntity.inventory.GetItemInHand();
+        if (heldItem != null)
         {
             GLManager.GL.PushMatrix();
             _modelBipedMain.bipedRightArm.transform(1.0F / 16.0F);
             GLManager.GL.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
-            if (var1.fishHook != null)
+            if (playerEntity.fishHook != null)
             {
-                var21 = new ItemStack(Item.Stick);
+                heldItem = new ItemStack(Item.Stick);
             }
 
-            if (var21.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[var21.ItemId].getRenderType()))
+            if (heldItem.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[heldItem.ItemId].getRenderType()))
             {
-                var5 = 0.5F;
+                heldItemScale = 0.5F;
                 GLManager.GL.Translate(0.0F, 3.0F / 16.0F, -(5.0F / 16.0F));
-                var5 *= 12.0F / 16.0F;
+                heldItemScale *= 12.0F / 16.0F;
                 GLManager.GL.Rotate(20.0F, 1.0F, 0.0F, 0.0F);
                 GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
-                GLManager.GL.Scale(var5, -var5, var5);
+                GLManager.GL.Scale(heldItemScale, -heldItemScale, heldItemScale);
             }
-            else if (Item.ITEMS[var21.ItemId].isHandheld())
+            else if (Item.ITEMS[heldItem.ItemId].isHandheld())
             {
-                var5 = 10.0F / 16.0F;
-                if (Item.ITEMS[var21.ItemId].isHandheldRod())
+                heldItemScale = 10.0F / 16.0F;
+                if (Item.ITEMS[heldItem.ItemId].isHandheldRod())
                 {
                     GLManager.GL.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
                     GLManager.GL.Translate(0.0F, -(2.0F / 16.0F), 0.0F);
                 }
 
                 GLManager.GL.Translate(0.0F, 3.0F / 16.0F, 0.0F);
-                GLManager.GL.Scale(var5, -var5, var5);
+                GLManager.GL.Scale(heldItemScale, -heldItemScale, heldItemScale);
                 GLManager.GL.Rotate(-100.0F, 1.0F, 0.0F, 0.0F);
                 GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
             }
             else
             {
-                var5 = 6.0F / 16.0F;
+                heldItemScale = 6.0F / 16.0F;
                 GLManager.GL.Translate(0.25F, 3.0F / 16.0F, -(3.0F / 16.0F));
-                GLManager.GL.Scale(var5, var5, var5);
+                GLManager.GL.Scale(heldItemScale, heldItemScale, heldItemScale);
                 GLManager.GL.Rotate(60.0F, 0.0F, 0.0F, 1.0F);
                 GLManager.GL.Rotate(-90.0F, 1.0F, 0.0F, 0.0F);
                 GLManager.GL.Rotate(20.0F, 0.0F, 0.0F, 1.0F);
             }
 
-            Dispatcher.HeldItemRenderer.renderItem(var1, var21);
+            Dispatcher.HeldItemRenderer.renderItem(playerEntity, heldItem);
             GLManager.GL.PopMatrix();
         }
 
     }
 
-    protected void func_186_b(EntityPlayer var1, float var2)
+    protected void func_186_b(EntityPlayer playerEntity, float tickDelta)
     {
-        float var3 = 15.0F / 16.0F;
-        GLManager.GL.Scale(var3, var3, var3);
+        float scale = 15.0F / 16.0F;
+        GLManager.GL.Scale(scale, scale, scale);
     }
 
     public void DrawFirstPersonHand()
@@ -270,67 +270,67 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         _modelBipedMain.bipedRightArm.render(1.0F / 16.0F);
     }
 
-    protected void func_22016_b(EntityPlayer var1, double var2, double var4, double var6)
+    protected void func_22016_b(EntityPlayer playerEntity, double x, double y, double z)
     {
-        if (var1.IsAlive() && var1.isSleeping())
+        if (playerEntity.IsAlive() && playerEntity.isSleeping())
         {
-            base.Func_22012_b(var1, var2 + var1.sleepOffsetX, var4 + var1.sleepOffsetY, var6 + var1.sleepOffsetZ);
+            base.Func_22012_b(playerEntity, x + playerEntity.sleepOffsetX, y + playerEntity.sleepOffsetY, z + playerEntity.sleepOffsetZ);
         }
         else
         {
-            base.Func_22012_b(var1, var2, var4, var6);
+            base.Func_22012_b(playerEntity, x, y, z);
         }
 
     }
 
-    protected void func_22017_a(EntityPlayer var1, float var2, float var3, float var4)
+    protected void func_22017_a(EntityPlayer playerEntity, float animationProgress, float bodyYaw, float tickDelta)
     {
-        if (var1.IsAlive() && var1.isSleeping())
+        if (playerEntity.IsAlive() && playerEntity.isSleeping())
         {
-            GLManager.GL.Rotate(var1.getSleepingRotation(), 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(getDeathMaxRotation(var1), 0.0F, 0.0F, 1.0F);
+            GLManager.GL.Rotate(playerEntity.getSleepingRotation(), 0.0F, 1.0F, 0.0F);
+            GLManager.GL.Rotate(getDeathMaxRotation(playerEntity), 0.0F, 0.0F, 1.0F);
             GLManager.GL.Rotate(270.0F, 0.0F, 1.0F, 0.0F);
         }
         else
         {
-            base.RotateCorpse(var1, var2, var3, var4);
+            base.RotateCorpse(playerEntity, animationProgress, bodyYaw, tickDelta);
         }
 
     }
 
-    protected override void PassSpecialRender(EntityLiving var1, double var2, double var4, double var6)
+    protected override void PassSpecialRender(EntityLiving entity, double x, double y, double z)
     {
-        RenderName((EntityPlayer)var1, var2, var4, var6);
+        RenderName((EntityPlayer)entity, x, y, z);
     }
 
-    protected override void PreRenderCallback(EntityLiving var1, float var2)
+    protected override void PreRenderCallback(EntityLiving entity, float tickDelta)
     {
-        func_186_b((EntityPlayer)var1, var2);
+        func_186_b((EntityPlayer)entity, tickDelta);
     }
 
-    protected override bool ShouldRenderPass(EntityLiving var1, int var2, float var3)
+    protected override bool ShouldRenderPass(EntityLiving entity, int renderPass, float tickDelta)
     {
-        return SetArmorModel((EntityPlayer)var1, var2, var3);
+        return SetArmorModel((EntityPlayer)entity, renderPass, tickDelta);
     }
 
-    protected override void RenderMore(EntityLiving var1, float var2)
+    protected override void RenderMore(EntityLiving entity, float tickDelta)
     {
-        RenderSpecials((EntityPlayer)var1, var2);
+        RenderSpecials((EntityPlayer)entity, tickDelta);
     }
 
-    protected override void RotateCorpse(EntityLiving var1, float var2, float var3, float var4)
+    protected override void RotateCorpse(EntityLiving entity, float animationProgress, float bodyYaw, float tickDelta)
     {
-        func_22017_a((EntityPlayer)var1, var2, var3, var4);
+        func_22017_a((EntityPlayer)entity, animationProgress, bodyYaw, tickDelta);
     }
 
-    protected override void Func_22012_b(EntityLiving var1, double var2, double var4, double var6)
+    protected override void Func_22012_b(EntityLiving entity, double x, double y, double z)
     {
-        func_22016_b((EntityPlayer)var1, var2, var4, var6);
+        func_22016_b((EntityPlayer)entity, x, y, z);
     }
 
-    public override void DoRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
+    public override void DoRenderLiving(EntityLiving entity, double x, double y, double z, float yaw, float tickDelta)
     {
-        RenderPlayer((EntityPlayer)var1, var2, var4, var6, var8, var9);
+        RenderPlayer((EntityPlayer)entity, x, y, z, yaw, tickDelta);
     }
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)

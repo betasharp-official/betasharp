@@ -135,7 +135,7 @@ public class GameOptions
     protected BetaSharp _game;
     private readonly string _optionsPath;
     public bool HideGUI = false;
-    public EnumCameraMode CameraMode = EnumCameraMode.FirstPerson;
+    public CameraMode CameraMode = CameraMode.FirstPerson;
     public bool ShowDebugInfo = false;
     public bool AdvancedItemTooltips = false;
     public string LastServer = "";
@@ -421,9 +421,9 @@ public class GameOptions
             case "skin": Skin = value; break;
             case "advancedItemTooltips": AdvancedItemTooltips = value == "true"; break;
             case "lastServer": LastServer = value; break;
-            case "cameraMode": CameraMode = (EnumCameraMode)int.Parse(value); break;
+            case "cameraMode": CameraMode = (CameraMode)int.Parse(value); break;
             case "thirdPersonView":
-                CameraMode = value == "true" ? EnumCameraMode.ThirdPerson : EnumCameraMode.FirstPerson;
+                CameraMode = value == "true" ? CameraMode.ThirdPerson : CameraMode.FirstPerson;
                 break;
             default:
                 if (key.StartsWith("controllerButton_"))

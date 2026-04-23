@@ -11,23 +11,23 @@ public class GhastEntityRenderer : LivingEntityRenderer
     {
     }
 
-    protected void render(EntityGhast var1, float var2)
+    protected void render(EntityGhast ghastEntity, float tickDelta)
     {
-        float var4 = (var1.prevAttackCounter + (var1.attackCounter - var1.prevAttackCounter) * var2) / 20.0F;
-        if (var4 < 0.0F)
+        float attackProgress = (ghastEntity.prevAttackCounter + (ghastEntity.attackCounter - ghastEntity.prevAttackCounter) * tickDelta) / 20.0F;
+        if (attackProgress < 0.0F)
         {
-            var4 = 0.0F;
+            attackProgress = 0.0F;
         }
 
-        var4 = 1.0F / (var4 * var4 * var4 * var4 * var4 * 2.0F + 1.0F);
-        float var5 = (8.0F + var4) / 2.0F;
-        float var6 = (8.0F + 1.0F / var4) / 2.0F;
-        GLManager.GL.Scale(var6, var5, var6);
+        attackProgress = 1.0F / (attackProgress * attackProgress * attackProgress * attackProgress * attackProgress * 2.0F + 1.0F);
+        float scaleY = (8.0F + attackProgress) / 2.0F;
+        float scaleXZ = (8.0F + 1.0F / attackProgress) / 2.0F;
+        GLManager.GL.Scale(scaleXZ, scaleY, scaleXZ);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    protected override void PreRenderCallback(EntityLiving var1, float var2)
+    protected override void PreRenderCallback(EntityLiving entity, float tickDelta)
     {
-        render((EntityGhast)var1, var2);
+        render((EntityGhast)entity, tickDelta);
     }
 }

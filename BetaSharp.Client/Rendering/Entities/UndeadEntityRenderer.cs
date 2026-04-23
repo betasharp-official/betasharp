@@ -17,43 +17,43 @@ public class UndeadEntityRenderer : LivingEntityRenderer
         modelBipedMain = mainModel;
     }
 
-    protected override void RenderMore(EntityLiving var1, float var2)
+    protected override void RenderMore(EntityLiving entity, float tickDelta)
     {
-        ItemStack var3 = var1.getHeldItem();
-        if (var3 != null)
+        ItemStack heldItem = entity.getHeldItem();
+        if (heldItem != null)
         {
             GLManager.GL.PushMatrix();
             modelBipedMain.bipedRightArm.transform(1.0F / 16.0F);
             GLManager.GL.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
-            float var4;
-            if (var3.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[var3.ItemId].getRenderType()))
+            float itemScale;
+            if (heldItem.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[heldItem.ItemId].getRenderType()))
             {
-                var4 = 0.5F;
+                itemScale = 0.5F;
                 GLManager.GL.Translate(0.0F, 3.0F / 16.0F, -(5.0F / 16.0F));
-                var4 *= 12.0F / 16.0F;
+                itemScale *= 12.0F / 16.0F;
                 GLManager.GL.Rotate(20.0F, 1.0F, 0.0F, 0.0F);
                 GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
-                GLManager.GL.Scale(var4, -var4, var4);
+                GLManager.GL.Scale(itemScale, -itemScale, itemScale);
             }
-            else if (Item.ITEMS[var3.ItemId].isHandheld())
+            else if (Item.ITEMS[heldItem.ItemId].isHandheld())
             {
-                var4 = 10.0F / 16.0F;
+                itemScale = 10.0F / 16.0F;
                 GLManager.GL.Translate(0.0F, 3.0F / 16.0F, 0.0F);
-                GLManager.GL.Scale(var4, -var4, var4);
+                GLManager.GL.Scale(itemScale, -itemScale, itemScale);
                 GLManager.GL.Rotate(-100.0F, 1.0F, 0.0F, 0.0F);
                 GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
             }
             else
             {
-                var4 = 6.0F / 16.0F;
+                itemScale = 6.0F / 16.0F;
                 GLManager.GL.Translate(0.25F, 3.0F / 16.0F, -(3.0F / 16.0F));
-                GLManager.GL.Scale(var4, var4, var4);
+                GLManager.GL.Scale(itemScale, itemScale, itemScale);
                 GLManager.GL.Rotate(60.0F, 0.0F, 0.0F, 1.0F);
                 GLManager.GL.Rotate(-90.0F, 1.0F, 0.0F, 0.0F);
                 GLManager.GL.Rotate(20.0F, 0.0F, 0.0F, 1.0F);
             }
 
-            Dispatcher.HeldItemRenderer.renderItem(var1, var3);
+            Dispatcher.HeldItemRenderer.renderItem(entity, heldItem);
             GLManager.GL.PopMatrix();
         }
 

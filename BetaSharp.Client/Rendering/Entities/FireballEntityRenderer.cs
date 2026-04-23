@@ -8,32 +8,32 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class FireballEntityRenderer : EntityRenderer
 {
 
-    public void render(EntityFireball var1, double x, double y, double z, float yaw, float tickDelta)
+    public void render(EntityFireball fireballEntity, double x, double y, double z, float yaw, float tickDelta)
     {
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate((float)x, (float)y, (float)z);
         GLManager.GL.Enable(GLEnum.RescaleNormal);
-        float var10 = 2.0F;
-        GLManager.GL.Scale(var10 / 1.0F, var10 / 1.0F, var10 / 1.0F);
-        int var11 = Item.Snowball.getTextureId(0);
+        float renderScale = 2.0F;
+        GLManager.GL.Scale(renderScale / 1.0F, renderScale / 1.0F, renderScale / 1.0F);
+        int textureIndex = Item.Snowball.getTextureId(0);
         loadTexture("/gui/items.png");
-        Tessellator var12 = Tessellator.instance;
-        float var13 = (var11 % 16 * 16 + 0) / 256.0F;
-        float var14 = (var11 % 16 * 16 + 16) / 256.0F;
-        float var15 = (var11 / 16 * 16 + 0) / 256.0F;
-        float var16 = (var11 / 16 * 16 + 16) / 256.0F;
-        float var17 = 1.0F;
-        float var18 = 0.5F;
-        float var19 = 0.25F;
+        Tessellator tessellator = Tessellator.instance;
+        float minU = (textureIndex % 16 * 16 + 0) / 256.0F;
+        float maxU = (textureIndex % 16 * 16 + 16) / 256.0F;
+        float minV = (textureIndex / 16 * 16 + 0) / 256.0F;
+        float maxV = (textureIndex / 16 * 16 + 16) / 256.0F;
+        float quadWidth = 1.0F;
+        float xOffset = 0.5F;
+        float yOffset = 0.25F;
         GLManager.GL.Rotate(180.0F - Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
         GLManager.GL.Rotate(-Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
-        var12.startDrawingQuads();
-        var12.setNormal(0.0F, 1.0F, 0.0F);
-        var12.addVertexWithUV((double)(0.0F - var18), (double)(0.0F - var19), 0.0D, (double)var13, (double)var16);
-        var12.addVertexWithUV((double)(var17 - var18), (double)(0.0F - var19), 0.0D, (double)var14, (double)var16);
-        var12.addVertexWithUV((double)(var17 - var18), (double)(1.0F - var19), 0.0D, (double)var14, (double)var15);
-        var12.addVertexWithUV((double)(0.0F - var18), (double)(1.0F - var19), 0.0D, (double)var13, (double)var15);
-        var12.draw();
+        tessellator.startDrawingQuads();
+        tessellator.setNormal(0.0F, 1.0F, 0.0F);
+        tessellator.addVertexWithUV((double)(0.0F - xOffset), (double)(0.0F - yOffset), 0.0D, (double)minU, (double)maxV);
+        tessellator.addVertexWithUV((double)(quadWidth - xOffset), (double)(0.0F - yOffset), 0.0D, (double)maxU, (double)maxV);
+        tessellator.addVertexWithUV((double)(quadWidth - xOffset), (double)(1.0F - yOffset), 0.0D, (double)maxU, (double)minV);
+        tessellator.addVertexWithUV((double)(0.0F - xOffset), (double)(1.0F - yOffset), 0.0D, (double)minU, (double)minV);
+        tessellator.draw();
         GLManager.GL.Disable(GLEnum.RescaleNormal);
         GLManager.GL.PopMatrix();
     }

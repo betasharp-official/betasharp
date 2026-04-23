@@ -22,22 +22,22 @@ public class LivingEntityRenderer : EntityRenderer
         ShadowRadius = shadowRadius;
     }
 
-    public void setRenderPassModel(ModelBase var1)
+    public void setRenderPassModel(ModelBase model)
     {
-        renderPassModel = var1;
+        renderPassModel = model;
     }
 
-    public virtual void DoRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
+    public virtual void DoRenderLiving(EntityLiving entity, double x, double y, double z, float yaw, float tickDelta)
     {
         GLManager.GL.PushMatrix();
         GLManager.GL.Disable(GLEnum.CullFace);
-        mainModel.onGround = func_167_c(var1, var9);
+        mainModel.onGround = func_167_c(entity, tickDelta);
         if (renderPassModel != null)
         {
             renderPassModel.onGround = mainModel.onGround;
         }
 
-        mainModel.isRiding = var1.HasVehicle();
+        mainModel.isRiding = entity.HasVehicle();
         if (renderPassModel != null)
         {
             renderPassModel.isRiding = mainModel.isRiding;
@@ -45,79 +45,79 @@ public class LivingEntityRenderer : EntityRenderer
 
         try
         {
-            float var10 = var1.LastBodyYaw + (var1.BodyYaw - var1.LastBodyYaw) * var9;
-            float var11 = var1.PrevYaw + (var1.Yaw - var1.PrevYaw) * var9;
-            float var12 = var1.PrevPitch + (var1.Pitch - var1.PrevPitch) * var9;
-            Func_22012_b(var1, var2, var4, var6);
-            float var13 = getAnimationProgress(var1, var9);
-            RotateCorpse(var1, var13, var10, var9);
-            float var14 = 1.0F / 16.0F;
+            float bodyYaw = entity.LastBodyYaw + (entity.BodyYaw - entity.LastBodyYaw) * tickDelta;
+            float headYaw = entity.PrevYaw + (entity.Yaw - entity.PrevYaw) * tickDelta;
+            float pitch = entity.PrevPitch + (entity.Pitch - entity.PrevPitch) * tickDelta;
+            Func_22012_b(entity, x, y, z);
+            float animationProgress = getAnimationProgress(entity, tickDelta);
+            RotateCorpse(entity, animationProgress, bodyYaw, tickDelta);
+            float modelScale = 1.0F / 16.0F;
             GLManager.GL.Enable(GLEnum.RescaleNormal);
             GLManager.GL.Scale(-1.0F, -1.0F, 1.0F);
-            PreRenderCallback(var1, var9);
-            GLManager.GL.Translate(0.0F, -24.0F * var14 - (1 / 128f), 0.0F);
-            float var15 = var1.LastWalkAnimationSpeed + (var1.WalkAnimationSpeed - var1.LastWalkAnimationSpeed) * var9;
-            float var16 = var1.AnimationPhase - var1.WalkAnimationSpeed * (1.0F - var9);
-            if (var15 > 1.0F)
+            PreRenderCallback(entity, tickDelta);
+            GLManager.GL.Translate(0.0F, -24.0F * modelScale - (1 / 128f), 0.0F);
+            float walkSpeed = entity.LastWalkAnimationSpeed + (entity.WalkAnimationSpeed - entity.LastWalkAnimationSpeed) * tickDelta;
+            float walkPhase = entity.AnimationPhase - entity.WalkAnimationSpeed * (1.0F - tickDelta);
+            if (walkSpeed > 1.0F)
             {
-                var15 = 1.0F;
+                walkSpeed = 1.0F;
             }
 
-            LoadDownloadableImageTexture((var1 as EntityPlayer)?.name, var1.GetTexture());
+            LoadDownloadableImageTexture((entity as EntityPlayer)?.name, entity.GetTexture());
             GLManager.GL.Enable(GLEnum.AlphaTest);
-            mainModel.setLivingAnimations(var1, var16, var15, var9);
-            mainModel.render(var16, var15, var13, var11 - var10, var12, var14);
+            mainModel.setLivingAnimations(entity, walkPhase, walkSpeed, tickDelta);
+            mainModel.render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
-            for (int var17 = 0; var17 < 4; ++var17)
+            for (int renderPass = 0; renderPass < 4; ++renderPass)
             {
-                if (ShouldRenderPass(var1, var17, var9))
+                if (ShouldRenderPass(entity, renderPass, tickDelta))
                 {
-                    renderPassModel.render(var16, var15, var13, var11 - var10, var12, var14);
+                    renderPassModel.render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                     GLManager.GL.Disable(GLEnum.Blend);
                     GLManager.GL.Enable(GLEnum.AlphaTest);
                 }
             }
 
-            RenderMore(var1, var9);
-            float var25 = var1.GetBrightnessAtEyes(var9);
-            int var18 = getColorMultiplier(var1, var25, var9);
-            if ((var18 >> 24 & 255) > 0 || var1.HurtTime > 0 || var1.DeathTime > 0)
+            RenderMore(entity, tickDelta);
+            float brightness = entity.GetBrightnessAtEyes(tickDelta);
+            int colorMultiplier = getColorMultiplier(entity, brightness, tickDelta);
+            if ((colorMultiplier >> 24 & 255) > 0 || entity.HurtTime > 0 || entity.DeathTime > 0)
             {
                 GLManager.GL.Disable(GLEnum.Texture2D);
                 GLManager.GL.Disable(GLEnum.AlphaTest);
                 GLManager.GL.Enable(GLEnum.Blend);
                 GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
                 GLManager.GL.DepthFunc(GLEnum.Equal);
-                if (var1.HurtTime > 0 || var1.DeathTime > 0)
+                if (entity.HurtTime > 0 || entity.DeathTime > 0)
                 {
-                    GLManager.GL.Color4(var25, 0.0F, 0.0F, 0.4F);
-                    mainModel.render(var16, var15, var13, var11 - var10, var12, var14);
+                    GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
+                    mainModel.render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
-                    for (int var19 = 0; var19 < 4; ++var19)
+                    for (int damagePass = 0; damagePass < 4; ++damagePass)
                     {
-                        if (func_27005_b(var1, var19, var9))
+                        if (func_27005_b(entity, damagePass, tickDelta))
                         {
-                            GLManager.GL.Color4(var25, 0.0F, 0.0F, 0.4F);
-                            renderPassModel.render(var16, var15, var13, var11 - var10, var12, var14);
+                            GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
+                            renderPassModel.render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                         }
                     }
                 }
 
-                if ((var18 >> 24 & 255) > 0)
+                if ((colorMultiplier >> 24 & 255) > 0)
                 {
-                    float var26 = (var18 >> 16 & 255) / 255.0F;
-                    float var20 = (var18 >> 8 & 255) / 255.0F;
-                    float var21 = (var18 & 255) / 255.0F;
-                    float var22 = (var18 >> 24 & 255) / 255.0F;
-                    GLManager.GL.Color4(var26, var20, var21, var22);
-                    mainModel.render(var16, var15, var13, var11 - var10, var12, var14);
+                    float red = (colorMultiplier >> 16 & 255) / 255.0F;
+                    float green = (colorMultiplier >> 8 & 255) / 255.0F;
+                    float blue = (colorMultiplier & 255) / 255.0F;
+                    float alpha = (colorMultiplier >> 24 & 255) / 255.0F;
+                    GLManager.GL.Color4(red, green, blue, alpha);
+                    mainModel.render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
-                    for (int var23 = 0; var23 < 4; ++var23)
+                    for (int overlayPass = 0; overlayPass < 4; ++overlayPass)
                     {
-                        if (func_27005_b(var1, var23, var9))
+                        if (func_27005_b(entity, overlayPass, tickDelta))
                         {
-                            GLManager.GL.Color4(var26, var20, var21, var22);
-                            renderPassModel.render(var16, var15, var13, var11 - var10, var12, var14);
+                            GLManager.GL.Color4(red, green, blue, alpha);
+                            renderPassModel.render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                         }
                     }
                 }
@@ -136,118 +136,118 @@ public class LivingEntityRenderer : EntityRenderer
         }
 
         GLManager.GL.PopMatrix();
-        PassSpecialRender(var1, var2, var4, var6);
+        PassSpecialRender(entity, x, y, z);
     }
 
-    protected virtual void Func_22012_b(EntityLiving var1, double var2, double var4, double var6)
+    protected virtual void Func_22012_b(EntityLiving entity, double x, double y, double z)
     {
-        GLManager.GL.Translate((float)var2, (float)var4, (float)var6);
+        GLManager.GL.Translate((float)x, (float)y, (float)z);
     }
 
-    protected virtual void RotateCorpse(EntityLiving var1, float var2, float var3, float var4)
+    protected virtual void RotateCorpse(EntityLiving entity, float animationProgress, float bodyYaw, float tickDelta)
     {
-        GLManager.GL.Rotate(180.0F - var3, 0.0F, 1.0F, 0.0F);
-        if (var1.DeathTime > 0)
+        GLManager.GL.Rotate(180.0F - bodyYaw, 0.0F, 1.0F, 0.0F);
+        if (entity.DeathTime > 0)
         {
-            float var5 = (var1.DeathTime + var4 - 1.0F) / 20.0F * 1.6F;
-            var5 = MathHelper.Sqrt(var5);
-            if (var5 > 1.0F)
+            float deathRotation = (entity.DeathTime + tickDelta - 1.0F) / 20.0F * 1.6F;
+            deathRotation = MathHelper.Sqrt(deathRotation);
+            if (deathRotation > 1.0F)
             {
-                var5 = 1.0F;
+                deathRotation = 1.0F;
             }
 
-            GLManager.GL.Rotate(var5 * getDeathMaxRotation(var1), 0.0F, 0.0F, 1.0F);
+            GLManager.GL.Rotate(deathRotation * getDeathMaxRotation(entity), 0.0F, 0.0F, 1.0F);
         }
 
     }
 
-    protected float func_167_c(EntityLiving var1, float var2)
+    protected float func_167_c(EntityLiving entity, float tickDelta)
     {
-        return var1.getSwingProgress(var2);
+        return entity.getSwingProgress(tickDelta);
     }
 
-    protected virtual float getAnimationProgress(EntityLiving var1, float var2)
+    protected virtual float getAnimationProgress(EntityLiving entity, float tickDelta)
     {
-        return var1.Age + var2;
+        return entity.Age + tickDelta;
     }
 
-    protected virtual void RenderMore(EntityLiving var1, float var2)
+    protected virtual void RenderMore(EntityLiving entity, float tickDelta)
     {
     }
 
-    protected virtual bool func_27005_b(EntityLiving var1, int var2, float var3)
+    protected virtual bool func_27005_b(EntityLiving entity, int renderPass, float tickDelta)
     {
-        return ShouldRenderPass(var1, var2, var3);
+        return ShouldRenderPass(entity, renderPass, tickDelta);
     }
 
-    protected virtual bool ShouldRenderPass(EntityLiving var1, int var2, float var3)
+    protected virtual bool ShouldRenderPass(EntityLiving entity, int renderPass, float tickDelta)
     {
         return false;
     }
 
-    protected virtual float getDeathMaxRotation(EntityLiving var1)
+    protected virtual float getDeathMaxRotation(EntityLiving entity)
     {
         return 90.0F;
     }
 
-    protected virtual int getColorMultiplier(EntityLiving var1, float var2, float var3)
+    protected virtual int getColorMultiplier(EntityLiving entity, float brightness, float tickDelta)
     {
         return 0;
     }
 
-    protected virtual void PreRenderCallback(EntityLiving var1, float var2)
+    protected virtual void PreRenderCallback(EntityLiving entity, float tickDelta)
     {
     }
 
-    protected virtual void PassSpecialRender(EntityLiving var1, double var2, double var4, double var6)
+    protected virtual void PassSpecialRender(EntityLiving entity, double x, double y, double z)
     {
         if (Dispatcher.Options.ShowDebugInfo)
         {
-            renderLivingLabel(var1, var1.ID.ToString(), var2, var4, var6, 64);
+            renderLivingLabel(entity, entity.ID.ToString(), x, y, z, 64);
         }
 
     }
 
-    protected void renderLivingLabel(EntityLiving var1, string var2, double var3, double var5, double var7, int var9)
+    protected void renderLivingLabel(EntityLiving entity, string label, double x, double y, double z, int maxDistance)
     {
-        float var10 = var1.GetDistance(Dispatcher.CameraEntity);
-        if (var10 <= var9)
+        float distance = entity.GetDistance(Dispatcher.CameraEntity);
+        if (distance <= maxDistance)
         {
-            TextRenderer var11 = TextRenderer;
-            float var12 = 1.6F;
-            float var13 = (float)(1.0D / 60.0D) * var12;
+            TextRenderer fontRenderer = TextRenderer;
+            float labelScale = 1.6F;
+            float renderScale = (float)(1.0D / 60.0D) * labelScale;
             GLManager.GL.PushMatrix();
-            GLManager.GL.Translate((float)var3 + 0.0F, (float)var5 + 2.3F, (float)var7);
+            GLManager.GL.Translate((float)x + 0.0F, (float)y + 2.3F, (float)z);
             GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
-            GLManager.GL.Scale(-var13, -var13, var13);
+            GLManager.GL.Scale(-renderScale, -renderScale, renderScale);
             GLManager.GL.Disable(GLEnum.Lighting);
             GLManager.GL.DepthMask(false);
             GLManager.GL.Disable(GLEnum.DepthTest);
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-            Tessellator var14 = Tessellator.instance;
-            int var15 = 0;
-            if (var2.Equals("deadmau5"))
+            Tessellator tessellator = Tessellator.instance;
+            int yOffset = 0;
+            if (label.Equals("deadmau5"))
             {
-                var15 = -10;
+                yOffset = -10;
             }
 
             GLManager.GL.Disable(GLEnum.Texture2D);
-            var14.startDrawingQuads();
-            int var16 = var11.GetStringWidth(var2) / 2;
-            var14.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
-            var14.addVertex(-var16 - 1, -1 + var15, 0.0D);
-            var14.addVertex(-var16 - 1, 8 + var15, 0.0D);
-            var14.addVertex(var16 + 1, 8 + var15, 0.0D);
-            var14.addVertex(var16 + 1, -1 + var15, 0.0D);
-            var14.draw();
+            tessellator.startDrawingQuads();
+            int labelHalfWidth = fontRenderer.GetStringWidth(label) / 2;
+            tessellator.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
+            tessellator.addVertex(-labelHalfWidth - 1, -1 + yOffset, 0.0D);
+            tessellator.addVertex(-labelHalfWidth - 1, 8 + yOffset, 0.0D);
+            tessellator.addVertex(labelHalfWidth + 1, 8 + yOffset, 0.0D);
+            tessellator.addVertex(labelHalfWidth + 1, -1 + yOffset, 0.0D);
+            tessellator.draw();
             GLManager.GL.Enable(GLEnum.Texture2D);
-            var11.DrawString(var2, -var11.GetStringWidth(var2) / 2, var15, Color.WhiteAlpha20);
+            fontRenderer.DrawString(label, -fontRenderer.GetStringWidth(label) / 2, yOffset, Color.WhiteAlpha20);
             GLManager.GL.Enable(GLEnum.DepthTest);
             GLManager.GL.DepthMask(true);
-            var11.DrawString(var2, -var11.GetStringWidth(var2) / 2, var15, Color.WhiteAlpha20);
+            fontRenderer.DrawString(label, -fontRenderer.GetStringWidth(label) / 2, yOffset, Color.WhiteAlpha20);
             GLManager.GL.Enable(GLEnum.Lighting);
             GLManager.GL.Disable(GLEnum.Blend);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);

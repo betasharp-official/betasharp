@@ -1,9 +1,9 @@
 namespace BetaSharp.Client.Rendering.Entities.Models;
 
-public class ModelSheep2 : ModelQuadruped
+public class SheepModel : ModelQuadruped
 {
 
-    public ModelSheep2() : base(12, 0.0f)
+    public SheepModel() : base(12, 0.0f)
     {
         head = new ModelPart(0, 0);
         head.addBox(-3.0F, -4.0F, -6.0F, 6, 6, 8, 0.0F);

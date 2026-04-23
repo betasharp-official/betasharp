@@ -11,9 +11,9 @@ public class PlayerController
     protected readonly BetaSharp Game;
     public bool IsTestPlayer = false;
 
-    public PlayerController(BetaSharp var1)
+    public PlayerController(BetaSharp game)
     {
-        Game = var1;
+        Game = game;
     }
 
     public virtual void ChangeWorld(World world) { }
@@ -47,7 +47,7 @@ public class PlayerController
     {
     }
 
-    public virtual void setPartialTime(float var1)
+    public virtual void setPartialTime(float tickDelta)
     {
     }
 
@@ -56,16 +56,16 @@ public class PlayerController
         return 5.0F;
     }
 
-    public virtual bool sendUseItem(EntityPlayer var1, World var2, ItemStack var3)
+    public virtual bool sendUseItem(EntityPlayer player, World world, ItemStack stack)
     {
-        int var4 = var3.Count;
-        ItemStack var5 = var3.use(var2, var1);
-        if (var5 != var3 || var5 != null && var5.Count != var4)
+        int originalCount = stack.Count;
+        ItemStack resultStack = stack.use(world, player);
+        if (resultStack != stack || resultStack != null && resultStack.Count != originalCount)
         {
-            var1.inventory.Main[var1.inventory.SelectedSlot] = var5;
-            if (var5.Count == 0)
+            player.inventory.Main[player.inventory.SelectedSlot] = resultStack;
+            if (resultStack.Count == 0)
             {
-                var1.inventory.Main[var1.inventory.SelectedSlot] = null;
+                player.inventory.Main[player.inventory.SelectedSlot] = null;
             }
 
             return true;
@@ -89,7 +89,7 @@ public class PlayerController
         return true;
     }
 
-    public virtual void fillHotbar(EntityPlayer var1)
+    public virtual void fillHotbar(EntityPlayer player)
     {
     }
 
@@ -117,29 +117,29 @@ public class PlayerController
         return selectedItem.useOnBlock(player, world, blockX, blockY, blockZ, blockSide);
     }
 
-    public virtual EntityPlayer createPlayer(World var1)
+    public virtual EntityPlayer createPlayer(World world)
     {
-        return new ClientPlayerEntity(Game, var1, Game.Session, var1.Dimension.Id);
+        return new ClientPlayerEntity(Game, world, Game.Session, world.Dimension.Id);
     }
 
-    public virtual void interactWithEntity(EntityPlayer var1, Entity var2)
+    public virtual void interactWithEntity(EntityPlayer player, Entity target)
     {
-        var1.interact(var2);
+        player.interact(target);
     }
 
-    public virtual void attackEntity(EntityPlayer var1, Entity var2)
+    public virtual void attackEntity(EntityPlayer player, Entity target)
     {
-        var1.attack(var2);
+        player.attack(target);
     }
 
-    public virtual ItemStack func_27174_a(int var1, int var2, int var3, bool var4, EntityPlayer var5)
+    public virtual ItemStack func_27174_a(int windowId, int slotIndex, int mouseButton, bool shiftClick, EntityPlayer player)
     {
-        return var5.currentScreenHandler.onSlotClick(var2, var3, var4, var5);
+        return player.currentScreenHandler.onSlotClick(slotIndex, mouseButton, shiftClick, player);
     }
 
-    public virtual void OnGuiClosed(int var1, EntityPlayer var2)
+    public virtual void OnGuiClosed(int windowId, EntityPlayer player)
     {
-        var2.currentScreenHandler.onClosed(var2);
-        var2.currentScreenHandler = var2.playerScreenHandler;
+        player.currentScreenHandler.onClosed(player);
+        player.currentScreenHandler = player.playerScreenHandler;
     }
 }

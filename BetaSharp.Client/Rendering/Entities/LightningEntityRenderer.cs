@@ -8,109 +8,109 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class LightningEntityRenderer : EntityRenderer
 {
 
-    public void render(EntityLightningBolt var1, double x, double y, double z, float yaw, float tickDelta)
+    public void render(EntityLightningBolt lightningBolt, double x, double y, double z, float yaw, float tickDelta)
     {
-        Tessellator var10 = Tessellator.instance;
+        Tessellator tessellator = Tessellator.instance;
         GLManager.GL.Disable(GLEnum.Texture2D);
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.One);
-        double[] var11 = new double[8];
-        double[] var12 = new double[8];
-        double var13 = 0.0D;
-        double var15 = 0.0D;
-        JavaRandom var17 = new(var1.renderSeed);
+        double[] xOffsets = new double[8];
+        double[] zOffsets = new double[8];
+        double offsetX = 0.0D;
+        double offsetZ = 0.0D;
+        JavaRandom random = new(lightningBolt.renderSeed);
 
-        for (int var18 = 7; var18 >= 0; --var18)
+        for (int segmentIndex = 7; segmentIndex >= 0; --segmentIndex)
         {
-            var11[var18] = var13;
-            var12[var18] = var15;
-            var13 += var17.NextInt(11) - 5;
-            var15 += var17.NextInt(11) - 5;
+            xOffsets[segmentIndex] = offsetX;
+            zOffsets[segmentIndex] = offsetZ;
+            offsetX += random.NextInt(11) - 5;
+            offsetZ += random.NextInt(11) - 5;
         }
 
-        for (int var45 = 0; var45 < 4; ++var45)
+        for (int layerIndex = 0; layerIndex < 4; ++layerIndex)
         {
-            JavaRandom var46 = new(var1.renderSeed);
+            JavaRandom branchRandom = new(lightningBolt.renderSeed);
 
-            for (int var19 = 0; var19 < 3; ++var19)
+            for (int branchDepth = 0; branchDepth < 3; ++branchDepth)
             {
-                int var20 = 7;
-                int var21 = 0;
-                if (var19 > 0)
+                int startIndex = 7;
+                int endIndex = 0;
+                if (branchDepth > 0)
                 {
-                    var20 = 7 - var19;
+                    startIndex = 7 - branchDepth;
                 }
 
-                if (var19 > 0)
+                if (branchDepth > 0)
                 {
-                    var21 = var20 - 2;
+                    endIndex = startIndex - 2;
                 }
 
-                double var22 = var11[var20] - var13;
-                double var24 = var12[var20] - var15;
+                double branchX = xOffsets[startIndex] - offsetX;
+                double branchZ = zOffsets[startIndex] - offsetZ;
 
-                for (int var26 = var20; var26 >= var21; --var26)
+                for (int yIndex = startIndex; yIndex >= endIndex; --yIndex)
                 {
-                    double var27 = var22;
-                    double var29 = var24;
-                    if (var19 == 0)
+                    double prevBranchX = branchX;
+                    double prevBranchZ = branchZ;
+                    if (branchDepth == 0)
                     {
-                        var22 += var46.NextInt(11) - 5;
-                        var24 += var46.NextInt(11) - 5;
+                        branchX += branchRandom.NextInt(11) - 5;
+                        branchZ += branchRandom.NextInt(11) - 5;
                     }
                     else
                     {
-                        var22 += var46.NextInt(31) - 15;
-                        var24 += var46.NextInt(31) - 15;
+                        branchX += branchRandom.NextInt(31) - 15;
+                        branchZ += branchRandom.NextInt(31) - 15;
                     }
 
-                    var10.startDrawing(5);
-                    float var31 = 0.5F;
-                    var10.setColorRGBA_F(0.9F * var31, 0.9F * var31, 1.0F * var31, 0.3F);
-                    double var32 = 0.1D + var45 * 0.2D;
-                    if (var19 == 0)
+                    tessellator.startDrawing(5);
+                    float alphaScale = 0.5F;
+                    tessellator.setColorRGBA_F(0.9F * alphaScale, 0.9F * alphaScale, 1.0F * alphaScale, 0.3F);
+                    double outerRadius = 0.1D + layerIndex * 0.2D;
+                    if (branchDepth == 0)
                     {
-                        var32 *= var26 * 0.1D + 1.0D;
+                        outerRadius *= yIndex * 0.1D + 1.0D;
                     }
 
-                    double var34 = 0.1D + var45 * 0.2D;
-                    if (var19 == 0)
+                    double innerRadius = 0.1D + layerIndex * 0.2D;
+                    if (branchDepth == 0)
                     {
-                        var34 *= (var26 - 1) * 0.1D + 1.0D;
+                        innerRadius *= (yIndex - 1) * 0.1D + 1.0D;
                     }
 
-                    for (int var36 = 0; var36 < 5; ++var36)
+                    for (int cornerIndex = 0; cornerIndex < 5; ++cornerIndex)
                     {
-                        double var37 = x + 0.5D - var32;
-                        double var39 = z + 0.5D - var32;
-                        if (var36 == 1 || var36 == 2)
+                        double outerX = x + 0.5D - outerRadius;
+                        double outerZ = z + 0.5D - outerRadius;
+                        if (cornerIndex == 1 || cornerIndex == 2)
                         {
-                            var37 += var32 * 2.0D;
+                            outerX += outerRadius * 2.0D;
                         }
 
-                        if (var36 == 2 || var36 == 3)
+                        if (cornerIndex == 2 || cornerIndex == 3)
                         {
-                            var39 += var32 * 2.0D;
+                            outerZ += outerRadius * 2.0D;
                         }
 
-                        double var41 = x + 0.5D - var34;
-                        double var43 = z + 0.5D - var34;
-                        if (var36 == 1 || var36 == 2)
+                        double innerX = x + 0.5D - innerRadius;
+                        double innerZ = z + 0.5D - innerRadius;
+                        if (cornerIndex == 1 || cornerIndex == 2)
                         {
-                            var41 += var34 * 2.0D;
+                            innerX += innerRadius * 2.0D;
                         }
 
-                        if (var36 == 2 || var36 == 3)
+                        if (cornerIndex == 2 || cornerIndex == 3)
                         {
-                            var43 += var34 * 2.0D;
+                            innerZ += innerRadius * 2.0D;
                         }
 
-                        var10.addVertex(var41 + var22, y + var26 * 16, var43 + var24);
-                        var10.addVertex(var37 + var27, y + (var26 + 1) * 16, var39 + var29);
+                        tessellator.addVertex(innerX + branchX, y + yIndex * 16, innerZ + branchZ);
+                        tessellator.addVertex(outerX + prevBranchX, y + (yIndex + 1) * 16, outerZ + prevBranchZ);
                     }
 
-                    var10.draw();
+                    tessellator.draw();
                 }
             }
         }

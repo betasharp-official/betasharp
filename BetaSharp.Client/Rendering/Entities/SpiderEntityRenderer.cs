@@ -13,40 +13,38 @@ public class SpiderEntityRenderer : LivingEntityRenderer
         setRenderPassModel(new ModelSpider());
     }
 
-    protected float setSpiderDeathMaxRotation(EntitySpider var1)
+    protected float setSpiderDeathMaxRotation(EntitySpider spiderEntity)
     {
         return 180.0F;
     }
 
-    protected bool setSpiderEyeBrightness(EntitySpider var1, int var2, float var3)
+    protected bool setSpiderEyeBrightness(EntitySpider spiderEntity, int renderPass, float tickDelta)
     {
-        if (var2 != 0)
-        {
-            return false;
-        }
-        else if (var2 != 0)
+        // Note: During renaming there was a double if (same condition here)
+        // check if is there any missing render pass for spider eyes entities
+        if (renderPass != 0)
         {
             return false;
         }
         else
         {
             loadTexture("/mob/spider_eyes.png");
-            float var4 = (1.0F - var1.GetBrightnessAtEyes(1.0F)) * 0.5F;
+            float alpha = (1.0F - spiderEntity.GetBrightnessAtEyes(1.0F)) * 0.5F;
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.Disable(GLEnum.AlphaTest);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-            GLManager.GL.Color4(1.0F, 1.0F, 1.0F, var4);
+            GLManager.GL.Color4(1.0F, 1.0F, 1.0F, alpha);
             return true;
         }
     }
 
-    protected override float getDeathMaxRotation(EntityLiving var1)
+    protected override float getDeathMaxRotation(EntityLiving entity)
     {
-        return setSpiderDeathMaxRotation((EntitySpider)var1);
+        return setSpiderDeathMaxRotation((EntitySpider)entity);
     }
 
-    protected override bool ShouldRenderPass(EntityLiving var1, int var2, float var3)
+    protected override bool ShouldRenderPass(EntityLiving entity, int renderPass, float tickDelta)
     {
-        return setSpiderEyeBrightness((EntitySpider)var1, var2, var3);
+        return setSpiderEyeBrightness((EntitySpider)entity, renderPass, tickDelta);
     }
 }

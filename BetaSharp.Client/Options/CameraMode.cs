@@ -1,6 +1,6 @@
 namespace BetaSharp.Client.Options;
 
-public enum EnumCameraMode
+public enum CameraMode
 {
     FirstPerson,
     FrontThirdPerson,

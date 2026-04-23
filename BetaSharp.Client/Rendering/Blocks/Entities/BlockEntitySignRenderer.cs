@@ -11,67 +11,67 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
 
     private readonly SignModel signModel = new();
 
-    public void renderTileEntitySignAt(BlockEntitySign var1, double var2, double var4, double var6, float var8)
+    public void renderTileEntitySignAt(BlockEntitySign sign, double x, double y, double z, float tickDelta)
     {
-        Block var9 = var1.getBlock();
+        Block signBlock = sign.getBlock();
         GLManager.GL.PushMatrix();
-        float var10 = 2.0F / 3.0F;
-        float var12;
-        if (var9 == Block.Sign)
+        float modelScale = 2.0F / 3.0F;
+        float rotationYaw;
+        if (signBlock == Block.Sign)
         {
-            GLManager.GL.Translate((float)var2 + 0.5F, (float)var4 + 12.0F / 16.0F * var10, (float)var6 + 0.5F);
-            float var11 = var1.PushedBlockData * 360 / 16.0F;
-            GLManager.GL.Rotate(-var11, 0.0F, 1.0F, 0.0F);
+            GLManager.GL.Translate((float)x + 0.5F, (float)y + 12.0F / 16.0F * modelScale, (float)z + 0.5F);
+            float rotationDegrees = sign.PushedBlockData * 360 / 16.0F;
+            GLManager.GL.Rotate(-rotationDegrees, 0.0F, 1.0F, 0.0F);
             signModel.signStick.visible = true;
         }
         else
         {
-            int var16 = var1.PushedBlockData;
-            var12 = 0.0F;
-            if (var16 == 2)
+            int wallFacing = sign.PushedBlockData;
+            rotationYaw = 0.0F;
+            if (wallFacing == 2)
             {
-                var12 = 180.0F;
+                rotationYaw = 180.0F;
             }
 
-            if (var16 == 4)
+            if (wallFacing == 4)
             {
-                var12 = 90.0F;
+                rotationYaw = 90.0F;
             }
 
-            if (var16 == 5)
+            if (wallFacing == 5)
             {
-                var12 = -90.0F;
+                rotationYaw = -90.0F;
             }
 
-            GLManager.GL.Translate((float)var2 + 0.5F, (float)var4 + 12.0F / 16.0F * var10, (float)var6 + 0.5F);
-            GLManager.GL.Rotate(-var12, 0.0F, 1.0F, 0.0F);
+            GLManager.GL.Translate((float)x + 0.5F, (float)y + 12.0F / 16.0F * modelScale, (float)z + 0.5F);
+            GLManager.GL.Rotate(-rotationYaw, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Translate(0.0F, -(5.0F / 16.0F), -(7.0F / 16.0F));
             signModel.signStick.visible = false;
         }
 
         bindTextureByName("/item/sign.png");
         GLManager.GL.PushMatrix();
-        GLManager.GL.Scale(var10, -var10, -var10);
+        GLManager.GL.Scale(modelScale, -modelScale, -modelScale);
         signModel.Render();
         GLManager.GL.PopMatrix();
-        TextRenderer var17 = getFontRenderer();
-        var12 = (float)(1.0D / 60.0D) * var10;
-        GLManager.GL.Translate(0.0F, 0.5F * var10, 0.07F * var10);
-        GLManager.GL.Scale(var12, -var12, var12);
-        GLManager.GL.Normal3(0.0F, 0.0F, -1.0F * var12);
+        TextRenderer fontRenderer = getFontRenderer();
+        rotationYaw = (float)(1.0D / 60.0D) * modelScale;
+        GLManager.GL.Translate(0.0F, 0.5F * modelScale, 0.07F * modelScale);
+        GLManager.GL.Scale(rotationYaw, -rotationYaw, rotationYaw);
+        GLManager.GL.Normal3(0.0F, 0.0F, -1.0F * rotationYaw);
         GLManager.GL.DepthMask(false);
 
-        for (int var14 = 0; var14 < var1.Texts.Length; ++var14)
+        for (int lineIndex = 0; lineIndex < sign.Texts.Length; ++lineIndex)
         {
-            string var15 = var1.Texts[var14];
-            if (var14 == var1.CurrentRow)
+            string lineText = sign.Texts[lineIndex];
+            if (lineIndex == sign.CurrentRow)
             {
-                var15 = "> " + var15 + " <";
-                var17.DrawString(var15, -var17.GetStringWidth(var15) / 2, var14 * 10 - var1.Texts.Length * 5, Color.Black);
+                lineText = "> " + lineText + " <";
+                fontRenderer.DrawString(lineText, -fontRenderer.GetStringWidth(lineText) / 2, lineIndex * 10 - sign.Texts.Length * 5, Color.Black);
             }
             else
             {
-                var17.DrawString(var15, -var17.GetStringWidth(var15) / 2, var14 * 10 - var1.Texts.Length * 5, Color.Black);
+                fontRenderer.DrawString(lineText, -fontRenderer.GetStringWidth(lineText) / 2, lineIndex * 10 - sign.Texts.Length * 5, Color.Black);
             }
         }
 

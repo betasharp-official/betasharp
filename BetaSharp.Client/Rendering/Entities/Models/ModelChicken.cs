@@ -15,59 +15,59 @@ public class ModelChicken : ModelBase
 
     public ModelChicken()
     {
-        byte var1 = 16;
+        byte yOffset = 16;
         head = new ModelPart(0, 0);
         head.addBox(-2.0F, -6.0F, -2.0F, 4, 6, 3, 0.0F);
-        head.setRotationPoint(0.0F, -1 + var1, -4.0F);
+        head.setRotationPoint(0.0F, -1 + yOffset, -4.0F);
         bill = new ModelPart(14, 0);
         bill.addBox(-2.0F, -4.0F, -4.0F, 4, 2, 2, 0.0F);
-        bill.setRotationPoint(0.0F, -1 + var1, -4.0F);
+        bill.setRotationPoint(0.0F, -1 + yOffset, -4.0F);
         chin = new ModelPart(14, 4);
         chin.addBox(-1.0F, -2.0F, -3.0F, 2, 2, 2, 0.0F);
-        chin.setRotationPoint(0.0F, -1 + var1, -4.0F);
+        chin.setRotationPoint(0.0F, -1 + yOffset, -4.0F);
         body = new ModelPart(0, 9);
         body.addBox(-3.0F, -4.0F, -3.0F, 6, 8, 6, 0.0F);
-        body.setRotationPoint(0.0F, 0 + var1, 0.0F);
+        body.setRotationPoint(0.0F, 0 + yOffset, 0.0F);
         rightLeg = new ModelPart(26, 0);
         rightLeg.addBox(-1.0F, 0.0F, -3.0F, 3, 5, 3);
-        rightLeg.setRotationPoint(-2.0F, 3 + var1, 1.0F);
+        rightLeg.setRotationPoint(-2.0F, 3 + yOffset, 1.0F);
         leftLeg = new ModelPart(26, 0);
         leftLeg.addBox(-1.0F, 0.0F, -3.0F, 3, 5, 3);
-        leftLeg.setRotationPoint(1.0F, 3 + var1, 1.0F);
+        leftLeg.setRotationPoint(1.0F, 3 + yOffset, 1.0F);
         rightWing = new ModelPart(24, 13);
         rightWing.addBox(0.0F, 0.0F, -3.0F, 1, 4, 6);
-        rightWing.setRotationPoint(-4.0F, -3 + var1, 0.0F);
+        rightWing.setRotationPoint(-4.0F, -3 + yOffset, 0.0F);
         leftWing = new ModelPart(24, 13);
         leftWing.addBox(-1.0F, 0.0F, -3.0F, 1, 4, 6);
-        leftWing.setRotationPoint(4.0F, -3 + var1, 0.0F);
+        leftWing.setRotationPoint(4.0F, -3 + yOffset, 0.0F);
     }
 
-    public override void render(float var1, float var2, float var3, float var4, float var5, float var6)
+    public override void render(float limbSwing, float limbSwingAmount, float wingRotation, float netHeadYaw, float headPitch, float scale)
     {
-        setRotationAngles(var1, var2, var3, var4, var5, var6);
-        head.render(var6);
-        bill.render(var6);
-        chin.render(var6);
-        body.render(var6);
-        rightLeg.render(var6);
-        leftLeg.render(var6);
-        rightWing.render(var6);
-        leftWing.render(var6);
+        setRotationAngles(limbSwing, limbSwingAmount, wingRotation, netHeadYaw, headPitch, scale);
+        head.render(scale);
+        bill.render(scale);
+        chin.render(scale);
+        body.render(scale);
+        rightLeg.render(scale);
+        leftLeg.render(scale);
+        rightWing.render(scale);
+        leftWing.render(scale);
     }
 
-    public override void setRotationAngles(float var1, float var2, float var3, float var4, float var5, float var6)
+    public override void setRotationAngles(float limbSwing, float limbSwingAmount, float wingRotation, float netHeadYaw, float headPitch, float scale)
     {
-        head.rotateAngleX = -(var5 / (180.0F / (float)Math.PI));
-        head.rotateAngleY = var4 / (180.0F / (float)Math.PI);
+        head.rotateAngleX = -(headPitch / (180.0F / (float)Math.PI));
+        head.rotateAngleY = netHeadYaw / (180.0F / (float)Math.PI);
         bill.rotateAngleX = head.rotateAngleX;
         bill.rotateAngleY = head.rotateAngleY;
         chin.rotateAngleX = head.rotateAngleX;
         chin.rotateAngleY = head.rotateAngleY;
         body.rotateAngleX = (float)Math.PI * 0.5F;
-        rightLeg.rotateAngleX = MathHelper.Cos(var1 * 0.6662F) * 1.4F * var2;
-        leftLeg.rotateAngleX = MathHelper.Cos(var1 * 0.6662F + (float)Math.PI) * 1.4F * var2;
-        rightWing.rotateAngleZ = var3;
-        leftWing.rotateAngleZ = -var3;
+        rightLeg.rotateAngleX = MathHelper.Cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
+        leftLeg.rotateAngleX = MathHelper.Cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount;
+        rightWing.rotateAngleZ = wingRotation;
+        leftWing.rotateAngleZ = -wingRotation;
     }
 
 }

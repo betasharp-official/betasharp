@@ -8,62 +8,62 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class ArrowEntityRenderer : EntityRenderer
 {
 
-    public void renderArrow(EntityArrow var1, double var2, double var4, double var6, float var8, float var9)
+    public void renderArrow(EntityArrow arrowEntity, double x, double y, double z, float yaw, float tickDelta)
     {
-        if (var1.PrevYaw != 0.0F || var1.PrevPitch != 0.0F)
+        if (arrowEntity.PrevYaw != 0.0F || arrowEntity.PrevPitch != 0.0F)
         {
             loadTexture("/item/arrows.png");
             GLManager.GL.PushMatrix();
-            GLManager.GL.Translate((float)var2, (float)var4, (float)var6);
-            GLManager.GL.Rotate(var1.PrevYaw + (var1.Yaw - var1.PrevYaw) * var9 - 90.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(var1.PrevPitch + (var1.Pitch - var1.PrevPitch) * var9, 0.0F, 0.0F, 1.0F);
-            Tessellator var10 = Tessellator.instance;
-            byte var11 = 0;
-            float var12 = 0.0F;
-            float var13 = 0.5F;
-            float var14 = (0 + var11 * 10) / 32.0F;
-            float var15 = (5 + var11 * 10) / 32.0F;
-            float var16 = 0.0F;
-            float var17 = 0.15625F;
-            float var18 = (5 + var11 * 10) / 32.0F;
-            float var19 = (10 + var11 * 10) / 32.0F;
-            float var20 = 0.05625F;
+            GLManager.GL.Translate((float)x, (float)y, (float)z);
+            GLManager.GL.Rotate(arrowEntity.PrevYaw + (arrowEntity.Yaw - arrowEntity.PrevYaw) * tickDelta - 90.0F, 0.0F, 1.0F, 0.0F);
+            GLManager.GL.Rotate(arrowEntity.PrevPitch + (arrowEntity.Pitch - arrowEntity.PrevPitch) * tickDelta, 0.0F, 0.0F, 1.0F);
+            Tessellator tessellator = Tessellator.instance;
+            byte arrowType = 0;
+            float shaftMinU = 0.0F;
+            float shaftMaxU = 0.5F;
+            float featherMinV = (0 + arrowType * 10) / 32.0F;
+            float featherMaxV = (5 + arrowType * 10) / 32.0F;
+            float sideMinU = 0.0F;
+            float sideMaxU = 0.15625F;
+            float sideMinV = (5 + arrowType * 10) / 32.0F;
+            float sideMaxV = (10 + arrowType * 10) / 32.0F;
+            float modelScale = 0.05625F;
             GLManager.GL.Enable(GLEnum.RescaleNormal);
-            float var21 = var1.arrowShake - var9;
-            if (var21 > 0.0F)
+            float shakeTime = arrowEntity.arrowShake - tickDelta;
+            if (shakeTime > 0.0F)
             {
-                float var22 = -MathHelper.Sin(var21 * 3.0F) * var21;
-                GLManager.GL.Rotate(var22, 0.0F, 0.0F, 1.0F);
+                float shakeRotation = -MathHelper.Sin(shakeTime * 3.0F) * shakeTime;
+                GLManager.GL.Rotate(shakeRotation, 0.0F, 0.0F, 1.0F);
             }
 
             GLManager.GL.Rotate(45.0F, 1.0F, 0.0F, 0.0F);
-            GLManager.GL.Scale(var20, var20, var20);
+            GLManager.GL.Scale(modelScale, modelScale, modelScale);
             GLManager.GL.Translate(-4.0F, 0.0F, 0.0F);
-            GLManager.GL.Normal3(var20, 0.0F, 0.0F);
-            var10.startDrawingQuads();
-            var10.addVertexWithUV(-7.0D, -2.0D, -2.0D, (double)var16, (double)var18);
-            var10.addVertexWithUV(-7.0D, -2.0D, 2.0D, (double)var17, (double)var18);
-            var10.addVertexWithUV(-7.0D, 2.0D, 2.0D, (double)var17, (double)var19);
-            var10.addVertexWithUV(-7.0D, 2.0D, -2.0D, (double)var16, (double)var19);
-            var10.draw();
-            GLManager.GL.Normal3(-var20, 0.0F, 0.0F);
-            var10.startDrawingQuads();
-            var10.addVertexWithUV(-7.0D, 2.0D, -2.0D, (double)var16, (double)var18);
-            var10.addVertexWithUV(-7.0D, 2.0D, 2.0D, (double)var17, (double)var18);
-            var10.addVertexWithUV(-7.0D, -2.0D, 2.0D, (double)var17, (double)var19);
-            var10.addVertexWithUV(-7.0D, -2.0D, -2.0D, (double)var16, (double)var19);
-            var10.draw();
+            GLManager.GL.Normal3(modelScale, 0.0F, 0.0F);
+            tessellator.startDrawingQuads();
+            tessellator.addVertexWithUV(-7.0D, -2.0D, -2.0D, (double)sideMinU, (double)sideMinV);
+            tessellator.addVertexWithUV(-7.0D, -2.0D, 2.0D, (double)sideMaxU, (double)sideMinV);
+            tessellator.addVertexWithUV(-7.0D, 2.0D, 2.0D, (double)sideMaxU, (double)sideMaxV);
+            tessellator.addVertexWithUV(-7.0D, 2.0D, -2.0D, (double)sideMinU, (double)sideMaxV);
+            tessellator.draw();
+            GLManager.GL.Normal3(-modelScale, 0.0F, 0.0F);
+            tessellator.startDrawingQuads();
+            tessellator.addVertexWithUV(-7.0D, 2.0D, -2.0D, (double)sideMinU, (double)sideMinV);
+            tessellator.addVertexWithUV(-7.0D, 2.0D, 2.0D, (double)sideMaxU, (double)sideMinV);
+            tessellator.addVertexWithUV(-7.0D, -2.0D, 2.0D, (double)sideMaxU, (double)sideMaxV);
+            tessellator.addVertexWithUV(-7.0D, -2.0D, -2.0D, (double)sideMinU, (double)sideMaxV);
+            tessellator.draw();
 
-            for (int var23 = 0; var23 < 4; ++var23)
+            for (int quadIndex = 0; quadIndex < 4; ++quadIndex)
             {
                 GLManager.GL.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
-                GLManager.GL.Normal3(0.0F, 0.0F, var20);
-                var10.startDrawingQuads();
-                var10.addVertexWithUV(-8.0D, -2.0D, 0.0D, (double)var12, (double)var14);
-                var10.addVertexWithUV(8.0D, -2.0D, 0.0D, (double)var13, (double)var14);
-                var10.addVertexWithUV(8.0D, 2.0D, 0.0D, (double)var13, (double)var15);
-                var10.addVertexWithUV(-8.0D, 2.0D, 0.0D, (double)var12, (double)var15);
-                var10.draw();
+                GLManager.GL.Normal3(0.0F, 0.0F, modelScale);
+                tessellator.startDrawingQuads();
+                tessellator.addVertexWithUV(-8.0D, -2.0D, 0.0D, (double)shaftMinU, (double)featherMinV);
+                tessellator.addVertexWithUV(8.0D, -2.0D, 0.0D, (double)shaftMaxU, (double)featherMinV);
+                tessellator.addVertexWithUV(8.0D, 2.0D, 0.0D, (double)shaftMaxU, (double)featherMaxV);
+                tessellator.addVertexWithUV(-8.0D, 2.0D, 0.0D, (double)shaftMinU, (double)featherMaxV);
+                tessellator.draw();
             }
 
             GLManager.GL.Disable(GLEnum.RescaleNormal);

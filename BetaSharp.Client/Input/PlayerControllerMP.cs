@@ -24,9 +24,9 @@ public class PlayerControllerMP : PlayerController
     private readonly ClientNetworkHandler netClientHandler;
     private int currentPlayerItem;
 
-    public PlayerControllerMP(BetaSharp var1, ClientNetworkHandler var2) : base(var1)
+    public PlayerControllerMP(BetaSharp game, ClientNetworkHandler networkHandler) : base(game)
     {
-        netClientHandler = var2;
+        netClientHandler = networkHandler;
     }
 
     public override void flipPlayer(EntityPlayer playerEntity)
@@ -105,18 +105,18 @@ public class PlayerControllerMP : PlayerController
             {
                 if (x == currentBlockX && y == currentBlockY && z == currentblockZ)
                 {
-                    int var5 = Game.World.Reader.GetBlockId(x, y, z);
-                    if (var5 == 0)
+                    int blockId = Game.World.Reader.GetBlockId(x, y, z);
+                    if (blockId == 0)
                     {
                         isHittingBlock = false;
                         return;
                     }
 
-                    Block var6 = Block.Blocks[var5];
-                    curBlockDamageMP += var6.getHardness(Game.Player);
-                    if (_mineSoundTimer % 4 == 0 && var6 != null)
+                    Block block = Block.Blocks[blockId];
+                    curBlockDamageMP += block.getHardness(Game.Player);
+                    if (_mineSoundTimer % 4 == 0 && block != null)
                     {
-                        Game.SoundManager.PlaySound(var6.SoundGroup.StepSound, (float)x + 0.5F, (float)y + 0.5F, (float)z + 0.5F, (var6.SoundGroup.Volume + 1.0F) / 8.0F, var6.SoundGroup.Pitch * 0.5F);
+                        Game.SoundManager.PlaySound(block.SoundGroup.StepSound, (float)x + 0.5F, (float)y + 0.5F, (float)z + 0.5F, (block.SoundGroup.Volume + 1.0F) / 8.0F, block.SoundGroup.Pitch * 0.5F);
                     }
 
                     ++_mineSoundTimer;
@@ -140,7 +140,7 @@ public class PlayerControllerMP : PlayerController
         }
     }
 
-    public override void setPartialTime(float var1)
+    public override void setPartialTime(float tickDelta)
     {
         if (curBlockDamageMP <= 0.0F)
         {
@@ -148,8 +148,8 @@ public class PlayerControllerMP : PlayerController
         }
         else
         {
-            float var2 = prevBlockDamageMP + (curBlockDamageMP - prevBlockDamageMP) * var1;
-            Game.WorldRenderer.DamagePartialTime = var2;
+            float partialDamage = prevBlockDamageMP + (curBlockDamageMP - prevBlockDamageMP) * tickDelta;
+            Game.WorldRenderer.DamagePartialTime = partialDamage;
         }
 
     }
@@ -168,10 +168,10 @@ public class PlayerControllerMP : PlayerController
 
     private void syncCurrentPlayItem()
     {
-        int var1 = Game.Player.inventory.SelectedSlot;
-        if (var1 != currentPlayerItem)
+        int selectedSlot = Game.Player.inventory.SelectedSlot;
+        if (selectedSlot != currentPlayerItem)
         {
-            currentPlayerItem = var1;
+            currentPlayerItem = selectedSlot;
             netClientHandler.AddToSendQueue(UpdateSelectedSlotC2SPacket.Get(currentPlayerItem));
         }
 
@@ -193,44 +193,44 @@ public class PlayerControllerMP : PlayerController
         return placed;
     }
 
-    public override bool sendUseItem(EntityPlayer var1, World var2, ItemStack var3)
+    public override bool sendUseItem(EntityPlayer player, World world, ItemStack stack)
     {
         syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(-1, -1, -1, 255, var1.inventory.GetItemInHand()));
-        bool var4 = base.sendUseItem(var1, var2, var3);
-        return var4;
+        netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(-1, -1, -1, 255, player.inventory.GetItemInHand()));
+        bool usedItem = base.sendUseItem(player, world, stack);
+        return usedItem;
     }
 
-    public override EntityPlayer createPlayer(World var1)
+    public override EntityPlayer createPlayer(World world)
     {
-        return new EntityClientPlayerMP(Game, var1, Game.Session, netClientHandler);
+        return new EntityClientPlayerMP(Game, world, Game.Session, netClientHandler);
     }
 
-    public override void attackEntity(EntityPlayer var1, Entity var2)
-    {
-        syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.ID, var2.ID, 1));
-        var1.attack(var2);
-    }
-
-    public override void interactWithEntity(EntityPlayer var1, Entity var2)
+    public override void attackEntity(EntityPlayer player, Entity target)
     {
         syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(var1.ID, var2.ID, 0));
-        var1.interact(var2);
+        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(player.ID, target.ID, 1));
+        player.attack(target);
     }
 
-    public override ItemStack func_27174_a(int var1, int var2, int var3, bool var4, EntityPlayer var5)
+    public override void interactWithEntity(EntityPlayer player, Entity target)
     {
-        short var6 = var5.currentScreenHandler.nextRevision(var5.inventory);
-        ItemStack var7 = base.func_27174_a(var1, var2, var3, var4, var5);
-        netClientHandler.AddToSendQueue(ClickSlotC2SPacket.Get(var1, var2, var3, var4, var7, var6));
-        return var7;
+        syncCurrentPlayItem();
+        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(player.ID, target.ID, 0));
+        player.interact(target);
     }
 
-    public override void OnGuiClosed(int var1, EntityPlayer var2)
+    public override ItemStack func_27174_a(int windowId, int slotIndex, int mouseButton, bool shiftClick, EntityPlayer player)
     {
-        if (var1 != -9999)
+        short revision = player.currentScreenHandler.nextRevision(player.inventory);
+        ItemStack resultStack = base.func_27174_a(windowId, slotIndex, mouseButton, shiftClick, player);
+        netClientHandler.AddToSendQueue(ClickSlotC2SPacket.Get(windowId, slotIndex, mouseButton, shiftClick, resultStack, revision));
+        return resultStack;
+    }
+
+    public override void OnGuiClosed(int windowId, EntityPlayer player)
+    {
+        if (windowId != -9999)
         {
         }
     }

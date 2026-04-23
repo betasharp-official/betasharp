@@ -2,7 +2,7 @@ namespace BetaSharp.Util.Maths;
 
 public record struct Vec3D
 {
-    public static readonly Vec3D Zero = new Vec3D(0.0D, 0.0D, 0.0D);
+    public static readonly Vec3D Zero = new(0.0D, 0.0D, 0.0D);
 
     public double x;
     public double y;
@@ -55,51 +55,51 @@ public record struct Vec3D
         return new Vec3D(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
     }
 
-    public Vec3D? getIntermediateWithXValue(Vec3D var1, double var2)
+    public Vec3D? getIntermediateWithXValue(Vec3D other, double xValue)
     {
-        double var4 = var1.x - x;
-        double var6 = var1.y - y;
-        double var8 = var1.z - z;
-        if (var4 * var4 < (double)1.0E-7F)
+        double deltaX = other.x - x;
+        double deltaY = other.y - y;
+        double deltaZ = other.z - z;
+        if (deltaX * deltaX < (double)1.0E-7F)
         {
             return null;
         }
         else
         {
-            double var10 = (var2 - x) / var4;
-            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3D(x + var4 * var10, y + var6 * var10, z + var8 * var10) : null;
+            double progress = (xValue - x) / deltaX;
+            return progress >= 0.0D && progress <= 1.0D ? new Vec3D(x + deltaX * progress, y + deltaY * progress, z + deltaZ * progress) : null;
         }
     }
 
-    public Vec3D? getIntermediateWithYValue(Vec3D var1, double var2)
+    public Vec3D? getIntermediateWithYValue(Vec3D other, double yValue)
     {
-        double var4 = var1.x - x;
-        double var6 = var1.y - y;
-        double var8 = var1.z - z;
-        if (var6 * var6 < (double)1.0E-7F)
+        double deltaX = other.x - x;
+        double deltaY = other.y - y;
+        double deltaZ = other.z - z;
+        if (deltaY * deltaY < (double)1.0E-7F)
         {
             return null;
         }
         else
         {
-            double var10 = (var2 - y) / var6;
-            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3D(x + var4 * var10, y + var6 * var10, z + var8 * var10) : null;
+            double progress = (yValue - y) / deltaY;
+            return progress >= 0.0D && progress <= 1.0D ? new Vec3D(x + deltaX * progress, y + deltaY * progress, z + deltaZ * progress) : null;
         }
     }
 
-    public Vec3D? getIntermediateWithZValue(Vec3D var1, double var2)
+    public Vec3D? getIntermediateWithZValue(Vec3D other, double zValue)
     {
-        double var4 = var1.x - x;
-        double var6 = var1.y - y;
-        double var8 = var1.z - z;
-        if (var8 * var8 < (double)1.0E-7F)
+        double deltaX = other.x - x;
+        double deltaY = other.y - y;
+        double deltaZ = other.z - z;
+        if (deltaZ * deltaZ < (double)1.0E-7F)
         {
             return null;
         }
         else
         {
-            double var10 = (var2 - z) / var8;
-            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3D(x + var4 * var10, y + var6 * var10, z + var8 * var10) : null;
+            double progress = (zValue - z) / deltaZ;
+            return progress >= 0.0D && progress <= 1.0D ? new Vec3D(x + deltaX * progress, y + deltaY * progress, z + deltaZ * progress) : null;
         }
     }
 

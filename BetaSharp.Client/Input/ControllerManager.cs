@@ -207,7 +207,7 @@ public static class ControllerManager
         // Camera
         if (cameraHeld && !s_wasCameraDown)
         {
-            s_game.Options.CameraMode = (EnumCameraMode)((int)(s_game.Options.CameraMode + 2) % 3);
+            s_game.Options.CameraMode = (CameraMode)((int)(s_game.Options.CameraMode + 2) % 3);
         }
 
         // Sneak Toggle

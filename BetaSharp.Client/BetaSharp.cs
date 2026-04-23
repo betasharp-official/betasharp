@@ -641,7 +641,7 @@ public partial class BetaSharp :
 
                     if (Player != null && Player.IsInsideWall())
                     {
-                        Options.CameraMode = EnumCameraMode.FirstPerson;
+                        Options.CameraMode = CameraMode.FirstPerson;
                     }
 
                     int savedWidth = DisplayWidth, savedHeight = DisplayHeight;
@@ -1113,7 +1113,7 @@ public partial class BetaSharp :
 
                     if (Keyboard.getEventKey() == Keyboard.KEY_F5)
                     {
-                        Options.CameraMode = (EnumCameraMode)((int)(Options.CameraMode + 2) % 3);
+                        Options.CameraMode = (CameraMode)((int)(Options.CameraMode + 2) % 3);
                     }
 
                     if (Keyboard.getEventKey() == Keyboard.KEY_F8) Options.SmoothCamera = !Options.SmoothCamera;
@@ -1773,11 +1773,11 @@ public partial class BetaSharp :
 
     private void LoadScreen()
     {
-        ScaledResolution var1 = new(Options, DisplayWidth, DisplayHeight);
+        ScaledResolution scaledResolution = new(Options, DisplayWidth, DisplayHeight);
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
         GLManager.GL.MatrixMode(GLEnum.Projection);
         GLManager.GL.LoadIdentity();
-        GLManager.GL.Ortho(0.0D, var1.ScaledWidth, var1.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
+        GLManager.GL.Ortho(0.0D, scaledResolution.ScaledWidth, scaledResolution.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
         GLManager.GL.MatrixMode(GLEnum.Modelview);
         GLManager.GL.LoadIdentity();
         GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
@@ -1796,11 +1796,11 @@ public partial class BetaSharp :
         tessellator.addVertexWithUV((double)DisplayWidth, 0.0D, 0.0D, 0.0D, 0.0D);
         tessellator.addVertexWithUV(0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         tessellator.draw();
-        short var3 = 256;
-        short var4 = 256;
+        short logoWidth = 256;
+        short logoHeight = 256;
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         tessellator.setColorOpaque_I(0xFFFFFF);
-        DrawTextureRegion((var1.ScaledWidth - var3) / 2, (var1.ScaledHeight - var4) / 2, 0, 0, var3, var4);
+        DrawTextureRegion((scaledResolution.ScaledWidth - logoWidth) / 2, (scaledResolution.ScaledHeight - logoHeight) / 2, 0, 0, logoWidth, logoHeight);
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.Fog);
         GLManager.GL.Enable(GLEnum.AlphaTest);

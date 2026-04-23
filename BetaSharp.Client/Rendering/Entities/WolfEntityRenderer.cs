@@ -10,33 +10,33 @@ public class WolfEntityRenderer : LivingEntityRenderer
     {
     }
 
-    public void renderWolf(EntityWolf var1, double var2, double var4, double var6, float var8, float var9)
+    public void renderWolf(EntityWolf wolfEntity, double x, double y, double z, float yaw, float tickDelta)
     {
-        base.DoRenderLiving(var1, var2, var4, var6, var8, var9);
+        base.DoRenderLiving(wolfEntity, x, y, z, yaw, tickDelta);
     }
 
-    protected float func_25004_a(EntityWolf var1, float var2)
+    protected float func_25004_a(EntityWolf wolf, float tickDelta)
     {
-        return var1.getTailRotation();
+        return wolf.getTailRotation();
     }
 
-    protected void func_25006_b(EntityWolf var1, float var2)
+    protected void func_25006_b(EntityWolf wolf, float tickDelta)
     {
     }
 
-    protected override void PreRenderCallback(EntityLiving var1, float var2)
+    protected override void PreRenderCallback(EntityLiving entity, float tickDelta)
     {
-        func_25006_b((EntityWolf)var1, var2);
+        func_25006_b((EntityWolf)entity, tickDelta);
     }
 
-    protected override float getAnimationProgress(EntityLiving var1, float var2)
+    protected override float getAnimationProgress(EntityLiving entity, float tickDelta)
     {
-        return func_25004_a((EntityWolf)var1, var2);
+        return func_25004_a((EntityWolf)entity, tickDelta);
     }
 
-    public override void DoRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
+    public override void DoRenderLiving(EntityLiving entity, double x, double y, double z, float yaw, float tickDelta)
     {
-        renderWolf((EntityWolf)var1, var2, var4, var6, var8, var9);
+        renderWolf((EntityWolf)entity, x, y, z, yaw, tickDelta);
     }
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)

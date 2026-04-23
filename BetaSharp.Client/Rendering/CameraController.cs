@@ -153,10 +153,10 @@ public class CameraController
                 GLManager.GL.Rotate(cameraEntity.PrevPitch + (cameraEntity.Pitch - cameraEntity.PrevPitch) * tickDelta, -1.0F, 0.0F, 0.0F);
             }
         }
-        else if (_game.Options.CameraMode == EnumCameraMode.ThirdPerson || _game.Options.CameraMode == EnumCameraMode.FrontThirdPerson)
+        else if (_game.Options.CameraMode == CameraMode.ThirdPerson || _game.Options.CameraMode == CameraMode.FrontThirdPerson)
         {
             double currentDistance;
-            if (_game.Options.CameraMode == EnumCameraMode.FrontThirdPerson)
+            if (_game.Options.CameraMode == CameraMode.FrontThirdPerson)
             {
                 currentDistance = _prevFrontThirdPersonDistance + (_frontThirdPersonDistance - _prevFrontThirdPersonDistance) * tickDelta;
             }
@@ -193,7 +193,7 @@ public class CameraController
 
                     HitResult hit = new HitResult(HitResultType.MISS);
 
-                    if (_game.Options.CameraMode == EnumCameraMode.FrontThirdPerson)
+                    if (_game.Options.CameraMode == CameraMode.FrontThirdPerson)
                     {
                         hit = _game.World.Reader.Raycast(
                             new Vec3D(x + offsetX, y + offsetY, z + offsetZ),
@@ -221,7 +221,7 @@ public class CameraController
                 GLManager.GL.Rotate(cameraEntity.Pitch - targetPitch, 1.0F, 0.0F, 0.0F);
                 GLManager.GL.Rotate(cameraEntity.Yaw - targetYaw, 0.0F, 1.0F, 0.0F);
                 GLManager.GL.Translate(0.0F, 0.0F, (float)-currentDistance);
-                if (_game.Options.CameraMode == EnumCameraMode.FrontThirdPerson)
+                if (_game.Options.CameraMode == CameraMode.FrontThirdPerson)
                 {
                     GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
                 }

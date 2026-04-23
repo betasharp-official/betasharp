@@ -8,10 +8,10 @@ namespace BetaSharp.Items;
 internal class ItemHoe : Item
 {
 
-    public ItemHoe(int id, EnumToolMaterial enumToolMaterial) : base(id)
+    public ItemHoe(int id, ToolMaterial toolMaterial) : base(id)
     {
         maxCount = 1;
-        setMaxDamage(enumToolMaterial.getMaxUses());
+        setMaxDamage(toolMaterial.getMaxUses());
     }
 
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)

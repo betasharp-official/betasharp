@@ -43,145 +43,145 @@ public class HeldItemRenderer
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId(texPath));
             int tileSize = _game.TextureManager.GetAtlasTileSize(texPath);
 
-            Tessellator var3 = Tessellator.instance;
-            int var4 = entity.getItemStackTextureId(item);
-            float var5 = (var4 % 16 * 16 + 0.0F) / 256.0F;
-            float var6 = (var4 % 16 * 16 + 15.99F) / 256.0F;
-            float var7 = (var4 / 16 * 16 + 0.0F) / 256.0F;
-            float var8 = (var4 / 16 * 16 + 15.99F) / 256.0F;
-            float var9 = 1.0F;
-            float var10 = 0.0F;
-            float var11 = 0.3F;
+            Tessellator tessellator = Tessellator.instance;
+            int iconIndex = entity.getItemStackTextureId(item);
+            float minU = (iconIndex % 16 * 16 + 0.0F) / 256.0F;
+            float maxU = (iconIndex % 16 * 16 + 15.99F) / 256.0F;
+            float minV = (iconIndex / 16 * 16 + 0.0F) / 256.0F;
+            float maxV = (iconIndex / 16 * 16 + 15.99F) / 256.0F;
+            float quadWidth = 1.0F;
+            float xOffset = 0.0F;
+            float yOffset = 0.3F;
             GLManager.GL.Enable(GLEnum.RescaleNormal);
-            GLManager.GL.Translate(-var10, -var11, 0.0F);
-            float var12 = 1.5F;
-            GLManager.GL.Scale(var12, var12, var12);
+            GLManager.GL.Translate(-xOffset, -yOffset, 0.0F);
+            float itemScale = 1.5F;
+            GLManager.GL.Scale(itemScale, itemScale, itemScale);
             GLManager.GL.Rotate(50.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(335.0F, 0.0F, 0.0F, 1.0F);
             GLManager.GL.Translate(-(15.0F / 16.0F), -(1.0F / 16.0F), 0.0F);
-            float var13 = 1.0F / 16.0F;
-            var3.startDrawingQuads();
-            var3.setNormal(0.0F, 0.0F, 1.0F);
-            var3.addVertexWithUV(0.0D, 0.0D, 0.0D, (double)var6, (double)var8);
-            var3.addVertexWithUV((double)var9, 0.0D, 0.0D, (double)var5, (double)var8);
-            var3.addVertexWithUV((double)var9, 1.0D, 0.0D, (double)var5, (double)var7);
-            var3.addVertexWithUV(0.0D, 1.0D, 0.0D, (double)var6, (double)var7);
-            var3.draw();
-            var3.startDrawingQuads();
-            var3.setNormal(0.0F, 0.0F, -1.0F);
-            var3.addVertexWithUV(0.0D, 1.0D, (double)(0.0F - var13), (double)var6, (double)var7);
-            var3.addVertexWithUV((double)var9, 1.0D, (double)(0.0F - var13), (double)var5, (double)var7);
-            var3.addVertexWithUV((double)var9, 0.0D, (double)(0.0F - var13), (double)var5, (double)var8);
-            var3.addVertexWithUV(0.0D, 0.0D, (double)(0.0F - var13), (double)var6, (double)var8);
-            var3.draw();
-            var3.startDrawingQuads();
-            var3.setNormal(-1.0F, 0.0F, 0.0F);
+            float thickness = 1.0F / 16.0F;
+            tessellator.startDrawingQuads();
+            tessellator.setNormal(0.0F, 0.0F, 1.0F);
+            tessellator.addVertexWithUV(0.0D, 0.0D, 0.0D, (double)maxU, (double)maxV);
+            tessellator.addVertexWithUV((double)quadWidth, 0.0D, 0.0D, (double)minU, (double)maxV);
+            tessellator.addVertexWithUV((double)quadWidth, 1.0D, 0.0D, (double)minU, (double)minV);
+            tessellator.addVertexWithUV(0.0D, 1.0D, 0.0D, (double)maxU, (double)minV);
+            tessellator.draw();
+            tessellator.startDrawingQuads();
+            tessellator.setNormal(0.0F, 0.0F, -1.0F);
+            tessellator.addVertexWithUV(0.0D, 1.0D, (double)(0.0F - thickness), (double)maxU, (double)minV);
+            tessellator.addVertexWithUV((double)quadWidth, 1.0D, (double)(0.0F - thickness), (double)minU, (double)minV);
+            tessellator.addVertexWithUV((double)quadWidth, 0.0D, (double)(0.0F - thickness), (double)minU, (double)maxV);
+            tessellator.addVertexWithUV(0.0D, 0.0D, (double)(0.0F - thickness), (double)maxU, (double)maxV);
+            tessellator.draw();
+            tessellator.startDrawingQuads();
+            tessellator.setNormal(-1.0F, 0.0F, 0.0F);
 
-            int var14;
-            float var15;
-            float var16;
-            float var17;
-            for (var14 = 0; var14 < tileSize; ++var14)
+            int sliceIndex;
+            float sliceProgress;
+            float sliceU;
+            float sliceX;
+            for (sliceIndex = 0; sliceIndex < tileSize; ++sliceIndex)
             {
-                var15 = var14 / (float)tileSize;
-                var16 = var6 + (var5 - var6) * var15 - (1.0f / (tileSize * 32.0f));
-                var17 = var9 * var15;
-                var3.addVertexWithUV((double)var17, 0.0D, (double)(0.0F - var13), (double)var16, (double)var8);
-                var3.addVertexWithUV((double)var17, 0.0D, 0.0D, (double)var16, (double)var8);
-                var3.addVertexWithUV((double)var17, 1.0D, 0.0D, (double)var16, (double)var7);
-                var3.addVertexWithUV((double)var17, 1.0D, (double)(0.0F - var13), (double)var16, (double)var7);
+                sliceProgress = sliceIndex / (float)tileSize;
+                sliceU = maxU + (minU - maxU) * sliceProgress - (1.0f / (tileSize * 32.0f));
+                sliceX = quadWidth * sliceProgress;
+                tessellator.addVertexWithUV((double)sliceX, 0.0D, (double)(0.0F - thickness), (double)sliceU, (double)maxV);
+                tessellator.addVertexWithUV((double)sliceX, 0.0D, 0.0D, (double)sliceU, (double)maxV);
+                tessellator.addVertexWithUV((double)sliceX, 1.0D, 0.0D, (double)sliceU, (double)minV);
+                tessellator.addVertexWithUV((double)sliceX, 1.0D, (double)(0.0F - thickness), (double)sliceU, (double)minV);
             }
 
-            var3.draw();
-            var3.startDrawingQuads();
-            var3.setNormal(1.0F, 0.0F, 0.0F);
+            tessellator.draw();
+            tessellator.startDrawingQuads();
+            tessellator.setNormal(1.0F, 0.0F, 0.0F);
 
-            for (var14 = 0; var14 < tileSize; ++var14)
+            for (sliceIndex = 0; sliceIndex < tileSize; ++sliceIndex)
             {
-                var15 = var14 / (float)tileSize;
-                var16 = var6 + (var5 - var6) * var15 - (1.0f / (tileSize * 32.0f));
-                var17 = var9 * var15 + 1.0F / tileSize;
-                var3.addVertexWithUV((double)var17, 1.0D, (double)(0.0F - var13), (double)var16, (double)var7);
-                var3.addVertexWithUV((double)var17, 1.0D, 0.0D, (double)var16, (double)var7);
-                var3.addVertexWithUV((double)var17, 0.0D, 0.0D, (double)var16, (double)var8);
-                var3.addVertexWithUV((double)var17, 0.0D, (double)(0.0F - var13), (double)var16, (double)var8);
+                sliceProgress = sliceIndex / (float)tileSize;
+                sliceU = maxU + (minU - maxU) * sliceProgress - (1.0f / (tileSize * 32.0f));
+                sliceX = quadWidth * sliceProgress + 1.0F / tileSize;
+                tessellator.addVertexWithUV((double)sliceX, 1.0D, (double)(0.0F - thickness), (double)sliceU, (double)minV);
+                tessellator.addVertexWithUV((double)sliceX, 1.0D, 0.0D, (double)sliceU, (double)minV);
+                tessellator.addVertexWithUV((double)sliceX, 0.0D, 0.0D, (double)sliceU, (double)maxV);
+                tessellator.addVertexWithUV((double)sliceX, 0.0D, (double)(0.0F - thickness), (double)sliceU, (double)maxV);
             }
 
-            var3.draw();
-            var3.startDrawingQuads();
-            var3.setNormal(0.0F, 1.0F, 0.0F);
+            tessellator.draw();
+            tessellator.startDrawingQuads();
+            tessellator.setNormal(0.0F, 1.0F, 0.0F);
 
-            for (var14 = 0; var14 < tileSize; ++var14)
+            for (sliceIndex = 0; sliceIndex < tileSize; ++sliceIndex)
             {
-                var15 = var14 / (float)tileSize;
-                var16 = var8 + (var7 - var8) * var15 - (1.0f / (tileSize * 32.0f));
-                var17 = var9 * var15 + 1.0F / tileSize;
-                var3.addVertexWithUV(0.0D, (double)var17, 0.0D, (double)var6, (double)var16);
-                var3.addVertexWithUV((double)var9, (double)var17, 0.0D, (double)var5, (double)var16);
-                var3.addVertexWithUV((double)var9, (double)var17, (double)(0.0F - var13), (double)var5, (double)var16);
-                var3.addVertexWithUV(0.0D, (double)var17, (double)(0.0F - var13), (double)var6, (double)var16);
+                sliceProgress = sliceIndex / (float)tileSize;
+                sliceU = maxV + (minV - maxV) * sliceProgress - (1.0f / (tileSize * 32.0f));
+                sliceX = quadWidth * sliceProgress + 1.0F / tileSize;
+                tessellator.addVertexWithUV(0.0D, (double)sliceX, 0.0D, (double)maxU, (double)sliceU);
+                tessellator.addVertexWithUV((double)quadWidth, (double)sliceX, 0.0D, (double)minU, (double)sliceU);
+                tessellator.addVertexWithUV((double)quadWidth, (double)sliceX, (double)(0.0F - thickness), (double)minU, (double)sliceU);
+                tessellator.addVertexWithUV(0.0D, (double)sliceX, (double)(0.0F - thickness), (double)maxU, (double)sliceU);
             }
 
-            var3.draw();
-            var3.startDrawingQuads();
-            var3.setNormal(0.0F, -1.0F, 0.0F);
+            tessellator.draw();
+            tessellator.startDrawingQuads();
+            tessellator.setNormal(0.0F, -1.0F, 0.0F);
 
-            for (var14 = 0; var14 < tileSize; ++var14)
+            for (sliceIndex = 0; sliceIndex < tileSize; ++sliceIndex)
             {
-                var15 = var14 / (float)tileSize;
-                var16 = var8 + (var7 - var8) * var15 - (1.0f / (tileSize * 32.0f));
-                var17 = var9 * var15;
-                var3.addVertexWithUV((double)var9, (double)var17, 0.0D, (double)var5, (double)var16);
-                var3.addVertexWithUV(0.0D, (double)var17, 0.0D, (double)var6, (double)var16);
-                var3.addVertexWithUV(0.0D, (double)var17, (double)(0.0F - var13), (double)var6, (double)var16);
-                var3.addVertexWithUV((double)var9, (double)var17, (double)(0.0F - var13), (double)var5, (double)var16);
+                sliceProgress = sliceIndex / (float)tileSize;
+                sliceU = maxV + (minV - maxV) * sliceProgress - (1.0f / (tileSize * 32.0f));
+                sliceX = quadWidth * sliceProgress;
+                tessellator.addVertexWithUV((double)quadWidth, (double)sliceX, 0.0D, (double)minU, (double)sliceU);
+                tessellator.addVertexWithUV(0.0D, (double)sliceX, 0.0D, (double)maxU, (double)sliceU);
+                tessellator.addVertexWithUV(0.0D, (double)sliceX, (double)(0.0F - thickness), (double)maxU, (double)sliceU);
+                tessellator.addVertexWithUV((double)quadWidth, (double)sliceX, (double)(0.0F - thickness), (double)minU, (double)sliceU);
             }
 
-            var3.draw();
+            tessellator.draw();
             GLManager.GL.Disable(GLEnum.RescaleNormal);
         }
 
         GLManager.GL.PopMatrix();
     }
 
-    public void renderItemInFirstPerson(float var1)
+    public void renderItemInFirstPerson(float tickDelta)
     {
-        float var2 = prevEquippedProgress + (equippedProgress - prevEquippedProgress) * var1;
-        ClientPlayerEntity var3 = _game.Player;
-        float var4 = var3.PrevPitch + (var3.Pitch - var3.PrevPitch) * var1;
+        float equipProgress = prevEquippedProgress + (equippedProgress - prevEquippedProgress) * tickDelta;
+        ClientPlayerEntity player = _game.Player;
+        float pitch = player.PrevPitch + (player.Pitch - player.PrevPitch) * tickDelta;
         GLManager.GL.PushMatrix();
-        GLManager.GL.Rotate(var4, 1.0F, 0.0F, 0.0F);
-        GLManager.GL.Rotate(var3.PrevYaw + (var3.Yaw - var3.PrevYaw) * var1, 0.0F, 1.0F, 0.0F);
+        GLManager.GL.Rotate(pitch, 1.0F, 0.0F, 0.0F);
+        GLManager.GL.Rotate(player.PrevYaw + (player.Yaw - player.PrevYaw) * tickDelta, 0.0F, 1.0F, 0.0F);
         Lighting.turnOn();
         GLManager.GL.PopMatrix();
-        ItemStack var5 = itemToRender;
-        float var6 = _game.World.GetLuminance(MathHelper.Floor(var3.X), MathHelper.Floor(var3.Y), MathHelper.Floor(var3.Z));
-        float var8;
-        float var9;
-        float var10;
+        ItemStack heldStack = itemToRender;
+        float brightness = _game.World.GetLuminance(MathHelper.Floor(player.X), MathHelper.Floor(player.Y), MathHelper.Floor(player.Z));
+        float red;
+        float sineSwing;
+        float sqrtSwing;
         if (itemToRender != null)
         {
-            int var7 = Item.ITEMS[itemToRender.ItemId].getColorMultiplier(itemToRender.getDamage());
-            var8 = (var7 >> 16 & 255) / 255.0F;
-            var9 = (var7 >> 8 & 255) / 255.0F;
-            var10 = (var7 & 255) / 255.0F;
-            GLManager.GL.Color4(var6 * var8, var6 * var9, var6 * var10, 1.0F);
+            int itemColor = Item.ITEMS[itemToRender.ItemId].getColorMultiplier(itemToRender.getDamage());
+            red = (itemColor >> 16 & 255) / 255.0F;
+            sineSwing = (itemColor >> 8 & 255) / 255.0F;
+            sqrtSwing = (itemColor & 255) / 255.0F;
+            GLManager.GL.Color4(brightness * red, brightness * sineSwing, brightness * sqrtSwing, 1.0F);
         }
         else
         {
-            GLManager.GL.Color4(var6, var6, var6, 1.0F);
+            GLManager.GL.Color4(brightness, brightness, brightness, 1.0F);
         }
 
-        float var14;
+        float baseScale;
         if (itemToRender != null && itemToRender.ItemId == Item.Map.id)
         {
             GLManager.GL.PushMatrix();
-            var14 = 0.8F;
-            float swingProgress = var3.getSwingProgress(var1);
-            var9 = MathHelper.Sin(swingProgress * (float)Math.PI);
-            var10 = MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI);
-            GLManager.GL.Translate(-var10 * 0.4F, MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI * 2.0F) * 0.2F, -var9 * 0.2F);
-            swingProgress = 1.0F - var4 / 45.0F + 0.1F;
+            baseScale = 0.8F;
+            float swingProgress = player.getSwingProgress(tickDelta);
+            sineSwing = MathHelper.Sin(swingProgress * (float)Math.PI);
+            sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI);
+            GLManager.GL.Translate(-sqrtSwing * 0.4F, MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI * 2.0F) * 0.2F, -sineSwing * 0.2F);
+            swingProgress = 1.0F - pitch / 45.0F + 0.1F;
             if (swingProgress < 0.0F)
             {
                 swingProgress = 0.0F;
@@ -193,7 +193,7 @@ public class HeldItemRenderer
             }
 
             swingProgress = -MathHelper.Cos(swingProgress * (float)Math.PI) * 0.5F + 0.5F;
-            GLManager.GL.Translate(0.0F, 0.0F * var14 - (1.0F - var2) * 1.2F - swingProgress * 0.5F + 0.04F, -0.9F * var14);
+            GLManager.GL.Translate(0.0F, 0.0F * baseScale - (1.0F - equipProgress) * 1.2F - swingProgress * 0.5F + 0.04F, -0.9F * baseScale);
             GLManager.GL.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(swingProgress * -85.0F, 0.0F, 0.0F, 1.0F);
             GLManager.GL.Enable(GLEnum.RescaleNormal);
@@ -201,44 +201,44 @@ public class HeldItemRenderer
 
             for (int i = 0; i < 2; i++)
             {
-                int var21 = i * 2 - 1;
+                int handSide = i * 2 - 1;
                 GLManager.GL.PushMatrix();
-                GLManager.GL.Translate(-0.0F, -0.6F, 1.1F * var21);
-                GLManager.GL.Rotate(-45 * var21, 1.0F, 0.0F, 0.0F);
+                GLManager.GL.Translate(-0.0F, -0.6F, 1.1F * handSide);
+                GLManager.GL.Rotate(-45 * handSide, 1.0F, 0.0F, 0.0F);
                 GLManager.GL.Rotate(-90.0F, 0.0F, 0.0F, 1.0F);
                 GLManager.GL.Rotate(59.0F, 0.0F, 0.0F, 1.0F);
-                GLManager.GL.Rotate(-65 * var21, 0.0F, 1.0F, 0.0F);
-                EntityRenderer var11 = EntityRenderDispatcher.Instance.GetEntityRenderObject(_game.Player);
-                PlayerEntityRenderer var12 = (PlayerEntityRenderer)var11;
-                float var13 = 1.0F;
-                GLManager.GL.Scale(var13, var13, var13);
-                var12.DrawFirstPersonHand();
+                GLManager.GL.Rotate(-65 * handSide, 0.0F, 1.0F, 0.0F);
+                EntityRenderer playerRendererBase = EntityRenderDispatcher.Instance.GetEntityRenderObject(_game.Player);
+                PlayerEntityRenderer playerRenderer = (PlayerEntityRenderer)playerRendererBase;
+                float armScale = 1.0F;
+                GLManager.GL.Scale(armScale, armScale, armScale);
+                playerRenderer.DrawFirstPersonHand();
                 GLManager.GL.PopMatrix();
             }
 
-            var9 = var3.getSwingProgress(var1);
-            var10 = MathHelper.Sin(var9 * var9 * (float)Math.PI);
-            float var18 = MathHelper.Sin(MathHelper.Sqrt(var9) * (float)Math.PI);
-            GLManager.GL.Rotate(-var10 * 20.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(-var18 * 20.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Rotate(-var18 * 80.0F, 1.0F, 0.0F, 0.0F);
-            var9 = 0.38F;
-            GLManager.GL.Scale(var9, var9, var9);
+            sineSwing = player.getSwingProgress(tickDelta);
+            sqrtSwing = MathHelper.Sin(sineSwing * sineSwing * (float)Math.PI);
+            float secondarySwing = MathHelper.Sin(MathHelper.Sqrt(sineSwing) * (float)Math.PI);
+            GLManager.GL.Rotate(-sqrtSwing * 20.0F, 0.0F, 1.0F, 0.0F);
+            GLManager.GL.Rotate(-secondarySwing * 20.0F, 0.0F, 0.0F, 1.0F);
+            GLManager.GL.Rotate(-secondarySwing * 80.0F, 1.0F, 0.0F, 0.0F);
+            sineSwing = 0.38F;
+            GLManager.GL.Scale(sineSwing, sineSwing, sineSwing);
             GLManager.GL.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
             GLManager.GL.Translate(-1.0F, -1.0F, 0.0F);
-            var10 = (1 / 64f);
-            GLManager.GL.Scale(var10, var10, var10);
+            sqrtSwing = (1 / 64f);
+            GLManager.GL.Scale(sqrtSwing, sqrtSwing, sqrtSwing);
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/misc/mapbg.png"));
-            Tessellator var19 = Tessellator.instance;
+            Tessellator tessellator = Tessellator.instance;
             GLManager.GL.Normal3(0.0F, 0.0F, -1.0F);
-            var19.startDrawingQuads();
-            byte var20 = 7;
-            var19.addVertexWithUV(0 - var20, 128 + var20, 0.0D, 0.0D, 1.0D);
-            var19.addVertexWithUV(128 + var20, 128 + var20, 0.0D, 1.0D, 1.0D);
-            var19.addVertexWithUV(128 + var20, 0 - var20, 0.0D, 1.0D, 0.0D);
-            var19.addVertexWithUV(0 - var20, 0 - var20, 0.0D, 0.0D, 0.0D);
-            var19.draw();
+            tessellator.startDrawingQuads();
+            byte mapBorder = 7;
+            tessellator.addVertexWithUV(0 - mapBorder, 128 + mapBorder, 0.0D, 0.0D, 1.0D);
+            tessellator.addVertexWithUV(128 + mapBorder, 128 + mapBorder, 0.0D, 1.0D, 1.0D);
+            tessellator.addVertexWithUV(128 + mapBorder, 0 - mapBorder, 0.0D, 1.0D, 0.0D);
+            tessellator.addVertexWithUV(0 - mapBorder, 0 - mapBorder, 0.0D, 0.0D, 0.0D);
+            tessellator.draw();
             MapState mapState = ItemMap.getMapState(itemToRender.getDamage(), _game.World);
             mapRenderer.render(_game.Player, _game.TextureManager, mapState);
             GLManager.GL.PopMatrix();
@@ -246,46 +246,46 @@ public class HeldItemRenderer
         else if (itemToRender != null)
         {
             GLManager.GL.PushMatrix();
-            var14 = 0.8F;
-            var8 = var3.getSwingProgress(var1);
-            var9 = MathHelper.Sin(var8 * (float)Math.PI);
-            var10 = MathHelper.Sin(MathHelper.Sqrt(var8) * (float)Math.PI);
-            GLManager.GL.Translate(-var10 * 0.4F, MathHelper.Sin(MathHelper.Sqrt(var8) * (float)Math.PI * 2.0F) * 0.2F, -var9 * 0.2F);
-            GLManager.GL.Translate(0.7F * var14, -0.65F * var14 - (1.0F - var2) * 0.6F, -0.9F * var14);
+            baseScale = 0.8F;
+            red = player.getSwingProgress(tickDelta);
+            sineSwing = MathHelper.Sin(red * (float)Math.PI);
+            sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI);
+            GLManager.GL.Translate(-sqrtSwing * 0.4F, MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI * 2.0F) * 0.2F, -sineSwing * 0.2F);
+            GLManager.GL.Translate(0.7F * baseScale, -0.65F * baseScale - (1.0F - equipProgress) * 0.6F, -0.9F * baseScale);
             GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Enable(GLEnum.RescaleNormal);
-            var8 = var3.getSwingProgress(var1);
-            var9 = MathHelper.Sin(var8 * var8 * (float)Math.PI);
-            var10 = MathHelper.Sin(MathHelper.Sqrt(var8) * (float)Math.PI);
-            GLManager.GL.Rotate(-var9 * 20.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(-var10 * 20.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Rotate(-var10 * 80.0F, 1.0F, 0.0F, 0.0F);
-            var8 = 0.4F;
-            GLManager.GL.Scale(var8, var8, var8);
+            red = player.getSwingProgress(tickDelta);
+            sineSwing = MathHelper.Sin(red * red * (float)Math.PI);
+            sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI);
+            GLManager.GL.Rotate(-sineSwing * 20.0F, 0.0F, 1.0F, 0.0F);
+            GLManager.GL.Rotate(-sqrtSwing * 20.0F, 0.0F, 0.0F, 1.0F);
+            GLManager.GL.Rotate(-sqrtSwing * 80.0F, 1.0F, 0.0F, 0.0F);
+            red = 0.4F;
+            GLManager.GL.Scale(red, red, red);
             if (itemToRender.getItem().isHandheldRod())
             {
                 GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
             }
 
-            renderItem(var3, itemToRender);
+            renderItem(player, itemToRender);
             GLManager.GL.PopMatrix();
         }
         else
         {
             GLManager.GL.PushMatrix();
-            var14 = 0.8F;
-            var8 = var3.getSwingProgress(var1);
-            var9 = MathHelper.Sin(var8 * (float)Math.PI);
-            var10 = MathHelper.Sin(MathHelper.Sqrt(var8) * (float)Math.PI);
-            GLManager.GL.Translate(-var10 * 0.3F, MathHelper.Sin(MathHelper.Sqrt(var8) * (float)Math.PI * 2.0F) * 0.4F, -var9 * 0.4F);
-            GLManager.GL.Translate(0.8F * var14, -(12.0F / 16.0F) * var14 - (1.0F - var2) * 0.6F, -0.9F * var14);
+            baseScale = 0.8F;
+            red = player.getSwingProgress(tickDelta);
+            sineSwing = MathHelper.Sin(red * (float)Math.PI);
+            sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI);
+            GLManager.GL.Translate(-sqrtSwing * 0.3F, MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI * 2.0F) * 0.4F, -sineSwing * 0.4F);
+            GLManager.GL.Translate(0.8F * baseScale, -(12.0F / 16.0F) * baseScale - (1.0F - equipProgress) * 0.6F, -0.9F * baseScale);
             GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Enable(GLEnum.RescaleNormal);
-            var8 = var3.getSwingProgress(var1);
-            var9 = MathHelper.Sin(var8 * var8 * (float)Math.PI);
-            var10 = MathHelper.Sin(MathHelper.Sqrt(var8) * (float)Math.PI);
-            GLManager.GL.Rotate(var10 * 70.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(-var9 * 20.0F, 0.0F, 0.0F, 1.0F);
+            red = player.getSwingProgress(tickDelta);
+            sineSwing = MathHelper.Sin(red * red * (float)Math.PI);
+            sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI);
+            GLManager.GL.Rotate(sqrtSwing * 70.0F, 0.0F, 1.0F, 0.0F);
+            GLManager.GL.Rotate(-sineSwing * 20.0F, 0.0F, 0.0F, 1.0F);
             bindSkinTexture();
             GLManager.GL.Translate(-1.0F, 3.6F, 3.5F);
             GLManager.GL.Rotate(120.0F, 0.0F, 0.0F, 1.0F);
@@ -293,11 +293,11 @@ public class HeldItemRenderer
             GLManager.GL.Rotate(-135.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Scale(1.0F, 1.0F, 1.0F);
             GLManager.GL.Translate(5.6F, 0.0F, 0.0F);
-            EntityRenderer var15 = EntityRenderDispatcher.Instance.GetEntityRenderObject(_game.Player);
-            PlayerEntityRenderer var16 = (PlayerEntityRenderer)var15;
-            var10 = 1.0F;
-            GLManager.GL.Scale(var10, var10, var10);
-            var16.DrawFirstPersonHand();
+            EntityRenderer playerRendererBase2 = EntityRenderDispatcher.Instance.GetEntityRenderObject(_game.Player);
+            PlayerEntityRenderer playerRenderer2 = (PlayerEntityRenderer)playerRendererBase2;
+            sqrtSwing = 1.0F;
+            GLManager.GL.Scale(sqrtSwing, sqrtSwing, sqrtSwing);
+            playerRenderer2.DrawFirstPersonHand();
             GLManager.GL.PopMatrix();
         }
 
@@ -305,144 +305,144 @@ public class HeldItemRenderer
         Lighting.turnOff();
     }
 
-    public void renderOverlays(float var1)
+    public void renderOverlays(float tickDelta)
     {
         GLManager.GL.Disable(GLEnum.AlphaTest);
-        int var2;
+        int blockX;
         if (_game.Player.IsOnFire())
         {
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/terrain.png"));
-            renderFireInFirstPerson(var1);
+            renderFireInFirstPerson(tickDelta);
         }
 
         if (_game.Player.IsInsideWall())
         {
-            var2 = MathHelper.Floor(_game.Player.X);
-            int var3 = MathHelper.Floor(_game.Player.Y);
-            int var4 = MathHelper.Floor(_game.Player.Z);
+            blockX = MathHelper.Floor(_game.Player.X);
+            int blockY = MathHelper.Floor(_game.Player.Y);
+            int blockZ = MathHelper.Floor(_game.Player.Z);
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/terrain.png"));
-            int var6 = _game.World.Reader.GetBlockId(var2, var3, var4);
-            if (_game.World.Reader.ShouldSuffocate(var2, var3, var4))
+            int blockId = _game.World.Reader.GetBlockId(blockX, blockY, blockZ);
+            if (_game.World.Reader.ShouldSuffocate(blockX, blockY, blockZ))
             {
-                renderInsideOfBlock(var1, Block.Blocks[var6].GetTexture(Side.North));
+                renderInsideOfBlock(tickDelta, Block.Blocks[blockId].GetTexture(Side.North));
             }
             else
             {
-                for (int var7 = 0; var7 < 8; ++var7)
+                for (int sampleIndex = 0; sampleIndex < 8; ++sampleIndex)
                 {
-                    float var8 = ((var7 >> 0) % 2 - 0.5F) * _game.Player.Width * 0.9F;
-                    float var9 = ((var7 >> 1) % 2 - 0.5F) * _game.Player.Height * 0.2F;
-                    float var10 = ((var7 >> 2) % 2 - 0.5F) * _game.Player.Width * 0.9F;
-                    int var11 = MathHelper.Floor(var2 + var8);
-                    int var12 = MathHelper.Floor(var3 + var9);
-                    int var13 = MathHelper.Floor(var4 + var10);
-                    if (_game.World.Reader.ShouldSuffocate(var11, var12, var13))
+                    float offsetX = ((sampleIndex >> 0) % 2 - 0.5F) * _game.Player.Width * 0.9F;
+                    float offsetY = ((sampleIndex >> 1) % 2 - 0.5F) * _game.Player.Height * 0.2F;
+                    float offsetZ = ((sampleIndex >> 2) % 2 - 0.5F) * _game.Player.Width * 0.9F;
+                    int sampleX = MathHelper.Floor(blockX + offsetX);
+                    int sampleY = MathHelper.Floor(blockY + offsetY);
+                    int sampleZ = MathHelper.Floor(blockZ + offsetZ);
+                    if (_game.World.Reader.ShouldSuffocate(sampleX, sampleY, sampleZ))
                     {
-                        var6 = _game.World.Reader.GetBlockId(var11, var12, var13);
+                        blockId = _game.World.Reader.GetBlockId(sampleX, sampleY, sampleZ);
                     }
                 }
             }
 
-            if (Block.Blocks[var6] != null)
+            if (Block.Blocks[blockId] != null)
             {
-                renderInsideOfBlock(var1, Block.Blocks[var6].GetTexture(Side.North));
+                renderInsideOfBlock(tickDelta, Block.Blocks[blockId].GetTexture(Side.North));
             }
         }
 
         if (_game.Player.IsInFluid(Material.Water))
         {
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/misc/water.png"));
-            renderWarpedTextureOverlay(var1);
+            renderWarpedTextureOverlay(tickDelta);
         }
 
         GLManager.GL.Enable(GLEnum.AlphaTest);
     }
 
-    private void renderInsideOfBlock(float var1, int var2)
+    private void renderInsideOfBlock(float tickDelta, int textureId)
     {
-        Tessellator var3 = Tessellator.instance;
-        _game.Player.GetBrightnessAtEyes(var1);
-        float var4 = 0.1F;
-        GLManager.GL.Color4(var4, var4, var4, 0.5F);
+        Tessellator tessellator = Tessellator.instance;
+        _game.Player.GetBrightnessAtEyes(tickDelta);
+        float brightness = 0.1F;
+        GLManager.GL.Color4(brightness, brightness, brightness, 0.5F);
         GLManager.GL.PushMatrix();
-        float var5 = -1.0F;
-        float var6 = 1.0F;
-        float var7 = -1.0F;
-        float var8 = 1.0F;
-        float var9 = -0.5F;
-        float var10 = (1 / 128f);
-        float var11 = var2 % 16 / 256.0F - var10;
-        float var12 = (var2 % 16 + 15.99F) / 256.0F + var10;
-        float var13 = var2 / 16 / 256.0F - var10;
-        float var14 = (var2 / 16 + 15.99F) / 256.0F + var10;
-        var3.startDrawingQuads();
-        var3.addVertexWithUV((double)var5, (double)var7, (double)var9, (double)var12, (double)var14);
-        var3.addVertexWithUV((double)var6, (double)var7, (double)var9, (double)var11, (double)var14);
-        var3.addVertexWithUV((double)var6, (double)var8, (double)var9, (double)var11, (double)var13);
-        var3.addVertexWithUV((double)var5, (double)var8, (double)var9, (double)var12, (double)var13);
-        var3.draw();
+        float minX = -1.0F;
+        float maxX = 1.0F;
+        float minY = -1.0F;
+        float maxY = 1.0F;
+        float z = -0.5F;
+        float uvInset = (1 / 128f);
+        float minU = textureId % 16 / 256.0F - uvInset;
+        float maxU = (textureId % 16 + 15.99F) / 256.0F + uvInset;
+        float minV = textureId / 16 / 256.0F - uvInset;
+        float maxV = (textureId / 16 + 15.99F) / 256.0F + uvInset;
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV((double)minX, (double)minY, (double)z, (double)maxU, (double)maxV);
+        tessellator.addVertexWithUV((double)maxX, (double)minY, (double)z, (double)minU, (double)maxV);
+        tessellator.addVertexWithUV((double)maxX, (double)maxY, (double)z, (double)minU, (double)minV);
+        tessellator.addVertexWithUV((double)minX, (double)maxY, (double)z, (double)maxU, (double)minV);
+        tessellator.draw();
         GLManager.GL.PopMatrix();
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    private void renderWarpedTextureOverlay(float var1)
+    private void renderWarpedTextureOverlay(float tickDelta)
     {
-        Tessellator var2 = Tessellator.instance;
-        float var3 = _game.Player.GetBrightnessAtEyes(var1);
-        GLManager.GL.Color4(var3, var3, var3, 0.5F);
+        Tessellator tessellator = Tessellator.instance;
+        float brightness = _game.Player.GetBrightnessAtEyes(tickDelta);
+        GLManager.GL.Color4(brightness, brightness, brightness, 0.5F);
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
         GLManager.GL.PushMatrix();
-        float var4 = 4.0F;
-        float var5 = -1.0F;
-        float var6 = 1.0F;
-        float var7 = -1.0F;
-        float var8 = 1.0F;
-        float var9 = -0.5F;
-        float var10 = -_game.Player.Yaw / 64.0F;
-        float var11 = _game.Player.Pitch / 64.0F;
-        var2.startDrawingQuads();
-        var2.addVertexWithUV((double)var5, (double)var7, (double)var9, (double)(var4 + var10), (double)(var4 + var11));
-        var2.addVertexWithUV((double)var6, (double)var7, (double)var9, (double)(0.0F + var10), (double)(var4 + var11));
-        var2.addVertexWithUV((double)var6, (double)var8, (double)var9, (double)(0.0F + var10), (double)(0.0F + var11));
-        var2.addVertexWithUV((double)var5, (double)var8, (double)var9, (double)(var4 + var10), (double)(0.0F + var11));
-        var2.draw();
+        float uvScale = 4.0F;
+        float minX = -1.0F;
+        float maxX = 1.0F;
+        float minY = -1.0F;
+        float maxY = 1.0F;
+        float z = -0.5F;
+        float uOffset = -_game.Player.Yaw / 64.0F;
+        float vOffset = _game.Player.Pitch / 64.0F;
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV((double)minX, (double)minY, (double)z, (double)(uvScale + uOffset), (double)(uvScale + vOffset));
+        tessellator.addVertexWithUV((double)maxX, (double)minY, (double)z, (double)(0.0F + uOffset), (double)(uvScale + vOffset));
+        tessellator.addVertexWithUV((double)maxX, (double)maxY, (double)z, (double)(0.0F + uOffset), (double)(0.0F + vOffset));
+        tessellator.addVertexWithUV((double)minX, (double)maxY, (double)z, (double)(uvScale + uOffset), (double)(0.0F + vOffset));
+        tessellator.draw();
         GLManager.GL.PopMatrix();
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.GL.Disable(GLEnum.Blend);
     }
 
-    private void renderFireInFirstPerson(float var1)
+    private void renderFireInFirstPerson(float tickDelta)
     {
-        Tessellator var2 = Tessellator.instance;
+        Tessellator tessellator = Tessellator.instance;
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 0.9F);
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-        float var3 = 1.0F;
+        float quadSize = 1.0F;
 
-        for (int var4 = 0; var4 < 2; ++var4)
+        for (int layerIndex = 0; layerIndex < 2; ++layerIndex)
         {
             GLManager.GL.PushMatrix();
-            int var5 = Block.Fire.TextureId + var4 * 16;
-            int var6 = (var5 & 15) << 4;
-            int var7 = var5 & 240;
-            float var8 = var6 / 256.0F;
-            float var9 = (var6 + 15.99F) / 256.0F;
-            float var10 = var7 / 256.0F;
-            float var11 = (var7 + 15.99F) / 256.0F;
-            float var12 = (0.0F - var3) / 2.0F;
-            float var13 = var12 + var3;
-            float var14 = 0.0F - var3 / 2.0F;
-            float var15 = var14 + var3;
-            float var16 = -0.5F;
-            GLManager.GL.Translate(-(var4 * 2 - 1) * 0.24F, -0.3F, 0.0F);
-            GLManager.GL.Rotate((var4 * 2 - 1) * 10.0F, 0.0F, 1.0F, 0.0F);
-            var2.startDrawingQuads();
-            var2.addVertexWithUV((double)var12, (double)var14, (double)var16, (double)var9, (double)var11);
-            var2.addVertexWithUV((double)var13, (double)var14, (double)var16, (double)var8, (double)var11);
-            var2.addVertexWithUV((double)var13, (double)var15, (double)var16, (double)var8, (double)var10);
-            var2.addVertexWithUV((double)var12, (double)var15, (double)var16, (double)var9, (double)var10);
-            var2.draw();
+            int fireTexture = Block.Fire.TextureId + layerIndex * 16;
+            int textureU = (fireTexture & 15) << 4;
+            int textureV = fireTexture & 240;
+            float minU = textureU / 256.0F;
+            float maxU = (textureU + 15.99F) / 256.0F;
+            float minV = textureV / 256.0F;
+            float maxV = (textureV + 15.99F) / 256.0F;
+            float minX = (0.0F - quadSize) / 2.0F;
+            float maxX = minX + quadSize;
+            float minY = 0.0F - quadSize / 2.0F;
+            float maxY = minY + quadSize;
+            float z = -0.5F;
+            GLManager.GL.Translate(-(layerIndex * 2 - 1) * 0.24F, -0.3F, 0.0F);
+            GLManager.GL.Rotate((layerIndex * 2 - 1) * 10.0F, 0.0F, 1.0F, 0.0F);
+            tessellator.startDrawingQuads();
+            tessellator.addVertexWithUV((double)minX, (double)minY, (double)z, (double)maxU, (double)maxV);
+            tessellator.addVertexWithUV((double)maxX, (double)minY, (double)z, (double)minU, (double)maxV);
+            tessellator.addVertexWithUV((double)maxX, (double)maxY, (double)z, (double)minU, (double)minV);
+            tessellator.addVertexWithUV((double)minX, (double)maxY, (double)z, (double)maxU, (double)minV);
+            tessellator.draw();
             GLManager.GL.PopMatrix();
         }
 
@@ -453,38 +453,38 @@ public class HeldItemRenderer
     public void updateEquippedItem()
     {
         prevEquippedProgress = equippedProgress;
-        ClientPlayerEntity var1 = _game.Player;
-        ItemStack var2 = var1.inventory.GetItemInHand();
-        bool var4 = field_20099_f == var1.inventory.SelectedSlot && var2 == itemToRender;
-        if (itemToRender == null && var2 == null)
+        ClientPlayerEntity player = _game.Player;
+        ItemStack heldStack = player.inventory.GetItemInHand();
+        bool sameItem = field_20099_f == player.inventory.SelectedSlot && heldStack == itemToRender;
+        if (itemToRender == null && heldStack == null)
         {
-            var4 = true;
+            sameItem = true;
         }
 
-        if (var2 != null && itemToRender != null && var2 != itemToRender && var2.ItemId == itemToRender.ItemId && var2.getDamage() == itemToRender.getDamage())
+        if (heldStack != null && itemToRender != null && heldStack != itemToRender && heldStack.ItemId == itemToRender.ItemId && heldStack.getDamage() == itemToRender.getDamage())
         {
-            itemToRender = var2;
-            var4 = true;
+            itemToRender = heldStack;
+            sameItem = true;
         }
 
-        float var5 = 0.4F;
-        float var6 = var4 ? 1.0F : 0.0F;
-        float var7 = var6 - equippedProgress;
-        if (var7 < -var5)
+        float maxStep = 0.4F;
+        float targetProgress = sameItem ? 1.0F : 0.0F;
+        float progressDelta = targetProgress - equippedProgress;
+        if (progressDelta < -maxStep)
         {
-            var7 = -var5;
+            progressDelta = -maxStep;
         }
 
-        if (var7 > var5)
+        if (progressDelta > maxStep)
         {
-            var7 = var5;
+            progressDelta = maxStep;
         }
 
-        equippedProgress += var7;
+        equippedProgress += progressDelta;
         if (equippedProgress < 0.1F)
         {
-            itemToRender = var2;
-            field_20099_f = var1.inventory.SelectedSlot;
+            itemToRender = heldStack;
+            field_20099_f = player.inventory.SelectedSlot;
         }
 
     }

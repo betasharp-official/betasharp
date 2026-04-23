@@ -10,28 +10,28 @@ public class BlockEntityMobSpawnerRenderer : BlockEntitySpecialRenderer
 
     private readonly Dictionary<string, Entity> _entityDict = [];
 
-    public void renderTileEntityMobSpawner(BlockEntityMobSpawner var1, double var2, double var4, double var6, float var8)
+    public void renderTileEntityMobSpawner(BlockEntityMobSpawner spawner, double x, double y, double z, float tickDelta)
     {
         GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)var2 + 0.5F, (float)var4, (float)var6 + 0.5F);
-        _entityDict.TryGetValue(var1.GetSpawnedEntityId(), out Entity? var9);
-        if (var9 == null)
+        GLManager.GL.Translate((float)x + 0.5F, (float)y, (float)z + 0.5F);
+        _entityDict.TryGetValue(spawner.GetSpawnedEntityId(), out Entity? displayEntity);
+        if (displayEntity == null)
         {
-            var9 = EntityRegistry.Create(var1.GetSpawnedEntityId(), null);
-            _entityDict.Add(var1.GetSpawnedEntityId(), var9);
+            displayEntity = EntityRegistry.Create(spawner.GetSpawnedEntityId(), null);
+            _entityDict.Add(spawner.GetSpawnedEntityId(), displayEntity);
         }
 
-        if (var9 != null)
+        if (displayEntity != null)
         {
-            var9.SetWorld(var1.World);
-            float var10 = 7.0F / 16.0F;
+            displayEntity.SetWorld(spawner.World);
+            float scale = 7.0F / 16.0F;
             GLManager.GL.Translate(0.0F, 0.4F, 0.0F);
-            GLManager.GL.Rotate((float)(var1.LastRotation + (var1.Rotation - var1.LastRotation) * (double)var8) * 10.0F, 0.0F, 1.0F, 0.0F);
+            GLManager.GL.Rotate((float)(spawner.LastRotation + (spawner.Rotation - spawner.LastRotation) * (double)tickDelta) * 10.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(-30.0F, 1.0F, 0.0F, 0.0F);
             GLManager.GL.Translate(0.0F, -0.4F, 0.0F);
-            GLManager.GL.Scale(var10, var10, var10);
-            var9.SetPositionAndAnglesKeepPrevAngles(var2, var4, var6, 0.0F, 0.0F);
-            EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(var9, 0.0D, 0.0D, 0.0D, 0.0F, var8);
+            GLManager.GL.Scale(scale, scale, scale);
+            displayEntity.SetPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
+            EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(displayEntity, 0.0D, 0.0D, 0.0D, 0.0F, tickDelta);
         }
 
         GLManager.GL.PopMatrix();
