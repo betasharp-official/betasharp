@@ -2,16 +2,6 @@
 
 This stack provides live operational visibility for the dedicated server.
 
-It includes:
-
-- a lightweight in-process HTTP monitoring surface in the server
-- Prometheus scraping that surface
-- Grafana with a preprovisioned `BetaSharp Server` dashboard
-
-This setup does not include alert rules right now.
-
-The server is treated as a single instance.
-
 The monitoring stack runs fully inside Docker Compose, including the dedicated server.
 
 ## Tool versions
@@ -44,12 +34,6 @@ Available variables:
 
 - `Release` (recommended default)
 - `Debug` (for heavy investigation only)
-
-## Goals
-
-- Keep production monitoring cheap enough to leave on in release builds.
-- Keep heavier profiling behind the profiler detail level instead of scattering compile guards through gameplay code.
-- Make it possible to inspect live server state without attaching a debugger.
 
 ## Server configuration
 
