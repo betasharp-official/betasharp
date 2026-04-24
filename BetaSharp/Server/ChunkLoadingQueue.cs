@@ -1,4 +1,5 @@
 using BetaSharp.Entities;
+using BetaSharp.Profiling;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Server;
@@ -10,6 +11,8 @@ internal class ChunkLoadingQueue(ChunkMap chunkMap)
     //TODO: MAKE THIS CONFIGURABLE
     private const int MAX_CHUNKS_PER_TICK = 5;
     private long _nextSequence;
+
+    public int Count => _pendingChunks.Count;
 
     public void Add(int x, int z, ServerPlayerEntity player)
     {
@@ -61,29 +64,33 @@ internal class ChunkLoadingQueue(ChunkMap chunkMap)
     {
         if (_pendingChunks.Count == 0) return;
 
-        // Convert to list once and sort once — avoids repeated full-sort of the backing store.
-        var sortedChunks = new List<PendingChunk>(_pendingChunks.Values);
-        sortedChunks.Sort((a, b) => a.GetPriority().CompareTo(b.GetPriority()));
-
-        int chunksLoaded = 0;
-        foreach (PendingChunk chunkToLoad in sortedChunks)
+        using (Profiler.Begin("LoadQueue", ProfilingDetailLevel.Detailed))
         {
-            if (chunksLoaded >= MAX_CHUNKS_PER_TICK) break;
+            // Convert to list once and sort once — avoids repeated full-sort of the backing store.
+            var sortedChunks = new List<PendingChunk>(_pendingChunks.Values);
+            sortedChunks.Sort((a, b) => a.GetPriority().CompareTo(b.GetPriority()));
 
-            _pendingChunks.Remove(chunkToLoad.Hash);
-
-            ChunkMap.TrackedChunk? chunk = _chunkMap.GetOrCreateChunk(chunkToLoad.X, chunkToLoad.Z, true);
-            if (chunk != null)
+            int chunksLoaded = 0;
+            foreach (PendingChunk chunkToLoad in sortedChunks)
             {
-                foreach (var player in chunkToLoad.Players)
+                if (chunksLoaded >= MAX_CHUNKS_PER_TICK) break;
+
+                _pendingChunks.Remove(chunkToLoad.Hash);
+
+                ChunkMap.TrackedChunk? chunk = _chunkMap.GetOrCreateChunk(chunkToLoad.X, chunkToLoad.Z, true);
+                if (chunk != null)
                 {
-                    if (!chunk.HasPlayer(player))
+                    foreach (var player in chunkToLoad.Players)
                     {
-                        chunk.addPlayer(player);
+                        if (!chunk.HasPlayer(player))
+                        {
+                            chunk.addPlayer(player);
+                        }
                     }
                 }
+
+                chunksLoaded++;
             }
-            chunksLoaded++;
         }
     }
 

@@ -20,6 +20,11 @@ public interface IServerConfiguration
     bool GetWhiteList(bool fallback);
     int GetSpawnRegionSize(int fallback);
     string GetDefaultGamemode(string fallback);
+    string GetProfilingDetail(string fallback);
+    bool GetMetricsHttpEnabled(bool fallback);
+    string GetMetricsHttpHost(string fallback);
+    int GetMetricsHttpPort(int fallback);
+    int GetStatsLogIntervalSeconds(int fallback);
     void Save();
 
     bool GetProperty(string property, bool fallback);

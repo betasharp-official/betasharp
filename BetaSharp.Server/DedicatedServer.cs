@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Sockets;
 using BetaSharp.Registries;
 using BetaSharp.Server.Network;
 using BetaSharp.Server.Threading;
@@ -10,6 +11,7 @@ namespace BetaSharp.Server;
 internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(config)
 {
     private static readonly ILogger<DedicatedServer> s_logger = Log.Instance.For<DedicatedServer>();
+    private ServerMonitoringHost? _monitoringHost;
 
     public override FileInfo GetFile(string path) => new(Path.Combine(".", path));
 
@@ -53,6 +55,13 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
         {
             connections = new ConnectionListener(this, address, port, dualStack);
         }
+        catch (SocketException ex)
+        {
+            s_logger.LogWarning("**** FAILED TO BIND TO PORT!");
+            s_logger.LogWarning($"The exception was: {ex}");
+            s_logger.LogWarning("Perhaps a server is already running on that port?");
+            return false;
+        }
         catch (IOException ex)
         {
             s_logger.LogWarning("**** FAILED TO BIND TO PORT!");
@@ -69,7 +78,30 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
             s_logger.LogWarning("To change this, set \"online-mode\" to \"true\" in the server.settings file.");
         }
 
-        return base.Init();
+        bool initialized = base.Init();
+        if (initialized && DiagnosticsOptions.MetricsHttpEnabled)
+        {
+            try
+            {
+                _monitoringHost = new ServerMonitoringHost(this, DiagnosticsOptions.MetricsHttpHost, DiagnosticsOptions.MetricsHttpPort);
+                _monitoringHost.Start();
+                s_logger.LogInformation("Monitoring endpoints listening on {Prefix}", _monitoringHost.Prefix);
+            }
+            catch (HttpListenerException ex)
+            {
+                s_logger.LogWarning(ex, "Failed to start monitoring endpoints on {Host}:{Port}", DiagnosticsOptions.MetricsHttpHost, DiagnosticsOptions.MetricsHttpPort);
+                _monitoringHost?.Dispose();
+                _monitoringHost = null;
+            }
+        }
+
+        return initialized;
+    }
+
+    protected override void OnShutdown()
+    {
+        _monitoringHost?.Dispose();
+        _monitoringHost = null;
     }
 
     public static void Main()

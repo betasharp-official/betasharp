@@ -21,6 +21,10 @@ internal class ChunkMap
     private int _viewDistance;
     private readonly ILogger<ChunkMap> _logger = Log.Instance.For<ChunkMap>();
 
+    public int PendingChunkCount => loadQueue.Count;
+    public int TrackedChunkCount => _chunkMapping.Count;
+    public int DirtyTrackedChunkCount => _chunksToUpdate.Count;
+
     public ChunkMap(BetaSharpServer server, int dimensionId, int viewRadius)
     {
         if (viewRadius > 32)

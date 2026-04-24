@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: BetaSharp
+    orgId: 1
+    folder: BetaSharp
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

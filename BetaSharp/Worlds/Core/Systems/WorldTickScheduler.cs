@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Profiling;
 using BetaSharp.Worlds.Chunks;
 
 namespace BetaSharp.Worlds.Core.Systems;
@@ -12,6 +13,17 @@ public class WorldTickScheduler
     private readonly HashSet<ScheduledBlockTick> _pendingScheduledKeys = new();
 
     private readonly record struct ScheduledBlockTick(int X, int Y, int Z, int BlockId);
+
+    public int PendingCount
+    {
+        get
+        {
+            lock (_queueLock)
+            {
+                return _scheduledUpdates.Count;
+            }
+        }
+    }
 
     public WorldTickScheduler(IWorldContext context) => _context = context;
     public void Tick(bool forceFlush = false) => ProcessScheduledTicks(forceFlush);
@@ -85,64 +97,67 @@ public class WorldTickScheduler
     {
         if (_context.IsRemote) return;
 
-        long currentTime = _context.GetTime();
-
-        List<BlockUpdate> readyToExecute = new();
-        List<BlockUpdate> deferredTicks = new();
-
-        lock (_queueLock)
+        using (Profiler.Begin("ProcessScheduledTicks", ProfilingDetailLevel.Detailed))
         {
-            int proportionalLimit = Math.Clamp(_scheduledUpdates.Count / 10, 1000, 8192);
-            int maxTicksPerFrame = forceFlush ? _scheduledUpdates.Count : proportionalLimit;
-            int h = ChuckFormat.WorldHeight - 1;
+            long currentTime = _context.GetTime();
 
-            for (int i = 0; i < maxTicksPerFrame; ++i)
+            List<BlockUpdate> readyToExecute = new();
+            List<BlockUpdate> deferredTicks = new();
+
+            lock (_queueLock)
             {
-                if (_scheduledUpdates.Count == 0) break;
-                if (!forceFlush && _scheduledUpdates.Peek().ScheduledTime > currentTime) break;
+                int proportionalLimit = Math.Clamp(_scheduledUpdates.Count / 10, 1000, 8192);
+                int maxTicksPerFrame = forceFlush ? _scheduledUpdates.Count : proportionalLimit;
+                int h = ChuckFormat.WorldHeight - 1;
 
-                BlockUpdate blockUpdate = _scheduledUpdates.Dequeue();
-                var key = new ScheduledBlockTick(blockUpdate.X, blockUpdate.Y, blockUpdate.Z, blockUpdate.BlockId);
-                _pendingScheduledKeys.Remove(key);
-
-                if (!_context.Reader.IsPosLoaded(blockUpdate.X, blockUpdate.Y, blockUpdate.Z))
+                for (int i = 0; i < maxTicksPerFrame; ++i)
                 {
-                    deferredTicks.Add(blockUpdate);
-                    continue;
+                    if (_scheduledUpdates.Count == 0) break;
+                    if (!forceFlush && _scheduledUpdates.Peek().ScheduledTime > currentTime) break;
+
+                    BlockUpdate blockUpdate = _scheduledUpdates.Dequeue();
+                    var key = new ScheduledBlockTick(blockUpdate.X, blockUpdate.Y, blockUpdate.Z, blockUpdate.BlockId);
+                    _pendingScheduledKeys.Remove(key);
+
+                    if (!_context.Reader.IsPosLoaded(blockUpdate.X, blockUpdate.Y, blockUpdate.Z))
+                    {
+                        deferredTicks.Add(blockUpdate);
+                        continue;
+                    }
+
+                    int currentBlockId = _context.Reader.GetBlockId(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
+                    if (currentBlockId != blockUpdate.BlockId || currentBlockId <= 0)
+                        continue;
+
+                    const byte loadRadius = 8;
+                    int minY = Math.Max(0, blockUpdate.Y - loadRadius);
+                    int maxY = Math.Min(h, blockUpdate.Y + loadRadius);
+
+                    bool posLoaded = _context.Reader.IsPosLoaded(blockUpdate.X - loadRadius, minY, blockUpdate.Z - loadRadius) &&
+                                     _context.Reader.IsPosLoaded(blockUpdate.X + loadRadius, maxY, blockUpdate.Z + loadRadius);
+
+                    if (!posLoaded)
+                    {
+                        deferredTicks.Add(blockUpdate);
+                        continue;
+                    }
+
+                    readyToExecute.Add(blockUpdate);
                 }
 
-                int currentBlockId = _context.Reader.GetBlockId(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
-                if (currentBlockId != blockUpdate.BlockId || currentBlockId <= 0)
-                    continue;
-
-                const byte loadRadius = 8;
-                int minY = Math.Max(0, blockUpdate.Y - loadRadius);
-                int maxY = Math.Min(h, blockUpdate.Y + loadRadius);
-
-                bool posLoaded = _context.Reader.IsPosLoaded(blockUpdate.X - loadRadius, minY, blockUpdate.Z - loadRadius) &&
-                                 _context.Reader.IsPosLoaded(blockUpdate.X + loadRadius, maxY, blockUpdate.Z + loadRadius);
-
-                if (!posLoaded)
+                foreach (var def in deferredTicks)
                 {
-                    deferredTicks.Add(blockUpdate);
-                    continue;
+                    var key = new ScheduledBlockTick(def.X, def.Y, def.Z, def.BlockId);
+                    _pendingScheduledKeys.Add(key);
+                    _scheduledUpdates.Enqueue(def, (def.ScheduledTime, def.ScheduledOrder));
                 }
-
-                readyToExecute.Add(blockUpdate);
             }
 
-            foreach (var def in deferredTicks)
+            foreach (var blockUpdate in readyToExecute)
             {
-                var key = new ScheduledBlockTick(def.X, def.Y, def.Z, def.BlockId);
-                _pendingScheduledKeys.Add(key);
-                _scheduledUpdates.Enqueue(def, (def.ScheduledTime, def.ScheduledOrder));
+                int meta = _context.Reader.GetBlockMeta(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
+                Block.Blocks[blockUpdate.BlockId].onTick(new OnTickEvent(_context, blockUpdate.X, blockUpdate.Y, blockUpdate.Z, meta, blockUpdate.BlockId));
             }
-        }
-
-        foreach (var blockUpdate in readyToExecute)
-        {
-            int meta = _context.Reader.GetBlockMeta(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
-            Block.Blocks[blockUpdate.BlockId].onTick(new OnTickEvent(_context, blockUpdate.X, blockUpdate.Y, blockUpdate.Z, meta, blockUpdate.BlockId));
         }
     }
 

@@ -32,6 +32,7 @@ public static class MetricRegistry
             ValueType = typeof(T),
             Index = index,
             ValueString = () => Storage<T>.Values[index]?.ToString() ?? string.Empty,
+            RawValueGetter = () => Storage<T>.Values[index],
         };
         s_all[index] = descriptor;
         s_byKey[key] = index;
@@ -68,6 +69,21 @@ public static class MetricRegistry
     /// <typeparam name="T">Type of metric to check</typeparam>
     public static bool IsStale<T>(MetricHandle<T> handle, double toleranceMs = 2000.0)
         => IsStale(handle.Index, toleranceMs);
+
+    /// <summary>
+    /// Gets all <see cref="MetricDescriptor"/> by namespace.
+    /// </summary>
+    public static IEnumerable<MetricDescriptor> GetAll()
+    {
+        int count = s_nextIndex;
+        for (int i = 0; i < count; i++)
+        {
+            if (s_all[i] is { } descriptor)
+            {
+                yield return descriptor;
+            }
+        }
+    }
 
     /// <summary>
     /// Gets all <see cref="MetricDescriptor"/> by namespace.

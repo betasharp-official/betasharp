@@ -14,9 +14,12 @@ public sealed class MetricDescriptor
 
     public required int Index { get; init; }
     internal Func<string> ValueString { get; init; } = null!;
+    internal Func<object?> RawValueGetter { get; init; } = null!;
 
     /// <summary>
     /// Gets the string representation of this metric's value.
     /// </summary>
     public string Value => ValueString();
+
+    public object? RawValue => RawValueGetter();
 }

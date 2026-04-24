@@ -485,20 +485,23 @@ public abstract class World : IWorldContext
 
     protected virtual void ManageChunkUpdatesAndEvents()
     {
-        _activeChunks.Clear();
-
-        for (int i = 0; i < Entities.Players.Count; ++i)
+        using (Profiler.Begin("CollectActiveChunks", ProfilingDetailLevel.Detailed))
         {
-            EntityPlayer player = Entities.Players[i];
-            int playerChunkX = MathHelper.Floor(player.X / 16.0D);
-            int playerChunkZ = MathHelper.Floor(player.Z / 16.0D);
-            const byte viewDistance = 9;
+            _activeChunks.Clear();
 
-            for (int xOffset = -viewDistance; xOffset <= viewDistance; ++xOffset)
+            for (int i = 0; i < Entities.Players.Count; ++i)
             {
-                for (int zOffset = -viewDistance; zOffset <= viewDistance; ++zOffset)
+                EntityPlayer player = Entities.Players[i];
+                int playerChunkX = MathHelper.Floor(player.X / 16.0D);
+                int playerChunkZ = MathHelper.Floor(player.Z / 16.0D);
+                const byte viewDistance = 9;
+
+                for (int xOffset = -viewDistance; xOffset <= viewDistance; ++xOffset)
                 {
-                    _activeChunks.Add(new ChunkPos(xOffset + playerChunkX, zOffset + playerChunkZ));
+                    for (int zOffset = -viewDistance; zOffset <= viewDistance; ++zOffset)
+                    {
+                        _activeChunks.Add(new ChunkPos(xOffset + playerChunkX, zOffset + playerChunkZ));
+                    }
                 }
             }
         }
@@ -508,94 +511,97 @@ public abstract class World : IWorldContext
             --_soundCounter;
         }
 
-        foreach (ChunkPos chunkPos in _activeChunks)
+        using (Profiler.Begin("TickActiveChunks", ProfilingDetailLevel.Detailed))
         {
-            int worldXBase = chunkPos.X * 16;
-            int worldZBase = chunkPos.Z * 16;
-            Chunk currentChunk = BlockHost.GetChunk(chunkPos.X, chunkPos.Z);
-
-            if (_soundCounter == 0)
+            foreach (ChunkPos chunkPos in _activeChunks)
             {
-                _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
-                int randomVal = _lcgBlockSeed >> 2;
-                int localX = randomVal & 15;
-                int localZ = (randomVal >> 8) & 15;
-                int localY = (randomVal >> 16) & 127;
+                int worldXBase = chunkPos.X * 16;
+                int worldZBase = chunkPos.Z * 16;
+                Chunk currentChunk = BlockHost.GetChunk(chunkPos.X, chunkPos.Z);
 
-                int blockId = currentChunk.GetBlockId(localX, localY, localZ);
-                int worldX = localX + worldXBase;
-                int worldZ = localZ + worldZBase;
-                if (blockId == 0 && Reader.GetBrightness(worldX, localY, worldZ) <= Random.NextInt(8) &&
-                    Lighting.GetBrightness(LightType.Sky, worldX, localY, worldZ) <= 0)
+                if (_soundCounter == 0)
                 {
-                    EntityPlayer? closest = Entities.GetClosestPlayer(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, 8.0D);
-                    if (closest != null &&
-                        closest.GetSquaredDistance(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D) > 4.0D)
+                    _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
+                    int randomVal = _lcgBlockSeed >> 2;
+                    int localX = randomVal & 15;
+                    int localZ = (randomVal >> 8) & 15;
+                    int localY = (randomVal >> 16) & 127;
+
+                    int blockId = currentChunk.GetBlockId(localX, localY, localZ);
+                    int worldX = localX + worldXBase;
+                    int worldZ = localZ + worldZBase;
+                    if (blockId == 0 && Reader.GetBrightness(worldX, localY, worldZ) <= Random.NextInt(8) &&
+                        Lighting.GetBrightness(LightType.Sky, worldX, localY, worldZ) <= 0)
                     {
-                        Broadcaster.PlaySoundAtPos(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, "ambient.cave.cave", 0.7F,
-                            0.8F + Random.NextFloat() * 0.2F);
-                        _soundCounter = Random.NextInt(12000) + 6000;
+                        EntityPlayer? closest = Entities.GetClosestPlayer(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, 8.0D);
+                        if (closest != null &&
+                            closest.GetSquaredDistance(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D) > 4.0D)
+                        {
+                            Broadcaster.PlaySoundAtPos(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, "ambient.cave.cave", 0.7F,
+                                0.8F + Random.NextFloat() * 0.2F);
+                            _soundCounter = Random.NextInt(12000) + 6000;
+                        }
                     }
                 }
-            }
 
-            if (Random.NextInt(100000) == 0 && Environment.IsRaining && Environment.IsThundering())
-            {
-                _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
-                int randomVal = _lcgBlockSeed >> 2;
-                int worldX = worldXBase + (randomVal & 15);
-                int worldZ = worldZBase + ((randomVal >> 8) & 15);
-                int worldY = Reader.GetTopSolidBlockY(worldX, worldZ);
-
-                if (Environment.IsRainingAt(worldX, worldY, worldZ))
+                if (Random.NextInt(100000) == 0 && Environment.IsRaining && Environment.IsThundering())
                 {
-                    Entities.SpawnGlobalEntity(new EntityLightningBolt(this, worldX, worldY, worldZ));
-                    Environment.LightningTicksLeft = 2;
-                }
-            }
+                    _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
+                    int randomVal = _lcgBlockSeed >> 2;
+                    int worldX = worldXBase + (randomVal & 15);
+                    int worldZ = worldZBase + ((randomVal >> 8) & 15);
+                    int worldY = Reader.GetTopSolidBlockY(worldX, worldZ);
 
-            if (Random.NextInt(16) == 0)
-            {
-                _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
-                int randomVal = _lcgBlockSeed >> 2;
-                int localX = randomVal & 15;
-                int localZ = (randomVal >> 8) & 15;
-                int worldX = localX + worldXBase;
-                int worldZ = localZ + worldZBase;
-                int worldY = Reader.GetTopSolidBlockY(worldX, worldZ);
-
-                if (GetBiomeSource().GetBiome(worldX, worldZ).GetEnableSnow() && worldY >= 0 && worldY < ChuckFormat.WorldHeight &&
-                    currentChunk.GetLight(LightType.Block, localX, worldY, localZ) < 10)
-                {
-                    int blockBelowId = currentChunk.GetBlockId(localX, worldY - 1, localZ);
-                    int currentBlockId = currentChunk.GetBlockId(localX, worldY, localZ);
-
-                    if (Environment.IsRaining && currentBlockId == 0 && Block.Snow.canPlaceAt(new CanPlaceAtContext(this, 1.ToSide(), worldX, worldY, worldZ)) &&
-                        blockBelowId != 0 && blockBelowId != Block.Ice.id &&
-                        Block.Blocks[blockBelowId].material.BlocksMovement)
+                    if (Environment.IsRainingAt(worldX, worldY, worldZ))
                     {
-                        Writer.SetBlock(worldX, worldY, worldZ, Block.Snow.id);
-                    }
-
-                    if (blockBelowId == Block.Water.id && currentChunk.GetBlockMeta(localX, worldY - 1, localZ) == 0)
-                    {
-                        Writer.SetBlock(worldX, worldY - 1, worldZ, Block.Ice.id);
+                        Entities.SpawnGlobalEntity(new EntityLightningBolt(this, worldX, worldY, worldZ));
+                        Environment.LightningTicksLeft = 2;
                     }
                 }
-            }
 
-            for (int j = 0; j < 80; ++j)
-            {
-                _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
-                int randomTickVal = _lcgBlockSeed >> 2;
-                int localX = randomTickVal & 15;
-                int localZ = (randomTickVal >> 8) & 15;
-                int localY = (randomTickVal >> 16) & 127;
-
-                int blockId = currentChunk.GetBlockId(localX, localY, localZ);
-                if (Block.BlocksRandomTick[blockId])
+                if (Random.NextInt(16) == 0)
                 {
-                    Block.Blocks[blockId].onTick(new OnTickEvent(this, localX + worldXBase, localY, localZ + worldZBase, currentChunk.GetBlockMeta(localX, localY, localZ), blockId));
+                    _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
+                    int randomVal = _lcgBlockSeed >> 2;
+                    int localX = randomVal & 15;
+                    int localZ = (randomVal >> 8) & 15;
+                    int worldX = localX + worldXBase;
+                    int worldZ = localZ + worldZBase;
+                    int worldY = Reader.GetTopSolidBlockY(worldX, worldZ);
+
+                    if (GetBiomeSource().GetBiome(worldX, worldZ).GetEnableSnow() && worldY >= 0 && worldY < ChuckFormat.WorldHeight &&
+                        currentChunk.GetLight(LightType.Block, localX, worldY, localZ) < 10)
+                    {
+                        int blockBelowId = currentChunk.GetBlockId(localX, worldY - 1, localZ);
+                        int currentBlockId = currentChunk.GetBlockId(localX, worldY, localZ);
+
+                        if (Environment.IsRaining && currentBlockId == 0 && Block.Snow.canPlaceAt(new CanPlaceAtContext(this, 1.ToSide(), worldX, worldY, worldZ)) &&
+                            blockBelowId != 0 && blockBelowId != Block.Ice.id &&
+                            Block.Blocks[blockBelowId].material.BlocksMovement)
+                        {
+                            Writer.SetBlock(worldX, worldY, worldZ, Block.Snow.id);
+                        }
+
+                        if (blockBelowId == Block.Water.id && currentChunk.GetBlockMeta(localX, worldY - 1, localZ) == 0)
+                        {
+                            Writer.SetBlock(worldX, worldY - 1, worldZ, Block.Ice.id);
+                        }
+                    }
+                }
+
+                for (int j = 0; j < 80; ++j)
+                {
+                    _lcgBlockSeed = _lcgBlockSeed * 3 + 1013904223;
+                    int randomTickVal = _lcgBlockSeed >> 2;
+                    int localX = randomTickVal & 15;
+                    int localZ = (randomTickVal >> 8) & 15;
+                    int localY = (randomTickVal >> 16) & 127;
+
+                    int blockId = currentChunk.GetBlockId(localX, localY, localZ);
+                    if (Block.BlocksRandomTick[blockId])
+                    {
+                        Block.Blocks[blockId].onTick(new OnTickEvent(this, localX + worldXBase, localY, localZ + worldZBase, currentChunk.GetBlockMeta(localX, localY, localZ), blockId));
+                    }
                 }
             }
         }

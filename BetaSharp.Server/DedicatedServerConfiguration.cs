@@ -138,4 +138,9 @@ internal class DedicatedServerConfiguration : IServerConfiguration
     public bool GetWhiteList(bool fallback) => GetProperty("white-list", fallback);
     public int GetSpawnRegionSize(int fallback) => GetProperty("spawn-region-size", fallback);
     public string GetDefaultGamemode(string fallback) => GetProperty("default-gamemode", fallback);
+    public string GetProfilingDetail(string fallback) => GetProperty("profiling-detail", fallback);
+    public bool GetMetricsHttpEnabled(bool fallback) => GetProperty("metrics-http-enabled", fallback);
+    public string GetMetricsHttpHost(string fallback) => GetProperty("metrics-http-host", fallback);
+    public int GetMetricsHttpPort(int fallback) => GetProperty("metrics-http-port", fallback);
+    public int GetStatsLogIntervalSeconds(int fallback) => GetProperty("stats-log-interval-seconds", fallback);
 }

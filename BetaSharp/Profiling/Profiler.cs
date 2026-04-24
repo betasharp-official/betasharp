@@ -3,6 +3,13 @@ using System.Runtime.CompilerServices;
 
 namespace BetaSharp.Profiling;
 
+public enum ProfilingDetailLevel
+{
+    Disabled = 0,
+    Basic = 1,
+    Detailed = 2,
+}
+
 /// <summary>
 /// Lightweight hierarchical profiler supporting two explicit threads: Main and Server.
 ///
@@ -151,8 +158,16 @@ public static class Profiler
     private static ThreadContext? s_mainContext;
     private static ThreadContext? s_serverContext;
 
+    private static volatile ProfilingDetailLevel s_detailLevel = GetDefaultDetailLevel();
+
     [ThreadStatic]
     private static ThreadContext? s_currentContext;
+
+    public static ProfilingDetailLevel DetailLevel
+    {
+        get => s_detailLevel;
+        set => s_detailLevel = value;
+    }
 
     /// <summary>
     /// Call once from the main client thread before the game loop starts.
@@ -177,9 +192,9 @@ public static class Profiler
     /// Returns a no-op default when the profiler is disabled or called from an unregistered thread.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ProfilerScope Begin(string name)
+    public static ProfilerScope Begin(string name, ProfilingDetailLevel minimumDetail = ProfilingDetailLevel.Basic)
     {
-        if (s_currentContext == null)
+        if (s_currentContext == null || s_detailLevel < minimumDetail)
             return default;
         return s_currentContext.BeginScope(name);
     }
@@ -187,9 +202,9 @@ public static class Profiler
     /// <summary>
     /// Records a pre-measured value (in milliseconds) under the given name at the current scope level.
     /// </summary>
-    public static void Record(string name, double milliseconds)
+    public static void Record(string name, double milliseconds, ProfilingDetailLevel minimumDetail = ProfilingDetailLevel.Basic)
     {
-        if (s_currentContext == null) return;
+        if (s_currentContext == null || s_detailLevel < minimumDetail) return;
         string path = s_currentContext.GetCurrentPath(name);
         s_currentContext.RecordDirect(path, milliseconds);
     }
@@ -199,6 +214,7 @@ public static class Profiler
     /// </summary>
     public static void Update(double dt)
     {
+        if (s_detailLevel == ProfilingDetailLevel.Disabled) return;
         s_mainContext?.RollPeriodMax(dt);
         s_serverContext?.RollPeriodMax(dt);
     }
@@ -208,6 +224,7 @@ public static class Profiler
     /// </summary>
     public static void CaptureFrame()
     {
+        if (s_detailLevel == ProfilingDetailLevel.Disabled) return;
         s_mainContext?.CaptureFrame();
         s_serverContext?.CaptureFrame();
     }
@@ -217,10 +234,24 @@ public static class Profiler
     /// </summary>
     public static IEnumerable<(string Name, double Last, double Avg, double Max, double[] History, int HistoryHead)> GetStats()
     {
+        if (s_detailLevel == ProfilingDetailLevel.Disabled)
+        {
+            return [];
+        }
+
         var result = new List<(string, double, double, double, double[], int)>();
         AppendContext(s_mainContext, "Main", result);
         AppendContext(s_serverContext, "Server", result);
         return result.OrderBy(x => x.Item1);
+    }
+
+    private static ProfilingDetailLevel GetDefaultDetailLevel()
+    {
+#if DEBUG
+        return ProfilingDetailLevel.Detailed;
+#else
+        return ProfilingDetailLevel.Basic;
+#endif
     }
 
     private static void AppendContext(
