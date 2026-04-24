@@ -125,7 +125,7 @@ All exported values are intentionally aggregated and low-cardinality.
 
 ## Run the stack
 
-From `ops/monitoring/`:
+From `BetaSharp.BetaSharp.Opsmonitoring/`:
 
 ```bash
 docker compose up -d --build
@@ -133,11 +133,11 @@ docker compose up -d --build
 
 Containerized server notes:
 
-- server data is stored in `ops/monitoring/server-data/`
-- a sample `server.properties` is provided at `ops/monitoring/server-data/server.properties`
+- server data is stored in `BetaSharp.Opsmonitoring/server-data/`
+- a sample `server.properties` is provided at `BetaSharp.Opsmonitoring/server-data/server.properties`
 - ensure `b1.7.3.jar` exists at the project root (`/home/tacf/code/betasharp/b1.7.3.jar`)
 - the compose file bind-mounts that root jar into the server container as `/data/b1.7.3.jar`
-- the Docker image can seed `/data` from `ops/monitoring/server-data/` on first start for config defaults
+- the Docker image can seed `/data` from `BetaSharp.Opsmonitoring/server-data/` on first start for config defaults
 - the server exposes:
   - game port `25565`
 
