@@ -236,9 +236,6 @@ public sealed class SkinManager : IDisposable
     private Task DownloadCapeFromId(string id) =>
         DownloadCapeFromUrl("http://textures.minecraft.net/texture/" + id, id);
 
-    private Task DownloadCapeFromUrl(string url) =>
-        DownloadCapeFromUrl(url, GetIdFromUrl(url));
-
     private string GetIdFromUrl(string str) => str.Substring(str.LastIndexOf('/') + 1);
 
     private async Task DownloadCapeFromUrl(string url, string id, string? username = null, bool cache = true)
