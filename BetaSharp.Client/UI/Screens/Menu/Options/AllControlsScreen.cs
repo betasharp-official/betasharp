@@ -8,17 +8,19 @@ public class AllControlsScreen : BaseOptionsScreen
     public AllControlsScreen(UIContext context, UIScreen? parent)
         : base(context, parent, "options.controls")
     {
-        TitleText = "Controls";
+        TitleText = TranslationStorage.Instance.TranslateKey("options.controls");
     }
 
     protected override IEnumerable<GameOption> GetOptions() => [];
 
     protected override UIElement CreateContent()
     {
+        TranslationStorage translationStorage = TranslationStorage.Instance;
+
         Panel list = CreateVerticalList();
 
         Button btnKeyboard = CreateButton();
-        btnKeyboard.Text = "Keyboard Controls...";
+        btnKeyboard.Text = translationStorage.TranslateKey("options.keyboardControls");
         btnKeyboard.Style.Width = 310;
         btnKeyboard.Style.MarginBottom = 4;
         btnKeyboard.OnClick += (e) =>
@@ -28,7 +30,7 @@ public class AllControlsScreen : BaseOptionsScreen
         list.AddChild(btnKeyboard);
 
         Button btnController = CreateButton();
-        btnController.Text = "Controller Settings...";
+        btnController.Text = translationStorage.TranslateKey("options.controllerSettings");
         btnController.Style.Width = 310;
         btnController.OnClick += (e) =>
         {

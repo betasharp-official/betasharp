@@ -16,13 +16,15 @@ public class DownloadingTerrainScreen(UIContext context, ClientNetworkHandler ne
 
     protected override void Init()
     {
+        TranslationStorage translationStorage = TranslationStorage.Instance;
+
         Root.AddChild(new Background(BackgroundType.Dirt));
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
 
         Label label = new()
         {
-            Text = TranslationStorage.Instance.TranslateKey("multiplayer.downloadingTerrain"),
+            Text = translationStorage.TranslateKey("multiplayer.downloadingTerrain"),
             TextColor = Color.White,
             Centered = true
         };

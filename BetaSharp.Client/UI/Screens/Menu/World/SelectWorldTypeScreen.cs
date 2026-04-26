@@ -19,11 +19,13 @@ public class SelectWorldTypeScreen(
 
     protected override void Init()
     {
+        TranslationStorage translationStorage = TranslationStorage.Instance;
+
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
         Root.Style.SetPadding(20);
 
-        Label title = new() { Text = "Select World Type", TextColor = Color.White };
+        Label title = new() { Text = translationStorage.TranslateKey("selectWorld.selectWorldType"), TextColor = Color.White };
         title.Style.MarginBottom = 10;
         Root.AddChild(title);
 
@@ -40,7 +42,7 @@ public class SelectWorldTypeScreen(
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
         Button btnDone = CreateButton();
-        btnDone.Text = "Done";
+        btnDone.Text = translationStorage.TranslateKey("selectWorld.done");
         btnDone.Style.Width = 100;
         btnDone.Style.SetMargin(2);
         btnDone.OnClick += (e) =>
@@ -54,7 +56,7 @@ public class SelectWorldTypeScreen(
         buttonPanel.AddChild(btnDone);
 
         Button btnCancel = CreateButton();
-        btnCancel.Text = "Cancel";
+        btnCancel.Text = translationStorage.TranslateKey("selectWorld.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);

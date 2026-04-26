@@ -3,14 +3,12 @@ using BetaSharp.Client.UI.Controls.Core;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
-public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOptionsScreen(context, parent, "options.videoTitle")
+public class LanguageSelection(UIContext context, UIScreen? parent) : BaseOptionsScreen(context, parent, "options.language")
 {
-    protected override IEnumerable<GameOption> GetOptions() => Options.VideoScreenOptions;
+    protected override IEnumerable<GameOption> GetOptions() => Options.LanguageOptions;
 
     protected override UIElement CreateContent()
     {
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-
         Panel root = CreateVerticalList();
 
         void AddSection(string name, IEnumerable<GameOption> sectionOptions)
@@ -30,21 +28,8 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
             root.AddChild(grid);
         }
 
-        AddSection(translationStorage.TranslateKey("options.video.performance"), [
-            Options.RenderDistanceOption,
-            Options.FramerateLimitOption,
-            Options.VSyncOption,
-            Options.MsaaOption,
-            Options.MipmapsOption,
-            Options.AnisotropicOption,
-        ]);
-
-        AddSection(translationStorage.TranslateKey("options.video.display"), [
-            Options.ViewBobbingOption,
-            Options.EnvironmentAnimationOption,
-            Options.ChunkFadeOption,
-            Options.ShowWTHITOption,
-            Options.AlternateBlocksOption
+        AddSection("Game restart required!", [
+            Options.LanguageOption,
         ]);
 
         return root;

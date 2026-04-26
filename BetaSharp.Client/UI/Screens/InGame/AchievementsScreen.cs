@@ -16,13 +16,15 @@ public class AchievementsScreen(
 
     protected override void Init()
     {
+        TranslationStorage translationStorage = TranslationStorage.Instance;
+
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.FlexStart;
 
         Root.AddChild(new Background(BackgroundType.World));
 
         // Title
-        Label title = new() { Text = "Achievements", TextColor = Color.White };
+        Label title = new() { Text = translationStorage.TranslateKey("achievements.title"), TextColor = Color.White };
         title.Style.MarginTop = 20;
         title.Style.MarginBottom = 8;
         Root.AddChild(title);
@@ -74,7 +76,7 @@ public class AchievementsScreen(
         PopulateAchievementList(cardList);
 
         Button btnDone = CreateButton();
-        btnDone.Text = "Done";
+        btnDone.Text = translationStorage.TranslateKey("achievements.done");
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 20;
         btnDone.Style.FlexShrink = 0;

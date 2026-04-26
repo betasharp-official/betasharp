@@ -17,12 +17,14 @@ public class IngameMenuScreen(
 {
     protected override void Init()
     {
+        TranslationStorage translationStorage = TranslationStorage.Instance;
+
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.FlexStart;
 
         Root.AddChild(new Background(BackgroundType.World));
 
-        Label title = new() { Text = "Game menu", TextColor = Color.White };
+        Label title = new() { Text = translationStorage.TranslateKey("gamemenu.title"), TextColor = Color.White };
         title.Style.MarginTop = 20;
         title.Style.MarginBottom = 8;
         Root.AddChild(title);
@@ -31,7 +33,7 @@ public class IngameMenuScreen(
         TranslationStorage translator = TranslationStorage.Instance;
 
         Button btnBack = CreateButton();
-        btnBack.Text = "Back to Game";
+        btnBack.Text = translationStorage.TranslateKey("gamemenu.backToGame");
         btnBack.OnClick += (e) =>
         {
             Context.Navigator.Navigate(null);

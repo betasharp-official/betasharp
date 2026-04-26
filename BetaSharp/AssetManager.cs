@@ -62,6 +62,7 @@ public class AssetManager
     private static readonly object s_instanceLock = new();
     private static AssetManager? s_instance;
     private static AssetProfile? s_configuredProfile;
+    public static List<(string Translation, string Stats)> Languages = new List<(string, string)>();
 
     public static AssetManager Instance => s_instance ?? throw new InvalidOperationException("AssetManager was not initialized.");
 
@@ -97,6 +98,19 @@ public class AssetManager
 
         defineHeadlessAssets();
 
+        defineLanguages();
+
+        for(int l = 0; l < Languages.Count; l++)
+        {
+            if(l > 100)
+            {
+                break;
+            }
+
+            defineEmbeddedAsset(Languages[l].Translation, AssetType.Text);
+            defineEmbeddedAsset(Languages[l].Stats, AssetType.Text);
+        }
+
         if (_assetProfile == AssetProfile.Full)
         {
             defineFullAssets();
@@ -110,12 +124,16 @@ public class AssetManager
         _logger.LogInformation($"Loaded {_embeddedAssetsLoaded} embedded assets");
     }
 
+    private void defineLanguages()
+    {
+        Languages.Add(("lang/en_US.lang", "lang/en_US-stats.lang"));
+        Languages.Add(("lang/pl_PL.lang", "lang/pl_PL-stats.lang"));
+    }
+
     private void defineHeadlessAssets()
     {
         defineAsset("font.txt", AssetType.Text);
         defineAsset("achievement/map.txt", AssetType.Text);
-        defineAsset("lang/en_US.lang", AssetType.Text);
-        defineAsset("lang/stats_US.lang", AssetType.Text);
     }
 
     private void defineFullAssets()

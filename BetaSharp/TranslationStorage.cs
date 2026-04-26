@@ -13,9 +13,6 @@ public class TranslationStorage
     {
         LoadLanguageFile("lang/en_US.lang");
         LoadLanguageFile("lang/stats_US.lang");
-
-        AddTranslation("disconnect.genericReason", "%1$s");
-        AddTranslation("key.zoom", "Zoom");
     }
 
     public void AddTranslation(string key, string translation)
@@ -23,10 +20,11 @@ public class TranslationStorage
         _translateTable[key] = translation;
     }
 
-    private void LoadLanguageFile(string assetPath)
+    public void LoadLanguageFile(string assetPath)
     {
         try
         {
+
             var asset = AssetManager.Instance.getAsset(assetPath);
             if (asset == null) return;
 
@@ -42,6 +40,7 @@ public class TranslationStorage
                 {
                     string key = line[..separatorIndex].Trim();
                     string value = line[(separatorIndex + 1)..].Trim();
+
                     _translateTable[key] = value;
                 }
             }
