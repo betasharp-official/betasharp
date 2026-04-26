@@ -1,4 +1,5 @@
 using BetaSharp.Entities;
+using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
@@ -46,6 +47,7 @@ public abstract partial class Command
     protected static RequiredArgumentBuilder<CommandSource, string> ArgumentGreedy(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.GreedyString());
     protected static RequiredArgumentBuilder<CommandSource, string> ArgumentString(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.Word());
     protected static RequiredArgumentBuilder<CommandSource, string> ArgumentItem(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, new ArgItem());
+    protected static RequiredArgumentBuilder<CommandSource, ItemStack> ArgumentItemStack(string name) => RequiredArgumentBuilder<CommandSource, ItemStack>.RequiredArgument(name, new ArgItemStack());
 
 
     public class CommandSource(ICommandHandler handler, string senderName, ICommandOutput output)
