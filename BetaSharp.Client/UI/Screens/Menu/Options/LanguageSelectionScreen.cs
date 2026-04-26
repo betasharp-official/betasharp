@@ -3,7 +3,7 @@ using BetaSharp.Client.UI.Controls.Core;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
-public class LanguageSelection(UIContext context, UIScreen? parent) : BaseOptionsScreen(context, parent, "options.language")
+public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : BaseOptionsScreen(context, parent, "options.language")
 {
     protected override IEnumerable<GameOption> GetOptions() => Options.LanguageOptions;
 
