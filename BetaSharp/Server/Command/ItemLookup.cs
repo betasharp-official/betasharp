@@ -55,7 +55,11 @@ internal static class ItemLookup
         {
             if (field.GetValue(null) is Item item)
             {
-                s_itemNameToId.TryAdd(field.Name.ToLower(), item.id);
+                string name = field.Name.ToLower();
+
+                if (name.Equals("woodendoor")) name = "door";
+
+                s_itemNameToId.TryAdd(name, item.id);
             }
         }
 
