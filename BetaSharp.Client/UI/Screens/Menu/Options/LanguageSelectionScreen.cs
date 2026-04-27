@@ -26,7 +26,7 @@ public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : Base
 
         TranslationStorage translations = TranslationStorage.Instance;
 
-        Label title = new() { Text = translations.TranslateKey("selectWorld.title"), TextColor = Color.White };
+        Label title = new() { Text = translations.TranslateKey("menu.language"), TextColor = Color.White };
         title.Style.MarginBottom = 8;
         Root.AddChild(title);
         AddTitleSpacer();
