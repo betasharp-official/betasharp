@@ -17,7 +17,11 @@ public class Chunk
     public ChunkNibbleArray Meta;
     public ChunkNibbleArray SkyLight;
     public ChunkNibbleArray BlockLight;
-    public byte[] HeightMap = new byte[256];
+
+    // (15 << 4) + 15 == 256
+    internal const int DefaultHeightMapHeight = 256;
+    // The value in a hightmap is HeightMap[chunkZ << 4 | chunk] == height
+    public readonly byte[] HeightMap = new byte[DefaultHeightMapHeight];
 
     public bool Loaded;
     public IWorldContext World;

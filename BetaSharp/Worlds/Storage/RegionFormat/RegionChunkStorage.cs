@@ -167,11 +167,11 @@ internal class RegionChunkStorage : IChunkStorage
             chunk.SkyLight = new ChunkNibbleArray(chunk.Blocks.Length);
             chunk.PopulateHeightMap();
         }
-        else if (chunk.HeightMap.Length == ChuckFormat.WorldHeight)
+        else if (chunk.HeightMap.Length == Chunk.DefaultHeightMapHeight)
         {
             foreach (byte height in chunk.HeightMap)
             {
-                if (height > ChuckFormat.WorldHeight - 1)
+                if (height >= ChuckFormat.WorldHeight)
                 {
                     chunk.PopulateHeightMapOnly();
                     break;
