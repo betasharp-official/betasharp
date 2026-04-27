@@ -68,22 +68,17 @@ public class MainMenuScreen(
         }
         Root.AddChild(btnMultiplayer);
 
-        Button btnMods = CreateButton();
-        btnMods.Text = translator.TranslateKey("menu.mods");
-        btnMods.OnClick += (e) => Context.Navigator.Navigate(new TexturePacksScreen(Context, this, texturePackList));
-        btnMods.Style.MarginBottom = 4;
-        Root.AddChild(btnMods);
-
         // Options and Quit side-by-side
         Panel footerButtons = new();
         footerButtons.Style.FlexDirection = FlexDirection.Row;
         footerButtons.Style.JustifyContent = Justify.SpaceBetween;
         footerButtons.Style.Width = 200;
+        footerButtons.Style.MarginTop = 16;
 
         Button btnOptions = CreateButton();
         btnOptions.Text = translator.TranslateKey("menu.options");
         btnOptions.Style.Width = 98;
-        btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this));
+        btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePackList));
 
         Button btnQuit = CreateButton();
         btnQuit.Text = translator.TranslateKey("menu.quit");

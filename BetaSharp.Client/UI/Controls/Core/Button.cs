@@ -11,6 +11,8 @@ public class Button : UIElement
     public Color HoverTextColor { get; set; } = Color.HoverYellow;
     public Action ClickSound;
 
+    public override bool DoTextMeasuring => true;
+
 
     public Button(Action clickSound)
     {
