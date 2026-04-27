@@ -40,6 +40,13 @@ cd BetaSharp.(Launcher/Client/Server)
 dotnet build
 ```
 
+## Monitoring
+
+The dedicated server includes an optional live monitoring surface with Prometheus and Grafana support.
+
+- Monitoring stack docs: [`ops/monitoring/README.md`](ops/monitoring/README.md)
+- Includes server endpoints, Prometheus scrape config, and a preprovisioned Grafana dashboard.
+
 ## Contributing
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the code of conduct and pull request process. \

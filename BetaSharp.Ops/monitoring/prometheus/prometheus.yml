@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: betasharp-server
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - betasharp-server:9464

@@ -52,7 +52,9 @@ public abstract class BetaSharpServer : ICommandOutput
 
     private readonly ILogger<BetaSharpServer> _logger = Log.Instance.For<BetaSharpServer>();
     private readonly object _tpsLock = new();
+    private readonly ServerDiagnosticsOptions _diagnosticsOptions;
     private long _lastTpsTime;
+    private long _lastStatsLogTime;
     private int _ticksThisSecond;
     private float _currentTps;
 
@@ -77,7 +79,34 @@ public abstract class BetaSharpServer : ICommandOutput
     protected BetaSharpServer(IServerConfiguration config)
     {
         this.config = config;
+        _diagnosticsOptions = ServerDiagnosticsOptions.FromConfiguration(config);
+        Profiler.DetailLevel = _diagnosticsOptions.ProfilingDetail;
+
+        if (_diagnosticsOptions.ProfilingDetailCappedToBuild)
+        {
+            _logger.LogWarning(
+                "Profiling detail requested '{RequestedRaw}' ({RequestedCanonical}) but effective level is '{Effective}' for this build.",
+                _diagnosticsOptions.RequestedProfilingDetailRaw,
+                _diagnosticsOptions.RequestedProfilingDetail,
+                _diagnosticsOptions.ProfilingDetail);
+        }
+        else if (!_diagnosticsOptions.ProfilingDetailValueRecognized)
+        {
+            _logger.LogWarning(
+                "Profiling detail value '{RequestedRaw}' is not recognized. Falling back to '{Effective}'.",
+                _diagnosticsOptions.RequestedProfilingDetailRaw,
+                _diagnosticsOptions.ProfilingDetail);
+        }
+        else
+        {
+            _logger.LogInformation(
+                "Profiling detail requested '{RequestedCanonical}', effective level '{Effective}'.",
+                _diagnosticsOptions.RequestedProfilingDetail,
+                _diagnosticsOptions.ProfilingDetail);
+        }
     }
+
+    public ServerDiagnosticsOptions DiagnosticsOptions => _diagnosticsOptions;
 
     protected virtual bool Init()
     {
@@ -285,6 +314,8 @@ public abstract class BetaSharpServer : ICommandOutput
         {
             RegistryAccess = RegistryAccess.WithoutWorldDatapacks();
         }
+
+        OnShutdown();
     }
 
     public void Stop()
@@ -311,6 +342,7 @@ public abstract class BetaSharpServer : ICommandOutput
                 long lastTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 long accumulatedTime = 0L;
                 _lastTpsTime = lastTime;
+                _lastStatsLogTime = lastTime;
                 _ticksThisSecond = 0;
                 var tickStopwatch = new Stopwatch();
 
@@ -332,6 +364,7 @@ public abstract class BetaSharpServer : ICommandOutput
 
                     accumulatedTime += tickLength;
                     lastTime = currentTime;
+                    Profiler.Update(tickLength / 1000.0);
 
                     if (_isPaused)
                     {
@@ -349,7 +382,10 @@ public abstract class BetaSharpServer : ICommandOutput
                     {
                         accumulatedTime -= 50L;
                         tickStopwatch.Restart();
-                        tick();
+                        using (Profiler.Begin("Tick"))
+                        {
+                            tick();
+                        }
                         tickStopwatch.Stop();
                         MetricRegistry.Set(ServerMetrics.Mspt, (float)tickStopwatch.Elapsed.TotalMilliseconds);
                         _ticksThisSecond++;
@@ -365,10 +401,11 @@ public abstract class BetaSharpServer : ICommandOutput
                         }
                         _ticksThisSecond = 0;
                         _lastTpsTime = tpsNow;
-                        MetricRegistry.Set(ServerMetrics.Tps, _currentTps);
-                        MetricRegistry.Set(ServerMetrics.PlayerCount, playerManager.players.Count);
-                        MetricRegistry.Set(ServerMetrics.EntityCount, worlds[0].Entities.Entities.Count);
+                        RefreshDiagnosticsMetrics();
+                        MaybeLogStats(tpsNow);
                     }
+
+                    Profiler.CaptureFrame();
 
                     Thread.Sleep(1);
                 }
@@ -431,59 +468,90 @@ public abstract class BetaSharpServer : ICommandOutput
 
     private void tick()
     {
-        // Snapshot keys to allow safe mutation during iteration.
-        var keysSnapshot = new List<string>(GIVE_COMMANDS_COOLDOWNS.Keys);
-        foreach (var key in keysSnapshot)
+        using (Profiler.Begin("Cooldowns", ProfilingDetailLevel.Detailed))
         {
-            if (GIVE_COMMANDS_COOLDOWNS.TryGetValue(key, out int cooldown))
+            // Snapshot keys to allow safe mutation during iteration.
+            var keysSnapshot = new List<string>(GIVE_COMMANDS_COOLDOWNS.Keys);
+            foreach (var key in keysSnapshot)
             {
-                if (cooldown > 0)
-                    GIVE_COMMANDS_COOLDOWNS[key] = cooldown - 1;
-                else
-                    GIVE_COMMANDS_COOLDOWNS.Remove(key);
+                if (GIVE_COMMANDS_COOLDOWNS.TryGetValue(key, out int cooldown))
+                {
+                    if (cooldown > 0)
+                        GIVE_COMMANDS_COOLDOWNS[key] = cooldown - 1;
+                    else
+                        GIVE_COMMANDS_COOLDOWNS.Remove(key);
+                }
             }
         }
 
         _ticks++;
 
-        for (int i = 0; i < worlds.Length; i++)
+        using (Profiler.Begin("Worlds"))
         {
-            if (i == 0 || config.GetAllowNether(true))
+            for (int i = 0; i < worlds.Length; i++)
             {
-                ServerWorld world = worlds[i];
-                if (_ticks % 20 == 0)
+                if (i == 0 || config.GetAllowNether(true))
                 {
-                    playerManager.sendToDimension(WorldTimeUpdateS2CPacket.Get(world.GetTime()), world.Dimension.Id);
+                    ServerWorld world = worlds[i];
+                    using (Profiler.Begin(world.Dimension.Id == 0 ? "Overworld" : "Nether", ProfilingDetailLevel.Detailed))
+                    {
+                        if (_ticks % 20 == 0)
+                        {
+                            playerManager.sendToDimension(WorldTimeUpdateS2CPacket.Get(world.GetTime()), world.Dimension.Id);
+                        }
+
+                        using (Profiler.Begin("TickWorld"))
+                        {
+                            world.Tick();
+                        }
+
+                        // Cap lighting updates to avoid spending the entire tick (and beyond)
+                        // draining the queue. The nether's lava seas can generate thousands
+                        // of lighting entries per tick; processing them all in one go causes
+                        // >2-second stalls and "Can't keep up" spam. Any remaining work
+                        // carries over and is processed across subsequent ticks.
+                        using (Profiler.Begin("Lighting"))
+                        {
+                            var lightSw = Stopwatch.StartNew();
+                            while (lightSw.ElapsedMilliseconds < 15L && world.Lighting.DoLightingUpdates())
+                            {
+                            }
+                        }
+
+                        using (Profiler.Begin("TickEntities"))
+                        {
+                            world.Entities.TickEntities();
+                        }
+                    }
                 }
-
-                world.Tick();
-
-                // Cap lighting updates to avoid spending the entire tick (and beyond)
-                // draining the queue. The nether's lava seas can generate thousands
-                // of lighting entries per tick; processing them all in one go causes
-                // >2-second stalls and "Can't keep up" spam. Any remaining work
-                // carries over and is processed across subsequent ticks.
-                var lightSw = Stopwatch.StartNew();
-                while (lightSw.ElapsedMilliseconds < 15L && world.Lighting.DoLightingUpdates())
-                {
-                }
-
-                world.Entities.TickEntities();
             }
         }
 
-        connections?.Tick();
-        playerManager.updateAllChunks();
-        playerManager.flushPendingChunkUpdates();
-
-        foreach (EntityTracker t in entityTrackers)
+        using (Profiler.Begin("Connections"))
         {
-            t.tick();
+            connections?.Tick();
+        }
+
+        using (Profiler.Begin("ChunkTracking"))
+        {
+            playerManager.updateAllChunks();
+            playerManager.flushPendingChunkUpdates();
+        }
+
+        using (Profiler.Begin("EntityTracking"))
+        {
+            foreach (EntityTracker t in entityTrackers)
+            {
+                t.tick();
+            }
         }
 
         try
         {
-            RunPendingCommands();
+            using (Profiler.Begin("Commands"))
+            {
+                RunPendingCommands();
+            }
         }
         catch (Exception e)
         {
@@ -514,6 +582,70 @@ public abstract class BetaSharpServer : ICommandOutput
     }
 
     public abstract FileInfo GetFile(string path);
+
+    protected virtual void OnShutdown()
+    {
+    }
+
+    public ServerDiagnosticsSnapshot GetDiagnosticsSnapshot()
+    {
+        int overworldEntityCount = worlds.Length > 0 && worlds[0] != null ? worlds[0].Entities.Entities.Count : 0;
+        int netherEntityCount = worlds.Length > 1 && worlds[1] != null ? worlds[1].Entities.Entities.Count : 0;
+        int entityCount = overworldEntityCount + netherEntityCount;
+        int blockEntityCount = 0;
+        int lightingQueue = 0;
+        int scheduledBlockTicks = 0;
+
+        for (int i = 0; i < worlds.Length; i++)
+        {
+            if (worlds[i] == null)
+            {
+                continue;
+            }
+
+            blockEntityCount += worlds[i].Entities.BlockEntities.Count;
+            lightingQueue += worlds[i].Lighting.PendingUpdateCount;
+            scheduledBlockTicks += worlds[i].TickScheduler.PendingCount;
+        }
+
+        ConnectionListener.ConnectionTotals connectionTotals = connections?.GetTotals() ?? default;
+        (int pendingChunkSends, int maxPendingChunkSends) = playerManager.GetPendingChunkSendCounts();
+
+        return new ServerDiagnosticsSnapshot(
+            DateTimeOffset.UtcNow,
+            Tps,
+            MetricRegistry.Get(ServerMetrics.Mspt),
+            playerManager.players.Count,
+            entityCount,
+            overworldEntityCount,
+            netherEntityCount,
+            blockEntityCount,
+            connections?.PendingConnectionCount ?? 0,
+            connections?.ActiveConnectionCount ?? 0,
+            connectionTotals.BytesRead,
+            connectionTotals.BytesWritten,
+            connectionTotals.PacketsRead,
+            connectionTotals.PacketsWritten,
+            playerManager.PendingChunkCount,
+            playerManager.TrackedChunkCount,
+            playerManager.DirtyTrackedChunkCount,
+            pendingChunkSends,
+            maxPendingChunkSends,
+            lightingQueue,
+            scheduledBlockTicks,
+            entityTrackers[0]?.Count ?? 0,
+            entityTrackers[1]?.Count ?? 0,
+            Environment.WorkingSet,
+            GC.GetTotalMemory(false));
+    }
+
+    public string GetDiagnosticsSummary() => ServerDiagnosticsFormatter.FormatSummary(GetDiagnosticsSnapshot());
+
+    public string GetDiagnosticsJson() => ServerDiagnosticsFormatter.FormatJson(GetDiagnosticsSnapshot());
+
+    public string GetMetricsText() => ServerDiagnosticsFormatter.FormatMetrics();
+
+    public string GetProfilerText() => ServerDiagnosticsFormatter.FormatProfiler();
 
     public void SendMessage(string message)
     {
@@ -589,5 +721,51 @@ public abstract class BetaSharpServer : ICommandOutput
                 playerManager.sendToAll(ChatMessagePacket.Get($"§cReload failed! See console for details."));
             }
         }
+    }
+
+    private void RefreshDiagnosticsMetrics()
+    {
+        ServerDiagnosticsSnapshot snapshot = GetDiagnosticsSnapshot();
+
+        MetricRegistry.Set(ServerMetrics.Tps, snapshot.Tps);
+        MetricRegistry.Set(ServerMetrics.PlayerCount, snapshot.PlayerCount);
+        MetricRegistry.Set(ServerMetrics.EntityCount, snapshot.EntityCount);
+        MetricRegistry.Set(ServerMetrics.OverworldEntityCount, snapshot.OverworldEntityCount);
+        MetricRegistry.Set(ServerMetrics.NetherEntityCount, snapshot.NetherEntityCount);
+        MetricRegistry.Set(ServerMetrics.BlockEntityCount, snapshot.BlockEntityCount);
+        MetricRegistry.Set(ServerMetrics.PendingConnections, snapshot.PendingConnections);
+        MetricRegistry.Set(ServerMetrics.ActiveConnections, snapshot.ActiveConnections);
+        MetricRegistry.Set(ServerMetrics.BytesRead, snapshot.BytesRead);
+        MetricRegistry.Set(ServerMetrics.BytesWritten, snapshot.BytesWritten);
+        MetricRegistry.Set(ServerMetrics.PacketsRead, snapshot.PacketsRead);
+        MetricRegistry.Set(ServerMetrics.PacketsWritten, snapshot.PacketsWritten);
+        MetricRegistry.Set(ServerMetrics.ChunkLoadsPending, snapshot.PendingChunkLoads);
+        MetricRegistry.Set(ServerMetrics.TrackedChunks, snapshot.TrackedChunks);
+        MetricRegistry.Set(ServerMetrics.DirtyTrackedChunks, snapshot.DirtyTrackedChunks);
+        MetricRegistry.Set(ServerMetrics.PendingChunkSends, snapshot.PendingChunkSends);
+        MetricRegistry.Set(ServerMetrics.MaxPendingChunkSends, snapshot.MaxPendingChunkSends);
+        MetricRegistry.Set(ServerMetrics.LightingQueue, snapshot.LightingQueue);
+        MetricRegistry.Set(ServerMetrics.ScheduledBlockTicks, snapshot.ScheduledBlockTicks);
+        MetricRegistry.Set(ServerMetrics.OverworldTrackedEntities, snapshot.OverworldTrackedEntities);
+        MetricRegistry.Set(ServerMetrics.NetherTrackedEntities, snapshot.NetherTrackedEntities);
+        MetricRegistry.Set(ServerMetrics.WorkingSetBytes, snapshot.WorkingSetBytes);
+        MetricRegistry.Set(ServerMetrics.HeapBytes, snapshot.HeapBytes);
+    }
+
+    private void MaybeLogStats(long currentTimeMs)
+    {
+        if (_diagnosticsOptions.StatsLogIntervalSeconds <= 0)
+        {
+            return;
+        }
+
+        long intervalMs = _diagnosticsOptions.StatsLogIntervalSeconds * 1000L;
+        if (currentTimeMs - _lastStatsLogTime < intervalMs)
+        {
+            return;
+        }
+
+        _lastStatsLogTime = currentTimeMs;
+        _logger.LogInformation("{Stats}", GetDiagnosticsSummary());
     }
 }

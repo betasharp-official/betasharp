@@ -7,6 +7,7 @@ using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Screens;
 using BetaSharp.Screens.Slots;
+using BetaSharp.Profiling;
 using BetaSharp.Server;
 using BetaSharp.Server.Entities;
 using BetaSharp.Server.Network;
@@ -250,6 +251,8 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     private bool CanSendMoreChunkData() => NetworkHandler.getBlockDataSendQueueSize() < MaxChunkPackets;
 
+    public int PendingChunkSendCount => _pendingChunkUpdates.Count;
+
     public void ResetChunkStreamingState()
     {
         _chunkStreamingMotionX = 0.0;
@@ -281,18 +284,21 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             return;
         }
 
-        ServerWorld world = server.getWorld(dimensionId);
-        while (CanSendMoreChunkData() && _pendingChunkUpdates.TryDequeue(out ChunkPos chunkPos))
+        using (Profiler.Begin("FlushPendingChunkUpdates", ProfilingDetailLevel.Detailed))
         {
-            if (!activeChunks.Contains(chunkPos))
+            ServerWorld world = server.getWorld(dimensionId);
+            while (CanSendMoreChunkData() && _pendingChunkUpdates.TryDequeue(out ChunkPos chunkPos))
             {
-                continue;
-            }
+                if (!activeChunks.Contains(chunkPos))
+                {
+                    continue;
+                }
 
-            SendChunkData(world, chunkPos);
-            ChunksTerrainSentToClient[chunkPos] = Environment.TickCount64;
-            SendBlockEntityUpdates(world, chunkPos);
-            server.getEntityTracker(dimensionId).updateListenerForChunk(this, chunkPos.X, chunkPos.Z);
+                SendChunkData(world, chunkPos);
+                ChunksTerrainSentToClient[chunkPos] = Environment.TickCount64;
+                SendBlockEntityUpdates(world, chunkPos);
+                server.getEntityTracker(dimensionId).updateListenerForChunk(this, chunkPos.X, chunkPos.Z);
+            }
         }
     }
 

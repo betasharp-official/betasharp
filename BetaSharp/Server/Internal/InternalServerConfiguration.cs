@@ -124,6 +124,31 @@ internal class InternalServerConfiguration : IServerConfiguration
 
     public string GetDefaultGamemode(string fallback) => fallback;
 
+    public string GetProfilingDetail(string fallback)
+    {
+        return fallback;
+    }
+
+    public bool GetMetricsHttpEnabled(bool fallback)
+    {
+        return fallback;
+    }
+
+    public string GetMetricsHttpHost(string fallback)
+    {
+        return fallback;
+    }
+
+    public int GetMetricsHttpPort(int fallback)
+    {
+        return fallback;
+    }
+
+    public int GetStatsLogIntervalSeconds(int fallback)
+    {
+        return fallback;
+    }
+
     public void Save()
     {
     }

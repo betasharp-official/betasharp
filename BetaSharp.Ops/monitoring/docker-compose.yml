@@ -1,0 +1,52 @@
+services:
+  server:
+    build:
+      context: ../..
+      dockerfile: BetaSharp.Ops/monitoring/server/Dockerfile
+      args:
+        BUILD_CONFIGURATION: ${BETASHARP_DOTNET_CONFIGURATION:-Release}
+    container_name: betasharp-server
+    working_dir: /data
+    ports:
+      - "${BETASHARP_SERVER_PORT:-25565}:25565"
+    volumes:
+      - ./server-data:/data
+      - ../../b1.7.3.jar:/data/b1.7.3.jar:ro
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.11.2
+    container_name: betasharp-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - server
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:13.0.1
+    container_name: betasharp-grafana
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_DEFAULT_THEME: dark
+      PROMETHEUS_URL: http://prometheus:9090
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  prometheus-data:
+  grafana-data:

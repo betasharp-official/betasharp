@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Network.Packets;
+using BetaSharp.Profiling;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Network;
@@ -23,11 +24,16 @@ public class Connection
 
     public long BytesRead { get; protected set; }
     public long BytesWritten { get; protected set; }
-    public int PacketsRead { get; protected set; }
-    public int PacketsWritten { get; protected set; }
+    public long PacketsRead { get; protected set; }
+    public long PacketsWritten { get; protected set; }
+
+    public bool IsOpen => open;
+    public bool IsClosed => closed;
+    public bool IsDisconnected => disconnected;
 
     private int _timeout;
     private readonly ConcurrentQueue<Packet> _sendQueue = [];
+    private int _sendQueueLength;
     private Socket? _socket;
     private NetworkStream? _networkStream;
 
@@ -63,6 +69,7 @@ public class Connection
         {
             Interlocked.Increment(ref packet.UseCount);
             _sendQueue.Enqueue(packet);
+            Interlocked.Increment(ref _sendQueueLength);
         }
     }
 
@@ -130,12 +137,15 @@ public class Connection
             throw new Exception("networkHandler is null");
         }
 
-        int maxPacketsPerTick = 100;
-
-        while (readQueue.TryDequeue(out Packet? packet) && maxPacketsPerTick-- >= 0)
+        using (Profiler.Begin("ProcessPackets", ProfilingDetailLevel.Detailed))
         {
-            packet.Apply(netHandler);
-            packet.Return();
+            int maxPacketsPerTick = 100;
+
+            while (readQueue.TryDequeue(out Packet? packet) && maxPacketsPerTick-- >= 0)
+            {
+                packet.Apply(netHandler);
+                packet.Return();
+            }
         }
     }
 
@@ -152,7 +162,7 @@ public class Connection
 
     public int getWorldPacketBacklog()
     {
-        return 0;
+        return Volatile.Read(ref _sendQueueLength);
     }
 
     private void Reading()
@@ -198,6 +208,7 @@ public class Connection
 
                 while (_sendQueue.TryDequeue(out packet))
                 {
+                    Interlocked.Decrement(ref _sendQueueLength);
                     Interlocked.Increment(ref packet.UseCount);
                     int pSize = packet.Size();
                     Packet.Write(packet, _networkStream);

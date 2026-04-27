@@ -20,6 +20,8 @@ public class LightingEngine : ILightProvider
         _world = world;
     }
 
+    public int PendingUpdateCount => _lightingQueue.Count;
+
     public float GetNaturalBrightness(int x, int y, int z, int blockLight)
     {
         int lightLevel = GetLightLevel(x, y, z);

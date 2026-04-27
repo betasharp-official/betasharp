@@ -28,8 +28,8 @@ internal sealed class NetworkInfoWindow : DebugWindow
         string serverAddress = MetricRegistry.Get(ClientMetrics.ServerAddress) ?? "Unknown";
         long currentUpload = MetricRegistry.Get(ClientMetrics.UploadBytes);
         long currentDownload = MetricRegistry.Get(ClientMetrics.DownloadBytes);
-        int uploadPackets = MetricRegistry.Get(ClientMetrics.UploadPackets);
-        int downloadPackets = MetricRegistry.Get(ClientMetrics.DownloadPackets);
+        long uploadPackets = MetricRegistry.Get(ClientMetrics.UploadPackets);
+        long downloadPackets = MetricRegistry.Get(ClientMetrics.DownloadPackets);
 
         long uploadDelta = currentUpload - _lastUploadBytes;
         long downloadDelta = currentDownload - _lastDownloadBytes;

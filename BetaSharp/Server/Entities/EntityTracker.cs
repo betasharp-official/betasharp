@@ -1,5 +1,6 @@
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets;
+using BetaSharp.Profiling;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Server.Entities;
@@ -11,6 +12,8 @@ public class EntityTracker
     private BetaSharpServer world;
     private int viewDistance;
     private int dimensionId;
+
+    public int Count => entries.Count;
 
     public EntityTracker(BetaSharpServer server, int dimensionId)
     {
@@ -130,24 +133,27 @@ public class EntityTracker
 
     public void tick()
     {
-        List<ServerPlayerEntity> players = [];
-
-        foreach (EntityTrackerEntry tracker in entries)
+        using (Profiler.Begin("EntityTracker", ProfilingDetailLevel.Detailed))
         {
-            tracker.notifyNewLocation(world.getWorld(dimensionId).Entities.Players.Cast<ServerPlayerEntity>());
-            if (tracker.newPlayerDataUpdated && tracker.currentTrackedEntity is ServerPlayerEntity player)
-            {
-                players.Add(player);
-            }
-        }
+            List<ServerPlayerEntity> players = [];
 
-        foreach (var player in players)
-        {
             foreach (EntityTrackerEntry tracker in entries)
             {
-                if (tracker.currentTrackedEntity != player)
+                tracker.notifyNewLocation(world.getWorld(dimensionId).Entities.Players.Cast<ServerPlayerEntity>());
+                if (tracker.newPlayerDataUpdated && tracker.currentTrackedEntity is ServerPlayerEntity player)
                 {
-                    tracker.updateListener(player);
+                    players.Add(player);
+                }
+            }
+
+            foreach (var player in players)
+            {
+                foreach (EntityTrackerEntry tracker in entries)
+                {
+                    if (tracker.currentTrackedEntity != player)
+                    {
+                        tracker.updateListener(player);
+                    }
                 }
             }
         }

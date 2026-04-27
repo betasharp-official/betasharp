@@ -26,6 +26,10 @@ public class PlayerManager
     private readonly bool _whitelistEnabled;
     private volatile int _pendingViewDistance = -1;
 
+    public int PendingChunkCount => _chunkMaps[0].PendingChunkCount + _chunkMaps[1].PendingChunkCount;
+    public int TrackedChunkCount => _chunkMaps[0].TrackedChunkCount + _chunkMaps[1].TrackedChunkCount;
+    public int DirtyTrackedChunkCount => _chunkMaps[0].DirtyTrackedChunkCount + _chunkMaps[1].DirtyTrackedChunkCount;
+
     public PlayerManager(BetaSharpServer server)
     {
         _chunkMaps = new ChunkMap[2];
@@ -311,6 +315,24 @@ public class PlayerManager
         {
             players[i].FlushPendingChunkUpdates();
         }
+    }
+
+    public (int Total, int Max) GetPendingChunkSendCounts()
+    {
+        int total = 0;
+        int max = 0;
+
+        for (int i = 0; i < players.Count; i++)
+        {
+            int count = players[i].PendingChunkSendCount;
+            total += count;
+            if (count > max)
+            {
+                max = count;
+            }
+        }
+
+        return (total, max);
     }
 
     public void markDirty(int x, int y, int z, int dimensionId)
