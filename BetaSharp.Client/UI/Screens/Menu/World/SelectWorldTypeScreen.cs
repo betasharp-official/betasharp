@@ -42,7 +42,7 @@ public class SelectWorldTypeScreen(
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
         Button btnDone = CreateButton();
-        btnDone.Text = translationStorage.TranslateKey("selectWorld.done");
+        btnDone.Text = translationStorage.TranslateKey("gui.done");
         btnDone.Style.Width = 100;
         btnDone.Style.SetMargin(2);
         btnDone.OnClick += (e) =>
@@ -56,7 +56,7 @@ public class SelectWorldTypeScreen(
         buttonPanel.AddChild(btnDone);
 
         Button btnCancel = CreateButton();
-        btnCancel.Text = translationStorage.TranslateKey("selectWorld.cancel");
+        btnCancel.Text = translationStorage.TranslateKey("gui.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
