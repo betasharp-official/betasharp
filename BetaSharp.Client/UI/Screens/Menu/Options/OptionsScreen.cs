@@ -55,7 +55,6 @@ public class OptionsScreen(
         AddSubButton(translationStorage.TranslateKey("options.uiSettings"), () => Context.Navigator.Navigate(new UISettingsScreen(Context, this)));
         AddSubButton(translationStorage.TranslateKey("options.audioSettings"), () => Context.Navigator.Navigate(new AudioSettingsScreen(Context, this)));
         AddSubButton(translationStorage.TranslateKey("options.controls"), () => Context.Navigator.Navigate(new AllControlsScreen(Context, this)));
-        AddSubButton(translationStorage.TranslateKey("options.language"), () => Context.Navigator.Navigate(new LanguageSelectionScreen(Context, this)));
 
         return list;
     }

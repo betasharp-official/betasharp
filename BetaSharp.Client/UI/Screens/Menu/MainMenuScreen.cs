@@ -7,6 +7,7 @@ using BetaSharp.Client.UI.Controls.MainMenu;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Screens.Menu.Options;
 using BetaSharp.Client.UI.Screens.Menu.World;
+using Silk.NET.OpenGL;
 namespace BetaSharp.Client.UI.Screens.Menu;
 
 public class MainMenuScreen(
@@ -78,7 +79,16 @@ public class MainMenuScreen(
         Panel footerButtons = new();
         footerButtons.Style.FlexDirection = FlexDirection.Row;
         footerButtons.Style.JustifyContent = Justify.SpaceBetween;
-        footerButtons.Style.Width = 200;
+        footerButtons.Style.Width = 224;
+        footerButtons.Style.MarginLeft = -26;
+
+        ImageButton btnLang = CreateImageButton();
+        btnLang.OnClick += (e) => Context.Navigator.Navigate(new LanguageSelectionScreen(Context, this));
+        btnLang.Texture = Renderer.TextureManager.GetTextureId("/gui/Globe.png");
+        btnLang.U = 0;
+        btnLang.V = 0;
+        btnLang.UWidth = 24;
+        btnLang.VHeight = 24;
 
         Button btnOptions = CreateButton();
         btnOptions.Text = translator.TranslateKey("menu.options");
@@ -90,6 +100,7 @@ public class MainMenuScreen(
         btnQuit.Style.Width = 98;
         btnQuit.OnClick += (e) => shutdown();
 
+        footerButtons.AddChild(btnLang);
         footerButtons.AddChild(btnOptions);
         if (!hideQuitButton)
         {

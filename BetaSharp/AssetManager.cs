@@ -62,7 +62,7 @@ public class AssetManager
     private static readonly object s_instanceLock = new();
     private static AssetManager? s_instance;
     private static AssetProfile? s_configuredProfile;
-    public static List<(string Translation, string Stats)> Languages = new List<(string, string)>();
+    public static Dictionary<string, string> Languages = new Dictionary<string, string>();
 
     public static AssetManager Instance => s_instance ?? throw new InvalidOperationException("AssetManager was not initialized.");
 
@@ -98,23 +98,12 @@ public class AssetManager
 
         defineHeadlessAssets();
 
-        defineLanguages();
-
-        for(int l = 0; l < Languages.Count; l++)
-        {
-            if(l > 100)
-            {
-                break;
-            }
-
-            defineEmbeddedAsset(Languages[l].Translation, AssetType.Text);
-            defineEmbeddedAsset(Languages[l].Stats, AssetType.Text);
-        }
-
         if (_assetProfile == AssetProfile.Full)
         {
             defineFullAssets();
         }
+
+        loadLanguages();
 
         _logger.LogInformation($"Asset profile: {_assetProfile}. Registered {_assetsToLoad.Count} assets.");
 
@@ -124,10 +113,46 @@ public class AssetManager
         _logger.LogInformation($"Loaded {_embeddedAssetsLoaded} embedded assets");
     }
 
-    private void defineLanguages()
+    private void loadLanguages()
     {
-        Languages.Add(("lang/en_US.lang", "lang/en_US-stats.lang"));
-        Languages.Add(("lang/pl_PL.lang", "lang/pl_PL-stats.lang"));
+        string langPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "lang");
+
+        try
+        {
+            if (Directory.Exists(langPath))
+            {
+                var langFiles = Directory.EnumerateFiles(langPath, "*.lang");
+
+                foreach (var file in langFiles)
+                {
+                    string? name = File.ReadLines(file).FirstOrDefault() ?? null;
+                    string fileName = Path.GetFileName(file);
+
+                    if (name != null && fileName.EndsWith(".lang"))
+                    {
+                        if (name.StartsWith("lang.name="))
+                        {
+                            name = name.Split('=')[1].Trim();
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+
+                    Languages.Add(fileName, name ?? "Unknown");
+                    defineAsset("lang/" + fileName, AssetType.Text);
+                }
+            }
+            else
+            {
+                Console.WriteLine($"No languages folder!");
+            }
+        }
+        catch (IOException ex)
+        {
+            Console.WriteLine($"Unable to access files: {ex.Message}");
+        }
     }
 
     private void defineHeadlessAssets()
@@ -138,6 +163,8 @@ public class AssetManager
 
     private void defineFullAssets()
     {
+        defineAsset("lang/pl_PL.lang", AssetType.Text);
+
         defineAsset("title/splashes.txt", AssetType.Text);
         defineAsset("title/black.png", AssetType.Binary);
         defineAsset("title/mclogo.png", AssetType.Binary);
@@ -179,6 +206,7 @@ public class AssetManager
         defineAsset("gui/trap.png", AssetType.Binary);
         defineAsset("gui/unknown_pack.png", AssetType.Binary);
         defineAsset("gui/Pointer.png", AssetType.Binary);
+        defineAsset("gui/Globe.png", AssetType.Binary);
 
         string[] controllerIcons = [
             "back_button", "back_button_pressed", "down_button", "down_button_pressed",

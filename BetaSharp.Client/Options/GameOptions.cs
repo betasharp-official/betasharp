@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Silk.NET.GLFW;
 using File = System.IO.File;
 using FileNotFoundException = System.IO.FileNotFoundException;
-using BetaSharp;
 
 namespace BetaSharp.Client.Options;
 
@@ -28,17 +27,12 @@ public class GameOptions
         "options.guiScale.large",
     ];
 
-    private static readonly string[] LanguageLabels =
-    [
-        "English (US)",
-        "Polski (PL)",
-    ];
-
     private static readonly string[] AnisoLabels = ["options.off", "2x", "4x", "8x", "16x"];
     private static readonly string[] MSAALabels = ["options.off", "2x", "4x", "8x"];
 
     public static float MaxAnisotropy = 1.0f;
 
+    public static string SelectedLanguage { get; private set; } = "en_us";
 
     public FloatOption MusicVolumeOption { get; private set; }
     public FloatOption SoundVolumeOption { get; private set; }
@@ -67,7 +61,7 @@ public class GameOptions
     public CycleOption MsaaOption { get; private set; }
     public BoolOption ShowWTHITOption { get; private set; }
     public BoolOption ShowCoordinatesOption { get; private set; }
-    public CycleOption LanguageOption { get; private set; }
+    public StringOption LanguageOption { get; private set; }
 
 
     public GameOption[] MainScreenOptions => [DifficultyOption, FovOption];
@@ -83,7 +77,6 @@ public class GameOptions
 
     public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption];
 
-    public GameOption[] LanguageOptions => [LanguageOption];
 
     public float MusicVolume
     {
@@ -95,6 +88,17 @@ public class GameOptions
     {
         get => SoundVolumeOption.Value;
         set => SoundVolumeOption.Value = value;
+    }
+
+    public string Language
+    {
+        get => LanguageOption.Value;
+        set
+        {
+            LanguageOption.Value = value;
+            SelectedLanguage = value;
+            UpdateLanguage();
+        }
     }
 
     public float MouseSensitivity => MouseSensitivityOption.Value;
@@ -114,7 +118,6 @@ public class GameOptions
     public bool VSync => VSyncOption.Value;
     public int Difficulty => DifficultyOption.Value;
     public int GuiScale => GuiScaleOption.Value;
-    public int Language => LanguageOption.Value;
     public int AnisotropicLevel => AnisotropicOption.Value;
     public int MSAALevel => MsaaOption.Value;
     public int INITIAL_MSAA;
@@ -333,8 +336,7 @@ public class GameOptions
                 return result;
             }
         };
-
-        LanguageOption = new CycleOption("options.language", "language", LanguageLabels);
+        LanguageOption = new StringOption("Language", "language", "en_US");
 
         _allOptions = [];
         foreach (GameOption option in GetAllOptions())
@@ -424,8 +426,7 @@ public class GameOptions
         {
             TranslationStorage translationStorage = TranslationStorage.Instance;
 
-            translationStorage.LoadLanguageFile(AssetManager.Languages[Language].Translation);
-            translationStorage.LoadLanguageFile(AssetManager.Languages[Language].Stats);
+            translationStorage.SwitchLanguage(Language);
         }
         catch (Exception)
         {
