@@ -32,8 +32,6 @@ public class GameOptions
 
     public static float MaxAnisotropy = 1.0f;
 
-    public static string SelectedLanguage { get; private set; } = "en_us";
-
     public FloatOption MusicVolumeOption { get; private set; }
     public FloatOption SoundVolumeOption { get; private set; }
     public FloatOption MouseSensitivityOption { get; private set; }
@@ -96,7 +94,6 @@ public class GameOptions
         set
         {
             LanguageOption.Value = value;
-            SelectedLanguage = value;
             UpdateLanguage();
         }
     }
