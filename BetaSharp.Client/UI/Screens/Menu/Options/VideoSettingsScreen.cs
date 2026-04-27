@@ -9,6 +9,8 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
 
     protected override UIElement CreateContent()
     {
+        TranslationStorage translationStorage = TranslationStorage.Instance;
+
         Panel root = CreateVerticalList();
 
         void AddSection(string name, IEnumerable<GameOption> sectionOptions)
@@ -28,7 +30,7 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
             root.AddChild(grid);
         }
 
-        AddSection("Performance", [
+        AddSection(translationStorage.TranslateKey("options.video.performance"), [
             Options.RenderDistanceOption,
             Options.FramerateLimitOption,
             Options.VSyncOption,
@@ -37,7 +39,7 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
             Options.AnisotropicOption,
         ]);
 
-        AddSection("Display", [
+        AddSection(translationStorage.TranslateKey("options.video.display"), [
             Options.ViewBobbingOption,
             Options.EnvironmentAnimationOption,
             Options.ChunkFadeOption,

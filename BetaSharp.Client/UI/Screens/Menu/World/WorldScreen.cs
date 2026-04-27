@@ -78,14 +78,14 @@ public class WorldScreen(
         row2.Style.JustifyContent = Justify.Center;
 
         _btnRename = CreateButton();
-        _btnRename.Text = translations.TranslateKey("selectWorld.rename");
+        _btnRename.Text = translations.TranslateKey("gui.rename");
         _btnRename.Style.Width = 72;
         _btnRename.Style.SetMargin(2);
         _btnRename.OnClick += (e) => RenameSelected();
         row2.AddChild(_btnRename);
 
         _btnDelete = CreateButton();
-        _btnDelete.Text = translations.TranslateKey("selectWorld.delete");
+        _btnDelete.Text = translations.TranslateKey("gui.delete");
         _btnDelete.Style.Width = 72;
         _btnDelete.Style.SetMargin(2);
         _btnDelete.OnClick += (e) => DeleteSelected();
@@ -191,7 +191,7 @@ public class WorldScreen(
         string deleteQuestion = translations.TranslateKey("selectWorld.deleteQuestion");
         string deleteWarning = "'" + worldInfo.DisplayName + "' " + translations.TranslateKey("selectWorld.deleteWarning");
 
-        Context.Navigator.Navigate(new ConfirmationScreen(Context, this, deleteQuestion, deleteWarning, translations.TranslateKey("selectWorld.deleteButton"), translations.TranslateKey("gui.cancel"), (confirmed) =>
+        Context.Navigator.Navigate(new ConfirmationScreen(Context, this, deleteQuestion, deleteWarning, translations.TranslateKey("gui.delete"), translations.TranslateKey("gui.cancel"), (confirmed) =>
         {
             if (confirmed)
             {

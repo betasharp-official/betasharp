@@ -62,6 +62,7 @@ public class AssetManager
     private static readonly object s_instanceLock = new();
     private static AssetManager? s_instance;
     private static AssetProfile? s_configuredProfile;
+    public static Dictionary<string, string> Languages = new Dictionary<string, string>();
 
     public static AssetManager Instance => s_instance ?? throw new InvalidOperationException("AssetManager was not initialized.");
 
@@ -102,6 +103,8 @@ public class AssetManager
             defineFullAssets();
         }
 
+        loadLanguages();
+
         _logger.LogInformation($"Asset profile: {_assetProfile}. Registered {_assetsToLoad.Count} assets.");
 
         extractNeccessaryAssets();
@@ -110,16 +113,58 @@ public class AssetManager
         _logger.LogInformation($"Loaded {_embeddedAssetsLoaded} embedded assets");
     }
 
+    private void loadLanguages()
+    {
+        string langPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "lang");
+
+        try
+        {
+            if (Directory.Exists(langPath))
+            {
+                var langFiles = Directory.EnumerateFiles(langPath, "*.lang");
+
+                foreach (var file in langFiles)
+                {
+                    string? name = File.ReadLines(file).FirstOrDefault() ?? null;
+                    string fileName = Path.GetFileName(file);
+
+                    if (name != null && fileName.EndsWith(".lang"))
+                    {
+                        if (name.StartsWith("lang.name="))
+                        {
+                            name = name.Split('=')[1].Trim();
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+
+                    Languages.Add(fileName, name ?? "Unknown");
+                    defineAsset("lang/" + fileName, AssetType.Text);
+                }
+            }
+            else
+            {
+                Console.WriteLine($"No languages folder!");
+            }
+        }
+        catch (IOException ex)
+        {
+            Console.WriteLine($"Unable to access files: {ex.Message}");
+        }
+    }
+
     private void defineHeadlessAssets()
     {
         defineAsset("font.txt", AssetType.Text);
         defineAsset("achievement/map.txt", AssetType.Text);
-        defineAsset("lang/en_US.lang", AssetType.Text);
-        defineAsset("lang/stats_US.lang", AssetType.Text);
     }
 
     private void defineFullAssets()
     {
+        defineAsset("lang/pl_PL.lang", AssetType.Text);
+
         defineAsset("title/splashes.txt", AssetType.Text);
         defineAsset("title/black.png", AssetType.Binary);
         defineAsset("title/mclogo.png", AssetType.Binary);
@@ -161,6 +206,7 @@ public class AssetManager
         defineAsset("gui/trap.png", AssetType.Binary);
         defineAsset("gui/unknown_pack.png", AssetType.Binary);
         defineAsset("gui/Pointer.png", AssetType.Binary);
+        defineAsset("gui/Globe.png", AssetType.Binary);
 
         string[] controllerIcons = [
             "back_button", "back_button_pressed", "down_button", "down_button_pressed",

@@ -71,6 +71,7 @@ public abstract class UIScreen
     public virtual bool PausesGame => true;
     public virtual bool AllowUserInput => false;
     public Func<Button> CreateButton { get; }
+    public Func<ImageButton> CreateImageButton { get; }
     public Func<Slider> CreateSlider { get; }
     protected virtual bool AutoAddTooltipBar => true;
 
@@ -113,6 +114,7 @@ public abstract class UIScreen
         Renderer = new UIRenderer(context.TextRenderer, context.TextureManager, context.Options, context.DisplaySize);
 
         CreateButton = () => new(context.PlayClickSound);
+        CreateImageButton = () => new(context.PlayClickSound);
         CreateSlider = () => new(context.PlayClickSound);
     }
 

@@ -5,17 +5,13 @@ namespace BetaSharp;
 public class TranslationStorage
 {
     private ILogger _logger = Log.Instance.For<TranslationStorage>();
-    private static readonly TranslationStorage _instance = new();
+    private static TranslationStorage _instance = new("en_us");
     public static TranslationStorage Instance => _instance;
     private readonly Dictionary<string, string> _translateTable = new();
 
-    private TranslationStorage()
+    private TranslationStorage(string lang)
     {
-        LoadLanguageFile("lang/en_US.lang");
-        LoadLanguageFile("lang/stats_US.lang");
-
-        AddTranslation("disconnect.genericReason", "%1$s");
-        AddTranslation("key.zoom", "Zoom");
+        LoadLanguageFile(lang);
     }
 
     public void AddTranslation(string key, string translation)
@@ -23,11 +19,15 @@ public class TranslationStorage
         _translateTable[key] = translation;
     }
 
+    public void SwitchLanguage(string lang)
+    {
+        _instance = new TranslationStorage(lang);
+    }
     private void LoadLanguageFile(string assetPath)
     {
         try
         {
-            var asset = AssetManager.Instance.getAsset(assetPath);
+            var asset = AssetManager.Instance.getAsset("lang/" + assetPath + ".lang");
             if (asset == null) return;
 
             using StringReader reader = new(asset.GetTextContent());
@@ -42,6 +42,7 @@ public class TranslationStorage
                 {
                     string key = line[..separatorIndex].Trim();
                     string value = line[(separatorIndex + 1)..].Trim();
+
                     _translateTable[key] = value;
                 }
             }

@@ -32,7 +32,6 @@ public class GameOptions
 
     public static float MaxAnisotropy = 1.0f;
 
-
     public FloatOption MusicVolumeOption { get; private set; }
     public FloatOption SoundVolumeOption { get; private set; }
     public FloatOption MouseSensitivityOption { get; private set; }
@@ -60,6 +59,7 @@ public class GameOptions
     public CycleOption MsaaOption { get; private set; }
     public BoolOption ShowWTHITOption { get; private set; }
     public BoolOption ShowCoordinatesOption { get; private set; }
+    public StringOption LanguageOption { get; private set; }
 
 
     public GameOption[] MainScreenOptions => [DifficultyOption, FovOption];
@@ -75,6 +75,7 @@ public class GameOptions
 
     public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption];
 
+
     public float MusicVolume
     {
         get => MusicVolumeOption.Value;
@@ -85,6 +86,16 @@ public class GameOptions
     {
         get => SoundVolumeOption.Value;
         set => SoundVolumeOption.Value = value;
+    }
+
+    public string Language
+    {
+        get => LanguageOption.Value;
+        set
+        {
+            LanguageOption.Value = value;
+            UpdateLanguage();
+        }
     }
 
     public float MouseSensitivity => MouseSensitivityOption.Value;
@@ -322,6 +333,7 @@ public class GameOptions
                 return result;
             }
         };
+        LanguageOption = new StringOption("Language", "language", "en_US");
 
         _allOptions = [];
         foreach (GameOption option in GetAllOptions())
@@ -355,6 +367,7 @@ public class GameOptions
         yield return MsaaOption;
         yield return ShowWTHITOption;
         yield return ShowCoordinatesOption;
+        yield return LanguageOption;
     }
 
 
@@ -396,10 +409,25 @@ public class GameOptions
                     _logger.LogError($"Skipping bad option: {line}");
                 }
             }
+
+            UpdateLanguage();
         }
         catch (Exception)
         {
             _logger.LogError("Failed to load options");
+        }
+    }
+
+    private void UpdateLanguage()
+    {   try
+        {
+            TranslationStorage translationStorage = TranslationStorage.Instance;
+
+            translationStorage.SwitchLanguage(Language);
+        }
+        catch (Exception)
+        {
+            _logger.LogError($"Failed to update language");
         }
     }
 
