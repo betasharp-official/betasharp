@@ -3,6 +3,9 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
 
+/// <summary>
+/// Represents the crosshair.
+/// </summary>
 public class Crosshair : UIElement
 {
     public override void Render(UIRenderer renderer)

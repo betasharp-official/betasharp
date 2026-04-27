@@ -6,6 +6,9 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
 
+/// <summary>
+/// Element to display controller tips ingame.
+/// </summary>
 public class ControlTooltipBar : UIElement
 {
     private readonly IControllerState _controllerState;

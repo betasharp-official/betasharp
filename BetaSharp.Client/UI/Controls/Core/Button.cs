@@ -4,14 +4,18 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
+/// <summary>
+/// UIElement for a button, a clickable object with text inside it.
+/// </summary>
 public class Button : UIElement
 {
     public string Text { get; set; } = "";
     public Color TextColor { get; set; } = Color.GrayE0;
     public Color HoverTextColor { get; set; } = Color.HoverYellow;
-    public Action ClickSound;
 
-
+    /// <summary>
+    /// Create a button, with a sound to play when clicked.
+    /// </summary>
     public Button(Action clickSound)
     {
         Style.Width = 200;

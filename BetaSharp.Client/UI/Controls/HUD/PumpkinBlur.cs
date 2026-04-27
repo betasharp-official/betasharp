@@ -4,6 +4,9 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
 
+/// <summary>
+/// Blur that appears when a carved pumpkin is on a player's head.
+/// </summary>
 public class PumpkinBlur(Func<ClientPlayerEntity?> getPlayer) : UIElement
 {
     public override void Render(UIRenderer renderer)

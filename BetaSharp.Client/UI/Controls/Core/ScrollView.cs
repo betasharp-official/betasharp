@@ -1,13 +1,18 @@
+using System.Reflection.Metadata.Ecma335;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Layout;
 using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
+/// <summary>
+/// UIElement that stores a container of other controls (can be anything)
+/// and allow scrolling through it.
+/// </summary>
 public class ScrollView : UIElement
 {
     public UIElement ContentContainer { get; private set; }
-
+    
     public float ScrollY { get; set; }
     public float MaxScrollY => Math.Max(0, ContentContainer.ComputedHeight - ComputedHeight);
 
@@ -23,6 +28,7 @@ public class ScrollView : UIElement
         ContentContainer.Style.FlexDirection = Layout.Flexbox.FlexDirection.Column;
         ContentContainer.Parent = this;
 
+        // handle scroll bars
         OnMouseDown += (e) =>
         {
             if (e.Button == MouseButton.Left)
@@ -166,11 +172,11 @@ public class ScrollView : UIElement
     public override void Render(UIRenderer renderer)
     {
         renderer.EnableClipping(0, 0, (int)ComputedWidth, (int)ComputedHeight);
-
         renderer.PushTranslate(ContentContainer.ComputedX, ContentContainer.ComputedY);
-        ContentContainer.Render(renderer);
-        renderer.PopTranslate();
 
+        ContentContainer.DrawClipped(renderer, ScreenY, ScreenY + ComputedHeight);
+
+        renderer.PopTranslate();
         renderer.DisableClipping();
 
         if (MaxScrollY > 0 && ContentContainer.ComputedHeight > 0)
