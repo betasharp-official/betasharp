@@ -55,7 +55,7 @@ public class EntityRenderDispatcher
         RegisterRenderer(typeof(EntityEgg), new ProjectileEntityRenderer(Item.Egg.getTextureId(0)));
         RegisterRenderer(typeof(EntityFireball), new FireballEntityRenderer());
         RegisterRenderer(typeof(EntityItem), new ItemRenderer());
-        RegisterRenderer(typeof(EntityTNTPrimed), new TntEntityRenderer());
+        RegisterRenderer(typeof(EntityTntPrimed), new TntEntityRenderer());
         RegisterRenderer(typeof(EntityFallingSand), new FallingBlockEntityRenderer());
         RegisterRenderer(typeof(EntityMinecart), new MinecartEntityRenderer());
         RegisterRenderer(typeof(EntityBoat), new BoatEntityRenderer());
@@ -96,7 +96,7 @@ public class EntityRenderDispatcher
         Options = options;
         CameraEntity = camera;
         _fontRenderer = textRenderer;
-        if (camera.isSleeping())
+        if (camera.IsSleeping)
         {
             int blockId = world.Reader.GetBlockId(MathHelper.Floor(camera.X), MathHelper.Floor(camera.Y), MathHelper.Floor(camera.Z));
             if (blockId == Block.Bed.id)

@@ -170,7 +170,7 @@ public class ChatScreen(
         if (msg.Length > 0)
         {
             string sendMsg = ConvertAmpersandToSection(msg);
-            player.sendChatMessage(sendMsg);
+            player.SendChatMessage(sendMsg);
             s_history.Add(msg); // Store original with & for history navigation
             if (s_history.Count > 100)
             {

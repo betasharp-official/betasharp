@@ -75,7 +75,7 @@ public class EntityTracker
         {
             startTracking(entity, 160, 3);
         }
-        else if (entity is EntityTNTPrimed)
+        else if (entity is EntityTntPrimed)
         {
             startTracking(entity, 160, 10, true);
         }

@@ -6,7 +6,6 @@ using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Network;
 
@@ -29,12 +28,12 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         sendQueue = clientNetworkHandler;
     }
 
-    public override bool Damage(Entity ent, int amount)
+    public override bool Damage(Entity? ent, int amount)
     {
         return false;
     }
 
-    public override void heal(int amount)
+    public override void Heal(int amount)
     {
     }
 
@@ -129,10 +128,10 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     {
         if (!Game.Player.GameMode.CanDrop) return;
 
-        var selected = getHand();
+        var selected = GetHand();
         if (selected != null && selected.Count > 0)
         {
-            increaseStat(Stats.Stats.DropStat, 1);
+            IncreaseStat(Stats.Stats.DropStat, 1);
         }
         sendQueue.AddToSendQueue(PlayerActionC2SPacket.Get(4, 0, 0, 0, 0));
     }
@@ -141,36 +140,36 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     {
     }
 
-    protected override void spawnItem(EntityItem ent)
+    protected override void SpawnItem(EntityItem ent)
     {
     }
 
-    public override void sendChatMessage(string message)
+    public override void SendChatMessage(string message)
     {
         sendQueue.AddToSendQueue(ChatMessagePacket.Get(message));
     }
 
-    public override void swingHand()
+    public override void SwingHand()
     {
-        base.swingHand();
+        base.SwingHand();
         sendQueue.AddToSendQueue(EntityAnimationPacket.Get(this, EntityAnimationPacket.EntityAnimation.SwingHand));
     }
 
-    public override void respawn()
+    public override void Respawn()
     {
         sendInventoryChanged();
-        sendQueue.AddToSendQueue(PlayerRespawnPacket.Get((sbyte)dimensionId));
+        sendQueue.AddToSendQueue(PlayerRespawnPacket.Get((sbyte)DimensionId));
     }
 
-    protected override void applyDamage(int amount)
+    protected override void ApplyDamage(int amount)
     {
         Health -= amount;
     }
 
     public override void closeHandledScreen()
     {
-        sendQueue.AddToSendQueue(CloseScreenS2CPacket.Get(currentScreenHandler.SyncId));
-        inventory.SetCursorStack(null);
+        sendQueue.AddToSendQueue(CloseScreenS2CPacket.Get(CurrentScreenHandler.SyncId));
+        Inventory.SetCursorStack(null);
         base.closeHandledScreen();
     }
 
@@ -188,13 +187,13 @@ public class EntityClientPlayerMP : ClientPlayerEntity
 
     }
 
-    public override void increaseStat(StatBase stat, int amount)
+    public override void IncreaseStat(StatBase stat, int amount)
     {
         if (stat != null)
         {
             if (stat.LocalOnly)
             {
-                base.increaseStat(stat, amount);
+                base.IncreaseStat(stat, amount);
             }
 
         }
@@ -204,7 +203,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     {
         if (stat != null && !stat.LocalOnly)
         {
-            base.increaseStat(stat, amount);
+            base.IncreaseStat(stat, amount);
         }
     }
 }

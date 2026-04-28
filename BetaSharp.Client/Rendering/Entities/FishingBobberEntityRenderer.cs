@@ -37,29 +37,29 @@ public class FishingBobberEntityRenderer : EntityRenderer
         tessellator.draw();
         GLManager.GL.Disable(GLEnum.RescaleNormal);
         GLManager.GL.PopMatrix();
-        if (bobberEntity.angler != null)
+        if (bobberEntity.Angler != null)
         {
-            float anglerYawRadians = (bobberEntity.angler.PrevYaw + (bobberEntity.angler.Yaw - bobberEntity.angler.PrevYaw) * tickDelta) * (float)Math.PI / 180.0F;
+            float anglerYawRadians = (bobberEntity.Angler.PrevYaw + (bobberEntity.Angler.Yaw - bobberEntity.Angler.PrevYaw) * tickDelta) * (float)Math.PI / 180.0F;
             double sinYaw = (double)MathHelper.Sin(anglerYawRadians);
             double cosYaw = (double)MathHelper.Cos(anglerYawRadians);
-            float swingProgress = bobberEntity.angler.getSwingProgress(tickDelta);
+            float swingProgress = bobberEntity.Angler.GetSwingProgress(tickDelta);
             float swingOffset = MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI);
             Vec3D rodOffset = new(-0.5D, 0.03D, 0.8D);
-            rodOffset.rotateAroundX(-(bobberEntity.angler.PrevPitch + (bobberEntity.angler.Pitch - bobberEntity.angler.PrevPitch) * tickDelta) * (float)Math.PI / 180.0F);
-            rodOffset.rotateAroundY(-(bobberEntity.angler.PrevYaw + (bobberEntity.angler.Yaw - bobberEntity.angler.PrevYaw) * tickDelta) * (float)Math.PI / 180.0F);
+            rodOffset.rotateAroundX(-(bobberEntity.Angler.PrevPitch + (bobberEntity.Angler.Pitch - bobberEntity.Angler.PrevPitch) * tickDelta) * (float)Math.PI / 180.0F);
+            rodOffset.rotateAroundY(-(bobberEntity.Angler.PrevYaw + (bobberEntity.Angler.Yaw - bobberEntity.Angler.PrevYaw) * tickDelta) * (float)Math.PI / 180.0F);
             rodOffset.rotateAroundY(swingOffset * 0.5F);
             rodOffset.rotateAroundX(-swingOffset * 0.7F);
-            double lineStartX = bobberEntity.angler.PrevX + (bobberEntity.angler.X - bobberEntity.angler.PrevX) * (double)tickDelta + rodOffset.x;
-            double lineStartY = bobberEntity.angler.PrevY + (bobberEntity.angler.Y - bobberEntity.angler.PrevY) * (double)tickDelta + rodOffset.y;
-            double lineStartZ = bobberEntity.angler.PrevZ + (bobberEntity.angler.Z - bobberEntity.angler.PrevZ) * (double)tickDelta + rodOffset.z;
+            double lineStartX = bobberEntity.Angler.PrevX + (bobberEntity.Angler.X - bobberEntity.Angler.PrevX) * (double)tickDelta + rodOffset.x;
+            double lineStartY = bobberEntity.Angler.PrevY + (bobberEntity.Angler.Y - bobberEntity.Angler.PrevY) * (double)tickDelta + rodOffset.y;
+            double lineStartZ = bobberEntity.Angler.PrevZ + (bobberEntity.Angler.Z - bobberEntity.Angler.PrevZ) * (double)tickDelta + rodOffset.z;
             if (Dispatcher.Options.CameraMode != CameraMode.FirstPerson)
             {
-                anglerYawRadians = (bobberEntity.angler.LastBodyYaw + (bobberEntity.angler.BodyYaw - bobberEntity.angler.LastBodyYaw) * tickDelta) * (float)Math.PI / 180.0F;
+                anglerYawRadians = (bobberEntity.Angler.LastBodyYaw + (bobberEntity.Angler.BodyYaw - bobberEntity.Angler.LastBodyYaw) * tickDelta) * (float)Math.PI / 180.0F;
                 sinYaw = (double)MathHelper.Sin(anglerYawRadians);
                 cosYaw = (double)MathHelper.Cos(anglerYawRadians);
-                lineStartX = bobberEntity.angler.PrevX + (bobberEntity.angler.X - bobberEntity.angler.PrevX) * (double)tickDelta - cosYaw * 0.35D - sinYaw * 0.85D;
-                lineStartY = bobberEntity.angler.PrevY + (bobberEntity.angler.Y - bobberEntity.angler.PrevY) * (double)tickDelta - 0.45D;
-                lineStartZ = bobberEntity.angler.PrevZ + (bobberEntity.angler.Z - bobberEntity.angler.PrevZ) * (double)tickDelta - sinYaw * 0.35D + cosYaw * 0.85D;
+                lineStartX = bobberEntity.Angler.PrevX + (bobberEntity.Angler.X - bobberEntity.Angler.PrevX) * (double)tickDelta - cosYaw * 0.35D - sinYaw * 0.85D;
+                lineStartY = bobberEntity.Angler.PrevY + (bobberEntity.Angler.Y - bobberEntity.Angler.PrevY) * (double)tickDelta - 0.45D;
+                lineStartZ = bobberEntity.Angler.PrevZ + (bobberEntity.Angler.Z - bobberEntity.Angler.PrevZ) * (double)tickDelta - sinYaw * 0.35D + cosYaw * 0.85D;
             }
 
             double bobberX = bobberEntity.PrevX + (bobberEntity.X - bobberEntity.PrevX) * (double)tickDelta;

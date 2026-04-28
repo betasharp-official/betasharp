@@ -26,7 +26,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     protected bool SetArmorModel(EntityPlayer playerEntity, int renderPass, float tickDelta)
     {
-        ItemStack armorStack = playerEntity.inventory.ArmorItemBySlot(3 - renderPass);
+        ItemStack armorStack = playerEntity.Inventory.ArmorItemBySlot(3 - renderPass);
         if (armorStack != null)
         {
             Item armorItem = armorStack.getItem();
@@ -51,7 +51,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     public void RenderPlayer(EntityPlayer playerEntity, double x, double y, double z, float yaw, float tickDelta)
     {
-        ItemStack heldItem = playerEntity.inventory.GetItemInHand();
+        ItemStack heldItem = playerEntity.Inventory.ItemInHand;
         _modelArmorChestplate.field_1278_i = _modelArmor.field_1278_i = _modelBipedMain.field_1278_i = heldItem != null;
         _modelArmorChestplate.isSneak = _modelArmor.isSneak = _modelBipedMain.isSneak = playerEntity.IsSneaking();
         double renderY = y - playerEntity.StandingEyeHeight;
@@ -75,10 +75,10 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             float maxDistance = playerEntity.IsSneaking() ? 32.0F : 64.0F;
             if (distance < maxDistance)
             {
-                string displayName = playerEntity.name;
+                string displayName = playerEntity.Name;
                 if (!playerEntity.IsSneaking())
                 {
-                    if (playerEntity.isSleeping())
+                    if (playerEntity.IsSleeping)
                     {
                         renderLivingLabel(playerEntity, displayName, x, y - 1.5D, z, 64);
                     }
@@ -126,7 +126,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     protected void RenderSpecials(EntityPlayer playerEntity, float tickDelta)
     {
-        ItemStack helmetStack = playerEntity.inventory.ArmorItemBySlot(3);
+        ItemStack helmetStack = playerEntity.Inventory.ArmorItemBySlot(3);
         if (helmetStack != null && helmetStack.getItem().id < 256)
         {
             GLManager.GL.PushMatrix();
@@ -144,7 +144,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         }
 
         float heldItemScale;
-        if (playerEntity.name.Equals("deadmau5") && LoadDownloadableImageTexture(playerEntity.name, null))
+        if (playerEntity.Name.Equals("deadmau5") && LoadDownloadableImageTexture(playerEntity.Name, null))
         {
             for (int earIndex = 0; earIndex < 2; ++earIndex)
             {
@@ -164,13 +164,13 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             }
         }
 
-        if (LoadDownloadableImageTexture(playerEntity.playerCloakUrl, null))
+        if (LoadDownloadableImageTexture(playerEntity.PlayerCloakUrl, null))
         {
             GLManager.GL.PushMatrix();
             GLManager.GL.Translate(0.0F, 0.0F, 2.0F / 16.0F);
-            double capeOffsetX = playerEntity.prevCapeX + (playerEntity.capeX - playerEntity.prevCapeX) * (double)tickDelta - (playerEntity.PrevX + (playerEntity.X - playerEntity.PrevX) * (double)tickDelta);
-            double capeOffsetY = playerEntity.prevCapeY + (playerEntity.capeY - playerEntity.prevCapeY) * (double)tickDelta - (playerEntity.PrevY + (playerEntity.Y - playerEntity.PrevY) * (double)tickDelta);
-            double capeOffsetZ = playerEntity.prevCapeZ + (playerEntity.capeZ - playerEntity.prevCapeZ) * (double)tickDelta - (playerEntity.PrevZ + (playerEntity.Z - playerEntity.PrevZ) * (double)tickDelta);
+            double capeOffsetX = playerEntity.PrevCapePos.x + (playerEntity.CapePos.x - playerEntity.PrevCapePos.x) * (double)tickDelta - (playerEntity.PrevX + (playerEntity.X - playerEntity.PrevX) * (double)tickDelta);
+            double capeOffsetY = playerEntity.PrevCapePos.y + (playerEntity.CapePos.y - playerEntity.PrevCapePos.y) * (double)tickDelta - (playerEntity.PrevY + (playerEntity.Y - playerEntity.PrevY) * (double)tickDelta);
+            double capeOffsetZ = playerEntity.PrevCapePos.z + (playerEntity.CapePos.z - playerEntity.PrevCapePos.z) * (double)tickDelta - (playerEntity.PrevZ + (playerEntity.Z - playerEntity.PrevZ) * (double)tickDelta);
             float bodyYaw = playerEntity.LastBodyYaw + (playerEntity.BodyYaw - playerEntity.LastBodyYaw) * tickDelta;
             double sinBodyYaw = (double)MathHelper.Sin(bodyYaw * (float)Math.PI / 180.0F);
             double cosBodyYaw = (double)-MathHelper.Cos(bodyYaw * (float)Math.PI / 180.0F);
@@ -192,7 +192,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 capeSwingForward = 0.0F;
             }
 
-            float bobbingAmount = playerEntity.prevStepBobbingAmount + (playerEntity.stepBobbingAmount - playerEntity.prevStepBobbingAmount) * tickDelta;
+            float bobbingAmount = playerEntity.PrevStepBobbingAmount + (playerEntity.StepBobbingAmount - playerEntity.PrevStepBobbingAmount) * tickDelta;
             capeLift += MathHelper.Sin((playerEntity.PrevHorizontalSpeed + (playerEntity.HorizontalSpeed - playerEntity.PrevHorizontalSpeed) * tickDelta) * 6.0F) * 32.0F * bobbingAmount;
             if (playerEntity.IsSneaking())
             {
@@ -207,13 +207,13 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             GLManager.GL.PopMatrix();
         }
 
-        ItemStack heldItem = playerEntity.inventory.GetItemInHand();
+        ItemStack heldItem = playerEntity.Inventory.ItemInHand;
         if (heldItem != null)
         {
             GLManager.GL.PushMatrix();
             _modelBipedMain.bipedRightArm.transform(1.0F / 16.0F);
             GLManager.GL.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
-            if (playerEntity.fishHook != null)
+            if (playerEntity.FishHook != null)
             {
                 heldItem = new ItemStack(Item.Stick);
             }
@@ -272,9 +272,9 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     protected void func_22016_b(EntityPlayer playerEntity, double x, double y, double z)
     {
-        if (playerEntity.IsAlive() && playerEntity.isSleeping())
+        if (playerEntity.IsAlive && playerEntity.IsSleeping)
         {
-            base.Func_22012_b(playerEntity, x + playerEntity.sleepOffsetX, y + playerEntity.sleepOffsetY, z + playerEntity.sleepOffsetZ);
+            base.Func_22012_b(playerEntity, x + playerEntity.SleepOffsetX, y + playerEntity.SleepOffsetY, z + playerEntity.SleepOffsetZ);
         }
         else
         {
@@ -285,9 +285,9 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     protected void func_22017_a(EntityPlayer playerEntity, float animationProgress, float bodyYaw, float tickDelta)
     {
-        if (playerEntity.IsAlive() && playerEntity.isSleeping())
+        if (playerEntity.IsAlive && playerEntity.IsSleeping)
         {
-            GLManager.GL.Rotate(playerEntity.getSleepingRotation(), 0.0F, 1.0F, 0.0F);
+            GLManager.GL.Rotate(playerEntity.GetSleepingRotation(), 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(getDeathMaxRotation(playerEntity), 0.0F, 0.0F, 1.0F);
             GLManager.GL.Rotate(270.0F, 0.0F, 1.0F, 0.0F);
         }

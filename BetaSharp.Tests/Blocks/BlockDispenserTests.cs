@@ -18,7 +18,7 @@ public sealed class BlockDispenserTests
 
         public override EntityType Type => EntityRegistry.Player;
 
-        public override void spawn()
+        public override void Spawn()
         {
         }
 
@@ -234,7 +234,7 @@ public sealed class BlockDispenserTests
 
         Block.Dispenser.onTick(DispenserTick(world, 6, 64, 6));
 
-        Assert.Contains(world.Entities.Entities, e => e is EntityItem ei && ei.stack.ItemId == Item.Stick.id);
+        Assert.Contains(world.Entities.Entities, e => e is EntityItem ei && ei.Stack.ItemId == Item.Stick.id);
     }
 
     [Fact]

@@ -61,7 +61,7 @@ internal class BlockJukeBox(int id, int textureId) : BlockWithEntity(id, texture
         double offsetZ = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
         EntityItem entityItem = new(level, x + offsetX, y + offsetY, z + offsetZ, new ItemStack(recordId, 1, 0))
         {
-            delayBeforeCanPickup = 10
+            DelayBeforeCanPickup = 10
         };
         level.SpawnEntity(entityItem);
     }

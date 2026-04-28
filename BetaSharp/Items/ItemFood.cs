@@ -1,5 +1,4 @@
 using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
@@ -20,7 +19,7 @@ internal class ItemFood : Item
     public override ItemStack use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
     {
         itemStack.ConsumeItem(entityPlayer);
-        entityPlayer.heal(healAmount);
+        entityPlayer.Heal(healAmount);
         return itemStack;
     }
 

@@ -4,7 +4,6 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Rendering.Entities;
@@ -21,7 +20,7 @@ public class FallingBlockEntityRenderer : EntityRenderer
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate((float)x, (float)y, (float)z);
         loadTexture("/terrain.png");
-        Block block = Block.Blocks[fallingBlockEntity.blockId];
+        Block block = Block.Blocks[fallingBlockEntity.BlockId];
         IWorldContext world = fallingBlockEntity.World;
         GLManager.GL.Disable(GLEnum.Lighting);
         BlockRenderer.RenderBlockFallingSand(block, world, MathHelper.Floor(fallingBlockEntity.X), MathHelper.Floor(fallingBlockEntity.Y), MathHelper.Floor(fallingBlockEntity.Z), Tessellator.instance);

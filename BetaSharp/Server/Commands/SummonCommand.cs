@@ -27,7 +27,7 @@ public class SummonCommand : Command.Command
         }
 
         string entityName = context.GetArgument<string>("entity");
-        ServerWorld world = context.Source.Server.getWorld(player.dimensionId);
+        ServerWorld world = context.Source.Server.getWorld(player.DimensionId);
         int summoned = 0;
 
         for (int i = 0; i < count; i++)

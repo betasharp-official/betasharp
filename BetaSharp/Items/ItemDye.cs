@@ -1,6 +1,5 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
@@ -138,9 +137,9 @@ internal class ItemDye : Item
         if (entityLiving is EntitySheep sheep)
         {
             int woolColor = BlockCloth.getBlockMeta(itemStack.getDamage());
-            if (!sheep.getSheared() && sheep.getFleeceColor() != woolColor)
+            if (!sheep.IsSheared && sheep.FleeceColor != woolColor)
             {
-                sheep.setFleeceColor(woolColor);
+                sheep.FleeceColor = woolColor;
                 itemStack.ConsumeItem(entityPlayer);
             }
         }

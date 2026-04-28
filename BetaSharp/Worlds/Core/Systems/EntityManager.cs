@@ -230,14 +230,14 @@ public class EntityManager
             return false;
         }
 
-        return Players.All(p => p.isPlayerFullyAsleep());
+        return Players.All(p => p.IsPlayerFullyAsleep());
     }
 
     public void WakeAllPlayers()
     {
-        foreach (EntityPlayer player in Players.Where(p => p.isSleeping()))
+        foreach (EntityPlayer player in Players.Where(p => p.IsSleeping))
         {
-            player.wakeUp(false, false, true);
+            player.WakeUp(false, false, true);
         }
     }
 
@@ -759,7 +759,7 @@ public class EntityManager
         return closestPlayer;
     }
 
-    public EntityPlayer? GetPlayer(string name) => Players.FirstOrDefault(p => p.name == name);
+    public EntityPlayer? GetPlayer(string name) => Players.FirstOrDefault(p => p.Name == name);
 
     public Entity? GetEntityByID(int id) => _entitiesById.TryGetValue(id, out Entity? entity) ? entity : null;
 
@@ -768,7 +768,7 @@ public class EntityManager
         AllPlayersSleeping = Players.Count > 0;
         foreach (EntityPlayer player in Players)
         {
-            if (!player.isSleeping())
+            if (!player.IsSleeping)
             {
                 AllPlayersSleeping = false;
                 break;

@@ -18,11 +18,11 @@ public class InventoryScreen : ContainerScreen
         ClientPlayerEntity player,
         PlayerController playerController,
         Func<UIScreen?> getCurrentScreen)
-        : base(context, player, playerController, player.playerScreenHandler)
+        : base(context, player, playerController, player.PlayerScreenHandler)
     {
         _player = player;
         _getCurrentScreen = getCurrentScreen;
-        player.increaseStat(global::BetaSharp.Achievements.OpenInventory, 1);
+        player.IncreaseStat(global::BetaSharp.Achievements.OpenInventory, 1);
     }
 
     protected override void Init()

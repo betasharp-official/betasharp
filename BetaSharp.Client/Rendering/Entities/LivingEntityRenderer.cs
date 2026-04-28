@@ -37,7 +37,7 @@ public class LivingEntityRenderer : EntityRenderer
             renderPassModel.onGround = mainModel.onGround;
         }
 
-        mainModel.isRiding = entity.HasVehicle();
+        mainModel.isRiding = entity.HasVehicle;
         if (renderPassModel != null)
         {
             renderPassModel.isRiding = mainModel.isRiding;
@@ -63,7 +63,7 @@ public class LivingEntityRenderer : EntityRenderer
                 walkSpeed = 1.0F;
             }
 
-            LoadDownloadableImageTexture((entity as EntityPlayer)?.name, entity.GetTexture());
+            LoadDownloadableImageTexture((entity as EntityPlayer)?.Name, entity.GetTexture());
             GLManager.GL.Enable(GLEnum.AlphaTest);
             mainModel.setLivingAnimations(entity, walkPhase, walkSpeed, tickDelta);
             mainModel.render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
@@ -163,7 +163,7 @@ public class LivingEntityRenderer : EntityRenderer
 
     protected float func_167_c(EntityLiving entity, float tickDelta)
     {
-        return entity.getSwingProgress(tickDelta);
+        return entity.GetSwingProgress(tickDelta);
     }
 
     protected virtual float getAnimationProgress(EntityLiving entity, float tickDelta)

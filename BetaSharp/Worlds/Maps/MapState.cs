@@ -87,7 +87,7 @@ public class MapState(string id) : PersistentState(id)
 
         foreach (MapUpdateTracker mapInfo in _updateTrackers.Values.ToList())
         {
-            if (!mapInfo.Player.Dead && mapInfo.Player.inventory.Contains(mapItem))
+            if (!mapInfo.Player.Dead && mapInfo.Player.Inventory.Contains(mapItem))
             {
                 float relX = (float)(mapInfo.Player.X - CenterX) / (1 << Scale);
                 float relZ = (float)(mapInfo.Player.Z - CenterZ) / (1 << Scale);
@@ -107,7 +107,7 @@ public class MapState(string id) : PersistentState(id)
                         iconRot = (byte)(((randomTick * randomTick * 34187121 + randomTick * 121) >> 15) & 15);
                     }
 
-                    if (mapInfo.Player.dimensionId == Dimension)
+                    if (mapInfo.Player.DimensionId == Dimension)
                     {
                         Icons.Add(new MapIcon(iconType, iconX, iconZ, iconRot));
                     }

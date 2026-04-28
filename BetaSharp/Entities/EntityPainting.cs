@@ -6,15 +6,15 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public class EntityPainting : Entity
+public sealed class EntityPainting : Entity
 {
-    public override EntityType Type => EntityRegistry.Painting;
+    private const float WallOffset = 9.0F / 16.0F;
     private int _tickCounter;
+    public Painting? Art;
     public int Direction;
     public int XPosition;
     public int YPosition;
     public int ZPosition;
-    public Painting Art;
 
     public EntityPainting(IWorldContext world) : base(world)
     {
@@ -50,7 +50,7 @@ public class EntityPainting : Entity
         SetFacing(direction);
     }
 
-    public EntityPainting(IWorldContext world, int x, int y, int z, int direction, String title) : this(world)
+    public EntityPainting(IWorldContext world, int x, int y, int z, int direction, string title) : this(world)
     {
         XPosition = x;
         YPosition = y;
@@ -61,20 +61,30 @@ public class EntityPainting : Entity
         SetFacing(direction);
     }
 
+    public override EntityType Type => EntityRegistry.Painting;
+
+    public override bool HasCollision => true;
+
 
     private void SetFacing(int facing)
     {
         Direction = facing;
-        PrevYaw = Yaw = (facing * 90);
+        PrevYaw = Yaw = facing * 90;
+
+        if (Art == null) return;
 
         float halfWidth = Art.SizeX;
         float halfHeight = Art.SizeY;
         float halfDepth = Art.SizeX;
 
         if (facing != 0 && facing != 2)
+        {
             halfWidth = 0.5F;
+        }
         else
+        {
             halfDepth = 0.5F;
+        }
 
         halfWidth /= 32.0F;
         halfHeight /= 32.0F;
@@ -83,24 +93,24 @@ public class EntityPainting : Entity
         float centerX = XPosition + 0.5F;
         float centerY = YPosition + 0.5F;
         float centerZ = ZPosition + 0.5F;
-        float wallOffset = 9.0F / 16.0F;
+
 
         switch (facing)
         {
             case 0:
-                centerZ -= wallOffset;
+                centerZ -= WallOffset;
                 centerX -= GetArtOffset(Art.SizeX);
                 break;
             case 1:
-                centerX -= wallOffset;
+                centerX -= WallOffset;
                 centerZ += GetArtOffset(Art.SizeX);
                 break;
             case 2:
-                centerZ += wallOffset;
+                centerZ += WallOffset;
                 centerX += GetArtOffset(Art.SizeX);
                 break;
             case 3:
-                centerX += wallOffset;
+                centerX += WallOffset;
                 centerZ -= GetArtOffset(Art.SizeX);
                 break;
         }
@@ -118,105 +128,93 @@ public class EntityPainting : Entity
             centerZ + halfDepth + margin);
     }
 
-    private static float GetArtOffset(int artSize)
-    {
-        return artSize == 32 ? 0.5F : (artSize == 64 ? 0.5F : 0.0F);
-    }
+    private static float GetArtOffset(int artSize) => artSize == 32 ? 0.5F : artSize == 64 ? 0.5F : 0.0F;
 
     public override void Tick()
     {
-        if (_tickCounter++ == 100 && !World.IsRemote)
-        {
-            _tickCounter = 0;
-            if (!CanHangOnWall())
-            {
-                DropAsItem();
-            }
-        }
+        if (_tickCounter++ != 100 || World.IsRemote) return;
+
+        _tickCounter = 0;
+        if (!CanHangOnWall()) DropAsItem();
     }
 
     public bool CanHangOnWall()
     {
-        if (World.Entities.GetEntityCollisionsScratch(this, BoundingBox).Count > 0)
+        if (World.Entities.GetEntityCollisionsScratch(this, BoundingBox).Count > 0) return false;
+
+        if (Art != null)
         {
-            return false;
-        }
+            int widthInBlocks = Art.SizeX / 16;
+            int heightInBlocks = Art.SizeY / 16;
+            int startX = XPosition;
+            int startZ = ZPosition;
 
-        int widthInBlocks = Art.SizeX / 16;
-        int heightInBlocks = Art.SizeY / 16;
-        int startX = XPosition;
-        int startZ = ZPosition;
-
-        switch (Direction)
-        {
-            case 0:
-            case 2:
-                startX = MathHelper.Floor(X - (Art.SizeX / 32.0F));
-                break;
-            case 1:
-            case 3:
-                startZ = MathHelper.Floor(Z - (Art.SizeX / 32.0F));
-                break;
-        }
-
-        int startY = MathHelper.Floor(Y - (Art.SizeY / 32.0F));
-
-        for (int dx = 0; dx < widthInBlocks; ++dx)
-        {
-            for (int dy = 0; dy < heightInBlocks; ++dy)
+            switch (Direction)
             {
-                Material material;
-                if (Direction != 0 && Direction != 2)
-                {
-                    material = World.Reader.GetMaterial(XPosition, startY + dy, startZ + dx);
-                }
-                else
-                {
-                    material = World.Reader.GetMaterial(startX + dx, startY + dy, ZPosition);
-                }
+                case 0:
+                case 2:
+                    startX = MathHelper.Floor(X - Art.SizeX / 32.0F);
+                    break;
+                case 1:
+                case 3:
+                    startZ = MathHelper.Floor(Z - Art.SizeX / 32.0F);
+                    break;
+            }
 
-                if (!material.IsSolid)
+            int startY = MathHelper.Floor(Y - Art.SizeY / 32.0F);
+
+            for (int dx = 0; dx < widthInBlocks; ++dx)
+            {
+                for (int dy = 0; dy < heightInBlocks; ++dy)
                 {
-                    return false;
+                    Material material;
+                    if (Direction != 0 && Direction != 2)
+                    {
+                        material = World.Reader.GetMaterial(XPosition, startY + dy, startZ + dx);
+                    }
+                    else
+                    {
+                        material = World.Reader.GetMaterial(startX + dx, startY + dy, ZPosition);
+                    }
+
+                    if (!material.IsSolid)
+                    {
+                        return false;
+                    }
                 }
             }
         }
 
-        var entitiesInBox = World.Entities.GetEntities(this, BoundingBox);
+        List<Entity> entitiesInBox = World.Entities.GetEntities(this, BoundingBox);
 
-        foreach (var entity in entitiesInBox)
+        foreach (Entity entity in entitiesInBox)
         {
-            if (entity is EntityPainting)
-            {
-                return false;
-            }
+            if (entity is EntityPainting) return false;
         }
 
         return true;
     }
 
-    public override bool IsCollidable() => true;
-
-    public override bool Damage(Entity entity, int amount)
+    public override bool Damage(Entity? entity, int amount)
     {
-        if (!Dead && !World.IsRemote)
-        {
-            ScheduleVelocityUpdate();
-            DropAsItem();
-        }
+        if (Dead || World.IsRemote) return true;
+
+        ScheduleVelocityUpdate();
+        DropAsItem();
+
         return true;
     }
 
-    public override void WriteNbt(NBTTagCompound nbt)
+    protected override void WriteNbt(NBTTagCompound nbt)
     {
         nbt.SetByte("Dir", (sbyte)Direction);
-        nbt.SetString("Motive", Art.Title);
+        nbt.SetString("Motive", Art?.Title);
         nbt.SetInteger("TileX", XPosition);
         nbt.SetInteger("TileY", YPosition);
         nbt.SetInteger("TileZ", ZPosition);
     }
 
-    public override void ReadNbt(NBTTagCompound nbt)
+    protected override void ReadNbt(NBTTagCompound nbt)
     {
         Direction = nbt.GetByte("Dir");
         XPosition = nbt.GetInteger("TileX");
@@ -248,7 +246,6 @@ public class EntityPainting : Entity
     private void DropAsItem()
     {
         if (Dead || World.IsRemote) return;
-
         MarkDead();
         World.SpawnEntity(new EntityItem(World, X, Y, Z, new ItemStack(Item.Painting)));
     }

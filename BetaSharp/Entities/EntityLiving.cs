@@ -4,127 +4,140 @@ using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
 public abstract class EntityLiving : Entity
 {
-    public int MaxHealth { get; set; } = 20;
-    public float LimbSwingPhase { get; set; }
-    public float LimbSwingScale { get; set; }
+    protected EntityLiving(IWorldContext world) : base(world)
+    {
+        PreventEntitySpawning = true;
+        SetPosition(X, Y, Z);
+        Yaw = System.Random.Shared.NextSingle() * (float)Math.PI * 2.0f;
+        StepHeight = 0.5F;
+    }
+
+    protected static int MaxHealth => 20;
     public float BodyYaw { get; set; }
-    public float LastBodyYaw { get; set; }
+    public float LastBodyYaw { get; private set; }
     protected float LastWalkProgress { get; set; }
-    protected float WalkProgress { get; set; }
-    protected float TotalWalkDistance { get; set; }
+    private float WalkProgress { get; set; }
+    private float TotalWalkDistance { get; set; }
     protected float LastTotalWalkDistance { get; set; }
     protected bool CanLookAround { get; set; } = true;
     protected string Texture { get; set; } = "/mob/char.png";
     protected float RotationOffset { get; set; } = 0.0F;
-    protected string ModelName { get; set; } = null;
+    protected string? ModelName { get; set; } = null;
     protected float ModelScale { get; set; } = 1.0F;
-    protected int ScoreAmount { get; set; } = 0;
+    private int ScoreAmount { get; } = 0;
     public bool InterpolateOnly { get; set; } = false;
-    public float LastSwingAnimationProgress { get; set; }
-    public float SwingAnimationProgress { get; set; }
-    public int Health { get; set; } = 10;
-    public int LastHealth { get; set; }
-    private int _livingSoundTime { get; set; }
-    public int HurtTime { get; set; }
-    public int MaxHurtTime { get; set; }
-    public float AttackedAtYaw { get; set; }
-    public int DeathTime { get; set; }
-    public int AttackTime { get; set; }
-    public float CameraPitch { get; set; }
-    public float Tilt { get; set; }
-    public float LastWalkAnimationSpeed { get; set; }
-    public float WalkAnimationSpeed { get; set; }
-    public float AnimationPhase { get; set; }
-    protected int NewPosRotationIncrements { get; set; }
-    protected double NewPosX { get; set; }
-    protected double NewPosY { get; set; }
-    protected double NewPosZ { get; set; }
-    protected double NewRotationYaw { get; set; }
-    protected double NewRotationPitch { get; set; }
+    private float LastSwingAnimationProgress { get; set; }
+    protected float SwingAnimationProgress { get; set; }
+    public int Health { get; protected set; } = 10;
+    public int LastHealth { get; protected set; }
+    private int LivingSoundTime { get; set; }
+    public int HurtTime { get; private set; }
+    public int MaxHurtTime { get; private set; }
+    public float AttackedAtYaw { get; private set; }
+    public int DeathTime { get; protected set; }
+    protected int AttackTime { get; set; }
+    public float CameraPitch { get; private set; }
+    public float Tilt { get; protected set; }
+    public float LastWalkAnimationSpeed { get; protected set; }
+    public float WalkAnimationSpeed { get; protected set; }
+    public float AnimationPhase { get; protected set; }
+    private int NewPosRotationIncrements { get; set; }
+    private double NewPosX { get; set; }
+    private double NewPosY { get; set; }
+    private double NewPosZ { get; set; }
+    private double NewRotationYaw { get; set; }
+    private double NewRotationPitch { get; set; }
     protected int DamageForDisplay { get; set; }
     protected int EntityAge { get; set; }
     protected float SidewaysSpeed { get; set; }
     protected float ForwardSpeed { get; set; }
-    protected float RotationSpeed { get; set; }
+    private float RotationSpeed { get; set; }
     protected bool Jumping { get; set; }
-    protected float DefaultPitch { get; set; } = 0.0F;
+    private static float DefaultPitch => 0.0F;
     protected float MovementSpeed { get; set; } = 0.7F;
-    private Entity _lookTarget;
     protected int LookTimer { get; set; }
 
-    public EntityLiving(IWorldContext world) : base(world)
+    public override Vec3D? LookVector => GetLook(1.0F);
+
+    public override bool IsAlive => !Dead && Health > 0;
+
+    public override bool HasCollision => !Dead;
+
+    public override bool IsPushable => !Dead;
+
+    public override float EyeHeight => Height * 0.85F;
+
+    protected virtual float SoundVolume => 1.0F;
+
+    protected virtual string? LivingSound => null;
+
+    protected virtual string? HurtSound => "random.hurt";
+
+    protected virtual string? DeathSound => "random.hurt";
+
+    protected virtual bool IsOnLadder
     {
-        PreventEntitySpawning = true;
-        LimbSwingScale = (System.Random.Shared.NextSingle() + 1.0f) * 0.01f;
-        SetPosition(X, Y, Z);
-        LimbSwingPhase = System.Random.Shared.NextSingle() * 12398.0f;
-        Yaw = (System.Random.Shared.NextSingle() * (float)Math.PI) * 2.0f;
-        StepHeight = 0.5F;
+        get
+        {
+            int x = MathHelper.Floor(X);
+            int y = MathHelper.Floor(BoundingBox.MinY);
+            int z = MathHelper.Floor(Z);
+            return World.Reader.GetBlockId(x, y, z) == Block.Ladder.id;
+        }
     }
+
+    protected bool HasCurrentTarget => CurrentTarget != null;
+
+    protected Entity? CurrentTarget { get; private set; }
+
+    public virtual bool IsSleeping => false;
+
+    public virtual ItemStack? HeldItem => null;
+
+    protected virtual int TalkInterval => 80;
+
+    private static float AirSpeed => 0.02f;
+
+    protected virtual bool CanDespawn => true;
+
+    public virtual int MaxSpawnedInChunk => 4;
 
     public virtual void PostSpawn()
     {
-
     }
 
 
-    public bool canSee(Entity entity)
-    {
-        return World.Reader.Raycast(new Vec3D(X, Y + (double)GetEyeHeight(), Z), new Vec3D(entity.X, entity.Y + (double)entity.GetEyeHeight(), entity.Z)).Type == HitResultType.MISS;
-    }
+    public bool CanSee(Entity entity) => World.Reader.Raycast(new Vec3D(X, Y + EyeHeight, Z), new Vec3D(entity.X, entity.Y + entity.EyeHeight, entity.Z)).Type == HitResultType.MISS;
 
-    public override string GetTexture()
-    {
-        return Texture;
-    }
+    public virtual string GetTexture() => Texture;
 
-    public override bool IsCollidable()
+    public void PlayLivingSound()
     {
-        return !Dead;
-    }
-
-    public override bool IsPushable()
-    {
-        return !Dead;
-    }
-
-    public override float GetEyeHeight()
-    {
-        return Height * 0.85F;
-    }
-
-    public virtual int getTalkInterval()
-    {
-        return 80;
-    }
-
-    public void playLivingSound()
-    {
-        string sound = getLivingSound();
+        string? sound = LivingSound;
         if (sound != null)
         {
-            World.Broadcaster.PlaySoundAtEntity(this, sound, getSoundVolume(), (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
+            World.Broadcaster.PlaySoundAtEntity(this, sound, SoundVolume, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
         }
-
     }
 
     public override void BaseTick()
     {
         LastSwingAnimationProgress = SwingAnimationProgress;
         base.BaseTick();
-        if (Random.NextInt(1000) < _livingSoundTime++)
+        if (Random.NextInt(1000) < LivingSoundTime++)
         {
-            _livingSoundTime = -getTalkInterval();
-            playLivingSound();
+            LivingSoundTime = -TalkInterval;
+            PlayLivingSound();
         }
 
-        if (IsAlive() && IsInsideWall())
+        if (IsAlive && IsInsideWall())
         {
             Damage(null, 1);
         }
@@ -134,20 +147,19 @@ public abstract class EntityLiving : Entity
             FireTicks = 0;
         }
 
-        int i;
-        if (IsAlive() && IsInFluid(Material.Water) && !canBreatheUnderwater())
+        if (IsAlive && IsInFluid(Material.Water) && !canBreatheUnderwater())
         {
             --Air;
             if (Air == -20)
             {
                 Air = 0;
 
-                for (i = 0; i < 8; ++i)
+                for (int i = 0; i < 8; ++i)
                 {
                     float offsetX = Random.NextFloat() - Random.NextFloat();
                     float offsetY = Random.NextFloat() - Random.NextFloat();
                     float offsetZ = Random.NextFloat() - Random.NextFloat();
-                    World.Broadcaster.AddParticle("bubble", X + (double)offsetX, Y + (double)offsetY, Z + (double)offsetZ, VelocityX, VelocityY, VelocityZ);
+                    World.Broadcaster.AddParticle("bubble", X + offsetX, Y + offsetY, Z + offsetZ, VelocityX, VelocityY, VelocityZ);
                 }
 
                 Damage(null, 2);
@@ -181,15 +193,15 @@ public abstract class EntityLiving : Entity
             ++DeathTime;
             if (DeathTime > 20)
             {
-                onEntityDeath();
+                OnEntityDeath();
                 MarkDead();
 
-                for (i = 0; i < 20; ++i)
+                for (int i = 0; i < 20; ++i)
                 {
                     double velX = Random.NextGaussian() * 0.02D;
                     double velY = Random.NextGaussian() * 0.02D;
                     double velZ = Random.NextGaussian() * 0.02D;
-                    World.Broadcaster.AddParticle("explode", X + (double)(Random.NextFloat() * Width * 2.0F) - (double)Width, Y + (double)(Random.NextFloat() * Height), Z + (double)(Random.NextFloat() * Width * 2.0F) - (double)Width, velX, velY, velZ);
+                    World.Broadcaster.AddParticle("explode", X + Random.NextFloat() * Width * 2.0F - Width, Y + Random.NextFloat() * Height, Z + Random.NextFloat() * Width * 2.0F - Width, velX, velY, velZ);
                 }
             }
         }
@@ -202,10 +214,13 @@ public abstract class EntityLiving : Entity
 
     public override void Move(double x, double y, double z)
     {
-        if (!InterpolateOnly/* || this is ClientPlayerEntity*/) base.Move(x, y, z);
+        if (!InterpolateOnly /* || this is ClientPlayerEntity*/)
+        {
+            base.Move(x, y, z);
+        }
     }
 
-    public void animateSpawn()
+    public void AnimateSpawn()
     {
         for (int i = 0; i < 20; ++i)
         {
@@ -213,9 +228,9 @@ public abstract class EntityLiving : Entity
             double velY = Random.NextGaussian() * 0.02D;
             double velZ = Random.NextGaussian() * 0.02D;
             double spread = 10.0D;
-            World.Broadcaster.AddParticle("explode", X + (double)(Random.NextFloat() * Width * 2.0F) - (double)Width - velX * spread, Y + (double)(Random.NextFloat() * Height) - velY * spread, Z + (double)(Random.NextFloat() * Width * 2.0F) - (double)Width - velZ * spread, velX, velY, velZ);
+            World.Broadcaster.AddParticle("explode", X + Random.NextFloat() * Width * 2.0F - Width - velX * spread, Y + Random.NextFloat() * Height - velY * spread, Z + Random.NextFloat() * Width * 2.0F - Width - velZ * spread, velX, velY,
+                velZ);
         }
-
     }
 
     public override void TickRiding()
@@ -228,18 +243,18 @@ public abstract class EntityLiving : Entity
     public override void SetPositionAndAnglesAvoidEntities(double newPosX, double newPosY, double newPosZ, float newRotationYaw, float newRotationPitch, int newPosRotationIncrements)
     {
         StandingEyeHeight = 0.0F;
-        this.NewPosX = newPosX;
-        this.NewPosY = newPosY;
-        this.NewPosZ = newPosZ;
-        this.NewRotationYaw = (double)newRotationYaw;
-        this.NewRotationPitch = (double)newRotationPitch;
-        this.NewPosRotationIncrements = newPosRotationIncrements;
+        NewPosX = newPosX;
+        NewPosY = newPosY;
+        NewPosZ = newPosZ;
+        NewRotationYaw = newRotationYaw;
+        NewRotationPitch = newRotationPitch;
+        NewPosRotationIncrements = newPosRotationIncrements;
     }
 
     public override void Tick()
     {
         base.Tick();
-        tickMovement();
+        TickMovement();
         double dx = X - PrevX;
         double dz = Z - PrevZ;
         float horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz);
@@ -251,12 +266,12 @@ public abstract class EntityLiving : Entity
         {
             walkAmount = 1.0F;
             walkSpeed = horizontalDistance * 3.0F;
-            computedYaw = (float)System.Math.Atan2(dz, dx) * 180.0F / (float)System.Math.PI - 90.0F;
+            computedYaw = (float)Math.Atan2(dz, dx) * 180.0F / (float)Math.PI - 90.0F;
         }
 
         if (SwingAnimationProgress > 0.0F)
         {
-            computedYaw = base.Yaw;
+            computedYaw = Yaw;
         }
 
         if (!OnGround)
@@ -266,40 +281,23 @@ public abstract class EntityLiving : Entity
 
         WalkProgress += (walkAmount - WalkProgress) * 0.3F;
 
-        float yawDelta;
-        for (yawDelta = computedYaw - BodyYaw; yawDelta < -180.0F; yawDelta += 360.0F)
-        {
-        }
-
-        while (yawDelta >= 180.0F)
-        {
-            yawDelta -= 360.0F;
-        }
+        float yawDelta = computedYaw - BodyYaw;
+        while (yawDelta < -180.0F) yawDelta += 360.0F;
+        while (yawDelta >= 180.0F) yawDelta -= 360.0F;
 
         BodyYaw += yawDelta * 0.3F;
 
-        float headYawDelta;
-        for (headYawDelta = base.Yaw - BodyYaw; headYawDelta < -180.0F; headYawDelta += 360.0F)
-        {
-        }
-
-        while (headYawDelta >= 180.0F)
-        {
-            headYawDelta -= 360.0F;
-        }
+        float headYawDelta = Yaw - BodyYaw;
+        while (headYawDelta < -180.0F) headYawDelta += 360.0F;
+        while (headYawDelta >= 180.0F) headYawDelta -= 360.0F;
 
         bool headFacingBackward = headYawDelta < -90.0F || headYawDelta >= 90.0F;
-        if (headYawDelta < -75.0F)
-        {
-            headYawDelta = -75.0F;
-        }
 
-        if (headYawDelta >= 75.0F)
-        {
-            headYawDelta = 75.0F;
-        }
+        if (headYawDelta < -75.0F) headYawDelta = -75.0F;
+        if (headYawDelta >= 75.0F) headYawDelta = 75.0F;
 
-        BodyYaw = base.Yaw - headYawDelta;
+        BodyYaw = Yaw - headYawDelta;
+
         if (headYawDelta * headYawDelta > 2500.0F)
         {
             BodyYaw += headYawDelta * 0.2F;
@@ -310,136 +308,104 @@ public abstract class EntityLiving : Entity
             walkSpeed *= -1.0F;
         }
 
-        while (base.Yaw - PrevYaw < -180.0F)
-        {
-            PrevYaw -= 360.0F;
-        }
+        while (Yaw - PrevYaw < -180.0F) PrevYaw -= 360.0F;
+        while (Yaw - PrevYaw >= 180.0F) PrevYaw += 360.0F;
 
-        while (base.Yaw - PrevYaw >= 180.0F)
-        {
-            PrevYaw += 360.0F;
-        }
+        while (BodyYaw - LastBodyYaw < -180.0F) LastBodyYaw -= 360.0F;
+        while (BodyYaw - LastBodyYaw >= 180.0F) LastBodyYaw += 360.0F;
 
-        while (BodyYaw - LastBodyYaw < -180.0F)
-        {
-            LastBodyYaw -= 360.0F;
-        }
-
-        while (BodyYaw - LastBodyYaw >= 180.0F)
-        {
-            LastBodyYaw += 360.0F;
-        }
-
-        while (Pitch - PrevPitch < -180.0F)
-        {
-            PrevPitch -= 360.0F;
-        }
-
-        while (Pitch - PrevPitch >= 180.0F)
-        {
-            PrevPitch += 360.0F;
-        }
+        while (Pitch - PrevPitch < -180.0F) PrevPitch -= 360.0F;
+        while (Pitch - PrevPitch >= 180.0F) PrevPitch += 360.0F;
 
         TotalWalkDistance += walkSpeed;
     }
 
-    protected override void SetBoundingBoxSpacing(float widthOffset, float heightOffset)
-    {
-        base.SetBoundingBoxSpacing(widthOffset, heightOffset);
-    }
+    protected override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
 
-    public virtual void heal(int amount)
+    public virtual void Heal(int amount)
     {
-        if (Health > 0)
+        if (Health <= 0) return;
+
+        Health += amount;
+        if (Health > MaxHealth)
         {
-            Health += amount;
-            if (Health > MaxHealth)
-            {
-                Health = MaxHealth;
-            }
-
-            Hearts = MaxHealth / 2;
+            Health = MaxHealth;
         }
+
+        Hearts = MaxHealth / 2;
     }
 
     public override bool Damage(Entity? entity, int amount)
     {
-        if (World.IsRemote)
+        if (World.IsRemote) return false;
+
+        EntityAge = 0;
+        if (Health <= 0) return false;
+
+        WalkAnimationSpeed = 1.5F;
+        bool playHurtEffects = true;
+        if (Hearts > MaxHealth / 2.0F)
         {
-            return false;
+            if (amount <= DamageForDisplay) return false;
+
+            ApplyDamage(amount - DamageForDisplay);
+            DamageForDisplay = amount;
+            playHurtEffects = false;
         }
         else
         {
-            EntityAge = 0;
-            if (Health <= 0)
+            DamageForDisplay = amount;
+            LastHealth = Health;
+            Hearts = MaxHealth;
+            ApplyDamage(amount);
+            HurtTime = MaxHurtTime = 10;
+        }
+
+        AttackedAtYaw = 0.0F;
+        if (playHurtEffects)
+        {
+            World.Broadcaster.EntityEvent(this, 2);
+            ScheduleVelocityUpdate();
+            if (entity != null)
             {
-                return false;
+                double knockbackX = entity.X - X;
+
+                double knockbackZ;
+                for (knockbackZ = entity.Z - Z; knockbackX * knockbackX + knockbackZ * knockbackZ < 1.0E-4D; knockbackZ = (System.Random.Shared.NextDouble() - System.Random.Shared.NextDouble()) * 0.01D)
+                {
+                    knockbackX = (System.Random.Shared.NextDouble() - System.Random.Shared.NextDouble()) * 0.01D;
+                }
+
+                AttackedAtYaw = (float)(Math.Atan2(knockbackZ, knockbackX) * 180.0D / (float)Math.PI) - Yaw;
+                KnockBack(entity, amount, knockbackX, knockbackZ);
             }
             else
             {
-                WalkAnimationSpeed = 1.5F;
-                bool playHurtEffects = true;
-                if ((float)Hearts > (float)MaxHealth / 2.0F)
-                {
-                    if (amount <= DamageForDisplay)
-                    {
-                        return false;
-                    }
-
-                    applyDamage(amount - DamageForDisplay);
-                    DamageForDisplay = amount;
-                    playHurtEffects = false;
-                }
-                else
-                {
-                    DamageForDisplay = amount;
-                    LastHealth = Health;
-                    Hearts = MaxHealth;
-                    applyDamage(amount);
-                    HurtTime = MaxHurtTime = 10;
-                }
-
-                AttackedAtYaw = 0.0F;
-                if (playHurtEffects)
-                {
-                    World.Broadcaster.EntityEvent(this, (byte)2);
-                    ScheduleVelocityUpdate();
-                    if (entity != null)
-                    {
-                        double knockbackX = entity.X - X;
-
-                        double knockbackZ;
-                        for (knockbackZ = entity.Z - Z; knockbackX * knockbackX + knockbackZ * knockbackZ < 1.0E-4D; knockbackZ = (System.Random.Shared.NextDouble() - System.Random.Shared.NextDouble()) * 0.01D)
-                        {
-                            knockbackX = (System.Random.Shared.NextDouble() - System.Random.Shared.NextDouble()) * 0.01D;
-                        }
-
-                        AttackedAtYaw = (float)(System.Math.Atan2(knockbackZ, knockbackX) * 180.0D / (double)((float)System.Math.PI)) - Yaw;
-                        knockBack(entity, amount, knockbackX, knockbackZ);
-                    }
-                    else
-                    {
-                        AttackedAtYaw = (float)((int)(System.Random.Shared.NextDouble() * 2.0D) * 180);
-                    }
-                }
-
-                if (Health <= 0)
-                {
-                    if (playHurtEffects)
-                    {
-                        World.Broadcaster.PlaySoundAtEntity(this, getDeathSound(), getSoundVolume(), (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
-                    }
-
-                    onKilledBy(entity);
-                }
-                else if (playHurtEffects)
-                {
-                    World.Broadcaster.PlaySoundAtEntity(this, getHurtSound(), getSoundVolume(), (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
-                }
-
-                return true;
+                AttackedAtYaw = (int)(System.Random.Shared.NextDouble() * 2.0D) * 180;
             }
         }
+
+        if (Health <= 0)
+        {
+            if (playHurtEffects)
+            {
+                if (DeathSound != null)
+                {
+                    World.Broadcaster.PlaySoundAtEntity(this, DeathSound, SoundVolume, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
+                }
+            }
+
+            OnKilledBy(entity);
+        }
+        else if (playHurtEffects)
+        {
+            if (HurtSound != null)
+            {
+                World.Broadcaster.PlaySoundAtEntity(this, HurtSound, SoundVolume, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
+            }
+        }
+
+        return true;
     }
 
     public override void AnimateHurt()
@@ -448,125 +414,97 @@ public abstract class EntityLiving : Entity
         AttackedAtYaw = 0.0F;
     }
 
-    protected virtual void applyDamage(int amount)
-    {
-        Health -= amount;
-    }
+    protected virtual void ApplyDamage(int amount) => Health -= amount;
 
-    protected virtual float getSoundVolume()
-    {
-        return 1.0F;
-    }
-
-    protected virtual string getLivingSound()
-    {
-        return null;
-    }
-
-    protected virtual string getHurtSound()
-    {
-        return "random.hurt";
-    }
-
-    protected virtual string getDeathSound()
-    {
-        return "random.hurt";
-    }
-
-    public void knockBack(Entity entity, int amount, double dx, double dy)
+    private void KnockBack(Entity entity, int amount, double dx, double dy)
     {
         float knockbackLength = MathHelper.Sqrt(dx * dx + dy * dy);
-        float knockbackStrength = 0.4F;
+        const float knockbackStrength = 0.4F;
         VelocityX /= 2.0D;
         VelocityY /= 2.0D;
         VelocityZ /= 2.0D;
-        VelocityX -= dx / (double)knockbackLength * (double)knockbackStrength;
-        VelocityY += (double)0.4F;
-        VelocityZ -= dy / (double)knockbackLength * (double)knockbackStrength;
-        if (VelocityY > (double)0.4F)
+        VelocityX -= dx / knockbackLength * knockbackStrength;
+        VelocityY += 0.4F;
+        VelocityZ -= dy / knockbackLength * knockbackStrength;
+        if (VelocityY > 0.4F)
         {
-            VelocityY = (double)0.4F;
+            VelocityY = 0.4F;
         }
-
     }
 
-    public virtual void onKilledBy(Entity entity)
+    protected virtual void OnKilledBy(Entity? entity)
     {
         if (ScoreAmount >= 0 && entity != null)
         {
             entity.UpdateKilledAchievement(this, ScoreAmount);
         }
 
-        if (entity != null)
-        {
-            entity.OnKillOther(this);
-        }
+        entity?.OnKillOther(this);
 
         if (!World.IsRemote)
         {
-            dropFewItems();
+            DropFewItems();
         }
 
-        World.Broadcaster.EntityEvent(this, (byte)3);
+        World.Broadcaster.EntityEvent(this, 3);
     }
 
-    protected virtual void dropFewItems()
+    protected virtual void DropFewItems()
     {
-        int dropItemId = getDropItemId();
-        if (dropItemId > 0)
+        int dropItemId = DropItemId;
+        if (dropItemId <= 0)
         {
-            int dropCount = Random.NextInt(3);
-
-            for (int dropIndex = 0; dropIndex < dropCount; ++dropIndex)
-            {
-                DropItem(dropItemId, 1);
-            }
+            return;
         }
 
+        int dropCount = Random.NextInt(3);
+
+        for (int dropIndex = 0; dropIndex < dropCount; ++dropIndex)
+        {
+            DropItem(dropItemId, 1);
+        }
     }
 
-    protected virtual int getDropItemId()
-    {
-        return 0;
-    }
+    protected virtual int DropItemId => 0;
 
     protected override void OnLanding(float fallDistance)
     {
         base.OnLanding(fallDistance);
-        int fallDamage = (int)Math.Ceiling((double)(fallDistance - 3.0F));
-        if (fallDamage > 0)
+        int fallDamage = (int)Math.Ceiling(fallDistance - 3.0F);
+        if (fallDamage <= 0)
         {
-            Damage(null, fallDamage);
-            int groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(Y - (double)0.2F - (double)StandingEyeHeight), MathHelper.Floor(Z));
-            if (groundBlockId > 0)
-            {
-                BlockSoundGroup soundGroup = Block.Blocks[groundBlockId].SoundGroup;
-                World.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.5F, soundGroup.Pitch * (12.0F / 16.0F));
-            }
+            return;
         }
 
+        Damage(null, fallDamage);
+        int groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(Y - 0.2F - StandingEyeHeight), MathHelper.Floor(Z));
+        if (groundBlockId <= 0)
+        {
+            return;
+        }
+
+        BlockSoundGroup soundGroup = Block.Blocks[groundBlockId].SoundGroup;
+        World.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.5F, soundGroup.Pitch * (12.0F / 16.0F));
     }
 
-    protected virtual float AirSpeed() => 0.02f;
-
-    public virtual void travel(float strafe, float forward)
+    protected virtual void Travel(float strafe, float forward)
     {
         double previousY;
-        if (IsInWater())
+        if (IsInWater)
         {
             previousY = Y;
             MoveNonSolid(strafe, forward, 0.02F);
             Move(VelocityX, VelocityY, VelocityZ);
-            VelocityX *= (double)0.8F;
-            VelocityY *= (double)0.8F;
-            VelocityZ *= (double)0.8F;
+            VelocityX *= 0.8F;
+            VelocityY *= 0.8F;
+            VelocityZ *= 0.8F;
             VelocityY -= 0.02D;
-            if (HorizontalCollison && GetEntitiesInside(VelocityX, VelocityY + (double)0.6F - Y + previousY, VelocityZ))
+            if (HorizontalCollision && GetEntitiesInside(VelocityX, VelocityY + 0.6F - Y + previousY, VelocityZ))
             {
-                VelocityY = (double)0.3F;
+                VelocityY = 0.3F;
             }
         }
-        else if (IsTouchingLava())
+        else if (IsTouchingLava)
         {
             previousY = Y;
             MoveNonSolid(strafe, forward, 0.02F);
@@ -575,9 +513,9 @@ public abstract class EntityLiving : Entity
             VelocityY *= 0.5D;
             VelocityZ *= 0.5D;
             VelocityY -= 0.02D;
-            if (HorizontalCollison && GetEntitiesInside(VelocityX, VelocityY + (double)0.6F - Y + previousY, VelocityZ))
+            if (HorizontalCollision && GetEntitiesInside(VelocityX, VelocityY + 0.6F - Y + previousY, VelocityZ))
             {
-                VelocityY = (double)0.3F;
+                VelocityY = 0.3F;
             }
         }
         else
@@ -594,7 +532,7 @@ public abstract class EntityLiving : Entity
             }
 
             float movementFactor = 0.16277136F / (friction * friction * friction);
-            MoveNonSolid(strafe, forward, OnGround ? 0.1F * movementFactor : AirSpeed());
+            MoveNonSolid(strafe, forward, OnGround ? 0.1F * movementFactor : AirSpeed);
             friction = 0.91F;
             if (OnGround)
             {
@@ -606,27 +544,27 @@ public abstract class EntityLiving : Entity
                 }
             }
 
-            if (isOnLadder())
+            if (IsOnLadder)
             {
-                float ladderSpeedClamp = 0.15F;
-                if (VelocityX < (double)(-ladderSpeedClamp))
+                const float ladderSpeedClamp = 0.15F;
+                if (VelocityX < -ladderSpeedClamp)
                 {
-                    VelocityX = (double)(-ladderSpeedClamp);
+                    VelocityX = -ladderSpeedClamp;
                 }
 
-                if (VelocityX > (double)ladderSpeedClamp)
+                if (VelocityX > ladderSpeedClamp)
                 {
-                    VelocityX = (double)ladderSpeedClamp;
+                    VelocityX = ladderSpeedClamp;
                 }
 
-                if (VelocityZ < (double)(-ladderSpeedClamp))
+                if (VelocityZ < -ladderSpeedClamp)
                 {
-                    VelocityZ = (double)(-ladderSpeedClamp);
+                    VelocityZ = -ladderSpeedClamp;
                 }
 
-                if (VelocityZ > (double)ladderSpeedClamp)
+                if (VelocityZ > ladderSpeedClamp)
                 {
-                    VelocityZ = (double)ladderSpeedClamp;
+                    VelocityZ = ladderSpeedClamp;
                 }
 
                 FallDistance = 0.0F;
@@ -642,15 +580,15 @@ public abstract class EntityLiving : Entity
             }
 
             Move(VelocityX, VelocityY, VelocityZ);
-            if (HorizontalCollison && isOnLadder())
+            if (HorizontalCollision && IsOnLadder)
             {
                 VelocityY = 0.2D;
             }
 
             VelocityY -= 0.08D;
-            VelocityY *= (double)0.98F;
-            VelocityX *= (double)friction;
-            VelocityZ *= (double)friction;
+            VelocityY *= 0.98F;
+            VelocityX *= friction;
+            VelocityZ *= friction;
         }
 
         LastWalkAnimationSpeed = WalkAnimationSpeed;
@@ -666,15 +604,7 @@ public abstract class EntityLiving : Entity
         AnimationPhase += WalkAnimationSpeed;
     }
 
-    public virtual bool isOnLadder()
-    {
-        int x = MathHelper.Floor(base.X);
-        int y = MathHelper.Floor(BoundingBox.MinY);
-        int z = MathHelper.Floor(base.Z);
-        return World.Reader.GetBlockId(x, y, z) == Block.Ladder.id;
-    }
-
-    public override void WriteNbt(NBTTagCompound nbt)
+    protected override void WriteNbt(NBTTagCompound nbt)
     {
         nbt.SetShort("Health", (short)Health);
         nbt.SetShort("HurtTime", (short)HurtTime);
@@ -682,7 +612,7 @@ public abstract class EntityLiving : Entity
         nbt.SetShort("AttackTime", (short)AttackTime);
     }
 
-    public override void ReadNbt(NBTTagCompound nbt)
+    protected override void ReadNbt(NBTTagCompound nbt)
     {
         Health = nbt.GetShort("Health");
         if (!nbt.HasKey("Health"))
@@ -695,17 +625,9 @@ public abstract class EntityLiving : Entity
         AttackTime = nbt.GetShort("AttackTime");
     }
 
-    public override bool IsAlive()
-    {
-        return !Dead && Health > 0;
-    }
+    protected virtual bool canBreatheUnderwater() => false;
 
-    public virtual bool canBreatheUnderwater()
-    {
-        return false;
-    }
-
-    public virtual void tickMovement()
+    protected virtual void TickMovement()
     {
         if (World.IsRemote && this is not EntityPlayer)
         {
@@ -718,28 +640,30 @@ public abstract class EntityLiving : Entity
             {
                 for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ)
                 {
-                    var chunk = World.ChunkHost.GetChunk(chunkX, chunkZ);
-                    if (!chunk.Loaded)
+                    Chunk chunk = World.ChunkHost.GetChunk(chunkX, chunkZ);
+                    if (chunk.Loaded)
                     {
-                        Jumping = false;
-                        SidewaysSpeed = 0.0F;
-                        ForwardSpeed = 0.0F;
-                        RotationSpeed = 0.0F;
-                        VelocityX = VelocityY = VelocityZ = 0.0D;
-                        return;
+                        continue;
                     }
+
+                    Jumping = false;
+                    SidewaysSpeed = 0.0F;
+                    ForwardSpeed = 0.0F;
+                    RotationSpeed = 0.0F;
+                    VelocityX = VelocityY = VelocityZ = 0.0D;
+                    return;
                 }
             }
         }
 
         if (NewPosRotationIncrements > 0)
         {
-            double newX = X + (NewPosX - X) / (double)NewPosRotationIncrements;
-            double newY = Y + (NewPosY - Y) / (double)NewPosRotationIncrements;
-            double newZ = Z + (NewPosZ - Z) / (double)NewPosRotationIncrements;
+            double newX = X + (NewPosX - X) / NewPosRotationIncrements;
+            double newY = Y + (NewPosY - Y) / NewPosRotationIncrements;
+            double newZ = Z + (NewPosZ - Z) / NewPosRotationIncrements;
 
             double yawDelta;
-            for (yawDelta = NewRotationYaw - (double)Yaw; yawDelta < -180.0D; yawDelta += 360.0D)
+            for (yawDelta = NewRotationYaw - Yaw; yawDelta < -180.0D; yawDelta += 360.0D)
             {
             }
 
@@ -753,19 +677,21 @@ public abstract class EntityLiving : Entity
             --NewPosRotationIncrements;
             SetPosition(newX, newY, newZ);
             SetRotation(Yaw, Pitch);
-            var collisions = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
+            List<Box> collisions = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
             if (collisions.Count > 0)
             {
                 double highestCollisionY = BoundingBox.MinY;
                 bool applyStep = false;
 
-                foreach (var col in collisions)
+                foreach (Box col in collisions)
                 {
-                    if (col.MaxY > highestCollisionY && col.MaxY <= BoundingBox.MinY + 1.0)
+                    if (!(col.MaxY > highestCollisionY) || !(col.MaxY <= BoundingBox.MinY + 1.0))
                     {
-                        highestCollisionY = col.MaxY;
-                        applyStep = true;
+                        continue;
                     }
+
+                    highestCollisionY = col.MaxY;
+                    applyStep = true;
                 }
 
                 if (applyStep)
@@ -786,91 +712,79 @@ public abstract class EntityLiving : Entity
         }
         else if (!InterpolateOnly)
         {
-            tickLiving();
+            TickLiving();
         }
 
-        bool isInWater = base.IsInWater();
-        bool isTouchingLava = base.IsTouchingLava();
+        bool isInWater = base.IsInWater;
+        bool isTouchingLava = IsTouchingLava;
         if (Jumping)
         {
-            if (isInWater)
+            if (isInWater || isTouchingLava)
             {
-                VelocityY += (double)0.04F;
-            }
-            else if (isTouchingLava)
-            {
-                VelocityY += (double)0.04F;
+                VelocityY += 0.04F;
             }
             else if (OnGround)
             {
-                jump();
+                Jump();
             }
         }
 
         SidewaysSpeed *= 0.98F;
         ForwardSpeed *= 0.98F;
         RotationSpeed *= 0.9F;
-        travel(SidewaysSpeed, ForwardSpeed);
-        var nearbyEntities = World.Entities.GetEntitiesScratch(this, BoundingBox.Expand((double)0.2F, 0.0D, (double)0.2F));
-        if (nearbyEntities != null && nearbyEntities.Count > 0)
+        Travel(SidewaysSpeed, ForwardSpeed);
+        List<Entity> nearbyEntities = World.Entities.GetEntitiesScratch(this, BoundingBox.Expand(0.2F, 0.0D, 0.2F));
+        if (nearbyEntities.Count <= 0)
         {
-            for (int i = 0; i < nearbyEntities.Count; ++i)
-            {
-                Entity entity = nearbyEntities[i];
-                if (entity.IsPushable())
-                {
-                    entity.OnCollision(this);
-                }
-            }
+            return;
         }
 
+        foreach (Entity entity in nearbyEntities)
+        {
+            if (entity.IsPushable)
+            {
+                entity.OnCollision(this);
+            }
+        }
     }
 
-    protected virtual bool isMovementBlocked()
-    {
-        return Health <= 0;
-    }
+    protected virtual bool isMovementBlocked() => Health <= 0;
 
-    protected virtual void jump()
-    {
-        VelocityY = (double)0.42F;
-    }
-
-    protected virtual bool canDespawn()
-    {
-        return true;
-    }
+    protected virtual void Jump() => VelocityY = 0.42F;
 
     protected void func_27021_X()
     {
-        EntityPlayer player = World.Entities.GetClosestPlayer(X, Y, Z, -1.0D);
-        if (canDespawn() && player != null)
+        EntityPlayer? player = World.Entities.GetClosestPlayer(X, Y, Z, -1.0D);
+        if (!CanDespawn || player == null)
         {
-            double dx = player.X - X;
-            double dy = player.Y - Y;
-            double dz = player.Z - Z;
-            double squaredDistance = dx * dx + dy * dy + dz * dz;
-            if (squaredDistance > 16384.0D)
-            {
-                MarkDead();
-            }
-
-            if (EntityAge > 600 && Random.NextInt(800) == 0)
-            {
-                if (squaredDistance < 1024.0D)
-                {
-                    EntityAge = 0;
-                }
-                else
-                {
-                    MarkDead();
-                }
-            }
+            return;
         }
 
+        double dx = player.X - X;
+        double dy = player.Y - Y;
+        double dz = player.Z - Z;
+        double squaredDistance = dx * dx + dy * dy + dz * dz;
+        if (squaredDistance > 16384.0D)
+        {
+            MarkDead();
+        }
+
+        if (EntityAge <= 600 || Random.NextInt(800) != 0)
+        {
+            return;
+        }
+
+        if (squaredDistance < 1024.0D)
+        {
+            EntityAge = 0;
+        }
+        else
+        {
+            MarkDead();
+        }
     }
 
-    public virtual void tickLiving()
+    protected virtual void TickLiving()
     {
         ++EntityAge;
         func_27021_X();
@@ -879,10 +793,10 @@ public abstract class EntityLiving : Entity
         const float lookRange = 8.0F;
         if (Random.NextFloat() < 0.02F)
         {
-            EntityPlayer? closestPlayer = World.Entities.GetClosestPlayer(X, Y, Z, (double)lookRange);
+            EntityPlayer? closestPlayer = World.Entities.GetClosestPlayer(X, Y, Z, lookRange);
             if (closestPlayer != null)
             {
-                _lookTarget = closestPlayer;
+                CurrentTarget = closestPlayer;
                 LookTimer = 10 + Random.NextInt(20);
             }
             else
@@ -891,12 +805,12 @@ public abstract class EntityLiving : Entity
             }
         }
 
-        if (_lookTarget != null)
+        if (CurrentTarget != null)
         {
-            faceEntity(_lookTarget, 10.0F, (float)getMaxFallDistance());
-            if (LookTimer-- <= 0 || _lookTarget.Dead || _lookTarget.GetSquaredDistance(this) > (double)(lookRange * lookRange))
+            faceEntity(CurrentTarget, 10.0F, getMaxFallDistance());
+            if (LookTimer-- <= 0 || CurrentTarget.Dead || CurrentTarget.GetSquaredDistance(this) > lookRange * lookRange)
             {
-                _lookTarget = null;
+                CurrentTarget = null;
             }
         }
         else
@@ -910,92 +824,59 @@ public abstract class EntityLiving : Entity
             Pitch = DefaultPitch;
         }
 
-        bool isInWater = base.IsInWater();
-        bool isTouchingLava = base.IsTouchingLava();
+        bool isInWater = base.IsInWater;
+        bool isTouchingLava = IsTouchingLava;
         if (isInWater || isTouchingLava)
         {
             Jumping = Random.NextFloat() < 0.8F;
         }
-
     }
 
-    protected virtual int getMaxFallDistance()
-    {
-        return 40;
-    }
+    protected virtual int getMaxFallDistance() => 40;
 
-    public void faceEntity(Entity entity, float yawSpeed, float pitchSpeed)
+    protected void faceEntity(Entity entity, float yawSpeed, float pitchSpeed)
     {
         double dx = entity.X - X;
         double dz = entity.Z - Z;
         double dy;
-        if (entity is EntityLiving)
+        if (entity is EntityLiving living)
         {
-            EntityLiving ent = (EntityLiving)entity;
-            dy = Y + (double)GetEyeHeight() - (ent.Y + (double)ent.GetEyeHeight());
+            dy = Y + EyeHeight - (living.Y + living.EyeHeight);
         }
         else
         {
-            dy = (entity.BoundingBox.MinY + entity.BoundingBox.MaxY) / 2.0D - (Y + (double)GetEyeHeight());
+            dy = (entity.BoundingBox.MinY + entity.BoundingBox.MaxY) / 2.0D - (Y + EyeHeight);
         }
 
-        double horizontalDistance = (double)MathHelper.Sqrt(dx * dx + dz * dz);
-        float targetYaw = (float)(System.Math.Atan2(dz, dx) * 180.0D / (double)((float)System.Math.PI)) - 90.0F;
-        float targetPitch = (float)(-(System.Math.Atan2(dy, horizontalDistance) * 180.0D / (double)((float)System.Math.PI)));
-        Pitch = -updateRotation(Pitch, targetPitch, pitchSpeed);
-        Yaw = updateRotation(Yaw, targetYaw, yawSpeed);
+        double horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz);
+        float targetYaw = (float)(Math.Atan2(dz, dx) * 180.0D / (float)Math.PI) - 90.0F;
+        float targetPitch = (float)-(Math.Atan2(dy, horizontalDistance) * 180.0D / (float)Math.PI);
+        Pitch = -UpdateRotation(Pitch, targetPitch, pitchSpeed);
+        Yaw = UpdateRotation(Yaw, targetYaw, yawSpeed);
     }
 
-    public bool hasCurrentTarget()
+    private static float UpdateRotation(float currentRotation, float targetRotation, float maxDelta)
     {
-        return _lookTarget != null;
-    }
+        float delta = targetRotation - currentRotation;
 
-    public Entity getCurrentTarget()
-    {
-        return _lookTarget;
-    }
+        while (delta < -180.0F) delta += 360.0F;
+        while (delta >= 180.0F) delta -= 360.0F;
 
-    private static float updateRotation(float currentRotation, float targetRotation, float maxDelta)
-    {
-        float delta;
-        for (delta = targetRotation - currentRotation; delta < -180.0F; delta += 360.0F)
-        {
-        }
-
-        while (delta >= 180.0F)
-        {
-            delta -= 360.0F;
-        }
-
-        if (delta > maxDelta)
-        {
-            delta = maxDelta;
-        }
-
-        if (delta < -maxDelta)
-        {
-            delta = -maxDelta;
-        }
+        if (delta > maxDelta) delta = maxDelta;
+        if (delta < -maxDelta) delta = -maxDelta;
 
         return currentRotation + delta;
     }
 
-    public static void onEntityDeath()
+    private static void OnEntityDeath()
     {
     }
 
-    public virtual bool canSpawn()
-    {
-        return World.Entities.CanSpawnEntity(BoundingBox) && World.Entities.GetEntityCollisionsScratch(this, BoundingBox).Count == 0 && !World.Reader.IsMaterialInBox(BoundingBox, m => m.IsFluid);
-    }
+    public virtual bool CanSpawn() => World.Entities.CanSpawnEntity(BoundingBox) && World.Entities.GetEntityCollisionsScratch(this, BoundingBox).Count == 0 && !World.Reader.IsMaterialInBox(BoundingBox, m => m.IsFluid);
 
-    protected override void TickInVoid()
-    {
-        Damage(null, 4);
-    }
+    protected override void TickInVoid() => Damage(null, 4);
 
-    public float getSwingProgress(float partialTick)
+    public float GetSwingProgress(float partialTick)
     {
         float progressDelta = SwingAnimationProgress - LastSwingAnimationProgress;
         if (progressDelta < 0.0F)
@@ -1006,106 +887,83 @@ public abstract class EntityLiving : Entity
         return LastSwingAnimationProgress + progressDelta * partialTick;
     }
 
-    public Vec3D GetPosition()
-    {
-        return new Vec3D(X, Y, Z);
-    }
+    public Vec3D GetPosition() => new(X, Y, Z);
 
     public Vec3D GetPosition(float partialTick)
     {
-        if (partialTick == 1.0F)
+        if (Math.Abs(partialTick - 1.0F) < 0.01f)
         {
             return new Vec3D(X, Y, Z);
         }
-        else
-        {
-            double x = PrevX + (base.X - PrevX) * (double)partialTick;
-            double y = PrevY + (base.Y - PrevY) * (double)partialTick;
-            double z = PrevZ + (base.Z - PrevZ) * (double)partialTick;
-            return new Vec3D(x, y, z);
-        }
+
+        double x = PrevX + (X - PrevX) * partialTick;
+        double y = PrevY + (Y - PrevY) * partialTick;
+        double z = PrevZ + (Z - PrevZ) * partialTick;
+        return new Vec3D(x, y, z);
     }
 
-    public override Vec3D? GetLookVector()
-    {
-        return getLook(1.0F);
-    }
-
-    public Vec3D getLook(float partialTick)
+    public Vec3D GetLook(float partialTick)
     {
         float cosYaw;
         float sinYaw;
         float cosPitch;
         float sinPitch;
-        if (partialTick == 1.0F)
+        if (Math.Abs(partialTick - 1.0F) < 0.01f)
         {
-            cosYaw = MathHelper.Cos(-Yaw * ((float)System.Math.PI / 180.0F) - (float)System.Math.PI);
-            sinYaw = MathHelper.Sin(-Yaw * ((float)System.Math.PI / 180.0F) - (float)System.Math.PI);
-            cosPitch = -MathHelper.Cos(-Pitch * ((float)System.Math.PI / 180.0F));
-            sinPitch = MathHelper.Sin(-Pitch * ((float)System.Math.PI / 180.0F));
-            return new Vec3D((double)(sinYaw * cosPitch), (double)sinPitch, (double)(cosYaw * cosPitch));
+            cosYaw = MathHelper.Cos(-Yaw * ((float)Math.PI / 180.0F) - (float)Math.PI);
+            sinYaw = MathHelper.Sin(-Yaw * ((float)Math.PI / 180.0F) - (float)Math.PI);
+            cosPitch = -MathHelper.Cos(-Pitch * ((float)Math.PI / 180.0F));
+            sinPitch = MathHelper.Sin(-Pitch * ((float)Math.PI / 180.0F));
+            return new Vec3D(sinYaw * cosPitch, sinPitch, cosYaw * cosPitch);
         }
-        else
-        {
-            cosYaw = PrevPitch + (Pitch - PrevPitch) * partialTick;
-            sinYaw = PrevYaw + (Yaw - PrevYaw) * partialTick;
-            cosPitch = MathHelper.Cos(-sinYaw * ((float)System.Math.PI / 180.0F) - (float)System.Math.PI);
-            sinPitch = MathHelper.Sin(-sinYaw * ((float)System.Math.PI / 180.0F) - (float)System.Math.PI);
-            float horizontalCos = -MathHelper.Cos(-cosYaw * ((float)System.Math.PI / 180.0F));
-            float verticalSin = MathHelper.Sin(-cosYaw * ((float)System.Math.PI / 180.0F));
-            return new Vec3D((double)(sinPitch * horizontalCos), (double)verticalSin, (double)(cosPitch * horizontalCos));
-        }
+
+        cosYaw = PrevPitch + (Pitch - PrevPitch) * partialTick;
+        sinYaw = PrevYaw + (Yaw - PrevYaw) * partialTick;
+        cosPitch = MathHelper.Cos(-sinYaw * ((float)Math.PI / 180.0F) - (float)Math.PI);
+        sinPitch = MathHelper.Sin(-sinYaw * ((float)Math.PI / 180.0F) - (float)Math.PI);
+        float horizontalCos = -MathHelper.Cos(-cosYaw * ((float)Math.PI / 180.0F));
+        float verticalSin = MathHelper.Sin(-cosYaw * ((float)Math.PI / 180.0F));
+        return new Vec3D(sinPitch * horizontalCos, verticalSin, cosPitch * horizontalCos);
     }
 
-    public HitResult rayTrace(double range, float partialTick)
+    public HitResult RayTrace(double range, float partialTick)
     {
         Vec3D startPos = GetPosition(partialTick);
-        Vec3D lookDir = getLook(partialTick);
+        Vec3D lookDir = GetLook(partialTick);
         Vec3D endPos = startPos + range * lookDir;
         return World.Reader.Raycast(startPos, endPos);
     }
 
-    public virtual int getMaxSpawnedInChunk()
-    {
-        return 4;
-    }
-
-    public virtual ItemStack getHeldItem()
-    {
-        return null;
-    }
-
     public override void ProcessServerEntityStatus(sbyte statusId)
     {
-        if (statusId == 2)
+        switch (statusId)
         {
-            WalkAnimationSpeed = 1.5F;
-            Hearts = MaxHealth;
-            HurtTime = MaxHurtTime = 10;
-            AttackedAtYaw = 0.0F;
-            World.Broadcaster.PlaySoundAtEntity(this, getHurtSound(), getSoundVolume(), (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
-            Damage(null, 0);
-        }
-        else if (statusId == 3)
-        {
-            World.Broadcaster.PlaySoundAtEntity(this, getDeathSound(), getSoundVolume(), (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
-            Health = 0;
-            onKilledBy(null);
-        }
-        else
-        {
-            base.ProcessServerEntityStatus(statusId);
-        }
+            case 2:
+                WalkAnimationSpeed = 1.5F;
+                Hearts = MaxHealth;
+                HurtTime = MaxHurtTime = 10;
+                AttackedAtYaw = 0.0F;
+                if (HurtSound != null)
+                {
+                    World.Broadcaster.PlaySoundAtEntity(this, HurtSound, SoundVolume, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
+                }
 
+                Damage(null, 0);
+                break;
+            case 3:
+                if (DeathSound != null)
+                {
+                    World.Broadcaster.PlaySoundAtEntity(this, DeathSound, SoundVolume, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
+                }
+
+                Health = 0;
+                OnKilledBy(null);
+                break;
+            default:
+                base.ProcessServerEntityStatus(statusId);
+                break;
+        }
     }
 
-    public virtual bool isSleeping()
-    {
-        return false;
-    }
-
-    public virtual int getItemStackTextureId(ItemStack item)
-    {
-        return item.getTextureId();
-    }
+    public virtual int GetItemStackTextureId(ItemStack item) => item.getTextureId();
 }

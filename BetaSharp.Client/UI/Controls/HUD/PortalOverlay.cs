@@ -19,8 +19,8 @@ public class PortalOverlay(Func<ClientPlayerEntity?> getPlayer) : UIElement
         ClientPlayerEntity? player = getPlayer();
         if (player == null) return;
 
-        float last = player.lastScreenDistortion;
-        float curr = player.changeDimensionCooldown;
+        float last = player.LastScreenDistortion;
+        float curr = player.ChangeDimensionCooldown;
         float portal = last + (curr - last) * _partialTicks;
 
         if (portal > 0.0F)

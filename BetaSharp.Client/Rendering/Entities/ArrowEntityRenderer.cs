@@ -29,7 +29,7 @@ public class ArrowEntityRenderer : EntityRenderer
             float sideMaxV = (10 + arrowType * 10) / 32.0F;
             float modelScale = 0.05625F;
             GLManager.GL.Enable(GLEnum.RescaleNormal);
-            float shakeTime = arrowEntity.arrowShake - tickDelta;
+            float shakeTime = arrowEntity.ArrowShake - tickDelta;
             if (shakeTime > 0.0F)
             {
                 float shakeRotation = -MathHelper.Sin(shakeTime * 3.0F) * shakeTime;

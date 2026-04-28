@@ -159,20 +159,20 @@ public class ServerPlayerInteractionManager
         world.Broadcaster.WorldEvent(player, 2001, x, y, z, blockId + world.Reader.GetBlockMeta(x, y, z) * 256);
         bool success = finishMining(x, y, z);
 
-        if (success && player.GameMode.BlockDrops && player.canHarvest(Block.Blocks[blockId]))
+        if (success && player.GameMode.BlockDrops && player.CanHarvest(Block.Blocks[blockId]))
         {
             Block.Blocks[blockId].onAfterBreak(new OnAfterBreakEvent(world, player, blockMeta, x, y, z));
             ((ServerPlayerEntity)player).NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
         }
 
-        ItemStack itemStack = player.getHand();
+        ItemStack itemStack = player.GetHand();
         if (itemStack != null)
         {
             itemStack.postMine(blockId, x, y, z, player);
             if (itemStack.Count == 0)
             {
                 ItemStack.onRemoved(player);
-                player.clearStackInHand();
+                player.ClearStackInHand();
             }
         }
 
@@ -185,10 +185,10 @@ public class ServerPlayerInteractionManager
         ItemStack itemStack = stack.use(world, player);
         if (itemStack != stack || itemStack != null && itemStack.Count != count)
         {
-            player.inventory.Main[player.inventory.SelectedSlot] = itemStack;
+            player.Inventory.Main[player.Inventory.SelectedSlot] = itemStack;
             if (itemStack.Count == 0)
             {
-                player.inventory.Main[player.inventory.SelectedSlot] = null;
+                player.Inventory.Main[player.Inventory.SelectedSlot] = null;
             }
 
             miningProgress = -1;

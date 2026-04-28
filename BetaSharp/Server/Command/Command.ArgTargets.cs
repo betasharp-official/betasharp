@@ -189,9 +189,9 @@ public abstract partial class Command
             {
                 foreach (ServerPlayerEntity p in context.Source.Server.playerManager.players)
                 {
-                    if (p.name.StartsWith(s, StringComparison.OrdinalIgnoreCase))
+                    if (p.Name.StartsWith(s, StringComparison.OrdinalIgnoreCase))
                     {
-                        builder.Suggest(p.name);
+                        builder.Suggest(p.Name);
                     }
                 }
             }

@@ -6,108 +6,84 @@ namespace BetaSharp.Entities;
 
 internal class EntityPigZombie : EntityZombie
 {
-    public override EntityType Type => EntityRegistry.PigZombie;
-    private int angerLevel;
-    private int randomSoundDelay;
-    private static readonly ItemStack defaultHeldItem = new ItemStack(Item.GoldenSword, 1);
+    private static readonly ItemStack s_defaultHeldItem = new(Item.GoldenSword, 1);
+    private int _angerLevel;
+    private int _randomSoundDelay;
 
     public EntityPigZombie(IWorldContext world) : base(world)
     {
         Texture = "/mob/pigzombie.png";
         MovementSpeed = 0.5F;
-        attackStrength = 5;
+        AttackStrength = 5;
         IsImmuneToFire = true;
     }
 
+    public override EntityType Type => EntityRegistry.PigZombie;
+
+    protected override string? LivingSound => "mob.zombiepig.zpig";
+
+    protected override string? HurtSound => "mob.zombiepig.zpighurt";
+
+    protected override string? DeathSound => "mob.zombiepig.zpigdeath";
+
+    public override ItemStack HeldItem => s_defaultHeldItem;
+
     public override void Tick()
     {
-        MovementSpeed = playerToAttack != null ? 0.95F : 0.5F;
-        if (randomSoundDelay > 0 && --randomSoundDelay == 0)
+        MovementSpeed = Target != null ? 0.95F : 0.5F;
+        if (_randomSoundDelay > 0 && --_randomSoundDelay == 0)
         {
-            World.Broadcaster.PlaySoundAtEntity(this, "mob.zombiepig.zpigangry", getSoundVolume() * 2.0F, ((Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F) * 1.8F);
+            World.Broadcaster.PlaySoundAtEntity(this, "mob.zombiepig.zpigangry", SoundVolume * 2.0F, ((Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F) * 1.8F);
         }
 
         base.Tick();
     }
 
-    public override bool canSpawn()
-    {
-        return World.Difficulty > 0 && World.Entities.CanSpawnEntity(BoundingBox) && World.Entities.GetEntityCollisionsScratch(this, BoundingBox).Count == 0 && !World.Reader.IsMaterialInBox(BoundingBox, m => m.IsFluid);
-    }
+    public override bool CanSpawn() => World.Difficulty > 0 && World.Entities.CanSpawnEntity(BoundingBox) && World.Entities.GetEntityCollisionsScratch(this, BoundingBox).Count == 0 &&
+                                       !World.Reader.IsMaterialInBox(BoundingBox, m => m.IsFluid);
 
-    public override void WriteNbt(NBTTagCompound nbt)
+    protected override void WriteNbt(NBTTagCompound nbt)
     {
         base.WriteNbt(nbt);
-        nbt.SetShort("Anger", (short)angerLevel);
+        nbt.SetShort("Anger", (short)_angerLevel);
     }
 
-    public override void ReadNbt(NBTTagCompound nbt)
+    protected override void ReadNbt(NBTTagCompound nbt)
     {
         base.ReadNbt(nbt);
-        angerLevel = nbt.GetShort("Anger");
+        _angerLevel = nbt.GetShort("Anger");
     }
 
-    protected override Entity findPlayerToAttack()
-    {
-        return angerLevel == 0 ? null : base.findPlayerToAttack();
-    }
+    protected override Entity? FindPlayerToAttack() => _angerLevel == 0 ? null : base.FindPlayerToAttack();
 
-    public override void tickMovement()
+    public override bool Damage(Entity? entity, int amount)
     {
-        base.tickMovement();
-    }
-
-    public override bool Damage(Entity entity, int amount)
-    {
-        if (entity is EntityPlayer { GameMode.CanBeTargeted: true })
+        if (entity is not EntityPlayer { GameMode.CanBeTargeted: true })
         {
-            var entities = World.Entities.GetEntities(this, BoundingBox.Expand(32.0D, 32.0D, 32.0D));
-
-            for (int i = 0; i < entities.Count; ++i)
-            {
-                Entity inBoundEntity = entities[i];
-                if (inBoundEntity is EntityPigZombie)
-                {
-                    EntityPigZombie pigZombie = (EntityPigZombie)inBoundEntity;
-                    pigZombie.becomeAngryAt(entity);
-                }
-            }
-
-            becomeAngryAt(entity);
+            return base.Damage(entity, amount);
         }
+
+        List<Entity> entities = World.Entities.GetEntities(this, BoundingBox.Expand(32.0D, 32.0D, 32.0D));
+
+        foreach (Entity inBoundEntity in entities)
+        {
+            if (inBoundEntity is EntityPigZombie pigZombie)
+            {
+                pigZombie.becomeAngryAt(entity);
+            }
+        }
+
+        becomeAngryAt(entity);
 
         return base.Damage(entity, amount);
     }
 
     private void becomeAngryAt(Entity entity)
     {
-        playerToAttack = entity;
-        angerLevel = 400 + Random.NextInt(400);
-        randomSoundDelay = Random.NextInt(40);
+        Target = entity;
+        _angerLevel = 400 + Random.NextInt(400);
+        _randomSoundDelay = Random.NextInt(40);
     }
 
-    protected override String getLivingSound()
-    {
-        return "mob.zombiepig.zpig";
-    }
-
-    protected override String getHurtSound()
-    {
-        return "mob.zombiepig.zpighurt";
-    }
-
-    protected override String getDeathSound()
-    {
-        return "mob.zombiepig.zpigdeath";
-    }
-
-    protected override int getDropItemId()
-    {
-        return Item.CookedPorkchop.id;
-    }
-
-    public override ItemStack getHeldItem()
-    {
-        return defaultHeldItem;
-    }
+    protected override int DropItemId => Item.CookedPorkchop.id;
 }

@@ -12,23 +12,37 @@ namespace BetaSharp.Entities;
 
 public abstract class Entity
 {
+    private static int s_nextEntityId;
+    private readonly SyncedProperty<byte> _flags;
+    private bool _firstTick = true;
+    private int _nextStepSoundDistance = 1;
+    private double _vehiclePitchDelta;
+    private double _vehicleYawDelta;
+    public Box BoundingBox = new(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
+
+    protected Entity(IWorldContext world)
+    {
+        World = world;
+        SetPosition(0.0D, 0.0D, 0.0D);
+        _flags = DataSynchronizer.MakeProperty<byte>(0, 0);
+    }
+
     public abstract EntityType? Type { get; }
-    private static int _nextEntityID;
-    public int ID { get; set; } = _nextEntityID++;
+    public int ID { get; set; } = s_nextEntityId++;
 
     /// <summary>
-    /// Muitipler for rendering, based of the render distance, 
+    ///     Multiplayer for rendering, based of the render distance,
     /// </summary>
-    public double RenderDistanceWeight { get; set; } = 1.0D;
+    protected double RenderDistanceWeight { get; init; } = 1.0D;
 
     /// <summary>
-    /// Prevents another entity spawning near/in this entity.
+    ///     Prevents another entity spawning near/in this entity.
     /// </summary>
-    public bool PreventEntitySpawning { get; set; } = false;
+    public bool PreventEntitySpawning { get; protected init; }
 
     public Entity? Passenger { get; set; }
     public Entity? Vehicle { get; set; }
-    public IWorldContext World { get; set; }
+    public IWorldContext World { get; private set; }
     public double PrevX { get; set; }
     public double PrevY { get; set; }
     public double PrevZ { get; set; }
@@ -42,59 +56,52 @@ public abstract class Entity
     public float Pitch { get; set; }
     public float PrevYaw { get; set; }
     public float PrevPitch { get; set; }
-    public Box BoundingBox = new Box(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     public bool OnGround { get; set; }
 
     /// <summary>
-    /// If a collision occured in the X or Z directions.
+    ///     If a collision occured in the X or Z directions.
     /// </summary>
-    public bool HorizontalCollison { get; set; }
+    protected bool HorizontalCollision { get; private set; }
 
     /// <summary>
-    /// If a collision occured in the Y direction.
+    ///     If a collision occured in the Y direction.
     /// </summary>
-    public bool VerticalCollision { get; set; }
+    private bool VerticalCollision { get; set; }
 
     /// <summary>
-    /// If a collision occured in either the X, Y, OR Z directions.
+    ///     If a collision occured in either the X, Y, OR Z directions.
     /// </summary>
     public bool HasCollided { get; set; }
 
     public bool VelocityModified { get; set; }
     public bool Slowed { get; set; }
-    public bool KeepVelocityOnCollision { get; set; } = true;
+    private static bool KeepVelocityOnCollision => true;
     public bool Dead { get; set; }
-
-    public float StandingEyeHeight { get; set; } = 0.0F;
-    public float Width { get; set; } = 0.6F;
-    public float Height { get; set; } = 1.8F;
-    public float PrevHorizontalSpeed { get; set; }
-    public float HorizontalSpeed { get; set; }
+    public float Width { get; private set; } = 0.6F;
+    public float Height { get; private set; } = 1.8F;
+    public float PrevHorizontalSpeed { get; private set; }
+    public float HorizontalSpeed { get; private set; }
     protected float FallDistance { get; set; }
-    private int _nextStepSoundDistance = 1;
     public double LastTickX { get; set; }
     public double LastTickY { get; set; }
     public double LastTickZ { get; set; }
     public float CameraOffset { get; set; }
-    public float StepHeight { get; set; } = 0.0F;
-    public bool NoClip { get; set; } = false;
-    public float PushSpeedReduction { get; set; } = 0.0F;
-    protected JavaRandom Random { get; set; } = new();
-    public int Age { get; set; } = 0;
-    public int FireImmunityTicks { get; set; } = 1;
-    public int FireTicks { get; set; }
-    protected int MaxAir { get; set; } = 300;
-    protected bool InWater { get; set; }
-    public int Hearts { get; set; } = 0;
-    public int Air { get; set; } = 300;
-    private bool _firstTick = true;
-    public string CloakUrl { get; set; }
-    protected bool IsImmuneToFire { get; set; } = false;
-    public DataSynchronizer DataSynchronizer { get; set; } = new();
-    public float MinBrightness { get; set; } = 0.0F;
-    private double _vehiclePitchDelta;
-    private double _vehicleYawDelta;
-    public bool IsPersistent { get; set; } = false;
+    protected float StepHeight { get; init; }
+    protected bool NoClip { get; init; }
+    protected static float PushSpeedReduction => 0.0F;
+    protected JavaRandom Random { get; } = new();
+    public int Age { get; private set; }
+    protected int FireImmunityTicks { get; init; } = 1;
+    protected int FireTicks { get; set; }
+    public static int MaxAir => 300;
+    protected bool InWater { get; private set; }
+    public int Hearts { get; protected set; }
+    public int Air { get; protected set; } = 300;
+    public string? CloakUrl { get; set; }
+    protected bool IsImmuneToFire { get; init; }
+    public DataSynchronizer DataSynchronizer { get; } = new();
+    public float MinBrightness { get; set; }
+    public bool IsPersistent { get; set; }
     public int ChunkX { get; set; }
     public int ChunkSlice { get; set; }
     public int ChunkZ { get; set; }
@@ -103,105 +110,105 @@ public abstract class Entity
     public int TrackedPosZ { get; set; }
 
     /// <summary>
-    /// If a entity should render even IF its outside the viewing angle.
+    ///     If an entity should render even IF it's outside the viewing angle.
     /// </summary>
-    public bool IgnoreFrustumCheck { get; set; }
-    private readonly SyncedProperty<byte> _flags;
+    public bool IgnoreFrustumCheck { get; init; }
 
-    public Entity(IWorldContext world)
-    {
-        this.World = world;
-        SetPosition(0.0D, 0.0D, 0.0D);
-        _flags = DataSynchronizer.MakeProperty<byte>(0, 0);
-    }
+    public Vec3D Position => new(X, Y, Z);
 
-    public Vec3D Position => new Vec3D(X, Y, Z);
+    public float StandingEyeHeight { get; protected set; }
+
+    protected virtual double PassengerRidingHeight => Height * 0.75D;
+
+    public virtual float TargetingMargin => 0.1F;
+
+    public virtual Vec3D? LookVector => null;
+
+    public bool IsOnFire => FireTicks > 0 || GetFlag(0);
+
+    public bool HasVehicle => Vehicle != null || GetFlag(2);
+
+    public virtual ItemStack?[] Equipment => null;
+
+    protected bool IsWet => InWater || World.Environment.IsRainingAt(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
+
+    protected virtual bool IsInWater => InWater;
+
+    protected bool IsTouchingLava => World.Reader.IsMaterialInBox(BoundingBox.Expand(-0.1F, -0.4F, -0.1F), m => m == Material.Lava);
+
+    public virtual bool IsAlive => !Dead;
+
+    public virtual float EyeHeight => 0.0F;
+
+    public virtual bool HasCollision => false;
+
+    public virtual bool IsPushable => false;
 
     /// <summary>
-    /// Keep moving up until theres no collison.
+    ///     Keep moving up until there's no collision.
     /// </summary>
     /// <remarks>
-    /// Note that the Pitch will be reset to 0, and the Motion
-    /// will be fully zeroed, so the entity might fall for a bit
-    /// if the position was off at the start.</remarks>
+    ///     Note that the Pitch will be reset to 0, and the Motion
+    ///     will be fully zeroed, so the entity might fall for a bit
+    ///     if the position was off at the start.
+    /// </remarks>
     public virtual void TeleportToTop()
     {
-        if (World != null)
+        while (Y > 0.0D)
         {
-            while (Y > 0.0D)
-            {
-                SetPosition(X, Y, Z);
-                if (World.Entities.GetEntityCollisionsScratch(this, BoundingBox).Count == 0)
-                {
-                    break;
-                }
-
-                ++Y;
-            }
-
-            VelocityX = VelocityY = VelocityZ = 0.0D;
-            Pitch = 0.0F;
+            SetPosition(X, Y, Z);
+            if (World.Entities.GetEntityCollisionsScratch(this, BoundingBox).Count == 0) break;
+            ++Y;
         }
+
+        VelocityX = VelocityY = VelocityZ = 0.0D;
+        Pitch = 0.0F;
     }
 
-    public virtual void MarkDead()
-    {
-        Dead = true;
-    }
+    public virtual void MarkDead() => Dead = true;
 
     protected virtual void SetBoundingBoxSpacing(float width, float height)
     {
-        this.Width = width;
-        this.Height = height;
+        Width = width;
+        Height = height;
     }
 
     protected void SetRotation(float yaw, float pitch)
     {
-        this.Yaw = yaw % 360.0F;
-        this.Pitch = pitch % 360.0F;
+        Yaw = yaw % 360.0F;
+        Pitch = pitch % 360.0F;
     }
 
     public void SetPosition(double x, double y, double z)
     {
-        this.X = x;
-        this.Y = y;
-        this.Z = z;
+        X = x;
+        Y = y;
+        Z = z;
         float halfWidth = Width / 2.0F;
-        float height = this.Height;
-        BoundingBox = new Box(x - (double)halfWidth, y - (double)StandingEyeHeight + (double)CameraOffset, z - (double)halfWidth, x + (double)halfWidth, y - (double)StandingEyeHeight + (double)CameraOffset + (double)height, z + (double)halfWidth);
+        float height = Height;
+        BoundingBox = new Box(x - halfWidth, y - StandingEyeHeight + CameraOffset, z - halfWidth, x + halfWidth, y - StandingEyeHeight + CameraOffset + height, z + halfWidth);
     }
 
     /// <summary>
-    /// Change the current look direction, with capping the pitch.
+    ///     Change the current look direction, with capping the pitch.
     /// </summary>
     public void ChangeLookDirection(float yaw, float pitch)
     {
-        float oldPitch = this.Pitch;
-        float oldYaw = this.Yaw;
-        this.Yaw = (float)((double)this.Yaw + (double)yaw * 0.15D);
-        this.Pitch = (float)((double)this.Pitch - (double)pitch * 0.15D);
-        if (this.Pitch < -90.0F)
-        {
-            this.Pitch = -90.0F;
-        }
-
-        if (this.Pitch > 90.0F)
-        {
-            this.Pitch = 90.0F;
-        }
-
-        PrevPitch += this.Pitch - oldPitch;
-        PrevYaw += this.Yaw - oldYaw;
+        float oldPitch = Pitch;
+        float oldYaw = Yaw;
+        Yaw = (float)(Yaw + yaw * 0.15D);
+        Pitch = (float)(Pitch - pitch * 0.15D);
+        if (Pitch < -90.0F) Pitch = -90.0F;
+        if (Pitch > 90.0F) Pitch = 90.0F;
+        PrevPitch += Pitch - oldPitch;
+        PrevYaw += Yaw - oldYaw;
     }
 
-    public virtual void Tick()
-    {
-        BaseTick();
-    }
+    public virtual void Tick() => BaseTick();
 
     public virtual void BaseTick()
     {
-        if (Vehicle != null && Vehicle.Dead)
+        if (Vehicle is { Dead: true })
         {
             Vehicle = null;
         }
@@ -217,21 +224,19 @@ public abstract class Entity
         {
             if (!InWater && !_firstTick)
             {
-                float volume = MathHelper.Sqrt(VelocityX * VelocityX * (double)0.2F + VelocityY * VelocityY + VelocityZ * VelocityZ * (double)0.2F) * 0.2F;
+                float volume = MathHelper.Sqrt(VelocityX * VelocityX * 0.2F + VelocityY * VelocityY + VelocityZ * VelocityZ * 0.2F) * 0.2F;
                 if (volume > 1.0F)
                 {
                     volume = 1.0F;
                 }
 
                 World.Broadcaster.PlaySoundAtEntity(this, "random.splash", volume, 1.0F + (Random.NextFloat() - Random.NextFloat()) * 0.4F);
-                float floorMinY = (float)MathHelper.Floor(BoundingBox.MinY);
+                float floorMinY = MathHelper.Floor(BoundingBox.MinY);
 
-                double xOffset;
-                double zOffset;
-                for (int i = 0; (float)i < 1.0F + Width * 20.0F; ++i)
+                for (int i = 0; i < 1.0F + Width * 20.0F; ++i)
                 {
-                    xOffset = (Random.NextFloat() * 2.0F - 1.0F) * Width;
-                    zOffset = (Random.NextFloat() * 2.0F - 1.0F) * Width;
+                    double xOffset = (Random.NextFloat() * 2.0F - 1.0F) * Width;
+                    double zOffset = (Random.NextFloat() * 2.0F - 1.0F) * Width;
                     World.Broadcaster.AddParticle("bubble", X + xOffset, floorMinY + 1.0D, Z + zOffset, VelocityX, VelocityY - Random.NextFloat() * 0.2D, VelocityZ);
 
                     xOffset = (Random.NextFloat() * 2.0F - 1.0F) * Width;
@@ -274,7 +279,7 @@ public abstract class Entity
             }
         }
 
-        if (IsTouchingLava())
+        if (IsTouchingLava)
         {
             SetOnFire();
         }
@@ -293,30 +298,24 @@ public abstract class Entity
         _firstTick = false;
     }
 
-    protected void SetOnFire()
+    private void SetOnFire()
     {
-        if (!IsImmuneToFire)
-        {
-            Damage((Entity)null, 4);
-            FireTicks = 600;
-        }
-
+        if (IsImmuneToFire) return;
+        Damage(null, 4);
+        FireTicks = 600;
     }
 
-    protected virtual void TickInVoid()
-    {
-        MarkDead();
-    }
+    protected virtual void TickInVoid() => MarkDead();
 
-    public bool GetEntitiesInside(double x, double y, double z)
+    protected bool GetEntitiesInside(double x, double y, double z)
     {
         Box box = BoundingBox.Offset(x, y, z);
         List<Box> entitiesInbound = World.Entities.GetEntityCollisionsScratch(this, box);
-        return entitiesInbound.Count > 0 ? false : !World.Reader.IsMaterialInBox(box, m => m.IsFluid);
+        return entitiesInbound.Count <= 0 && !World.Reader.IsMaterialInBox(box, m => m.IsFluid);
     }
 
     /// <summary>
-    /// Move by a certain amount, making sure to handle collisions and the such.
+    ///     Move by a certain amount, making sure to handle collisions and the such.
     /// </summary>
     /// <param name="x"></param>
     /// <param name="y"></param>
@@ -347,15 +346,15 @@ public abstract class Entity
         if (NoClip)
         {
             BoundingBox.Translate(x, y, z);
-            this.X = (BoundingBox.MinX + BoundingBox.MaxX) / 2.0D;
-            this.Y = BoundingBox.MinY + (double)StandingEyeHeight - (double)CameraOffset;
-            this.Z = (BoundingBox.MinZ + BoundingBox.MaxZ) / 2.0D;
+            X = (BoundingBox.MinX + BoundingBox.MaxX) / 2.0D;
+            Y = BoundingBox.MinY + (double)StandingEyeHeight - (double)CameraOffset;
+            Z = (BoundingBox.MinZ + BoundingBox.MaxZ) / 2.0D;
         }
         else
         {
             CameraOffset *= 0.4F;
-            double mx = this.X;
-            double my = this.Z;
+            double mx = X;
+            double my = Z;
             if (Slowed)
             {
                 Slowed = false;
@@ -540,13 +539,13 @@ public abstract class Entity
                 }
             }
 
-            this.X = (BoundingBox.MinX + BoundingBox.MaxX) / 2.0D;
-            this.Y = BoundingBox.MinY + (double)StandingEyeHeight - (double)CameraOffset;
-            this.Z = (BoundingBox.MinZ + BoundingBox.MaxZ) / 2.0D;
-            HorizontalCollison = originalX != x || originalZ != z;
+            X = (BoundingBox.MinX + BoundingBox.MaxX) / 2.0D;
+            Y = BoundingBox.MinY + (double)StandingEyeHeight - (double)CameraOffset;
+            Z = (BoundingBox.MinZ + BoundingBox.MaxZ) / 2.0D;
+            HorizontalCollision = originalX != x || originalZ != z;
             VerticalCollision = originalY != y;
             OnGround = originalY != y && originalY < 0.0D;
-            HasCollided = HorizontalCollison || VerticalCollision;
+            HasCollided = HorizontalCollision || VerticalCollision;
             Fall(y, OnGround);
             if (originalX != x)
             {
@@ -563,8 +562,8 @@ public abstract class Entity
                 VelocityZ = 0.0D;
             }
 
-            originalStepX = this.X - mx;
-            originalStepZ = this.Z - my;
+            originalStepX = X - mx;
+            originalStepZ = Z - my;
             int blockY;
             int blockX;
             int blockZ;
@@ -574,9 +573,9 @@ public abstract class Entity
 
                 if (OnGround)
                 {
-                    blockX = MathHelper.Floor(this.X);
-                    blockY = MathHelper.Floor(this.Y - (double)0.2F - (double)StandingEyeHeight);
-                    blockZ = MathHelper.Floor(this.Z);
+                    blockX = MathHelper.Floor(X);
+                    blockY = MathHelper.Floor(Y - (double)0.2F - (double)StandingEyeHeight);
+                    blockZ = MathHelper.Floor(Z);
                     blockId = World.Reader.GetBlockId(blockX, blockY, blockZ);
                     if (World.Reader.GetBlockId(blockX, blockY - 1, blockZ) == Block.Fence.id)
                     {
@@ -626,7 +625,7 @@ public abstract class Entity
                 }
             }
 
-            bool wet = IsWet();
+            bool wet = IsWet;
             if (World.Reader.IsMaterialInBox(BoundingBox.Contract(0.001D, 0.001D, 0.001D), m => m == Material.Fire || m == Material.Lava))
             {
                 Damage(1);
@@ -653,32 +652,27 @@ public abstract class Entity
         }
     }
 
-    protected virtual bool BypassesSteppingEffects()
-    {
-        return true;
-    }
+    protected virtual bool BypassesSteppingEffects() => true;
 
     protected virtual void Fall(double fallDistance, bool onGround)
     {
         if (onGround)
         {
-            if (this.FallDistance > 0.0F)
+            if (!(FallDistance > 0.0F))
             {
-                OnLanding(this.FallDistance);
-                this.FallDistance = 0.0F;
+                return;
             }
+
+            OnLanding(FallDistance);
+            FallDistance = 0.0F;
         }
         else if (fallDistance < 0.0D)
         {
-            this.FallDistance = (float)((double)this.FallDistance - fallDistance);
+            FallDistance = (float)(FallDistance - fallDistance);
         }
-
     }
 
-    public virtual Box? GetBoundingBox()
-    {
-        return null;
-    }
+    public virtual Box? GetBoundingBox() => null;
 
     protected virtual void Damage(int amt)
     {
@@ -686,87 +680,56 @@ public abstract class Entity
         {
             Damage(null, amt);
         }
-
     }
 
-    protected virtual void OnLanding(float fallDistance)
-    {
-        if (Passenger != null)
-        {
-            Passenger.OnLanding(fallDistance);
-        }
+    protected virtual void OnLanding(float fallDistance) => Passenger?.OnLanding(fallDistance);
 
-    }
-
-    public bool IsWet()
-    {
-        return InWater || World.Environment.IsRainingAt(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
-    }
-
-    public virtual bool IsInWater()
-    {
-        return InWater;
-    }
-
-    public virtual bool CheckWaterCollisions()
-    {
-        return World.Reader.UpdateMovementInFluid(BoundingBox.Expand(0.0D, (double)-0.4F, 0.0D).Contract(0.001D, 0.001D, 0.001D), Material.Water, this);
-    }
+    public virtual bool CheckWaterCollisions() => World.Reader.UpdateMovementInFluid(BoundingBox.Expand(0.0D, -0.4F, 0.0D).Contract(0.001D, 0.001D, 0.001D), Material.Water, this);
 
     public bool IsInFluid(Material mat)
     {
-        double eyeY = Y + (double)GetEyeHeight();
+        double eyeY = Y + EyeHeight;
         int floorX = MathHelper.Floor(X);
-        int floorEyeY = MathHelper.Floor((float)MathHelper.Floor(eyeY));
+        int floorEyeY = MathHelper.Floor(MathHelper.Floor(eyeY));
         int floorZ = MathHelper.Floor(Z);
         int id = World.Reader.GetBlockId(floorX, floorEyeY, floorZ);
         if (id != 0 && Block.Blocks[id].material == mat)
         {
             float fluidHeight = BlockFluid.getFluidHeightFromMeta(World.Reader.GetBlockMeta(floorX, floorEyeY, floorZ)) - 1.0F / 9.0F;
-            float fluidSurfaceY = (float)(floorEyeY + 1) - fluidHeight;
-            return eyeY < (double)fluidSurfaceY;
+            float fluidSurfaceY = floorEyeY + 1 - fluidHeight;
+            return eyeY < fluidSurfaceY;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
-    public virtual float GetEyeHeight()
-    {
-        return 0.0F;
-    }
-
-    public bool IsTouchingLava()
-    {
-        return World.Reader.IsMaterialInBox(BoundingBox.Expand(-0.1F, -0.4F, -0.1F), m => m == Material.Lava);
-    }
-
-    public void MoveNonSolid(float strafe, float forward, float speed)
+    protected void MoveNonSolid(float strafe, float forward, float speed)
     {
         float inputLength = MathHelper.Sqrt(strafe * strafe + forward * forward);
-        if (inputLength >= 0.01F)
+        if (!(inputLength >= 0.01F))
         {
-            if (inputLength < 1.0F)
-            {
-                inputLength = 1.0F;
-            }
-
-            inputLength = speed / inputLength;
-            strafe *= inputLength;
-            forward *= inputLength;
-            float sinYaw = MathHelper.Sin(Yaw * (float)System.Math.PI / 180.0F);
-            float cosYaw = MathHelper.Cos(Yaw * (float)System.Math.PI / 180.0F);
-            VelocityX += (double)(strafe * cosYaw - forward * sinYaw);
-            VelocityZ += (double)(forward * cosYaw + strafe * sinYaw);
+            return;
         }
+
+        if (inputLength < 1.0F)
+        {
+            inputLength = 1.0F;
+        }
+
+        inputLength = speed / inputLength;
+        strafe *= inputLength;
+        forward *= inputLength;
+        float sinYaw = MathHelper.Sin(Yaw * (float)Math.PI / 180.0F);
+        float cosYaw = MathHelper.Cos(Yaw * (float)Math.PI / 180.0F);
+        VelocityX += strafe * cosYaw - forward * sinYaw;
+        VelocityZ += forward * cosYaw + strafe * sinYaw;
     }
 
-    public virtual float GetBrightnessAtEyes(float tickDelta)
+    public float GetBrightnessAtEyes(float tickDelta)
     {
         int floorX = MathHelper.Floor(X);
         double eyeOffset = (BoundingBox.MaxY - BoundingBox.MinY) * 0.66D;
-        int floorY = MathHelper.Floor(Y - (double)StandingEyeHeight + eyeOffset);
+        int floorY = MathHelper.Floor(Y - StandingEyeHeight + eyeOffset);
         int floorZ = MathHelper.Floor(Z);
 
         int minX = MathHelper.Floor(BoundingBox.MinX);
@@ -780,36 +743,31 @@ public abstract class Entity
         minY = Math.Clamp(minY, 0, h);
         maxY = Math.Clamp(maxY, 0, h);
 
-        if (World.ChunkHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
-        {
-            float lum = World.Lighting.GetLuminance(floorX, floorY, floorZ);
-            if (lum < MinBrightness)
-            {
-                lum = MinBrightness;
-            }
-
-            return lum;
-        }
-        else
+        if (!World.ChunkHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
         {
             return MinBrightness;
         }
+
+        float lum = World.Lighting.GetLuminance(floorX, floorY, floorZ);
+        if (lum < MinBrightness)
+        {
+            lum = MinBrightness;
+        }
+
+        return lum;
     }
 
-    public virtual void SetWorld(IWorldContext world)
-    {
-        this.World = world;
-    }
+    public virtual void SetWorld(IWorldContext world) => World = world;
 
     public void SetPositionAndAngles(double x, double y, double z, float yaw, float pitch)
     {
-        PrevX = this.X = x;
-        PrevY = this.Y = y;
-        PrevZ = this.Z = z;
-        PrevYaw = this.Yaw = yaw;
-        PrevPitch = this.Pitch = pitch;
+        PrevX = X = x;
+        PrevY = Y = y;
+        PrevZ = Z = z;
+        PrevYaw = Yaw = yaw;
+        PrevPitch = Pitch = pitch;
         CameraOffset = 0.0F;
-        double diff = (double)(PrevYaw - yaw);
+        double diff = PrevYaw - yaw;
         if (diff < -180.0D)
         {
             PrevYaw += 360.0F;
@@ -820,18 +778,18 @@ public abstract class Entity
             PrevYaw -= 360.0F;
         }
 
-        SetPosition(this.X, this.Y, this.Z);
+        SetPosition(X, Y, Z);
         SetRotation(yaw, pitch);
     }
 
     public void SetPositionAndAnglesKeepPrevAngles(double x, double y, double z, float yaw, float pitch)
     {
-        LastTickX = PrevX = this.X = x;
-        LastTickY = PrevY = this.Y = y + (double)StandingEyeHeight;
-        LastTickZ = PrevZ = this.Z = z;
-        this.Yaw = yaw;
-        this.Pitch = pitch;
-        SetPosition(this.X, this.Y, this.Z);
+        LastTickX = PrevX = X = x;
+        LastTickY = PrevY = Y = y + StandingEyeHeight;
+        LastTickZ = PrevZ = Z = z;
+        Yaw = yaw;
+        Pitch = pitch;
+        SetPosition(X, Y, Z);
     }
 
     public double GetSquaredDistance(double x, double y, double z)
@@ -844,9 +802,9 @@ public abstract class Entity
 
     public double GetSquaredDistance(Entity entity) => GetSquaredDistance(entity.X, entity.Y, entity.Z);
 
-    public double GetDistance(double x, double y, double z) => (double)MathHelper.Sqrt(GetSquaredDistance(x, y, z));
+    public double GetDistance(double x, double y, double z) => MathHelper.Sqrt(GetSquaredDistance(x, y, z));
 
-    public float GetDistance(Entity entity) => (float) GetDistance(entity.X, entity.Y, entity.Z);
+    public float GetDistance(Entity entity) => (float)GetDistance(entity.X, entity.Y, entity.Z);
 
     public virtual void OnPlayerInteraction(EntityPlayer player)
     {
@@ -854,64 +812,79 @@ public abstract class Entity
 
     public virtual void OnCollision(Entity entity)
     {
-        if (entity.Passenger != this && entity.Vehicle != this)
+        if (Equals(entity.Passenger, this) || Equals(entity.Vehicle, this))
         {
-            double diffX = entity.X - X;
-            double diffY = entity.Z - Z;
-            double max = Math.Max(Math.Abs(diffX), Math.Abs(diffY));
-            if (max >= (double)0.01F)
-            {
-                max = (double)MathHelper.Sqrt(max);
-                diffX /= max;
-                diffY /= max;
-                double maxMulInverse = 1.0D / max;
-                if (maxMulInverse > 1.0D)
-                {
-                    maxMulInverse = 1.0D;
-                }
+            return;
+        }
 
-                diffX *= maxMulInverse;
-                diffY *= maxMulInverse;
-                diffX *= (double)0.05F;
-                diffY *= (double)0.05F;
-                diffX *= (double)(1.0F - PushSpeedReduction);
-                diffY *= (double)(1.0F - PushSpeedReduction);
-                const double maxHorizontalImpulsePerCollision = 0.05D;
-                const double maxHorizontalSpeed = 0.05D;
-                if (diffX > maxHorizontalImpulsePerCollision) diffX = maxHorizontalImpulsePerCollision;
-                else if (diffX < -maxHorizontalImpulsePerCollision) diffX = -maxHorizontalImpulsePerCollision;
+        double diffX = entity.X - X;
+        double diffY = entity.Z - Z;
+        double max = Math.Max(Math.Abs(diffX), Math.Abs(diffY));
+        if (!(max >= 0.01F))
+        {
+            return;
+        }
 
-                if (diffY > maxHorizontalImpulsePerCollision) diffY = maxHorizontalImpulsePerCollision;
-                else if (diffY < -maxHorizontalImpulsePerCollision) diffY = -maxHorizontalImpulsePerCollision;
+        max = MathHelper.Sqrt(max);
+        diffX /= max;
+        diffY /= max;
+        double maxMulInverse = 1.0D / max;
+        if (maxMulInverse > 1.0D)
+        {
+            maxMulInverse = 1.0D;
+        }
 
-                double impulseMag = MathHelper.Sqrt(diffX * diffX + diffY * diffY);
-                if (impulseMag > maxHorizontalImpulsePerCollision)
-                {
-                    double s = maxHorizontalImpulsePerCollision / impulseMag;
-                    diffX *= s;
-                    diffY *= s;
-                }
+        diffX *= maxMulInverse;
+        diffY *= maxMulInverse;
+        diffX *= 0.05F;
+        diffY *= 0.05F;
+        diffX *= 1.0F - PushSpeedReduction;
+        diffY *= 1.0F - PushSpeedReduction;
+        const double maxHorizontalImpulsePerCollision = 0.05D;
+        const double maxHorizontalSpeed = 0.05D;
+        if (diffX > maxHorizontalImpulsePerCollision)
+        {
+            diffX = maxHorizontalImpulsePerCollision;
+        }
+        else if (diffX < -maxHorizontalImpulsePerCollision)
+        {
+            diffX = -maxHorizontalImpulsePerCollision;
+        }
 
-                AddVelocity(-diffX, 0.0D, -diffY);
-                entity.AddVelocity(diffX, 0.0D, diffY);
+        if (diffY > maxHorizontalImpulsePerCollision)
+        {
+            diffY = maxHorizontalImpulsePerCollision;
+        }
+        else if (diffY < -maxHorizontalImpulsePerCollision)
+        {
+            diffY = -maxHorizontalImpulsePerCollision;
+        }
 
-                double speedThis = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
-                if (speedThis > maxHorizontalSpeed)
-                {
-                    double s = maxHorizontalSpeed / speedThis;
-                    VelocityX *= s;
-                    VelocityZ *= s;
-                }
+        double impulseMag = MathHelper.Sqrt(diffX * diffX + diffY * diffY);
+        if (impulseMag > maxHorizontalImpulsePerCollision)
+        {
+            double s = maxHorizontalImpulsePerCollision / impulseMag;
+            diffX *= s;
+            diffY *= s;
+        }
 
-                double speedOther = MathHelper.Sqrt(entity.VelocityX * entity.VelocityX + entity.VelocityZ * entity.VelocityZ);
-                if (speedOther > maxHorizontalSpeed)
-                {
-                    double s = maxHorizontalSpeed / speedOther;
-                    entity.VelocityX *= s;
-                    entity.VelocityZ *= s;
-                }
-            }
+        AddVelocity(-diffX, 0.0D, -diffY);
+        entity.AddVelocity(diffX, 0.0D, diffY);
 
+        double speedThis = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
+        if (speedThis > maxHorizontalSpeed)
+        {
+            double s = maxHorizontalSpeed / speedThis;
+            VelocityX *= s;
+            VelocityZ *= s;
+        }
+
+        double speedOther = MathHelper.Sqrt(entity.VelocityX * entity.VelocityX + entity.VelocityZ * entity.VelocityZ);
+        if (speedOther > maxHorizontalSpeed)
+        {
+            double s = maxHorizontalSpeed / speedOther;
+            entity.VelocityX *= s;
+            entity.VelocityZ *= s;
         }
     }
 
@@ -922,10 +895,7 @@ public abstract class Entity
         VelocityZ += vz;
     }
 
-    protected void ScheduleVelocityUpdate()
-    {
-        VelocityModified = true;
-    }
+    protected void ScheduleVelocityUpdate() => VelocityModified = true;
 
     public virtual bool Damage(Entity? entity, int amount)
     {
@@ -933,61 +903,37 @@ public abstract class Entity
         return false;
     }
 
-    public virtual bool IsCollidable()
-    {
-        return false;
-    }
-
-    public virtual bool IsPushable()
-    {
-        return false;
-    }
-
     public virtual void UpdateKilledAchievement(Entity entity, int score)
     {
     }
 
-    public virtual bool ShouldRender(Vec3D vec)
-    {
-        double diffX = X - vec.x;
-        double diffY = Y - vec.y;
-        double diffZ = Z - vec.z;
-        double squaredDistance = diffX * diffX + diffY * diffY + diffZ * diffZ;
-        return ShouldRender(GetSquaredDistance(vec.x, vec.y, vec.z));
-    }
+    public virtual bool ShouldRender(Vec3D vec) => ShouldRender(GetSquaredDistance(vec.x, vec.y, vec.z));
 
-    public virtual bool ShouldRender(double sqDist)
+    protected virtual bool ShouldRender(double sqDist)
     {
-        double renderDistance = BoundingBox.AverageEdgeLength;
-        renderDistance *= 64.0D * RenderDistanceWeight;
-        return sqDist < renderDistance * renderDistance;
-    }
-
-    public virtual string GetTexture()
-    {
-        return null;
+        double edgeLength = BoundingBox.AverageEdgeLength;
+        edgeLength *= 64.0D * RenderDistanceWeight;
+        return sqDist < edgeLength * edgeLength;
     }
 
     public bool SaveSelfNbt(NBTTagCompound nbt)
     {
-        string id = GetRegistryEntry();
-        if (!Dead && id != null)
-        {
-            nbt.SetString("id", id);
-            Write(nbt);
-            return true;
-        }
-        else
+        string? id = GetRegistryEntry();
+        if (Dead || id == null)
         {
             return false;
         }
+
+        nbt.SetString("id", id);
+        Write(nbt);
+        return true;
     }
 
     public void Write(NBTTagCompound nbt)
     {
-        nbt.SetTag("Pos", NewDoubleNBTList(X, Y + (double)CameraOffset, Z));
-        nbt.SetTag("Motion", NewDoubleNBTList(VelocityX, VelocityY, VelocityZ));
-        nbt.SetTag("Rotation", NewFloatNBTList(Yaw, Pitch));
+        nbt.SetTag("Pos", newDoubleNbtList(X, Y + CameraOffset, Z));
+        nbt.SetTag("Motion", newDoubleNbtList(VelocityX, VelocityY, VelocityZ));
+        nbt.SetTag("Rotation", newFloatNbtList(Yaw, Pitch));
         nbt.SetFloat("FallDistance", FallDistance);
         nbt.SetShort("Fire", (short)FireTicks);
         nbt.SetShort("Air", (short)Air);
@@ -1000,9 +946,11 @@ public abstract class Entity
         NBTTagList pos = nbt.GetTagList("Pos");
         NBTTagList mot = nbt.GetTagList("Motion");
         NBTTagList rot = nbt.GetTagList("Rotation");
+
         VelocityX = ((NBTTagDouble)mot.TagAt(0)).Value;
         VelocityY = ((NBTTagDouble)mot.TagAt(1)).Value;
         VelocityZ = ((NBTTagDouble)mot.TagAt(2)).Value;
+
         if (Math.Abs(VelocityX) > 10.0D)
         {
             VelocityX = 0.0D;
@@ -1021,87 +969,73 @@ public abstract class Entity
         PrevX = LastTickX = X = ((NBTTagDouble)pos.TagAt(0)).Value;
         PrevY = LastTickY = Y = ((NBTTagDouble)pos.TagAt(1)).Value;
         PrevZ = LastTickZ = Z = ((NBTTagDouble)pos.TagAt(2)).Value;
+
         PrevYaw = Yaw = ((NBTTagFloat)rot.TagAt(0)).Value;
         PrevPitch = Pitch = ((NBTTagFloat)rot.TagAt(1)).Value;
+
         FallDistance = nbt.GetFloat("FallDistance");
         FireTicks = nbt.GetShort("Fire");
         Air = nbt.GetShort("Air");
         OnGround = nbt.GetBoolean("OnGround");
+
         SetPosition(X, Y, Z);
         SetRotation(Yaw, Pitch);
         ReadNbt(nbt);
     }
 
-    protected string? GetRegistryEntry()
-    {
-        return Type?.Id;
-    }
+    private string? GetRegistryEntry() => Type?.Id;
 
-    public abstract void ReadNbt(NBTTagCompound nbt);
+    protected abstract void ReadNbt(NBTTagCompound nbt);
 
-    public abstract void WriteNbt(NBTTagCompound nbt);
+    protected abstract void WriteNbt(NBTTagCompound nbt);
 
-    protected static NBTTagList NewDoubleNBTList(params double[] arr)
+    private static NBTTagList newDoubleNbtList(params double[] arr)
     {
         NBTTagList nbt = new();
-
-        for (int i = 0; i < arr.Length; ++i)
+        foreach (double t in arr)
         {
-            nbt.SetTag(new NBTTagDouble(arr[i]));
+            nbt.SetTag(new NBTTagDouble(t));
         }
 
         return nbt;
     }
 
-    protected static NBTTagList NewFloatNBTList(params float[] arr)
+    private static NBTTagList newFloatNbtList(params float[] arr)
     {
         NBTTagList nbt = new();
-
-        for (int i = 0; i < arr.Length; ++i)
+        foreach (float t in arr)
         {
-            nbt.SetTag(new NBTTagFloat(arr[i]));
+            nbt.SetTag(new NBTTagFloat(t));
         }
 
         return nbt;
     }
 
-    public virtual float GetShadowRadius()
-    {
-        return Height / 2.0F;
-    }
+    public virtual float GetShadowRadius() => Height / 2.0F;
 
-    public EntityItem DropItem(int id, int count)
-    {
-        return DropItem(id, count, 0.0F);
-    }
+    protected void DropItem(int id, int count) => DropItem(id, count, 0.0F);
 
-    public EntityItem DropItem(int id, int count, float y)
-    {
-        return DropItem(new ItemStack(id, count, 0), y);
-    }
+    protected EntityItem DropItem(int id, int count, float y) => DropItem(new ItemStack(id, count, 0), y);
 
-    public EntityItem DropItem(ItemStack stack, float y)
+    protected EntityItem DropItem(ItemStack stack, float y)
     {
-        EntityItem item = new EntityItem(World, X, Y + (double)y, Z, stack);
-        item.delayBeforeCanPickup = 10;
+        EntityItem item = new(World, X, Y + y, Z, stack)
+        {
+            DelayBeforeCanPickup = 10
+        };
         World.SpawnEntity(item);
         return item;
-    }
-
-    public virtual bool IsAlive()
-    {
-        return !Dead;
     }
 
     public virtual bool IsInsideWall()
     {
         for (int i = 0; i < 8; ++i)
         {
-            float offsetX = ((float)((i >> 0) % 2) - 0.5F) * Width * 0.9F;
-            float offsetY = ((float)((i >> 1) % 2) - 0.5F) * 0.1F;
-            float offsetZ = ((float)((i >> 2) % 2) - 0.5F) * Width * 0.9F;
+            float offsetX = (((i >> 0) % 2) - 0.5F) * Width * 0.9F;
+            float offsetY = (((i >> 1) % 2) - 0.5F) * 0.1F;
+            float offsetZ = (((i >> 2) % 2) - 0.5F) * Width * 0.9F;
             int x = MathHelper.Floor(X + (double)offsetX);
-            int y = MathHelper.Floor(Y + (double)GetEyeHeight() + (double)offsetY);
+            int y = MathHelper.Floor(Y + (double)EyeHeight + (double)offsetY);
             int z = MathHelper.Floor(Z + (double)offsetZ);
             if (World.Reader.ShouldSuffocate(x, y, z))
             {
@@ -1112,99 +1046,50 @@ public abstract class Entity
         return false;
     }
 
-    public virtual bool Interact(EntityPlayer player)
-    {
-        return false;
-    }
+    public virtual bool Interact(EntityPlayer player) => false;
 
-    public virtual Box? GetCollisionAgainstShape(Entity entity)
-    {
-        return null;
-    }
+    public virtual Box? GetCollisionAgainstShape(Entity entity) => null;
 
     public virtual void TickRiding()
     {
-        if (Vehicle.Dead)
+        if (Vehicle is { Dead: true })
         {
             Vehicle = null;
+            return;
         }
-        else
-        {
-            VelocityX = 0.0D;
-            VelocityY = 0.0D;
-            VelocityZ = 0.0D;
-            Tick();
-            if (Vehicle != null)
-            {
-                Vehicle.UpdatePassengerPosition();
-                _vehicleYawDelta += (double)(Vehicle.Yaw - Vehicle.PrevYaw);
 
-                for (_vehiclePitchDelta += (double)(Vehicle.Pitch - Vehicle.PrevPitch); _vehicleYawDelta >= 180.0D; _vehicleYawDelta -= 360.0D)
-                {
-                }
+        VelocityX = 0.0D;
+        VelocityY = 0.0D;
+        VelocityZ = 0.0D;
+        Tick();
+        if (Vehicle == null) return;
 
-                while (_vehicleYawDelta < -180.0D)
-                {
-                    _vehicleYawDelta += 360.0D;
-                }
+        Vehicle.UpdatePassengerPosition();
+        _vehicleYawDelta += Vehicle.Yaw - Vehicle.PrevYaw;
 
-                while (_vehiclePitchDelta >= 180.0D)
-                {
-                    _vehiclePitchDelta -= 360.0D;
-                }
+        _vehiclePitchDelta += Vehicle.Pitch - Vehicle.PrevPitch;
 
-                while (_vehiclePitchDelta < -180.0D)
-                {
-                    _vehiclePitchDelta += 360.0D;
-                }
+        while (_vehicleYawDelta >= 180.0D) _vehicleYawDelta -= 360.0D;
+        while (_vehicleYawDelta < -180.0D) _vehicleYawDelta += 360.0D;
+        while (_vehiclePitchDelta >= 180.0D) _vehiclePitchDelta -= 360.0D;
+        while (_vehiclePitchDelta < -180.0D) _vehiclePitchDelta += 360.0D;
 
-                double yawDelta = _vehicleYawDelta * 0.5D;
-                double pitchDelta = _vehiclePitchDelta * 0.5D;
-                double limit = 10.0F;
-                if (yawDelta > limit)
-                {
-                    yawDelta = limit;
-                }
+        double yawDelta = _vehicleYawDelta * 0.5D;
+        double pitchDelta = _vehiclePitchDelta * 0.5D;
+        const double limit = 10.0F;
+        if (yawDelta > limit) yawDelta = limit;
+        if (yawDelta < -limit) yawDelta = -limit;
+        if (pitchDelta < -limit) pitchDelta = -limit;
 
-                if (yawDelta < -limit)
-                {
-                    yawDelta = -limit;
-                }
-
-                if (pitchDelta > limit)
-                {
-                    pitchDelta = limit;
-                }
-
-                if (pitchDelta < limit)
-                {
-                    pitchDelta = limit;
-                }
-
-                _vehicleYawDelta -= yawDelta;
-                _vehiclePitchDelta -= pitchDelta;
-                Yaw = (float)((double)Yaw + yawDelta);
-                Pitch = (float)((double)Pitch + pitchDelta);
-            }
-        }
+        _vehicleYawDelta -= yawDelta;
+        _vehiclePitchDelta -= pitchDelta;
+        Yaw = (float)(Yaw + yawDelta);
+        Pitch = (float)(Pitch + pitchDelta);
     }
 
-    public virtual void UpdatePassengerPosition()
-    {
-        Passenger.SetPosition(X, Y + GetPassengerRidingHeight() + Passenger.GetStandingEyeHeight(), Z);
-    }
+    public virtual void UpdatePassengerPosition() => Passenger?.SetPosition(X, Y + PassengerRidingHeight + Passenger.StandingEyeHeight, Z);
 
-    public virtual double GetStandingEyeHeight()
-    {
-        return (double)StandingEyeHeight;
-    }
-
-    public virtual double GetPassengerRidingHeight()
-    {
-        return (double)Height * 0.75D;
-    }
-
-    public virtual void SetVehicle(Entity entity)
+    public virtual void SetVehicle(Entity? entity)
     {
         _vehiclePitchDelta = 0.0D;
         _vehicleYawDelta = 0.0D;
@@ -1212,30 +1097,22 @@ public abstract class Entity
         {
             if (Vehicle != null)
             {
-                SetPositionAndAnglesKeepPrevAngles(Vehicle.X, Vehicle.BoundingBox.MinY + (double)Vehicle.Height, Vehicle.Z, Yaw, Pitch);
+                SetPositionAndAnglesKeepPrevAngles(Vehicle.X, Vehicle.BoundingBox.MinY + Vehicle.Height, Vehicle.Z, Yaw, Pitch);
                 Vehicle.Passenger = null;
             }
 
             Vehicle = null;
         }
-        else if (Vehicle == entity)
+        else if (Equals(Vehicle, entity))
         {
             Vehicle.Passenger = null;
             Vehicle = null;
-            SetPositionAndAnglesKeepPrevAngles(entity.X, entity.BoundingBox.MinY + (double)entity.Height, entity.Z, Yaw, Pitch);
+            SetPositionAndAnglesKeepPrevAngles(entity.X, entity.BoundingBox.MinY + entity.Height, entity.Z, Yaw, Pitch);
         }
         else
         {
-            if (Vehicle != null)
-            {
-                Vehicle.Passenger = null;
-            }
-
-            if (entity.Passenger != null)
-            {
-                entity.Passenger.Vehicle = null;
-            }
-
+            Vehicle?.Passenger = null;
+            entity.Passenger?.Vehicle = null;
             Vehicle = entity;
             entity.Passenger = this;
         }
@@ -1245,33 +1122,20 @@ public abstract class Entity
     {
         SetPosition(x, y, z);
         SetRotation(yaw, pitch);
-        var collisions = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
-        if (collisions.Count > 0)
+        List<Box> collisions = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
+        if (collisions.Count <= 0) return;
+
+        double maxMaxY = 0.0D;
+        foreach (Box box in collisions)
         {
-            double maxMaxY = 0.0D;
-
-            for (int i = 0; i < collisions.Count; ++i)
+            if (box.MaxY > maxMaxY)
             {
-                Box box = collisions[i];
-                if (box.MaxY > maxMaxY)
-                {
-                    maxMaxY = box.MaxY;
-                }
+                maxMaxY = box.MaxY;
             }
-
-            y += maxMaxY - BoundingBox.MinY;
-            SetPosition(x, y, z);
         }
-    }
 
-    public virtual float GetTargetingMargin()
-    {
-        return 0.1F;
-    }
-
-    public virtual Vec3D? GetLookVector()
-    {
-        return null;
+        y += maxMaxY - BoundingBox.MinY;
+        SetPosition(x, y, z);
     }
 
     public virtual void TickPortalCooldown()
@@ -1285,7 +1149,7 @@ public abstract class Entity
         VelocityZ = vz;
     }
 
-    public virtual void ProcessServerEntityStatus(sbyte statusID)
+    public virtual void ProcessServerEntityStatus(sbyte statusId)
     {
     }
 
@@ -1297,53 +1161,22 @@ public abstract class Entity
     {
     }
 
-    public virtual void SetEquipmentStack(int slotIndex, int itemID, int damage)
+    public virtual void SetEquipmentStack(int slotIndex, int itemId, int damage)
     {
     }
 
-    public bool IsOnFire()
-    {
-        return FireTicks > 0 || GetFlag(0);
-    }
+    public virtual bool IsSneaking() => GetFlag(1);
 
-    public bool HasVehicle()
-    {
-        return Vehicle != null || GetFlag(2);
-    }
+    public void SetSneaking(bool sneaking) => SetFlag(1, sneaking);
 
-    public virtual ItemStack[] GetEquipment()
-    {
-        return null;
-    }
+    private bool GetFlag(int index) => (_flags.Value & (1 << index)) != 0;
 
-    public virtual bool IsSneaking()
-    {
-        return GetFlag(1);
-    }
-
-    public void SetSneaking(bool sneaking)
-    {
-        SetFlag(1, sneaking);
-    }
-
-    protected bool GetFlag(int index)
-    {
-        return (_flags.Value & (1 << index)) != 0;
-    }
-
-    protected void SetFlag(int index, bool value)
+    private void SetFlag(int index, bool value)
     {
         byte oldValue = _flags.Value;
         byte newValue;
-        if (value)
-        {
-            newValue = (byte)(oldValue | (1 << index));
-        }
-        else
-        {
-            newValue = (byte)(oldValue & ~(1 << index));
-        }
-
+        if (value) newValue = (byte)(oldValue | (1 << index));
+        else newValue = (byte)(oldValue & ~(1 << index));
         _flags.Value = newValue;
     }
 
@@ -1351,24 +1184,17 @@ public abstract class Entity
     {
         Damage(5);
         ++FireTicks;
-        if (FireTicks == 0)
-        {
-            FireTicks = 300;
-        }
-
+        if (FireTicks == 0) FireTicks = 300;
     }
 
-    public virtual void OnKillOther(EntityLiving other)
+    public virtual void OnKillOther(EntityLiving entityLiving)
     {
     }
 
     protected virtual bool PushOutOfBlocks(double x, double y, double z)
     {
         // Only players should attempt "push out of blocks".
-        if (this is not EntityPlayer)
-        {
-            return false;
-        }
+        if (this is not EntityPlayer) return false;
 
         int floorX = MathHelper.Floor(x);
         int floorY = MathHelper.Floor(y);
@@ -1376,94 +1202,78 @@ public abstract class Entity
         double fracX = x - floorX;
         double fracY = y - floorY;
         double fracZ = z - floorZ;
-        if (World.Reader.ShouldSuffocate(floorX, floorY, floorZ))
+        if (!World.Reader.ShouldSuffocate(floorX, floorY, floorZ)) return false;
+
+        bool canPushWest = !World.Reader.ShouldSuffocate(floorX - 1, floorY, floorZ);
+        bool canPushEast = !World.Reader.ShouldSuffocate(floorX + 1, floorY, floorZ);
+        bool canPushDown = !World.Reader.ShouldSuffocate(floorX, floorY - 1, floorZ);
+        bool canPushUp = !World.Reader.ShouldSuffocate(floorX, floorY + 1, floorZ);
+        bool canPushNorth = !World.Reader.ShouldSuffocate(floorX, floorY, floorZ - 1);
+        bool canPushSouth = !World.Reader.ShouldSuffocate(floorX, floorY, floorZ + 1);
+        int pushDirection = -1;
+        double closestEdgeDistance = double.MaxValue;
+        if (canPushWest && fracX < closestEdgeDistance)
         {
-            bool canPushWest = !World.Reader.ShouldSuffocate(floorX - 1, floorY, floorZ);
-            bool canPushEast = !World.Reader.ShouldSuffocate(floorX + 1, floorY, floorZ);
-            bool canPushDown = !World.Reader.ShouldSuffocate(floorX, floorY - 1, floorZ);
-            bool canPushUp = !World.Reader.ShouldSuffocate(floorX, floorY + 1, floorZ);
-            bool canPushNorth = !World.Reader.ShouldSuffocate(floorX, floorY, floorZ - 1);
-            bool canPushSouth = !World.Reader.ShouldSuffocate(floorX, floorY, floorZ + 1);
-            int pushDirection = -1;
-            double closestEdgeDistance = 9999.0D;
-            if (canPushWest && fracX < closestEdgeDistance)
-            {
-                closestEdgeDistance = fracX;
-                pushDirection = 0;
-            }
+            closestEdgeDistance = fracX;
+            pushDirection = 0;
+        }
 
-            if (canPushEast && 1.0D - fracX < closestEdgeDistance)
-            {
-                closestEdgeDistance = 1.0D - fracX;
-                pushDirection = 1;
-            }
+        if (canPushEast && 1.0D - fracX < closestEdgeDistance)
+        {
+            closestEdgeDistance = 1.0D - fracX;
+            pushDirection = 1;
+        }
 
-            if (canPushDown && fracY < closestEdgeDistance)
-            {
-                closestEdgeDistance = fracY;
-                pushDirection = 2;
-            }
+        if (canPushDown && fracY < closestEdgeDistance)
+        {
+            closestEdgeDistance = fracY;
+            pushDirection = 2;
+        }
 
-            if (canPushUp && 1.0D - fracY < closestEdgeDistance)
-            {
-                closestEdgeDistance = 1.0D - fracY;
-                pushDirection = 3;
-            }
+        if (canPushUp && 1.0D - fracY < closestEdgeDistance)
+        {
+            closestEdgeDistance = 1.0D - fracY;
+            pushDirection = 3;
+        }
 
-            if (canPushNorth && fracZ < closestEdgeDistance)
-            {
-                closestEdgeDistance = fracZ;
-                pushDirection = 4;
-            }
+        if (canPushNorth && fracZ < closestEdgeDistance)
+        {
+            closestEdgeDistance = fracZ;
+            pushDirection = 4;
+        }
 
-            if (canPushSouth && 1.0D - fracZ < closestEdgeDistance)
-            {
-                closestEdgeDistance = 1.0D - fracZ;
-                pushDirection = 5;
-            }
+        if (canPushSouth && 1.0D - fracZ < closestEdgeDistance)
+        {
+            pushDirection = 5;
+        }
 
-            float pushStrength = Random.NextFloat() * 0.2F + 0.1F;
-            if (pushDirection == 0)
-            {
-                VelocityX = (double)(-pushStrength);
-            }
-
-            if (pushDirection == 1)
-            {
-                VelocityX = (double)pushStrength;
-            }
-
-            if (pushDirection == 2)
-            {
-                VelocityY = (double)(-pushStrength);
-            }
-
-            if (pushDirection == 3)
-            {
-                VelocityY = (double)pushStrength;
-            }
-
-            if (pushDirection == 4)
-            {
-                VelocityZ = (double)(-pushStrength);
-            }
-
-            if (pushDirection == 5)
-            {
-                VelocityZ = (double)pushStrength;
-            }
+        float pushStrength = Random.NextFloat() * 0.2F + 0.1F;
+        switch (pushDirection)
+        {
+            case 0:
+                VelocityX = -pushStrength;
+                break;
+            case 1:
+                VelocityX = pushStrength;
+                break;
+            case 2:
+                VelocityY = -pushStrength;
+                break;
+            case 3:
+                VelocityY = pushStrength;
+                break;
+            case 4:
+                VelocityZ = -pushStrength;
+                break;
+            case 5:
+                VelocityZ = pushStrength;
+                break;
         }
 
         return false;
     }
 
-    public override bool Equals(object other)
-    {
-        return other is Entity e && e.ID == ID;
-    }
+    public override bool Equals(object? other) => other is Entity e && e.ID == ID;
 
-    public override int GetHashCode()
-    {
-        return ID;
-    }
+    public override int GetHashCode() => ID;
 }

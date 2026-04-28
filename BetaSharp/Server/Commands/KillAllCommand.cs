@@ -43,7 +43,7 @@ public class KillAllCommand : Command.Command
                     (byte)TypeFilter.Hostile => entity is EntityMonster,
                     (byte)TypeFilter.Friendly => entity is EntityAnimal,
                     (byte)TypeFilter.Item => entity is EntityItem,
-                    (byte)TypeFilter.Tnt => entity is EntityTNTPrimed,
+                    (byte)TypeFilter.Tnt => entity is EntityTntPrimed,
                     _ => EntityRegistry.GetId(entity)?.Equals(filter, StringComparison.OrdinalIgnoreCase) ?? false
                 };
 

@@ -44,7 +44,7 @@ public class HeldItemRenderer
             int tileSize = _game.TextureManager.GetAtlasTileSize(texPath);
 
             Tessellator tessellator = Tessellator.instance;
-            int iconIndex = entity.getItemStackTextureId(item);
+            int iconIndex = entity.GetItemStackTextureId(item);
             float minU = (iconIndex % 16 * 16 + 0.0F) / 256.0F;
             float maxU = (iconIndex % 16 * 16 + 15.99F) / 256.0F;
             float minV = (iconIndex / 16 * 16 + 0.0F) / 256.0F;
@@ -177,7 +177,7 @@ public class HeldItemRenderer
         {
             GLManager.GL.PushMatrix();
             baseScale = 0.8F;
-            float swingProgress = player.getSwingProgress(tickDelta);
+            float swingProgress = player.GetSwingProgress(tickDelta);
             sineSwing = MathHelper.Sin(swingProgress * (float)Math.PI);
             sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI);
             GLManager.GL.Translate(-sqrtSwing * 0.4F, MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI * 2.0F) * 0.2F, -sineSwing * 0.2F);
@@ -216,7 +216,7 @@ public class HeldItemRenderer
                 GLManager.GL.PopMatrix();
             }
 
-            sineSwing = player.getSwingProgress(tickDelta);
+            sineSwing = player.GetSwingProgress(tickDelta);
             sqrtSwing = MathHelper.Sin(sineSwing * sineSwing * (float)Math.PI);
             float secondarySwing = MathHelper.Sin(MathHelper.Sqrt(sineSwing) * (float)Math.PI);
             GLManager.GL.Rotate(-sqrtSwing * 20.0F, 0.0F, 1.0F, 0.0F);
@@ -247,14 +247,14 @@ public class HeldItemRenderer
         {
             GLManager.GL.PushMatrix();
             baseScale = 0.8F;
-            red = player.getSwingProgress(tickDelta);
+            red = player.GetSwingProgress(tickDelta);
             sineSwing = MathHelper.Sin(red * (float)Math.PI);
             sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI);
             GLManager.GL.Translate(-sqrtSwing * 0.4F, MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI * 2.0F) * 0.2F, -sineSwing * 0.2F);
             GLManager.GL.Translate(0.7F * baseScale, -0.65F * baseScale - (1.0F - equipProgress) * 0.6F, -0.9F * baseScale);
             GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Enable(GLEnum.RescaleNormal);
-            red = player.getSwingProgress(tickDelta);
+            red = player.GetSwingProgress(tickDelta);
             sineSwing = MathHelper.Sin(red * red * (float)Math.PI);
             sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI);
             GLManager.GL.Rotate(-sineSwing * 20.0F, 0.0F, 1.0F, 0.0F);
@@ -274,14 +274,14 @@ public class HeldItemRenderer
         {
             GLManager.GL.PushMatrix();
             baseScale = 0.8F;
-            red = player.getSwingProgress(tickDelta);
+            red = player.GetSwingProgress(tickDelta);
             sineSwing = MathHelper.Sin(red * (float)Math.PI);
             sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI);
             GLManager.GL.Translate(-sqrtSwing * 0.3F, MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI * 2.0F) * 0.4F, -sineSwing * 0.4F);
             GLManager.GL.Translate(0.8F * baseScale, -(12.0F / 16.0F) * baseScale - (1.0F - equipProgress) * 0.6F, -0.9F * baseScale);
             GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Enable(GLEnum.RescaleNormal);
-            red = player.getSwingProgress(tickDelta);
+            red = player.GetSwingProgress(tickDelta);
             sineSwing = MathHelper.Sin(red * red * (float)Math.PI);
             sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI);
             GLManager.GL.Rotate(sqrtSwing * 70.0F, 0.0F, 1.0F, 0.0F);
@@ -309,7 +309,7 @@ public class HeldItemRenderer
     {
         GLManager.GL.Disable(GLEnum.AlphaTest);
         int blockX;
-        if (_game.Player.IsOnFire())
+        if (_game.Player.IsOnFire)
         {
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/terrain.png"));
             renderFireInFirstPerson(tickDelta);
@@ -454,8 +454,8 @@ public class HeldItemRenderer
     {
         prevEquippedProgress = equippedProgress;
         ClientPlayerEntity player = _game.Player;
-        ItemStack heldStack = player.inventory.GetItemInHand();
-        bool sameItem = field_20099_f == player.inventory.SelectedSlot && heldStack == itemToRender;
+        ItemStack heldStack = player.Inventory.ItemInHand;
+        bool sameItem = field_20099_f == player.Inventory.SelectedSlot && heldStack == itemToRender;
         if (itemToRender == null && heldStack == null)
         {
             sameItem = true;
@@ -484,7 +484,7 @@ public class HeldItemRenderer
         if (equippedProgress < 0.1F)
         {
             itemToRender = heldStack;
-            field_20099_f = player.inventory.SelectedSlot;
+            field_20099_f = player.Inventory.SelectedSlot;
         }
 
     }
@@ -496,7 +496,7 @@ public class HeldItemRenderer
 
     private void bindSkinTexture()
     {
-        var skinHandle = EntityRenderDispatcher.Instance.SkinManager?.GetTextureHandle(_game.Player?.name);
+        var skinHandle = EntityRenderDispatcher.Instance.SkinManager?.GetTextureHandle(_game.Player?.Name);
         if (skinHandle != null)
         {
             skinHandle.Bind();

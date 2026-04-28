@@ -4,7 +4,6 @@ using BetaSharp.Network;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
-using BetaSharp.Registries;
 using BetaSharp.Server.Internal;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
@@ -140,10 +139,10 @@ public class ServerLoginNetworkHandler : NetHandler
         if (ent != null)
         {
             server.playerManager.loadPlayerData(ent);
-            ent.SetWorld(server.getWorld(ent.dimensionId));
+            ent.SetWorld(server.getWorld(ent.DimensionId));
             ent.GameModeHolder = server.DefaultGameMode;
             _logger.LogInformation($"{getConnectionInfo()} logged in with entity id {ent.ID} at ({ent.X}, {ent.Y}, {ent.Z})");
-            ServerWorld playerWorld = server.getWorld(ent.dimensionId);
+            ServerWorld playerWorld = server.getWorld(ent.DimensionId);
             Vec3i spawnPos = playerWorld.Properties.GetSpawnPos();
             ServerPlayNetworkHandler handler = new ServerPlayNetworkHandler(server, connection, ent);
             handler.SendPacket(new LoginHelloPacket("", ent.ID, playerWorld.Seed, (sbyte)playerWorld.Dimension.Id));
@@ -151,8 +150,8 @@ public class ServerLoginNetworkHandler : NetHandler
             handler.SendPacket(PlayerGameModeUpdateS2CPacket.Get(ent.GameMode));
             handler.SendPacket(PlayerSpawnPositionS2CPacket.Get(spawnPos.X, spawnPos.Y, spawnPos.Z));
             PlayerManager.sendWorldInfo(ent, playerWorld);
-            server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(ent.ID, PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Join, ent.name));
-            server.playerManager.sendToAll(ChatMessagePacket.Get("§e" + ent.name + " joined the game."));
+            server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(ent.ID, PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Join, ent.Name));
+            server.playerManager.sendToAll(ChatMessagePacket.Get("§e" + ent.Name + " joined the game."));
             server.playerManager.addPlayer(ent);
             handler.teleport(ent.X, ent.Y, ent.Z, ent.Yaw, ent.Pitch);
             server.connections.AddConnection(handler);

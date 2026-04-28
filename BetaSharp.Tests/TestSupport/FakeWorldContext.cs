@@ -17,12 +17,13 @@ using BetaSharp.Worlds.Mechanics;
 using BetaSharp.Worlds.Storage;
 using BetaSharp.Worlds.Storage.RegionFormat;
 
-namespace BetaSharp.Tests.Blocks;
+namespace BetaSharp.Tests.TestSupport;
 
 public sealed class FakeWorldContext : IWorldContext
 {
     private readonly World _broadcasterWorld;
     private readonly FakeChunkSource _chunkSource;
+    private readonly PathFinder _pathFinder;
 
     public FakeWorldContext()
     {
@@ -31,10 +32,15 @@ public sealed class FakeWorldContext : IWorldContext
         _chunkSource = new FakeChunkSource(this);
         ChunkHost = new ChunkHost(_chunkSource);
         Entities = new EntityManager(this);
+        Dimension = new OverworldDimension();
+        Dimension.SetWorld(this);
+        Lighting = new LightingEngine(this);
+        Environment = new EnvironmentManager(this);
         _broadcasterWorld = new BroadcasterWorldStub();
         Broadcaster = new TestWorldEventBroadcaster(this, _broadcasterWorld);
         TickSchedulerSpy = new RecordingTickScheduler(this);
         Rules = new RuleSet(RuleRegistry.Instance);
+        _pathFinder = new PathFinder(this);
     }
 
     public FakeBlockGrid ReaderWriter { get; }
@@ -46,9 +52,9 @@ public sealed class FakeWorldContext : IWorldContext
     public WorldEventBroadcaster Broadcaster { get; }
     public RedstoneEngine Redstone { get; }
     public EntityManager Entities { get; }
-    public LightingEngine Lighting => throw new NotSupportedException();
-    public EnvironmentManager Environment => throw new NotSupportedException();
-    public Dimension Dimension => throw new NotSupportedException();
+    public LightingEngine Lighting { get; }
+    public EnvironmentManager Environment { get; }
+    public Dimension Dimension { get; }
     public WorldTickScheduler TickScheduler => TickSchedulerSpy;
     public long Seed => 0;
     public bool IsRemote { get; set; }
@@ -64,7 +70,7 @@ public sealed class FakeWorldContext : IWorldContext
         SpawnZ = 0
     };
     public JavaRandom Random { get; } = new(1234L);
-    PathFinder IWorldContext.Pathing => throw new NotSupportedException();
+    PathFinder IWorldContext.Pathing => _pathFinder;
 
     /// <summary>Returned by <see cref="GetTime"/> for tests that need advancing world time (e.g. torch burnout history pruning).</summary>
     public long SimulatedWorldTime { get; set; }
@@ -75,8 +81,16 @@ public sealed class FakeWorldContext : IWorldContext
     public bool SpawnEntity(Entity entity) => true;
     public bool SpawnItemDrop(double x, double y, double z, ItemStack itemStack) => true;
     public bool CanInteract(EntityPlayer player, int x, int y, int z) => true;
-    public Explosion CreateExplosion(Entity? source, double x, double y, double z, float power, bool fire) => throw new NotSupportedException();
-    public Explosion CreateExplosion(Entity? source, double x, double y, double z, float power) => throw new NotSupportedException();
+    public Explosion CreateExplosion(Entity? source, double x, double y, double z, float power) =>
+        CreateExplosion(source, x, y, z, power, false);
+
+    public Explosion CreateExplosion(Entity? source, double x, double y, double z, float power, bool fire)
+    {
+        Explosion explosion = new(this, source, x, y, z, power) { isFlaming = fire };
+        explosion.doExplosionA();
+        explosion.doExplosionB(true);
+        return explosion;
+    }
 }
 
 public sealed class FakeChunkSource(IWorldContext world) : IChunkSource
@@ -246,10 +260,37 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
     }
 
     public float GetVisibilityRatio(Vec3D sourcePosition, Box targetBox) => 0F;
-    public HitResult Raycast(Vec3D start, Vec3D end, bool includeFluids = false, bool ignoreNonSolid = false) => throw new NotSupportedException();
+    public HitResult Raycast(Vec3D start, Vec3D end, bool includeFluids = false, bool ignoreNonSolid = false) => new(HitResultType.MISS);
     public bool IsPosLoaded(int x, int y, int z) => true;
-    public bool IsMaterialInBox(Box area, Func<Material, bool> predicate) => false;
-    public bool UpdateMovementInFluid(Box entityBox, Material fluidMaterial, Entity entity) => false;
+
+    public bool IsMaterialInBox(Box area, Func<Material, bool> predicate)
+    {
+        int minX = MathHelper.Floor(area.MinX);
+        int maxX = MathHelper.Floor(area.MaxX);
+        int minY = MathHelper.Floor(area.MinY);
+        int maxY = MathHelper.Floor(area.MaxY);
+        int minZ = MathHelper.Floor(area.MinZ);
+        int maxZ = MathHelper.Floor(area.MaxZ);
+
+        for (int x = minX; x <= maxX; x++)
+        {
+            for (int y = minY; y <= maxY; y++)
+            {
+                for (int z = minZ; z <= maxZ; z++)
+                {
+                    if (predicate(GetMaterial(x, y, z)))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public bool UpdateMovementInFluid(Box entityBox, Material fluidMaterial, Entity entity) =>
+        IsMaterialInBox(entityBox, m => m == fluidMaterial);
 
     public event Action<int, int, int, int, int, int, int>? OnBlockChangedWithPrev;
     public event Action<int, int, int, int>? OnBlockChanged;
