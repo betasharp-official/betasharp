@@ -1,0 +1,11 @@
+{
+    "type": "shapeless",
+    "ingredients": [
+        "betasharp:Dye:1",
+        "betasharp:Dye:11"
+    ],
+    "result": {
+        "id": "betasharp:Dye:14",
+        "count": 2
+    }
+}

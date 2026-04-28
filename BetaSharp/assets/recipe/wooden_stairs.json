@@ -1,0 +1,15 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "#  ",
+        "## ",
+        "###"
+    ],
+    "key": {
+        "#": "Planks"
+    },
+    "result": {
+        "id": "betasharp:WoodenStairs",
+        "count": 4
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "# #",
+        "###",
+        "# #"
+    ],
+    "key": {
+        "#": "betasharp:Stick"
+    },
+    "result": {
+        "id": "betasharp:Ladder",
+        "count": 2
+    }
+}

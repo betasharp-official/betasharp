@@ -1,0 +1,7 @@
+{
+    "type": "smelting",
+    "input": "betasharp:GoldOre",
+    "result": {
+        "id": "betasharp:GoldIngot"
+    }
+}

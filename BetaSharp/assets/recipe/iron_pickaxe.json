@@ -1,0 +1,15 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "XXX",
+        " # ",
+        " # "
+    ],
+    "key": {
+        "X": "betasharp:IronIngot",
+        "#": "betasharp:Stick"
+    },
+    "result": {
+        "id": "betasharp:IronPickaxe"
+    }
+}

@@ -10,7 +10,6 @@
 *.user
 *.userosscache
 *.sln.docstates
-assets/
 b1.7.3.jar
 
 # User-specific files (MonoDevelop/Xamarin Studio)

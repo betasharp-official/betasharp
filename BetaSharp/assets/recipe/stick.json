@@ -1,0 +1,14 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "#",
+        "#"
+    ],
+    "key": {
+        "#": "betasharp:Planks"
+    },
+    "result": {
+        "id": "betasharp:Stick",
+        "count": 4
+    }
+}

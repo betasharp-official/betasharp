@@ -1,0 +1,14 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "A",
+        "B"
+    ],
+    "key": {
+        "A": "betasharp:Chest",
+        "B": "betasharp:Minecart"
+    },
+    "result": {
+        "id": "betasharp:ChestMinecart"
+    }
+}

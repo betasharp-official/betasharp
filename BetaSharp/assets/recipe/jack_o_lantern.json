@@ -1,0 +1,14 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "A",
+        "B"
+    ],
+    "key": {
+        "A": "betasharp:Pumpkin",
+        "B": "betasharp:Torch"
+    },
+    "result": {
+        "id": "betasharp:JackLantern"
+    }
+}

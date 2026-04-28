@@ -1,0 +1,7 @@
+{
+    "type": "smelting",
+    "input": "betasharp:Cactus",
+    "result": {
+        "id": "betasharp:Dye:2"
+    }
+}

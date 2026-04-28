@@ -1,0 +1,13 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "#"
+    ],
+    "key": {
+        "#": "betasharp:LapisBlock"
+    },
+    "result": {
+        "id": "betasharp:Dye:4",
+        "count": 9
+    }
+}

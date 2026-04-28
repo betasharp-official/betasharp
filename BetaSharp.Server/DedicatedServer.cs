@@ -1,4 +1,5 @@
 using System.Net;
+using BetaSharp.Recipes;
 using BetaSharp.Registries;
 using BetaSharp.Server.Network;
 using BetaSharp.Server.Threading;

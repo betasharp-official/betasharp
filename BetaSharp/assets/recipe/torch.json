@@ -1,0 +1,15 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "X",
+        "#"
+    ],
+    "key": {
+        "X": "betasharp:Coal",
+        "#": "betasharp:Stick"
+    },
+    "result": {
+        "id": "betasharp:Torch",
+        "count": 4
+    }
+}
