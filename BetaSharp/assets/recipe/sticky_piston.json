@@ -1,0 +1,14 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "S",
+        "P"
+    ],
+    "key": {
+        "S": "Slimeball",
+        "P": "Piston"
+    },
+    "result": {
+        "id": "betasharp:StickyPiston"
+    }
+}

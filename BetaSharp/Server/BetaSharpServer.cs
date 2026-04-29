@@ -4,6 +4,7 @@ using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Profiling;
+using BetaSharp.Recipes;
 using BetaSharp.Registries;
 using BetaSharp.Registries.Data;
 using BetaSharp.Server.Command;
@@ -84,6 +85,7 @@ public abstract class BetaSharpServer : ICommandOutput
         _commandHandler = new ServerCommandHandler(this);
 
         RegisterReloadListener(new DefaultGameModeListener(this));
+        RegisterReloadListener(new RecipeManager());
 
         onlineMode = config.GetOnlineMode(true);
         spawnAnimals = config.GetSpawnAnimals(true);

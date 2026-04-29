@@ -5,15 +5,13 @@ namespace BetaSharp.Recipes;
 
 internal class ShapedRecipes : IRecipe
 {
-    private int _width;
-    private int _height;
-    private ItemStack?[] _items;
-    private ItemStack _output;
-    public readonly int RecipeOutputItemID;
+    private readonly int _width;
+    private readonly int _height;
+    private readonly ItemStack?[] _items;
+    private readonly ItemStack _output;
 
     public ShapedRecipes(int width, int height, ItemStack?[] items, ItemStack output)
     {
-        RecipeOutputItemID = output.ItemId;
         _width = width;
         _height = height;
         _items = items;
@@ -90,5 +88,20 @@ internal class ShapedRecipes : IRecipe
     public int GetRecipeSize()
     {
         return _width * _height;
+    }
+
+    public override int GetHashCode()
+    {
+        int hash = 0;
+
+        for (int i = 0; i < _items.Length; i++)
+        {
+            if (_items[i] != null)
+                hash += (_items[i].ItemId + (_items[i].getDamage() << 8)) * (i + 1);
+        }
+
+        hash += (_output.ItemId << 12) + (_output.getDamage() << 20) + _output.Count;
+
+        return ((_width + _height * 4) << 28) + hash;
     }
 }

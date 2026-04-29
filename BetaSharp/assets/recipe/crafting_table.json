@@ -1,0 +1,13 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "##",
+        "##"
+    ],
+    "key": {
+        "#": "Planks"
+    },
+    "result": {
+        "id": "betasharp:CraftingTable"
+    }
+}

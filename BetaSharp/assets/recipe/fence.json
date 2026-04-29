@@ -1,0 +1,14 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "###",
+        "###"
+    ],
+    "key": {
+        "#": "betasharp:Stick"
+    },
+    "result": {
+        "id": "betasharp:Fence",
+        "count": 2
+    }
+}

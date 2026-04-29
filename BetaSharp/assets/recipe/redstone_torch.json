@@ -1,0 +1,14 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "X",
+        "#"
+    ],
+    "key": {
+        "#": "betasharp:Stick",
+        "X": "betasharp:Redstone"
+    },
+    "result": {
+        "id": "betasharp:LitRedstoneTorch"
+    }
+}

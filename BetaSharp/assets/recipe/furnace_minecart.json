@@ -1,0 +1,14 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "A",
+        "B"
+    ],
+    "key": {
+        "A": "betasharp:Furnace",
+        "B": "betasharp:Minecart"
+    },
+    "result": {
+        "id": "betasharp:FurnaceMinecart"
+    }
+}

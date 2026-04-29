@@ -1,0 +1,13 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "X X",
+        "X X"
+    ],
+    "key": {
+        "X": "betasharp:Leather"
+    },
+    "result": {
+        "id": "betasharp:LeatherBoots"
+    }
+}

@@ -56,7 +56,7 @@ public class CraftingScreenHandler : ScreenHandler
 
     public override void onSlotUpdate(IInventory inv)
     {
-        result.SetStack(0, CraftingManager.getInstance().FindMatchingRecipe(input));
+        result.SetStack(0, RecipesCrafting.Craft(input));
     }
 
     public override void onClosed(EntityPlayer player)

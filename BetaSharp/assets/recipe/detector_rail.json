@@ -1,0 +1,17 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "X X",
+        "X#X",
+        "XRX"
+    ],
+    "key": {
+        "X": "betasharp:IronIngot",
+        "#": "betasharp:StonePressurePlate",
+        "R": "betasharp:Redstone"
+    },
+    "result": {
+        "id": "betasharp:DetectorRail",
+        "count": 6
+    }
+}

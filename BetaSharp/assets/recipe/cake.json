@@ -1,0 +1,17 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "AAA",
+        "BEB",
+        "CCC"
+    ],
+    "key": {
+        "A": "betasharp:MilkBucket",
+        "B": "betasharp:Sugar",
+        "C": "Wheat",
+        "E": "Egg"
+    },
+    "result": {
+        "id": "betasharp:Cake"
+    }
+}

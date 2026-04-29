@@ -29,6 +29,7 @@ using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Profiling;
+using BetaSharp.Recipes;
 using BetaSharp.Registries;
 using BetaSharp.Server.Internal;
 using BetaSharp.Stats;

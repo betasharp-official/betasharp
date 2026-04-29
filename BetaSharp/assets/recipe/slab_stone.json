@@ -1,0 +1,13 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "###"
+    ],
+    "key": {
+        "#": "betasharp:Stone"
+    },
+    "result": {
+        "id": "betasharp:Slab:0",
+        "count": 3
+    }
+}
