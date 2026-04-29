@@ -10,5 +10,5 @@ public class AudioSettingsScreen : BaseOptionsScreen
         TitleText = "Audio Settings";
     }
 
-    protected override IEnumerable<GameOption> GetOptions() => Options.AudioScreenOptions;
+    protected override List<OptionSection> GetOptions() => [new(Options.AudioScreenOptions)];
 }

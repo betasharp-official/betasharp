@@ -12,7 +12,7 @@ public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
     private int _listeningIndex = -1;
     private readonly ControllerListener _listener = new();
 
-    protected override IEnumerable<GameOption> GetOptions() => [];
+    protected override List<OptionSection> GetOptions() => [];
 
     protected override void Init()
     {
@@ -22,7 +22,7 @@ public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
 
     protected override UIElement CreateContent()
     {
-        Panel list = CreateVerticalList();
+        Panel list = CreateTwoColumnList();
 
         for (int i = 0; i < Options.ControllerBindings.Length; i++)
         {
@@ -32,7 +32,7 @@ public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
             Panel row = new();
             row.Style.FlexDirection = FlexDirection.Row;
             row.Style.AlignItems = Align.Center;
-            row.Style.Width = 310;
+            row.Style.Width = TwoButtonSize;
             row.Style.SetMargin(2);
 
             Label label = new() { Text = bind.Description };

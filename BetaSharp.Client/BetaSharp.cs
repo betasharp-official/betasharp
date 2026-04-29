@@ -1574,7 +1574,7 @@ public partial class BetaSharp :
                 if (IsMultiplayerWorld()) World.Disconnect();
                 StopInternalServer();
                 ChangeWorld(null);
-            }, () => World?.AttemptSaving(saveStep++) ?? false));
+            }, () => World?.AttemptSaving(saveStep++) ?? false, TexturePackList));
         }
     }
 
