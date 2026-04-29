@@ -92,7 +92,7 @@ public abstract class ContainerScreen(
             ItemStack stack = hoveredSlot.Slot.getStack();
             if (stack != null)
             {
-                string itemName = ("" + TranslationStorage.Instance.TranslateNamedKey(stack.getItemName())).Trim();
+                string itemName = ("" + TranslationStorage.Instance.TranslateNamedKey(stack.GetItemName())).Trim();
                 if (itemName.Length > 0)
                 {
                     int textWidth = Context.TextRenderer.GetStringWidth(itemName);

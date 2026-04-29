@@ -158,7 +158,7 @@ public class EntitySlime : EntityLiving, Monster
 
     protected override int getDropItemId()
     {
-        return getSlimeSize() == 1 ? Item.Slimeball.id : 0;
+        return getSlimeSize() == 1 ? Item.Slimeball.Id : 0;
     }
 
     public override bool canSpawn()

@@ -180,7 +180,7 @@ internal class BlockFurnace : BlockWithEntity
                     if (stackCount > stack.Count) stackCount = stack.Count;
 
                     stack.Count -= stackCount;
-                    EntityItem droppedItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, stackCount, stack.getDamage()))
+                    EntityItem droppedItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, stackCount, stack.GetDamage()))
                     {
                         VelocityX = (float)s_random.NextGaussian() * DropSpread,
                         VelocityY = (float)s_random.NextGaussian() * DropSpread + 0.2F,

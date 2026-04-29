@@ -115,7 +115,7 @@ public class EntityItem : Entity
     {
         nbt.SetShort("Health", (short)((byte)health));
         nbt.SetShort("Age", (short)itemAge);
-        nbt.SetCompoundTag("Item", stack.writeToNBT(new NBTTagCompound()));
+        nbt.SetCompoundTag("Item", stack.WriteToNbt(new NBTTagCompound()));
     }
 
     public override void ReadNbt(NBTTagCompound nbt)
@@ -138,7 +138,7 @@ public class EntityItem : Entity
                     player.incrementStat(Achievements.MineWood);
                 }
 
-                if (stack.ItemId == Item.Leather.id)
+                if (stack.ItemId == Item.Leather.Id)
                 {
                     player.incrementStat(Achievements.KillCow);
                 }

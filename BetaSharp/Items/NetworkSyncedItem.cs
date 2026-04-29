@@ -1,23 +1,12 @@
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
-public class NetworkSyncedItem : Item
+public class NetworkSyncedItem(int id) : Item(id)
 {
-    public NetworkSyncedItem(int id) : base(id)
-    {
-    }
+    public override bool IsNetworkSynced() => true;
 
-    public override bool isNetworkSynced()
-    {
-        return true;
-    }
-
-    public virtual Packet? getUpdatePacket(ItemStack stack, IWorldContext world, EntityPlayer player)
-    {
-        return null;
-    }
+    public virtual Packet? getUpdatePacket(ItemStack stack, IWorldContext world, EntityPlayer player) => null;
 }

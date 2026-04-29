@@ -51,5 +51,5 @@ public class BlockTallGrass : BlockPlant
         return GrassColors.getColor(temperature, downfall);
     }
 
-    public override int getDroppedItemId(int blockMeta) => Random.Shared.Next(8) == 0 ? Item.Seeds.id : -1;
+    public override int getDroppedItemId(int blockMeta) => Random.Shared.Next(8) == 0 ? Item.Seeds.Id : -1;
 }

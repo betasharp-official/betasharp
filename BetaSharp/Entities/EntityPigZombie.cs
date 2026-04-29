@@ -103,7 +103,7 @@ internal class EntityPigZombie : EntityZombie
 
     protected override int getDropItemId()
     {
-        return Item.CookedPorkchop.id;
+        return Item.CookedPorkchop.Id;
     }
 
     public override ItemStack getHeldItem()

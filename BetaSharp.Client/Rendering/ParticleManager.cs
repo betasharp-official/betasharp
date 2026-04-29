@@ -354,7 +354,7 @@ public class ParticleManager
     {
         ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz);
 
-        int texIndex = item.getTextureId(0);
+        int texIndex = item.GetTextureId(0);
         float baseScale = RandomBaseScale() / 2.0f;
         float gravity = Block.SnowBlock.particleFallSpeedModifier;
 

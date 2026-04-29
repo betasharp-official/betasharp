@@ -1,39 +1,27 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
-internal class ItemSeeds : Item
+internal class ItemSeeds(int id, int blockId) : Item(id)
 {
-
-    private int blockId;
-
-    public ItemSeeds(int id, int blockId) : base(id)
-    {
-        this.blockId = blockId;
-    }
-
-    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
+    public override bool UseOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
         if (meta != 1)
         {
             return false;
         }
-        else
+
+        int blockId1 = world.Reader.GetBlockId(x, y, z);
+        if (blockId1 != Block.Farmland.id || !world.Reader.IsAir(x, y + 1, z))
         {
-            int blockId = world.Reader.GetBlockId(x, y, z);
-            if (blockId == Block.Farmland.id && world.Reader.IsAir(x, y + 1, z))
-            {
-                world.Writer.SetBlock(x, y + 1, z, this.blockId);
-                itemStack.ConsumeItem(entityPlayer);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return false;
         }
+
+        world.Writer.SetBlock(x, y + 1, z, blockId);
+        itemStack.ConsumeItem(entityPlayer);
+        return true;
+
     }
 }

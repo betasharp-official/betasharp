@@ -44,10 +44,10 @@ public class PlayerControllerMP : PlayerController
         ItemStack hand = Game.Player.getHand();
         if (hand != null)
         {
-            hand.postMine(blockId, x, y, z, Game.Player);
+            hand.PostMine(blockId, x, y, z, Game.Player);
             if (hand.Count == 0)
             {
-                ItemStack.onRemoved(Game.Player);
+                ItemStack.OnRemoved(Game.Player);
                 Game.Player.clearStackInHand();
             }
         }

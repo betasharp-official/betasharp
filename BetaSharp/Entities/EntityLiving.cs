@@ -1106,6 +1106,6 @@ public abstract class EntityLiving : Entity
 
     public virtual int getItemStackTextureId(ItemStack item)
     {
-        return item.getTextureId();
+        return item.GetTextureId();
     }
 }

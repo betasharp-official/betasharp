@@ -1,49 +1,39 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
 internal class ItemFlintAndSteel : Item
 {
-
     public ItemFlintAndSteel(int id) : base(id)
     {
-        maxCount = 1;
-        setMaxDamage(64);
+        MaxCount = 1;
+        SetMaxDamage(64);
     }
 
-    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
+    public override bool UseOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (meta == 0)
+        switch (meta)
         {
-            --y;
-        }
-
-        if (meta == 1)
-        {
-            ++y;
-        }
-
-        if (meta == 2)
-        {
-            --z;
-        }
-
-        if (meta == 3)
-        {
-            ++z;
-        }
-
-        if (meta == 4)
-        {
-            --x;
-        }
-
-        if (meta == 5)
-        {
-            ++x;
+            case 0:
+                --y;
+                break;
+            case 1:
+                ++y;
+                break;
+            case 2:
+                --z;
+                break;
+            case 3:
+                ++z;
+                break;
+            case 4:
+                --x;
+                break;
+            case 5:
+                ++x;
+                break;
         }
 
         int blockId = world.Reader.GetBlockId(x, y, z);

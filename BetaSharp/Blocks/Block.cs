@@ -181,11 +181,11 @@ public class Block
 
     static Block()
     {
-        Item.ITEMS[Wool.id] = new ItemCloth(Wool.id - 256).setItemName("cloth");
-        Item.ITEMS[Log.id] = new ItemLog(Log.id - 256).setItemName("log");
-        Item.ITEMS[Slab.id] = new ItemSlab(Slab.id - 256).setItemName("stoneSlab");
-        Item.ITEMS[Sapling.id] = new ItemSapling(Sapling.id - 256).setItemName("sapling");
-        Item.ITEMS[Leaves.id] = new ItemLeaves(Leaves.id - 256).setItemName("leaves");
+        Item.ITEMS[Wool.id] = new ItemCloth(Wool.id - 256).SetItemName("cloth");
+        Item.ITEMS[Log.id] = new ItemLog(Log.id - 256).SetItemName("log");
+        Item.ITEMS[Slab.id] = new ItemSlab(Slab.id - 256).SetItemName("stoneSlab");
+        Item.ITEMS[Sapling.id] = new ItemSapling(Sapling.id - 256).SetItemName("sapling");
+        Item.ITEMS[Leaves.id] = new ItemLeaves(Leaves.id - 256).SetItemName("leaves");
         Item.ITEMS[Piston.id] = new ItemPiston(Piston.id - 256);
         Item.ITEMS[StickyPiston.id] = new ItemPiston(StickyPiston.id - 256);
 

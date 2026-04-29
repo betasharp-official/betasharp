@@ -21,5 +21,5 @@ internal class BlockWeb : Block
 
     public override bool isFullCube() => false;
 
-    public override int getDroppedItemId(int blockMeta) => Item.String.id;
+    public override int getDroppedItemId(int blockMeta) => Item.String.Id;
 }

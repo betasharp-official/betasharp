@@ -15,7 +15,7 @@ public class FireballEntityRenderer : EntityRenderer
         GLManager.GL.Enable(GLEnum.RescaleNormal);
         float renderScale = 2.0F;
         GLManager.GL.Scale(renderScale / 1.0F, renderScale / 1.0F, renderScale / 1.0F);
-        int textureIndex = Item.Snowball.getTextureId(0);
+        int textureIndex = Item.Snowball.GetTextureId(0);
         loadTexture("/gui/items.png");
         Tessellator tessellator = Tessellator.instance;
         float minU = (textureIndex % 16 * 16 + 0) / 256.0F;

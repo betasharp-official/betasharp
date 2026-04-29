@@ -88,7 +88,7 @@ public class CraftingScreenHandler : ScreenHandler
         if (slot != null && slot.hasStack())
         {
             ItemStack slotStack = slot.getStack();
-            movedStack = slotStack.copy();
+            movedStack = slotStack.Copy();
             if (slotNumber == 0)
             {
                 insertItem(slotStack, 10, 46, true);

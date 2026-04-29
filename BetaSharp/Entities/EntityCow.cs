@@ -35,13 +35,13 @@ public class EntityCow : EntityAnimal
 
     protected override int getDropItemId()
     {
-        return Item.Leather.id;
+        return Item.Leather.Id;
     }
 
     public override bool Interact(EntityPlayer player)
     {
         ItemStack heldBucket = player.inventory.GetItemInHand();
-        if (heldBucket != null && heldBucket.ItemId == Item.Bucket.id)
+        if (heldBucket != null && heldBucket.ItemId == Item.Bucket.Id)
         {
             player.inventory.SetStack(player.inventory.SelectedSlot, new ItemStack(Item.MilkBucket));
             return true;

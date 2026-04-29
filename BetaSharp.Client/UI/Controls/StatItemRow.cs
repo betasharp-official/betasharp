@@ -37,7 +37,7 @@ public class StatItemRow : UIElement
         renderer.DrawItem(new ItemStack(ItemId, 1, 0), IconX + 1, IconY + 1);
 
         // don't draw unlocalized names for now
-        string? name = Item.ITEMS[ItemId]?.getStatName();
+        string? name = Item.ITEMS[ItemId]?.GetStatName();
         if (name != null && !name.Contains('.'))
         {
             renderer.DrawText(name, 28, TextY, Color.White);

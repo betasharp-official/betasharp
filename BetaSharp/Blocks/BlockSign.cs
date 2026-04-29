@@ -77,7 +77,7 @@ internal class BlockSign : BlockWithEntity
         }
     }
 
-    public override int getDroppedItemId(int blockMeta) => Item.Sign.id;
+    public override int getDroppedItemId(int blockMeta) => Item.Sign.Id;
 
     public override void neighborUpdate(OnTickEvent @event)
     {

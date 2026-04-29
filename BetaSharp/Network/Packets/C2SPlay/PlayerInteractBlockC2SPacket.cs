@@ -56,7 +56,7 @@ public class PlayerInteractBlockC2SPacket() : Packet(PacketId.PlayerInteractBloc
         {
             stream.WriteShort((short)stack.ItemId);
             stream.WriteByte((byte)stack.Count);
-            stream.WriteShort((short)stack.getDamage());
+            stream.WriteShort((short)stack.GetDamage());
         }
 
     }

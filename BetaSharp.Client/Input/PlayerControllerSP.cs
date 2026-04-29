@@ -35,10 +35,10 @@ public class PlayerControllerSP : PlayerController
         bool canHarvest = Game.Player.canHarvest(Block.Blocks[blockId]);
         if (itemStackInHand != null)
         {
-            itemStackInHand.postMine(blockId, x, y, z, Game.Player);
+            itemStackInHand.PostMine(blockId, x, y, z, Game.Player);
             if (itemStackInHand.Count == 0)
             {
-                ItemStack.onRemoved(Game.Player);
+                ItemStack.OnRemoved(Game.Player);
                 Game.Player.clearStackInHand();
             }
         }

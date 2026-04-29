@@ -8,15 +8,15 @@ namespace BetaSharp.Items;
 
 internal class ItemBlock : Item
 {
-    private int blockID;
+    private readonly int blockID;
 
     public ItemBlock(int id) : base(id)
     {
         blockID = id + 256;
-        setTextureId(Block.Blocks[id + 256].GetTexture(2.ToSide()));
+        SetTextureId(Block.Blocks[id + 256].GetTexture(2.ToSide()));
     }
 
-    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
+    public override bool UseOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
         if (world.Reader.GetBlockId(x, y, z) == Block.Snow.id)
         {
@@ -85,7 +85,7 @@ internal class ItemBlock : Item
 
         if (block.canPlaceAt(new CanPlaceAtContext(world, meta.ToSide(), x, y, z)))
         {
-            int placementMeta = getPlacementMetadata(itemStack.getDamage());
+            int placementMeta = GetPlacementMetadata(itemStack.GetDamage());
             if (world.Writer.SetBlockWithoutCallingOnPlaced(x, y, z, blockID, placementMeta))
             {
                 Block.Blocks[blockID].onPlaced(new OnPlacedEvent(world, entityPlayer, meta.ToSide(), meta.ToSide(), x, y, z));
@@ -99,13 +99,7 @@ internal class ItemBlock : Item
         return false;
     }
 
-    public override string getItemNameIS(ItemStack itemStack)
-    {
-        return Block.Blocks[blockID].getBlockName();
-    }
+    public override string GetItemNameIS(ItemStack itemStack) => Block.Blocks[blockID].getBlockName();
 
-    public override string getItemName()
-    {
-        return Block.Blocks[blockID].getBlockName();
-    }
+    public override string GetItemName() => Block.Blocks[blockID].getBlockName();
 }

@@ -2,10 +2,9 @@ using BetaSharp.Blocks;
 
 namespace BetaSharp.Items;
 
-internal class ItemAxe : ItemTool
+internal class ItemAxe(int id, ToolMaterial toolMaterial) : ItemTool(id, 3, toolMaterial, s_blocksEffectiveAgainst)
 {
-
-    private static Block[] blocksEffectiveAgainst =
+    private static readonly Block[] s_blocksEffectiveAgainst =
     [
         Block.Planks,
         Block.Bookshelf,
@@ -17,8 +16,4 @@ internal class ItemAxe : ItemTool
         Block.Trapdoor,
         Block.Fence
     ];
-
-    public ItemAxe(int id, ToolMaterial toolMaterial) : base(id, 3, toolMaterial, blocksEffectiveAgainst)
-    {
-    }
 }

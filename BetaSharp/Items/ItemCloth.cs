@@ -4,25 +4,15 @@ namespace BetaSharp.Items;
 
 internal class ItemCloth : ItemBlock
 {
-
     public ItemCloth(int id) : base(id)
     {
-        setMaxDamage(0);
-        setHasSubtypes(true);
+        SetMaxDamage(0);
+        SetHasSubtypes(true);
     }
 
-    public override int getTextureId(int meta)
-    {
-        return Block.Wool.GetTexture(2.ToSide(), BlockCloth.getBlockMeta(meta));
-    }
+    public override int GetTextureId(int meta) => Block.Wool.GetTexture(2.ToSide(), BlockCloth.getBlockMeta(meta));
 
-    public override int getPlacementMetadata(int meta)
-    {
-        return meta;
-    }
+    protected override int GetPlacementMetadata(int meta) => meta;
 
-    public override String getItemNameIS(ItemStack itemStack)
-    {
-        return base.getItemName() + "." + ItemDye.DyeColorNames[BlockCloth.getBlockMeta(itemStack.getDamage())];
-    }
+    public override string GetItemNameIS(ItemStack itemStack) => $"{base.GetItemName()}.{ItemDye.DyeColorNames[BlockCloth.getBlockMeta(itemStack.GetDamage())]}";
 }

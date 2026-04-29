@@ -94,7 +94,7 @@ internal class BlockEntityChest : BlockEntity, IInventory
             {
                 NBTTagCompound itemsTag = new();
                 itemsTag.SetByte("Slot", (sbyte)slotIndex);
-                stack.writeToNBT(itemsTag);
+                stack.WriteToNbt(itemsTag);
                 itemList.SetTag(itemsTag);
             }
         }

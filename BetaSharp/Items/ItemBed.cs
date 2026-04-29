@@ -1,19 +1,17 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
 internal class ItemBed : Item
 {
-
     public ItemBed(int id) : base(id)
     {
     }
 
-    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
+    public override bool UseOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
         if (meta != 1)
         {
@@ -22,13 +20,28 @@ internal class ItemBed : Item
 
         ++y;
 
-        int dir = MathHelper.Floor((double)(entityPlayer.Yaw * 4.0F / 360.0F) + 0.5D) & 3;
+        int dir = MathHelper.Floor(entityPlayer.Yaw * 4.0F / 360.0F + 0.5D) & 3;
         int offsetX = 0;
         int offsetZ = 0;
-        if (dir == 0) offsetZ = 1;
-        if (dir == 1) offsetX = -1;
-        if (dir == 2) offsetZ = -1;
-        if (dir == 3) offsetX = 1;
+        if (dir == 0)
+        {
+            offsetZ = 1;
+        }
+
+        if (dir == 1)
+        {
+            offsetX = -1;
+        }
+
+        if (dir == 2)
+        {
+            offsetZ = -1;
+        }
+
+        if (dir == 3)
+        {
+            offsetX = 1;
+        }
 
         bool footReplaceable = isReplaceable(world, x, y, z);
         bool headReplaceable = isReplaceable(world, x + offsetX, y, z + offsetZ);

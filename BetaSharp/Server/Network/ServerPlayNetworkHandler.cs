@@ -383,11 +383,11 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         }
 
         player.skipPacketSlotUpdates = true;
-        player.inventory.Main[player.inventory.SelectedSlot] = ItemStack.clone(player.inventory.Main[player.inventory.SelectedSlot]);
+        player.inventory.Main[player.inventory.SelectedSlot] = ItemStack.Clone(player.inventory.Main[player.inventory.SelectedSlot]);
         Slot slot = player.currentScreenHandler.GetSlot(player.inventory, player.inventory.SelectedSlot);
         player.currentScreenHandler.SendContentUpdates();
         player.skipPacketSlotUpdates = false;
-        if (!ItemStack.areEqual(player.inventory.GetItemInHand(), packet.stack))
+        if (!ItemStack.AreEqual(player.inventory.GetItemInHand(), packet.stack))
         {
             SendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(player.currentScreenHandler.SyncId, slot.id, player.inventory.GetItemInHand()));
         }
@@ -575,7 +575,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         if (player.currentScreenHandler.SyncId == packet.syncId && player.currentScreenHandler.canOpen(player))
         {
             ItemStack clickedStack = player.currentScreenHandler.onSlotClick(packet.slot, packet.button, packet.holdingShift, player);
-            if (ItemStack.areEqual(packet.stack, clickedStack))
+            if (ItemStack.AreEqual(packet.stack, clickedStack))
             {
                 player.NetworkHandler.SendPacket(ScreenHandlerAcknowledgementPacket.Get(packet.syncId, packet.actionType, true));
                 player.skipPacketSlotUpdates = true;

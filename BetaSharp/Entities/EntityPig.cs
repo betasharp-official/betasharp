@@ -59,7 +59,7 @@ public class EntityPig : EntityAnimal
 
     protected override int getDropItemId()
     {
-        return FireTicks > 0 ? Item.CookedPorkchop.id : Item.RawPorkchop.id;
+        return FireTicks > 0 ? Item.CookedPorkchop.Id : Item.RawPorkchop.Id;
     }
 
     public override void OnStruckByLightning(EntityLightningBolt bolt)

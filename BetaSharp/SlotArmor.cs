@@ -25,8 +25,8 @@ class SlotArmor : Slot
 
     public override bool canInsert(ItemStack stack)
     {
-        return stack.getItem() is ItemArmor
-            ? ((ItemArmor)stack.getItem()).armorType == armorType
-            : stack.getItem().id == Block.Pumpkin.id && armorType == 0;
+        return stack.GetItem() is ItemArmor
+            ? ((ItemArmor)stack.GetItem()).ArmorType == armorType
+            : stack.GetItem().Id == Block.Pumpkin.id && armorType == 0;
     }
 }

@@ -596,10 +596,10 @@ public abstract class EntityPlayer : EntityLiving
             ItemStack itemStackInHand = getHand();
             if (itemStackInHand != null && entity is EntityLiving living)
             {
-                itemStackInHand.useOnEntity(living, this);
+                itemStackInHand.UseOnEntity(living, this);
                 if (itemStackInHand.Count <= 0)
                 {
-                    ItemStack.onRemoved(this);
+                    ItemStack.OnRemoved(this);
                     clearStackInHand();
                 }
             }
@@ -644,10 +644,10 @@ public abstract class EntityPlayer : EntityLiving
                 ItemStack itemStackInHand = getHand();
                 if (itemStackInHand != null)
                 {
-                    itemStackInHand.postHit(living, this);
+                    itemStackInHand.PostHit(living, this);
                     if (itemStackInHand.Count <= 0)
                     {
-                        ItemStack.onRemoved(this);
+                        ItemStack.OnRemoved(this);
                         clearStackInHand();
                     }
                 }
@@ -1030,9 +1030,9 @@ public abstract class EntityPlayer : EntityLiving
     public override int getItemStackTextureId(ItemStack stack)
     {
         int textureId = base.getItemStackTextureId(stack);
-        if (stack.ItemId == Item.FishingRod.id && fishHook != null)
+        if (stack.ItemId == Item.FishingRod.Id && fishHook != null)
         {
-            textureId = stack.getTextureId() + 16;
+            textureId = stack.GetTextureId() + 16;
         }
 
         return textureId;

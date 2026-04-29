@@ -181,7 +181,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         for (int slotIndex = 0; slotIndex < inventory.Size; slotIndex++)
         {
             ItemStack? itemStack = inventory.GetStack(slotIndex);
-            if (itemStack != null && Item.ITEMS[itemStack.ItemId].isNetworkSynced() && NetworkHandler.getBlockDataSendQueueSize() <= 2)
+            if (itemStack != null && Item.ITEMS[itemStack.ItemId].IsNetworkSynced() && NetworkHandler.getBlockDataSendQueueSize() <= 2)
             {
                 Packet? packet = ((NetworkSyncedItem)Item.ITEMS[itemStack.ItemId]).getUpdatePacket(itemStack, World, this);
                 if (packet != null)

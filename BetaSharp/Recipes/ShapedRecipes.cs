@@ -69,7 +69,7 @@ internal class ShapedRecipes : IRecipe
                         return false;
                     }
 
-                    if (expected.getDamage() != -1 && expected.getDamage() != actual.getDamage())
+                    if (expected.GetDamage() != -1 && expected.GetDamage() != actual.GetDamage())
                     {
                         return false;
                     }
@@ -82,7 +82,7 @@ internal class ShapedRecipes : IRecipe
 
     public ItemStack GetCraftingResult(InventoryCrafting craftingInventory)
     {
-        return new ItemStack(_output.ItemId, _output.Count, _output.getDamage());
+        return new ItemStack(_output.ItemId, _output.Count, _output.GetDamage());
     }
 
     public int GetRecipeSize()
@@ -97,10 +97,10 @@ internal class ShapedRecipes : IRecipe
         for (int i = 0; i < _items.Length; i++)
         {
             if (_items[i] != null)
-                hash += (_items[i].ItemId + (_items[i].getDamage() << 8)) * (i + 1);
+                hash += (_items[i].ItemId + (_items[i].GetDamage() << 8)) * (i + 1);
         }
 
-        hash += (_output.ItemId << 12) + (_output.getDamage() << 20) + _output.Count;
+        hash += (_output.ItemId << 12) + (_output.GetDamage() << 20) + _output.Count;
 
         return ((_width + _height * 4) << 28) + hash;
     }

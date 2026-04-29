@@ -7,7 +7,7 @@ internal class BlockSnowBlock : Block
 {
     public BlockSnowBlock(int id, int textureId) : base(id, textureId, Material.SnowBlock) => setTickRandomly(true);
 
-    public override int getDroppedItemId(int blockMeta) => Item.Snowball.id;
+    public override int getDroppedItemId(int blockMeta) => Item.Snowball.Id;
 
     public override int getDroppedItemCount() => 4;
 

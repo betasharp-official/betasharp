@@ -182,7 +182,7 @@ public class BlockBed : Block
         }
     }
 
-    public override int getDroppedItemId(int blockMeta) => isHeadOfBed(blockMeta) ? 0 : Item.Bed.id;
+    public override int getDroppedItemId(int blockMeta) => isHeadOfBed(blockMeta) ? 0 : Item.Bed.Id;
 
     private void setDefaultShape() => setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 9.0F / 16.0F, 1.0F);
 

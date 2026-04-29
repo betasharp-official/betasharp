@@ -82,7 +82,7 @@ public static class Stats
             {
                 if (Item.ITEMS[itemId] != null)
                 {
-                    string translatedName = StatCollector.TranslateToLocalFormatted("stat.craftItem", Item.ITEMS[itemId].getStatName());
+                    string translatedName = StatCollector.TranslateToLocalFormatted("stat.craftItem", Item.ITEMS[itemId].GetStatName());
                     Crafted[itemId] = new StatCrafting(16842752 + itemId, translatedName, itemId).RegisterStat();
                 }
             }
@@ -117,7 +117,7 @@ public static class Stats
         {
             if (Item.ITEMS[i] != null)
             {
-                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, Item.ITEMS[i].getStatName());
+                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, Item.ITEMS[i].GetStatName());
                 statsArray[i] = new StatCrafting(baseId + i, translatedName, i).RegisterStat();
 
                 if (i >= Block.Blocks.Length)
@@ -137,9 +137,9 @@ public static class Stats
 
         for (int i = startIdx; i < endIdx; ++i)
         {
-            if (Item.ITEMS[i] != null && Item.ITEMS[i].isDamagable())
+            if (Item.ITEMS[i] != null && Item.ITEMS[i].IsDamagable())
             {
-                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, Item.ITEMS[i].getStatName());
+                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, Item.ITEMS[i].GetStatName());
                 statsArray[i] = new StatCrafting(baseId + i, translatedName, i).RegisterStat();
             }
         }

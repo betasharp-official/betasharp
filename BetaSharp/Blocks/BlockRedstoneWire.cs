@@ -257,7 +257,7 @@ public class BlockRedstoneWire : Block
         base.neighborUpdate(@event);
     }
 
-    public override int getDroppedItemId(int blockMeta) => Item.Redstone.id;
+    public override int getDroppedItemId(int blockMeta) => Item.Redstone.Id;
 
     public override bool isStrongPoweringSide(IBlockReader reader, int x, int y, int z, int side) => s_wiresProvidePower.Value && isPoweringSide(reader, x, y, z, side);
 

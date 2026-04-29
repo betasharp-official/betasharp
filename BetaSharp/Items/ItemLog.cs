@@ -4,20 +4,13 @@ namespace BetaSharp.Items;
 
 internal class ItemLog : ItemBlock
 {
-
     public ItemLog(int id) : base(id)
     {
-        setMaxDamage(0);
-        setHasSubtypes(true);
+        SetMaxDamage(0);
+        SetHasSubtypes(true);
     }
 
-    public override int getTextureId(int meta)
-    {
-        return Block.Log.GetTexture(2.ToSide(), meta);
-    }
+    public override int GetTextureId(int meta) => Block.Log.GetTexture(2.ToSide(), meta);
 
-    public override int getPlacementMetadata(int meta)
-    {
-        return meta;
-    }
+    protected override int GetPlacementMetadata(int meta) => meta;
 }

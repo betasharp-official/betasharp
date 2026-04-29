@@ -1,14 +1,12 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
 internal class ItemDye : Item
 {
-
-    public static readonly String[] DyeColorNames =
+    public static readonly string[] DyeColorNames =
     [
         "black",
         "red",
@@ -25,8 +23,9 @@ internal class ItemDye : Item
         "lightBlue",
         "magenta",
         "orange",
-        "white",
+        "white"
     ];
+
     public static readonly int[] DyeColorValues =
     [
         0x1E1B1B,
@@ -44,106 +43,118 @@ internal class ItemDye : Item
         0x6689D3,
         0xC354CD,
         0xEB8844,
-        0xF0F0F0,
+        0xF0F0F0
     ];
 
     public ItemDye(int id) : base(id)
     {
-        setHasSubtypes(true);
-        setMaxDamage(0);
+        SetHasSubtypes(true);
+        SetMaxDamage(0);
     }
 
-    public override int getTextureId(int meta)
-    {
-        return textureId + meta % 8 * 16 + meta / 8;
-    }
+    public override int GetTextureId(int meta) => TextureId + meta % 8 * 16 + meta / 8;
 
-    public override String getItemNameIS(ItemStack itemStack)
-    {
-        return base.getItemName() + "." + DyeColorNames[itemStack.getDamage()];
-    }
+    public override string GetItemNameIS(ItemStack itemStack) => base.GetItemName() + "." + DyeColorNames[itemStack.GetDamage()];
 
-    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
+    public override bool UseOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (itemStack.getDamage() == 15)
+        if (itemStack.GetDamage() != 15)
         {
-            int blockId = world.Reader.GetBlockId(x, y, z);
-            if (blockId == Block.Sapling.id)
-            {
-                if (!world.IsRemote)
-                {
-                    ((BlockSapling)Block.Sapling).generate(world, x, y, z);
-                    itemStack.ConsumeItem(entityPlayer);
-                }
-                return true;
-            }
-            if (blockId == Block.Wheat.id)
-            {
-                if (!world.IsRemote)
-                {
-                    BlockCrops.applyFullGrowth(world, x, y, z);
-                    itemStack.ConsumeItem(entityPlayer);
-                }
-                return true;
-            }
-            if (blockId == Block.GrassBlock.id)
-            {
-                if (!world.IsRemote)
-                {
-                    itemStack.ConsumeItem(entityPlayer);
-
-                    for (int attempt = 0; attempt < 128; ++attempt)
-                    {
-                        int spawnX = x;
-                        int spawnY = y + 1;
-                        int spawnZ = z;
-
-                        bool validPosition = true;
-                        for (int walkStep = 0; walkStep < attempt / 16 && validPosition; ++walkStep)
-                        {
-                            spawnX += itemRand.NextInt(3) - 1;
-                            spawnY += (itemRand.NextInt(3) - 1) * itemRand.NextInt(3) / 2;
-                            spawnZ += itemRand.NextInt(3) - 1;
-                            if (world.Reader.GetBlockId(spawnX, spawnY - 1, spawnZ) != Block.GrassBlock.id || world.Reader.ShouldSuffocate(spawnX, spawnY, spawnZ))
-                            {
-                                validPosition = false;
-                            }
-                        }
-
-                        if (validPosition && world.Reader.GetBlockId(spawnX, spawnY, spawnZ) == 0)
-                        {
-                            if (itemRand.NextInt(10) != 0)
-                            {
-                                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Grass.id, 1);
-                            }
-                            else if (itemRand.NextInt(3) != 0)
-                            {
-                                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Dandelion.id);
-                            }
-                            else
-                            {
-                                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Rose.id);
-                            }
-                        }
-                    }
-                }
-                return true;
-            }
+            return false;
         }
-        return false;
-    }
 
-    public override void useOnEntity(ItemStack itemStack, EntityLiving entityLiving, EntityPlayer entityPlayer)
-    {
-        if (entityLiving is EntitySheep sheep)
+        int blockId = world.Reader.GetBlockId(x, y, z);
+        if (blockId == Block.Sapling.id)
         {
-            int woolColor = BlockCloth.getBlockMeta(itemStack.getDamage());
-            if (!sheep.getSheared() && sheep.getFleeceColor() != woolColor)
+            if (world.IsRemote)
             {
-                sheep.setFleeceColor(woolColor);
+                return true;
+            }
+
+            ((BlockSapling)Block.Sapling).generate(world, x, y, z);
+            itemStack.ConsumeItem(entityPlayer);
+
+            return true;
+        }
+
+        if (blockId == Block.Wheat.id)
+        {
+            if (!world.IsRemote)
+            {
+                BlockCrops.applyFullGrowth(world, x, y, z);
                 itemStack.ConsumeItem(entityPlayer);
             }
+
+            return true;
         }
 
+        if (blockId != Block.GrassBlock.id)
+        {
+            return false;
+        }
+
+        if (world.IsRemote)
+        {
+            return true;
+        }
+
+        itemStack.ConsumeItem(entityPlayer);
+
+        for (int attempt = 0; attempt < 128; ++attempt)
+        {
+            int spawnX = x;
+            int spawnY = y + 1;
+            int spawnZ = z;
+
+            bool validPosition = true;
+            for (int walkStep = 0; walkStep < attempt / 16 && validPosition; ++walkStep)
+            {
+                spawnX += itemRand.NextInt(3) - 1;
+                spawnY += (itemRand.NextInt(3) - 1) * itemRand.NextInt(3) / 2;
+                spawnZ += itemRand.NextInt(3) - 1;
+                if (world.Reader.GetBlockId(spawnX, spawnY - 1, spawnZ) != Block.GrassBlock.id || world.Reader.ShouldSuffocate(spawnX, spawnY, spawnZ))
+                {
+                    validPosition = false;
+                }
+            }
+
+            if (!validPosition || world.Reader.GetBlockId(spawnX, spawnY, spawnZ) != 0)
+            {
+                continue;
+            }
+
+            if (itemRand.NextInt(10) != 0)
+            {
+                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Grass.id, 1);
+            }
+            else if (itemRand.NextInt(3) != 0)
+            {
+                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Dandelion.id);
+            }
+            else
+            {
+                world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Rose.id);
+            }
+        }
+
+        return true;
+
+    }
+
+    public override void UseOnEntity(ItemStack itemStack, EntityLiving entityLiving, EntityPlayer entityPlayer)
+    {
+        if (entityLiving is not EntitySheep sheep)
+        {
+            return;
+        }
+
+        int woolColor = BlockCloth.getBlockMeta(itemStack.GetDamage());
+        if (sheep.getSheared() || sheep.getFleeceColor() == woolColor)
+        {
+            return;
+        }
+
+        sheep.setFleeceColor(woolColor);
+        itemStack.ConsumeItem(entityPlayer);
     }
 }

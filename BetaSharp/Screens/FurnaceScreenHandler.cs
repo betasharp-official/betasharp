@@ -104,7 +104,7 @@ public class FurnaceScreenHandler : ScreenHandler
         if (slot != null && slot.hasStack())
         {
             ItemStack slotStack = slot.getStack();
-            movedStack = slotStack.copy();
+            movedStack = slotStack.Copy();
             if (slotNumber == 2)
             {
                 insertItem(slotStack, 3, 39, true);

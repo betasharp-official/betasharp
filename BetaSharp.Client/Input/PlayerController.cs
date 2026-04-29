@@ -59,7 +59,7 @@ public class PlayerController
     public virtual bool sendUseItem(EntityPlayer player, World world, ItemStack stack)
     {
         int originalCount = stack.Count;
-        ItemStack resultStack = stack.use(world, player);
+        ItemStack resultStack = stack.Use(world, player);
         if (resultStack != stack || resultStack != null && resultStack.Count != originalCount)
         {
             player.inventory.Main[player.inventory.SelectedSlot] = resultStack;
@@ -114,7 +114,7 @@ public class PlayerController
 
         if (selectedItem == null || !player.GameMode.CanPlace) return false;
 
-        return selectedItem.useOnBlock(player, world, blockX, blockY, blockZ, blockSide);
+        return selectedItem.UseOnBlock(player, world, blockX, blockY, blockZ, blockSide);
     }
 
     public virtual EntityPlayer createPlayer(World world)

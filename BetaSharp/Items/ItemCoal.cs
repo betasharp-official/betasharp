@@ -2,15 +2,11 @@ namespace BetaSharp.Items;
 
 internal class ItemCoal : Item
 {
-
     public ItemCoal(int id) : base(id)
     {
-        setHasSubtypes(true);
-        setMaxDamage(0);
+        SetHasSubtypes(true);
+        SetMaxDamage(0);
     }
 
-    public override String getItemNameIS(ItemStack itemStack)
-    {
-        return itemStack.getDamage() == 1 ? "item.charcoal" : "item.coal";
-    }
+    public override string GetItemNameIS(ItemStack itemStack) => itemStack.GetDamage() == 1 ? "item.charcoal" : "item.coal";
 }

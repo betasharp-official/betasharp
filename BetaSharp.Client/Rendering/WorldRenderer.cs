@@ -870,7 +870,7 @@ public class WorldRenderer : IWorldEventListener
             case 1005:
                 if (Item.ITEMS[data] is ItemRecord)
                 {
-                    _game.SoundManager.PlayStreaming(((ItemRecord)Item.ITEMS[data]).recordName, x, y, z, 1.0F, 1.0F);
+                    _game.SoundManager.PlayStreaming(((ItemRecord)Item.ITEMS[data]).RecordName, x, y, z, 1.0F, 1.0F);
                 }
                 else
                 {

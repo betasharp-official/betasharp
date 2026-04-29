@@ -167,7 +167,7 @@ public class EntityGhast : EntityFlying, Monster
 
     protected override int getDropItemId()
     {
-        return Item.Gunpowder.id;
+        return Item.Gunpowder.Id;
     }
 
     protected override float getSoundVolume()

@@ -99,7 +99,7 @@ public class EntityBoat : Entity
 
                 for (int i = 0; i < 2; ++i)
                 {
-                    DropItem(Item.Stick.id, 1, 0.0F);
+                    DropItem(Item.Stick.Id, 1, 0.0F);
                 }
 
                 MarkDead();
@@ -291,7 +291,7 @@ public class EntityBoat : Entity
 
                 for (int i = 0; i < 2; ++i)
                 {
-                    DropItem(Item.Stick.id, 1, 0.0F);
+                    DropItem(Item.Stick.Id, 1, 0.0F);
                 }
             }
         }

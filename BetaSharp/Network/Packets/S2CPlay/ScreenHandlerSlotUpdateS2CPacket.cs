@@ -14,7 +14,7 @@ public class ScreenHandlerSlotUpdateS2CPacket() : Packet(PacketId.ScreenHandlerS
         var p = Get<ScreenHandlerSlotUpdateS2CPacket>(PacketId.ScreenHandlerSlotUpdateS2C);
         p.syncId = syncId;
         p.slot = slot;
-        p.stack = stack == null ? stack : stack.copy();
+        p.stack = stack == null ? stack : stack.Copy();
         return p;
     }
 
@@ -53,7 +53,7 @@ public class ScreenHandlerSlotUpdateS2CPacket() : Packet(PacketId.ScreenHandlerS
         {
             stream.WriteShort((short)stack.ItemId);
             stream.WriteByte((byte)stack.Count);
-            stream.WriteShort((short)stack.getDamage());
+            stream.WriteShort((short)stack.GetDamage());
         }
 
     }

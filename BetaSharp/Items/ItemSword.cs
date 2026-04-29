@@ -5,45 +5,32 @@ namespace BetaSharp.Items;
 
 internal class ItemSword : Item
 {
-
-    private int weaponDamage;
+    private readonly int _weaponDamage;
 
     public ItemSword(int id, ToolMaterial toolMaterial) : base(id)
     {
-        maxCount = 1;
-        setMaxDamage(toolMaterial.getMaxUses());
-        weaponDamage = 4 + toolMaterial.getDamageVsEntity() * 2;
+        MaxCount = 1;
+        SetMaxDamage(toolMaterial.getMaxUses());
+        _weaponDamage = 4 + toolMaterial.getDamageVsEntity() * 2;
     }
 
-    public override float getMiningSpeedMultiplier(ItemStack itemStack, Block block)
-    {
-        return block.id == Block.Cobweb.id ? 15.0F : 1.5F;
-    }
+    public override float GetMiningSpeedMultiplier(ItemStack itemStack, Block block) => block.id == Block.Cobweb.id ? 15.0F : 1.5F;
 
-    public override bool postHit(ItemStack itemStack, EntityLiving a, EntityPlayer entityPlayer)
+    public override bool PostHit(ItemStack itemStack, EntityLiving a, EntityPlayer entityPlayer)
     {
         itemStack.DamageItem(1, entityPlayer);
         return true;
     }
 
-    public override bool postMine(ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving entityLiving)
+    public override bool PostMine(ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving entityLiving)
     {
         itemStack.DamageItem(2, entityLiving);
         return true;
     }
 
-    public override int getAttackDamage(Entity entity)
-    {
-        return weaponDamage;
-    }
+    public override int GetAttackDamage(Entity entity) => _weaponDamage;
 
-    public override bool isHandheld()
-    {
-        return true;
-    }
+    public override bool IsHandheld() => true;
 
-    public override bool isSuitableFor(Block block)
-    {
-        return block.id == Block.Cobweb.id;
-    }
+    public override bool IsSuitableFor(Block block) => block.id == Block.Cobweb.id;
 }

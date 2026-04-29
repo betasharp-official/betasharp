@@ -56,9 +56,9 @@ public abstract class ScreenHandler
         {
             ItemStack slotStack = Slots[slotIndex].getStack();
             ItemStack? trackedStack = TrackedStacks[slotIndex];
-            if (!ItemStack.areEqual(trackedStack, slotStack))
+            if (!ItemStack.AreEqual(trackedStack, slotStack))
             {
-                trackedStack = slotStack is null ? null : slotStack.copy();
+                trackedStack = slotStack is null ? null : slotStack.Copy();
                 TrackedStacks[slotIndex] = trackedStack;
 
                 for (int listenerIndex = 0; listenerIndex < Listeners.Count; ++listenerIndex)
@@ -132,7 +132,7 @@ public abstract class ScreenHandler
                     if (itemStack is not null)
                     {
                         int itemStackSize = itemStack.Count;
-                        returnStack = itemStack.copy();
+                        returnStack = itemStack.Copy();
                         Slot slot = Slots[index];
                         if (slot is not null && slot.getStack() is not null)
                         {
@@ -154,7 +154,7 @@ public abstract class ScreenHandler
                         ItemStack cursorStack = playerInventory.GetCursorStack();
                         if (slotStack is not null)
                         {
-                            returnStack = slotStack.copy();
+                            returnStack = slotStack.Copy();
                         }
 
                         if (slotStack is null)
@@ -188,7 +188,7 @@ public abstract class ScreenHandler
                         }
                         else if (slot.canInsert(cursorStack))
                         {
-                            if (slotStack.ItemId != cursorStack.ItemId || slotStack.getHasSubtypes() && slotStack.getDamage() != cursorStack.getDamage())
+                            if (slotStack.ItemId != cursorStack.ItemId || slotStack.GetHasSubtypes() && slotStack.GetDamage() != cursorStack.GetDamage())
                             {
                                 if (cursorStack.Count <= slot.getMaxItemCount())
                                 {
@@ -204,9 +204,9 @@ public abstract class ScreenHandler
                                     slotItemStackSize = slot.getMaxItemCount() - slotStack.Count;
                                 }
 
-                                if (slotItemStackSize > cursorStack.getMaxCount() - slotStack.Count)
+                                if (slotItemStackSize > cursorStack.GetMaxCount() - slotStack.Count)
                                 {
-                                    slotItemStackSize = cursorStack.getMaxCount() - slotStack.Count;
+                                    slotItemStackSize = cursorStack.GetMaxCount() - slotStack.Count;
                                 }
 
                                 cursorStack.Split(slotItemStackSize);
@@ -218,10 +218,10 @@ public abstract class ScreenHandler
                                 slotStack.Count += slotItemStackSize;
                             }
                         }
-                        else if (slotStack.ItemId == cursorStack.ItemId && cursorStack.getMaxCount() > 1 && (!slotStack.getHasSubtypes() || slotStack.getDamage() == cursorStack.getDamage()))
+                        else if (slotStack.ItemId == cursorStack.ItemId && cursorStack.GetMaxCount() > 1 && (!slotStack.GetHasSubtypes() || slotStack.GetDamage() == cursorStack.GetDamage()))
                         {
                             slotItemStackSize = slotStack.Count;
-                            if (slotItemStackSize > 0 && slotItemStackSize + cursorStack.Count <= cursorStack.getMaxCount())
+                            if (slotItemStackSize > 0 && slotItemStackSize + cursorStack.Count <= cursorStack.GetMaxCount())
                             {
                                 cursorStack.Count += slotItemStackSize;
                                 slotStack.Split(slotItemStackSize);
@@ -326,25 +326,25 @@ public abstract class ScreenHandler
 
         Slot slotToInsertStack;
         ItemStack itemStackToInsert;
-        if (stack.isStackable())
+        if (stack.IsStackable())
         {
             while (stack.Count > 0 && (!fromLast && slotIndex < end || fromLast && slotIndex >= start))
             {
                 slotToInsertStack = Slots[slotIndex];
                 itemStackToInsert = slotToInsertStack.getStack();
-                if (itemStackToInsert is not null && itemStackToInsert.ItemId == stack.ItemId && (!stack.getHasSubtypes() || stack.getDamage() == itemStackToInsert.getDamage()))
+                if (itemStackToInsert is not null && itemStackToInsert.ItemId == stack.ItemId && (!stack.GetHasSubtypes() || stack.GetDamage() == itemStackToInsert.GetDamage()))
                 {
                     int newitemStackSize = itemStackToInsert.Count + stack.Count;
-                    if (newitemStackSize <= stack.getMaxCount())
+                    if (newitemStackSize <= stack.GetMaxCount())
                     {
                         stack.Count = 0;
                         itemStackToInsert.Count = newitemStackSize;
                         slotToInsertStack.markDirty();
                     }
-                    else if (itemStackToInsert.Count < stack.getMaxCount())
+                    else if (itemStackToInsert.Count < stack.GetMaxCount())
                     {
-                        stack.Count -= stack.getMaxCount() - itemStackToInsert.Count;
-                        itemStackToInsert.Count = stack.getMaxCount();
+                        stack.Count -= stack.GetMaxCount() - itemStackToInsert.Count;
+                        itemStackToInsert.Count = stack.GetMaxCount();
                         slotToInsertStack.markDirty();
                     }
                 }
@@ -377,7 +377,7 @@ public abstract class ScreenHandler
                 itemStackToInsert = slotToInsertStack.getStack();
                 if (itemStackToInsert is null)
                 {
-                    slotToInsertStack.setStack(stack.copy());
+                    slotToInsertStack.setStack(stack.Copy());
                     slotToInsertStack.markDirty();
                     stack.Count = 0;
                     break;

@@ -159,7 +159,7 @@ public class EntityFish : Entity
             if (!World.IsRemote)
             {
                 ItemStack heldItem = angler.getHand();
-                if (angler.Dead || !angler.IsAlive() || heldItem == null || heldItem.getItem() != Item.FishingRod || GetSquaredDistance(angler) > 1024.0D)
+                if (angler.Dead || !angler.IsAlive() || heldItem == null || heldItem.GetItem() != Item.FishingRod || GetSquaredDistance(angler) > 1024.0D)
                 {
                     MarkDead();
                     angler.fishHook = null;

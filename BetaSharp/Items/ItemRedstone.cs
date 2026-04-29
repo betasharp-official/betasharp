@@ -1,49 +1,35 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
-internal class ItemRedstone : Item
+internal class ItemRedstone(int id) : Item(id)
 {
-
-    public ItemRedstone(int id) : base(id)
-    {
-    }
-
-    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
+    public override bool UseOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
         if (world.Reader.GetBlockId(x, y, z) != Block.Snow.id)
         {
-            if (meta == 0)
+            switch (meta)
             {
-                --y;
-            }
-
-            if (meta == 1)
-            {
-                ++y;
-            }
-
-            if (meta == 2)
-            {
-                --z;
-            }
-
-            if (meta == 3)
-            {
-                ++z;
-            }
-
-            if (meta == 4)
-            {
-                --x;
-            }
-
-            if (meta == 5)
-            {
-                ++x;
+                case 0:
+                    --y;
+                    break;
+                case 1:
+                    ++y;
+                    break;
+                case 2:
+                    --z;
+                    break;
+                case 3:
+                    ++z;
+                    break;
+                case 4:
+                    --x;
+                    break;
+                case 5:
+                    ++x;
+                    break;
             }
 
             if (!world.Reader.IsAir(x, y, z))
@@ -52,11 +38,13 @@ internal class ItemRedstone : Item
             }
         }
 
-        if (Block.RedstoneWire.canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
+        if (!Block.RedstoneWire.canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
-            itemStack.ConsumeItem(entityPlayer);
-            world.Writer.SetBlock(x, y, z, Block.RedstoneWire.id);
+            return true;
         }
+
+        itemStack.ConsumeItem(entityPlayer);
+        world.Writer.SetBlock(x, y, z, Block.RedstoneWire.id);
 
         return true;
     }

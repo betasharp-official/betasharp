@@ -57,7 +57,7 @@ public static class RecipesCrafting
             {
                 char c = rowStr[col];
                 if (keyMap.TryGetValue(c, out ItemStack? stack))
-                    grid[row * width + col] = stack?.copy();
+                    grid[row * width + col] = stack?.Copy();
             }
         }
 

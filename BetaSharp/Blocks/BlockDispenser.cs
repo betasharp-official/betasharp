@@ -124,7 +124,7 @@ internal class BlockDispenser : BlockWithEntity
             return;
         }
 
-        if (itemStack.ItemId == Item.ARROW.id)
+        if (itemStack.ItemId == Item.ARROW.Id)
         {
             EntityArrow arrow = new(@event.World, spawnX, spawnY, spawnZ);
             arrow.setArrowHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
@@ -132,14 +132,14 @@ internal class BlockDispenser : BlockWithEntity
             @event.World.Entities.SpawnEntity(arrow);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }
-        else if (itemStack.ItemId == Item.Egg.id)
+        else if (itemStack.ItemId == Item.Egg.Id)
         {
             EntityEgg egg = new(@event.World, spawnX, spawnY, spawnZ);
             egg.setHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
             @event.World.Entities.SpawnEntity(egg);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }
-        else if (itemStack.ItemId == Item.Snowball.id)
+        else if (itemStack.ItemId == Item.Snowball.Id)
         {
             EntitySnowball snowball = new(@event.World, spawnX, spawnY, spawnZ);
             snowball.setHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
@@ -214,7 +214,7 @@ internal class BlockDispenser : BlockWithEntity
                     }
 
                     stack.Count -= amount;
-                    EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.getDamage()))
+                    EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.GetDamage()))
                     {
                         VelocityX = (float)random.NextGaussian() * LaunchSpread,
                         VelocityY = (float)random.NextGaussian() * LaunchSpread + 0.2F,

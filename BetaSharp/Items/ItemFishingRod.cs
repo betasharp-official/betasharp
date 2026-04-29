@@ -1,35 +1,26 @@
 using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
 
 internal class ItemFishingRod : Item
 {
-
     public ItemFishingRod(int id) : base(id)
     {
-        setMaxDamage(64);
-        setMaxCount(1);
+        SetMaxDamage(64);
+        SetMaxCount(1);
     }
 
-    public override bool isHandheld()
-    {
-        return true;
-    }
+    public override bool IsHandheld() => true;
 
-    public override bool isHandheldRod()
-    {
-        return true;
-    }
+    public override bool IsHandheldRod() => true;
 
-    public override ItemStack use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
+    public override ItemStack Use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
     {
         if (entityPlayer.fishHook != null)
         {
             int durabilityLoss = entityPlayer.fishHook.catchFish();
             itemStack.DamageItem(durabilityLoss, entityPlayer);
-            entityPlayer.swingHand();
         }
         else
         {
@@ -38,9 +29,9 @@ internal class ItemFishingRod : Item
             {
                 world.SpawnEntity(new EntityFish(world, entityPlayer));
             }
-
-            entityPlayer.swingHand();
         }
+
+        entityPlayer.swingHand();
 
         return itemStack;
     }

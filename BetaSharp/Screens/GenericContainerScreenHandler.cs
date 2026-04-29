@@ -54,7 +54,7 @@ public class GenericContainerScreenHandler : ScreenHandler
         if (slot != null && slot.hasStack())
         {
             ItemStack slotStack = slot.getStack();
-            movedStack = slotStack.copy();
+            movedStack = slotStack.Copy();
             if (slotNumber < rows * 9)
             {
                 insertItem(slotStack, rows * 9, Slots.Count, true);

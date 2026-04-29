@@ -5,54 +5,47 @@ namespace BetaSharp.Items;
 
 internal class ItemTool : Item
 {
-
-    private Block[] blocksEffectiveAgainst;
-    private float efficiencyOnProperMaterial = 4.0F;
-    private int damageVsEntity;
-    protected ToolMaterial toolMaterial;
+    private readonly Block[] _blocksEffectiveAgainst;
+    private readonly int _damageVsEntity;
+    private readonly float _efficiencyOnProperMaterial;
+    protected readonly ToolMaterial ToolMaterial;
 
     protected ItemTool(int id, int baseDamage, ToolMaterial toolMaterial, Block[] blocksEffectiveAgainst) : base(id)
     {
-        this.toolMaterial = toolMaterial;
-        this.blocksEffectiveAgainst = blocksEffectiveAgainst;
-        maxCount = 1;
-        setMaxDamage(toolMaterial.getMaxUses());
-        efficiencyOnProperMaterial = toolMaterial.getEfficiencyOnProperMaterial();
-        damageVsEntity = baseDamage + toolMaterial.getDamageVsEntity();
+        ToolMaterial = toolMaterial;
+        _blocksEffectiveAgainst = blocksEffectiveAgainst;
+        MaxCount = 1;
+        SetMaxDamage(toolMaterial.getMaxUses());
+        _efficiencyOnProperMaterial = toolMaterial.getEfficiencyOnProperMaterial();
+        _damageVsEntity = baseDamage + toolMaterial.getDamageVsEntity();
     }
 
-    public override float getMiningSpeedMultiplier(ItemStack itemStack, Block block)
+    public override float GetMiningSpeedMultiplier(ItemStack itemStack, Block block)
     {
-        for (int i = 0; i < blocksEffectiveAgainst.Length; ++i)
+        foreach (var t in _blocksEffectiveAgainst)
         {
-            if (blocksEffectiveAgainst[i] == block)
+            if (t == block)
             {
-                return efficiencyOnProperMaterial;
+                return _efficiencyOnProperMaterial;
             }
         }
 
         return 1.0F;
     }
 
-    public override bool postHit(ItemStack itemStack, EntityLiving a, EntityPlayer b)
+    public override bool PostHit(ItemStack itemStack, EntityLiving a, EntityPlayer b)
     {
         itemStack.DamageItem(2, b);
         return true;
     }
 
-    public override bool postMine(ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving entityLiving)
+    public override bool PostMine(ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving entityLiving)
     {
         itemStack.DamageItem(1, entityLiving);
         return true;
     }
 
-    public override int getAttackDamage(Entity entity)
-    {
-        return damageVsEntity;
-    }
+    public override int GetAttackDamage(Entity entity) => _damageVsEntity;
 
-    public override bool isHandheld()
-    {
-        return true;
-    }
+    public override bool IsHandheld() => true;
 }

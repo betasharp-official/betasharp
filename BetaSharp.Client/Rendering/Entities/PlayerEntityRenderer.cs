@@ -29,10 +29,10 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         ItemStack armorStack = playerEntity.inventory.ArmorItemBySlot(3 - renderPass);
         if (armorStack != null)
         {
-            Item armorItem = armorStack.getItem();
+            Item armorItem = armorStack.GetItem();
             if (armorItem is ItemArmor armor)
             {
-                loadTexture("/armor/" + s_armorFilenamePrefix[armor.renderIndex] + "_" + (renderPass == 2 ? 2 : 1) + ".png");
+                loadTexture("/armor/" + s_armorFilenamePrefix[armor.RenderIndex] + "_" + (renderPass == 2 ? 2 : 1) + ".png");
                 ModelBiped armorModel = renderPass == 2 ? _modelArmor : _modelArmorChestplate;
                 armorModel.bipedHead.visible = renderPass == 0;
                 armorModel.bipedHeadwear.visible = renderPass == 0;
@@ -127,7 +127,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
     protected void RenderSpecials(EntityPlayer playerEntity, float tickDelta)
     {
         ItemStack helmetStack = playerEntity.inventory.ArmorItemBySlot(3);
-        if (helmetStack != null && helmetStack.getItem().id < 256)
+        if (helmetStack != null && helmetStack.GetItem().Id < 256)
         {
             GLManager.GL.PushMatrix();
             _modelBipedMain.bipedHead.transform(1.0F / 16.0F);
@@ -227,10 +227,10 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
                 GLManager.GL.Scale(heldItemScale, -heldItemScale, heldItemScale);
             }
-            else if (Item.ITEMS[heldItem.ItemId].isHandheld())
+            else if (Item.ITEMS[heldItem.ItemId].IsHandheld())
             {
                 heldItemScale = 10.0F / 16.0F;
-                if (Item.ITEMS[heldItem.ItemId].isHandheldRod())
+                if (Item.ITEMS[heldItem.ItemId].IsHandheldRod())
                 {
                     GLManager.GL.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
                     GLManager.GL.Translate(0.0F, -(2.0F / 16.0F), 0.0F);

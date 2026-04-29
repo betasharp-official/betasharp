@@ -89,7 +89,7 @@ public class PlayerScreenHandler : ScreenHandler
         if (slot != null && slot.hasStack())
         {
             ItemStack slotStack = slot.getStack();
-            movedStack = slotStack.copy();
+            movedStack = slotStack.Copy();
             if (slotNumber == 0)
             {
                 insertItem(slotStack, 9, 45, true);
@@ -100,9 +100,9 @@ public class PlayerScreenHandler : ScreenHandler
             }
             else if (slotNumber >= 9 && slotNumber < 45)
             {
-                if (slotStack.getItem() is ItemArmor armor)
+                if (slotStack.GetItem() is ItemArmor armor)
                 {
-                    int targetSlot = 5 + armor.armorType;
+                    int targetSlot = 5 + armor.ArmorType;
                     int countBefore = slotStack.Count;
                     insertItem(slotStack, targetSlot, targetSlot + 1, false);
                     if (slotStack.Count == countBefore)

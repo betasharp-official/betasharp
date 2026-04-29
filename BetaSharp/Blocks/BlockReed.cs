@@ -65,7 +65,7 @@ internal class BlockReed : Block
 
     public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override int getDroppedItemId(int blockMeta) => Item.SugarCane.id;
+    public override int getDroppedItemId(int blockMeta) => Item.SugarCane.Id;
 
     public override bool isOpaque() => false;
 

@@ -74,14 +74,14 @@ public class ItemRenderer : EntityRenderer
                     GLManager.GL.Translate(minU, maxU, minV);
                 }
 
-                BlockRenderer.RenderBlockOnInventory(Block.Blocks[stack.ItemId], stack.getDamage(), entityItem.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
+                BlockRenderer.RenderBlockOnInventory(Block.Blocks[stack.ItemId], stack.GetDamage(), entityItem.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
                 GLManager.GL.PopMatrix();
             }
         }
         else
         {
             GLManager.GL.Scale(0.5F, 0.5F, 0.5F);
-            int iconIndex = stack.getTextureId();
+            int iconIndex = stack.GetTextureId();
             if (stack.ItemId < 256)
             {
                 loadTexture("/terrain.png");
@@ -105,7 +105,7 @@ public class ItemRenderer : EntityRenderer
             float blue;
             if (useCustomDisplayColor)
             {
-                colorMultiplier = Item.ITEMS[stack.ItemId].getColorMultiplier(stack.getDamage());
+                colorMultiplier = Item.ITEMS[stack.ItemId].GetColorMultiplier(stack.GetDamage());
                 red = (colorMultiplier >> 16 & 255) / 255.0F;
                 green = (colorMultiplier >> 8 & 255) / 255.0F;
                 blue = (colorMultiplier & 255) / 255.0F;
@@ -154,7 +154,7 @@ public class ItemRenderer : EntityRenderer
             GLManager.GL.Scale(1.0F, 1.0F, -1.0F);
             GLManager.GL.Rotate(210.0F, 1.0F, 0.0F, 0.0F);
             GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
-            int itemColor = Item.ITEMS[itemId].getColorMultiplier(itemDamage);
+            int itemColor = Item.ITEMS[itemId].GetColorMultiplier(itemDamage);
             blue = (itemColor >> 16 & 255) / 255.0F;
             float greenChannel = (itemColor >> 8 & 255) / 255.0F;
             float blueChannel = (itemColor & 255) / 255.0F;
@@ -179,7 +179,7 @@ public class ItemRenderer : EntityRenderer
                 textureManager.BindTexture(textureManager.GetTextureId("/gui/items.png"));
             }
 
-            int colorMultiplier = Item.ITEMS[itemId].getColorMultiplier(itemDamage);
+            int colorMultiplier = Item.ITEMS[itemId].GetColorMultiplier(itemDamage);
             float red = (colorMultiplier >> 16 & 255) / 255.0F;
             float green = (colorMultiplier >> 8 & 255) / 255.0F;
             blue = (colorMultiplier & 255) / 255.0F;
@@ -196,7 +196,7 @@ public class ItemRenderer : EntityRenderer
     {
         if (stack != null)
         {
-            drawItemIntoGui(fontRenderer, textureManager, stack.ItemId, stack.getDamage(), stack.getTextureId(), x, y);
+            drawItemIntoGui(fontRenderer, textureManager, stack.ItemId, stack.GetDamage(), stack.GetTextureId(), x, y);
         }
     }
 
@@ -212,10 +212,10 @@ public class ItemRenderer : EntityRenderer
                 fontRenderer.DrawStringWithShadow(stackText, x + 19 - 2 - fontRenderer.GetStringWidth(stackText), y + 6 + 3, Color.White);
             }
 
-            if (stack.isDamaged())
+            if (stack.IsDamaged())
             {
-                int barWidth = (int)MathHelper.Round(13.0D - stack.getDamage2() * 13.0D / stack.getMaxDamage());
-                int damageColor = (int)MathHelper.Round(255.0D - stack.getDamage2() * 255.0D / stack.getMaxDamage());
+                int barWidth = (int)MathHelper.Round(13.0D - stack.GetDamage2() * 13.0D / stack.GetMaxDamage());
+                int damageColor = (int)MathHelper.Round(255.0D - stack.GetDamage2() * 255.0D / stack.GetMaxDamage());
                 GLManager.GL.Disable(GLEnum.Lighting);
                 GLManager.GL.Disable(GLEnum.DepthTest);
                 GLManager.GL.Disable(GLEnum.Texture2D);

@@ -115,7 +115,7 @@ internal class BlockCrops : BlockPlant
         }
     }
 
-    public override int getDroppedItemId(int blockMeta) => blockMeta == 7 ? Item.Wheat.id : -1;
+    public override int getDroppedItemId(int blockMeta) => blockMeta == 7 ? Item.Wheat.Id : -1;
 
     public override int getDroppedItemCount() => 1;
 }

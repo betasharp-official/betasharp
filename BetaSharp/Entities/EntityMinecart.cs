@@ -116,7 +116,7 @@ public class EntityMinecart : Entity, IInventory
                 Passenger?.SetVehicle(this);
 
                 MarkDead();
-                DropItem(Item.Minecart.id, 1, 0.0F);
+                DropItem(Item.Minecart.Id, 1, 0.0F);
 
                 if (type == 1)
                 {
@@ -146,7 +146,7 @@ public class EntityMinecart : Entity, IInventory
                                     X + offsetX,
                                     Y + offsetY,
                                     Z + offsetZ,
-                                    new ItemStack(itemStack.ItemId, dropCount, itemStack.getDamage())
+                                    new ItemStack(itemStack.ItemId, dropCount, itemStack.GetDamage())
                                 );
 
                                 float scatterSpeed = 0.05F;
@@ -211,7 +211,7 @@ public class EntityMinecart : Entity, IInventory
                         X + offsetX,
                         Y + offsetY,
                         Z + offsetZ,
-                        new ItemStack(itemStack.ItemId, dropCount, itemStack.getDamage())
+                        new ItemStack(itemStack.ItemId, dropCount, itemStack.GetDamage())
                     );
 
                     float scatterSpeed = 0.05F;
@@ -834,7 +834,7 @@ public class EntityMinecart : Entity, IInventory
                 {
                     NBTTagCompound itemTag = new();
                     itemTag.SetByte("Slot", (sbyte)slotIndex);
-                    stack.writeToNBT(itemTag);
+                    stack.WriteToNbt(itemTag);
                     items.SetTag(itemTag);
                 }
             }
@@ -1058,7 +1058,7 @@ public class EntityMinecart : Entity, IInventory
         else if (type == 2)
         {
             ItemStack? heldItem = player.inventory.GetItemInHand();
-            if (heldItem != null && heldItem.ItemId == Item.Coal.id)
+            if (heldItem != null && heldItem.ItemId == Item.Coal.Id)
             {
                 if (--heldItem.Count == 0)
                 {

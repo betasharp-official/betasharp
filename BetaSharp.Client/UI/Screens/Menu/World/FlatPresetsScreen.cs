@@ -38,9 +38,9 @@ public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) 
         new PresetItem("Water World", "2;7,5x1,5x3,5x12,90x9;1;village,biome_1"),
         new PresetItem("Overworld", "2;7,59x1,3x3,2;1;village,biome_1,decoration,stronghold,mineshaft,dungeon,lake,lava_lake", Block.DeadBush.id),
         new PresetItem("Snowy Kingdom", "2;7,59x1,3x3,2,78;1;village,biome_1"),
-        new PresetItem("Bottomless Pit", "2;2x4,3x3,2;1;village,biome_1", Item.Feather.id),
+        new PresetItem("Bottomless Pit", "2;2x4,3x3,2;1;village,biome_1", Item.Feather.Id),
         new PresetItem("Desert", "2;7,3x1,52x24,8x12;1;village,biome_1,decoration,stronghold,mineshaft,dungeon"),
-        new PresetItem("Redstone Ready", "2;7,3x1,52x24;1;", Item.Redstone.id)
+        new PresetItem("Redstone Ready", "2;7,3x1,52x24;1;", Item.Redstone.Id)
     ];
 
     private ScrollView _scrollView = null!;

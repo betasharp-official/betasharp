@@ -104,7 +104,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             {
                 NBTTagCompound slotTag = new();
                 slotTag.SetByte("Slot", (sbyte)slotIndex);
-                stack.writeToNBT(slotTag);
+                stack.WriteToNbt(slotTag);
                 itemList.SetTag(slotTag);
             }
         }
@@ -194,7 +194,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             return false;
         }
 
-        ItemStack? output = RecipesSmelting.Craft(input.getItem().id);
+        ItemStack? output = RecipesSmelting.Craft(input.GetItem().Id);
         if (output is null)
         {
             return false;
@@ -207,14 +207,14 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             return true;
         }
 
-        if (!slot2.isItemEqual(output))
+        if (!slot2.IsItemEqual(output))
         {
             return false;
         }
 
         return slot2.Count < MaxCountPerStack &&
-               slot2.Count < slot2.getMaxCount() &&
-               slot2.Count < output.getMaxCount();
+               slot2.Count < slot2.GetMaxCount() &&
+               slot2.Count < output.GetMaxCount();
     }
 
     private void CraftRecipe()
@@ -225,13 +225,13 @@ public class BlockEntityFurnace : BlockEntity, IInventory
 
             if (inv0 is null) return;
 
-            ItemStack? outputStack = RecipesSmelting.Craft(inv0.getItem().id);
+            ItemStack? outputStack = RecipesSmelting.Craft(inv0.GetItem().Id);
 
             if (outputStack == null) return;
 
             if (_inventory[2] == null)
             {
-                _inventory[2] = outputStack.copy();
+                _inventory[2] = outputStack.Copy();
             }
             else
             {
@@ -261,7 +261,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             return 0;
         }
 
-        int itemId = itemStack.getItem().id;
-        return itemId < 256 && Block.Blocks[itemId].material == Material.Wood ? 300 : itemId == Item.Stick.id ? 100 : itemId == Item.Coal.id ? 1600 : itemId == Item.LavaBucket.id ? 20000 : itemId == Block.Sapling.id ? 100 : 0;
+        int itemId = itemStack.GetItem().Id;
+        return itemId < 256 && Block.Blocks[itemId].material == Material.Wood ? 300 : itemId == Item.Stick.Id ? 100 : itemId == Item.Coal.Id ? 1600 : itemId == Item.LavaBucket.Id ? 20000 : itemId == Block.Sapling.id ? 100 : 0;
     }
 }

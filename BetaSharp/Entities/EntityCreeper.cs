@@ -102,7 +102,7 @@ public class EntityCreeper : EntityMonster
         base.onKilledBy(entity);
         if (entity is EntitySkeleton)
         {
-            DropItem(Item.RecordThirteen.id + Random.NextInt(2), 1);
+            DropItem(Item.RecordThirteen.Id + Random.NextInt(2), 1);
         }
 
     }
@@ -157,7 +157,7 @@ public class EntityCreeper : EntityMonster
 
     protected override int getDropItemId()
     {
-        return Item.Gunpowder.id;
+        return Item.Gunpowder.Id;
     }
 
     public override void OnStruckByLightning(EntityLightningBolt bolt)

@@ -3,10 +3,9 @@ using BetaSharp.Blocks.Materials;
 
 namespace BetaSharp.Items;
 
-internal class ItemPickaxe : ItemTool
+internal class ItemPickaxe(int id, ToolMaterial toolMaterial) : ItemTool(id, 2, toolMaterial, s_blocksEffectiveAgainst)
 {
-
-    private static Block[] blocksEffectiveAgainst =
+    private static readonly Block[] s_blocksEffectiveAgainst =
     [
         Block.Cobblestone,
         Block.DoubleSlab,
@@ -29,12 +28,29 @@ internal class ItemPickaxe : ItemTool
         Block.CobblestoneStairs
     ];
 
-    public ItemPickaxe(int id, ToolMaterial toolMaterial) : base(id, 2, toolMaterial, blocksEffectiveAgainst)
+    public override bool IsSuitableFor(Block block)
     {
-    }
+        if (block == Block.Obsidian)
+        {
+            return ToolMaterial.getHarvestLevel() == 3;
+        }
 
-    public override bool isSuitableFor(Block block)
-    {
-        return block == Block.Obsidian ? toolMaterial.getHarvestLevel() == 3 : (block != Block.DiamondBlock && block != Block.DiamondOre ? (block != Block.GoldBlock && block != Block.GoldOre ? (block != Block.IronBlock && block != Block.IronOre ? (block != Block.LapisBlock && block != Block.LapisOre ? (block != Block.RedstoneOre && block != Block.LitRedstoneOre ? (block.material == Material.Stone ? true : block.material == Material.Metal) : toolMaterial.getHarvestLevel() >= 2) : toolMaterial.getHarvestLevel() >= 1) : toolMaterial.getHarvestLevel() >= 1) : toolMaterial.getHarvestLevel() >= 2) : toolMaterial.getHarvestLevel() >= 2);
+        if (block == Block.DiamondBlock || block == Block.DiamondOre || block == Block.GoldBlock || block == Block.GoldOre)
+        {
+            return ToolMaterial.getHarvestLevel() >= 2;
+        }
+
+        if (block == Block.IronBlock || block == Block.IronOre)
+        {
+            return ToolMaterial.getHarvestLevel() >= 1;
+        }
+
+        if (block != Block.LapisBlock && block != Block.LapisOre)
+        {
+            return block != Block.RedstoneOre && block != Block.LitRedstoneOre ? block.material == Material.Stone || block.material == Material.Metal : ToolMaterial.getHarvestLevel() >= 2;
+        }
+
+        return ToolMaterial.getHarvestLevel() >= 1;
+
     }
 }

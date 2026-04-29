@@ -36,7 +36,7 @@ internal class ShapelessRecipes : IRecipe
                     while (iterator.MoveNext())
                     {
                         ItemStack recipeItem = iterator.Current;
-                        if (gridStack.ItemId == recipeItem.ItemId && (recipeItem.getDamage() == -1 || gridStack.getDamage() == recipeItem.getDamage()))
+                        if (gridStack.ItemId == recipeItem.ItemId && (recipeItem.GetDamage() == -1 || gridStack.GetDamage() == recipeItem.GetDamage()))
                         {
                             foundMatch = true;
                             remainingIngredients.Remove(recipeItem);
@@ -57,7 +57,7 @@ internal class ShapelessRecipes : IRecipe
 
     public ItemStack GetCraftingResult(InventoryCrafting craftingInventory)
     {
-        return _output.copy();
+        return _output.Copy();
     }
 
     public int GetRecipeSize()
@@ -70,9 +70,9 @@ internal class ShapelessRecipes : IRecipe
         int hash = 0;
         for (int i = 0; i < _recipeItems.Count; i++)
         {
-            hash += (_recipeItems[i].ItemId + (_recipeItems[i].getDamage() << 8)) * (i + 1);
+            hash += (_recipeItems[i].ItemId + (_recipeItems[i].GetDamage() << 8)) * (i + 1);
         }
 
-        return hash + (_output.ItemId << 12) + (_output.getDamage() << 20) + _output.Count;
+        return hash + (_output.ItemId << 12) + (_output.GetDamage() << 20) + _output.Count;
     }
 }

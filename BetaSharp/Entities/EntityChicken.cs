@@ -58,7 +58,7 @@ public class EntityChicken : EntityAnimal
         if (!World.IsRemote && --timeUntilNextEgg <= 0)
         {
             World.Broadcaster.PlaySoundAtEntity(this, "mob.chickenplop", 1.0F, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
-            DropItem(Item.Egg.id, 1);
+            DropItem(Item.Egg.Id, 1);
             timeUntilNextEgg = Random.NextInt(6000) + 6000;
         }
 
@@ -95,6 +95,6 @@ public class EntityChicken : EntityAnimal
 
     protected override int getDropItemId()
     {
-        return Item.Feather.id;
+        return Item.Feather.Id;
     }
 }

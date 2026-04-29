@@ -18,7 +18,7 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
     private BetaSharp _game;
     private int _resolution = 16;
 
-    public ClockSprite(BetaSharp game) : base(Item.Clock.getTextureId(0))
+    public ClockSprite(BetaSharp game) : base(Item.Clock.GetTextureId(0))
     {
         _game = game;
         Atlas = FxImage.Items;

@@ -79,7 +79,7 @@ public class EntitySkeleton : EntityMonster
 
     protected override int getDropItemId()
     {
-        return Item.ARROW.id;
+        return Item.ARROW.Id;
     }
 
     protected override void dropFewItems()
@@ -89,14 +89,14 @@ public class EntitySkeleton : EntityMonster
         int i;
         for (i = 0; i < amount; ++i)
         {
-            DropItem(Item.ARROW.id, 1);
+            DropItem(Item.ARROW.Id, 1);
         }
 
         amount = Random.NextInt(3);
 
         for (i = 0; i < amount; ++i)
         {
-            DropItem(Item.Bone.id, 1);
+            DropItem(Item.Bone.Id, 1);
         }
 
     }

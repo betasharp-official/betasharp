@@ -51,8 +51,8 @@ public class EntityRenderDispatcher
         RegisterRenderer(typeof(Entity), new BoxEntityRenderer());
         RegisterRenderer(typeof(EntityPainting), new PaintingEntityRenderer());
         RegisterRenderer(typeof(EntityArrow), new ArrowEntityRenderer());
-        RegisterRenderer(typeof(EntitySnowball), new ProjectileEntityRenderer(Item.Snowball.getTextureId(0)));
-        RegisterRenderer(typeof(EntityEgg), new ProjectileEntityRenderer(Item.Egg.getTextureId(0)));
+        RegisterRenderer(typeof(EntitySnowball), new ProjectileEntityRenderer(Item.Snowball.GetTextureId(0)));
+        RegisterRenderer(typeof(EntityEgg), new ProjectileEntityRenderer(Item.Egg.GetTextureId(0)));
         RegisterRenderer(typeof(EntityFireball), new FireballEntityRenderer());
         RegisterRenderer(typeof(EntityItem), new ItemRenderer());
         RegisterRenderer(typeof(EntityTNTPrimed), new TntEntityRenderer());

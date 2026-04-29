@@ -35,7 +35,7 @@ public class HeldItemRenderer
         if (item.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[item.ItemId].getRenderType()))
         {
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/terrain.png"));
-            BlockRenderer.RenderBlockOnInventory(Block.Blocks[item.ItemId], item.getDamage(), entity.GetBrightnessAtEyes(1.0F), Tessellator.instance);
+            BlockRenderer.RenderBlockOnInventory(Block.Blocks[item.ItemId], item.GetDamage(), entity.GetBrightnessAtEyes(1.0F), Tessellator.instance);
         }
         else
         {
@@ -161,7 +161,7 @@ public class HeldItemRenderer
         float sqrtSwing;
         if (itemToRender != null)
         {
-            int itemColor = Item.ITEMS[itemToRender.ItemId].getColorMultiplier(itemToRender.getDamage());
+            int itemColor = Item.ITEMS[itemToRender.ItemId].GetColorMultiplier(itemToRender.GetDamage());
             red = (itemColor >> 16 & 255) / 255.0F;
             sineSwing = (itemColor >> 8 & 255) / 255.0F;
             sqrtSwing = (itemColor & 255) / 255.0F;
@@ -173,7 +173,7 @@ public class HeldItemRenderer
         }
 
         float baseScale;
-        if (itemToRender != null && itemToRender.ItemId == Item.Map.id)
+        if (itemToRender != null && itemToRender.ItemId == Item.Map.Id)
         {
             GLManager.GL.PushMatrix();
             baseScale = 0.8F;
@@ -239,7 +239,7 @@ public class HeldItemRenderer
             tessellator.addVertexWithUV(128 + mapBorder, 0 - mapBorder, 0.0D, 1.0D, 0.0D);
             tessellator.addVertexWithUV(0 - mapBorder, 0 - mapBorder, 0.0D, 0.0D, 0.0D);
             tessellator.draw();
-            MapState mapState = ItemMap.getMapState(itemToRender.getDamage(), _game.World);
+            MapState mapState = ItemMap.getMapState(itemToRender.GetDamage(), _game.World);
             mapRenderer.render(_game.Player, _game.TextureManager, mapState);
             GLManager.GL.PopMatrix();
         }
@@ -262,7 +262,7 @@ public class HeldItemRenderer
             GLManager.GL.Rotate(-sqrtSwing * 80.0F, 1.0F, 0.0F, 0.0F);
             red = 0.4F;
             GLManager.GL.Scale(red, red, red);
-            if (itemToRender.getItem().isHandheldRod())
+            if (itemToRender.GetItem().IsHandheldRod())
             {
                 GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
             }
@@ -461,7 +461,7 @@ public class HeldItemRenderer
             sameItem = true;
         }
 
-        if (heldStack != null && itemToRender != null && heldStack != itemToRender && heldStack.ItemId == itemToRender.ItemId && heldStack.getDamage() == itemToRender.getDamage())
+        if (heldStack != null && itemToRender != null && heldStack != itemToRender && heldStack.ItemId == itemToRender.ItemId && heldStack.GetDamage() == itemToRender.GetDamage())
         {
             itemToRender = heldStack;
             sameItem = true;

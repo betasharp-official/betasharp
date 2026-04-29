@@ -17,7 +17,7 @@ public class InventoryS2CPacket() : Packet(PacketId.InventoryS2C)
         for (int i = 0; i < p.contents.Length; i++)
         {
             ItemStack itemStack = contents[i];
-            p.contents[i] = itemStack == null ? null : itemStack.copy();
+            p.contents[i] = itemStack == null ? null : itemStack.Copy();
         }
 
         return p;
@@ -58,7 +58,7 @@ public class InventoryS2CPacket() : Packet(PacketId.InventoryS2C)
             {
                 stream.WriteShort((short)contents[i].ItemId);
                 stream.WriteByte((byte)contents[i].Count);
-                stream.WriteShort((short)contents[i].getDamage());
+                stream.WriteShort((short)contents[i].GetDamage());
             }
         }
 

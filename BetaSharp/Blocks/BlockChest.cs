@@ -151,7 +151,7 @@ internal class BlockChest : BlockWithEntity
                 }
 
                 stack.Count -= amount;
-                EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.getDamage()));
+                EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.GetDamage()));
 
                 entityItem.VelocityX = s_random.NextGaussian() * DropSpread;
                 entityItem.VelocityY = s_random.NextGaussian() * DropSpread + 0.2F;

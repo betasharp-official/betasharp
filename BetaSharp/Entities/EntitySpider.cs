@@ -106,7 +106,7 @@ public class EntitySpider : EntityMonster
 
     protected override int getDropItemId()
     {
-        return Item.String.id;
+        return Item.String.Id;
     }
 
     public override bool isOnLadder()

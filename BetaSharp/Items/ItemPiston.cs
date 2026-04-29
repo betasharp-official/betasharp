@@ -1,14 +1,6 @@
 namespace BetaSharp.Items;
 
-internal class ItemPiston : ItemBlock
+internal class ItemPiston(int id) : ItemBlock(id)
 {
-
-    public ItemPiston(int id) : base(id)
-    {
-    }
-
-    public override int getPlacementMetadata(int meta)
-    {
-        return 7;
-    }
+    protected override int GetPlacementMetadata(int meta) => 7;
 }

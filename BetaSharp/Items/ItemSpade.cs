@@ -2,10 +2,9 @@ using BetaSharp.Blocks;
 
 namespace BetaSharp.Items;
 
-internal class ItemSpade : ItemTool
+internal class ItemSpade(int id, ToolMaterial toolMaterial) : ItemTool(id, 1, toolMaterial, s_blocksEffectiveAgainst)
 {
-
-    private static Block[] blocksEffectiveAgainst =
+    private static readonly Block[] s_blocksEffectiveAgainst =
     [
         Block.GrassBlock,
         Block.Dirt,
@@ -14,15 +13,8 @@ internal class ItemSpade : ItemTool
         Block.Snow,
         Block.SnowBlock,
         Block.Clay,
-        Block.Farmland,
+        Block.Farmland
     ];
 
-    public ItemSpade(int id, ToolMaterial toolMaterial) : base(id, 1, toolMaterial, blocksEffectiveAgainst)
-    {
-    }
-
-    public override bool isSuitableFor(Block block)
-    {
-        return block == Block.Snow ? true : block == Block.SnowBlock;
-    }
+    public override bool IsSuitableFor(Block block) => block == Block.Snow || block == Block.SnowBlock;
 }

@@ -24,12 +24,12 @@ internal class CraftingResultSlot : Slot
 
     public override void onTakeItem(ItemStack stack)
     {
-        stack.onCraft(thePlayer.World, thePlayer);
+        stack.OnCraft(thePlayer.World, thePlayer);
         if (stack.ItemId == Block.CraftingTable.id)
         {
             thePlayer.increaseStat(Achievements.BuildWorkbench, 1);
         }
-        else if (stack.ItemId == Item.WoodenPickaxe.id)
+        else if (stack.ItemId == Item.WoodenPickaxe.Id)
         {
             thePlayer.increaseStat(Achievements.BuildPickaxe, 1);
         }
@@ -37,23 +37,23 @@ internal class CraftingResultSlot : Slot
         {
             thePlayer.increaseStat(Achievements.BuildFurnace, 1);
         }
-        else if (stack.ItemId == Item.WoodenHoe.id)
+        else if (stack.ItemId == Item.WoodenHoe.Id)
         {
             thePlayer.increaseStat(Achievements.BuildHoe, 1);
         }
-        else if (stack.ItemId == Item.Bread.id)
+        else if (stack.ItemId == Item.Bread.Id)
         {
             thePlayer.increaseStat(Achievements.MakeBread, 1);
         }
-        else if (stack.ItemId == Item.Cake.id)
+        else if (stack.ItemId == Item.Cake.Id)
         {
             thePlayer.increaseStat(Achievements.MakeCake, 1);
         }
-        else if (stack.ItemId == Item.StonePickaxe.id)
+        else if (stack.ItemId == Item.StonePickaxe.Id)
         {
             thePlayer.increaseStat(Achievements.CraftStonePickaxe, 1);
         }
-        else if (stack.ItemId == Item.WoodenSword.id)
+        else if (stack.ItemId == Item.WoodenSword.Id)
         {
             thePlayer.increaseStat(Achievements.CraftSword, 1);
         }
@@ -64,9 +64,9 @@ internal class CraftingResultSlot : Slot
             if (ingredientStack != null)
             {
                 craftMatrix.RemoveStack(slotIndex, 1);
-                if (ingredientStack.getItem().hasContainerItem())
+                if (ingredientStack.GetItem().HasContainerItem())
                 {
-                    craftMatrix.SetStack(slotIndex, new ItemStack(ingredientStack.getItem().getContainerItem()));
+                    craftMatrix.SetStack(slotIndex, new ItemStack(ingredientStack.GetItem().GetContainerItem()));
                 }
             }
         }

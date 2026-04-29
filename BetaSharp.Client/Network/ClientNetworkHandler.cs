@@ -785,7 +785,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onMapUpdate(MapUpdateS2CPacket packet)
     {
-        if (packet.itemRawId == Item.Map.id)
+        if (packet.itemRawId == Item.Map.Id)
         {
             ItemMap.getMapState(packet.id, _context.WorldHost.World).UpdateData(packet.updateData);
         }
