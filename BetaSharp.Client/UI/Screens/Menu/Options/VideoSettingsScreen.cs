@@ -6,7 +6,7 @@ namespace BetaSharp.Client.UI.Screens.Menu.Options;
 public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOptionsScreen(context, parent, "options.videoTitle")
 {
     protected override List<OptionSection> GetOptions() => [
-        new(translationStorage.TranslateKey("options.video.performance"), [
+        new(TranslationStorage.Instance.TranslateKey("options.video.performance"), [
             Options.RenderDistanceOption,
             Options.FramerateLimitOption,
             Options.VSyncOption,
@@ -15,7 +15,7 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
             Options.AnisotropicOption,
         ]),
 
-        new("Display", [
+        new(TranslationStorage.Instance.TranslateKey("options.video.display"), [
             Options.ViewBobbingOption,
             Options.EnvironmentAnimationOption,
             Options.ChunkFadeOption,

@@ -231,6 +231,15 @@ public class GameOptions
 
         LoadOptions();
         INITIAL_MSAA = MSAALevel;
+
+        if(AssetManager.Languages.ContainsKey(LanguageOption!.Value + ".json"))
+        {
+            Language = LanguageOption!.Value;
+        }
+        else
+        {
+            Language = "en_us";
+        }
     }
 
     public GameOptions()
@@ -314,20 +323,18 @@ public class GameOptions
             }
         };
 
-        EnvironmentAnimationOption = new BoolOption("Environment Anim", "envAnimation", true);
-        ChunkFadeOption = new BoolOption("Chunk Fade", "chunkFade", true);
-        AlternateBlocksOption = new BoolOption("Alternate Blocks", "alternateBlocks", true)
+        EnvironmentAnimationOption = new BoolOption("options.environmentAnim", "envAnimation", true);
+        ChunkFadeOption = new BoolOption("options.chunkFade", "chunkFade", true);
+        AlternateBlocksOption = new BoolOption("options.alternateBlocks", "alternateBlocks", true)
         {
-            LabelOverride = "Alternate Blocks",
             OnChanged = _ => ReloadChunks.Invoke()
         };
         MenuMusicOption = new BoolOption("Menu Music", "menuMusic", true);
 
-        RenderDistanceOption = new FloatOption("options.renderDistance", "viewDistance", 0.2f)
+        RenderDistanceOption = new FloatOption("options.renderDistance.text", "viewDistance", 0.2f)
         {
-            LabelOverride = "Render Distance",
             Steps = 28,
-            Formatter = (v, t) => $"{4 + (int)(v * 28.0f)} Chunks",
+            Formatter = (v, t) => $"{4 + (int)(v * 28.0f)} " + TranslationStorage.Instance.TranslateKey("options.renderDistance.chunks"),
             OnChanged = _ =>
             {
                 if (_game?.InternalServer != null)
@@ -336,9 +343,9 @@ public class GameOptions
                 }
             }
         };
-        DifficultyOption = new CycleOption("options.difficulty", "difficulty", DifficultyLabels, 2);
-        GuiScaleOption = new CycleOption("options.guiScale", "guiScale", GuiScaleLabels);
-        AnisotropicOption = new CycleOption("Aniso Level", "anisotropicLevel", AnisoLabels)
+        DifficultyOption = new CycleOption("options.difficulty.text", "difficulty", DifficultyLabels, 2);
+        GuiScaleOption = new CycleOption("options.guiScale.text", "guiScale", GuiScaleLabels);
+        AnisotropicOption = new CycleOption("options.anisoLevel", "anisotropicLevel", AnisoLabels)
         {
             Formatter = (v, t) => v == 0 ? t.TranslateKey("options.off") : AnisoLabels[v],
             OnChanged = v =>
@@ -361,7 +368,10 @@ public class GameOptions
                 return result;
             }
         };
-        LanguageOption = new StringOption("Language", "language", "en_US");
+        LanguageOption = new StringOption("Language", "language", "en_us")
+        {
+            OnChanged = _ => Language = LanguageOption.Value
+        };
 
         _allOptions = [];
         foreach (GameOption option in GetAllOptions())
@@ -435,11 +445,6 @@ public class GameOptions
                 {
                     _logger.LogError($"Skipping bad option: {line}");
                 }
-            }
-
-            if (string.IsNullOrWhiteSpace(Language))
-            {
-                Language = "en_us";
             }
         }
         catch (Exception)

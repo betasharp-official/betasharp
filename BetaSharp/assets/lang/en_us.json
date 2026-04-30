@@ -1,0 +1,1244 @@
+﻿{
+    "lang": {
+        "name": "English (United States)"
+    },
+    "gui": {
+        "edit": "Edit",
+        "refresh": "Refresh",
+        "done": "Done",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "toMenu": "Back to title screen",
+        "up": "Up",
+        "down": "Down",
+        "yes": "Yes",
+        "no": "No",
+        "connect": "Connect",
+        "directConnect": "Direct Connect",
+        "addServer": "Add Server",
+        "create": "Create",
+        "customize": "Customize",
+        "achievements": "Achievements",
+        "stats": "Statistics"
+    },
+    "menu": {
+        "singleplayer": "Singleplayer",
+        "multiplayer": "Multiplayer",
+        "texturePacks": "Texture Packs",
+        "options": "Options...",
+        "language": "Language",
+        "quit": "Quit Game",
+        "credits": "Credits"
+    },
+    "selectWorld": {
+        "title": "Select World",
+        "empty": "empty",
+        "world": "World",
+        "select": "Play Selected World",
+        "create": "Create New World",
+        "createDemo": "Play New Demo World",
+        "rename": "Rename",
+        "deleteQuestion": "Are you sure you want to delete this world?",
+        "deleteWarning": "will be lost forever! (A long time!)",
+        "renameButton": "Rename",
+        "renameTitle": "Rename World",
+        "conversion": "Must be converted!",
+        "newWorld": "New World",
+        "enterName": "World Name",
+        "resultFolder": "Will be saved in:",
+        "enterSeed": "Seed for the World Generator",
+        "seedInfo": "Leave blank for a random seed",
+        "selectWorldType": "Select World Type",
+        "worldType": "World Type",
+        "customize": "Customize",
+        "moreWorldOptions": "More World Options..."
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "Customize Superflat World"
+            },
+            "removeLayer": "Remove Layer",
+            "presets": "Presets"
+        }
+    },
+    "world": {
+        "world": "World",
+        "unsupportedFormat": "Unsupported Format!"
+    },
+    "multiplayer": {
+        "title": "Play Multiplayer",
+        "betasharpServer": "BetaSharp Server",
+        "info1": "Minecraft Multiplayer is currently not finished, but there",
+        "info2": "is some buggy early testing going on.",
+        "ipinfo": "Enter the IP of a server to connect to it:",
+        "deleteQuestion": "Are you sure you want to delete this server?",
+        "deleteWarning": "will be lost forever! (A long time!)",
+        "downloadingTerrain": "Downloading terrain",
+        "stopSleeping": "Leave Bed"
+    },
+    "loading": {
+        "loadingLevel": "Loading level",
+        "startingServer": "Starting server..."
+    },
+    "achievements": {
+        "title": "Achievements"
+    },
+    "gameover": {
+        "title": "Game Over!",
+        "score": "Score",
+        "respawn": "Respawn",
+        "titleMenu": "Title menu"
+    },
+    "gamemenu": {
+        "title": "Game Menu",
+        "backToGame": "Back to Game"
+    },
+    "sign": {
+        "title": "Edit sign message:"
+    },
+    "stats": {
+        "title": "Statistics",
+        "general": "General",
+        "blocks": {
+            "name": "Blocks",
+            "mined": "Mined",
+            "placed": "Placed",
+            "used": "Used"
+        },
+        "items": {
+            "name": "Items",
+            "broken": "Broken",
+            "crafted": "Crafted",
+            "used": "Used"
+        },
+        "item": "Item",
+        "done": "Done"
+    },
+    "demo": {
+        "day": {
+            "1": "This demo will last five game days, do your best!",
+            "2": "Day Two",
+            "3": "Day Three",
+            "4": "Day Four",
+            "5": "This is your last day!",
+            "warning": "Your time is almost up!",
+            "6": "You have passed your fifth day, use F2 to save a screenshot of your creation"
+        },
+        "reminder": "The demo time has expired, buy the game to continue or start a new world!",
+        "help": {
+            "movement": "Use %1$s, %2$s, %3$s, %4$s and the mouse to move around",
+            "jump": "Jump by pressing %1$s",
+            "inventory": "Use %1$s to open your inventory"
+        }
+    },
+    "connect": {
+        "connecting": "Connecting to the server...",
+        "authorizing": "Logging in...",
+        "failed": "Failed to connect to the server"
+    },
+    "disconnect": {
+        "genericReason": "%1$s",
+        "disconnected": "Disconnected by Server",
+        "lost": "Connection Lost",
+        "kicked": "Was kicked from the game",
+        "timeout": "Timed out",
+        "closed": "Connection closed",
+        "loginFailed": "Failed to login",
+        "loginFailedInfo": "Failed to login: %s",
+        "quitting": "Quitting",
+        "endOfStream": "End of stream",
+        "overflow": "Buffer overflow"
+    },
+    "options": {
+        "off": "OFF",
+        "on": "ON",
+        "title": "Options",
+        "controls": "Controls...",
+        "keyboardControls": "Keyboard Controls...",
+        "controllerSettings": "Controller Settings...",
+        "video": {
+            "text": "Video Settings...",
+            "performance": "Performance",
+            "display": "Display"
+        },
+        "uiSettings": "UI Settings...",
+        "audioSettings": "Audio Settings...",
+        "audioTitle": "Audio Settings",
+        "videoTitle": "Video Settings",
+        "language": "Language...",
+        "anisoLevel": "Aniso Level",
+        "music": "Music",
+        "sound": "Sound",
+        "invertMouse": "Invert Mouse",
+        "alternateBlocks": "Alternate Blocks",
+        "chunkFade": "Chunk Fade",
+        "environmentAnim": "Environment Anim",
+        "sensitivity": {
+            "text": "Sensitivity",
+            "min": "*yawn*",
+            "max": "HYPERSPEED!!!"
+        },
+        "renderDistance": {
+            "text": "Render Distance",
+            "chunks": "Chunks",
+            "tiny": "Tiny",
+            "short": "Short",
+            "normal": "Normal",
+            "far": "Far"
+        },
+        "viewBobbing": "View Bobbing",
+        "ao": "Smooth Lighting",
+        "anaglyph": "3D Anaglyph",
+        "framerateLimit": "Performance",
+        "difficulty": {
+            "text": "Difficulty",
+            "peaceful": "Peaceful",
+            "easy": "Easy",
+            "normal": "Normal",
+            "hard": "Hard"
+        },
+        "graphics": {
+            "text": "Graphics",
+            "fancy": "Fancy",
+            "fast": "Fast"
+        },
+        "guiScale": {
+            "text": "GUI Scale",
+            "auto": "Auto",
+            "small": "Small",
+            "normal": "Normal",
+            "large": "Large"
+        },
+        "advancedOpengl": "Advanced OpenGL"
+    },
+    "performance": {
+        "max": "Max FPS",
+        "balanced": "Balanced",
+        "powersaver": "Power saver"
+    },
+    "controls": {
+        "title": "Controls"
+    },
+    "key": {
+        "forward": "Forward",
+        "left": "Left",
+        "back": "Back",
+        "right": "Right",
+        "jump": "Jump",
+        "inventory": "Inventory",
+        "drop": "Drop",
+        "chat": "Chat",
+        "fog": "Toggle Fog",
+        "sneak": "Sneak",
+        "playerlist": "List players",
+        "zoom": "Zoom"
+    },
+    "texturePack": {
+        "openFolder": "Open texture pack folder",
+        "title": "Select Texture Pack",
+        "folderInfo": "(Place texture pack files here)"
+    },
+    "tile": {
+        "stone": {
+            "name": "Stone",
+            "desc": ""
+        },
+        "grass": {
+            "name": "Grass",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "Dirt",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "Cobblestone",
+            "desc": ""
+        },
+        "wood": {
+            "name": "Wooden Planks",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "Sapling",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "Bedrock",
+            "desc": ""
+        },
+        "water": {
+            "name": "Water",
+            "desc": ""
+        },
+        "lava": {
+            "name": "Lava",
+            "desc": ""
+        },
+        "sand": {
+            "name": "Sand",
+            "desc": ""
+        },
+        "sandStone": { "name": "Sandstone" },
+        "gravel": {
+            "name": "Gravel",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "Gold Ore",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "Iron Ore",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "Coal Ore",
+            "desc": ""
+        },
+        "log": {
+            "name": "Wood",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Leaves",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "Sponge",
+            "desc": ""
+        },
+        "glass": {
+            "name": "Glass",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "Wool",
+            "desc": "",
+            "black": {
+                "name": "Black Wool",
+                "desc": ""
+            },
+            "red": {
+                "name": "Red Wool",
+                "desc": ""
+            },
+            "green": {
+                "name": "Green Wool",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Brown Wool",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Blue Wool",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Purple Wool",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Cyan Wool",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Light Gray Wool",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Gray Wool",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Pink Wool",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Lime Wool",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Yellow Wool",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Light Blue Wool",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Magenta Wool",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Orange Wool",
+                "desc": ""
+            },
+            "white": {
+                "name": "Wool",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "Flower",
+            "desc": ""
+        },
+        "rose": {
+            "name": "Rose",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "Mushroom",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "Block of Gold",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "Block of Iron",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "Stone Slab",
+                "desc": ""
+            },
+            "sand": {
+                "name": "Sandstone Slab",
+                "desc": ""
+            },
+            "wood": {
+                "name": "Wooden Slab",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "Stone Slab",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "Bricks",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "TNT",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "Bookshelf",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "Moss Stone",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "Obsidian",
+            "desc": ""
+        },
+        "torch": {
+            "name": "Torch",
+            "desc": ""
+        },
+        "fire": {
+            "name": "Fire",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "Monster Spawner",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "Wooden Stairs",
+            "desc": ""
+        },
+        "chest": {
+            "name": "Chest",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "Redstone Dust",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "Diamond Ore",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "Block of Diamond",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "Crafting Table",
+            "desc": ""
+        },
+        "crops": {
+            "name": "Crops",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "Farmland",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "Furnace",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Sign",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Wooden Door",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "Ladder",
+            "desc": ""
+        },
+        "rail": {
+            "name": "Rail",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "Powered Rail",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "Detector Rail",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "Stone Stairs",
+            "desc": ""
+        },
+        "lever": {
+            "name": "Lever",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "Pressure Plate",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Iron Door",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "Redstone Ore",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "Redstone Torch",
+            "desc": ""
+        },
+        "button": {
+            "name": "Button",
+            "desc": ""
+        },
+        "snow": {
+            "name": "Snow",
+            "desc": ""
+        },
+        "ice": {
+            "name": "Ice",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "Cactus",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Clay",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "Sugar cane",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "Jukebox",
+            "desc": ""
+        },
+        "fence": {
+            "name": "Fence",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "Pumpkin",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "Jack 'o' Lantern",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "Netherrack",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "Soul Sand",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "Glowstone",
+            "desc": ""
+        },
+        "portal": {
+            "name": "Portal",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "Lapis Lazuli Ore",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "Lapis Lazuli Block",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "Dispenser",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "Note Block",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Cake",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Bed",
+            "desc": "",
+            "occupied": "This bed is occupied",
+            "noSleep": "You can only sleep at night",
+            "notValid": "Your home bed was missing or obstructed"
+        },
+        "lockedchest": {
+            "name": "Locked chest",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "Trapdoor",
+            "desc": ""
+        },
+        "web": {
+            "name": "Cobweb",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "Stone Bricks",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "Piston",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "Sticky Piston",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "Iron Shovel",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "Iron Pickaxe",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "Iron Axe",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "Flint and Steel",
+            "desc": ""
+        },
+        "apple": {
+            "name": "Apple",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "Cookie",
+            "desc": ""
+        },
+        "bow": {
+            "name": "Bow",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "Arrow",
+            "desc": ""
+        },
+        "coal": {
+            "name": "Coal",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "Charcoal",
+            "desc": ""
+        },
+        "emerald": {
+            "name": "Diamond",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "Iron Ingot",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "Gold Ingot",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "Iron Sword",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "Wooden Sword",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "Wooden Shovel",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "Wooden Pickaxe",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "Wooden Axe",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "Stone Sword",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "Stone Shovel",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "Stone Pickaxe",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "Stone Axe",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "Diamond Sword",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "Diamond Shovel",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "Diamond Pickaxe",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "Diamond Axe",
+            "desc": ""
+        },
+        "stick": {
+            "name": "Stick",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "Bowl",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "Mushroom Stew",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "Golden Sword",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "Golden Shovel",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "Golden Pickaxe",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "Golden Axe",
+            "desc": ""
+        },
+        "string": {
+            "name": "String",
+            "desc": ""
+        },
+        "feather": {
+            "name": "Feather",
+            "desc": ""
+        },
+        "sulphur": {
+            "name": "Gunpowder",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "Wooden Hoe",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "Stone Hoe",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "Iron Hoe",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "Diamond Hoe",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "Golden Hoe",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "Seeds",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "Wheat",
+            "desc": ""
+        },
+        "bread": {
+            "name": "Bread",
+            "desc": ""
+        },
+        "helmetCloth": {
+            "name": "Leather Cap",
+            "desc": ""
+        },
+        "chestplateCloth": {
+            "name": "Leather Tunic",
+            "desc": ""
+        },
+        "leggingsCloth": {
+            "name": "Leather Pants",
+            "desc": ""
+        },
+        "bootsCloth": {
+            "name": "Leather Boots",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "Chain Helmet",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "Chain Chestplate",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "Chain Leggings",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "Chain Boots",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "Iron Helmet",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "Iron Chestplate",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "Iron Leggings",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "Iron Boots",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "Diamond Helmet",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "Diamond Chestplate",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "Diamond Leggings",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "Diamond Boots",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "Golden Helmet",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "Golden Chestplate",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "Golden Leggings",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "Golden boots",
+            "desc": ""
+        },
+        "flint": {
+            "name": "Flint",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "Raw Porkchop",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "Cooked Porkchop",
+            "desc": ""
+        },
+        "painting": {
+            "name": "Painting",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "Golden Apple",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Sign",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Wooden Door",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "Bucket",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "Water Bucket",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "Lava bucket",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "Minecart",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "Saddle",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Iron Door",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "Redstone",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "Snowball",
+            "desc": ""
+        },
+        "boat": {
+            "name": "Boat",
+            "desc": ""
+        },
+        "leather": {
+            "name": "Leather",
+            "desc": ""
+        },
+        "milk": {
+            "name": "Milk",
+            "desc": ""
+        },
+        "brick": {
+            "name": "Brick",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Clay",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "Sugar Canes",
+            "desc": ""
+        },
+        "paper": {
+            "name": "Paper",
+            "desc": ""
+        },
+        "book": {
+            "name": "Book",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "Slimeball",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "Minecart with Chest",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "Minecart with Furnace",
+            "desc": ""
+        },
+        "egg": {
+            "name": "Egg",
+            "desc": ""
+        },
+        "compass": {
+            "name": "Compass",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "Fishing Rod",
+            "desc": ""
+        },
+        "clock": {
+            "name": "Clock",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "Glowstone Dust",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "Raw Fish",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "Cooked Fish",
+            "desc": ""
+        },
+        "record": {
+            "name": "Music Disc",
+            "desc": ""
+        },
+        "bone": {
+            "name": "Bone",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "Ink Sac",
+                "desc": ""
+            },
+            "red": {
+                "name": "Rose Red",
+                "desc": ""
+            },
+            "green": {
+                "name": "Cactus Green",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Cocoa Beans",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Lapis Lazuli",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Purple Dye",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Cyan Dye",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Light Gray Dye",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Gray Dye",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Pink Dye",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Lime Dye",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Dandelion Yellow",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Light Blue Dye",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Magenta Dye",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Orange Dye",
+                "desc": ""
+            },
+            "white": {
+                "name": "Bone Meal",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "Sugar",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Cake",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Bed",
+            "desc": ""
+        },
+        "diode": {
+            "name": "Redstone Repeater",
+            "desc": ""
+        },
+        "map": {
+            "name": "Map",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Leaves",
+            "desc": ""
+        },
+        "shears": {
+            "name": "Shears",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "General",
+        "blocksButton": "Blocks",
+        "itemsButton": "Items",
+        "used": "Times Used",
+        "mined": "Times Mined",
+        "depleted": "Times Depleted",
+        "crafted": "Times Crafted",
+        "startGame": "Times played",
+        "createWorld": "Worlds played",
+        "loadWorld": "Saves loaded",
+        "joinMultiplayer": "Multiplayer joins",
+        "leaveGame": "Games quit",
+        "playOneMinute": "Minutes Played",
+        "walkOneCm": "Distance Walked",
+        "fallOneCm": "Distance Fallen",
+        "swimOneCm": "Distance Swum",
+        "flyOneCm": "Distance Flown",
+        "climbOneCm": "Distance Climbed",
+        "diveOneCm": "Distance Dove",
+        "minecartOneCm": "Distance by Minecart",
+        "boatOneCm": "Distance by Boat",
+        "pigOneCm": "Distance by Pig",
+        "jump": "Jumps",
+        "drop": "Items Dropped",
+        "damageDealt": "Damage Dealt",
+        "damageTaken": "Damage Taken",
+        "deaths": "Number of Deaths",
+        "mobKills": "Mob Kills",
+        "playerKills": "Player Kills",
+        "fishCaught": "Fish Caught",
+        "mineBlock": "%1$s Mined",
+        "craftItem": "%1$s Crafted",
+        "useItem": "%1$s Used",
+        "breakItem": "%1$s Depleted"
+    },
+    "achievements.title": "Achievements",
+    "achievement": {
+        "get": "Achievement get!",
+        "taken": "Taken!",
+        "requires": "Requires '%1$s'",
+        "openInventory": {
+            "title": "Taking Inventory",
+            "desc": "Press '%1$s' to open your inventory."
+        },
+        "mineWood": {
+            "title": "Getting Wood",
+            "desc": "Attack a tree until a block of wood pops out"
+        },
+        "buildWorkBench": {
+            "title": "Benchmarking",
+            "desc": "Craft a workbench with four blocks of planks"
+        },
+        "buildPickaxe": {
+            "title": "Time to Mine!",
+            "desc": "Use planks and sticks to make a pickaxe"
+        },
+        "buildFurnace": {
+            "title": "Hot Topic",
+            "desc": "Construct a furnace out of eight stone blocks"
+        },
+        "acquireIron": {
+            "title": "Acquire Hardware",
+            "desc": "Smelt an iron ingot"
+        },
+        "buildHoe": {
+            "title": "Time to Farm!",
+            "desc": "Use planks and sticks to make a hoe"
+        },
+        "makeBread": {
+            "title": "Bake Bread",
+            "desc": "Turn wheat into bread"
+        },
+        "bakeCake": {
+            "title": "The Lie",
+            "desc": "Wheat, sugar, milk and eggs!"
+        },
+        "buildBetterPickaxe": {
+            "title": "Getting an Upgrade",
+            "desc": "Construct a better pickaxe"
+        },
+        "cookFish": {
+            "title": "Delicious Fish",
+            "desc": "Catch and cook fish!"
+        },
+        "onARail": {
+            "title": "On A Rail",
+            "desc": "Travel by minecart at least 1 km from where you started "
+        },
+        "buildSword": {
+            "title": "Time to Strike!",
+            "desc": "Use planks and sticks to make a sword"
+        },
+        "killEnemy": {
+            "title": "Monster Hunter",
+            "desc": "Attack and destroy a monster"
+        },
+        "killCow": {
+            "title": "Cow Tipper",
+            "desc": "Harvest some leather"
+        },
+        "flyPig": {
+            "title": "When Pigs Fly",
+            "desc": "Fly a pig off a cliff"
+        }
+    }
+}

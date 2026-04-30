@@ -76,7 +76,7 @@ public class AchievementsScreen(
         PopulateAchievementList(cardList);
 
         Button btnDone = CreateButton();
-        btnDone.Text = translationStorage.TranslateKey("achievements.done");
+        btnDone.Text = translationStorage.TranslateKey("gui.done");
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 20;
         btnDone.Style.FlexShrink = 0;

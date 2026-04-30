@@ -10,7 +10,7 @@ namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
 public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : BaseOptionsScreen(context, parent, "options.videoTitle") {
 
-    protected override IEnumerable<GameOption> GetOptions() => [];
+    protected override List<OptionSection> GetOptions() => [];
 
     private readonly List<WorldSaveInfo> _saveList = [];
     private ScrollView _scrollView = null!;
@@ -84,6 +84,11 @@ public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : Base
             item.OnClick += (e) => SelectListItem(item, lang.Key);
             _scrollView.AddContent(item);
             _listItems.Add(item);
+            if (lang.Key.Remove(5) == Options.Language)
+            {
+                item.IsSelected = true;
+                _selectedLanguage = item;
+            }
         }
     }
 

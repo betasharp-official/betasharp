@@ -24,7 +24,7 @@ public class Achievement : StatBase
     {
     }
 
-    public Achievement(int id, string key, int column, int row, ItemStack icon, Achievement parent) : base(5242880 + id, StatCollector.TranslateToLocal("achievement." + key))
+    public Achievement(int id, string key, int column, int row, ItemStack icon, Achievement parent) : base(5242880 + id, StatCollector.TranslateToLocal("achievement." + key + ".title"))
     {
         this.icon = icon;
         TranslationKey = StatCollector.TranslateToLocal("achievement." + key + ".desc");
