@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp;
@@ -121,24 +122,29 @@ public class AssetManager
         {
             if (Directory.Exists(langPath))
             {
-                var langFiles = Directory.EnumerateFiles(langPath, "*.lang");
+                var langFiles = Directory.EnumerateFiles(langPath, "*.json");
 
                 foreach (var file in langFiles)
                 {
-                    string? name = File.ReadLines(file).FirstOrDefault() ?? null;
-                    string fileName = Path.GetFileName(file);
+                    string? name = null;
 
-                    if (name != null && fileName.EndsWith(".lang"))
+                    try
                     {
-                        if (name.StartsWith("lang.name="))
+                        string json = File.ReadAllText(file);
+                        using JsonDocument doc = JsonDocument.Parse(json);
+
+                        if (doc.RootElement.TryGetProperty("lang", out var langObj) &&
+                            langObj.TryGetProperty("name", out var nameProp))
                         {
-                            name = name.Split('=')[1].Trim();
-                        }
-                        else
-                        {
-                            continue;
+                            name = nameProp.GetString();
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Invalid JSON in {file}: {ex.Message}");
+                    }
+
+                    string fileName = Path.GetFileName(file);
 
                     Languages.Add(fileName, name ?? "Unknown");
                     defineAsset("lang/" + fileName, AssetType.Text);
@@ -163,8 +169,6 @@ public class AssetManager
 
     private void defineFullAssets()
     {
-        defineAsset("lang/pl_PL.lang", AssetType.Text);
-
         defineAsset("title/splashes.txt", AssetType.Text);
         defineAsset("title/black.png", AssetType.Binary);
         defineAsset("title/mclogo.png", AssetType.Binary);

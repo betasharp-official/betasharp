@@ -94,7 +94,7 @@ public class GameOptions
         set
         {
             LanguageOption.Value = value;
-            UpdateLanguage();
+            TranslationStorage.Instance.SwitchLanguage(Language);
         }
     }
 
@@ -410,24 +410,14 @@ public class GameOptions
                 }
             }
 
-            UpdateLanguage();
+            if (string.IsNullOrWhiteSpace(Language))
+            {
+                Language = "en_us";
+            }
         }
         catch (Exception)
         {
             _logger.LogError("Failed to load options");
-        }
-    }
-
-    private void UpdateLanguage()
-    {   try
-        {
-            TranslationStorage translationStorage = TranslationStorage.Instance;
-
-            translationStorage.SwitchLanguage(Language);
-        }
-        catch (Exception)
-        {
-            _logger.LogError($"Failed to update language");
         }
     }
 

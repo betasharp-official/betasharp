@@ -7,12 +7,12 @@ namespace BetaSharp.Client.UI.Controls.Core;
 
 public class ImageButton : UIElement
 {
-    public TextureHandle? Texture { get; set; }
+    public TextureHandle Texture { get; set; }
 
     public float? U { get; set; }
     public float? V { get; set; }
     public float? UWidth { get; set; }
-    public float? VHeight { get; set; }
+    public float? VHeight { get; set; } 
     public Action ClickSound;
 
 
