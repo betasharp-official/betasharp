@@ -37,9 +37,10 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
         tabBar.Style.MarginBottom = 6;
 
         _btnGeneral = CreateTabButton(translationStorage.TranslateKey("stats.general"), Tab.General);
-        _btnBlocks = CreateTabButton(translationStorage.TranslateKey("stats.blocks"), Tab.Blocks);
-        _btnItems = CreateTabButton(translationStorage.TranslateKey("stats.items"), Tab.Items);
+        _btnBlocks = CreateTabButton(translationStorage.TranslateKey("stat.blocksButton"), Tab.Blocks);
+        _btnItems = CreateTabButton(translationStorage.TranslateKey("stat.itemsButton"), Tab.Items);
 
+        tabBar.AddChild(_btnGeneral);
         tabBar.AddChild(_btnGeneral);
         tabBar.AddChild(_btnBlocks);
         tabBar.AddChild(_btnItems);
@@ -56,7 +57,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
 
         // Done button
         Button btnDone = CreateButton();
-        btnDone.Text = translationStorage.TranslateKey("stats.done");
+        btnDone.Text = translationStorage.TranslateKey("gui.done");
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 20;
         btnDone.Style.FlexShrink = 0; // Prevent squeezing

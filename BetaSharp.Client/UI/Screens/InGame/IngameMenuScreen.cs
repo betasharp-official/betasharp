@@ -33,8 +33,6 @@ public class IngameMenuScreen(
         Root.AddChild(title);
         AddTitleSpacer();
 
-        TranslationStorage translator = TranslationStorage.Instance;
-
         Button btnBack = CreateButton();
         btnBack.Text = translationStorage.TranslateKey("gamemenu.backToGame");
         btnBack.OnClick += (e) =>
@@ -53,12 +51,12 @@ public class IngameMenuScreen(
         rowStats.Style.MarginBottom = 4;
 
         Button btnAchievements = CreateButton();
-        btnAchievements.Text = StatCollector.TranslateToLocal("gui.achievements");
+        btnAchievements.Text = translationStorage.TranslateKey("achievements.title");
         btnAchievements.Style.Width = 98;
         btnAchievements.OnClick += (e) => Context.Navigator.Navigate(new AchievementsScreen(Context, this, statFileWriter));
 
         Button btnStats = CreateButton();
-        btnStats.Text = StatCollector.TranslateToLocal("gui.stats");
+        btnStats.Text = translationStorage.TranslateKey("gui.stats");
         btnStats.Style.Width = 98;
         btnStats.OnClick += (e) => Context.Navigator.Navigate(new StatsScreen(Context, this, statFileWriter));
 
@@ -74,12 +72,12 @@ public class IngameMenuScreen(
         feedbackRow.Style.MarginBottom = 4;
 
         Button btnFeedback = CreateButton();
-        btnFeedback.Text = "Send Feedback";
+        btnFeedback.Text = translationStorage.TranslateKey("menu.sendFeedback");
         btnFeedback.Style.Width = 98;
         btnFeedback.OnClick += (e) => OpenLink("https://github.com/betasharp-official/betasharp/issues/new");
 
         Button btnReport = CreateButton();
-        btnReport.Text = "Report Bugs";
+        btnReport.Text = translationStorage.TranslateKey("menu.reportBugs");
         btnReport.Style.Width = 98;
         btnReport.OnClick += (e) => OpenLink("https://github.com/betasharp-official/betasharp/issues/new?template=bug_report.yml");
 
@@ -88,7 +86,7 @@ public class IngameMenuScreen(
         Root.AddChild(feedbackRow);
 
         Button btnOptions = CreateButton();
-        btnOptions.Text = translator.TranslateKey("menu.options");
+        btnOptions.Text = translationStorage.TranslateKey("menu.options");
         btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePacks));
         btnOptions.Style.MarginBottom = 4;
         Root.AddChild(btnOptions);

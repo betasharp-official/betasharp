@@ -28,7 +28,11 @@
         "options": "Options...",
         "language": "Language",
         "quit": "Quit Game",
-        "credits": "Credits"
+        "credits": "Credits",
+        "sendFeedback": "Send Feedback",
+        "reportBugs": "Report Bugs",
+        "saveAndQuitToTitle": "Save and quit to title",
+        "disconnect": "Disconnect"
     },
     "selectWorld": {
         "title": "Select World",
@@ -103,7 +107,7 @@
         "blocks": {
             "name": "Blocks",
             "mined": "Mined",
-            "placed": "Placed",
+            "crafted": "Crafted",
             "used": "Used"
         },
         "items": {
@@ -1166,19 +1170,22 @@
         "mobKills": "Mob Kills",
         "playerKills": "Player Kills",
         "fishCaught": "Fish Caught",
-        "mineBlock": "%1$s Mined",
-        "craftItem": "%1$s Crafted",
-        "useItem": "%1$s Used",
-        "breakItem": "%1$s Depleted"
+        "mineBlock": "{0} Mined",
+        "craftItem": "{0} Crafted",
+        "useItem": "{0} Used",
+        "breakItem": "{0} Depleted"
     },
     "achievements.title": "Achievements",
     "achievement": {
         "get": "Achievement get!",
         "taken": "Taken!",
-        "requires": "Requires '%1$s'",
+        "challenge": "CHALLENGE",
+        "unlocked": "UNLOCKED",
+        "locked": "LOCKED",
+        "requires": "Requires '{0}'",
         "openInventory": {
             "title": "Taking Inventory",
-            "desc": "Press '%1$s' to open your inventory."
+            "desc": "Open your inventory."
         },
         "mineWood": {
             "title": "Getting Wood",

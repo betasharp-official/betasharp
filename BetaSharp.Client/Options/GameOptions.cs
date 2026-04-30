@@ -260,7 +260,7 @@ public class GameOptions
             Steps = 100,
             OnChanged = _ => _game?.SoundManager.OnSoundOptionsChanged()
         };
-        MouseSensitivityOption = new FloatOption("options.sensitivity", "mouseSensitivity", 0.5F)
+        MouseSensitivityOption = new FloatOption("options.sensitivity.text", "mouseSensitivity", 0.5F)
         {
             Steps = 200,
             Formatter = (v, t) => v == 0.0F

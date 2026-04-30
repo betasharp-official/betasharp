@@ -28,7 +28,11 @@
         "options": "Opcje...",
         "language": "Język...",
         "quit": "Wyjdź z gry",
-        "credits": "Twórcy"
+        "credits": "Twórcy",
+        "sendFeedback": "Wyślij opinię",
+        "reportBugs": "Zgłoś błędy",
+        "saveAndQuitToTitle": "Zapisz i wyjdź",
+        "disconnect": "Rozłącz"
     },
     "selectWorld": {
         "title": "Wybierz świat",
@@ -103,7 +107,7 @@
         "blocks": {
             "text": "Bloki",
             "mined": "Wykopane",
-            "placed": "Postawione",
+            "crafted": "Stworzone",
             "used": "Użyte"
         },
         "items": {
@@ -1166,19 +1170,22 @@
         "mobKills": "Zabitych stworzeń",
         "playerKills": "Zabitych graczy",
         "fishCaught": "Złowionych ryb",
-        "mineBlock": "%1$s Wykopano",
-        "craftItem": "%1$s Stworzono",
-        "useItem": "%1$s Użyto",
-        "breakItem": "%1$s Wyczerpano"
+        "mineBlock": "{0} Wykopano",
+        "craftItem": "{0} Stworzono",
+        "useItem": "{0} Użyto",
+        "breakItem": "{0} Wyczerpano"
     },
     "achievements.title": "Osiągnięcia",
     "achievement": {
         "get": "Osiągnięcie zdobyte!",
         "taken": "Zdobyte!",
-        "requires": "Requires '%1$s'",
+        "challenge": "WYZWANIE",
+        "unlocked": "ODBLOKOWANE",
+        "locked": "ZABLOKOWANE",
+        "requires": "Wyamaga '{0}'",
         "openInventory": {
             "title": "Inwentaryzacja",
-            "desc": "Naciśnij '%1$s' aby otworzyć ekwipunek."
+            "desc": "Otwórz swój ekwipunek"
         },
         "mineWood": {
             "title": "Zdobywanie drewna",

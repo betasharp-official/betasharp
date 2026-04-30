@@ -12,7 +12,7 @@ public class Achievement : StatBase
     public string TranslationKey { get; }
     public readonly ItemStack icon;
     private bool _isChallenge;
-    public Func<string>? GetTranslatedDescription { get; set; }
+    //public Func<string>? GetTranslatedDescription { get; set; }
   
     // TODO: Remove this null-safe fallback once static bootstrap order is refactored
     // so Achievement icon items are always fully initialized before construction.
@@ -24,10 +24,10 @@ public class Achievement : StatBase
     {
     }
 
-    public Achievement(int id, string key, int column, int row, ItemStack icon, Achievement parent) : base(5242880 + id, StatCollector.TranslateToLocal("achievement." + key + ".title"))
+    public Achievement(int id, string key, int column, int row, ItemStack icon, Achievement parent) : base(5242880 + id, "achievement." + key + ".title")
     {
         this.icon = icon;
-        TranslationKey = StatCollector.TranslateToLocal("achievement." + key + ".desc");
+        TranslationKey = "achievement." + key;
         this.column = column;
         this.row = row;
         if (column < Achievements.minColumn)
@@ -77,15 +77,8 @@ public class Achievement : StatBase
         return true;
     }
 
-    public string? getTranslatedDescription()
-    {
-        if (GetTranslatedDescription == null)
-        {
-            return TranslationKey;
-        }
-
-        return GetTranslatedDescription();
-    }
+    public string? GetTranslatedTitle => TranslationStorage.Instance.TranslateKey($"{TranslationKey}.title");
+    public string? GetTranslatedDescription => TranslationStorage.Instance.TranslateKey($"{TranslationKey}.desc");
 
     public bool isChallenge()
     {
