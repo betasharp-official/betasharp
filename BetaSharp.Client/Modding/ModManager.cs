@@ -21,18 +21,35 @@ public class ModManager(string modsFolder, BetaSharp game)
             Mod modInstance = (Mod)Activator.CreateInstance(type);
 
             // Store
-            modInstance.Game = game;
             Mods.Add(modInstance);
         }
     }
 
-    public void Start()
+    public void ApplyPatches()
     {
-        foreach (var mod in Mods) mod.Start();
+        foreach (var mod in Mods) mod.ApplyPatches();
+    }
+
+    public void InitMods()
+    {
+        foreach (var mod in Mods) mod.InternalInit(game);
     }
 
     public void LoadMods()
     {
+        AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
+        {
+            // Get just the name (e.g., "BetaSharp" or "0Harmony")
+            string assemblyName = new AssemblyName(args.Name).Name;
+
+            // Check if it's already loaded in the game's memory
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (assembly.GetName().Name == assemblyName) return assembly;
+            }
+            return null;
+        };
+
         if (!Directory.Exists(modsFolder))
         {
             Directory.CreateDirectory(modsFolder);

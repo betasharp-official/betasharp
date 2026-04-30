@@ -553,6 +553,8 @@ public partial class BetaSharp :
             _logger.LogInformation("    Mod {ID} ({Name}): {Description}", mod.ID, mod.Name, mod.Description);
         }
 
+        Mods.ApplyPatches();
+
         try
         {
             StartGame();
@@ -563,7 +565,7 @@ public partial class BetaSharp :
             return;
         }
 
-        Mods.Start();
+        Mods.InitMods();
 
         try
         {
