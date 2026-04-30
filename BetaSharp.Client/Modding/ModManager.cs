@@ -50,6 +50,8 @@ public class ModManager(string modsFolder, BetaSharp game)
             return null;
         };
 
+        Mod.Game = game;
+
         if (!Directory.Exists(modsFolder))
         {
             Directory.CreateDirectory(modsFolder);

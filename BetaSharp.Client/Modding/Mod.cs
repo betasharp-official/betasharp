@@ -12,7 +12,7 @@ public abstract class Mod
     public abstract string Description { get; }
     public abstract string Author { get; }
 
-    protected BetaSharp Game { get; private set; }
+    public static BetaSharp Game { get; internal set; }
     protected Harmony HarmonyInstance { get; private set; }
 
 
