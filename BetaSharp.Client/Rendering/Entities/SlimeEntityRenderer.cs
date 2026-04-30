@@ -39,8 +39,8 @@ public class SlimeEntityRenderer : LivingEntityRenderer
 
     protected void scaleSlime(EntitySlime slimeEntity, float tickDelta)
     {
-        int slimeSize = slimeEntity.getSlimeSize();
-        float squish = (slimeEntity.prevSquishAmount + (slimeEntity.squishAmount - slimeEntity.prevSquishAmount) * tickDelta) / (slimeSize * 0.5F + 1.0F);
+        int slimeSize = slimeEntity.SlimeSize;
+        float squish = (slimeEntity.PrevSquishAmount + (slimeEntity.SquishAmount - slimeEntity.PrevSquishAmount) * tickDelta) / (slimeSize * 0.5F + 1.0F);
         float inverseSquish = 1.0F / (squish + 1.0F);
         float baseScale = slimeSize;
         GLManager.GL.Scale(inverseSquish * baseScale, 1.0F / inverseSquish * baseScale, inverseSquish * baseScale);

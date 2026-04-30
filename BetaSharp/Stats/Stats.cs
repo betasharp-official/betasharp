@@ -66,12 +66,12 @@ public static class Stats
         {
             HashSet<int> craftedIds = new HashSet<int>();
 
-            foreach (IRecipe recipe in CraftingManager.getInstance().Recipes)
+            foreach (IRecipe recipe in RecipesCrafting.Recipes.Values)
             {
                 craftedIds.Add(recipe.GetRecipeOutput().ItemId);
             }
 
-            foreach (ItemStack itemStack in SmeltingRecipeManager.getInstance().GetSmeltingList().Values)
+            foreach (ItemStack itemStack in RecipesSmelting.Recipes.Values)
             {
                 craftedIds.Add(itemStack.ItemId);
             }

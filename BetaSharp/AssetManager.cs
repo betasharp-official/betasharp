@@ -212,6 +212,8 @@ public class AssetManager
         defineAsset("gui/Pointer.png", AssetType.Binary);
         defineAsset("gui/Globe.png", AssetType.Binary);
 
+        defineAsset("gui/Logo.png", AssetType.Binary);
+        
         string[] controllerIcons = [
             "back_button", "back_button_pressed", "down_button", "down_button_pressed",
             "dpad_down", "dpad_down_pressed", "dpad_left", "dpad_left_pressed",

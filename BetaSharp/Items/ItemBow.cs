@@ -1,5 +1,4 @@
 using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
@@ -14,7 +13,7 @@ internal class ItemBow : Item
 
     public override ItemStack use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
     {
-        if (entityPlayer.inventory.ConsumeInventoryItem(Item.ARROW.id))
+        if (entityPlayer.Inventory.ConsumeInventoryItem(ARROW.id))
         {
             world.Broadcaster.PlaySoundAtEntity(entityPlayer, "random.bow", 1.0F, 1.0F / (itemRand.NextFloat() * 0.4F + 0.8F));
             if (!world.IsRemote)

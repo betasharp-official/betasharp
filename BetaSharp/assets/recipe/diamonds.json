@@ -1,0 +1,13 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "#"
+    ],
+    "key": {
+        "#": "betasharp:DiamondBlock"
+    },
+    "result": {
+        "id": "betasharp:Diamond",
+        "count": 9
+    }
+}

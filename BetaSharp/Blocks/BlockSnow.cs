@@ -64,11 +64,11 @@ internal class BlockSnow : Block
         double offsetZ = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
         EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(snowballId, 1, 0))
         {
-            delayBeforeCanPickup = 10
+            DelayBeforeCanPickup = 10
         };
         @event.World.Entities.SpawnEntity(entityItem);
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-        @event.Player.increaseStat(Stats.Stats.MineBlockStatArray[id], 1);
+        @event.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[id], 1);
     }
 
     public override int getDroppedItemId(int blockMeta) => Item.Snowball.id;

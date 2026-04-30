@@ -11,7 +11,10 @@ namespace BetaSharp.Client.Rendering.Core.Textures;
 public sealed class SkinManager : IDisposable
 {
     private const string SkinCacheDirectoryName = "SkinCache";
-    private const int CacheValidForDays = 14;
+    private const int SkinCacheSize = 128;
+    private const int SkinCacheValidForDays = 14;
+
+    private const string CapeCacheDirectoryName = "CapeCache";
     private const string CapeTextureKeySuffix = "#cape";
 
     private readonly ConcurrentDictionary<string, Image<Rgba32>> _downloadedImages = new();
@@ -20,6 +23,8 @@ public sealed class SkinManager : IDisposable
     private readonly ILogger _logger = Log.Instance.For<SkinManager>();
     private readonly ConcurrentDictionary<string, TextureHandle> _textureHandles = new();
     private readonly TextureManager _textureManager;
+
+    private int _cacheSize = 0;
 
     public SkinManager(TextureManager textureManager)
     {
@@ -58,7 +63,7 @@ public sealed class SkinManager : IDisposable
         string path = Path.Combine(Path.GetTempPath(), "BetaSharp", SkinCacheDirectoryName);
         if (!Directory.Exists(path)) return;
 
-        DateTime cacheAgeLimit = DateTime.Now.AddDays(-CacheValidForDays);
+        DateTime cacheAgeLimit = DateTime.Now.AddDays(-SkinCacheValidForDays);
         foreach (string file in Directory.GetFiles(path))
         {
             if (File.GetCreationTime(file) >= cacheAgeLimit) continue;
@@ -73,9 +78,11 @@ public sealed class SkinManager : IDisposable
                 _logger.LogWarning(ex, "Failed to delete old cached skin for {name}", Path.GetFileNameWithoutExtension(file));
             }
         }
+
+        _cacheSize = Directory.GetFiles(path, "*.png").Length;
     }
 
-    public void RequestDownload(string? username, bool cache = false)
+    public void RequestDownload(string? username, bool cache = true)
     {
         if (string.IsNullOrWhiteSpace(username) || _textureHandles.ContainsKey(username)
                                                 || _downloadedImages.ContainsKey(username)
@@ -87,17 +94,34 @@ public sealed class SkinManager : IDisposable
         _ = DownloadTask(username, cache);
     }
 
-    private async Task DownloadTask(string username, bool cache = false)
+    private async Task DownloadTask(string username, bool cache)
     {
         try
         {
             bool skinLoadedFromCache = await TryLoadTextureFromCache(username, username + ".png");
-            bool capeLoadedFromCache = await TryLoadTextureFromCache(GetCapeTextureKey(username), username + ".cape.png");
+            bool capeLoadedFromCache = await TryLoadCapeId(username);
 
-            if (skinLoadedFromCache) _logger.LogInformation("Skin loaded from cache for {Name}", username);
-            if (capeLoadedFromCache) _logger.LogInformation("Cape loaded from cache for {Name}", username);
+            if (skinLoadedFromCache && capeLoadedFromCache)
+            {
+                _logger.LogInformation("Skin and cape loaded from cache for {Name}", username);
+                return;
+            }
 
-            _logger.LogInformation("Downloading skin for {Url}", username);
+            if (skinLoadedFromCache)
+            {
+                _logger.LogInformation("Skin loaded from cache for {Name}", username);
+                _logger.LogInformation("Downloading cape for {Name}", username);
+            }
+            else if (capeLoadedFromCache)
+            {
+                _logger.LogInformation("Cape loaded from cache for {Name}", username);
+                _logger.LogInformation("Downloading skin for {Name}", username);
+            }
+            else
+            {
+                _logger.LogInformation("Downloading skin and cape for {Name}", username);
+            }
+
 
             string? id = await GetProfileIdFromName(username);
             if (id == null) throw new ProfileException();
@@ -110,6 +134,8 @@ public sealed class SkinManager : IDisposable
             string? capeTexture = node?["textures"]?["CAPE"]?["url"]?.GetValue<string>();
 
             ArgumentException.ThrowIfNullOrWhiteSpace(texture);
+
+            bool isCacheFull = _cacheSize >= SkinCacheSize;
 
             if (!skinLoadedFromCache)
             {
@@ -126,28 +152,38 @@ public sealed class SkinManager : IDisposable
 
                 _logger.LogInformation("Skin downloaded successfully for {Name}: ({W}x{H})", username, image.Width, image.Height);
 
-                if (cache)
+                if (cache && !isCacheFull)
                 {
-                    await SaveTextureToCache(username + ".png", image);
+                    await SaveTextureToCache(username + ".png", image, SkinCacheDirectoryName);
+                    _cacheSize++;
                     _logger.LogInformation("Skin saved in cache for {Name}", username);
+
+                    if (!string.IsNullOrWhiteSpace(capeTexture))
+                    {
+                        await SaveTxtCache(username + ".txt", GetIdFromUrl(capeTexture), SkinCacheDirectoryName);
+                    }
+                    else
+                    {
+                        // save empty file so we know not to try to get cape next time.
+                        await SaveTxtCache(username + ".txt", "", SkinCacheDirectoryName);
+                    }
+
+                    _logger.LogInformation("Cape id for {Name} saved in cache", username);
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(capeTexture) && !capeLoadedFromCache)
+            if (!capeLoadedFromCache)
             {
-                await using Stream capeTextureStream = await _httpClient.GetStreamAsync(capeTexture);
-
-                Image<Rgba32> capeImage = await Image.LoadAsync<Rgba32>(capeTextureStream);
-
-                string capeTextureKey = GetCapeTextureKey(username);
-                _downloadedImages[capeTextureKey] = capeImage;
-
-                _logger.LogInformation("Cape downloaded successfully for {Name}: ({W}x{H})", username, capeImage.Width, capeImage.Height);
-
-                if (cache)
+                if (!string.IsNullOrWhiteSpace(capeTexture))
                 {
-                    await SaveTextureToCache(username + ".cape.png", capeImage);
-                    _logger.LogInformation("Cape saved in cache for {Name}", username);
+                    string capeId = GetIdFromUrl(capeTexture);
+                    await DownloadCapeFromUrl(capeTexture, capeId, username, cache);
+                    if (cache && !isCacheFull) await SaveTxtCache(username + ".txt", capeId, SkinCacheDirectoryName);
+                }
+                else if (cache && !isCacheFull)
+                {
+                    await SaveTxtCache(username + ".txt", "", SkinCacheDirectoryName);
+                    _logger.LogInformation("Cape id for {Name} saved in cache", username);
                 }
             }
         }
@@ -167,20 +203,73 @@ public sealed class SkinManager : IDisposable
 
     private static string GetCapeTextureKey(string username) => username + CapeTextureKeySuffix;
 
-    private async Task<bool> TryLoadTextureFromCache(string textureKey, string cacheFileName)
+    private async Task<bool> TryLoadTextureFromCache(string textureKey, string cacheFileName, string dir = SkinCacheDirectoryName)
     {
-        string skinCachePath = Path.Combine(Path.GetTempPath(), "BetaSharp", SkinCacheDirectoryName, cacheFileName);
+        string skinCachePath = Path.Combine(Path.GetTempPath(), "BetaSharp", dir, cacheFileName);
         if (!File.Exists(skinCachePath)) return false;
 
         Image<Rgba32> cachedImage = await Image.LoadAsync<Rgba32>(skinCachePath);
         _downloadedImages[textureKey] = cachedImage;
+        return true;
+    }
+
+    private async Task<bool> TryLoadCapeId(string username)
+    {
+        string skinCachePath = Path.Combine(Path.GetTempPath(), "BetaSharp", SkinCacheDirectoryName, username + ".txt");
+        if (!File.Exists(skinCachePath)) return false;
+
+        string id = Encoding.ASCII.GetString(await File.ReadAllBytesAsync(skinCachePath));
+
+        // player have no cape equipped.
+        if (string.IsNullOrEmpty(id)) return true;
+
+        if (!await TryLoadTextureFromCache(id, id + ".png", CapeCacheDirectoryName))
+        {
+            await DownloadCapeFromId(id);
+        }
+
+        _downloadedImages[GetCapeTextureKey(username)] = _downloadedImages[id];
 
         return true;
     }
 
-    private async Task SaveTextureToCache(string cacheFileName, Image image)
+    private Task DownloadCapeFromId(string id) =>
+        DownloadCapeFromUrl("http://textures.minecraft.net/texture/" + id, id);
+
+    private string GetIdFromUrl(string str) => str.Substring(str.LastIndexOf('/') + 1);
+
+    private async Task DownloadCapeFromUrl(string url, string id, string? username = null, bool cache = true)
     {
-        string path = Path.Combine(Path.GetTempPath(), "BetaSharp", SkinCacheDirectoryName);
+        await using Stream capeTextureStream = await _httpClient.GetStreamAsync(url);
+
+        Image<Rgba32> capeImage = await Image.LoadAsync<Rgba32>(capeTextureStream);
+        _downloadedImages[id] = capeImage;
+
+        if (!string.IsNullOrEmpty(username))
+        {
+            _downloadedImages[GetCapeTextureKey(username)] = capeImage;
+            _logger.LogInformation("Cape downloaded successfully for {Name}: ({W}x{H})", username, capeImage.Width, capeImage.Height);
+        }
+        else
+        {
+            _logger.LogInformation("Cape downloaded successfully {ID}: ({W}x{H})", id, capeImage.Width, capeImage.Height);
+        }
+
+
+        if (cache)
+        {
+            await SaveTextureToCache(id + ".png", capeImage, CapeCacheDirectoryName);
+
+            if (!string.IsNullOrEmpty(username))
+                _logger.LogInformation("Cape saved in cache for {Name}", username);
+            else
+                _logger.LogInformation("Cape saved in cache for id {ID}", id);
+        }
+    }
+
+    private async Task SaveTextureToCache(string cacheFileName, Image image, string directoryName)
+    {
+        string path = Path.Combine(Path.GetTempPath(), "BetaSharp", directoryName);
         if (!Directory.Exists(path))
         {
             Directory.CreateDirectory(path);
@@ -190,6 +279,21 @@ public sealed class SkinManager : IDisposable
 
         await using FileStream cacheStream = new(path, FileMode.Create, FileAccess.Write);
         await image.SaveAsPngAsync(cacheStream);
+        cacheStream.Close();
+    }
+
+    private async Task SaveTxtCache(string filename, string text, string directoryName)
+    {
+        string path = Path.Combine(Path.GetTempPath(), "BetaSharp", directoryName);
+        if (!Directory.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+        }
+
+        path = Path.Combine(path, filename);
+
+        await using FileStream cacheStream = new(path, FileMode.Create, FileAccess.Write);
+        await cacheStream.WriteAsync(Encoding.ASCII.GetBytes(text));
         cacheStream.Close();
     }
 

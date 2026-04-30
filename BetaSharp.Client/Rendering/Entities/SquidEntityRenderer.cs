@@ -18,8 +18,8 @@ public class SquidEntityRenderer : LivingEntityRenderer
 
     protected void func_21007_a(EntitySquid squidEntity, float deathTime, float bodyYaw, float tickDelta)
     {
-        float tiltAngle = squidEntity.prevTiltAngle + (squidEntity.tiltAngle - squidEntity.prevTiltAngle) * tickDelta;
-        float tentacleYaw = squidEntity.prevTentaclePhase + (squidEntity.tentaclePhase - squidEntity.prevTentaclePhase) * tickDelta;
+        float tiltAngle = squidEntity.PrevTiltAngle + (squidEntity.TiltAngle - squidEntity.PrevTiltAngle) * tickDelta;
+        float tentacleYaw = squidEntity.PrevTentaclePhase + (squidEntity.TentaclePhase - squidEntity.PrevTentaclePhase) * tickDelta;
         GLManager.GL.Translate(0.0F, 0.5F, 0.0F);
         GLManager.GL.Rotate(180.0F - bodyYaw, 0.0F, 1.0F, 0.0F);
         GLManager.GL.Rotate(tiltAngle, 1.0F, 0.0F, 0.0F);
@@ -33,7 +33,7 @@ public class SquidEntityRenderer : LivingEntityRenderer
 
     protected float func_21006_b(EntitySquid squidEntity, float tickDelta)
     {
-        float tentacleSpread = squidEntity.prevTentacleSpread + (squidEntity.tentacleSpread - squidEntity.prevTentacleSpread) * tickDelta;
+        float tentacleSpread = squidEntity.PrevTentacleSpread + (squidEntity.TentacleSpread - squidEntity.PrevTentacleSpread) * tickDelta;
         return tentacleSpread;
     }
 

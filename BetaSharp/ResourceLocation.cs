@@ -57,6 +57,9 @@ public sealed partial class ResourceLocation : IEquatable<ResourceLocation>, ICo
         if (!s_validPattern.IsMatch(part))
             throw new ArgumentException(
                 $"'{part}' contains invalid characters. Only [a-z0-9_-.] are allowed.", paramName);
+        if (part[0] < 'a' && part[0] > 'z')
+            throw new ArgumentException(
+                $"'{part}' must start with a [a-z] letter.", paramName);
     }
 
     public bool Equals(ResourceLocation? other) =>

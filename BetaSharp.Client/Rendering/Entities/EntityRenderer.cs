@@ -307,7 +307,7 @@ public abstract class EntityRenderer
             }
         }
 
-        if (target.IsOnFire())
+        if (target.IsOnFire)
         {
             RenderOnFire(target, pos, tickDelta);
         }

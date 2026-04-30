@@ -409,7 +409,7 @@ public class Block
 
     public virtual int getDroppedItemId(int blockMeta) => id;
 
-    public float getHardness(EntityPlayer player) => hardness < 0.0F ? 0.0F : !player.canHarvest(this) ? 1.0F / hardness / 100.0F : player.getBlockBreakingSpeed(this) / hardness / 30.0F;
+    public float getHardness(EntityPlayer player) => hardness < 0.0F ? 0.0F : !player.CanHarvest(this) ? 1.0F / hardness / 100.0F : player.GetBlockBreakingSpeed(this) / hardness / 30.0F;
 
     public virtual void dropStacks(OnDropEvent ctx)
     {
@@ -520,7 +520,7 @@ public class Block
 
     public virtual void onAfterBreak(OnAfterBreakEvent ctx)
     {
-        ctx.Player.increaseStat(Stats.Stats.MineBlockStatArray[id], 1);
+        ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[id], 1);
         dropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, ctx.Meta));
     }
 

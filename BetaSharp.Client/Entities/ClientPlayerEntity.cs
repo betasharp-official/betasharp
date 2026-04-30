@@ -17,22 +17,25 @@ namespace BetaSharp.Client.Entities;
 
 public class ClientPlayerEntity : EntityPlayer
 {
-    public override EntityType Type => EntityRegistry.Player;
-    public MovementInput movementInput;
-    protected BetaSharp Game;
-    private byte _lastJump;
     private bool _isFlying;
+    private byte _lastJump;
+    protected BetaSharp Game;
+    public MovementInput movementInput;
 
     public ClientPlayerEntity(BetaSharp game, IWorldContext world, Session session, int dimensionId) : base(world)
     {
         Game = game;
-        base.dimensionId = dimensionId;
-        name = session.username;
+        DimensionId = dimensionId;
+        Name = session.username;
     }
 
-    public override void tickLiving()
+    public override EntityType Type => EntityRegistry.Player;
+
+    protected new float AirSpeed => GameMode.DisallowFlying || !_isFlying ? 0.02f : AirFlySpeedMult * 0.02f;
+
+    protected override void TickLiving()
     {
-        base.tickLiving();
+        base.TickLiving();
         if (GameMode is { CanWalk: false, DisallowFlying: true })
         {
             SidewaysSpeed = 0;
@@ -59,6 +62,7 @@ public class ClientPlayerEntity : EntityPlayer
                 {
                     _isFlying = !_isFlying;
                 }
+
                 _lastJump = 0;
             }
         }
@@ -68,19 +72,19 @@ public class ClientPlayerEntity : EntityPlayer
         }
     }
 
-    public override void tickMovement()
+    protected override void TickMovement()
     {
         if (!Game.StatFileWriter.HasAchievementUnlocked(global::BetaSharp.Achievements.OpenInventory))
         {
             Game.HUD.AchievementToast.QueueInfo(global::BetaSharp.Achievements.OpenInventory);
         }
 
-        lastScreenDistortion = changeDimensionCooldown;
-        if (inTeleportationState)
+        LastScreenDistortion = ChangeDimensionCooldown;
+        if (InTeleportationState)
         {
             if (!World.IsRemote && Vehicle != null)
             {
-                SetVehicle((Entity)null);
+                SetVehicle(null);
             }
 
             if (Game.CurrentScreen != null)
@@ -88,35 +92,35 @@ public class ClientPlayerEntity : EntityPlayer
                 Game.Navigate(null);
             }
 
-            if (changeDimensionCooldown == 0.0F)
+            if (ChangeDimensionCooldown == 0.0F)
             {
                 Game.SoundManager.PlaySoundFX("portal.trigger", 1.0F, Random.NextFloat() * 0.4F + 0.8F);
             }
 
-            changeDimensionCooldown += 0.0125F;
-            if (changeDimensionCooldown >= 1.0F)
+            ChangeDimensionCooldown += 0.0125F;
+            if (ChangeDimensionCooldown >= 1.0F)
             {
-                changeDimensionCooldown = 1.0F;
+                ChangeDimensionCooldown = 1.0F;
             }
 
-            inTeleportationState = false;
+            InTeleportationState = false;
         }
         else
         {
-            if (changeDimensionCooldown > 0.0F)
+            if (ChangeDimensionCooldown > 0.0F)
             {
-                changeDimensionCooldown -= 0.05F;
+                ChangeDimensionCooldown -= 0.05F;
             }
 
-            if (changeDimensionCooldown < 0.0F)
+            if (ChangeDimensionCooldown < 0.0F)
             {
-                changeDimensionCooldown = 0.0F;
+                ChangeDimensionCooldown = 0.0F;
             }
         }
 
-        if (portalCooldown > 0)
+        if (PortalCooldown > 0)
         {
-            --portalCooldown;
+            --PortalCooldown;
         }
 
         movementInput.updatePlayerMoveState(this);
@@ -137,7 +141,6 @@ public class ClientPlayerEntity : EntityPlayer
                     // hold height, but smoothly
                     VelocityY = VelocityY < -0.15 ? VelocityY + 0.15 : Math.Max(0, VelocityY);
                 }
-
             }
             else if (movementInput.jump)
             {
@@ -149,7 +152,6 @@ public class ClientPlayerEntity : EntityPlayer
                 // limit flying decent speed
                 VelocityY = Math.Max(VelocityY, -0.5);
             }
-
         }
 
         if (movementInput.sneak && CameraOffset < 0.2F)
@@ -157,33 +159,27 @@ public class ClientPlayerEntity : EntityPlayer
             CameraOffset = 0.2F;
         }
 
-        PushOutOfBlocks(X - (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z + (double)Width * 0.35D);
-        PushOutOfBlocks(X - (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z - (double)Width * 0.35D);
-        PushOutOfBlocks(X + (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z - (double)Width * 0.35D);
-        PushOutOfBlocks(X + (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z + (double)Width * 0.35D);
-        base.tickMovement();
+        PushOutOfBlocks(X - Width * 0.35D, BoundingBox.MinY + 0.5D, Z + Width * 0.35D);
+        PushOutOfBlocks(X - Width * 0.35D, BoundingBox.MinY + 0.5D, Z - Width * 0.35D);
+        PushOutOfBlocks(X + Width * 0.35D, BoundingBox.MinY + 0.5D, Z - Width * 0.35D);
+        PushOutOfBlocks(X + Width * 0.35D, BoundingBox.MinY + 0.5D, Z + Width * 0.35D);
+        base.TickMovement();
     }
 
-    public void resetPlayerKeyState()
-    {
-        movementInput.resetKeyState();
-    }
+    public void resetPlayerKeyState() => movementInput.resetKeyState();
 
-    public void handleKeyPress(int scanCode, bool isPressed)
-    {
-        movementInput.checkKeyForMovementInput(scanCode, isPressed);
-    }
+    public void handleKeyPress(int scanCode, bool isPressed) => movementInput.checkKeyForMovementInput(scanCode, isPressed);
 
-    public override void WriteNbt(NBTTagCompound nbt)
+    protected override void WriteNbt(NBTTagCompound nbt)
     {
         base.WriteNbt(nbt);
-        nbt.SetInteger("Score", score);
+        nbt.SetInteger("Score", Score);
     }
 
-    public override void ReadNbt(NBTTagCompound nbt)
+    protected override void ReadNbt(NBTTagCompound nbt)
     {
         base.ReadNbt(nbt);
-        score = nbt.GetInteger("Score");
+        Score = nbt.GetInteger("Score");
     }
 
     public override void closeHandledScreen()
@@ -199,48 +195,25 @@ public class ClientPlayerEntity : EntityPlayer
         {
             sendUpdate = () => mp.sendQueue.AddToSendQueue(UpdateSignPacket.Get(sign.X, sign.Y, sign.Z, sign.Texts));
         }
+
         Game.Navigate(new SignEditScreen(Game.UIContext, sign, sendUpdate));
     }
 
-    public override void openChestScreen(IInventory inventory)
-    {
-        Game.Navigate(new ChestScreen(Game.UIContext, this, Game.PlayerController, base.inventory, inventory));
-    }
+    public override void openChestScreen(IInventory inventory) => Game.Navigate(new ChestScreen(Game.UIContext, this, Game.PlayerController, Inventory, inventory));
 
-    public override void openCraftingScreen(int x, int y, int z)
-    {
-        Game.Navigate(new CraftingScreen(Game.UIContext, this, Game.PlayerController, inventory, (IWorldContext)World, x, y, z));
-    }
+    public override void openCraftingScreen(int x, int y, int z) => Game.Navigate(new CraftingScreen(Game.UIContext, this, Game.PlayerController, Inventory, World, x, y, z));
 
-    public override void openFurnaceScreen(BlockEntityFurnace furnace)
-    {
-        Game.Navigate(new FurnaceScreen(Game.UIContext, this, Game.PlayerController, inventory, furnace));
-    }
+    public override void openFurnaceScreen(BlockEntityFurnace furnace) => Game.Navigate(new FurnaceScreen(Game.UIContext, this, Game.PlayerController, Inventory, furnace));
 
-    public override void openDispenserScreen(BlockEntityDispenser dispenser)
-    {
-        Game.Navigate(new DispenserScreen(Game.UIContext, this, Game.PlayerController, inventory, dispenser));
-    }
+    public override void openDispenserScreen(BlockEntityDispenser dispenser) => Game.Navigate(new DispenserScreen(Game.UIContext, this, Game.PlayerController, Inventory, dispenser));
 
-    public override void sendPickup(Entity entity, int count)
-    {
-        Game.ParticleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(Game.World, entity, this, -0.5F)));
-    }
+    public override void sendPickup(Entity entity, int count) => Game.ParticleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(Game.World, entity, this, -0.5F)));
 
-    public int getPlayerArmorValue()
-    {
-        return inventory.GetTotalArmorValue();
-    }
+    public int getPlayerArmorValue() => Inventory.GetTotalArmorValue();
 
-    public override void sendChatMessage(string message)
-    {
-        Game.HUD.AddChatMessage($"<{name}> {message}");
-    }
+    public override void SendChatMessage(string message) => Game.HUD.AddChatMessage($"<{Name}> {message}");
 
-    public override bool IsSneaking()
-    {
-        return movementInput.sneak && !sleeping;
-    }
+    public override bool IsSneaking() => movementInput.sneak && !Sleeping;
 
     public virtual void setHealth(int newHealth)
     {
@@ -255,29 +228,27 @@ public class ClientPlayerEntity : EntityPlayer
         }
         else
         {
-            if (!GameMode.CanReceiveDamage) return;
+            if (!GameMode.CanReceiveDamage)
+            {
+                return;
+            }
+
             DamageForDisplay = damageAmount;
             LastHealth = Health;
             Hearts = MaxHealth;
-            applyDamage(damageAmount);
+            ApplyDamage(damageAmount);
         }
     }
 
-    public override void respawn()
-    {
-        Game.Respawn(false, 0);
-    }
+    public override void Respawn() => Game.Respawn(false, 0);
 
-    public override void spawn()
+    public override void Spawn()
     {
     }
 
-    public override void sendMessage(string message)
-    {
-        Game.HUD.AddChatMessage(message);
-    }
+    public override void SendMessage(string message) => Game.HUD.AddChatMessage(message);
 
-    public override void increaseStat(StatBase stat, int value)
+    public override void IncreaseStat(StatBase stat, int value)
     {
         if (stat != null)
         {
@@ -304,18 +275,15 @@ public class ClientPlayerEntity : EntityPlayer
         }
     }
 
-    private bool isBlockTranslucent(int x, int y, int z)
-    {
-        return World.Reader.ShouldSuffocate(x, y, z);
-    }
+    private bool isBlockTranslucent(int x, int y, int z) => World.Reader.ShouldSuffocate(x, y, z);
 
     protected override bool PushOutOfBlocks(double posX, double posY, double posZ)
     {
         int floorX = MathHelper.Floor(posX);
         int floorY = MathHelper.Floor(posY);
         int floorZ = MathHelper.Floor(posZ);
-        double fracX = posX - (double)floorX;
-        double fracZ = posZ - (double)floorZ;
+        double fracX = posX - floorX;
+        double fracZ = posZ - floorZ;
         if (isBlockTranslucent(floorX, floorY, floorZ) || isBlockTranslucent(floorX, floorY + 1, floorZ))
         {
             bool canPushWest = !isBlockTranslucent(floorX - 1, floorY, floorZ) && !isBlockTranslucent(floorX - 1, floorY + 1, floorZ);
@@ -351,22 +319,22 @@ public class ClientPlayerEntity : EntityPlayer
             float pushStrength = 0.1F;
             if (pushDirection == 0)
             {
-                VelocityX = (double)(-pushStrength);
+                VelocityX = -pushStrength;
             }
 
             if (pushDirection == 1)
             {
-                VelocityX = (double)pushStrength;
+                VelocityX = pushStrength;
             }
 
             if (pushDirection == 4)
             {
-                VelocityZ = (double)(-pushStrength);
+                VelocityZ = -pushStrength;
             }
 
             if (pushDirection == 5)
             {
-                VelocityZ = (double)pushStrength;
+                VelocityZ = pushStrength;
             }
         }
 
@@ -378,6 +346,4 @@ public class ClientPlayerEntity : EntityPlayer
         _isFlying = false;
         base.MarkDead();
     }
-
-    protected override float AirSpeed() => GameMode.DisallowFlying || !_isFlying ? 0.02f : AirFlySpeedMult * 0.02f;
 }

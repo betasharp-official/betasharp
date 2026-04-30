@@ -77,7 +77,7 @@ public class GameRenderer
         }
 
         double reachDistance = (double)_client.PlayerController.getBlockReachDistance();
-        _client.ObjectMouseOver = _client.Camera.rayTrace(reachDistance, tickDelta);
+        _client.ObjectMouseOver = _client.Camera.RayTrace(reachDistance, tickDelta);
         Vec3D cameraPosition = _client.Camera.GetPosition(tickDelta);
 
         if (_client.ObjectMouseOver.Type != HitResultType.MISS)
@@ -90,7 +90,7 @@ public class GameRenderer
             reachDistance = 3.0D;
         }
 
-        Vec3D lookVec = _client.Camera.getLook(tickDelta);
+        Vec3D lookVec = _client.Camera.GetLook(tickDelta);
         Vec3D targetVec = cameraPosition + reachDistance * lookVec;
         _targetedEntity = null;
 
@@ -101,9 +101,9 @@ public class GameRenderer
         for (int i = 0; i < entities.Count; ++i)
         {
             Entity ent = entities[i];
-            if (ent.IsCollidable())
+            if (ent.HasCollision)
             {
-                float targetingMargin = ent.GetTargetingMargin();
+                float targetingMargin = ent.TargetingMargin;
                 Box box = ent.BoundingBox.Expand((double)targetingMargin, (double)targetingMargin, (double)targetingMargin);
                 HitResult hit = box.Raycast(cameraPosition, targetVec);
 
@@ -160,7 +160,7 @@ public class GameRenderer
             cameraController.ApplyViewBobbing(tickDelta);
         }
 
-        float screenDistortion = _client.Player.lastScreenDistortion + (_client.Player.changeDimensionCooldown - _client.Player.lastScreenDistortion) * tickDelta;
+        float screenDistortion = _client.Player.LastScreenDistortion + (_client.Player.ChangeDimensionCooldown - _client.Player.LastScreenDistortion) * tickDelta;
         if (screenDistortion > 0.0F)
         {
             float distortionScale = 5.0F / (screenDistortion * screenDistortion + 5.0F) - screenDistortion * 0.04F;
@@ -194,13 +194,13 @@ public class GameRenderer
             cameraController.ApplyViewBobbing(tickDelta);
         }
 
-        if (_client.Options.CameraMode == CameraMode.FirstPerson && !_client.Camera.isSleeping() && !_client.Options.HideGUI)
+        if (_client.Options.CameraMode == CameraMode.FirstPerson && !_client.Camera.IsSleeping && !_client.Options.HideGUI)
         {
             itemRenderer.renderItemInFirstPerson(tickDelta);
         }
 
         GLManager.GL.PopMatrix();
-        if (_client.Options.CameraMode == CameraMode.FirstPerson && !_client.Camera.isSleeping())
+        if (_client.Options.CameraMode == CameraMode.FirstPerson && !_client.Camera.IsSleeping)
         {
             itemRenderer.renderOverlays(tickDelta);
             cameraController.ApplyDamageTiltEffect(tickDelta);
@@ -237,7 +237,7 @@ public class GameRenderer
             bool zoomHeldForSensitivity = _client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.scanCode);
             if (zoomHeldForSensitivity)
             {
-                float zoomProgress = 1.0F / System.Math.Clamp(_client.Options.ZoomScale, 1.25F, 20.0F);
+                float zoomProgress = 1.0F / Math.Clamp(_client.Options.ZoomScale, 1.25F, 20.0F);
                 float sensitivityFloor = 0.4F;
                 float zoomSensitivityMultiplier = sensitivityFloor + (1.0F - sensitivityFloor) * zoomProgress;
                 yawDelta *= zoomSensitivityMultiplier;
@@ -439,8 +439,8 @@ public class GameRenderer
         {
             entityPlayer = (EntityPlayer)entity;
             GLManager.GL.Disable(GLEnum.AlphaTest);
-            worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.inventory.GetItemInHand(), tickDelta);
-            worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.inventory.GetItemInHand(), tickDelta);
+            worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.Inventory.ItemInHand, tickDelta);
+            worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.Inventory.ItemInHand, tickDelta);
             GLManager.GL.Enable(GLEnum.AlphaTest);
         }
 
@@ -466,8 +466,8 @@ public class GameRenderer
         {
             entityPlayer = (EntityPlayer)entity;
             GLManager.GL.Disable(GLEnum.AlphaTest);
-            worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.inventory.GetItemInHand(), tickDelta);
-            worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.inventory.GetItemInHand(), tickDelta);
+            worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.Inventory.ItemInHand, tickDelta);
+            worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.Inventory.ItemInHand, tickDelta);
             GLManager.GL.Enable(GLEnum.AlphaTest);
         }
 

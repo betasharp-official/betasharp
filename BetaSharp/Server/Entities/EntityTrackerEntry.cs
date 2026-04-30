@@ -46,7 +46,7 @@ internal class EntityTrackerEntry
         lastPitch = MathHelper.Floor(entity.Pitch * 256.0F / 360.0F);
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is EntityTrackerEntry entry && entry.currentTrackedEntity.ID == currentTrackedEntity.ID;
     }
@@ -209,7 +209,7 @@ internal class EntityTrackerEntry
                 if (!listeners.Contains(player))
                 {
                     if (currentTrackedEntity.World is ServerWorld sw
-                        && player.dimensionId == sw.Dimension.Id
+                        && player.DimensionId == sw.Dimension.Id
                         && sw.ChunkMap != null)
                     {
                         int entityChunkX = MathHelper.Floor(currentTrackedEntity.X / 16.0);
@@ -235,7 +235,7 @@ internal class EntityTrackerEntry
                             );
                     }
 
-                    ItemStack[] equipment = currentTrackedEntity.GetEquipment();
+                    ItemStack[] equipment = currentTrackedEntity.Equipment;
                     if (equipment != null)
                     {
                         for (int slot = 0; slot < equipment.Length; slot++)
@@ -246,7 +246,7 @@ internal class EntityTrackerEntry
 
                     if (currentTrackedEntity is EntityPlayer trackedPlayer)
                     {
-                        if (trackedPlayer.isSleeping())
+                        if (trackedPlayer.IsSleeping)
                         {
                             player.NetworkHandler
                                 .SendPacket(
@@ -325,7 +325,7 @@ internal class EntityTrackerEntry
             }
             else if (currentTrackedEntity is EntityArrow arrow)
             {
-                EntityLiving arrowOwner = arrow.owner;
+                EntityLiving arrowOwner = arrow.Owner;
                 return EntitySpawnS2CPacket.Get(currentTrackedEntity, 60, arrowOwner != null ? arrowOwner.ID : currentTrackedEntity.ID);
             }
             else if (currentTrackedEntity is EntitySnowball)
@@ -334,10 +334,10 @@ internal class EntityTrackerEntry
             }
             else if (currentTrackedEntity is EntityFireball fireball)
             {
-                var packet = EntitySpawnS2CPacket.Get(fireball, 63, fireball.owner.ID);
-                packet.velocityX = (int)(fireball.powerX * 8000.0);
-                packet.velocityY = (int)(fireball.powerY * 8000.0);
-                packet.velocityZ = (int)(fireball.powerZ * 8000.0);
+                var packet = EntitySpawnS2CPacket.Get(fireball, 63, fireball.Owner.ID);
+                packet.velocityX = (int)(fireball.PowerX * 8000.0);
+                packet.velocityY = (int)(fireball.PowerY * 8000.0);
+                packet.velocityZ = (int)(fireball.PowerZ * 8000.0);
 
                 return packet;
             }
@@ -345,7 +345,7 @@ internal class EntityTrackerEntry
             {
                 return EntitySpawnS2CPacket.Get(currentTrackedEntity, 62);
             }
-            else if (currentTrackedEntity is EntityTNTPrimed)
+            else if (currentTrackedEntity is EntityTntPrimed)
             {
                 return EntitySpawnS2CPacket.Get(currentTrackedEntity, 50);
             }
@@ -353,12 +353,12 @@ internal class EntityTrackerEntry
             {
                 if (currentTrackedEntity is EntityFallingSand fallingSandEntity)
                 {
-                    if (fallingSandEntity.blockId == Block.Sand.id)
+                    if (fallingSandEntity.BlockId == Block.Sand.id)
                     {
                         return EntitySpawnS2CPacket.Get(currentTrackedEntity, 70);
                     }
 
-                    if (fallingSandEntity.blockId == Block.Gravel.id)
+                    if (fallingSandEntity.BlockId == Block.Gravel.id)
                     {
                         return EntitySpawnS2CPacket.Get(currentTrackedEntity, 71);
                     }

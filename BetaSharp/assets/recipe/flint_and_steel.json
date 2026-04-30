@@ -1,0 +1,14 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "A ",
+        " B"
+    ],
+    "key": {
+        "A": "betasharp:IronIngot",
+        "B": "betasharp:Flint"
+    },
+    "result": {
+        "id": "betasharp:FlintAndSteel"
+    }
+}

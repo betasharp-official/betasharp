@@ -53,11 +53,11 @@ public class PlayerManager
     public void updatePlayerAfterDimensionChange(ServerPlayerEntity player)
     {
         player.ResetChunkStreamingState();
-        player.activeChunks.Clear();
+        player.ActiveChunks.Clear();
         player.ChunksTerrainSentToClient.Clear();
-        GetChunkMap(player.dimensionId).addPlayer(player);
-        ServerWorld playerWorld = _server.getWorld(player.dimensionId);
-        playerWorld.ChunkCache.LoadChunk((int)player.X >> 4, (int)player.Z >> 4);
+        GetChunkMap(player.DimensionId).addPlayer(player);
+        ServerWorld var2 = _server.getWorld(player.DimensionId);
+        var2.ChunkCache.LoadChunk((int)player.X >> 4, (int)player.Z >> 4);
     }
 
     public int getBlockViewDistance()
@@ -84,7 +84,7 @@ public class PlayerManager
     {
         players.Add(player);
         player.ResetChunkStreamingState();
-        ServerWorld playerWorld = _server.getWorld(player.dimensionId);
+        ServerWorld playerWorld = _server.getWorld(player.DimensionId);
         playerWorld.ChunkCache.LoadChunk((int)player.X >> 4, (int)player.Z >> 4);
 
         while (playerWorld.Entities.GetEntityCollisions(player, player.BoundingBox).Count != 0)
@@ -93,20 +93,20 @@ public class PlayerManager
         }
 
         playerWorld.Entities.SpawnEntity(player);
-        GetChunkMap(player.dimensionId).addPlayer(player);
+        GetChunkMap(player.DimensionId).addPlayer(player);
     }
 
     public void updatePlayerChunks(ServerPlayerEntity player)
     {
-        GetChunkMap(player.dimensionId).updatePlayerChunks(player);
+        GetChunkMap(player.DimensionId).updatePlayerChunks(player);
     }
 
     public void disconnect(ServerPlayerEntity player)
     {
         _saveHandler.SavePlayerData(player);
-        _server.getWorld(player.dimensionId).Entities.Remove(player);
+        _server.getWorld(player.DimensionId).Entities.Remove(player);
         players.Remove(player);
-        GetChunkMap(player.dimensionId).removePlayer(player);
+        GetChunkMap(player.DimensionId).removePlayer(player);
     }
 
     public ServerPlayerEntity? connectPlayer(ServerLoginNetworkHandler loginNetworkHandler, string name)
@@ -151,7 +151,7 @@ public class PlayerManager
 
         foreach (var playerEntity in players)
         {
-            if (playerEntity.name.EqualsIgnoreCase(name))
+            if (playerEntity.Name.EqualsIgnoreCase(name))
             {
                 playerEntity.NetworkHandler.disconnect("You logged in from another location");
             }
@@ -162,28 +162,28 @@ public class PlayerManager
 
     public ServerPlayerEntity respawnPlayer(ServerPlayerEntity player, int dimensionId)
     {
-        _server.getEntityTracker(player.dimensionId).removeListener(player);
-        _server.getEntityTracker(player.dimensionId).onEntityRemoved(player);
-        GetChunkMap(player.dimensionId).removePlayer(player);
+        _server.getEntityTracker(player.DimensionId).removeListener(player);
+        _server.getEntityTracker(player.DimensionId).onEntityRemoved(player);
+        GetChunkMap(player.DimensionId).removePlayer(player);
         players.Remove(player);
-        _server.getWorld(player.dimensionId).Entities.ServerRemove(player);
-        Vec3i? spawnPos = player.getSpawnPos();
-        player.dimensionId = dimensionId;
+        _server.getWorld(player.DimensionId).Entities.ServerRemove(player);
+        Vec3i? spawnPos = player.GetSpawnPos();
+        player.DimensionId = dimensionId;
         ServerPlayerEntity serverPlayer = new(
-            _server, _server.getWorld(player.dimensionId), player.name, new ServerPlayerInteractionManager(_server.getWorld(player.dimensionId))
+            _server, _server.getWorld(player.DimensionId), player.Name, new ServerPlayerInteractionManager(_server.getWorld(player.DimensionId))
         )
         {
             ID = player.ID,
             NetworkHandler = player.NetworkHandler
         };
-        ServerWorld targetWorld = _server.getWorld(player.dimensionId);
+        ServerWorld targetWorld = _server.getWorld(player.DimensionId);
         if (spawnPos is (int x, int y, int z))
         {
-            Vec3i? respawnPos = EntityPlayer.findRespawnPosition(_server.getWorld(player.dimensionId), spawnPos);
-            if (respawnPos is (int x2, int y2, int z2))
+            Vec3i? respawnPosition = EntityPlayer.FindRespawnPosition(_server.getWorld(player.DimensionId), spawnPos);
+            if (respawnPosition is (int x2, int y2, int z2))
             {
                 serverPlayer.SetPositionAndAnglesKeepPrevAngles(x2 + 0.5F, y2 + 0.1F, z2 + 0.5F, 0.0F, 0.0F);
-                serverPlayer.setSpawnPos(spawnPos);
+                serverPlayer.SetSpawnPos(spawnPos);
 
             }
             else
@@ -199,10 +199,10 @@ public class PlayerManager
             serverPlayer.SetPosition(serverPlayer.X, serverPlayer.Y + 1.0, serverPlayer.Z);
         }
 
-        serverPlayer.NetworkHandler.SendPacket(PlayerRespawnPacket.Get((sbyte)serverPlayer.dimensionId));
+        serverPlayer.NetworkHandler.SendPacket(PlayerRespawnPacket.Get((sbyte)serverPlayer.DimensionId));
         serverPlayer.NetworkHandler.teleport(serverPlayer.X, serverPlayer.Y, serverPlayer.Z, serverPlayer.Yaw, serverPlayer.Pitch);
         sendWorldInfo(serverPlayer, targetWorld);
-        GetChunkMap(serverPlayer.dimensionId).addPlayer(serverPlayer);
+        GetChunkMap(serverPlayer.DimensionId).addPlayer(serverPlayer);
         targetWorld.SpawnEntity(serverPlayer);
         players.Add(serverPlayer);
         serverPlayer.initScreenHandler();
@@ -212,7 +212,7 @@ public class PlayerManager
     public void changePlayerDimension(ServerPlayerEntity player)
     {
         int targetDim = 0;
-        if (player.dimensionId == -1)
+        if (player.DimensionId == -1)
         {
             targetDim = 0;
         }
@@ -226,7 +226,7 @@ public class PlayerManager
 
     public void sendPlayerToDimension(ServerPlayerEntity player, int targetDim)
     {
-        int sourceDim = player.dimensionId;
+        int sourceDim = player.DimensionId;
         ServerWorld currentWorld = _server.getWorld(sourceDim);
         ServerWorld targetWorld = _server.getWorld(targetDim);
 
@@ -239,20 +239,20 @@ public class PlayerManager
         // source-dimension space.
         GetChunkMap(sourceDim).removePlayer(player);
 
-        player.dimensionId = targetDim;
-        player.NetworkHandler.SendPacket(PlayerRespawnPacket.Get((sbyte)player.dimensionId));
+        player.DimensionId = targetDim;
+        player.NetworkHandler.SendPacket(PlayerRespawnPacket.Get((sbyte)player.DimensionId));
         currentWorld.Entities.ServerRemove(player);
         player.Dead = false;
         double x = player.X;
         double z = player.Z;
         double scale = 8.0;
 
-        if (player.dimensionId == -1)
+        if (player.DimensionId == -1)
         {
             x /= scale;
             z /= scale;
             player.SetPositionAndAnglesKeepPrevAngles(x, player.Y, z, player.Yaw, player.Pitch);
-            if (player.IsAlive())
+            if (player.IsAlive)
             {
                 currentWorld.Entities.UpdateEntity(player, false);
             }
@@ -262,13 +262,13 @@ public class PlayerManager
             x *= scale;
             z *= scale;
             player.SetPositionAndAnglesKeepPrevAngles(x, player.Y, z, player.Yaw, player.Pitch);
-            if (player.IsAlive())
+            if (player.IsAlive)
             {
                 currentWorld.Entities.UpdateEntity(player, false);
             }
         }
 
-        if (player.IsAlive())
+        if (player.IsAlive)
         {
             targetWorld.Entities.SpawnEntity(player);
             player.SetPositionAndAnglesKeepPrevAngles(x, player.Y, z, player.Yaw, player.Pitch);
@@ -333,7 +333,7 @@ public class PlayerManager
         for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
             ServerPlayerEntity playerEntity = players[playerIndex];
-            if (playerEntity.dimensionId == dimensionId)
+            if (playerEntity.DimensionId == dimensionId)
             {
                 playerEntity.NetworkHandler.SendPacket(packet);
             }
@@ -343,7 +343,7 @@ public class PlayerManager
 
     public string getPlayerList()
     {
-        return string.Join(", ", players.ConvertAll(p => p.name));
+        return string.Join(", ", players.ConvertAll(p => p.Name));
     }
 
     public void banPlayer(string name)
@@ -430,7 +430,7 @@ public class PlayerManager
         for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
             ServerPlayerEntity playerEntity = players[playerIndex];
-            if (playerEntity.name.EqualsIgnoreCase(name))
+            if (playerEntity.Name.EqualsIgnoreCase(name))
             {
                 return playerEntity;
             }
@@ -492,7 +492,7 @@ public class PlayerManager
             var keysToRemove = new List<double>();
             foreach (var p in dict)
             {
-                if (p.Value.dimensionId != d)
+                if (p.Value.DimensionId != d)
                 {
                     keysToRemove.Add(p.Key);
                 }
@@ -559,7 +559,7 @@ public class PlayerManager
         for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
         {
             ServerPlayerEntity playerEntity = players[playerIndex];
-            if (playerEntity != player && playerEntity.dimensionId == dimensionId)
+            if (playerEntity != player && playerEntity.DimensionId == dimensionId)
             {
                 double deltaX = x - playerEntity.X;
                 double deltaY = y - playerEntity.Y;
@@ -583,7 +583,7 @@ public class PlayerManager
 
         foreach (var player in players)
         {
-            if (isOperator(player.name))
+            if (isOperator(player.Name))
             {
                 player.NetworkHandler.SendPacket(chatMessagePacket);
             }
@@ -656,7 +656,7 @@ public class PlayerManager
 
     public static void sendPlayerStatus(ServerPlayerEntity player)
     {
-        player.onContentsUpdate(player.playerScreenHandler);
+        player.onContentsUpdate(player.PlayerScreenHandler);
         player.markHealthDirty();
     }
 }

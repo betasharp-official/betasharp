@@ -64,4 +64,15 @@ internal class ShapelessRecipes : IRecipe
     {
         return _recipeItems.Count;
     }
+
+    public override int GetHashCode()
+    {
+        int hash = 0;
+        for (int i = 0; i < _recipeItems.Count; i++)
+        {
+            hash += (_recipeItems[i].ItemId + (_recipeItems[i].getDamage() << 8)) * (i + 1);
+        }
+
+        return hash + (_output.ItemId << 12) + (_output.getDamage() << 20) + _output.Count;
+    }
 }

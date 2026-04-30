@@ -35,8 +35,8 @@ internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.T
 
     public override void onDestroyedByExplosion(OnDestroyedByExplosionEvent @event)
     {
-        EntityTNTPrimed entityTntPrimed = new(@event.World, @event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F);
-        entityTntPrimed.fuse = @event.World.Random.NextInt(entityTntPrimed.fuse / 4) + entityTntPrimed.fuse / 8;
+        EntityTntPrimed entityTntPrimed = new(@event.World, @event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F);
+        entityTntPrimed.Fuse = @event.World.Random.NextInt(entityTntPrimed.Fuse / 4) + entityTntPrimed.Fuse / 8;
         @event.World.Entities.SpawnEntity(entityTntPrimed);
     }
 
@@ -50,7 +50,7 @@ internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.T
         }
         else
         {
-            EntityTNTPrimed entityTntPrimed = new(@event.World, @event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F);
+            EntityTntPrimed entityTntPrimed = new(@event.World, @event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F);
             @event.World.Entities.SpawnEntity(entityTntPrimed);
             @event.World.Broadcaster.PlaySoundAtPos(@event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F, "random.fuse", 1.0F, 1.0F);
         }
@@ -58,7 +58,7 @@ internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.T
 
     public override void onBlockBreakStart(OnBlockBreakStartEvent ctx)
     {
-        if (ctx.Player.getHand() != null && ctx.Player.getHand().ItemId == Item.FlintAndSteel.id)
+        if (ctx.Player.GetHand() != null && ctx.Player.GetHand().ItemId == Item.FlintAndSteel.id)
         {
             ctx.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(ctx.X, ctx.Y, ctx.Z, 1);
         }

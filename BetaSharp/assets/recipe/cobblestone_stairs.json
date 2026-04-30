@@ -1,0 +1,15 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "#  ",
+        "## ",
+        "###"
+    ],
+    "key": {
+        "#": "betasharp:Cobblestone"
+    },
+    "result": {
+        "id": "betasharp:CobblestoneStairs",
+        "count": 4
+    }
+}

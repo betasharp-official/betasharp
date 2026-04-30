@@ -1,0 +1,7 @@
+{
+    "type": "smelting",
+    "input": "betasharp:Cobblestone",
+    "result": {
+        "id": "betasharp:Stone"
+    }
+}

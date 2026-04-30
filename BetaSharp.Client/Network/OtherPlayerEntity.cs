@@ -2,7 +2,6 @@ using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Network;
 
@@ -18,11 +17,11 @@ public class OtherPlayerEntity : EntityPlayer
 
     public OtherPlayerEntity(World world, string name) : base(world)
     {
-        base.name = name;
+        base.Name = name;
         StandingEyeHeight = 0.0F;
         StepHeight = 0.0F;
         NoClip = true;
-        sleepOffsetY = 0.25F;
+        SleepOffsetY = 0.25F;
         RenderDistanceWeight = 10.0D;
     }
 
@@ -31,7 +30,7 @@ public class OtherPlayerEntity : EntityPlayer
         StandingEyeHeight = 0.0F;
     }
 
-    public override bool Damage(Entity ent, int amount)
+    public override bool Damage(Entity? ent, int amount)
     {
         return true;
     }
@@ -48,7 +47,7 @@ public class OtherPlayerEntity : EntityPlayer
 
     public override void Tick()
     {
-        sleepOffsetY = 0.0F;
+        SleepOffsetY = 0.0F;
         base.Tick();
         LastWalkAnimationSpeed = WalkAnimationSpeed;
         double dx = X - PrevX;
@@ -68,9 +67,9 @@ public class OtherPlayerEntity : EntityPlayer
         return 0.0F;
     }
 
-    public override void tickMovement()
+    protected override void TickMovement()
     {
-        base.tickLiving();
+        base.TickLiving();
         if (lerpSteps > 0)
         {
             double newX = X + (lerpX - X) / lerpSteps;
@@ -94,7 +93,7 @@ public class OtherPlayerEntity : EntityPlayer
             SetRotation(Yaw, Pitch);
         }
 
-        prevStepBobbingAmount = stepBobbingAmount;
+        PrevStepBobbingAmount = StepBobbingAmount;
         float horizontalSpeed = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
         float tiltAmount = (float)Math.Atan(-VelocityY * (double)0.2F) * 15.0F;
         if (horizontalSpeed > 0.1F)
@@ -112,7 +111,7 @@ public class OtherPlayerEntity : EntityPlayer
             tiltAmount = 0.0F;
         }
 
-        stepBobbingAmount += (horizontalSpeed - stepBobbingAmount) * 0.4F;
+        StepBobbingAmount += (horizontalSpeed - StepBobbingAmount) * 0.4F;
         Tilt += (tiltAmount - Tilt) * 0.8F;
     }
 
@@ -126,16 +125,16 @@ public class OtherPlayerEntity : EntityPlayer
 
         if (slotIndex == 0)
         {
-            inventory.Main[inventory.SelectedSlot] = itemStack;
+            Inventory.Main[Inventory.SelectedSlot] = itemStack;
         }
         else
         {
-            inventory.Armor[slotIndex - 1] = itemStack;
+            Inventory.Armor[slotIndex - 1] = itemStack;
         }
 
     }
 
-    public override void spawn()
+    public override void Spawn()
     {
     }
 }

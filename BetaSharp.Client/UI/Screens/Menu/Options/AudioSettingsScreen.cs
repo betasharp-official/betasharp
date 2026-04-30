@@ -10,5 +10,5 @@ public class AudioSettingsScreen : BaseOptionsScreen
         TitleText = TranslationStorage.Instance.TranslateKey("options.audioTitle");
     }
 
-    protected override IEnumerable<GameOption> GetOptions() => Options.AudioScreenOptions;
+    protected override List<OptionSection> GetOptions() => [new(Options.AudioScreenOptions)];
 }

@@ -26,7 +26,7 @@ public abstract class ContainerScreen(
 
     protected override void Init()
     {
-        player.currentScreenHandler = InventorySlots;
+        player.CurrentScreenHandler = InventorySlots;
 
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
@@ -65,7 +65,7 @@ public abstract class ContainerScreen(
     public override void Update(float partialTicks)
     {
         base.Update(partialTicks);
-        if (!player.IsAlive() || player.Dead)
+        if (!player.IsAlive || player.Dead)
         {
             player.closeHandledScreen();
         }
@@ -76,7 +76,7 @@ public abstract class ContainerScreen(
         base.Render(mouseX, mouseY, partialTicks);
 
         // Render held item on top of everything
-        ItemStack cursorStack = player.inventory.GetCursorStack();
+        ItemStack cursorStack = player.Inventory.GetCursorStack();
         if (cursorStack != null)
         {
             Renderer.Begin();
@@ -110,7 +110,7 @@ public abstract class ContainerScreen(
 
     public override void GetTooltips(List<ActionTip> tips)
     {
-        ItemStack cursorStack = player.inventory.GetCursorStack();
+        ItemStack cursorStack = player.Inventory.GetCursorStack();
 
         if (Root.HitTest(MouseX, MouseY) is UISlot hoveredSlot)
         {

@@ -161,7 +161,7 @@ public abstract class World : IWorldContext
     {
         EntityItem droppedItem = new(this, x, y, z, itemStack)
         {
-            delayBeforeCanPickup = 10
+            DelayBeforeCanPickup = 10
         };
         return Entities.SpawnEntity(droppedItem);
     }

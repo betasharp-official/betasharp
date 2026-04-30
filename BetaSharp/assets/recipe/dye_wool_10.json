@@ -1,0 +1,10 @@
+{
+    "type": "shapeless",
+    "ingredients": [
+        "betasharp:Dye:10",
+        "betasharp:Wool:0"
+    ],
+    "result": {
+        "id": "betasharp:Wool:5"
+    }
+}

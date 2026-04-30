@@ -13,8 +13,10 @@ public class Achievement : StatBase
     public readonly ItemStack icon;
     private bool _isChallenge;
     public Func<string>? GetTranslatedDescription { get; set; }
-
-    public Achievement(int id, string key, int column, int row, Item displayItem, Achievement parent) : this(id, key, column, row, new ItemStack(displayItem), parent)
+  
+    // TODO: Remove this null-safe fallback once static bootstrap order is refactored
+    // so Achievement icon items are always fully initialized before construction.
+    public Achievement(int id, string key, int column, int row, Item? displayItem, Achievement parent) : this(id, key, column, row, new ItemStack(displayItem?.id ?? 280, 1, 0), parent)
     {
     }
 

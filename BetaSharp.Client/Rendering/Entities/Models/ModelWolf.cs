@@ -78,7 +78,7 @@ public class ModelWolf : ModelBase
     public override void setLivingAnimations(EntityLiving entity, float limbSwing, float limbSwingAmount, float partialTick)
     {
         EntityWolf wolf = (EntityWolf)entity;
-        if (wolf.isWolfAngry())
+        if (wolf.IsWolfAngry)
         {
             wolfTail.rotateAngleY = 0.0F;
         }
@@ -87,7 +87,7 @@ public class ModelWolf : ModelBase
             wolfTail.rotateAngleY = MathHelper.Cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
         }
 
-        if (wolf.isWolfSitting())
+        if (wolf.IsWolfSitting)
         {
             wolfMane.setRotationPoint(-1.0F, 16.0F, -3.0F);
             wolfMane.rotateAngleX = (float)Math.PI * 0.4F;

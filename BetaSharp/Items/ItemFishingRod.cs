@@ -1,5 +1,4 @@
 using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items;
@@ -25,11 +24,11 @@ internal class ItemFishingRod : Item
 
     public override ItemStack use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
     {
-        if (entityPlayer.fishHook != null)
+        if (entityPlayer.FishHook != null)
         {
-            int durabilityLoss = entityPlayer.fishHook.catchFish();
+            int durabilityLoss = entityPlayer.FishHook.catchFish();
             itemStack.DamageItem(durabilityLoss, entityPlayer);
-            entityPlayer.swingHand();
+            entityPlayer.SwingHand();
         }
         else
         {
@@ -39,7 +38,7 @@ internal class ItemFishingRod : Item
                 world.SpawnEntity(new EntityFish(world, entityPlayer));
             }
 
-            entityPlayer.swingHand();
+            entityPlayer.SwingHand();
         }
 
         return itemStack;

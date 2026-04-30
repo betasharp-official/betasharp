@@ -3,7 +3,7 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Recipes;
 
-internal interface IRecipe
+public interface IRecipe
 {
     bool Matches(InventoryCrafting InventoryCrafting);
 
@@ -12,4 +12,18 @@ internal interface IRecipe
     int GetRecipeSize();
 
     ItemStack GetRecipeOutput();
+
+    public bool Equals(IRecipe b) => Equals(this, b);
+
+    public static bool Equals(IRecipe a, IRecipe b)
+    {
+        // The hash should 99.99% of cases be accurate.
+        // If we need to hash often, we should cache the hash.
+        if (a.GetHashCode() != b.GetHashCode()) return false;
+        if (a.GetType() != b.GetType()) return false;
+        if (!a.GetRecipeOutput().Equals(b.GetRecipeOutput())) return false;
+        if (a.GetRecipeSize() != b.GetRecipeSize()) return false;
+
+        return true;
+    }
 }

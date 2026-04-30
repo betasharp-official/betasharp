@@ -7,34 +7,32 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public class EntityBoat : Entity
+public sealed class EntityBoat : Entity
 {
-    public override EntityType Type => EntityRegistry.Boat;
-
-    public int boatCurrentDamage;
-    public int boatTimeSinceHit;
-    public int boatRockDirection;
-
-    private int lerpSteps;
-    private double targetX;
-    private double targetY;
-    private double targetZ;
-    private double targetYaw;
-    private double targetPitch;
-    private double boatVelocityX;
-    private double boatVelocityY;
-    private double boatVelocityZ;
-
     private const double MaxHorizontalSpeed = 0.4D;
     private const double RiderInputAcceleration = 0.18D;
     private const double RiderTurnVelocityBlend = 0.25D;
     private const double YawSmoothing = 0.35D;
 
+    public int BoatCurrentDamage;
+    public int BoatRockDirection;
+    public int BoatTimeSinceHit;
+    private double _boatVelocityX;
+    private double _boatVelocityY;
+    private double _boatVelocityZ;
+
+    private int _lerpSteps;
+    private double _targetPitch;
+    private double _targetX;
+    private double _targetY;
+    private double _targetYaw;
+    private double _targetZ;
+
     public EntityBoat(IWorldContext world) : base(world)
     {
-        boatCurrentDamage = 0;
-        boatTimeSinceHit = 0;
-        boatRockDirection = 1;
+        BoatCurrentDamage = 0;
+        BoatTimeSinceHit = 0;
+        BoatRockDirection = 1;
         PreventEntitySpawning = true;
         SetBoundingBoxSpacing(1.5F, 0.6F);
         StandingEyeHeight = Height / 2.0F;
@@ -51,111 +49,81 @@ public class EntityBoat : Entity
         PrevZ = z;
     }
 
-    protected override bool BypassesSteppingEffects()
-    {
-        return false;
-    }
+    public override EntityType Type => EntityRegistry.Boat;
 
-    public override Box? GetCollisionAgainstShape(Entity entity)
-    {
-        return entity.BoundingBox;
-    }
+    protected override double PassengerRidingHeight => Height * 0.0D - 0.3D;
 
-    public override Box? GetBoundingBox()
-    {
-        return BoundingBox;
-    }
+    protected override bool BypassesSteppingEffects() => false;
 
-    public override bool IsPushable()
-    {
-        return true;
-    }
+    public override Box? GetCollisionAgainstShape(Entity entity) => entity.BoundingBox;
 
-    public override double GetPassengerRidingHeight()
-    {
-        return (double)Height * 0.0D - 0.3D;
-    }
+    public override Box? GetBoundingBox() => BoundingBox;
 
-    public override bool Damage(Entity entity, int amount)
+    public override bool IsPushable => true;
+
+    public override bool Damage(Entity? entity, int amount)
     {
-        if (!World.IsRemote && !Dead)
+        if (World.IsRemote || Dead) return true;
+
+        BoatRockDirection = -BoatRockDirection;
+        BoatTimeSinceHit = 10;
+        BoatCurrentDamage += amount * 10;
+        ScheduleVelocityUpdate();
+
+        if (BoatCurrentDamage <= 40) return true;
+
+        Passenger?.SetVehicle(this);
+
+        for (int i = 0; i < 3; ++i)
         {
-            boatRockDirection = -boatRockDirection;
-            boatTimeSinceHit = 10;
-            boatCurrentDamage += amount * 10;
-            ScheduleVelocityUpdate();
-
-            if (boatCurrentDamage > 40)
-            {
-                if (Passenger != null)
-                {
-                    Passenger.SetVehicle(this);
-                }
-
-                for (int i = 0; i < 3; ++i)
-                {
-                    DropItem(Block.Planks.id, 1, 0.0F);
-                }
-
-                for (int i = 0; i < 2; ++i)
-                {
-                    DropItem(Item.Stick.id, 1, 0.0F);
-                }
-
-                MarkDead();
-            }
-
-            return true;
+            DropItem(Block.Planks.id, 1, 0.0F);
         }
+
+        for (int i = 0; i < 2; ++i)
+        {
+            DropItem(Item.Stick.id, 1, 0.0F);
+        }
+
+        MarkDead();
 
         return true;
     }
 
     public override void AnimateHurt()
     {
-        boatRockDirection = -boatRockDirection;
-        boatTimeSinceHit = 10;
-        boatCurrentDamage += boatCurrentDamage * 10;
+        BoatRockDirection = -BoatRockDirection;
+        BoatTimeSinceHit = 10;
+        BoatCurrentDamage += BoatCurrentDamage * 10;
     }
 
-    public override bool IsCollidable()
-    {
-        return !Dead;
-    }
+    public override bool HasCollision => !Dead;
 
     public override void SetPositionAndAnglesAvoidEntities(double targetX, double targetY, double targetZ, float targetYaw, float targetPitch, int lerpSteps)
     {
-        this.targetX = targetX;
-        this.targetY = targetY;
-        this.targetZ = targetZ;
-        this.targetYaw = targetYaw;
-        this.targetPitch = targetPitch;
-        this.lerpSteps = lerpSteps + 2;
-        VelocityX = boatVelocityX;
-        VelocityY = boatVelocityY;
-        VelocityZ = boatVelocityZ;
+        _targetX = targetX;
+        _targetY = targetY;
+        _targetZ = targetZ;
+        _targetYaw = targetYaw;
+        _targetPitch = targetPitch;
+        _lerpSteps = lerpSteps + 2;
+        VelocityX = _boatVelocityX;
+        VelocityY = _boatVelocityY;
+        VelocityZ = _boatVelocityZ;
     }
 
     public override void SetVelocityClient(double velocityX, double velocityY, double velocityZ)
     {
-        boatVelocityX = base.VelocityX = velocityX;
-        boatVelocityY = base.VelocityY = velocityY;
-        boatVelocityZ = base.VelocityZ = velocityZ;
+        _boatVelocityX = VelocityX = velocityX;
+        _boatVelocityY = VelocityY = velocityY;
+        _boatVelocityZ = VelocityZ = velocityZ;
     }
 
     public override void Tick()
     {
         base.Tick();
 
-        if (boatTimeSinceHit > 0)
-        {
-            --boatTimeSinceHit;
-        }
-
-        if (boatCurrentDamage > 0)
-        {
-            --boatCurrentDamage;
-        }
+        if (BoatTimeSinceHit > 0) --BoatTimeSinceHit;
+        if (BoatCurrentDamage > 0) --BoatCurrentDamage;
 
         PrevX = X;
         PrevY = Y;
@@ -168,7 +136,7 @@ public class EntityBoat : Entity
         {
             double sliceMinY = BoundingBox.MinY + (BoundingBox.MaxY - BoundingBox.MinY) * i / waterSliceCount - 0.125D;
             double sliceMaxY = BoundingBox.MinY + (BoundingBox.MaxY - BoundingBox.MinY) * (i + 1) / waterSliceCount - 0.125D;
-            Box sliceBox = new Box(BoundingBox.MinX, sliceMinY, BoundingBox.MinZ, BoundingBox.MaxX, sliceMaxY, BoundingBox.MaxZ);
+            Box sliceBox = new(BoundingBox.MinX, sliceMinY, BoundingBox.MinZ, BoundingBox.MaxX, sliceMaxY, BoundingBox.MaxZ);
 
             if (World.Reader.IsMaterialInBox(sliceBox, m => m == Material.Water))
             {
@@ -176,29 +144,23 @@ public class EntityBoat : Entity
             }
         }
 
-        if (World.IsRemote)
-        {
-            tickClient();
-        }
-        else
-        {
-            tickServer(waterSubmersion);
-        }
+        if (World.IsRemote) tickClient();
+        else tickServer(waterSubmersion);
     }
 
     private void tickClient()
     {
-        if (lerpSteps > 0)
+        if (_lerpSteps > 0)
         {
-            double nextX = X + (targetX - X) / lerpSteps;
-            double nextY = Y + (targetY - Y) / lerpSteps;
-            double nextZ = Z + (targetZ - Z) / lerpSteps;
+            double nextX = X + (_targetX - X) / _lerpSteps;
+            double nextY = Y + (_targetY - Y) / _lerpSteps;
+            double nextZ = Z + (_targetZ - Z) / _lerpSteps;
 
-            double yawDelta = WrapDegrees(targetYaw - Yaw);
-            Yaw = (float)(Yaw + yawDelta / lerpSteps);
-            Pitch = (float)(Pitch + (targetPitch - Pitch) / lerpSteps);
+            double yawDelta = WrapDegrees(_targetYaw - Yaw);
+            Yaw = (float)(Yaw + yawDelta / _lerpSteps);
+            Pitch = (float)(Pitch + (_targetPitch - Pitch) / _lerpSteps);
 
-            --lerpSteps;
+            --_lerpSteps;
             SetPosition(nextX, nextY, nextZ);
             SetRotation(Yaw, Pitch);
             return;
@@ -272,13 +234,13 @@ public class EntityBoat : Entity
 
         Move(VelocityX, VelocityY, VelocityZ);
 
-        double horizontalSpeed = System.Math.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
+        double horizontalSpeed = Math.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
         if (horizontalSpeed > 0.15D)
         {
             spawnSplashParticles(horizontalSpeed);
         }
 
-        if (HorizontalCollison && horizontalSpeed > 0.15D)
+        if (HorizontalCollision && horizontalSpeed > 0.15D)
         {
             if (!World.IsRemote)
             {
@@ -305,13 +267,12 @@ public class EntityBoat : Entity
         Pitch = 0.0F;
         updateBoatYawFromMotion();
 
-        var nearbyEntities = World.Entities.GetEntities(this, BoundingBox.Expand(0.2D, 0.0D, 0.2D));
-        if (nearbyEntities != null && nearbyEntities.Count > 0)
+        List<Entity> nearbyEntities = World.Entities.GetEntities(this, BoundingBox.Expand(0.2D, 0.0D, 0.2D));
+        if (nearbyEntities is { Count: > 0 })
         {
-            for (int i = 0; i < nearbyEntities.Count; ++i)
+            foreach (var entity in nearbyEntities)
             {
-                Entity entity = nearbyEntities[i];
-                if (entity != Passenger && entity.IsPushable() && entity is EntityBoat)
+                if (!Equals(entity, Passenger) && entity.IsPushable && entity is EntityBoat)
                 {
                     entity.OnCollision(this);
                 }
@@ -320,9 +281,9 @@ public class EntityBoat : Entity
 
         for (int i = 0; i < 4; ++i)
         {
-            int snowX = MathHelper.Floor(base.X + ((i % 2) - 0.5D) * 0.8D);
-            int snowY = MathHelper.Floor(base.Y);
-            int snowZ = MathHelper.Floor(base.Z + ((i / 2) - 0.5D) * 0.8D);
+            int snowX = MathHelper.Floor(X + (i % 2 - 0.5D) * 0.8D);
+            int snowY = MathHelper.Floor(Y);
+            int snowZ = MathHelper.Floor(Z + (i * 0.5f - 0.5D) * 0.8D);
 
             if (World.Reader.GetBlockId(snowX, snowY, snowZ) == Block.Snow.id)
             {
@@ -330,7 +291,7 @@ public class EntityBoat : Entity
             }
         }
 
-        if (Passenger != null && Passenger.Dead)
+        if (Passenger is { Dead: true })
         {
             Passenger = null;
         }
@@ -338,34 +299,25 @@ public class EntityBoat : Entity
 
     private void applyRiderInput()
     {
-        if (Passenger == null)
-        {
-            return;
-        }
+        if (Passenger == null) return;
 
         VelocityX += Passenger.VelocityX * RiderInputAcceleration;
         VelocityZ += Passenger.VelocityZ * RiderInputAcceleration;
 
         double riderInputSpeedSq = Passenger.VelocityX * Passenger.VelocityX + Passenger.VelocityZ * Passenger.VelocityZ;
-        if (riderInputSpeedSq <= 1.0E-4D)
-        {
-            return;
-        }
+        if (riderInputSpeedSq <= 1.0E-4D) return;
 
-        double speed = System.Math.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
-        if (speed <= 0.01D)
-        {
-            return;
-        }
+        double speed = Math.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
+        if (speed <= 0.01D) return;
 
-        double riderInputSpeed = System.Math.Sqrt(riderInputSpeedSq);
+        double riderInputSpeed = Math.Sqrt(riderInputSpeedSq);
         double targetVelocityX = Passenger.VelocityX / riderInputSpeed * speed;
         double targetVelocityZ = Passenger.VelocityZ / riderInputSpeed * speed;
 
         VelocityX += (targetVelocityX - VelocityX) * RiderTurnVelocityBlend;
         VelocityZ += (targetVelocityZ - VelocityZ) * RiderTurnVelocityBlend;
 
-        double desiredYaw = System.Math.Atan2(-targetVelocityZ, -targetVelocityX) * 180.0D / System.Math.PI;
+        double desiredYaw = Math.Atan2(-targetVelocityZ, -targetVelocityX) * 180.0D / Math.PI;
         Yaw = (float)(Yaw + WrapDegrees(desiredYaw - Yaw) * YawSmoothing);
     }
 
@@ -377,7 +329,7 @@ public class EntityBoat : Entity
 
         if (motionX * motionX + motionZ * motionZ > 0.001D)
         {
-            desiredYaw = System.Math.Atan2(motionZ, motionX) * 180.0D / System.Math.PI;
+            desiredYaw = Math.Atan2(motionZ, motionX) * 180.0D / Math.PI;
         }
 
         Yaw = (float)(Yaw + WrapDegrees(desiredYaw - Yaw) * YawSmoothing);
@@ -386,8 +338,8 @@ public class EntityBoat : Entity
 
     private void spawnSplashParticles(double horizontalSpeed)
     {
-        double yawCos = System.Math.Cos(Yaw * System.Math.PI / 180.0D);
-        double yawSin = System.Math.Sin(Yaw * System.Math.PI / 180.0D);
+        double yawCos = Math.Cos(Yaw * Math.PI / 180.0D);
+        double yawSin = Math.Sin(Yaw * Math.PI / 180.0D);
 
         for (int i = 0; i < 1.0D + horizontalSpeed * 60.0D; ++i)
         {
@@ -414,54 +366,34 @@ public class EntityBoat : Entity
 
     private static double WrapDegrees(double angle)
     {
-        while (angle >= 180.0D)
-        {
-            angle -= 360.0D;
-        }
-
-        while (angle < -180.0D)
-        {
-            angle += 360.0D;
-        }
-
+        while (angle >= 180.0D) angle -= 360.0D;
+        while (angle < -180.0D) angle += 360.0D;
         return angle;
     }
 
     public override void UpdatePassengerPosition()
     {
-        if (Passenger != null)
-        {
-            double xOffset = Math.Cos(Yaw * Math.PI / 180.0D) * 0.4D;
-            double zOffset = Math.Sin(Yaw * Math.PI / 180.0D) * 0.4D;
-            Passenger.SetPosition(X + xOffset, Y + GetPassengerRidingHeight() + Passenger.GetStandingEyeHeight(), Z + zOffset);
-        }
+        if (Passenger == null) return;
+
+        double xOffset = Math.Cos(Yaw * Math.PI / 180.0D) * 0.4D;
+        double zOffset = Math.Sin(Yaw * Math.PI / 180.0D) * 0.4D;
+        Passenger.SetPosition(X + xOffset, Y + PassengerRidingHeight + Passenger.StandingEyeHeight, Z + zOffset);
     }
 
-    public override void WriteNbt(NBTTagCompound nbt)
+    protected override void WriteNbt(NBTTagCompound nbt)
     {
     }
 
-    public override void ReadNbt(NBTTagCompound nbt)
+    protected override void ReadNbt(NBTTagCompound nbt)
     {
     }
 
-    public override float GetShadowRadius()
-    {
-        return 0.0F;
-    }
+    public override float GetShadowRadius() => 0.0F;
 
     public override bool Interact(EntityPlayer player)
     {
-        if (Passenger != null && Passenger is EntityPlayer && Passenger != player)
-        {
-            return true;
-        }
-
-        if (!World.IsRemote)
-        {
-            player.SetVehicle(this);
-        }
-
+        if (Passenger is EntityPlayer && !Equals(Passenger, player)) return true;
+        if (!World.IsRemote) player.SetVehicle(this);
         return true;
     }
 }

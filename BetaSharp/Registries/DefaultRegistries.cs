@@ -34,6 +34,7 @@ public static class DefaultRegistries
         RegistryAccess.AddBuiltIn(RegistryKeys.BlockEntityTypes, BlockEntityTypes);
         RegistryAccess.AddBuiltIn(RegistryKeys.GameRules, GameRules);
         RegistryAccess.AddDynamic(RegistryDefinitions.GameModes);
+        RegistryAccess.AddDynamic(RegistryDefinitions.Recipes);
 
         FreezeAll();
     }

@@ -24,12 +24,12 @@ public class MinecartEntityRenderer : EntityRenderer
         double interpY = minecart.LastTickY + (minecart.Y - minecart.LastTickY) * (double)tickDelta;
         double interpZ = minecart.LastTickZ + (minecart.Z - minecart.LastTickZ) * (double)tickDelta;
         double trackOffset = (double)0.3F;
-        Vec3D? trackPos = minecart.func_514_g(interpX, interpY, interpZ);
+        Vec3D? trackPos = minecart.GetTrackPosition(interpX, interpY, interpZ);
         float pitch = minecart.PrevPitch + (minecart.Pitch - minecart.PrevPitch) * tickDelta;
         if (trackPos != null)
         {
-            Vec3D forwardTrackPos = minecart.func_515_a(interpX, interpY, interpZ, trackOffset) ?? trackPos.Value;
-            Vec3D backTrackPos = minecart.func_515_a(interpX, interpY, interpZ, -trackOffset) ?? trackPos.Value;
+            Vec3D forwardTrackPos = minecart.GetTrackPositionOffset(interpX, interpY, interpZ, trackOffset) ?? trackPos.Value;
+            Vec3D backTrackPos = minecart.GetTrackPositionOffset(interpX, interpY, interpZ, -trackOffset) ?? trackPos.Value;
 
             x += trackPos.Value.x - interpX;
             y += (forwardTrackPos.y + backTrackPos.y) / 2.0D - interpY;
@@ -46,8 +46,8 @@ public class MinecartEntityRenderer : EntityRenderer
         GLManager.GL.Translate((float)x, (float)y, (float)z);
         GLManager.GL.Rotate(180.0F - yaw, 0.0F, 1.0F, 0.0F);
         GLManager.GL.Rotate(-pitch, 0.0F, 0.0F, 1.0F);
-        float timeSinceHit = minecart.minecartTimeSinceHit - tickDelta;
-        float damageTaken = minecart.minecartCurrentDamage - tickDelta;
+        float timeSinceHit = minecart.MinecartTimeSinceHit - tickDelta;
+        float damageTaken = minecart.MinecartCurrentDamage - tickDelta;
         if (damageTaken < 0.0F)
         {
             damageTaken = 0.0F;
@@ -55,7 +55,7 @@ public class MinecartEntityRenderer : EntityRenderer
 
         if (timeSinceHit > 0.0F)
         {
-            GLManager.GL.Rotate(MathHelper.Sin(timeSinceHit) * timeSinceHit * damageTaken / 10.0F * minecart.minecartRockDirection, 1.0F, 0.0F, 0.0F);
+            GLManager.GL.Rotate(MathHelper.Sin(timeSinceHit) * timeSinceHit * damageTaken / 10.0F * minecart.MinecartRockDirection, 1.0F, 0.0F, 0.0F);
         }
 
         if (minecart.type != 0)

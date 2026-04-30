@@ -21,8 +21,8 @@ public class BoatEntityRenderer : EntityRenderer
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate((float)x, (float)y, (float)z);
         GLManager.GL.Rotate(180.0F - yaw, 0.0F, 1.0F, 0.0F);
-        float timeSinceHit = boatEntity.boatTimeSinceHit - tickDelta;
-        float damageTaken = boatEntity.boatCurrentDamage - tickDelta;
+        float timeSinceHit = boatEntity.BoatTimeSinceHit - tickDelta;
+        float damageTaken = boatEntity.BoatCurrentDamage - tickDelta;
         if (damageTaken < 0.0F)
         {
             damageTaken = 0.0F;
@@ -30,7 +30,7 @@ public class BoatEntityRenderer : EntityRenderer
 
         if (timeSinceHit > 0.0F)
         {
-            GLManager.GL.Rotate(MathHelper.Sin(timeSinceHit) * timeSinceHit * damageTaken / 10.0F * boatEntity.boatRockDirection, 1.0F, 0.0F, 0.0F);
+            GLManager.GL.Rotate(MathHelper.Sin(timeSinceHit) * timeSinceHit * damageTaken / 10.0F * boatEntity.BoatRockDirection, 1.0F, 0.0F, 0.0F);
         }
 
         loadTexture("/terrain.png");

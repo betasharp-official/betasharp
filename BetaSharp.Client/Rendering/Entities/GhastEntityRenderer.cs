@@ -13,7 +13,7 @@ public class GhastEntityRenderer : LivingEntityRenderer
 
     protected void render(EntityGhast ghastEntity, float tickDelta)
     {
-        float attackProgress = (ghastEntity.prevAttackCounter + (ghastEntity.attackCounter - ghastEntity.prevAttackCounter) * tickDelta) / 20.0F;
+        float attackProgress = (ghastEntity.PrevAttackCounter + (ghastEntity.AttackCounter - ghastEntity.PrevAttackCounter) * tickDelta) / 20.0F;
         if (attackProgress < 0.0F)
         {
             attackProgress = 0.0F;

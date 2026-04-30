@@ -1,0 +1,14 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "##",
+        "##",
+        "##"
+    ],
+    "key": {
+        "#": "betasharp:IronIngot"
+    },
+    "result": {
+        "id": "betasharp:IronDoor"
+    }
+}

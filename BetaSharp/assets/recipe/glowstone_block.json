@@ -1,0 +1,13 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "##",
+        "##"
+    ],
+    "key": {
+        "#": "betasharp:GlowstoneDust"
+    },
+    "result": {
+        "id": "betasharp:Glowstone"
+    }
+}

@@ -4,27 +4,23 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public abstract class EntityFlying : EntityLiving
+public abstract class EntityFlying(IWorldContext world) : EntityLiving(world)
 {
-    public EntityFlying(IWorldContext world) : base(world)
-    {
-    }
-
     protected override void OnLanding(float fallDistance)
     {
     }
 
-    public override void travel(float strafe, float forward)
+    protected override void Travel(float strafe, float forward)
     {
-        if (IsInWater())
+        if (IsInWater)
         {
             MoveNonSolid(strafe, forward, 0.02F);
             Move(VelocityX, VelocityY, VelocityZ);
-            VelocityX *= (double)0.8F;
-            VelocityY *= (double)0.8F;
-            VelocityZ *= (double)0.8F;
+            VelocityX *= 0.8F;
+            VelocityY *= 0.8F;
+            VelocityZ *= 0.8F;
         }
-        else if (IsTouchingLava())
+        else if (IsTouchingLava)
         {
             MoveNonSolid(strafe, forward, 0.02F);
             Move(VelocityX, VelocityY, VelocityZ);
@@ -59,9 +55,9 @@ public abstract class EntityFlying : EntityLiving
             }
 
             Move(VelocityX, VelocityY, VelocityZ);
-            VelocityX *= (double)friction;
-            VelocityY *= (double)friction;
-            VelocityZ *= (double)friction;
+            VelocityX *= friction;
+            VelocityY *= friction;
+            VelocityZ *= friction;
         }
 
         LastWalkAnimationSpeed = WalkAnimationSpeed;
@@ -77,8 +73,5 @@ public abstract class EntityFlying : EntityLiving
         AnimationPhase += WalkAnimationSpeed;
     }
 
-    public override bool isOnLadder()
-    {
-        return false;
-    }
+    protected override bool IsOnLadder => false;
 }

@@ -13,14 +13,14 @@ public class TntEntityRenderer : EntityRenderer
         ShadowRadius = 0.5F;
     }
 
-    public void render(EntityTNTPrimed tntEntity, double x, double y, double z, float yaw, float tickDelta)
+    public void render(EntityTntPrimed tntEntity, double x, double y, double z, float yaw, float tickDelta)
     {
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate((float)x, (float)y, (float)z);
         float flashProgress;
-        if (tntEntity.fuse - tickDelta + 1.0F < 10.0F)
+        if (tntEntity.Fuse - tickDelta + 1.0F < 10.0F)
         {
-            flashProgress = 1.0F - (tntEntity.fuse - tickDelta + 1.0F) / 10.0F;
+            flashProgress = 1.0F - (tntEntity.Fuse - tickDelta + 1.0F) / 10.0F;
             if (flashProgress < 0.0F)
             {
                 flashProgress = 0.0F;
@@ -37,10 +37,10 @@ public class TntEntityRenderer : EntityRenderer
             GLManager.GL.Scale(scale, scale, scale);
         }
 
-        flashProgress = (1.0F - (tntEntity.fuse - tickDelta + 1.0F) / 100.0F) * 0.8F;
+        flashProgress = (1.0F - (tntEntity.Fuse - tickDelta + 1.0F) / 100.0F) * 0.8F;
         loadTexture("/terrain.png");
         BlockRenderer.RenderBlockOnInventory(Block.TNT, 0, tntEntity.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
-        if (tntEntity.fuse / 5 % 2 == 0)
+        if (tntEntity.Fuse / 5 % 2 == 0)
         {
             GLManager.GL.Disable(GLEnum.Texture2D);
             GLManager.GL.Disable(GLEnum.Lighting);
@@ -58,6 +58,6 @@ public class TntEntityRenderer : EntityRenderer
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
-        render((EntityTNTPrimed)target, x, y, z, yaw, tickDelta);
+        render((EntityTntPrimed)target, x, y, z, yaw, tickDelta);
     }
 }

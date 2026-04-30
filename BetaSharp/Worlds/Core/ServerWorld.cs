@@ -79,7 +79,7 @@ public class ServerWorld : World
     {
         int absX = Math.Abs(x - Properties.SpawnX);
         int absZ = Math.Abs(z - Properties.SpawnZ);
-        return absX > 16 || absZ > 16 || server.playerManager.isOperator(player.name) || server is InternalServer;
+        return absX > 16 || absZ > 16 || server.playerManager.isOperator(player.Name) || server is InternalServer;
     }
 
     public override Explosion CreateExplosion(Entity? source, double x, double y, double z, float power, bool fire)
