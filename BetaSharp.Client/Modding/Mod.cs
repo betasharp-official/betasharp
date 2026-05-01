@@ -11,10 +11,11 @@ public abstract class Mod
     public abstract string Name { get; }
     public abstract string Description { get; }
     public abstract string Author { get; }
+    public abstract bool AddNamespace { get; }
 
     public static BetaSharp Game { get; internal set; }
     protected Harmony HarmonyInstance { get; private set; }
-
+    protected Namespace Namespace { get; private set; }
 
     internal void ApplyPatches()
     {
@@ -32,6 +33,8 @@ public abstract class Mod
     internal void InternalInit(BetaSharp game)
     {
         Game = game;
+        if (AddNamespace) Namespace = Namespace.Add(ID);
+
         Init();
     }
 
