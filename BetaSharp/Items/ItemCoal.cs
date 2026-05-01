@@ -13,4 +13,6 @@ internal class ItemCoal : Item
     {
         return itemStack.getDamage() == 1 ? "item.charcoal" : "item.coal";
     }
+
+    public override string[] GetItemAlias() => ["charcoal:1"];
 }

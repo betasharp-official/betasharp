@@ -536,6 +536,8 @@ public class Block
 
     public string getBlockName() => _blockName;
 
+    public virtual string[] GetBlockAlias() => [];
+
     public virtual void onBlockAction(OnBlockActionEvent ctx)
     {
     }
