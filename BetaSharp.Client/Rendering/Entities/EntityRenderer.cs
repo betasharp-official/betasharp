@@ -363,6 +363,30 @@ public abstract class EntityRenderer
         tess.addVertex(minX, maxY, maxZ);
 
         tess.draw();
+        tess.startDrawing(1);
+        GLManager.GL.Color4(1.0F, 1.0F, 0, 1.0F);
+
+        tess.addVertex(minX, target.EyeHeight, minZ);
+        tess.addVertex(maxX, target.EyeHeight, minZ);
+        tess.addVertex(maxX, target.EyeHeight, minZ);
+        tess.addVertex(maxX, target.EyeHeight, maxZ);
+        tess.addVertex(maxX, target.EyeHeight, maxZ);
+        tess.addVertex(minX, target.EyeHeight, maxZ);
+        tess.addVertex(minX, target.EyeHeight, maxZ);
+        tess.addVertex(minX, target.EyeHeight, minZ);
+
+        tess.draw();
+        tess.startDrawing(1);
+        GLManager.GL.Color4(1.0F, 0, 0, 1.0F);
+
+        const float toRad = -MathF.PI / 180.0F;
+        yaw *= toRad;
+        float pitchCos = MathHelper.Cos(target.Pitch * toRad);
+
+        tess.addVertex(0, target.EyeHeight, 0);
+        tess.addVertex(MathHelper.Sin(yaw) * pitchCos, target.EyeHeight + MathHelper.Sin(target.Pitch * toRad), MathHelper.Cos(yaw) * pitchCos);
+
+        tess.draw();
         GLManager.GL.PopMatrix();
         GLManager.GL.Enable(GLEnum.Texture2D);
         GLManager.GL.Enable(GLEnum.Lighting);
