@@ -1,8 +1,6 @@
-using System.Net.Sockets;
-
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class PlayerConnectionUpdateS2CPacket() : ExtendedProtocolPacket(PacketId.PlayerConnectionUpdateS2C)
+public class PlayerConnectionUpdateS2CPacket() : ExtendedProtocolPacket(PacketId.PlayerConnectionUpdateS2C), IPacketEntity
 {
     public enum ConnectionUpdateType : byte
     {
@@ -10,9 +8,10 @@ public class PlayerConnectionUpdateS2CPacket() : ExtendedProtocolPacket(PacketId
         Leave = 1
     }
 
-    public int entityId;
-    public ConnectionUpdateType type;
-    public string name;
+    public string Name { get; private set; } = "";
+    public ConnectionUpdateType Type { get; private set; }
+
+    public int EntityId { get; private set; }
 
     public static PlayerConnectionUpdateS2CPacket Get(
         int entityId,
@@ -20,34 +19,28 @@ public class PlayerConnectionUpdateS2CPacket() : ExtendedProtocolPacket(PacketId
         string name
     )
     {
-        var p = Get<PlayerConnectionUpdateS2CPacket>(PacketId.PlayerConnectionUpdateS2C);
-        p.entityId = entityId;
-        p.type = type;
-        p.name = name;
+        PlayerConnectionUpdateS2CPacket p = Get<PlayerConnectionUpdateS2CPacket>(PacketId.PlayerConnectionUpdateS2C);
+        p.EntityId = entityId;
+        p.Type = type;
+        p.Name = name;
         return p;
     }
 
     public override void Read(Stream stream)
     {
-        entityId = stream.ReadInt();
-        type = (ConnectionUpdateType)stream.ReadByte();
-        name = stream.ReadLongString(16);
+        EntityId = stream.ReadInt();
+        Type = (ConnectionUpdateType)stream.ReadByte();
+        Name = stream.ReadLongString(16);
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteInt(entityId);
-        stream.WriteByte((byte)type);
-        stream.WriteLongString(name);
+        stream.WriteInt(EntityId);
+        stream.WriteByte((byte)Type);
+        stream.WriteLongString(Name);
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.onPlayerConnectionUpdate(this);
-    }
+    public override void Apply(NetHandler handler) => handler.onPlayerConnectionUpdate(this);
 
-    public override int Size()
-    {
-        return 39;
-    }
+    public override int Size() => 39;
 }

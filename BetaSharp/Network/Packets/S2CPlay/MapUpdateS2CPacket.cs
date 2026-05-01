@@ -1,45 +1,37 @@
-using System.Net.Sockets;
-
 namespace BetaSharp.Network.Packets.S2CPlay;
 
 public class MapUpdateS2CPacket() : Packet(PacketId.MapUpdateS2C)
 {
-    public short itemRawId;
-    public short id;
-    public byte[] updateData;
+    public short MapId { get; private set; }
+    public short ItemRawId { get; private set; }
+    public byte[] UpdateData { get; private set; } = [];
 
     public static MapUpdateS2CPacket Get(short itemRawId, short id, byte[] updateData)
     {
-        var p = Get<MapUpdateS2CPacket>(PacketId.MapUpdateS2C);
-        p.itemRawId = itemRawId;
-        p.id = id;
-        p.updateData = updateData;
+        MapUpdateS2CPacket p = Get<MapUpdateS2CPacket>(PacketId.MapUpdateS2C);
+        p.ItemRawId = itemRawId;
+        p.MapId = id;
+        p.UpdateData = updateData;
         return p;
     }
 
     public override void Read(Stream stream)
     {
-        itemRawId = stream.ReadShort();
-        id = stream.ReadShort();
-        updateData = new byte[(sbyte)stream.ReadByte() & 255];
-        stream.ReadExactly(updateData);
+        ItemRawId = stream.ReadShort();
+        MapId = stream.ReadShort();
+        UpdateData = new byte[(sbyte)stream.ReadByte() & 255];
+        stream.ReadExactly(UpdateData);
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteShort(itemRawId);
-        stream.WriteShort(id);
-        stream.WriteByte((byte)updateData.Length);
-        stream.Write(updateData);
+        stream.WriteShort(ItemRawId);
+        stream.WriteShort(MapId);
+        stream.WriteByte((byte)UpdateData.Length);
+        stream.Write(UpdateData);
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.onMapUpdate(this);
-    }
+    public override void Apply(NetHandler handler) => handler.onMapUpdate(this);
 
-    public override int Size()
-    {
-        return 4 + updateData.Length;
-    }
+    public override int Size() => 4 + UpdateData.Length;
 }

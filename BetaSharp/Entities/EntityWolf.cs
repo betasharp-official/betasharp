@@ -1,5 +1,6 @@
 using BetaSharp.Items;
 using BetaSharp.NBT;
+using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.PathFinding;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
@@ -182,7 +183,7 @@ public class EntityWolf : EntityAnimal
         _isShaking = true;
         _timeWolfIsShaking = 0.0F;
         _prevTimeWolfIsShaking = 0.0F;
-        World.Broadcaster.EntityEvent(this, 8);
+        World.Broadcaster.EntityEvent(this, EntityStatusS2CPacket.EntityState.WolfShaking);
     }
 
     public override void Tick()
@@ -399,12 +400,12 @@ public class EntityWolf : EntityAnimal
                 Health = 20;
                 WolfOwner = player.Name;
                 ShowHeartsOrSmokeFx(true);
-                World.Broadcaster.EntityEvent(this, 7);
+                World.Broadcaster.EntityEvent(this, EntityStatusS2CPacket.EntityState.WolfHeartsFx);
             }
             else
             {
                 ShowHeartsOrSmokeFx(false);
-                World.Broadcaster.EntityEvent(this, 6);
+                World.Broadcaster.EntityEvent(this, EntityStatusS2CPacket.EntityState.WolfSmokeFx);
             }
         }
         else
@@ -464,13 +465,13 @@ public class EntityWolf : EntityAnimal
     {
         switch (status)
         {
-            case 7:
-                ShowHeartsOrSmokeFx(true);
-                break;
-            case 6:
+            case (sbyte)EntityStatusS2CPacket.EntityState.WolfSmokeFx:
                 ShowHeartsOrSmokeFx(false);
                 break;
-            case 8:
+            case (sbyte)EntityStatusS2CPacket.EntityState.WolfHeartsFx:
+                ShowHeartsOrSmokeFx(true);
+                break;
+            case (sbyte)EntityStatusS2CPacket.EntityState.WolfShaking:
                 _isShaking = true;
                 _timeWolfIsShaking = 0.0F;
                 _prevTimeWolfIsShaking = 0.0F;

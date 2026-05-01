@@ -1,5 +1,3 @@
-using System.Net.Sockets;
-
 namespace BetaSharp.Network.Packets.S2CPlay;
 
 public class PlayerGameModeUpdateS2CPacket() : ExtendedProtocolPacket(PacketId.PlayerGameModeUpdateS2C)

@@ -1,43 +1,41 @@
-using System.Net.Sockets;
-
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-internal class EntityRotateS2CPacket : EntityS2CPacket
+internal interface IEntityRotatePacket : IPacketEntity
 {
-    public EntityRotateS2CPacket() : base(PacketId.EntityRotateS2C)
-    {
-        rotate = true;
-    }
+    sbyte Yaw { get; }
+    sbyte Pitch { get; }
+}
+
+public class EntityRotateS2CPacket() : Packet(PacketId.EntityRotateS2C), IEntityRotatePacket
+{
+    public int EntityId { get; private set; }
+    public sbyte Yaw { get; private set; }
+    public sbyte Pitch { get; private set; }
 
     public static EntityRotateS2CPacket Get(int entityId, byte yaw, byte pitch)
     {
-        var p = Get<EntityRotateS2CPacket>(PacketId.EntityRotateS2C);
+        EntityRotateS2CPacket p = Get<EntityRotateS2CPacket>(PacketId.EntityRotateS2C);
         p.EntityId = entityId;
-        p.deltaX = 0;
-        p.deltaY = 0;
-        p.deltaZ = 0;
-        p.yaw = (sbyte)yaw;
-        p.pitch = (sbyte)pitch;
-        p.rotate = true;
+        p.Yaw = (sbyte)yaw;
+        p.Pitch = (sbyte)pitch;
         return p;
     }
 
     public override void Read(Stream stream)
     {
-        base.Read(stream);
-        yaw = (sbyte)stream.ReadByte();
-        pitch = (sbyte)stream.ReadByte();
+        EntityId = stream.ReadInt();
+        Yaw = (sbyte)stream.ReadByte();
+        Pitch = (sbyte)stream.ReadByte();
     }
 
     public override void Write(Stream stream)
     {
-        base.Write(stream);
-        stream.WriteByte((byte)yaw);
-        stream.WriteByte((byte)pitch);
+        stream.WriteInt(EntityId);
+        stream.WriteByte((byte)Yaw);
+        stream.WriteByte((byte)Pitch);
     }
 
-    public override int Size()
-    {
-        return 6;
-    }
+    public override void Apply(NetHandler handler) => handler.onEntity(this);
+
+    public override int Size() => 6;
 }

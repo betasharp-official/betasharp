@@ -63,5 +63,5 @@ public enum PacketId : byte
     FinishConfigurationS2C = 135,
     BundleS2C = 150,
     IncreaseStatS2C = 200,
-    Disconnect = 255,
+    Disconnect = 255
 }

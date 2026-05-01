@@ -1,38 +1,37 @@
-using System.Net.Sockets;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
 public class ExplosionS2CPacket() : Packet(PacketId.ExplosionS2C)
 {
-    public double explosionX;
-    public double explosionY;
-    public double explosionZ;
-    public float explosionSize;
-    public HashSet<BlockPos> destroyedBlockPositions;
+    public HashSet<BlockPos> DestroyedBlockPositions { get; private set; } = new();
+    public float ExplosionSize { get; private set; }
+    public double ExplosionX { get; private set; }
+    public double ExplosionY { get; private set; }
+    public double ExplosionZ { get; private set; }
 
     public static ExplosionS2CPacket Get(double x, double y, double z, float radius, HashSet<BlockPos> affectedBlocks)
     {
-        var p = Get<ExplosionS2CPacket>(PacketId.ExplosionS2C);
-        p.explosionX = x;
-        p.explosionY = y;
-        p.explosionZ = z;
-        p.explosionSize = radius;
-        p.destroyedBlockPositions = new HashSet<BlockPos>(affectedBlocks);
+        ExplosionS2CPacket p = Get<ExplosionS2CPacket>(PacketId.ExplosionS2C);
+        p.ExplosionX = x;
+        p.ExplosionY = y;
+        p.ExplosionZ = z;
+        p.ExplosionSize = radius;
+        p.DestroyedBlockPositions = new HashSet<BlockPos>(affectedBlocks);
         return p;
     }
 
     public override void Read(Stream stream)
     {
-        explosionX = stream.ReadDouble();
-        explosionY = stream.ReadDouble();
-        explosionZ = stream.ReadDouble();
-        explosionSize = stream.ReadFloat();
+        ExplosionX = stream.ReadDouble();
+        ExplosionY = stream.ReadDouble();
+        ExplosionZ = stream.ReadDouble();
+        ExplosionSize = stream.ReadFloat();
         int blockCount = stream.ReadInt();
-        destroyedBlockPositions = new HashSet<BlockPos>();
-        int x = (int)explosionX;
-        int y = (int)explosionY;
-        int z = (int)explosionZ;
+        DestroyedBlockPositions = new HashSet<BlockPos>();
+        int x = (int)ExplosionX;
+        int y = (int)ExplosionY;
+        int z = (int)ExplosionZ;
 
         for (int _ = 0; _ < blockCount; ++_)
         {
@@ -40,22 +39,21 @@ public class ExplosionS2CPacket() : Packet(PacketId.ExplosionS2C)
             int yOffset = (sbyte)stream.ReadByte() + y;
             int zOffset = (sbyte)stream.ReadByte() + z;
 
-            destroyedBlockPositions.Add(new BlockPos(xOffset, yOffset, zOffset));
+            DestroyedBlockPositions.Add(new BlockPos(xOffset, yOffset, zOffset));
         }
-
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteDouble(explosionX);
-        stream.WriteDouble(explosionY);
-        stream.WriteDouble(explosionZ);
-        stream.WriteFloat(explosionSize);
-        stream.WriteInt(destroyedBlockPositions.Count);
-        int x = (int)explosionX;
-        int y = (int)explosionY;
-        int z = (int)explosionZ;
-        foreach (var pos in destroyedBlockPositions)
+        stream.WriteDouble(ExplosionX);
+        stream.WriteDouble(ExplosionY);
+        stream.WriteDouble(ExplosionZ);
+        stream.WriteFloat(ExplosionSize);
+        stream.WriteInt(DestroyedBlockPositions.Count);
+        int x = (int)ExplosionX;
+        int y = (int)ExplosionY;
+        int z = (int)ExplosionZ;
+        foreach (BlockPos pos in DestroyedBlockPositions)
         {
             int xOffset = pos.x - x;
             int yOffset = pos.y - y;
@@ -66,13 +64,7 @@ public class ExplosionS2CPacket() : Packet(PacketId.ExplosionS2C)
         }
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.onExplosion(this);
-    }
+    public override void Apply(NetHandler handler) => handler.onExplosion(this);
 
-    public override int Size()
-    {
-        return 32 + destroyedBlockPositions.Count * 3;
-    }
+    public override int Size() => 32 + DestroyedBlockPositions.Count * 3;
 }

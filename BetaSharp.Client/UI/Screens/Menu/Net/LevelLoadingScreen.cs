@@ -86,7 +86,7 @@ public class LevelLoadingScreen(
                 ClientNetworkHandler clientHandler = new(networkContext, clientConnection);
                 clientConnection.setNetworkHandler(clientHandler);
                 _logger.LogInformation("[Internal-Client] Sending HandshakePacket");
-                clientHandler.AddToSendQueue(new HandshakePacket(networkContext.Session.username));
+                clientHandler.AddToSendQueue(HandshakePacket.Get(networkContext.Session.username));
 
                 Context.Navigator.Navigate(new ConnectingScreen(Context, clientHandler));
             }

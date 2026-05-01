@@ -1,5 +1,3 @@
-using System.Net.Sockets;
-
 namespace BetaSharp.Network.Packets.S2CPlay;
 
 public class BundleS2CPacket() : ExtendedProtocolPacket(PacketId.BundleS2C)
@@ -12,7 +10,10 @@ public class BundleS2CPacket() : ExtendedProtocolPacket(PacketId.BundleS2C)
         for (int i = 0; i < count; i++)
         {
             Packet? p = Read(stream, false); // Client bound
-            if (p != null) Packets.Add(p);
+            if (p != null)
+            {
+                Packets.Add(p);
+            }
         }
     }
 
@@ -23,6 +24,7 @@ public class BundleS2CPacket() : ExtendedProtocolPacket(PacketId.BundleS2C)
         {
             Write(p, stream);
         }
+
         Packets.Clear();
     }
 
@@ -33,6 +35,7 @@ public class BundleS2CPacket() : ExtendedProtocolPacket(PacketId.BundleS2C)
             p.Apply(handler);
             p.Return();
         }
+
         Packets.Clear();
     }
 
@@ -43,6 +46,7 @@ public class BundleS2CPacket() : ExtendedProtocolPacket(PacketId.BundleS2C)
         {
             size += 1 + p.Size(); // id + data length
         }
+
         return size;
     }
 }
