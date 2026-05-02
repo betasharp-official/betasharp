@@ -75,7 +75,7 @@ public abstract class EntityPlayer : EntityLiving
 
     public override bool IsSleeping => Sleeping;
 
-    protected new float AirSpeed => GameMode.DisallowFlying ? 0.02f : AirFlySpeedMult * 0.02f;
+    protected override float AirSpeed => GameMode.DisallowFlying ? 0.02f : AirFlySpeedMult * 0.02f;
 
     protected override bool canBreatheUnderwater() => !GameMode.NeedsAir;
 
