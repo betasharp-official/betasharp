@@ -1,0 +1,1251 @@
+﻿{
+    "lang": {
+        "name": "Polski"
+    },
+    "gui": {
+        "edit": "Edytuj",
+        "refresh": "Odśwież",
+        "done": "Gotowe",
+        "cancel": "Anuluj",
+        "delete": "Usuń",
+        "toMenu": "Wróć do ekranu tytułowego",
+        "up": "Góra",
+        "down": "Dół",
+        "yes": "Tak",
+        "no": "Nie",
+        "connect": "Połącz",
+        "directConnect": "Połącz bezpośrednio",
+        "addServer": "Dodaj serwer",
+        "create": "Stwórz",
+        "customize": "Dostosuj",
+        "achievements": "Osiągnięcia",
+        "stats": "Statystyki"
+    },
+    "menu": {
+        "singleplayer": "Jednoosobowy",
+        "multiplayer": "Wieloosobowy",
+        "texturePacks": "Paczki tekstur",
+        "options": "Opcje...",
+        "language": "Język...",
+        "quit": "Wyjdź z gry",
+        "credits": "Twórcy",
+        "sendFeedback": "Wyślij opinię",
+        "reportBugs": "Zgłoś błędy",
+        "saveAndQuitToTitle": "Zapisz i wyjdź",
+        "disconnect": "Rozłącz"
+    },
+    "selectWorld": {
+        "title": "Wybierz świat",
+        "empty": "pusty",
+        "world": "Świat",
+        "select": "Graj w wybranym świecie",
+        "create": "Stwórz nowy świat",
+        "createDemo": "Zagraj w nowym świecie demo",
+        "rename": "Zmień nazwę",
+        "deleteQuestion": "Czy na pewno chcesz usunąć ten świat?",
+        "deleteWarning": "zostanie utracony na zawsze! (to bardzo długo!)",
+        "renameButton": "Zmień nazwę",
+        "renameTitle": "Zmiana nazwy świata",
+        "conversion": "Musi być skonwertowany!",
+        "newWorld": "Nowy świat",
+        "enterName": "Nazwa świata",
+        "resultFolder": "Zostanie zapisany w:",
+        "enterSeed": "Ziarno dla generatora świata",
+        "seedInfo": "Pozostaw puste dla losowego ziarna",
+        "selectWorldType": "Wybierz typ świata",
+        "worldType": "Typ świata",
+        "customize": "Dostosuj",
+        "moreWorldOptions": "Więcej opcji świata..."
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "Dostosuj super płaski świat"
+            },
+            "removeLayer": "Usuń warstwę",
+            "presets": "Szablony"
+        }
+    },
+    "world": {
+        "world": "Świat",
+        "unsupportedFormat": "Nieobsługiwany format!"
+    },
+    "multiplayer": {
+        "title": "Zagraj w wieloosobowy",
+        "betasharpServer": "Serwer BetaSharp",
+        "info1": "Tryb wieloosobowy Minecrafta nie został ukończony,",
+        "info2": "mogą występować błędy.",
+        "ipinfo": "Wpisz adres IP serwera z którym chcesz się połączyć:",
+        "deleteQuestion": "Czy na pewno chcesz usunąć ten serwer?",
+        "deleteWarning": "zostanie utracony na zawsze! (to bardzo długo!)",
+        "downloadingTerrain": "Pobieranie terenu",
+        "stopSleeping": "Wstań z łóżka"
+    },
+    "loading": {
+        "loadingLevel": "Wczytywanie poziomu",
+        "startingServer": "Uruchamianie serwera..."
+    },
+    "achievements": {
+        "title": "Osiągnięcia"
+    },
+    "gameover": {
+        "title": "Przegrana!",
+        "score": "Wynik",
+        "respawn": "Odrodzenie",
+        "titleMenu": "Menu tytułowe"
+    },
+    "gamemenu": {
+        "title": "Menu gry",
+        "backToGame": "Wróc do gry"
+    },
+    "sign": {
+        "title": "Edytuj wiadomość tabliczki:"
+    },
+    "stats": {
+        "title": "Statystyki",
+        "general": "Ogólne",
+        "blocks": {
+            "text": "Bloki",
+            "mined": "Wykopane",
+            "crafted": "Stworzone",
+            "used": "Użyte"
+        },
+        "items": {
+            "text": "Przedmioty",
+            "broken": "Zniszczone",
+            "crafted": "Stworzone",
+            "used": "Użyte"
+        },
+        "item": "Przedmiot",
+        "done": "Gotowe"
+    },
+    "demo": {
+        "day": {
+            "1": "This demo will last five game days, do your best!",
+            "2": "Day Two",
+            "3": "Day Three",
+            "4": "Day Four",
+            "5": "This is your last day!",
+            "warning": "Your time is almost up!",
+            "6": "You have passed your fifth day, use F2 to save a screenshot of your creation"
+        },
+        "reminder": "The demo time has expired, buy the game to continue or start a new world!",
+        "help": {
+            "movement": "Use %1$s, %2$s, %3$s, %4$s and the mouse to move around",
+            "jump": "Jump by pressing %1$s",
+            "inventory": "Use %1$s to open your inventory"
+        }
+    },
+    "connect": {
+        "connecting": "Łączenie z serwerem...",
+        "authorizing": "Logowanie...",
+        "failed": "Nie udało się połączyć z serwerem"
+    },
+    "disconnect": {
+        "genericReason": "%s",
+        "disconnected": "Rozłączono przez serwer",
+        "lost": "Utracono połączenie",
+        "kicked": "Wyrzucono z serwera",
+        "timeout": "Czas połączenia upłynął",
+        "closed": "Połączenie zamknięte",
+        "loginFailed": "Nie udało się zalogować",
+        "loginFailedInfo": "Nie udało się zalogować: %s",
+        "quitting": "Wychodzenie",
+        "endOfStream": "Koniec strumienia",
+        "overflow": "Przeładowanie bufera"
+    },
+    "options": {
+        "off": "Wył.",
+        "on": "Wł.",
+        "title": "Opcje",
+        "controls": "Sterowanie...",
+        "keyboardControls": "Sterowanie klawiaturą...",
+        "controllerSettings": "Ustawienia kontrolera...",
+        "video": {
+            "text": "Ustawienia wideo...",
+            "performance": "Wydajność",
+            "display": "Wyświetlanie"
+        },
+        "uiSettings": "Ustawienia interfejsu...",
+        "audioSettings": "Ustawienia dźwięku...",
+        "audioTitle": "Ustawienia dźwięku",
+        "videoTitle": "Ustawienia wideo",
+        "language": "Język...",
+        "anisoLevel": "Poziom anizotropii",
+        "music": "Muzyka",
+        "sound": "Dźwięk",
+        "invertMouse": "Odwróć mysz",
+        "alternateBlocks": "Alternatywne bloki",
+        "chunkFade": "Zanikanie chunków",
+        "environmentAnim": "Animacje otoczenia",
+        "sensitivity": {
+            "text": "Czułość",
+            "min": "*yawn*",
+            "max": "HIPERPRĘDKOŚĆ!!!"
+        },
+        "renderDistance": {
+            "text": "Odległość render.",
+            "chunks": "czanków",
+            "tiny": "Mała",
+            "short": "Krótka",
+            "normal": "Normalna",
+            "far": "Daleka"
+        },
+        "viewBobbing": "Kołysanie kamery",
+        "ao": "Gładkie oświetlenie",
+        "anaglyph": "Efekt 3D",
+        "framerateLimit": "Wydajność",
+        "difficulty": {
+            "text": "Poziom trudności",
+            "peaceful": "Pokojowy",
+            "easy": "Łatwy",
+            "normal": "Normalny",
+            "hard": "Trudny"
+        },
+        "graphics": {
+            "text": "Grafika",
+            "fancy": "Ładna",
+            "fast": "Szybka"
+        },
+        "guiScale": {
+            "text": "Rozmiar interfejsu",
+            "auto": "Auto.",
+            "small": "Mały",
+            "normal": "Normalny",
+            "large": "Duży"
+        },
+        "advancedOpengl": "Zaawansowany OpenGL"
+    },
+    "performance": {
+        "max": "Maks. FPS",
+        "balanced": "Zbalansowane",
+        "powersaver": "Oszczędzanie energii"
+    },
+    "controls": {
+        "title": "Sterowanie"
+    },
+    "key": {
+        "forward": "Przód",
+        "left": "Lewo",
+        "back": "Tył",
+        "right": "Prawo",
+        "jump": "Skok",
+        "inventory": "Ekwipunek",
+        "drop": "Upuszczanie",
+        "chat": "Czat",
+        "fog": "Przełączanie mgły",
+        "sneak": "Skradanie",
+        "playerlist": "Listya graczy",
+        "zoom": "Przybliżenie"
+    },
+    "texturePack": {
+        "openFolder": "Otwórz folder z paczkami tekstur",
+        "title": "Wybierz paczkę tekstur",
+        "folderInfo": "(Upuść tutaj paczkę tekstur)"
+    },
+    "tile": {
+        "stone": {
+            "name": "Kamień",
+            "desc": ""
+        },
+        "grass": {
+            "name": "Trawa",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "Ziemia",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "Bruk",
+            "desc": ""
+        },
+        "wood": {
+            "name": "Drewniane deski",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "Sadzonka",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "Skała macierzysta",
+            "desc": ""
+        },
+        "water": {
+            "name": "Woda",
+            "desc": ""
+        },
+        "lava": {
+            "name": "Lawa",
+            "desc": ""
+        },
+        "sand": {
+            "name": "Piasek",
+            "desc": ""
+        },
+        "sandStone": { "name": "Piaskowiec" },
+        "gravel": {
+            "name": "Źwir",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "Ruda złota",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "Ruda żelaza",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "Ruda węgla",
+            "desc": ""
+        },
+        "log": {
+            "name": "Drewno",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Liście",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "Gąbka",
+            "desc": ""
+        },
+        "glass": {
+            "name": "Szkło",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "Wełna",
+            "desc": "",
+            "black": {
+                "name": "Czarna wełna",
+                "desc": ""
+            },
+            "red": {
+                "name": "Czerwona wełna",
+                "desc": ""
+            },
+            "green": {
+                "name": "Zielona wełna",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Brązowa wełna",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Niebieska wełna",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Fioletowa wełna",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Cyjanowa wełna",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Jasnoszara wełna",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Szara wełna",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Różowa wełna",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Limonkowa wełna",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Żółta wełna",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Jasnoniebieska wełna",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Karmazynowa wełna",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Pomarańczowa wełna",
+                "desc": ""
+            },
+            "white": {
+                "name": "Wełna",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "Kwiatek",
+            "desc": ""
+        },
+        "rose": {
+            "name": "Róża",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "Grzyb",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "Blok złota",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "Blok żelaza",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "Kamienna płytka",
+                "desc": ""
+            },
+            "sand": {
+                "name": "Piaskowa płytka",
+                "desc": ""
+            },
+            "wood": {
+                "name": "Drewniana płytka",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "Brukowa płytka",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "Cegły",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "TNT",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "Biblioteczka",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "Zamszony kamień",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "Obsydian",
+            "desc": ""
+        },
+        "torch": {
+            "name": "Pochodnia",
+            "desc": ""
+        },
+        "fire": {
+            "name": "Ogień",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "Spawner potworów",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "Drewniane schody",
+            "desc": ""
+        },
+        "chest": {
+            "name": "Szkrzynia",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "Czerwony proszek",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "Ruda diamentu",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "Blok diamentu",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "Stół rzemieślniczy",
+            "desc": ""
+        },
+        "crops": {
+            "name": "Uprawy",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "Pole uprawne",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "Piec",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Tabliczka",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Drewniane drzwi",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "Drabina",
+            "desc": ""
+        },
+        "rail": {
+            "name": "Tory",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "Zasilane tory",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "Wykrywające tory",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "Kamienne schody",
+            "desc": ""
+        },
+        "lever": {
+            "name": "Dźwignia",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "Płyta naciskowa",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Żelazne drzwi",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "Ruda czerwonego proszku",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "Czerwona pochodnia",
+            "desc": ""
+        },
+        "button": {
+            "name": "Przycisk",
+            "desc": ""
+        },
+        "snow": {
+            "name": "Śnieg",
+            "desc": ""
+        },
+        "ice": {
+            "name": "Lód",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "Kaktus",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Glina",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "Trzcina cukrowa",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "Szafa grająca",
+            "desc": ""
+        },
+        "fence": {
+            "name": "Płot",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "Dynia",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "Jack 'o' Lantern",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "Netherrack",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "Piasek dusz",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "Jasnogłaz",
+            "desc": ""
+        },
+        "portal": {
+            "name": "Portal",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "Ruda lazurytu",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "Blok lazurytu",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "Podajnik",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "Blok dźwiękowy",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Ciasto",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Łóżko",
+            "desc": "",
+            "occupied": "To łóżko jest już zajęte",
+            "noSleep": "Możesz spać tylko w nocy",
+            "notValid": "Twoje domowe łóżko jest nieobecne lub zablokowane"
+        },
+        "lockedchest": {
+            "name": "Skrzynia zablokowana",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "Właz",
+            "desc": ""
+        },
+        "web": {
+            "name": "Pajęczyna",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "Kamienne cegły",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "Tłok",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "Lepki tłok",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "Żelazna łopata",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "Żelazny kilof",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "Żelazna siekiera",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "Krzesiwo",
+            "desc": ""
+        },
+        "apple": {
+            "name": "Jabłko",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "Ciastko",
+            "desc": ""
+        },
+        "bow": {
+            "name": "Łuk",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "Strzała",
+            "desc": ""
+        },
+        "coal": {
+            "name": "Węgiel",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "Węgiel drzewny",
+            "desc": ""
+        },
+        "emerald": {
+            "name": "Diament",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "Sztabka żelaza",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "Sztabka złota",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "Żelazny miecz",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "Drewniany miecz",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "Drewniana łopata",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "Drewniany kilof",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "Drewniana siekiera",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "Kmaienny miecz",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "Kamienna łopata",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "Kamienny kilof",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "Kamienna siekiera",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "Diamentowy miecz",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "Diemantowa łopata",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "Diamentowy kilof",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "Diamentowa siekiera",
+            "desc": ""
+        },
+        "stick": {
+            "name": "Patyk",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "Miska",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "Zupa grzybowa",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "Złoty miecz",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "Złota łopata",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "Złoty kilof",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "Złota siekiera",
+            "desc": ""
+        },
+        "string": {
+            "name": "Nić",
+            "desc": ""
+        },
+        "feather": {
+            "name": "Pióro",
+            "desc": ""
+        },
+        "sulphur": {
+            "name": "Proch strzelniczy",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "Drewniana motyka",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "Kamienna motyka",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "Żelazna motyka",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "Diamentowa motyka",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "Złota motyka",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "Nasiona",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "Pszenica",
+            "desc": ""
+        },
+        "bread": {
+            "name": "Chleb",
+            "desc": ""
+        },
+        "helmetCloth": {
+            "name": "Skórzana czapka",
+            "desc": ""
+        },
+        "chestplateCloth": {
+            "name": "Skórzana tunika",
+            "desc": ""
+        },
+        "leggingsCloth": {
+            "name": "Skórzane spodnie",
+            "desc": ""
+        },
+        "bootsCloth": {
+            "name": "Skórzane buty",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "Kolczy hełm",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "Kolczy napierśnik",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "Kolcze spodnie",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "Kolcze buty",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "Żelazny hełm",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "Żelazny napierśnik",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "Żelazne spodnie",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "Żelazne buty",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "Diamentowy hełm",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "Diamentowy napierśnik",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "Diamentowe spodnie",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "Diamentowe buty",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "Złoty hełm",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "Złoty napierśnik",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "Złote spodnie",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "Złote buty",
+            "desc": ""
+        },
+        "flint": {
+            "name": "Krzemień",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "Surowa wieprzowina",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "Pieczona wieprzowina",
+            "desc": ""
+        },
+        "painting": {
+            "name": "Obraz",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "Złote jabłko",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Tabliczka",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Drewniane drzwi",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "Wiadro",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "Wiadro wody",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "Wiadro lawy",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "Wagonik",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "Sidoło",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Żelazne drzwi",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "Czerwony proszek",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "Śnieżka",
+            "desc": ""
+        },
+        "boat": {
+            "name": "Łódka",
+            "desc": ""
+        },
+        "leather": {
+            "name": "Skóra",
+            "desc": ""
+        },
+        "milk": {
+            "name": "Mleko",
+            "desc": ""
+        },
+        "brick": {
+            "name": "Cegła",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Glina",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "Trzcina cukrowa",
+            "desc": ""
+        },
+        "paper": {
+            "name": "Papier",
+            "desc": ""
+        },
+        "book": {
+            "name": "Książka",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "Kula szlamu",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "Wagonik z skrzynką",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "Wagonik z piecem",
+            "desc": ""
+        },
+        "egg": {
+            "name": "Jajko",
+            "desc": ""
+        },
+        "compass": {
+            "name": "Kompas",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "Wędka",
+            "desc": ""
+        },
+        "clock": {
+            "name": "Zegar",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "Jasnopył",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "Surowa ryba",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "Pieczona ryba",
+            "desc": ""
+        },
+        "record": {
+            "name": "Płyta muzyczna",
+            "desc": ""
+        },
+        "bone": {
+            "name": "Kość",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "Torbiel z atramentem",
+                "desc": ""
+            },
+            "red": {
+                "name": "Różany czerwień",
+                "desc": ""
+            },
+            "green": {
+                "name": "Kaktusowa zieleń",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Ziarna kakaowca",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Lazuryt",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Fioletowy barwnik",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Cyjanowy barwnik",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Jasnoszary barwnik",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Szary barwnik",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Różowy barwnik",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Limonkowy barwnik",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Żółty barwnik",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Jasnoniebieski barwnik",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Karmazynowy barwnik",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Pomarańczowy barwnik",
+                "desc": ""
+            },
+            "white": {
+                "name": "Mączka kostna",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "Cukier",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Ciasto",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Łóżko",
+            "desc": ""
+        },
+        "diode": {
+            "name": "Powtarczacz czerwonego proszku",
+            "desc": ""
+        },
+        "map": {
+            "name": "Mapa",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Liście",
+            "desc": ""
+        },
+        "shears": {
+            "name": "Nożyce",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "Ogólne",
+        "blocksButton": "Bloki",
+        "itemsButton": "Przedmioty",
+        "used": "Użyto",
+        "mined": "Wykopano",
+        "depleted": "Wyczerpano",
+        "crafted": "Stworzono",
+        "startGame": "Zagrano",
+        "createWorld": "Zagrano na światach",
+        "loadWorld": "Wczytanych zapisów",
+        "joinMultiplayer": "Dołączeń do gry wieloosobowej",
+        "leaveGame": "Wyjść z gry",
+        "playOneMinute": "Minut grano",
+        "walkOneCm": "Przebyty dystans",
+        "fallOneCm": "Dystans spadania",
+        "swimOneCm": "Przepłynięty dystans",
+        "flyOneCm": "Przebyty dystans podczas latania",
+        "climbOneCm": "Przebyty dystans podczas wspinaczki",
+        "diveOneCm": "Przebyty dystans podczas nurkowania",
+        "minecartOneCm": "Przebyty dystans w wagoniku",
+        "boatOneCm": "Przebyty dystans w łódce",
+        "pigOneCm": "Przebyty dystans na świni",
+        "jump": "Skoki",
+        "drop": "Upuszczone przedmioty",
+        "damageDealt": "Otrymane obrażenia",
+        "damageTaken": "Zadane obrażenia",
+        "deaths": "Ilość zgonów",
+        "mobKills": "Zabitych stworzeń",
+        "playerKills": "Zabitych graczy",
+        "fishCaught": "Złowionych ryb",
+        "mineBlock": "{0} Wykopano",
+        "craftItem": "{0} Stworzono",
+        "useItem": "{0} Użyto",
+        "breakItem": "{0} Wyczerpano"
+    },
+    "achievements.title": "Osiągnięcia",
+    "achievement": {
+        "get": "Osiągnięcie zdobyte!",
+        "taken": "Zdobyte!",
+        "challenge": "WYZWANIE",
+        "unlocked": "ODBLOKOWANE",
+        "locked": "ZABLOKOWANE",
+        "requires": "Wyamaga '{0}'",
+        "openInventory": {
+            "title": "Inwentaryzacja",
+            "desc": "Otwórz swój ekwipunek"
+        },
+        "mineWood": {
+            "title": "Zdobywanie drewna",
+            "desc": "Uderzaj w drzewo aż wypadnie blok drzewa"
+        },
+        "buildWorkBench": {
+            "title": "Rzemiosło",
+            "desc": "Stwórz stół rzemieślniczy z czterech desek"
+        },
+        "buildPickaxe": {
+            "title": "Czas kopać!",
+            "desc": "Użyj desek i patyków, aby zrobić kilof"
+        },
+        "buildFurnace": {
+            "title": "Gorący temat",
+            "desc": "Stwórz piec z ośmiu bloków bruku"
+        },
+        "acquireIron": {
+            "title": "Nabycie sprzętu",
+            "desc": "Wytop sztabkę żelaza"
+        },
+        "buildHoe": {
+            "title": "Czas na farmę!",
+            "desc": "Użyj desek i patyków, aby zrobić motykę"
+        },
+        "makeBread": {
+            "title": "Pieczenie chleba",
+            "desc": "Przerób pszenicę w chleb"
+        },
+        "bakeCake": {
+            "title": "Kłamstwo",
+            "desc": "Pszenica, cukier, mleko i jajka!"
+        },
+        "buildBetterPickaxe": {
+            "title": "Ulepszenie!",
+            "desc": "Skonstruuj lepszy kilof"
+        },
+        "cookFish": {
+            "title": "Smakowita ryba",
+            "desc": "Złów i upiecz rybę!"
+        },
+        "onARail": {
+            "title": "Na szynach",
+            "desc": "Przejedź wagonikiem co najmniej 1 km"
+        },
+        "buildSword": {
+            "title": "Czas uderzyć!",
+            "desc": "Użyj desek i patyków, aby zrobić miecz"
+        },
+        "killEnemy": {
+            "title": "Łowca potworów",
+            "desc": "Atakuj i zniszcz potwora"
+        },
+        "killCow": {
+            "title": "Rzeźnik",
+            "desc": "Zbierz trochę skóry"
+        },
+        "flyPig": {
+            "title": "Gdy świnie zaczną latać",
+            "desc": "Spadnij świnią z klifu"
+        }
+    }
+}

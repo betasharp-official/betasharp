@@ -27,13 +27,15 @@ public class LevelLoadingScreen(
 
     protected override void Init()
     {
+        TranslationStorage translationStorage = TranslationStorage.Instance;
+
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
 
         Label lblTitle = new()
         {
-            Text = "Loading level",
+            Text = translationStorage.TranslateKey("loading.loadingLevel"),
             TextColor = Color.White,
             Centered = true
         };
@@ -42,7 +44,7 @@ public class LevelLoadingScreen(
 
         _lblProgress = new Label
         {
-            Text = "Starting server...",
+            Text = translationStorage.TranslateKey("loading.startingServer"),
             TextColor = Color.White,
             Centered = true
         };
@@ -68,7 +70,7 @@ public class LevelLoadingScreen(
                 return;
             }
 
-            string progressMsg = server.progressMessage ?? "Starting server...";
+            string progressMsg = server.progressMessage ?? TranslationStorage.Instance.TranslateKey("loading.startingServer");
             int progress = server.progress;
             _lblProgress.Text = $"{progressMsg} ({progress}%)";
 

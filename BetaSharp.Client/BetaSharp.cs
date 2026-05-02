@@ -334,10 +334,10 @@ public partial class BetaSharp :
         StatFileWriter = new StatFileWriter(Session, _gameDataDir);
 
         StatStringFormatKeyInv format = new(this);
-        global::BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () =>
+        /*global::BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () =>
         {
             return format.formatString(global::BetaSharp.Achievements.OpenInventory.TranslationKey);
-        };
+        };*/
     }
 
     private unsafe void SetupOpenGLAndInput()
@@ -1566,8 +1566,10 @@ public partial class BetaSharp :
     {
         if (CurrentScreen == null)
         {
+            TranslationStorage translationStorage = TranslationStorage.Instance;
+
             bool isMP = IsMultiplayerWorld() && InternalServer == null;
-            string quitText = isMP ? "Disconnect" : "Save and quit to title";
+            string quitText = isMP ? translationStorage.TranslateKey("menu.disconnect") : translationStorage.TranslateKey("menu.saveAndQuitToTitle");
             int saveStep = 0;
             Navigate(new IngameMenuScreen(UIContext, StatFileWriter, SetIngameFocus, quitText, () =>
             {

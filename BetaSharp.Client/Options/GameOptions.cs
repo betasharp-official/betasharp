@@ -32,7 +32,6 @@ public class GameOptions
 
     public static float MaxAnisotropy = 1.0f;
 
-
     public FloatOption MusicVolumeOption { get; private set; }
     public FloatOption SoundVolumeOption { get; private set; }
     public FloatOption MouseSensitivityOption { get; private set; }
@@ -59,6 +58,7 @@ public class GameOptions
     public CycleOption AnisotropicOption { get; private set; }
     public CycleOption MsaaOption { get; private set; }
     public BoolOption ShowCoordinatesOption { get; private set; }
+    public StringOption LanguageOption { get; private set; }
 
 
     public GameOption[] MainScreenOptions => [FovOption, DifficultyOption];
@@ -74,6 +74,7 @@ public class GameOptions
 
     public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption];
 
+
     public float MusicVolume
     {
         get => MusicVolumeOption.Value;
@@ -84,6 +85,16 @@ public class GameOptions
     {
         get => SoundVolumeOption.Value;
         set => SoundVolumeOption.Value = value;
+    }
+
+    public string Language
+    {
+        get => LanguageOption.Value;
+        set
+        {
+            LanguageOption.Value = value;
+            TranslationStorage.Instance.SwitchLanguage(Language);
+        }
     }
 
     public float MouseSensitivity => MouseSensitivityOption.Value;
@@ -220,6 +231,15 @@ public class GameOptions
 
         LoadOptions();
         INITIAL_MSAA = MSAALevel;
+
+        if(AssetManager.Languages.ContainsKey(LanguageOption!.Value + ".json"))
+        {
+            Language = LanguageOption!.Value;
+        }
+        else
+        {
+            Language = "en_us";
+        }
     }
 
     public GameOptions()
@@ -240,7 +260,7 @@ public class GameOptions
             Steps = 100,
             OnChanged = _ => _game?.SoundManager.OnSoundOptionsChanged()
         };
-        MouseSensitivityOption = new FloatOption("options.sensitivity", "mouseSensitivity", 0.5F)
+        MouseSensitivityOption = new FloatOption("options.sensitivity.text", "mouseSensitivity", 0.5F)
         {
             Steps = 200,
             Formatter = (v, t) => v == 0.0F
@@ -303,20 +323,18 @@ public class GameOptions
             }
         };
 
-        EnvironmentAnimationOption = new BoolOption("Environment Anim", "envAnimation", true);
-        ChunkFadeOption = new BoolOption("Chunk Fade", "chunkFade", true);
-        AlternateBlocksOption = new BoolOption("Alternate Blocks", "alternateBlocks", true)
+        EnvironmentAnimationOption = new BoolOption("options.environmentAnim", "envAnimation", true);
+        ChunkFadeOption = new BoolOption("options.chunkFade", "chunkFade", true);
+        AlternateBlocksOption = new BoolOption("options.alternateBlocks", "alternateBlocks", true)
         {
-            LabelOverride = "Alternate Blocks",
             OnChanged = _ => ReloadChunks.Invoke()
         };
         MenuMusicOption = new BoolOption("Menu Music", "menuMusic", true);
 
-        RenderDistanceOption = new FloatOption("options.renderDistance", "viewDistance", 0.2f)
+        RenderDistanceOption = new FloatOption("options.renderDistance.text", "viewDistance", 0.2f)
         {
-            LabelOverride = "Render Distance",
             Steps = 28,
-            Formatter = (v, t) => $"{4 + (int)(v * 28.0f)} Chunks",
+            Formatter = (v, t) => $"{4 + (int)(v * 28.0f)} " + TranslationStorage.Instance.TranslateKey("options.renderDistance.chunks"),
             OnChanged = _ =>
             {
                 if (_game?.InternalServer != null)
@@ -325,9 +343,9 @@ public class GameOptions
                 }
             }
         };
-        DifficultyOption = new CycleOption("options.difficulty", "difficulty", DifficultyLabels, 2);
-        GuiScaleOption = new CycleOption("options.guiScale", "guiScale", GuiScaleLabels);
-        AnisotropicOption = new CycleOption("Aniso Level", "anisotropicLevel", AnisoLabels)
+        DifficultyOption = new CycleOption("options.difficulty.text", "difficulty", DifficultyLabels, 2);
+        GuiScaleOption = new CycleOption("options.guiScale.text", "guiScale", GuiScaleLabels);
+        AnisotropicOption = new CycleOption("options.anisoLevel", "anisotropicLevel", AnisoLabels)
         {
             Formatter = (v, t) => v == 0 ? t.TranslateKey("options.off") : AnisoLabels[v],
             OnChanged = v =>
@@ -349,6 +367,10 @@ public class GameOptions
                 if (v != INITIAL_MSAA) result += " (Reload required)";
                 return result;
             }
+        };
+        LanguageOption = new StringOption("Language", "language", "en_us")
+        {
+            OnChanged = _ => Language = LanguageOption.Value
         };
 
         _allOptions = [];
@@ -382,6 +404,7 @@ public class GameOptions
         yield return AnisotropicOption;
         yield return MsaaOption;
         yield return ShowCoordinatesOption;
+        yield return LanguageOption;
     }
 
 
