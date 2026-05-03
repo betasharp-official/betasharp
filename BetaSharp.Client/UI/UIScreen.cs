@@ -448,6 +448,15 @@ public abstract class UIScreen
                 _hoveredElement.OnMouseEnter?.Invoke(new UIMouseEvent { Target = _hoveredElement, MouseX = (int)mouseX, MouseY = (int)mouseY });
             }
         }
+
+        if (_hoveredElement is Button btn)
+        {
+            if (btn.Enabled) Mouse.SetClickCursor();
+            else Mouse.SetDisabledCursor();
+        }
+        else if (_hoveredElement is ListItem) Mouse.SetClickCursor();
+        else if (_hoveredElement is TextField) Mouse.SetTextCursor();
+        else Mouse.SetNormalCursor();
     }
 
     public void HandleMouseInput()
