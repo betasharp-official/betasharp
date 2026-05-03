@@ -456,7 +456,7 @@ public abstract class UIScreen
                 if (btn.Enabled) Mouse.SetClickCursor();
                 else Mouse.SetDisabledCursor();
             }
-            else if (_hoveredElement is ListItem) Mouse.SetClickCursor();
+            else if (_hoveredElement is ListItem || _hoveredElement is Link) Mouse.SetClickCursor();
             else if (_hoveredElement is TextField) Mouse.SetTextCursor();
             else Mouse.SetNormalCursor();
         } else
