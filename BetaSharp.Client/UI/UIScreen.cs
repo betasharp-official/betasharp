@@ -449,14 +449,20 @@ public abstract class UIScreen
             }
         }
 
-        if (_hoveredElement is Button btn)
+        if (Context.Options.UICursors)
         {
-            if (btn.Enabled) Mouse.SetClickCursor();
-            else Mouse.SetDisabledCursor();
+            if (_hoveredElement is Button btn)
+            {
+                if (btn.Enabled) Mouse.SetClickCursor();
+                else Mouse.SetDisabledCursor();
+            }
+            else if (_hoveredElement is ListItem) Mouse.SetClickCursor();
+            else if (_hoveredElement is TextField) Mouse.SetTextCursor();
+            else Mouse.SetNormalCursor();
+        } else
+        {
+            Mouse.SetNormalCursor();
         }
-        else if (_hoveredElement is ListItem) Mouse.SetClickCursor();
-        else if (_hoveredElement is TextField) Mouse.SetTextCursor();
-        else Mouse.SetNormalCursor();
     }
 
     public void HandleMouseInput()
