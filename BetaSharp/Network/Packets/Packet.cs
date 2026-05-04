@@ -1,4 +1,3 @@
-using System.Net.Sockets;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
@@ -49,7 +48,10 @@ public abstract class Packet
 
     protected void ReturnNoCount()
     {
-        if (Volatile.Read(ref UseCount) > 0) return;
+        if (Volatile.Read(ref UseCount) > 0)
+        {
+            return;
+        }
 
 #if DEBUG
         if (IsReturned)
@@ -69,9 +71,17 @@ public abstract class Packet
         s_logger.LogError("Packet id " + Id + " not found");
     }
 
-    public static T Get<T>(PacketId id) where T : Packet => (T)Get((byte)id);
+    public static T Get<T>(PacketId id) where T : Packet
+    {
+        Packet p = Get((byte)id);
+        if (p is T p2)
+        {
+            return p2;
+        }
 
-    public Packet Get() => Get(Id);
+        throw new Exception("Packet id " + id + " is not of type " + typeof(T));
+    }
+
     public static Packet Get(PacketId id) => Get((byte)id);
 
     public static Packet Get(byte id)
@@ -103,11 +113,17 @@ public abstract class Packet
 
             if (server)
             {
-                if (!packetR.ServerBound) throw new IOException("Bad server bound packet id " + rawId);
+                if (!packetR.ServerBound)
+                {
+                    throw new IOException("Bad server bound packet id " + rawId);
+                }
             }
             else
             {
-                if (!packetR.ClientBound) throw new IOException("Bad client bound packet id " + rawId);
+                if (!packetR.ClientBound)
+                {
+                    throw new IOException("Bad client bound packet id " + rawId);
+                }
             }
 
             packet = packetR.Get();
@@ -126,7 +142,7 @@ public abstract class Packet
             s_trackers.Add(rawId, tracker);
         }
 
-        tracker.update(packet.Size());
+        tracker.Update(packet.Size());
 
         return packet;
     }
@@ -139,7 +155,7 @@ public abstract class Packet
             throw new InvalidOperationException($"Packet used after return (Write). Allocated at:\n{packet.AllocationTrace}\n\nReturned at:\n{packet.ReturnTrace}\n\nWritten at:\n{Environment.StackTrace}");
         }
 #endif
-        stream.WriteByte((byte)packet.Id);
+        stream.WriteByte(packet.Id);
         packet.Write(stream);
         packet.Return();
     }
@@ -154,8 +170,7 @@ public abstract class Packet
 
     public virtual void ProcessForInternal() { }
 
-    static Packet()
-    {
+    static Packet() =>
         Registry.Register([
             New(PacketId.KeepAlive, true, true, false, () => new KeepAlivePacket()),
             New(PacketId.LoginHello, true, true, false, () => new LoginHelloPacket()),
@@ -220,20 +235,21 @@ public abstract class Packet
             New(PacketId.IncreaseStatS2C, true, false, false, () => new IncreaseStatS2CPacket()),
             New(PacketId.Disconnect, true, true, false, () => new DisconnectPacket())
         ]);
-    }
 
-    public class PacketRegisterItem(byte rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) : FactoryPoolItem<Packet>(rawId, item: factory, PoolSize(rawId))
+    public class PacketRegisterItem(byte rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) : FactoryPoolItem<Packet>(rawId, factory, PoolSize(rawId))
     {
-        private static int PoolSize(byte rawId)
-        {
-            return rawId switch
+        public readonly bool ClientBound = clientBound;
+        public readonly bool ServerBound = serverBound;
+        public readonly bool WorldPacket = worldPacket;
+
+        private static int PoolSize(byte rawId) =>
+            rawId switch
             {
                 (byte)PacketId.EntityRotateAndMoveRelativeS2C or (byte)PacketId.EntityMoveRelativeS2C or (byte)PacketId.EntityPositionS2C => 256,
                 (byte)PacketId.ChunkStatusUpdateS2C or (byte)PacketId.BlockUpdateS2C or (byte)PacketId.PlayerActionC2S or (byte)PacketId.ChunkDataS2C or (byte)PacketId.LivingEntitySpawnS2C or (byte)PacketId.EntityDestroyS2C => 64,
                 (byte)PacketId.KeepAlive or (byte)PacketId.UpdateSign or (byte)PacketId.PlayerConnectionUpdateS2C or (byte)PacketId.PlayerGameModeUpdateS2C or (byte)PacketId.Disconnect or (byte)PacketId.LoginHello or (byte)PacketId.Handshake or (byte)PacketId.ChatMessage or (byte)PacketId.EntityEquipmentUpdateS2C or (byte)PacketId.PlayerSpawnPositionS2C or (byte)PacketId.PaintingEntitySpawnS2C => 16,
-                _ => 32,
+                _ => 32
             };
-        }
 
         public override Packet Get()
         {
@@ -248,10 +264,6 @@ public abstract class Packet
 #endif
             return p;
         }
-
-        public readonly bool ClientBound = clientBound;
-        public readonly bool ServerBound = serverBound;
-        public readonly bool WorldPacket = worldPacket;
     }
 
     private static PacketRegisterItem New(PacketId rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) =>

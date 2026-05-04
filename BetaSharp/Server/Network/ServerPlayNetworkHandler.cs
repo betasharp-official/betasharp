@@ -79,8 +79,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         moved = true;
         if (!teleported)
         {
-            double teleportDeltaY = packet.y - teleportTargetY;
-            if (packet.x == teleportTargetX && teleportDeltaY * teleportDeltaY < 0.01 && packet.z == teleportTargetZ)
+            double teleportDeltaY = packet.Y - teleportTargetY;
+            if (packet.X == teleportTargetX && teleportDeltaY * teleportDeltaY < 0.01 && packet.Z == teleportTargetZ)
             {
                 teleported = true;
             }
@@ -98,19 +98,19 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 double vehicleZ = player.Z;
                 double moveX = 0.0;
                 double moveZ = 0.0;
-                if (packet.changeLook)
+                if (packet.ChangeLook)
                 {
-                    yaw = packet.yaw;
-                    pitch = packet.pitch;
+                    yaw = packet.Yaw;
+                    pitch = packet.Pitch;
                 }
 
-                if (packet.changePosition && packet.y <= -999.0 && packet.eyeHeight <= -999.0)
+                if (packet.ChangePosition && packet.Y <= -999.0 && packet.EyeHeight <= -999.0)
                 {
-                    moveX = packet.x;
-                    moveZ = packet.z;
+                    moveX = packet.X;
+                    moveZ = packet.Z;
                 }
 
-                player.OnGround = packet.onGround;
+                player.OnGround = packet.OnGround;
                 player.PlayerTick(false);
                 player.Move(moveX, 0.0, moveZ);
                 player.SetPositionAndAngles(vehicleX, vehicleY, vehicleZ, yaw, pitch);
@@ -151,17 +151,17 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             double targetZ = player.Z;
             float targetYaw = player.Yaw;
             float targetPitch = player.Pitch;
-            if (packet.changePosition && packet.y <= -999.0 && packet.eyeHeight <= -999.0)
+            if (packet.ChangePosition && packet.Y <= -999.0 && packet.EyeHeight <= -999.0)
             {
-                packet.changePosition = false;
+                packet.ChangePosition = false;
             }
 
-            if (packet.changePosition)
+            if (packet.ChangePosition)
             {
-                targetX = packet.x;
-                targetY = packet.y;
-                targetZ = packet.z;
-                double stanceHeight = packet.eyeHeight - packet.y;
+                targetX = packet.X;
+                targetY = packet.Y;
+                targetZ = packet.Z;
+                double stanceHeight = packet.EyeHeight - packet.Y;
                 if (!player.IsSleeping && (stanceHeight > 1.65 || stanceHeight < 0.1))
                 {
                     disconnect("Illegal stance");
@@ -169,17 +169,17 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                     return;
                 }
 
-                if (Math.Abs(packet.x) > 3.2E7 || Math.Abs(packet.z) > 3.2E7)
+                if (Math.Abs(packet.X) > 3.2E7 || Math.Abs(packet.Z) > 3.2E7)
                 {
                     disconnect("Illegal position");
                     return;
                 }
             }
 
-            if (packet.changeLook)
+            if (packet.ChangeLook)
             {
-                targetYaw = packet.yaw;
-                targetPitch = packet.pitch;
+                targetYaw = packet.Yaw;
+                targetPitch = packet.Pitch;
             }
 
             player.PlayerTick(false);
@@ -246,9 +246,9 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 }
             }
 
-            player.OnGround = packet.onGround;
+            player.OnGround = packet.OnGround;
             server.playerManager.updatePlayerChunks(player);
-            player.handleFall(player.Y - previousY, packet.onGround);
+            player.handleFall(player.Y - previousY, packet.OnGround);
         }
     }
 
@@ -266,17 +266,17 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     public override void handlePlayerAction(PlayerActionC2SPacket packet)
     {
         ServerWorld world = server.getWorld(player.DimensionId);
-        if (packet.action == 4)
+        if (packet.Action == 4)
         {
             player.DropSelectedItem();
         }
         else
         {
-            int x = packet.x;
-            int y = packet.y;
-            int z = packet.z;
+            int x = packet.X;
+            int y = packet.Y;
+            int z = packet.Z;
 
-            if (packet.action == 3)
+            if (packet.Action == 3)
             {
                 if (MathHelper.GetDistSqr(player.X, player.Y, player.Z, x, y, z) < 256.0)
                 {
@@ -286,7 +286,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 return;
             }
 
-            if (packet.action == 0 || packet.action == 2)
+            if (packet.Action == 0 || packet.Action == 2)
             {
                 if (MathHelper.GetDistSqr(player.X, player.Y, player.Z, x, y, z) > 36.0)
                 {
@@ -294,7 +294,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 }
             }
 
-            if (packet.action == 0)
+            if (packet.Action == 0)
             {
                 if (!CanBypassSpawnProtection(x, z, world))
                 {
@@ -302,10 +302,10 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 }
                 else
                 {
-                    player.InteractionManager.onBlockBreakingAction(x, y, z, packet.direction);
+                    player.InteractionManager.onBlockBreakingAction(x, y, z, packet.Direction);
                 }
             }
-            else if (packet.action == 2)
+            else if (packet.Action == 2)
             {
                 player.InteractionManager.continueMining(x, y, z);
                 if (world.Reader.GetBlockId(x, y, z) != 0)
@@ -329,7 +329,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     {
         ServerWorld world = server.getWorld(player.DimensionId);
         ItemStack stack = player.Inventory.ItemInHand;
-        if (packet.side == 255)
+        if (packet.Side == 255)
         {
             if (stack == null)
             {
@@ -340,10 +340,10 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         }
         else
         {
-            int x = packet.x;
-            int y = packet.y;
-            int z = packet.z;
-            int side = packet.side;
+            int x = packet.X;
+            int y = packet.Y;
+            int z = packet.Z;
+            int side = packet.Side;
 
             if (teleported && CanBypassSpawnProtection(x, z, world) && player.GetSquaredDistance(x + 0.5, y + 0.5, z + 0.5) < 64.0)
             {
@@ -387,7 +387,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         Slot slot = player.CurrentScreenHandler.GetSlot(player.Inventory, player.Inventory.SelectedSlot);
         player.CurrentScreenHandler.SendContentUpdates();
         player.SkipPacketSlotUpdates = false;
-        if (!ItemStack.areEqual(player.Inventory.ItemInHand, packet.stack))
+        if (!ItemStack.areEqual(player.Inventory.ItemInHand, packet.Stack))
         {
             SendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(player.CurrentScreenHandler.SyncId, slot.id, player.Inventory.ItemInHand));
         }
@@ -420,10 +420,10 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public override void onUpdateSelectedSlot(UpdateSelectedSlotC2SPacket packet)
     {
-        if (packet.selectedSlot >= 0 && packet.selectedSlot <= InventoryPlayer.HotbarSize)
+        if (packet.SelectedSlot >= 0 && packet.SelectedSlot <= InventoryPlayer.HotbarSize)
         {
             player.InteractionManager.UpdateMiningTool();
-            player.Inventory.SelectedSlot = packet.selectedSlot;
+            player.Inventory.SelectedSlot = packet.SelectedSlot;
         }
         else
         {
@@ -433,7 +433,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public override void onChatMessage(ChatMessagePacket packet)
     {
-        string msg = packet.chatMessage;
+        string msg = packet.ChatMessage;
         if (msg.Length > 100)
         {
             disconnect("Chat message too long");
@@ -494,7 +494,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public override void onEntityAnimation(EntityAnimationPacket packet)
     {
-        if (packet.animationId == 1)
+        if (packet.AnimationId == 1)
         {
             player.SwingHand();
         }
@@ -502,15 +502,15 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public override void handleClientCommand(ClientCommandC2SPacket packet)
     {
-        if (packet.mode == 1)
+        if (packet.Mode == 1)
         {
             player.SetSneaking(true);
         }
-        else if (packet.mode == 2)
+        else if (packet.Mode == 2)
         {
             player.SetSneaking(false);
         }
-        else if (packet.mode == 3)
+        else if (packet.Mode == 3)
         {
             player.WakeUp(false, true, true);
             teleported = false;
@@ -543,14 +543,14 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     public override void handleInteractEntity(PlayerInteractEntityC2SPacket packet)
     {
         ServerWorld playerWorld = server.getWorld(player.DimensionId);
-        Entity targetEntity = playerWorld.getEntity(packet.entityId);
+        Entity targetEntity = playerWorld.getEntity(packet.EntityId);
         if (targetEntity != null && player.CanSee(targetEntity) && player.GetSquaredDistance(targetEntity) < 36.0)
         {
-            if (packet.isLeftClick == 0)
+            if (packet.IsLeftClick == 0)
             {
                 player.Interact(targetEntity);
             }
-            else if (packet.isLeftClick == 1)
+            else if (packet.IsLeftClick == 1)
             {
                 player.Attack(targetEntity);
             }
@@ -572,12 +572,12 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public override void onClickSlot(ClickSlotC2SPacket packet)
     {
-        if (player.CurrentScreenHandler.SyncId == packet.syncId && player.CurrentScreenHandler.canOpen(player))
+        if (player.CurrentScreenHandler.SyncId == packet.SyncId && player.CurrentScreenHandler.canOpen(player))
         {
-            ItemStack clickedStack = player.CurrentScreenHandler.onSlotClick(packet.slot, packet.button, packet.holdingShift, player);
-            if (ItemStack.areEqual(packet.stack, clickedStack))
+            ItemStack clickedStack = player.CurrentScreenHandler.onSlotClick(packet.Slot, packet.Button, packet.HoldingShift, player);
+            if (ItemStack.areEqual(packet.Stack, clickedStack))
             {
-                player.NetworkHandler.SendPacket(ScreenHandlerAcknowledgementPacket.Get(packet.syncId, packet.actionType, true));
+                player.NetworkHandler.SendPacket(ScreenHandlerAcknowledgementPacket.Get(packet.SyncId, packet.ActionType, true));
                 player.SkipPacketSlotUpdates = true;
                 player.CurrentScreenHandler.SendContentUpdates();
                 player.updateCursorStack();
@@ -586,8 +586,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             else
             {
                 // should something be done adding fails?
-                transactions.TryAdd(player.CurrentScreenHandler.SyncId, packet.actionType);
-                player.NetworkHandler.SendPacket(ScreenHandlerAcknowledgementPacket.Get(packet.syncId, packet.actionType, false));
+                transactions.TryAdd(player.CurrentScreenHandler.SyncId, packet.ActionType);
+                player.NetworkHandler.SendPacket(ScreenHandlerAcknowledgementPacket.Get(packet.SyncId, packet.ActionType, false));
                 player.CurrentScreenHandler.updatePlayerList(player, false);
 
                 int size = player.CurrentScreenHandler.Slots.Count;
@@ -606,8 +606,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     public override void onScreenHandlerAcknowledgement(ScreenHandlerAcknowledgementPacket packet)
     {
         if (transactions.TryGetValue(player.CurrentScreenHandler.SyncId, out short value)
-            && packet.actionType == value
-            && player.CurrentScreenHandler.SyncId == packet.syncId
+            && packet.ActionType == value
+            && player.CurrentScreenHandler.SyncId == packet.SyncId
             && !player.CurrentScreenHandler.canOpen(player))
         {
             player.CurrentScreenHandler.updatePlayerList(player, true);
@@ -617,9 +617,9 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     public override void handleUpdateSign(UpdateSignPacket packet)
     {
         ServerWorld playerWorld = server.getWorld(player.DimensionId);
-        if (playerWorld.Reader.IsPosLoaded(packet.x, packet.y, packet.z))
+        if (playerWorld.Reader.IsPosLoaded(packet.X, packet.Y, packet.Z))
         {
-            BlockEntity blockEntity = playerWorld.Entities.GetBlockEntity<BlockEntitySign>(packet.x, packet.y, packet.z);
+            BlockEntity blockEntity = playerWorld.Entities.GetBlockEntity<BlockEntitySign>(packet.X, packet.Y, packet.Z);
             BlockEntitySign? sign = blockEntity as BlockEntitySign;
             if (sign != null)
             {
@@ -633,15 +633,15 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             for (int lineIndex = 0; lineIndex < 4; lineIndex++)
             {
                 bool lineValid = true;
-                if (packet.text[lineIndex].Length > 15)
+                if (packet.Text[lineIndex].Length > 15)
                 {
                     lineValid = false;
                 }
                 else
                 {
-                    for (int charIndex = 0; charIndex < packet.text[lineIndex].Length; charIndex++)
+                    for (int charIndex = 0; charIndex < packet.Text[lineIndex].Length; charIndex++)
                     {
-                        if (!ChatAllowedCharacters.IsAllowedCharacter(packet.text[lineIndex][charIndex]))
+                        if (!ChatAllowedCharacters.IsAllowedCharacter(packet.Text[lineIndex][charIndex]))
                         {
                             lineValid = false;
                         }
@@ -650,19 +650,19 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
                 if (!lineValid)
                 {
-                    packet.text[lineIndex] = "!?";
+                    packet.Text[lineIndex] = "!?";
                 }
             }
 
             if (sign != null)
             {
-                int x = packet.x;
-                int y = packet.y;
-                int z = packet.z;
+                int x = packet.X;
+                int y = packet.Y;
+                int z = packet.Z;
 
                 for (int textLineIndex = 0; textLineIndex < 4; textLineIndex++)
                 {
-                    sign.Texts[textLineIndex] = packet.text[textLineIndex];
+                    sign.Texts[textLineIndex] = packet.Text[textLineIndex];
                 }
 
                 sign.SetEditable(false);

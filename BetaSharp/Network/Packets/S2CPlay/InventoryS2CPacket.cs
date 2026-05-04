@@ -1,23 +1,22 @@
-using System.Net.Sockets;
 using BetaSharp.Items;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
 public class InventoryS2CPacket() : Packet(PacketId.InventoryS2C)
 {
-    public int syncId;
-    public ItemStack[] contents;
+    public ItemStack[] Contents { get; private set; } = [];
+    public int SyncId { get; private set; }
 
     public static InventoryS2CPacket Get(int syncId, List<ItemStack> contents)
     {
-        var p = Get<InventoryS2CPacket>(PacketId.InventoryS2C);
-        p.syncId = syncId;
-        p.contents = new ItemStack[contents.Count];
+        InventoryS2CPacket p = Get<InventoryS2CPacket>(PacketId.InventoryS2C);
+        p.SyncId = syncId;
+        p.Contents = new ItemStack[contents.Count];
 
-        for (int i = 0; i < p.contents.Length; i++)
+        for (int i = 0; i < p.Contents.Length; i++)
         {
             ItemStack itemStack = contents[i];
-            p.contents[i] = itemStack == null ? null : itemStack.copy();
+            p.Contents[i] = itemStack == null ? null : itemStack.copy();
         }
 
         return p;
@@ -25,9 +24,9 @@ public class InventoryS2CPacket() : Packet(PacketId.InventoryS2C)
 
     public override void Read(Stream stream)
     {
-        syncId = (sbyte)stream.ReadByte();
+        SyncId = (sbyte)stream.ReadByte();
         short itemsCount = stream.ReadShort();
-        contents = new ItemStack[itemsCount];
+        Contents = new ItemStack[itemsCount];
 
         for (int i = 0; i < itemsCount; ++i)
         {
@@ -37,40 +36,32 @@ public class InventoryS2CPacket() : Packet(PacketId.InventoryS2C)
                 sbyte count = (sbyte)stream.ReadByte();
                 short damage = stream.ReadShort();
 
-                contents[i] = new ItemStack(itemId, count, damage);
+                Contents[i] = new ItemStack(itemId, count, damage);
             }
         }
-
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteByte((byte)syncId);
-        stream.WriteShort((short)contents.Length);
+        stream.WriteByte((byte)SyncId);
+        stream.WriteShort((short)Contents.Length);
 
-        for (int i = 0; i < contents.Length; ++i)
+        for (int i = 0; i < Contents.Length; ++i)
         {
-            if (contents[i] == null)
+            if (Contents[i] == null)
             {
                 stream.WriteShort(-1);
             }
             else
             {
-                stream.WriteShort((short)contents[i].ItemId);
-                stream.WriteByte((byte)contents[i].Count);
-                stream.WriteShort((short)contents[i].getDamage());
+                stream.WriteShort((short)Contents[i].ItemId);
+                stream.WriteByte((byte)Contents[i].Count);
+                stream.WriteShort((short)Contents[i].getDamage());
             }
         }
-
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.onInventory(this);
-    }
+    public override void Apply(NetHandler handler) => handler.onInventory(this);
 
-    public override int Size()
-    {
-        return 3 + contents.Length * 5;
-    }
+    public override int Size() => 3 + Contents.Length * 5;
 }

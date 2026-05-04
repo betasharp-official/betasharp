@@ -1,56 +1,48 @@
-using System.Net.Sockets;
-
 namespace BetaSharp.Network.Packets.Play;
 
 public class UpdateSignPacket() : Packet(PacketId.UpdateSign)
 {
-    public int x;
-    public int y;
-    public int z;
-    public string[] text;
+    public string[] Text { get; private set; } = [];
+    public int X { get; private set; }
+    public int Y { get; private set; }
+    public int Z { get; private set; }
 
     public static UpdateSignPacket Get(int x, int y, int z, string[] text)
     {
-        var p = Get<UpdateSignPacket>(PacketId.UpdateSign);
-        p.x = x;
-        p.y = y;
-        p.z = z;
-        p.text = text;
+        UpdateSignPacket p = Get<UpdateSignPacket>(PacketId.UpdateSign);
+        p.X = x;
+        p.Y = y;
+        p.Z = z;
+        p.Text = text;
         return p;
     }
 
     public override void Read(Stream stream)
     {
-        x = stream.ReadInt();
-        y = stream.ReadShort();
-        z = stream.ReadInt();
-        text = new string[4];
+        X = stream.ReadInt();
+        Y = stream.ReadShort();
+        Z = stream.ReadInt();
+        Text = new string[4];
 
         for (int i = 0; i < 4; ++i)
         {
-
-            text[i] = stream.ReadLongString(15);
+            Text[i] = stream.ReadLongString(15);
         }
-
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteInt(x);
-        stream.WriteShort((short)y);
-        stream.WriteInt(z);
+        stream.WriteInt(X);
+        stream.WriteShort((short)Y);
+        stream.WriteInt(Z);
 
         for (int i = 0; i < 4; ++i)
         {
-            stream.WriteLongString(text[i]);
+            stream.WriteLongString(Text[i]);
         }
-
     }
 
-    public override void Apply(NetHandler networkHandler)
-    {
-        networkHandler.handleUpdateSign(this);
-    }
+    public override void Apply(NetHandler networkHandler) => networkHandler.handleUpdateSign(this);
 
     public override int Size()
     {
@@ -58,7 +50,7 @@ public class UpdateSignPacket() : Packet(PacketId.UpdateSign)
 
         for (int i = 0; i < 4; ++i)
         {
-            size += text[i].Length;
+            size += Text[i].Length;
         }
 
         return size;

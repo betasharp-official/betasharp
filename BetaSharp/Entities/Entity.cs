@@ -1118,23 +1118,32 @@ public abstract class Entity
         }
     }
 
+    public void SetPositionAndAnglesAvoidEntities(int newPosRotationIncrements)
+    {
+        SetPositionAndAnglesAvoidEntities(Yaw, Pitch, newPosRotationIncrements);
+    }
+
+    public void SetPositionAndAnglesAvoidEntities(float yaw, float pitch, int newPosRotationIncrements)
+    {
+        double posX = TrackedPosX / 32.0D;
+        double posY = TrackedPosY / 32.0D;
+        double posZ = TrackedPosZ / 32.0D;
+        SetPositionAndAnglesAvoidEntities(posX, posY, posZ, yaw, pitch, newPosRotationIncrements);
+    }
+
+    public void SetPositionAndAnglesAvoidEntities(double x, double y, double z, int newPosRotationIncrements)
+    {
+        SetPositionAndAnglesAvoidEntities(x, y, z, Yaw, Pitch, newPosRotationIncrements);
+    }
+
     public virtual void SetPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch, int newPosRotationIncrements)
     {
         SetPosition(x, y, z);
         SetRotation(yaw, pitch);
-        List<Box> collisions = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
-        if (collisions.Count <= 0) return;
+        double maxY = World.Entities.GetMaxYEntityCollision(this, BoundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
+        if (maxY <= 0) return;
 
-        double maxMaxY = 0.0D;
-        foreach (Box box in collisions)
-        {
-            if (box.MaxY > maxMaxY)
-            {
-                maxMaxY = box.MaxY;
-            }
-        }
-
-        y += maxMaxY - BoundingBox.MinY;
+        y += maxY - BoundingBox.MinY;
         SetPosition(x, y, z);
     }
 

@@ -1,89 +1,79 @@
 using System.IO.Compression;
-using System.Net.Sockets;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
 public class ChunkDataS2CPacket() : Packet(PacketId.ChunkDataS2C)
 {
-    public int x;
-    public int y;
-    public int z;
-    public int sizeX;
-    public int sizeY;
-    public int sizeZ;
-    public byte[] chunkData;
-    private int chunkDataSize;
-    public byte[] rawData;
+    public int X { get; private set; }
+    public int Y { get; private set; }
+    public int Z { get; private set; }
+    public int SizeX { get; private set; }
+    public int SizeY { get; private set; }
+    public int SizeZ { get; private set; }
+    public byte[] ChunkData { get; private set; } = Array.Empty<byte>();
+    private int ChunkDataSize { get; set; }
+    private byte[] RawData { get; set; } = Array.Empty<byte>();
 
     public static ChunkDataS2CPacket Get(int x, int y, int z, int sizeX, int sizeY, int sizeZ, IWorldContext world)
     {
-        var p = Get<ChunkDataS2CPacket>(PacketId.ChunkDataS2C);
-        p.x = x;
-        p.y = y;
-        p.z = z;
-        p.sizeX = sizeX;
-        p.sizeY = sizeY;
-        p.sizeZ = sizeZ;
-        p.rawData = world.ChunkHost.GetChunkData(x, y, z, sizeX, sizeY, sizeZ);
+        ChunkDataS2CPacket p = Get<ChunkDataS2CPacket>(PacketId.ChunkDataS2C);
+        p.X = x;
+        p.Y = y;
+        p.Z = z;
+        p.SizeX = sizeX;
+        p.SizeY = sizeY;
+        p.SizeZ = sizeZ;
+        p.RawData = world.ChunkHost.GetChunkData(x, y, z, sizeX, sizeY, sizeZ);
 
-        using var output = new MemoryStream(sizeX * sizeY * sizeZ * 5 / 2);
-        using var stream = new ZLibStream(output, CompressionLevel.Optimal);
+        using MemoryStream output = new(sizeX * sizeY * sizeZ * 5 / 2);
+        using ZLibStream stream = new(output, CompressionLevel.Optimal);
 
-        stream.Write(p.rawData);
+        stream.Write(p.RawData);
         stream.Flush();
 
-        p.chunkData = output.GetBuffer();
-        p.chunkDataSize = (int)output.Position;
+        p.ChunkData = output.GetBuffer();
+        p.ChunkDataSize = (int)output.Position;
 
         return p;
     }
 
     public override void Read(Stream stream)
     {
-        x = stream.ReadInt();
-        y = stream.ReadShort();
-        z = stream.ReadInt();
-        sizeX = stream.ReadByte() + 1;
-        sizeY = stream.ReadByte() + 1;
-        sizeZ = stream.ReadByte() + 1;
-        chunkDataSize = stream.ReadInt();
+        X = stream.ReadInt();
+        Y = stream.ReadShort();
+        Z = stream.ReadInt();
+        SizeX = stream.ReadByte() + 1;
+        SizeY = stream.ReadByte() + 1;
+        SizeZ = stream.ReadByte() + 1;
+        ChunkDataSize = stream.ReadInt();
 
-        byte[] buffer = new byte[chunkDataSize];
+        byte[] buffer = new byte[ChunkDataSize];
         stream.ReadExactly(buffer);
 
-        using var output = new MemoryStream(sizeX * sizeY * sizeZ * 5 / 2);
-        using var decompressor = new ZLibStream(new MemoryStream(buffer), CompressionMode.Decompress);
+        using MemoryStream output = new(SizeX * SizeY * SizeZ * 5 / 2);
+        using ZLibStream decompressor = new(new MemoryStream(buffer), CompressionMode.Decompress);
 
         decompressor.CopyTo(output);
 
-        chunkData = output.GetBuffer();
+        ChunkData = output.GetBuffer();
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteInt(x);
-        stream.WriteShort((short)y);
-        stream.WriteInt(z);
-        stream.WriteByte((byte)(sizeX - 1));
-        stream.WriteByte((byte)(sizeY - 1));
-        stream.WriteByte((byte)(sizeZ - 1));
-        stream.WriteInt(chunkDataSize);
-        stream.Write(chunkData, 0, chunkDataSize);
+        stream.WriteInt(X);
+        stream.WriteShort((short)Y);
+        stream.WriteInt(Z);
+        stream.WriteByte((byte)(SizeX - 1));
+        stream.WriteByte((byte)(SizeY - 1));
+        stream.WriteByte((byte)(SizeZ - 1));
+        stream.WriteInt(ChunkDataSize);
+        stream.Write(ChunkData, 0, ChunkDataSize);
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.handleChunkData(this);
-    }
+    public override void Apply(NetHandler handler) => handler.handleChunkData(this);
 
-    public override int Size()
-    {
-        return 17 + chunkDataSize;
-    }
+    public override int Size() => 17 + ChunkDataSize;
 
-    public override void ProcessForInternal()
-    {
-        chunkData = rawData;
-    }
+    public override void ProcessForInternal() => ChunkData = RawData;
 }

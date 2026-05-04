@@ -2,6 +2,7 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
 using BetaSharp.NBT;
+using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Chunks;
@@ -364,7 +365,7 @@ public abstract class EntityLiving : Entity
         AttackedAtYaw = 0.0F;
         if (playHurtEffects)
         {
-            World.Broadcaster.EntityEvent(this, 2);
+            World.Broadcaster.EntityEvent(this, EntityStatusS2CPacket.EntityState.Hurt);
             ScheduleVelocityUpdate();
             if (entity != null)
             {
@@ -446,7 +447,7 @@ public abstract class EntityLiving : Entity
             DropFewItems();
         }
 
-        World.Broadcaster.EntityEvent(this, 3);
+        World.Broadcaster.EntityEvent(this, EntityStatusS2CPacket.EntityState.Death);
     }
 
     protected virtual void DropFewItems()
@@ -938,7 +939,7 @@ public abstract class EntityLiving : Entity
     {
         switch (statusId)
         {
-            case 2:
+            case (sbyte)EntityStatusS2CPacket.EntityState.Hurt:
                 WalkAnimationSpeed = 1.5F;
                 Hearts = MaxHealth;
                 HurtTime = MaxHurtTime = 10;
@@ -950,7 +951,7 @@ public abstract class EntityLiving : Entity
 
                 Damage(null, 0);
                 break;
-            case 3:
+            case (sbyte)EntityStatusS2CPacket.EntityState.Death:
                 if (DeathSound != null)
                 {
                     World.Broadcaster.PlaySoundAtEntity(this, DeathSound, SoundVolume, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);

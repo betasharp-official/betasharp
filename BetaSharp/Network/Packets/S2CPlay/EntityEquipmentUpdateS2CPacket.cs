@@ -1,28 +1,28 @@
-using System.Net.Sockets;
 using BetaSharp.Items;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class EntityEquipmentUpdateS2CPacket() : PacketBaseEntity(PacketId.EntityEquipmentUpdateS2C)
+public class EntityEquipmentUpdateS2CPacket() : Packet(PacketId.EntityEquipmentUpdateS2C), IPacketEntity
 {
-    public int slot;
-    public int itemRawId;
-    public int itemDamage;
+    public int Slot { get; private set; }
+    public int ItemRawId { get; private set; } = -1;
+    public int ItemDamage { get; private set; }
+    public int EntityId { get; private set; }
 
-    public static EntityEquipmentUpdateS2CPacket Get(int entityId, int slot, ItemStack itemStack)
+    public static EntityEquipmentUpdateS2CPacket Get(int entityId, int slot, ItemStack? itemStack = null)
     {
-        var p = Get<EntityEquipmentUpdateS2CPacket>(PacketId.EntityEquipmentUpdateS2C);
+        EntityEquipmentUpdateS2CPacket p = Get<EntityEquipmentUpdateS2CPacket>(PacketId.EntityEquipmentUpdateS2C);
         p.EntityId = entityId;
-        p.slot = slot;
+        p.Slot = slot;
         if (itemStack == null)
         {
-            p.itemRawId = -1;
-            p.itemDamage = 0;
+            p.ItemRawId = -1;
+            p.ItemDamage = 0;
         }
         else
         {
-            p.itemRawId = itemStack.ItemId;
-            p.itemDamage = itemStack.getDamage();
+            p.ItemRawId = itemStack.ItemId;
+            p.ItemDamage = itemStack.getDamage();
         }
 
         return p;
@@ -30,27 +30,21 @@ public class EntityEquipmentUpdateS2CPacket() : PacketBaseEntity(PacketId.Entity
 
     public override void Read(Stream stream)
     {
-        base.Read(stream);
-        slot = stream.ReadShort();
-        itemRawId = stream.ReadShort();
-        itemDamage = stream.ReadShort();
+        EntityId = stream.ReadInt();
+        Slot = stream.ReadShort();
+        ItemRawId = stream.ReadShort();
+        ItemDamage = stream.ReadShort();
     }
 
     public override void Write(Stream stream)
     {
-        base.Write(stream);
-        stream.WriteShort((short)slot);
-        stream.WriteShort((short)itemRawId);
-        stream.WriteShort((short)itemDamage);
+        stream.WriteInt(EntityId);
+        stream.WriteShort((short)Slot);
+        stream.WriteShort((short)ItemRawId);
+        stream.WriteShort((short)ItemDamage);
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.onEntityEquipmentUpdate(this);
-    }
+    public override void Apply(NetHandler handler) => handler.onEntityEquipmentUpdate(this);
 
-    public override int Size()
-    {
-        return 6 + PacketBaseEntitySize;
-    }
+    public override int Size() => 6 + IPacketEntity.PacketBaseEntitySize;
 }
