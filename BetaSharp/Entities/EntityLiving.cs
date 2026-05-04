@@ -103,7 +103,7 @@ public abstract class EntityLiving : Entity
 
     protected virtual int TalkInterval => 80;
 
-    private static float AirSpeed => 0.02f;
+    protected virtual float AirSpeed => 0.02f;
 
     protected virtual bool CanDespawn => true;
 
