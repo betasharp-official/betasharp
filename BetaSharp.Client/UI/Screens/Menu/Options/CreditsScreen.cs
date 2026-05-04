@@ -69,32 +69,15 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
 
         void Link(string text, string url, float scale = 1.0F)
         {
-            Label lbl = new Label()
+            Link lbl = new Link()
             {
                 Text = text,
                 Scale = scale,
-                Centered = true
+                Centered = true,
+                URL = url
             };
 
             lbl.Style.MarginBottom = 4;
-
-            lbl.OnMouseEnter += (e) => {
-                lbl.TextColor = Color.HoverYellow;
-            };
-
-            lbl.OnMouseLeave += (e) =>
-            {
-                lbl.TextColor = Color.White;
-            };
-
-            lbl.OnClick += (e) =>
-            {
-                if (e.Button == MouseButton.Left)
-                {
-                    OpenBrowser(url);
-                }
-            };
-
             scroll.AddContent(lbl);
         }
 
@@ -129,22 +112,5 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
         Link("SixLabors - Fonts, image processing", "https://github.com/sixlabors");
     }
 
-    private static void OpenBrowser(string url)
-    {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            // Windows requires UseShellExecute to be true for URLs
-            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-            // Linux uses xdg-open
-            Process.Start("xdg-open", url);
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            // macOS uses the open command
-            Process.Start("open", url);
-        }
-    }
+    
 }

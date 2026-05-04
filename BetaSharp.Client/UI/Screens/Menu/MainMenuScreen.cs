@@ -102,25 +102,15 @@ public class MainMenuScreen(
     private void AddBottomLabels()
     {
         // Version info
-        Label versionLabel = new()
+        Link versionLabel = new()
         {
             Text = "BetaSharp " + BetaSharp.Version,
-            TextColor = Guis.Color.White
+            TextColor = Guis.Color.White,
+            URL = "https://github.com/betasharp-official/betasharp"
         };
         versionLabel.Style.Position = PositionType.Absolute;
         versionLabel.Style.Left = 2;
         versionLabel.Style.Top = 2;
-        versionLabel.OnClick += (e) =>
-        {
-            var ps = new System.Diagnostics.ProcessStartInfo("https://github.com/betasharp-official/betasharp")
-            {
-                UseShellExecute = true,
-                Verb = "open"
-            };
-            System.Diagnostics.Process.Start(ps);
-        };
-        versionLabel.OnMouseEnter += (e) => versionLabel.TextColor = Color.HoverYellow;
-        versionLabel.OnMouseLeave += (e) => versionLabel.TextColor = Color.White;
 
         Root.AddChild(versionLabel);
 
