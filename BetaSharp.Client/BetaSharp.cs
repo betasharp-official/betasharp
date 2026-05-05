@@ -165,6 +165,7 @@ public partial class BetaSharp :
     private readonly string _serverName;
     private readonly int _serverPort;
     private readonly bool _hideQuitButton;
+    private readonly BetaSharpRuntimeOptions _runtimeOptions;
 
 
     private DebugWindowManager _debugWindowManager;
@@ -194,13 +195,14 @@ public partial class BetaSharp :
 
     #region Initialization & Lifecycle
 
-    public BetaSharp(int width, int height, bool isFullscreen)
+    public BetaSharp(int width, int height, bool isFullscreen, BetaSharpRuntimeOptions? runtimeOptions = null)
     {
         _loadingScreen = new LoadingScreenRenderer(this);
         _tempDisplayHeight = height;
         _fullscreen = isFullscreen;
         DisplayWidth = width;
         DisplayHeight = height;
+        _runtimeOptions = runtimeOptions ?? BetaSharpRuntimeOptions.Default;
     }
 
     public void StartGame()
@@ -214,6 +216,10 @@ public partial class BetaSharp :
         InitializeTimer();
 
         SetupDisplay();
+        if (_runtimeOptions.ForceDebugUi)
+        {
+            Options.ShowDebugInfo = true;
+        }
         SetupCoreSystems();
 
         LoadScreen();
@@ -510,7 +516,7 @@ public partial class BetaSharp :
             Display.destroy();
             CleanupTimer();
 
-            if (!_hasCrashed)
+            if (!_hasCrashed && !_runtimeOptions.SuppressProcessExit)
             {
                 Environment.Exit(0);
             }
@@ -1865,27 +1871,40 @@ public partial class BetaSharp :
         StartMainThread(result.Name, result.Session);
     }
 
+    public static BetaSharp CreateConfiguredInstance(
+        string playerName,
+        string sessionToken,
+        BetaSharpRuntimeOptions? runtimeOptions = null,
+        int width = 850,
+        int height = 480,
+        bool fullscreen = false)
+    {
+        PlayerNameValidator.Validate(playerName);
+
+        BetaSharp game = new(width, height, fullscreen, runtimeOptions);
+        game.Session = new Session(playerName, sessionToken);
+
+        if (sessionToken == "-")
+        {
+            HasPaidCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        }
+
+        return game;
+    }
+
     private static void StartMainThread(string? playerName, string? sessionToken)
     {
         Thread.CurrentThread.Name = "BetaSharp Main Thread";
 
-        BetaSharp game = new(850, 480, false);
-
         if (playerName != null && sessionToken != null)
         {
-            game.Session = new Session(playerName, sessionToken);
-
-            if (sessionToken == "-")
-            {
-                HasPaidCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            }
+            BetaSharp game = CreateConfiguredInstance(playerName, sessionToken);
+            game.Run();
         }
         else
         {
             throw new Exception("Player name and session token were not provided!");
         }
-
-        game.Run();
     }
 
     #endregion
