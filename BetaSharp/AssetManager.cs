@@ -343,6 +343,16 @@ public class AssetManager
         _assetsToLoad.Clear();
     }
 
+    public void AddBinaryAsset(string path, byte[] data)
+    {
+        _loadedAssets[path] = new(data);
+    }
+
+    public void AddTextAsset(string path, string data)
+    {
+        _loadedAssets[path] = new(data);
+    }
+
     private void defineAsset(string assetPath, AssetType type)
     {
         _assetsToLoad[assetPath] = type;

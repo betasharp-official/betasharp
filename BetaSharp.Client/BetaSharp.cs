@@ -8,6 +8,7 @@ using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.DynamicTexture;
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Input;
+using BetaSharp.Client.Modding;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering;
@@ -82,6 +83,7 @@ public partial class BetaSharp :
     public IWorldStorageSource SaveLoader { get; private set; }
     public InternalServer? InternalServer { get; private set; }
     public RegistryAccess RegistryAccess { get; private set; } = RegistryAccess.Empty;
+    public ModManager Mods { get; private set; }
 
     #endregion
 
@@ -542,6 +544,17 @@ public partial class BetaSharp :
     {
         Running = true;
 
+        Mods = new(Path.Combine(BetaSharpDir, "mods"), this);
+        Mods.LoadMods();
+        _logger.LogInformation("Loaded {Count} mods", Mods.Mods.Count);
+
+        foreach (Mod mod in Mods.Mods)
+        {
+            _logger.LogInformation("    Mod {ID} ({Name}): {Description}", mod.ID, mod.Name, mod.Description);
+        }
+
+        Mods.ApplyPatches();
+
         try
         {
             StartGame();
@@ -551,6 +564,8 @@ public partial class BetaSharp :
             OnGameCrash(startupException);
             return;
         }
+
+        Mods.InitMods();
 
         try
         {
@@ -1606,7 +1621,7 @@ public partial class BetaSharp :
         }
     }
 
-    private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, _hideQuitButton, this, CreateNetworkContext(), TexturePackList, Shutdown);
+    private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, _hideQuitButton, this, CreateNetworkContext(), TexturePackList, Shutdown, this);
     private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, HUD.AddChatMessage, this);
 
     #endregion

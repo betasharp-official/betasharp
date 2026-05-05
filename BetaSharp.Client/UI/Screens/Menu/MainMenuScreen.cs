@@ -16,7 +16,8 @@ public class MainMenuScreen(
     ISingleplayerHost singleplayerHost,
     ClientNetworkContext networkContext,
     TexturePacks texturePackList,
-    Action shutdown) : UIScreen(context)
+    Action shutdown,
+    BetaSharp game) : UIScreen(context)
 {
     private const float LogoTopPadding = 30f;
 
@@ -67,6 +68,12 @@ public class MainMenuScreen(
             btnMultiplayer.Enabled = false;
         }
         Root.AddChild(btnMultiplayer);
+
+        Button btnMods = CreateButton();
+        btnMods.Text = "Mods";
+        btnMods.OnClick += (e) => Context.Navigator.Navigate(new ModsScreen(Context, game.Mods));
+        btnMods.Style.MarginBottom = 4;
+        Root.AddChild(btnMods);
 
         // Options and Quit side-by-side
         Panel footerButtons = new();
