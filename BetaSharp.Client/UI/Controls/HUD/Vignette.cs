@@ -5,6 +5,9 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
 
+/// <summary>
+/// Vignette for when in darkness.
+/// </summary>
 public class Vignette(Func<ClientPlayerEntity?> getPlayer) : UIElement
 {
     private float _prevVignetteBrightness = 1.0f;

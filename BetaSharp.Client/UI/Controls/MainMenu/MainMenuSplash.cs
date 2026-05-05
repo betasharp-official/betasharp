@@ -5,6 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.UI.Controls.MainMenu;
 
+/// <summary>
+/// Element for the main menu splash, rendering a random splash text.
+/// </summary>
 public class MainMenuSplash : UIElement
 {
     private static readonly ILogger<MainMenuSplash> s_logger = Log.Instance.For<MainMenuSplash>();

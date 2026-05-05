@@ -2,15 +2,21 @@ using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Stats;
+using BetaSharp;
 
 namespace BetaSharp.Client.UI.Controls.Achievement;
 
+using Achievement = global::BetaSharp.Achievement;
+
+/// <summary>
+/// UI element for a Achievement card, displayed in the Achivements menu.
+/// </summary>
 public class AchievementCard : UIElement
 {
-    private readonly global::BetaSharp.Achievement _achievement;
+    private readonly Achievement _achievement;
     private readonly StatFileWriter _stats;
 
-    public AchievementCard(global::BetaSharp.Achievement ach, StatFileWriter stats)
+    public AchievementCard(Achievement ach, StatFileWriter stats)
     {
         _achievement = ach;
         _stats = stats;

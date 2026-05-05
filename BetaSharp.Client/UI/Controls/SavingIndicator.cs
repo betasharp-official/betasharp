@@ -5,6 +5,9 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace BetaSharp.Client.UI.Controls;
 
+/// <summary>
+/// Label to display a "Saving level.." text, used in the game menu.
+/// </summary>
 public class SavingIndicator(Func<bool> isSavingComplete) : UIElement
 {
     private float _tickCounter = 0;
