@@ -21,7 +21,7 @@ internal class BlockCloth() : Block(35, 64, Material.Wool)
 
     public static int getItemMeta(int blockMeta) => ~blockMeta & 15;
 
-    public override string[] GetBlockAlias() => [
+    public override IReadOnlyList<string> GetBlockAlias => [
         "blackWool:15",
         "redWool:14",
         "greenWool:13",

@@ -9,10 +9,10 @@ internal class ItemCoal : Item
         setMaxDamage(0);
     }
 
-    public override String getItemNameIS(ItemStack itemStack)
+    public override string getItemNameIS(ItemStack itemStack)
     {
         return itemStack.getDamage() == 1 ? "item.charcoal" : "item.coal";
     }
 
-    public override string[] GetItemAlias() => ["charcoal:1"];
+    public override IReadOnlyList<string> GetItemAlias => ["charcoal:1"];
 }

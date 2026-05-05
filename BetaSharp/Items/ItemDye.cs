@@ -146,7 +146,7 @@ internal class ItemDye : Item
 
     }
 
-    public override string[] GetItemAlias() => [
+    public override IReadOnlyList<string> GetItemAlias => [
         "blackDye:0",
         "redDye:1",
         "greenDye:2",

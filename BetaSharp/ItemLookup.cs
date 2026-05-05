@@ -160,7 +160,7 @@ internal static class ItemLookup
 
     private static void BuildItemLookupAlias(Item item)
     {
-        foreach (string alias in item.GetItemAlias())
+        foreach (string alias in item.GetItemAlias)
         {
             string s = alias.ToLower();
             int i = s.LastIndexOf(':');
@@ -176,7 +176,7 @@ internal static class ItemLookup
 
     private static void BuildItemLookupAlias(Block block)
     {
-        foreach (string alias in block.GetBlockAlias())
+        foreach (string alias in block.GetBlockAlias)
         {
             string s = alias.ToLower();
             int i = s.LastIndexOf(':');

@@ -58,5 +58,5 @@ internal class ItemDoor : Item
         return true;
     }
 
-    public override string[] GetItemAlias() => doorMaterial == Material.Wood ? ["door", "woodDoor"] : [];
+    public override IReadOnlyList<string> GetItemAlias => doorMaterial == Material.Wood ? ["door", "woodDoor"] : [];
 }
