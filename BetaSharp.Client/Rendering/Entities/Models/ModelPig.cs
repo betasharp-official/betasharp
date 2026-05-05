@@ -7,7 +7,7 @@ public class ModelPig : ModelQuadruped
     {
     }
 
-    public ModelPig(float var1) : base(6, var1)
+    public ModelPig(float scale) : base(6, scale)
     {
     }
 }

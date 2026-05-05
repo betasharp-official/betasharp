@@ -56,7 +56,7 @@ internal class BlockCake : Block
     {
         if (@event.Player.Health >= 20) return true;
 
-        @event.Player.heal(3);
+        @event.Player.Heal(3);
         int slicesEaten = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) + 1;
         if (slicesEaten >= 6)
         {
@@ -75,7 +75,7 @@ internal class BlockCake : Block
     {
         if (@event.Player.Health >= 20) return;
 
-        @event.Player.heal(3);
+        @event.Player.Heal(3);
         int slicesEaten = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) + 1;
         if (slicesEaten >= 6)
         {

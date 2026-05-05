@@ -1,0 +1,13 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "##",
+        "##"
+    ],
+    "key": {
+        "#": "betasharp:Brick"
+    },
+    "result": {
+        "id": "betasharp:Bricks"
+    }
+}

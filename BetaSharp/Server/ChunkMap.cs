@@ -53,8 +53,8 @@ internal class ChunkMap
             // Unload chunks that are now out of view distance
             foreach (var player in players)
             {
-                int px = (int)player.lastX >> 4;
-                int pz = (int)player.lastZ >> 4;
+                int px = (int)player.LastX >> 4;
+                int pz = (int)player.LastZ >> 4;
 
                 foreach (var item in GetChunks(player, oldDistance))
                 {
@@ -80,8 +80,8 @@ internal class ChunkMap
             // Load chunks that are now within view distance
             foreach (ServerPlayerEntity player in players)
             {
-                int px = (int)player.lastX >> 4;
-                int pz = (int)player.lastZ >> 4;
+                int px = (int)player.LastX >> 4;
+                int pz = (int)player.LastZ >> 4;
 
                 foreach (ChunkPos item in GetChunks(player))
                 {
@@ -144,10 +144,10 @@ internal class ChunkMap
 
     public void markBlockForUpdate(int x, int y, int z)
     {
-        int var4 = x >> 4;
-        int var5 = z >> 4;
-        TrackedChunk? var6 = GetOrCreateChunk(var4, var5, false);
-        var6?.updatePlayerChunks(x & 15, y, z & 15);
+        int chunkX = x >> 4;
+        int chunkZ = z >> 4;
+        TrackedChunk? trackedChunk = GetOrCreateChunk(chunkX, chunkZ, false);
+        trackedChunk?.updatePlayerChunks(x & 15, y, z & 15);
     }
 
     internal bool IsChunkTrackedAndSent(int chunkX, int chunkZ)
@@ -188,8 +188,8 @@ internal class ChunkMap
     public void addPlayer(ServerPlayerEntity player)
     {
         player.ResetChunkStreamingState();
-        player.lastX = player.X;
-        player.lastZ = player.Z;
+        player.LastX = player.X;
+        player.LastZ = player.Z;
 
         foreach (ChunkPos item in GetChunks(player))
         {
@@ -221,17 +221,17 @@ internal class ChunkMap
 
     private bool isWithinViewDistance(int chunkX, int chunkZ, int centerX, int centerZ)
     {
-        int var5 = chunkX - centerX;
-        int var6 = chunkZ - centerZ;
-        return var5 >= -_viewDistance && var5 <= _viewDistance && var6 >= -_viewDistance && var6 <= _viewDistance;
+        int deltaX = chunkX - centerX;
+        int deltaZ = chunkZ - centerZ;
+        return deltaX >= -_viewDistance && deltaX <= _viewDistance && deltaZ >= -_viewDistance && deltaZ <= _viewDistance;
     }
 
     public void updatePlayerChunks(ServerPlayerEntity player)
     {
         int playerChunkCenterX = (int)player.X >> 4;
         int playerChunkCenterZ = (int)player.Z >> 4;
-        int playerLastChunkCenterX = (int)player.lastX >> 4;
-        int playerLastChunkCenterZ = (int)player.lastZ >> 4;
+        int playerLastChunkCenterX = (int)player.LastX >> 4;
+        int playerLastChunkCenterZ = (int)player.LastZ >> 4;
         int playerChunkCenterDeltaX = playerChunkCenterX - playerLastChunkCenterX;
         int playerChunkCenterDeltaZ = playerChunkCenterZ - playerLastChunkCenterZ;
         if (playerChunkCenterDeltaX == 0 && playerChunkCenterDeltaZ == 0)
@@ -278,8 +278,8 @@ internal class ChunkMap
             }
         }
 
-        player.lastX = player.X;
-        player.lastZ = player.Z;
+        player.LastX = player.X;
+        player.LastZ = player.Z;
     }
 
     public int getBlockViewDistance()
@@ -356,7 +356,7 @@ internal class ChunkMap
                 return;
             }
 
-            if (player.activeChunks.Add(_chunkPos))
+            if (player.ActiveChunks.Add(_chunkPos))
             {
                 player.NetworkHandler.SendPacket(ChunkStatusUpdateS2CPacket.Get(_chunkPos.X, _chunkPos.Z, true));
             }
@@ -387,8 +387,8 @@ internal class ChunkMap
             {
                 if (_players.Count == 0)
                 {
-                    long var2 = GetChunkHash(_chunkPos.X, _chunkPos.Z);
-                    _chunkMap._chunkMapping.Remove(var2);
+                    long chunkHash = GetChunkHash(_chunkPos.X, _chunkPos.Z);
+                    _chunkMap._chunkMapping.Remove(chunkHash);
                     if (_dirtyBlockCount > 0)
                     {
                         _chunkMap._chunksToUpdate.Remove(this);
@@ -397,7 +397,7 @@ internal class ChunkMap
                     _chunkMap.getWorld().ChunkCache.isLoaded(_chunkPos.X, _chunkPos.Z);
                 }
 
-                if (player.activeChunks.Remove(_chunkPos))
+                if (player.ActiveChunks.Remove(_chunkPos))
                 {
                     player.NetworkHandler.SendPacket(ChunkStatusUpdateS2CPacket.Get(_chunkPos.X, _chunkPos.Z, false));
                 }
@@ -466,7 +466,7 @@ internal class ChunkMap
         {
             foreach (ServerPlayerEntity serverPlayer in _players)
             {
-                if (serverPlayer.activeChunks.Contains(_chunkPos))
+                if (serverPlayer.ActiveChunks.Contains(_chunkPos))
                 {
                     serverPlayer.NetworkHandler.SendPacket(packet);
                 }
@@ -514,12 +514,12 @@ internal class ChunkMap
 
                     for (int i = 0; i < _dirtyBlockCount; i++)
                     {
-                        int var13 = _chunkPos.X * 16 + (_dirtyBlocks[i] >> 12 & 15);
-                        int var15 = _dirtyBlocks[i] & 0xFF;
-                        int var16 = _chunkPos.Z * 16 + (_dirtyBlocks[i] >> 8 & 15);
-                        if (Block.BlocksWithEntity[sWorld.Reader.GetBlockId(var13, var15, var16)])
+                        int worldX = _chunkPos.X * 16 + (_dirtyBlocks[i] >> 12 & 15);
+                        int worldY = _dirtyBlocks[i] & 0xFF;
+                        int worldZ = _chunkPos.Z * 16 + (_dirtyBlocks[i] >> 8 & 15);
+                        if (Block.BlocksWithEntity[sWorld.Reader.GetBlockId(worldX, worldY, worldZ)])
                         {
-                            sendBlockEntityUpdate(sWorld.Entities.GetBlockEntity<BlockEntity>(var13, var15, var16));
+                            sendBlockEntityUpdate(sWorld.Entities.GetBlockEntity<BlockEntity>(worldX, worldY, worldZ));
                         }
                     }
                 }

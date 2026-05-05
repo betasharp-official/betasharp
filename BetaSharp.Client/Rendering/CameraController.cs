@@ -49,7 +49,7 @@ public class CameraController
         _prevCameraRollAmount = _cameraRollAmount;
 
         float luminance = _game.World.GetLuminance(MathHelper.Floor(_game.Camera.X), MathHelper.Floor(_game.Camera.Y), MathHelper.Floor(_game.Camera.Z));
-        float renderDistFactor = System.Math.Clamp((_game.Options.renderDistance - 4.0F) / 28.0F, 0.0F, 1.0F);
+        float renderDistFactor = Math.Clamp((_game.Options.renderDistance - 4.0F) / 28.0F, 0.0F, 1.0F);
         float targetBob = luminance * (1.0F - renderDistFactor) + renderDistFactor;
         ViewBob += (targetBob - ViewBob) * 0.1F;
     }
@@ -57,7 +57,7 @@ public class CameraController
     public void SetZoomState(bool isHeld, float zoomScale)
     {
         _isZoomHeld = isHeld;
-        _zoomScale = System.Math.Clamp(zoomScale, 1.25F, 20.0F);
+        _zoomScale = Math.Clamp(zoomScale, 1.25F, 20.0F);
         CameraZoom = 1.0D;
     }
 
@@ -80,7 +80,7 @@ public class CameraController
         if (_isZoomHeld && !isHand)
         {
             float zoomProgress = 1.0F / _zoomScale;
-            float easedZoomProgress = (float)System.Math.Pow(zoomProgress, 2.0D);
+            float easedZoomProgress = (float)Math.Pow(zoomProgress, 2.0D);
             fov = 1.0F + (fov - 1.0F) * easedZoomProgress;
         }
 
@@ -115,7 +115,7 @@ public class CameraController
         {
             float speedDelta = player.HorizontalSpeed - player.PrevHorizontalSpeed;
             float speed = -(player.HorizontalSpeed + speedDelta * tickDelta);
-            float bobAmount = player.prevStepBobbingAmount + (player.stepBobbingAmount - player.prevStepBobbingAmount) * tickDelta;
+            float bobAmount = player.PrevStepBobbingAmount + (player.StepBobbingAmount - player.PrevStepBobbingAmount) * tickDelta;
             float pitch = player.CameraPitch + (player.Tilt - player.CameraPitch) * tickDelta;
 
             GLManager.GL.Translate(MathHelper.Sin(speed * (float)Math.PI) * bobAmount * 0.5F, -Math.Abs(MathHelper.Cos(speed * (float)Math.PI) * bobAmount), 0.0F);
@@ -135,7 +135,7 @@ public class CameraController
 
         GLManager.GL.Rotate(_prevCameraRollAmount + (_cameraRollAmount - _prevCameraRollAmount) * tickDelta, 0.0F, 0.0F, 1.0F);
 
-        if (cameraEntity.isSleeping())
+        if (cameraEntity.IsSleeping)
         {
             eyeHeightOffset = (float)((double)eyeHeightOffset + 1.0D);
             GLManager.GL.Translate(0.0F, 0.3F, 0.0F);
@@ -153,10 +153,10 @@ public class CameraController
                 GLManager.GL.Rotate(cameraEntity.PrevPitch + (cameraEntity.Pitch - cameraEntity.PrevPitch) * tickDelta, -1.0F, 0.0F, 0.0F);
             }
         }
-        else if (_game.Options.CameraMode == EnumCameraMode.ThirdPerson || _game.Options.CameraMode == EnumCameraMode.FrontThirdPerson)
+        else if (_game.Options.CameraMode == CameraMode.ThirdPerson || _game.Options.CameraMode == CameraMode.FrontThirdPerson)
         {
             double currentDistance;
-            if (_game.Options.CameraMode == EnumCameraMode.FrontThirdPerson)
+            if (_game.Options.CameraMode == CameraMode.FrontThirdPerson)
             {
                 currentDistance = _prevFrontThirdPersonDistance + (_frontThirdPersonDistance - _prevFrontThirdPersonDistance) * tickDelta;
             }
@@ -193,7 +193,7 @@ public class CameraController
 
                     HitResult hit = new HitResult(HitResultType.MISS);
 
-                    if (_game.Options.CameraMode == EnumCameraMode.FrontThirdPerson)
+                    if (_game.Options.CameraMode == CameraMode.FrontThirdPerson)
                     {
                         hit = _game.World.Reader.Raycast(
                             new Vec3D(x + offsetX, y + offsetY, z + offsetZ),
@@ -221,7 +221,7 @@ public class CameraController
                 GLManager.GL.Rotate(cameraEntity.Pitch - targetPitch, 1.0F, 0.0F, 0.0F);
                 GLManager.GL.Rotate(cameraEntity.Yaw - targetYaw, 0.0F, 1.0F, 0.0F);
                 GLManager.GL.Translate(0.0F, 0.0F, (float)-currentDistance);
-                if (_game.Options.CameraMode == EnumCameraMode.FrontThirdPerson)
+                if (_game.Options.CameraMode == CameraMode.FrontThirdPerson)
                 {
                     GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
                 }

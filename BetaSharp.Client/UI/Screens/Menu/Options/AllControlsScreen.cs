@@ -11,15 +11,15 @@ public class AllControlsScreen : BaseOptionsScreen
         TitleText = "Controls";
     }
 
-    protected override IEnumerable<GameOption> GetOptions() => [];
+    protected override List<OptionSection> GetOptions() => [];
 
     protected override UIElement CreateContent()
     {
-        Panel list = CreateVerticalList();
+        Panel list = CreateTwoColumnList();
 
         Button btnKeyboard = CreateButton();
         btnKeyboard.Text = "Keyboard Controls...";
-        btnKeyboard.Style.Width = 310;
+        btnKeyboard.Style.Width = TwoButtonSize;
         btnKeyboard.Style.MarginBottom = 4;
         btnKeyboard.OnClick += (e) =>
         {
@@ -29,7 +29,7 @@ public class AllControlsScreen : BaseOptionsScreen
 
         Button btnController = CreateButton();
         btnController.Text = "Controller Settings...";
-        btnController.Style.Width = 310;
+        btnController.Style.Width = TwoButtonSize;
         btnController.OnClick += (e) =>
         {
             Context.Navigator.Navigate(new ControllerControlsScreen(Context, this));

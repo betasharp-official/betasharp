@@ -15,6 +15,8 @@ public class Label : UIElement
     public float Scale { get; set; } = 1.0f;
     public bool HasShadow { get; set; } = true;
 
+    public override bool DoTextMeasuring => true;
+
     public override List<string> GetInspectorProperties()
     {
         List<string> props = base.GetInspectorProperties();

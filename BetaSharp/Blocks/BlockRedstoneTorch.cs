@@ -118,7 +118,7 @@ internal class BlockRedstoneTorch : BlockTorch
 
             if (!isBurnedOut(@event, true, currentTime)) return;
 
-            @event.World.Broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, "random.fizz", 0.5F, 2.6F + (Random.Shared.NextSingle() - Random.Shared.NextSingle()) * 0.8F);
+            @event.World.Broadcaster.WorldEvent(1004, x, y, z, 0);
 
             for (int particleIndex = 0; particleIndex < 5; ++particleIndex)
             {

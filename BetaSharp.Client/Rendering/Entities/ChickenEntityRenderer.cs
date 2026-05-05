@@ -18,8 +18,8 @@ public class ChickenEntityRenderer : LivingEntityRenderer
 
     protected float getWingRotation(EntityChicken chicken, float tickDelta)
     {
-        float flapProgress = chicken.prevFlapProgress + (chicken.flapProgress - chicken.prevFlapProgress) * tickDelta;
-        float wingExtension = chicken.prevDestPos + (chicken.destPos - chicken.prevDestPos) * tickDelta;
+        float flapProgress = chicken.PrevFlapProgress + (chicken.FlapProgress - chicken.PrevFlapProgress) * tickDelta;
+        float wingExtension = chicken.PrevDestPos + (chicken.DestPos - chicken.PrevDestPos) * tickDelta;
         return (MathHelper.Sin(flapProgress) + 1.0F) * wingExtension;
     }
 

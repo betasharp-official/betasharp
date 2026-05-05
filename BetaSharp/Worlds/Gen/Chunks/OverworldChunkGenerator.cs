@@ -870,8 +870,8 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
                     // Reduce density towards max height
                     if (iY > sizeY - 4)
                     {
-                        double var44 = (iY - (sizeY - 4)) / 3.0F;
-                        terrainDensity = terrainDensity * (1.0D - var44) + -10.0D * var44;
+                        double surfaceBlend = (iY - (sizeY - 4)) / 3.0F;
+                        terrainDensity = terrainDensity * (1.0D - surfaceBlend) + -10.0D * surfaceBlend;
                     }
 
                     heightMap[xyzIndex] = terrainDensity;

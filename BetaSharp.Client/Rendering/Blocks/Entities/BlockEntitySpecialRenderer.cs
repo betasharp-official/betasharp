@@ -11,18 +11,18 @@ public abstract class BlockEntitySpecialRenderer
 
     public abstract void renderTileEntityAt(BlockEntity blockEntity, double x, double y, double z, float tickDelta);
 
-    protected void bindTextureByName(string var1)
+    protected void bindTextureByName(string texturePath)
     {
-        TextureManager var2 = tileEntityRenderer.TextureManager;
-        var2.BindTexture(var2.GetTextureId(var1));
+        TextureManager textureManager = tileEntityRenderer.TextureManager;
+        textureManager.BindTexture(textureManager.GetTextureId(texturePath));
     }
 
-    public void setTileEntityRenderer(BlockEntityRenderer var1)
+    public void setTileEntityRenderer(BlockEntityRenderer renderer)
     {
-        tileEntityRenderer = var1;
+        tileEntityRenderer = renderer;
     }
 
-    public virtual void func_31069_a(World var1)
+    public virtual void func_31069_a(World world)
     {
     }
 

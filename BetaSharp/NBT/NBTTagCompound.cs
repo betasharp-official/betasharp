@@ -93,7 +93,7 @@ public sealed class NBTTagCompound : NBTBase
         };
     }
 
-    public void SetString(string key, string value)
+    public void SetString(string key, string? value)
     {
         _dictionary[key] = new NBTTagString(value)
         {

@@ -25,7 +25,7 @@ internal class BlockTorch : Block
 
     private static bool TryGetHorizontalWallPickRay(EntityLiving placer, int torchX, int torchZ, out double lx, out double lz)
     {
-        Vec3D look = placer.getLook(1.0F);
+        Vec3D look = placer.GetLook(1.0F);
         double h = Math.Sqrt((look.x * look.x) + (look.z * look.z));
         if (h >= 1e-3)
         {
@@ -76,20 +76,20 @@ internal class BlockTorch : Block
             }
 
             const double tieEps = 1e-4;
-            double d1 = west ? (lx * -1.0) + (lz * 0.0) : double.NegativeInfinity;
-            double d2 = east ? (lx * 1.0) + (lz * 0.0) : double.NegativeInfinity;
-            double d3 = north ? (lx * 0.0) + (lz * -1.0) : double.NegativeInfinity;
-            double d4 = south ? (lx * 0.0) + (lz * 1.0) : double.NegativeInfinity;
-            double maxD = Math.Max(Math.Max(d1, d2), Math.Max(d3, d4));
+            double westScore = west ? (lx * -1.0) + (lz * 0.0) : double.NegativeInfinity;
+            double eastScore = east ? (lx * 1.0) + (lz * 0.0) : double.NegativeInfinity;
+            double northScore = north ? (lx * 0.0) + (lz * -1.0) : double.NegativeInfinity;
+            double southScore = south ? (lx * 0.0) + (lz * 1.0) : double.NegativeInfinity;
+            double maxD = Math.Max(Math.Max(westScore, eastScore), Math.Max(northScore, southScore));
 
             for (int meta = 1; meta <= 4; meta++)
             {
                 double d = meta switch
                 {
-                    1 => d1,
-                    2 => d2,
-                    3 => d3,
-                    4 => d4,
+                    1 => westScore,
+                    2 => eastScore,
+                    3 => northScore,
+                    4 => southScore,
                     _ => double.NegativeInfinity
                 };
                 bool solid = meta switch

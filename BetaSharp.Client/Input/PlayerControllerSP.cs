@@ -15,7 +15,7 @@ public class PlayerControllerSP : PlayerController
     private byte _mineSoundTimer;
     private int blockHitWait;
 
-    public PlayerControllerSP(BetaSharp var1) : base(var1)
+    public PlayerControllerSP(BetaSharp game) : base(game)
     {
     }
 
@@ -31,15 +31,15 @@ public class PlayerControllerSP : PlayerController
 
         int blockId = Game.World.Reader.GetBlockId(x, y, z);
         bool blockRemoved = base.sendBlockRemoved(x, y, z, direction);
-        ItemStack itemStackInHand = Game.Player.getHand();
-        bool canHarvest = Game.Player.canHarvest(Block.Blocks[blockId]);
+        ItemStack itemStackInHand = Game.Player.GetHand();
+        bool canHarvest = Game.Player.CanHarvest(Block.Blocks[blockId]);
         if (itemStackInHand != null)
         {
             itemStackInHand.postMine(blockId, x, y, z, Game.Player);
             if (itemStackInHand.Count == 0)
             {
                 ItemStack.onRemoved(Game.Player);
-                Game.Player.clearStackInHand();
+                Game.Player.ClearStackInHand();
             }
         }
 
@@ -124,7 +124,7 @@ public class PlayerControllerSP : PlayerController
         }
     }
 
-    public override void setPartialTime(float var1)
+    public override void setPartialTime(float tickDelta)
     {
         if (curBlockDamage <= 0.0F)
         {
@@ -132,8 +132,8 @@ public class PlayerControllerSP : PlayerController
         }
         else
         {
-            float var2 = prevBlockDamage + (curBlockDamage - prevBlockDamage) * var1;
-            Game.WorldRenderer.DamagePartialTime = var2;
+            float partialDamage = prevBlockDamage + (curBlockDamage - prevBlockDamage) * tickDelta;
+            Game.WorldRenderer.DamagePartialTime = partialDamage;
         }
 
     }

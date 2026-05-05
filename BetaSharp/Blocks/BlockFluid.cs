@@ -228,22 +228,22 @@ public abstract class BlockFluid : Block
         if (!hasWaterAdjacent) return;
 
         int meta = reader.GetBlockMeta(x, y, z);
-        switch (meta)
+        if (meta == 0)
         {
-            case 0:
-                writer.SetBlock(x, y, z, Obsidian.id);
-                break;
-            default:
-                writer.SetBlock(x, y, z, Cobblestone.id);
-                break;
+            writer.SetBlock(x, y, z, Obsidian.id);
+            fizz(broadcaster, x, y, z);
+            return;
         }
 
+        if (meta > 4) return;
+
+        writer.SetBlock(x, y, z, Cobblestone.id);
         fizz(broadcaster, x, y, z);
     }
 
     protected static void fizz(WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, "random.fizz", 0.5F, 2.6F + (Random.Shared.NextSingle() - Random.Shared.NextSingle()) * 0.8F);
+        broadcaster.WorldEvent(1004, x, y, z, 0);
 
         for (int particleIndex = 0; particleIndex < 8; ++particleIndex)
         {

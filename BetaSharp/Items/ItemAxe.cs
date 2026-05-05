@@ -18,7 +18,7 @@ internal class ItemAxe : ItemTool
         Block.Fence
     ];
 
-    public ItemAxe(int id, EnumToolMaterial enumToolMaterial) : base(id, 3, enumToolMaterial, blocksEffectiveAgainst)
+    public ItemAxe(int id, ToolMaterial toolMaterial) : base(id, 3, toolMaterial, blocksEffectiveAgainst)
     {
     }
 }

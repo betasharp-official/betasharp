@@ -27,35 +27,35 @@ internal class CraftingResultSlot : Slot
         stack.onCraft(thePlayer.World, thePlayer);
         if (stack.ItemId == Block.CraftingTable.id)
         {
-            thePlayer.increaseStat(Achievements.BuildWorkbench, 1);
+            thePlayer.IncreaseStat(Achievements.BuildWorkbench, 1);
         }
         else if (stack.ItemId == Item.WoodenPickaxe.id)
         {
-            thePlayer.increaseStat(Achievements.BuildPickaxe, 1);
+            thePlayer.IncreaseStat(Achievements.BuildPickaxe, 1);
         }
         else if (stack.ItemId == Block.Furnace.id)
         {
-            thePlayer.increaseStat(Achievements.BuildFurnace, 1);
+            thePlayer.IncreaseStat(Achievements.BuildFurnace, 1);
         }
         else if (stack.ItemId == Item.WoodenHoe.id)
         {
-            thePlayer.increaseStat(Achievements.BuildHoe, 1);
+            thePlayer.IncreaseStat(Achievements.BuildHoe, 1);
         }
         else if (stack.ItemId == Item.Bread.id)
         {
-            thePlayer.increaseStat(Achievements.MakeBread, 1);
+            thePlayer.IncreaseStat(Achievements.MakeBread, 1);
         }
         else if (stack.ItemId == Item.Cake.id)
         {
-            thePlayer.increaseStat(Achievements.MakeCake, 1);
+            thePlayer.IncreaseStat(Achievements.MakeCake, 1);
         }
         else if (stack.ItemId == Item.StonePickaxe.id)
         {
-            thePlayer.increaseStat(Achievements.CraftStonePickaxe, 1);
+            thePlayer.IncreaseStat(Achievements.CraftStonePickaxe, 1);
         }
         else if (stack.ItemId == Item.WoodenSword.id)
         {
-            thePlayer.increaseStat(Achievements.CraftSword, 1);
+            thePlayer.IncreaseStat(Achievements.CraftSword, 1);
         }
 
         for (int slotIndex = 0; slotIndex < craftMatrix.Size; ++slotIndex)

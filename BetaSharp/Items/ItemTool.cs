@@ -9,16 +9,16 @@ internal class ItemTool : Item
     private Block[] blocksEffectiveAgainst;
     private float efficiencyOnProperMaterial = 4.0F;
     private int damageVsEntity;
-    protected EnumToolMaterial toolMaterial;
+    protected ToolMaterial toolMaterial;
 
-    protected ItemTool(int id, int baseDamage, EnumToolMaterial enumToolMaterial, Block[] blocksEffectiveAgainst) : base(id)
+    protected ItemTool(int id, int baseDamage, ToolMaterial toolMaterial, Block[] blocksEffectiveAgainst) : base(id)
     {
-        toolMaterial = enumToolMaterial;
+        this.toolMaterial = toolMaterial;
         this.blocksEffectiveAgainst = blocksEffectiveAgainst;
         maxCount = 1;
-        setMaxDamage(enumToolMaterial.getMaxUses());
-        efficiencyOnProperMaterial = enumToolMaterial.getEfficiencyOnProperMaterial();
-        damageVsEntity = baseDamage + enumToolMaterial.getDamageVsEntity();
+        setMaxDamage(toolMaterial.getMaxUses());
+        efficiencyOnProperMaterial = toolMaterial.getEfficiencyOnProperMaterial();
+        damageVsEntity = baseDamage + toolMaterial.getDamageVsEntity();
     }
 
     public override float getMiningSpeedMultiplier(ItemStack itemStack, Block block)

@@ -21,72 +21,72 @@ public class ModelBiped : ModelBase
     {
     }
 
-    public ModelBiped(float var1) : this(var1, 0.0f)
+    public ModelBiped(float scale) : this(scale, 0.0f)
     {
     }
 
-    public ModelBiped(float var1, float var2)
+    public ModelBiped(float scale, float yOffset)
     {
         field_1279_h = false;
         field_1278_i = false;
         isSneak = false;
         bipedCloak = new ModelPart(0, 0);
-        bipedCloak.addBox(-5.0F, 0.0F, -1.0F, 10, 16, 1, var1);
+        bipedCloak.addBox(-5.0F, 0.0F, -1.0F, 10, 16, 1, scale);
         bipedEars = new ModelPart(24, 0);
-        bipedEars.addBox(-3.0F, -6.0F, -1.0F, 6, 6, 1, var1);
+        bipedEars.addBox(-3.0F, -6.0F, -1.0F, 6, 6, 1, scale);
         bipedHead = new ModelPart(0, 0);
-        bipedHead.addBox(-4.0F, -8.0F, -4.0F, 8, 8, 8, var1);
-        bipedHead.setRotationPoint(0.0F, 0.0F + var2, 0.0F);
+        bipedHead.addBox(-4.0F, -8.0F, -4.0F, 8, 8, 8, scale);
+        bipedHead.setRotationPoint(0.0F, 0.0F + yOffset, 0.0F);
         bipedHeadwear = new ModelPart(32, 0);
-        bipedHeadwear.addBox(-4.0F, -8.0F, -4.0F, 8, 8, 8, var1 + 0.5F);
-        bipedHeadwear.setRotationPoint(0.0F, 0.0F + var2, 0.0F);
+        bipedHeadwear.addBox(-4.0F, -8.0F, -4.0F, 8, 8, 8, scale + 0.5F);
+        bipedHeadwear.setRotationPoint(0.0F, 0.0F + yOffset, 0.0F);
         bipedBody = new ModelPart(16, 16);
-        bipedBody.addBox(-4.0F, 0.0F, -2.0F, 8, 12, 4, var1);
-        bipedBody.setRotationPoint(0.0F, 0.0F + var2, 0.0F);
+        bipedBody.addBox(-4.0F, 0.0F, -2.0F, 8, 12, 4, scale);
+        bipedBody.setRotationPoint(0.0F, 0.0F + yOffset, 0.0F);
         bipedRightArm = new ModelPart(40, 16);
-        bipedRightArm.addBox(-3.0F, -2.0F, -2.0F, 4, 12, 4, var1);
-        bipedRightArm.setRotationPoint(-5.0F, 2.0F + var2, 0.0F);
+        bipedRightArm.addBox(-3.0F, -2.0F, -2.0F, 4, 12, 4, scale);
+        bipedRightArm.setRotationPoint(-5.0F, 2.0F + yOffset, 0.0F);
         bipedLeftArm = new ModelPart(40, 16)
         {
             mirror = true
         };
-        bipedLeftArm.addBox(-1.0F, -2.0F, -2.0F, 4, 12, 4, var1);
-        bipedLeftArm.setRotationPoint(5.0F, 2.0F + var2, 0.0F);
+        bipedLeftArm.addBox(-1.0F, -2.0F, -2.0F, 4, 12, 4, scale);
+        bipedLeftArm.setRotationPoint(5.0F, 2.0F + yOffset, 0.0F);
         bipedRightLeg = new ModelPart(0, 16);
-        bipedRightLeg.addBox(-2.0F, 0.0F, -2.0F, 4, 12, 4, var1);
-        bipedRightLeg.setRotationPoint(-2.0F, 12.0F + var2, 0.0F);
+        bipedRightLeg.addBox(-2.0F, 0.0F, -2.0F, 4, 12, 4, scale);
+        bipedRightLeg.setRotationPoint(-2.0F, 12.0F + yOffset, 0.0F);
         bipedLeftLeg = new ModelPart(0, 16)
         {
             mirror = true
         };
-        bipedLeftLeg.addBox(-2.0F, 0.0F, -2.0F, 4, 12, 4, var1);
-        bipedLeftLeg.setRotationPoint(2.0F, 12.0F + var2, 0.0F);
+        bipedLeftLeg.addBox(-2.0F, 0.0F, -2.0F, 4, 12, 4, scale);
+        bipedLeftLeg.setRotationPoint(2.0F, 12.0F + yOffset, 0.0F);
     }
 
-    public override void render(float var1, float var2, float var3, float var4, float var5, float var6)
+    public override void render(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
     {
-        setRotationAngles(var1, var2, var3, var4, var5, var6);
-        bipedHead.render(var6);
-        bipedBody.render(var6);
-        bipedRightArm.render(var6);
-        bipedLeftArm.render(var6);
-        bipedRightLeg.render(var6);
-        bipedLeftLeg.render(var6);
-        bipedHeadwear.render(var6);
+        setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
+        bipedHead.render(scale);
+        bipedBody.render(scale);
+        bipedRightArm.render(scale);
+        bipedLeftArm.render(scale);
+        bipedRightLeg.render(scale);
+        bipedLeftLeg.render(scale);
+        bipedHeadwear.render(scale);
     }
 
-    public override void setRotationAngles(float var1, float var2, float var3, float var4, float var5, float var6)
+    public override void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
     {
-        bipedHead.rotateAngleY = var4 / (180.0F / (float)Math.PI);
-        bipedHead.rotateAngleX = var5 / (180.0F / (float)Math.PI);
+        bipedHead.rotateAngleY = netHeadYaw / (180.0F / (float)Math.PI);
+        bipedHead.rotateAngleX = headPitch / (180.0F / (float)Math.PI);
         bipedHeadwear.rotateAngleY = bipedHead.rotateAngleY;
         bipedHeadwear.rotateAngleX = bipedHead.rotateAngleX;
-        bipedRightArm.rotateAngleX = MathHelper.Cos(var1 * 0.6662F + (float)Math.PI) * 2.0F * var2 * 0.5F;
-        bipedLeftArm.rotateAngleX = MathHelper.Cos(var1 * 0.6662F) * 2.0F * var2 * 0.5F;
+        bipedRightArm.rotateAngleX = MathHelper.Cos(limbSwing * 0.6662F + (float)Math.PI) * 2.0F * limbSwingAmount * 0.5F;
+        bipedLeftArm.rotateAngleX = MathHelper.Cos(limbSwing * 0.6662F) * 2.0F * limbSwingAmount * 0.5F;
         bipedRightArm.rotateAngleZ = 0.0F;
         bipedLeftArm.rotateAngleZ = 0.0F;
-        bipedRightLeg.rotateAngleX = MathHelper.Cos(var1 * 0.6662F) * 1.4F * var2;
-        bipedLeftLeg.rotateAngleX = MathHelper.Cos(var1 * 0.6662F + (float)Math.PI) * 1.4F * var2;
+        bipedRightLeg.rotateAngleX = MathHelper.Cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
+        bipedLeftLeg.rotateAngleX = MathHelper.Cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount;
         bipedRightLeg.rotateAngleY = 0.0F;
         bipedLeftLeg.rotateAngleY = 0.0F;
         if (isRiding)
@@ -113,8 +113,8 @@ public class ModelBiped : ModelBase
         bipedLeftArm.rotateAngleY = 0.0F;
         if (onGround > -9990.0F)
         {
-            float var7 = onGround;
-            bipedBody.rotateAngleY = MathHelper.Sin(MathHelper.Sqrt(var7) * (float)Math.PI * 2.0F) * 0.2F;
+            float swingProgress = onGround;
+            bipedBody.rotateAngleY = MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI * 2.0F) * 0.2F;
             bipedRightArm.rotationPointZ = MathHelper.Sin(bipedBody.rotateAngleY) * 5.0F;
             bipedRightArm.rotationPointX = -MathHelper.Cos(bipedBody.rotateAngleY) * 5.0F;
             bipedLeftArm.rotationPointZ = -MathHelper.Sin(bipedBody.rotateAngleY) * 5.0F;
@@ -122,13 +122,13 @@ public class ModelBiped : ModelBase
             bipedRightArm.rotateAngleY += bipedBody.rotateAngleY;
             bipedLeftArm.rotateAngleY += bipedBody.rotateAngleY;
             bipedLeftArm.rotateAngleX += bipedBody.rotateAngleY;
-            var7 = 1.0F - onGround;
-            var7 *= var7;
-            var7 *= var7;
-            var7 = 1.0F - var7;
-            float var8 = MathHelper.Sin(var7 * (float)Math.PI);
-            float var9 = MathHelper.Sin(onGround * (float)Math.PI) * -(bipedHead.rotateAngleX - 0.7F) * (12.0F / 16.0F);
-            bipedRightArm.rotateAngleX = (float)(bipedRightArm.rotateAngleX - ((double)var8 * 1.2D + (double)var9));
+            swingProgress = 1.0F - onGround;
+            swingProgress *= swingProgress;
+            swingProgress *= swingProgress;
+            swingProgress = 1.0F - swingProgress;
+            float attackSwing = MathHelper.Sin(swingProgress * (float)Math.PI);
+            float headOffset = MathHelper.Sin(onGround * (float)Math.PI) * -(bipedHead.rotateAngleX - 0.7F) * (12.0F / 16.0F);
+            bipedRightArm.rotateAngleX = (float)(bipedRightArm.rotateAngleX - ((double)attackSwing * 1.2D + (double)headOffset));
             bipedRightArm.rotateAngleY += bipedBody.rotateAngleY * 2.0F;
             bipedRightArm.rotateAngleZ = MathHelper.Sin(onGround * (float)Math.PI) * -0.4F;
         }
@@ -156,23 +156,23 @@ public class ModelBiped : ModelBase
             bipedHead.rotationPointY = 0.0F;
         }
 
-        bipedRightArm.rotateAngleZ += MathHelper.Cos(var3 * 0.09F) * 0.05F + 0.05F;
-        bipedLeftArm.rotateAngleZ -= MathHelper.Cos(var3 * 0.09F) * 0.05F + 0.05F;
-        bipedRightArm.rotateAngleX += MathHelper.Sin(var3 * 0.067F) * 0.05F;
-        bipedLeftArm.rotateAngleX -= MathHelper.Sin(var3 * 0.067F) * 0.05F;
+        bipedRightArm.rotateAngleZ += MathHelper.Cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
+        bipedLeftArm.rotateAngleZ -= MathHelper.Cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
+        bipedRightArm.rotateAngleX += MathHelper.Sin(ageInTicks * 0.067F) * 0.05F;
+        bipedLeftArm.rotateAngleX -= MathHelper.Sin(ageInTicks * 0.067F) * 0.05F;
     }
 
-    public void renderEars(float var1)
+    public void renderEars(float scale)
     {
         bipedEars.rotateAngleY = bipedHead.rotateAngleY;
         bipedEars.rotateAngleX = bipedHead.rotateAngleX;
         bipedEars.rotationPointX = 0.0F;
         bipedEars.rotationPointY = 0.0F;
-        bipedEars.render(var1);
+        bipedEars.render(scale);
     }
 
-    public void renderCloak(float var1)
+    public void renderCloak(float scale)
     {
-        bipedCloak.render(var1);
+        bipedCloak.render(scale);
     }
 }

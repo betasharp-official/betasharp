@@ -178,7 +178,7 @@ public static class ControllerManager
 
             if (lbHeld && (!s_wasHotbarLeftDown || nowMs >= s_nextZoomInAdjustAtMs))
             {
-                s_game.Options.ZoomScale = System.Math.Clamp(s_game.Options.ZoomScale * 1.08F, 1.25F, 20.0F);
+                s_game.Options.ZoomScale = Math.Clamp(s_game.Options.ZoomScale * 1.08F, 1.25F, 20.0F);
                 s_nextZoomInAdjustAtMs = nowMs + (s_wasHotbarLeftDown ? 70L : 220L);
             }
             else if (!lbHeld)
@@ -188,7 +188,7 @@ public static class ControllerManager
 
             if (rbHeld && (!s_wasHotbarRightDown || nowMs >= s_nextZoomOutAdjustAtMs))
             {
-                s_game.Options.ZoomScale = System.Math.Clamp(s_game.Options.ZoomScale / 1.08F, 1.25F, 20.0F);
+                s_game.Options.ZoomScale = Math.Clamp(s_game.Options.ZoomScale / 1.08F, 1.25F, 20.0F);
                 s_nextZoomOutAdjustAtMs = nowMs + (s_wasHotbarRightDown ? 70L : 220L);
             }
             else if (!rbHeld)
@@ -198,8 +198,8 @@ public static class ControllerManager
         }
         else
         {
-            if (lbHeld && !s_wasHotbarLeftDown) s_game.Player.inventory.ChangeCurrentItem(1);
-            if (rbHeld && !s_wasHotbarRightDown) s_game.Player.inventory.ChangeCurrentItem(-1);
+            if (lbHeld && !s_wasHotbarLeftDown) s_game.Player.Inventory.ChangeCurrentItem(1);
+            if (rbHeld && !s_wasHotbarRightDown) s_game.Player.Inventory.ChangeCurrentItem(-1);
             s_nextZoomInAdjustAtMs = 0L;
             s_nextZoomOutAdjustAtMs = 0L;
         }
@@ -207,7 +207,7 @@ public static class ControllerManager
         // Camera
         if (cameraHeld && !s_wasCameraDown)
         {
-            s_game.Options.CameraMode = (EnumCameraMode)((int)(s_game.Options.CameraMode + 2) % 3);
+            s_game.Options.CameraMode = (CameraMode)((int)(s_game.Options.CameraMode + 2) % 3);
         }
 
         // Sneak Toggle

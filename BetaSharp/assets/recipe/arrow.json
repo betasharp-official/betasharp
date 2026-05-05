@@ -1,0 +1,17 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "X",
+        "#",
+        "Y"
+    ],
+    "key": {
+        "X": "betasharp:Flint",
+        "#": "betasharp:Stick",
+        "Y": "betasharp:Feather"
+    },
+    "result": {
+        "id": "betasharp:ARROW",
+        "count": 4
+    }
+}

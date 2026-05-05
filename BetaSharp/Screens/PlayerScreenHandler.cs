@@ -58,7 +58,7 @@ public class PlayerScreenHandler : ScreenHandler
 
     public override void onSlotUpdate(IInventory inv)
     {
-        craftingResult.SetStack(0, CraftingManager.getInstance().FindMatchingRecipe(craftingInput));
+        craftingResult.SetStack(0, RecipesCrafting.Craft(craftingInput));
     }
 
     public override void onClosed(EntityPlayer player)
@@ -70,7 +70,7 @@ public class PlayerScreenHandler : ScreenHandler
             ItemStack craftingStack = craftingInput.GetStack(slotIndex);
             if (craftingStack != null)
             {
-                player.inventory.AddItemStackToInventory(craftingStack);
+                player.Inventory.AddItemStackToInventory(craftingStack);
                 craftingInput.SetStack(slotIndex, null);
             }
         }

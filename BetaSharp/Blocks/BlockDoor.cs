@@ -1,4 +1,5 @@
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
@@ -83,9 +84,9 @@ internal class BlockDoor : Block
         }
     }
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvent @event) => updateDorState(@event.World, @event.X, @event.Y, @event.Z);
+    public override void onBlockBreakStart(OnBlockBreakStartEvent @event) => updateDorState(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
 
-    private bool updateDorState(IWorldContext world, int x, int y, int z)
+    private bool updateDorState(EntityPlayer player, IWorldContext world, int x, int y, int z)
     {
         if (world.IsRemote)
         {
@@ -102,7 +103,7 @@ internal class BlockDoor : Block
         {
             if (world.Reader.GetBlockId(x, y - 1, z) == id)
             {
-                updateDorState(world, x, y - 1, z);
+                updateDorState(player, world, x, y - 1, z);
             }
 
             return true;
@@ -115,12 +116,12 @@ internal class BlockDoor : Block
 
         world.Writer.SetBlockMeta(x, y, z, meta ^ 4);
         world.Broadcaster.SetBlocksDirty(x, y - 1, z, x, y, z);
-        world.Broadcaster.WorldEvent(1003, x, y, z, 0);
+        world.Broadcaster.WorldEvent(player, 1003, x, y, z, 0);
         return true;
     }
 
 
-    public override bool onUse(OnUseEvent @event) => updateDorState(@event.World, @event.X, @event.Y, @event.Z);
+    public override bool onUse(OnUseEvent @event) => updateDorState(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
     public static int SetOpen(int meta) => (meta & 4) == 0 ? (meta - 1) & 3 : meta & 3;
 
     public void SetOpen(IWorldContext world, int x, int y, int z, bool open)

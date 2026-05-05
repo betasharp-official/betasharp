@@ -127,8 +127,8 @@ internal class BlockDispenser : BlockWithEntity
         if (itemStack.ItemId == Item.ARROW.id)
         {
             EntityArrow arrow = new(@event.World, spawnX, spawnY, spawnZ);
-            arrow.setArrowHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
-            arrow.doesArrowBelongToPlayer = true;
+            arrow.SetArrowHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
+            arrow.DoesArrowBelongToPlayer = true;
             @event.World.Entities.SpawnEntity(arrow);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }
@@ -142,7 +142,7 @@ internal class BlockDispenser : BlockWithEntity
         else if (itemStack.ItemId == Item.Snowball.id)
         {
             EntitySnowball snowball = new(@event.World, spawnX, spawnY, spawnZ);
-            snowball.setHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
+            snowball.SetHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
             @event.World.Entities.SpawnEntity(snowball);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }

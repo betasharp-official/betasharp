@@ -5,79 +5,77 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public class EntityFireball : Entity
+public sealed class EntityFireball : Entity
 {
-    public override EntityType Type => EntityRegistry.Fireball;
-    private int blockX = -1;
-    private int blockY = -1;
-    private int blockZ = -1;
-    private int blockId;
-    private bool inGround;
-    public int shake;
-    public EntityLiving owner;
-    private int removalTimer;
-    private int inAirTime;
-    public double powerX;
-    public double powerY;
-    public double powerZ;
+    private int _blockId;
+    private BlockPos _tile = new(-1, -1, -1);
+    private int _inAirTime;
+    private bool _inGround;
+    public readonly EntityLiving? Owner;
+    public double PowerX;
+    public double PowerY;
+    public double PowerZ;
+    private int _removalTimer;
+    private int _shake;
 
-    public EntityFireball(IWorldContext world) : base(world)
-    {
-        SetBoundingBoxSpacing(1.0F, 1.0F);
-    }
+    public EntityFireball(IWorldContext world) : base(world) => SetBoundingBoxSpacing(1.0F, 1.0F);
 
-
-    public override bool ShouldRender(double var1)
-    {
-        double var3 = BoundingBox.AverageEdgeLength * 4.0D;
-        var3 *= 64.0D;
-        return var1 < var3 * var3;
-    }
-
-    public EntityFireball(IWorldContext world, double x, double y, double z, double var8, double var10, double var12) : base(world)
+    public EntityFireball(IWorldContext world, double x, double y, double z, double directionX, double directionY, double directionZ) : base(world)
     {
         SetBoundingBoxSpacing(1.0F, 1.0F);
         SetPositionAndAnglesKeepPrevAngles(x, y, z, Yaw, Pitch);
         SetPosition(x, y, z);
-        double var14 = (double)MathHelper.Sqrt(var8 * var8 + var10 * var10 + var12 * var12);
-        powerX = var8 / var14 * 0.1D;
-        powerY = var10 / var14 * 0.1D;
-        powerZ = var12 / var14 * 0.1D;
+        double directionLength = (double)MathHelper.Sqrt(directionX * directionX + directionY * directionY + directionZ * directionZ);
+        PowerX = directionX / directionLength * 0.1D;
+        PowerY = directionY / directionLength * 0.1D;
+        PowerZ = directionZ / directionLength * 0.1D;
     }
 
-    public EntityFireball(IWorldContext world, EntityLiving var2, double var3, double var5, double var7) : base(world)
+    public EntityFireball(IWorldContext world, EntityLiving owner, double accelerationX, double accelerationY, double accelerationZ) : base(world)
     {
-        owner = var2;
+        Owner = owner;
         SetBoundingBoxSpacing(1.0F, 1.0F);
-        SetPositionAndAnglesKeepPrevAngles(var2.X, var2.Y, var2.Z, var2.Yaw, var2.Pitch);
+        SetPositionAndAnglesKeepPrevAngles(owner.X, owner.Y, owner.Z, owner.Yaw, owner.Pitch);
         SetPosition(X, Y, Z);
         StandingEyeHeight = 0.0F;
         VelocityX = VelocityY = VelocityZ = 0.0D;
-        var3 += Random.NextGaussian() * 0.4D;
-        var5 += Random.NextGaussian() * 0.4D;
-        var7 += Random.NextGaussian() * 0.4D;
-        double var9 = (double)MathHelper.Sqrt(var3 * var3 + var5 * var5 + var7 * var7);
-        powerX = var3 / var9 * 0.1D;
-        powerY = var5 / var9 * 0.1D;
-        powerZ = var7 / var9 * 0.1D;
+        accelerationX += Random.NextGaussian() * 0.4D;
+        accelerationY += Random.NextGaussian() * 0.4D;
+        accelerationZ += Random.NextGaussian() * 0.4D;
+        double directionLength = (double)MathHelper.Sqrt(accelerationX * accelerationX + accelerationY * accelerationY + accelerationZ * accelerationZ);
+        PowerX = accelerationX / directionLength * 0.1D;
+        PowerY = accelerationY / directionLength * 0.1D;
+        PowerZ = accelerationZ / directionLength * 0.1D;
+    }
+
+    public override EntityType Type => EntityRegistry.Fireball;
+
+    public override float TargetingMargin => 1.0F;
+
+
+    protected override bool ShouldRender(double squaredDistanceToCamera)
+    {
+        double renderDistance = BoundingBox.AverageEdgeLength * 4.0D;
+        renderDistance *= 64.0D;
+        return squaredDistanceToCamera < renderDistance * renderDistance;
     }
 
     public override void Tick()
     {
         base.Tick();
         FireTicks = 10;
-        if (shake > 0)
+        if (_shake > 0)
         {
-            --shake;
+            --_shake;
         }
 
-        if (inGround)
+        if (_inGround)
         {
-            int var1 = World.Reader.GetBlockId(blockX, blockY, blockZ);
-            if (var1 == blockId)
+            int inGroundBlockId = World.Reader.GetBlockId(_tile.x, _tile.y, _tile.z);
+            if (inGroundBlockId == _blockId)
             {
-                ++removalTimer;
-                if (removalTimer == 1200)
+                ++_removalTimer;
+                if (_removalTimer == 1200)
                 {
                     MarkDead();
                 }
@@ -85,62 +83,58 @@ public class EntityFireball : Entity
                 return;
             }
 
-            inGround = false;
-            VelocityX *= (double)(Random.NextFloat() * 0.2F);
-            VelocityY *= (double)(Random.NextFloat() * 0.2F);
-            VelocityZ *= (double)(Random.NextFloat() * 0.2F);
-            removalTimer = 0;
-            inAirTime = 0;
+            _inGround = false;
+            VelocityX *= Random.NextFloat() * 0.2F;
+            VelocityY *= Random.NextFloat() * 0.2F;
+            VelocityZ *= Random.NextFloat() * 0.2F;
+            _removalTimer = 0;
+            _inAirTime = 0;
         }
         else
         {
-            ++inAirTime;
+            ++_inAirTime;
         }
 
-        Vec3D var15 = new Vec3D(X, Y, Z);
-        Vec3D var2 = new Vec3D(X + VelocityX, Y + VelocityY, Z + VelocityZ);
-        HitResult var3 = World.Reader.Raycast(var15, var2);
-        var15 = new Vec3D(X, Y, Z);
-        var2 = new Vec3D(X + VelocityX, Y + VelocityY, Z + VelocityZ);
-        if (var3.Type != HitResultType.MISS)
+        Vec3D startPos = new(X, Y, Z);
+        Vec3D endPos = new(X + VelocityX, Y + VelocityY, Z + VelocityZ);
+        HitResult hitResult = World.Reader.Raycast(startPos, endPos);
+        startPos = new Vec3D(X, Y, Z);
+        endPos = new Vec3D(X + VelocityX, Y + VelocityY, Z + VelocityZ);
+        if (hitResult.Type != HitResultType.MISS)
         {
-            var2 = new Vec3D(var3.Pos.x, var3.Pos.y, var3.Pos.z);
+            endPos = new Vec3D(hitResult.Pos.x, hitResult.Pos.y, hitResult.Pos.z);
         }
 
-        Entity var4 = null;
-        var var5 = World.Entities.GetEntities(this, BoundingBox.Stretch(VelocityX, VelocityY, VelocityZ).Expand(1.0D, 1.0D, 1.0D));
-        double var6 = 0.0D;
+        Entity? hitEntity = null;
+        var candidateEntities = World.Entities.GetEntities(this, BoundingBox.Stretch(VelocityX, VelocityY, VelocityZ).Expand(1.0D, 1.0D, 1.0D));
+        double nearestHitDistance = 0.0D;
 
-        for (int var8 = 0; var8 < var5.Count; ++var8)
+        foreach (var candidateEntity in candidateEntities)
         {
-            Entity var9 = var5[var8];
-            if (var9.IsCollidable() && (var9 != owner || inAirTime >= 25))
-            {
-                float var10 = 0.3F;
-                Box var11 = var9.BoundingBox.Expand((double)var10, (double)var10, (double)var10);
-                HitResult var12 = var11.Raycast(var15, var2);
-                if (var12.Type != HitResultType.MISS)
-                {
-                    double var13 = var15.distanceTo(var12.Pos);
-                    if (var13 < var6 || var6 == 0.0D)
-                    {
-                        var4 = var9;
-                        var6 = var13;
-                    }
-                }
-            }
+            if (!candidateEntity.HasCollision || (Equals(candidateEntity, Owner) && _inAirTime < 25)) continue;
+
+            const float collisionMargin = 0.3F;
+            Box candidateBox = candidateEntity.BoundingBox.Expand(collisionMargin, collisionMargin, collisionMargin);
+            HitResult candidateHit = candidateBox.Raycast(startPos, endPos);
+            if (candidateHit.Type == HitResultType.MISS) continue;
+
+            double hitDistance = startPos.distanceTo(candidateHit.Pos);
+            if (!(hitDistance < nearestHitDistance) && nearestHitDistance != 0.0D) continue;
+
+            hitEntity = candidateEntity;
+            nearestHitDistance = hitDistance;
         }
 
-        if (var4 != null)
+        if (hitEntity != null)
         {
-            var3 = new HitResult(var4);
+            hitResult = new HitResult(hitEntity);
         }
 
-        if (var3.Type != HitResultType.MISS)
+        if (hitResult.Type != HitResultType.MISS)
         {
             if (!World.IsRemote)
             {
-                if (var3.Entity != null && var3.Entity.Damage(owner, 0))
+                if (hitResult.Entity != null && hitResult.Entity.Damage(Owner, 0))
                 {
                 }
 
@@ -153,108 +147,76 @@ public class EntityFireball : Entity
         X += VelocityX;
         Y += VelocityY;
         Z += VelocityZ;
-        float var16 = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
-        Yaw = (float)(System.Math.Atan2(VelocityX, VelocityZ) * 180.0D / (double)((float)Math.PI));
+        float horizontalSpeed = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
+        Yaw = (float)(Math.Atan2(VelocityX, VelocityZ) * 180.0D / (float)Math.PI);
 
-        for (Pitch = (float)(System.Math.Atan2(VelocityY, (double)var16) * 180.0D / (double)((float)Math.PI)); Pitch - PrevPitch < -180.0F; PrevPitch -= 360.0F)
-        {
-        }
-
-        while (Pitch - PrevPitch >= 180.0F)
-        {
-            PrevPitch += 360.0F;
-        }
-
-        while (Yaw - PrevYaw < -180.0F)
-        {
-            PrevYaw -= 360.0F;
-        }
-
-        while (Yaw - PrevYaw >= 180.0F)
-        {
-            PrevYaw += 360.0F;
-        }
+        Pitch = (float)(Math.Atan2(VelocityY, horizontalSpeed) * 180.0D / Math.PI);
+        while (Pitch - PrevPitch < -180.0F) PrevPitch -= 360.0F;
+        while (Pitch - PrevPitch >= 180.0F) PrevPitch += 360.0F;
+        while (Yaw - PrevYaw < -180.0F) PrevYaw -= 360.0F;
+        while (Yaw - PrevYaw >= 180.0F) PrevYaw += 360.0F;
 
         Pitch = PrevPitch + (Pitch - PrevPitch) * 0.2F;
         Yaw = PrevYaw + (Yaw - PrevYaw) * 0.2F;
-        float var17 = 0.95F;
-        if (IsInWater())
+        float drag = 0.95F;
+        if (IsInWater)
         {
-            for (int var18 = 0; var18 < 4; ++var18)
+            for (int bubbleIndex = 0; bubbleIndex < 4; ++bubbleIndex)
             {
-                float var19 = 0.25F;
-                World.Broadcaster.AddParticle("bubble", X - VelocityX * (double)var19, Y - VelocityY * (double)var19, Z - VelocityZ * (double)var19, VelocityX, VelocityY, VelocityZ);
+                const float bubbleOffset = 0.25F;
+                World.Broadcaster.AddParticle("bubble", X - VelocityX * bubbleOffset, Y - VelocityY * bubbleOffset, Z - VelocityZ * bubbleOffset, VelocityX, VelocityY, VelocityZ);
             }
 
-            var17 = 0.8F;
+            drag = 0.8F;
         }
 
-        VelocityX += powerX;
-        VelocityY += powerY;
-        VelocityZ += powerZ;
-        VelocityX *= (double)var17;
-        VelocityY *= (double)var17;
-        VelocityZ *= (double)var17;
+        VelocityX += PowerX;
+        VelocityY += PowerY;
+        VelocityZ += PowerZ;
+        VelocityX *= drag;
+        VelocityY *= drag;
+        VelocityZ *= drag;
         World.Broadcaster.AddParticle("smoke", X, Y + 0.5D, Z, 0.0D, 0.0D, 0.0D);
         SetPosition(X, Y, Z);
     }
 
-    public override void WriteNbt(NBTTagCompound nbt)
+    protected override void WriteNbt(NBTTagCompound nbt)
     {
-        nbt.SetShort("xTile", (short)blockX);
-        nbt.SetShort("yTile", (short)blockY);
-        nbt.SetShort("zTile", (short)blockZ);
-        nbt.SetByte("inTile", (sbyte)blockId);
-        nbt.SetByte("shake", (sbyte)shake);
-        nbt.SetByte("inGround", (sbyte)(inGround ? 1 : 0));
+        nbt.SetShort("xTile", (short)_tile.x);
+        nbt.SetShort("yTile", (short)_tile.y);
+        nbt.SetShort("zTile", (short)_tile.z);
+        nbt.SetByte("inTile", (sbyte)_blockId);
+        nbt.SetByte("shake", (sbyte)_shake);
+        nbt.SetByte("inGround", (sbyte)(_inGround ? 1 : 0));
     }
 
-    public override void ReadNbt(NBTTagCompound nbt)
+    protected override void ReadNbt(NBTTagCompound nbt)
     {
-        blockX = nbt.GetShort("xTile");
-        blockY = nbt.GetShort("yTile");
-        blockZ = nbt.GetShort("zTile");
-        blockId = nbt.GetByte("inTile") & 255;
-        shake = nbt.GetByte("shake") & 255;
-        inGround = nbt.GetByte("inGround") == 1;
+        _tile = new BlockPos(nbt.GetShort("xTile"), nbt.GetShort("yTile"), nbt.GetShort("zTile"));
+        _blockId = nbt.GetByte("inTile") & 255;
+        _shake = nbt.GetByte("shake") & 255;
+        _inGround = nbt.GetByte("inGround") == 1;
     }
 
-    public override bool IsCollidable()
+    public override bool HasCollision => true;
+
+    public override bool Damage(Entity? entity, int amount)
     {
+        ScheduleVelocityUpdate();
+        if (entity == null)            return false;
+        Vec3D? lookVector = entity.LookVector;
+        if (lookVector == null)            return true;
+
+        VelocityX = lookVector.Value.x;
+        VelocityY = lookVector.Value.y;
+        VelocityZ = lookVector.Value.z;
+
+        PowerX = VelocityX * 0.1D;
+        PowerY = VelocityY * 0.1D;
+        PowerZ = VelocityZ * 0.1D;
+
         return true;
     }
 
-    public override float GetTargetingMargin()
-    {
-        return 1.0F;
-    }
-
-    public override bool Damage(Entity entity, int amount)
-    {
-        ScheduleVelocityUpdate();
-        if (entity != null)
-        {
-            Vec3D? var3 = entity.GetLookVector();
-            if (var3 != null)
-            {
-                VelocityX = var3.Value.x;
-                VelocityY = var3.Value.y;
-                VelocityZ = var3.Value.z;
-                powerX = VelocityX * 0.1D;
-                powerY = VelocityY * 0.1D;
-                powerZ = VelocityZ * 0.1D;
-            }
-
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public override float GetShadowRadius()
-    {
-        return 0.0F;
-    }
+    public override float GetShadowRadius() => 0.0F;
 }

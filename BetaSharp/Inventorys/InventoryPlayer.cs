@@ -15,7 +15,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
 
     public static int HotbarSize => 9;
 
-    public ItemStack? GetItemInHand() =>
+    public ItemStack? ItemInHand =>
         SelectedSlot < HotbarSize && SelectedSlot >= 0 ? Main[SelectedSlot] : null;
 
     private int FindSlotByItemId(int itemId)
@@ -94,7 +94,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
                 if (h >= 0) SelectedSlot = h;
             }
 
-            Player.sendChatMessage("/give " + itemId);
+            Player.SendChatMessage("/give " + itemId);
         }
         else if (slotIndex < HotbarSize)
         {
@@ -466,7 +466,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
     public void SetCursorStack(ItemStack? itemStack)
     {
         _cursorStack = itemStack;
-        Player.onCursorStackChanged(itemStack);
+        Player.OnCursorStackChanged(itemStack);
     }
 
     public ItemStack? GetCursorStack()

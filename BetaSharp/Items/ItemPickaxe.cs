@@ -29,7 +29,7 @@ internal class ItemPickaxe : ItemTool
         Block.CobblestoneStairs
     ];
 
-    public ItemPickaxe(int id, EnumToolMaterial enumToolMaterial) : base(id, 2, enumToolMaterial, blocksEffectiveAgainst)
+    public ItemPickaxe(int id, ToolMaterial toolMaterial) : base(id, 2, toolMaterial, blocksEffectiveAgainst)
     {
     }
 

@@ -10,14 +10,14 @@ public class CowEntityRenderer : LivingEntityRenderer
     {
     }
 
-    public void renderCow(EntityCow var1, double var2, double var4, double var6, float var8, float var9)
+    public void renderCow(EntityCow cowEntity, double x, double y, double z, float yaw, float tickDelta)
     {
-        base.DoRenderLiving(var1, var2, var4, var6, var8, var9);
+        base.DoRenderLiving(cowEntity, x, y, z, yaw, tickDelta);
     }
 
-    public override void DoRenderLiving(EntityLiving var1, double var2, double var4, double var6, float var8, float var9)
+    public override void DoRenderLiving(EntityLiving entity, double x, double y, double z, float yaw, float tickDelta)
     {
-        renderCow((EntityCow)var1, var2, var4, var6, var8, var9);
+        renderCow((EntityCow)entity, x, y, z, yaw, tickDelta);
     }
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)

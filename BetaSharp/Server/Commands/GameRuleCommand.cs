@@ -87,7 +87,7 @@ public class GameRuleCommand : Command.Command
     private static (RuleSet rules, RuleRegistry registry) GetContext(CommandContext<CommandSource> context)
     {
         ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
-        ServerWorld world = player != null ? context.Source.Server.getWorld(player.dimensionId) : context.Source.Server.worlds[0];
+        ServerWorld world = player != null ? context.Source.Server.getWorld(player.DimensionId) : context.Source.Server.worlds[0];
         return (world.Rules, RuleRegistry.Instance);
     }
 }

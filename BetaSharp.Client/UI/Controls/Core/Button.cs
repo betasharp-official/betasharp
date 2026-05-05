@@ -12,6 +12,10 @@ public class Button : UIElement
     public string Text { get; set; } = "";
     public Color TextColor { get; set; } = Color.GrayE0;
     public Color HoverTextColor { get; set; } = Color.HoverYellow;
+    public Action ClickSound;
+
+    public override bool DoTextMeasuring => true;
+
 
     /// <summary>
     /// Create a button, with a sound to play when clicked.

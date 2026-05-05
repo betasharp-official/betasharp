@@ -35,17 +35,17 @@ public class ModelCow : ModelQuadruped
         --leg4.rotationPointZ;
     }
 
-    public override void render(float var1, float var2, float var3, float var4, float var5, float var6)
+    public override void render(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
     {
-        base.render(var1, var2, var3, var4, var5, var6);
-        horn1.render(var6);
-        horn2.render(var6);
-        udders.render(var6);
+        base.render(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
+        horn1.render(scale);
+        horn2.render(scale);
+        udders.render(scale);
     }
 
-    public override void setRotationAngles(float var1, float var2, float var3, float var4, float var5, float var6)
+    public override void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
     {
-        base.setRotationAngles(var1, var2, var3, var4, var5, var6);
+        base.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
         horn1.rotateAngleY = head.rotateAngleY;
         horn1.rotateAngleX = head.rotateAngleX;
         horn2.rotateAngleY = head.rotateAngleY;

@@ -23,7 +23,7 @@ public class ClearCommand : Command.Command
             return 1;
         }
 
-        ItemStack[] inventory = player.inventory.Main;
+        ItemStack[] inventory = player.Inventory.Main;
         for (int i = 0; i < inventory.Length; i++)
         {
             inventory[i] = null;

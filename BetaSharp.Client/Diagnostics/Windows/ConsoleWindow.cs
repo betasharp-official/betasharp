@@ -97,7 +97,7 @@ internal sealed class ConsoleWindow(DebugWindowContext ctx) : DebugWindow
 
         if ((submitted || sendClicked) && player is not null && !string.IsNullOrWhiteSpace(_input))
         {
-            player.sendChatMessage(_input.Trim());
+            player.SendChatMessage(_input.Trim());
             _input = string.Empty;
             _scrollToBottom = true;
             _refocusInput = true;

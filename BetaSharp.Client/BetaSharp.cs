@@ -29,6 +29,7 @@ using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Profiling;
+using BetaSharp.Recipes;
 using BetaSharp.Registries;
 using BetaSharp.Server.Internal;
 using BetaSharp.Stats;
@@ -446,7 +447,7 @@ public partial class BetaSharp :
             () => PlayerController,
             () => World,
             () => CurrentScreen == null && Player != null && World != null
-                ? new InGameTipContext(ObjectMouseOver, World.Reader, Player.inventory.GetItemInHand())
+                ? new InGameTipContext(ObjectMouseOver, World.Reader, Player.Inventory.ItemInHand)
                 : null,
             () => _isMainMenuOpen
         ));
@@ -641,7 +642,7 @@ public partial class BetaSharp :
 
                     if (Player != null && Player.IsInsideWall())
                     {
-                        Options.CameraMode = EnumCameraMode.FirstPerson;
+                        Options.CameraMode = CameraMode.FirstPerson;
                     }
 
                     int savedWidth = DisplayWidth, savedHeight = DisplayHeight;
@@ -884,12 +885,12 @@ public partial class BetaSharp :
             {
                 Navigate(null);
             }
-            else if (Player.isSleeping() && World != null && World.IsRemote)
+            else if (Player.IsSleeping && World != null && World.IsRemote)
             {
                 Navigate(new SleepScreen(UIContext, Player));
             }
         }
-        else if (CurrentScreen is SleepScreen && !Player.isSleeping())
+        else if (CurrentScreen is SleepScreen && !Player.IsSleeping)
         {
             Navigate(null);
         }
@@ -1020,7 +1021,7 @@ public partial class BetaSharp :
                     }
                     else
                     {
-                        Player.inventory.ChangeCurrentItem(mouseWheelDelta);
+                        Player.Inventory.ChangeCurrentItem(mouseWheelDelta);
                         if (Options.InvertScrolling)
                         {
                             if (mouseWheelDelta > 0) mouseWheelDelta = 1;
@@ -1113,7 +1114,7 @@ public partial class BetaSharp :
 
                     if (Keyboard.getEventKey() == Keyboard.KEY_F5)
                     {
-                        Options.CameraMode = (EnumCameraMode)((int)(Options.CameraMode + 2) % 3);
+                        Options.CameraMode = (CameraMode)((int)(Options.CameraMode + 2) % 3);
                     }
 
                     if (Keyboard.getEventKey() == Keyboard.KEY_F8) Options.SmoothCamera = !Options.SmoothCamera;
@@ -1141,7 +1142,7 @@ public partial class BetaSharp :
                 {
                     if (Keyboard.getEventKey() == Keyboard.KEY_1 + slotIndex)
                     {
-                        Player.inventory.SelectedSlot = slotIndex;
+                        Player.Inventory.SelectedSlot = slotIndex;
                     }
                 }
 
@@ -1183,7 +1184,7 @@ public partial class BetaSharp :
         {
             if (mouseButton == 0)
             {
-                Player.swingHand();
+                Player.SwingHand();
             }
 
             bool shouldPerformSecondaryAction = true;
@@ -1218,12 +1219,12 @@ public partial class BetaSharp :
                 }
                 else
                 {
-                    ItemStack selectedItem = Player.inventory.GetItemInHand();
+                    ItemStack selectedItem = Player.Inventory.ItemInHand;
                     int itemCountBefore = selectedItem != null ? selectedItem.Count : 0;
                     if (PlayerController.sendPlaceBlock(Player, World, selectedItem, blockX, blockY, blockZ, blockSide))
                     {
                         shouldPerformSecondaryAction = false;
-                        Player.swingHand();
+                        Player.SwingHand();
                     }
 
                     if (selectedItem == null)
@@ -1233,7 +1234,7 @@ public partial class BetaSharp :
 
                     if (selectedItem.Count == 0)
                     {
-                        Player.inventory.Main[Player.inventory.SelectedSlot] = null;
+                        Player.Inventory.Main[Player.Inventory.SelectedSlot] = null;
                     }
                     else if (selectedItem.Count != itemCountBefore)
                     {
@@ -1244,7 +1245,7 @@ public partial class BetaSharp :
 
             if (shouldPerformSecondaryAction && mouseButton == 1)
             {
-                ItemStack selectedItem = Player.inventory.GetItemInHand();
+                ItemStack selectedItem = Player.Inventory.ItemInHand;
                 if (selectedItem != null && PlayerController.sendUseItem(Player, World, selectedItem))
                 {
                     GameRenderer.itemRenderer.ResetEquippedProgress();
@@ -1265,7 +1266,7 @@ public partial class BetaSharp :
             else if (blockId == Block.Leaves.id) backupId = Block.Sapling.id;
             else if (blockId == Block.DoubleSlab.id) blockId = Block.Slab.id;
 
-            Player.inventory.SetCurrentItem(blockId, backupId);
+            Player.Inventory.SetCurrentItem(blockId, backupId);
         }
     }
 
@@ -1357,7 +1358,7 @@ public partial class BetaSharp :
             }
 
             newWorld.AddPlayer(Player);
-            SkinManager.RequestDownload(Player.name);
+            SkinManager.RequestDownload(Player.Name);
 
             if (newWorld.IsNewWorld)
             {
@@ -1379,15 +1380,15 @@ public partial class BetaSharp :
 
         if (Player is not null && !ignoreSpawnPosition)
         {
-            playerSpawnPos = Player.getSpawnPos();
+            playerSpawnPos = Player.GetSpawnPos();
 
             if (playerSpawnPos is not null)
             {
-                respawnPos = EntityPlayer.findRespawnPosition(World, playerSpawnPos);
+                respawnPos = EntityPlayer.FindRespawnPosition(World, playerSpawnPos);
 
                 if (respawnPos is null)
                 {
-                    Player.sendMessage("tile.bed.notValid");
+                    Player.SendMessage("tile.bed.notValid");
                 }
             }
         }
@@ -1407,12 +1408,12 @@ public partial class BetaSharp :
         }
 
         Player = (ClientPlayerEntity)PlayerController.createPlayer(World);
-        Player.dimensionId = newDimensionId;
+        Player.DimensionId = newDimensionId;
         Player.TeleportToTop();
 
         if (useBedSpawn)
         {
-            Player.setSpawnPos(playerSpawnPos);
+            Player.SetSpawnPos(playerSpawnPos);
             Player.SetPositionAndAnglesKeepPrevAngles(
                 finalRespawnPos.X + 0.5,
                 finalRespawnPos.Y + 0.1,
@@ -1425,7 +1426,7 @@ public partial class BetaSharp :
         World.AddPlayer(Player);
         Player.movementInput = new MovementInputFromOptions(Options);
         Player.ID = previousPlayerId;
-        Player.spawn();
+        Player.Spawn();
         PlayerController.fillHotbar(Player);
 
         ShowText("Respawning");
@@ -1501,7 +1502,8 @@ public partial class BetaSharp :
 
     public void Navigate(UIScreen? newScreen)
     {
-        Mouse.ClearEvents();
+        Mouse.Flush();
+        Keyboard.Flush();
         Controller.ClearEvents();
         CurrentScreen?.Uninit();
 
@@ -1516,13 +1518,16 @@ public partial class BetaSharp :
         }
 
         StatFileWriter.SyncStats();
-        if (newScreen == null && World == null)
+        if (newScreen == null)
         {
-            newScreen = CreateMainMenuScreen();
-        }
-        else if (newScreen == null && Player.Health <= 0)
-        {
-            newScreen = new GameOverScreen(UIContext, (int)Player.getScore(), Player.respawn, canRespawn: Session != null, exitToTitle: () => ChangeWorld(null!));
+            if (World == null)
+            {
+                newScreen = CreateMainMenuScreen();
+            }
+            else if (Player.Health <= 0)
+            {
+                newScreen = new GameOverScreen(UIContext, Player.getScore(), Player.Respawn, canRespawn: Session != null, exitToTitle: () => ChangeWorld(null!));
+            }
         }
 
         if (newScreen is MainMenuScreen)
@@ -1569,7 +1574,7 @@ public partial class BetaSharp :
                 if (IsMultiplayerWorld()) World.Disconnect();
                 StopInternalServer();
                 ChangeWorld(null);
-            }, () => World?.AttemptSaving(saveStep++) ?? false));
+            }, () => World?.AttemptSaving(saveStep++) ?? false, TexturePackList));
         }
     }
 
@@ -1773,11 +1778,11 @@ public partial class BetaSharp :
 
     private void LoadScreen()
     {
-        ScaledResolution var1 = new(Options, DisplayWidth, DisplayHeight);
+        ScaledResolution scaledResolution = new(Options, DisplayWidth, DisplayHeight);
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
         GLManager.GL.MatrixMode(GLEnum.Projection);
         GLManager.GL.LoadIdentity();
-        GLManager.GL.Ortho(0.0D, var1.ScaledWidth, var1.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
+        GLManager.GL.Ortho(0.0D, scaledResolution.ScaledWidth, scaledResolution.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
         GLManager.GL.MatrixMode(GLEnum.Modelview);
         GLManager.GL.LoadIdentity();
         GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
@@ -1796,11 +1801,11 @@ public partial class BetaSharp :
         tessellator.addVertexWithUV((double)DisplayWidth, 0.0D, 0.0D, 0.0D, 0.0D);
         tessellator.addVertexWithUV(0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         tessellator.draw();
-        short var3 = 256;
-        short var4 = 256;
+        short logoWidth = 256;
+        short logoHeight = 256;
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         tessellator.setColorOpaque_I(0xFFFFFF);
-        DrawTextureRegion((var1.ScaledWidth - var3) / 2, (var1.ScaledHeight - var4) / 2, 0, 0, var3, var4);
+        DrawTextureRegion((scaledResolution.ScaledWidth - logoWidth) / 2, (scaledResolution.ScaledHeight - logoHeight) / 2, 0, 0, logoWidth, logoHeight);
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.Fog);
         GLManager.GL.Enable(GLEnum.AlphaTest);

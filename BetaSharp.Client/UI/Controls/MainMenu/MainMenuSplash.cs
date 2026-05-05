@@ -15,6 +15,8 @@ public class MainMenuSplash : UIElement
 
     private string _splashText = "missingno";
 
+    public override bool DoTextMeasuring => true;
+
     public MainMenuSplash()
     {
         LoadSplashText();

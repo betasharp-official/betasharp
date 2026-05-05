@@ -71,7 +71,7 @@ public class ItemStack
         bool item = getItem().useOnBlock(this, entityPlayer, world, x, y, z, meta);
         if (item)
         {
-            entityPlayer.increaseStat(Stats.Stats.Used[ItemId], 1);
+            entityPlayer.IncreaseStat(Stats.Stats.Used[ItemId], 1);
         }
 
         return item;
@@ -181,7 +181,7 @@ public class ItemStack
         _damage += damageAmount;
         if (UpdateBroken())
         {
-            player.increaseStat(Stats.Stats.Broken[ItemId], 1);
+            player.IncreaseStat(Stats.Stats.Broken[ItemId], 1);
         }
     }
 
@@ -203,7 +203,7 @@ public class ItemStack
         bool hit = Item.ITEMS[ItemId].postHit(this, entityLiving, entityPlayer);
         if (hit)
         {
-            entityPlayer.increaseStat(Stats.Stats.Used[ItemId], 1);
+            entityPlayer.IncreaseStat(Stats.Stats.Used[ItemId], 1);
         }
 
     }
@@ -213,7 +213,7 @@ public class ItemStack
         bool mined = Item.ITEMS[ItemId].postMine(this, blockId, x, y, z, entityPlayer);
         if (mined)
         {
-            entityPlayer.increaseStat(Stats.Stats.Used[ItemId], 1);
+            entityPlayer.IncreaseStat(Stats.Stats.Used[ItemId], 1);
         }
 
     }
@@ -284,7 +284,7 @@ public class ItemStack
 
     public void onCraft(IWorldContext world, EntityPlayer entityPlayer)
     {
-        entityPlayer.increaseStat(Stats.Stats.Crafted[ItemId], Count);
+        entityPlayer.IncreaseStat(Stats.Stats.Crafted[ItemId], Count);
         Item.ITEMS[ItemId].onCraft(this, world, entityPlayer);
     }
 

@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls;
@@ -14,6 +15,14 @@ public abstract class BaseOptionsScreen(
     protected readonly UIScreen? Parent = parent;
     protected GameOptions Options => Context.Options;
     protected string TitleText = TranslationStorage.Instance.TranslateKey(titleKey);
+
+    protected const int ButtonSize = 150;
+    protected const int ButtonPadding = 4;
+    protected const int TwoButtonSize = ButtonSize * 2 + ButtonPadding * 2;
+    protected const int ScrollContentSize = ButtonSize * 2 + ButtonPadding * 4;
+    protected const int ScrollSize = ScrollContentSize + 10;
+
+    protected virtual int MaxWidth { get; } = 200;
 
     protected override void Init()
     {
@@ -34,9 +43,9 @@ public abstract class BaseOptionsScreen(
         AddTitleSpacer();
 
         ScrollView scroll = new();
-        scroll.Style.Width = 340;
+        scroll.Style.Width = ScrollSize;
         scroll.Style.FlexGrow = 1;
-        scroll.Style.MaxHeight = 200;
+        scroll.Style.MaxHeight = MaxWidth;
         scroll.Style.MarginBottom = 10;
 
         UIElement content = CreateContent();
@@ -52,27 +61,34 @@ public abstract class BaseOptionsScreen(
 
     protected virtual UIElement CreateContent()
     {
-        Panel list = CreateVerticalList();
+        Panel root = new();
+        root.Style.FlexDirection = FlexDirection.Column;
+        root.Style.AlignItems = Align.Center;
+        root.Style.Width = ScrollContentSize;
 
-        foreach (GameOption option in GetOptions())
+        var options = GetOptions();
+        bool first = true;
+        foreach (OptionSection section in options)
         {
-            UIElement control = CreateControlForOption(option);
-            control.Style.MarginTop = 2;
-            control.Style.MarginBottom = 2;
-            control.Style.Width = 310;
-            list.AddChild(control);
+            if (section.Name is not null) root.AddChild(CreateSectionHeader(section.Name, first));
+
+            Panel grid = CreateTwoColumnList();
+            foreach (GameOption option in section.Options)
+            {
+                UIElement control = CreateControlForOption(option);
+                control.Style.Width = ButtonSize;
+                control.Style.MarginTop = 2;
+                control.Style.MarginBottom = 2;
+                control.Style.MarginLeft = ButtonPadding;
+                control.Style.MarginRight = ButtonPadding;
+                grid.AddChild(control);
+            }
+            root.AddChild(grid);
+
+            first = false;
         }
 
-        return list;
-    }
-
-    protected static Panel CreateVerticalList()
-    {
-        Panel list = new();
-        list.Style.FlexDirection = FlexDirection.Column;
-        list.Style.AlignItems = Align.Center;
-        list.Style.Width = 330;
-        return list;
+        return root;
     }
 
     protected static Panel CreateTwoColumnList()
@@ -80,18 +96,18 @@ public abstract class BaseOptionsScreen(
         Panel list = new();
         list.Style.FlexDirection = FlexDirection.Row;
         list.Style.FlexWrap = Wrap.Wrap;
-        list.Style.JustifyContent = Justify.Center;
-        list.Style.Width = 330;
+        list.Style.JustifyContent = Justify.FlexStart;
+        list.Style.Width = ScrollContentSize;
         return list;
     }
 
-    protected static UIElement CreateSectionHeader(string text)
+    protected static UIElement CreateSectionHeader(string text, bool first)
     {
         Panel header = new();
         header.Style.FlexDirection = FlexDirection.Row;
         header.Style.AlignItems = Align.Center;
-        header.Style.Width = 330;
-        header.Style.MarginTop = 10;
+        header.Style.Width = ScrollContentSize;
+        header.Style.MarginTop = first ? 0 : 10;
         header.Style.MarginBottom = 4;
         header.IsHitTestVisible = false;
 
@@ -123,7 +139,25 @@ public abstract class BaseOptionsScreen(
         return header;
     }
 
-    protected abstract IEnumerable<GameOption> GetOptions();
+    protected struct OptionSection
+    {
+        public string? Name;
+        public IEnumerable<GameOption> Options;
+
+        public OptionSection(string name, IEnumerable<GameOption> options)
+        {
+            Name = name;
+            Options = options;
+        }
+
+        public OptionSection(IEnumerable<GameOption> options)
+        {
+            Name = null;
+            Options = options;
+        }
+    }
+
+    protected abstract List<OptionSection> GetOptions();
 
     protected virtual void OnDone()
     {

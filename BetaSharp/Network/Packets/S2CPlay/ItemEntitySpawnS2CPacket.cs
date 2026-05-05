@@ -1,4 +1,3 @@
-using System.Net.Sockets;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 
@@ -21,9 +20,9 @@ public class ItemEntitySpawnS2CPacket() : Packet(PacketId.ItemEntitySpawnS2C)
     {
         var p = Get<ItemEntitySpawnS2CPacket>(PacketId.ItemEntitySpawnS2C);
         p.id = item.ID;
-        p.itemRawId = item.stack.ItemId;
-        p.itemCount = item.stack.Count;
-        p.itemDamage = item.stack.getDamage();
+        p.itemRawId = item.Stack.ItemId;
+        p.itemCount = item.Stack.Count;
+        p.itemDamage = item.Stack.getDamage();
         p.x = MathHelper.Floor(item.X * 32.0D);
         p.y = MathHelper.Floor(item.Y * 32.0D);
         p.z = MathHelper.Floor(item.Z * 32.0D);

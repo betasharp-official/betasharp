@@ -170,9 +170,9 @@ public class BlockLeaves : BlockLeavesBase
 
     public override void onAfterBreak(OnAfterBreakEvent ctx)
     {
-        if (!ctx.World.IsRemote && ctx.Player.getHand() != null && ctx.Player.getHand().ItemId == Item.Shears.id)
+        if (!ctx.World.IsRemote && ctx.Player.GetHand() != null && ctx.Player.GetHand().ItemId == Item.Shears.id)
         {
-            ctx.Player.increaseStat(Stats.Stats.MineBlockStatArray[id], 1);
+            ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[id], 1);
             dropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(Leaves.id, 1, ctx.Meta & 3));
         }
         else

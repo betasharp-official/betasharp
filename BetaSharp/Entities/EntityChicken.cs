@@ -1,100 +1,82 @@
 using BetaSharp.Items;
-using BetaSharp.NBT;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
 public class EntityChicken : EntityAnimal
 {
-    public override EntityType Type => EntityRegistry.Chicken;
-    public bool jockey = false;
-    public float flapProgress;
-    public float destPos;
-    public float prevDestPos;
-    public float prevFlapProgress;
-    public float flapSpeed = 1.0F;
-    public int timeUntilNextEgg;
+    private float _flapSpeed = 1.0F;
+    private int _timeUntilNextEgg;
+    public float DestPos;
+    public float FlapProgress;
+    public bool Jockey = false;
+    public float PrevDestPos;
+    public float PrevFlapProgress;
 
     public EntityChicken(IWorldContext world) : base(world)
     {
         Texture = "/mob/chicken.png";
         SetBoundingBoxSpacing(0.3F, 0.4F);
         Health = 4;
-        timeUntilNextEgg = Random.NextInt(6000) + 6000;
+        _timeUntilNextEgg = Random.NextInt(6000) + 6000;
     }
 
-    public override void tickMovement()
+    public override EntityType Type => EntityRegistry.Chicken;
+
+    protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
+
+    protected override void TickMovement()
     {
-        base.tickMovement();
+        base.TickMovement();
         if (World.IsRemote)
         {
-            OnGround = System.Math.Abs(Y - PrevY) < 0.02D;
-        }
-        prevFlapProgress = flapProgress;
-        prevDestPos = destPos;
-        destPos = (float)((double)destPos + (double)(OnGround ? -1 : 4) * 0.3D);
-        if (destPos < 0.0F)
-        {
-            destPos = 0.0F;
+            OnGround = Math.Abs(Y - PrevY) < 0.02D;
         }
 
-        if (destPos > 1.0F)
+        PrevFlapProgress = FlapProgress;
+        PrevDestPos = DestPos;
+        DestPos = (float)(DestPos + (OnGround ? -1 : 4) * 0.3D);
+        if (DestPos < 0.0F)
         {
-            destPos = 1.0F;
+            DestPos = 0.0F;
         }
 
-        if (!OnGround && flapSpeed < 1.0F)
+        if (DestPos > 1.0F)
         {
-            flapSpeed = 1.0F;
+            DestPos = 1.0F;
         }
 
-        flapSpeed = (float)((double)flapSpeed * 0.9D);
+        if (!OnGround && _flapSpeed < 1.0F)
+        {
+            _flapSpeed = 1.0F;
+        }
+
+        _flapSpeed = (float)(_flapSpeed * 0.9D);
         if (!OnGround && VelocityY < 0.0D)
         {
             VelocityY *= 0.6D;
         }
 
-        flapProgress += flapSpeed * 2.0F;
-        if (!World.IsRemote && --timeUntilNextEgg <= 0)
+        FlapProgress += _flapSpeed * 2.0F;
+        if (World.IsRemote || --_timeUntilNextEgg > 0)
         {
-            World.Broadcaster.PlaySoundAtEntity(this, "mob.chickenplop", 1.0F, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
-            DropItem(Item.Egg.id, 1);
-            timeUntilNextEgg = Random.NextInt(6000) + 6000;
+            return;
         }
 
+        World.Broadcaster.PlaySoundAtEntity(this, "mob.chickenplop", 1.0F, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
+        DropItem(Item.Egg.id, 1);
+        _timeUntilNextEgg = Random.NextInt(6000) + 6000;
     }
 
     protected override void OnLanding(float fallDistance)
     {
     }
 
-    public override void WriteNbt(NBTTagCompound nbt)
-    {
-        base.WriteNbt(nbt);
-    }
+    protected override string? LivingSound => "mob.chicken";
 
-    public override void ReadNbt(NBTTagCompound nbt)
-    {
-        base.ReadNbt(nbt);
-    }
+    protected override string? HurtSound => "mob.chickenhurt";
 
-    protected override string getLivingSound()
-    {
-        return "mob.chicken";
-    }
+    protected override string? DeathSound => "mob.chickenhurt";
 
-    protected override string getHurtSound()
-    {
-        return "mob.chickenhurt";
-    }
-
-    protected override string getDeathSound()
-    {
-        return "mob.chickenhurt";
-    }
-
-    protected override int getDropItemId()
-    {
-        return Item.Feather.id;
-    }
+    protected override int DropItemId => Item.Feather.id;
 }

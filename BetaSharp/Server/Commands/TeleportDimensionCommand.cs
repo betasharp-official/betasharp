@@ -44,14 +44,14 @@ public class TeleportDimensionCommand : Command.Command
             return 0;
         }
 
-        if (player.dimensionId == dim)
+        if (player.DimensionId == dim)
         {
             context.Source.Output.SendMessage("Player is already in dimension " + dim);
             return 0;
         }
 
         context.Source.Server.playerManager.sendPlayerToDimension(player, dim);
-        context.Source.Output.SendMessage("Teleported " + player.name + " to dimension " + dim);
+        context.Source.Output.SendMessage("Teleported " + player.Name + " to dimension " + dim);
         return 1;
     }
 }

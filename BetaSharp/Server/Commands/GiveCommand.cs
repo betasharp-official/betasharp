@@ -1,6 +1,5 @@
 using BetaSharp.Entities;
 using BetaSharp.Items;
-using BetaSharp.Server.Command;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
@@ -14,17 +13,17 @@ public class GiveCommand : Command.Command
 
     public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
         argBuilder
-            .Then(ArgumentString("item")
+            .Then(ArgumentItem("item")
                 .Executes(GiveItem)
                 .Then(ArgumentInt("count")
                     .Executes(GiveItemCount)))
             .Then(ArgumentPlayer("player")
-                .Then(ArgumentString("item")
+                .Then(ArgumentItem("item")
                     .Executes(GivePlayerItem)
                     .Then(ArgumentInt("count")
                         .Executes(GivePlayerItemCount))));
 
-    // give <item>  →  give 1 of item to self
+    // give <item> -> give 1 of item to self
     private static int GiveItem(CommandContext<CommandSource> context)
     {
         string item = context.GetArgument<string>("item");
@@ -76,16 +75,15 @@ public class GiveCommand : Command.Command
 
     private static void GiveTo(CommandSource source, ServerPlayerEntity target, string item, int count)
     {
-        if (!ItemLookup.TryResolveItemId(item, out int itemId))
+        if (!ItemLookup.TryGetItem(item, out ItemStack? stack, count))
         {
             source.Output.SendMessage("Unknown item: " + item);
             return;
         }
 
-        ItemStack stack = new(itemId, count, 0);
-        target.inventory.AddItemStackToInventoryOrDrop(stack);
-        string msg = $"Gave {count} [{ItemLookup.ResolveItemName(stack)}] to {target.name}";
-        source.LogOp($"{target.name} {msg}");
+        target.Inventory.AddItemStackToInventoryOrDrop(stack);
+        string msg = $"Gave {count} [{ItemLookup.ResolveItemName(stack)}] to {target.Name}";
+        source.LogOp($"{target.Name} {msg}");
         source.Output.SendMessage(msg);
     }
 }

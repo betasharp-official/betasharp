@@ -8,11 +8,11 @@ internal class ItemSword : Item
 
     private int weaponDamage;
 
-    public ItemSword(int id, EnumToolMaterial enumToolMaterial) : base(id)
+    public ItemSword(int id, ToolMaterial toolMaterial) : base(id)
     {
         maxCount = 1;
-        setMaxDamage(enumToolMaterial.getMaxUses());
-        weaponDamage = 4 + enumToolMaterial.getDamageVsEntity() * 2;
+        setMaxDamage(toolMaterial.getMaxUses());
+        weaponDamage = 4 + toolMaterial.getDamageVsEntity() * 2;
     }
 
     public override float getMiningSpeedMultiplier(ItemStack itemStack, Block block)

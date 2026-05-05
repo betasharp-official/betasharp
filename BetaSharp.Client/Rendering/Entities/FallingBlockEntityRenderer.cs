@@ -4,7 +4,6 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Rendering.Entities;
@@ -16,15 +15,15 @@ public class FallingBlockEntityRenderer : EntityRenderer
         ShadowRadius = 0.5F;
     }
 
-    public void doRenderFallingSand(EntityFallingSand var1, double var2, double var4, double var6, float var8, float var9)
+    public void doRenderFallingSand(EntityFallingSand fallingBlockEntity, double x, double y, double z, float yaw, float tickDelta)
     {
         GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)var2, (float)var4, (float)var6);
+        GLManager.GL.Translate((float)x, (float)y, (float)z);
         loadTexture("/terrain.png");
-        Block var10 = Block.Blocks[var1.blockId];
-        IWorldContext var11 = var1.World;
+        Block block = Block.Blocks[fallingBlockEntity.BlockId];
+        IWorldContext world = fallingBlockEntity.World;
         GLManager.GL.Disable(GLEnum.Lighting);
-        BlockRenderer.RenderBlockFallingSand(var10, var11, MathHelper.Floor(var1.X), MathHelper.Floor(var1.Y), MathHelper.Floor(var1.Z), Tessellator.instance);
+        BlockRenderer.RenderBlockFallingSand(block, world, MathHelper.Floor(fallingBlockEntity.X), MathHelper.Floor(fallingBlockEntity.Y), MathHelper.Floor(fallingBlockEntity.Z), Tessellator.instance);
         GLManager.GL.Enable(GLEnum.Lighting);
         GLManager.GL.PopMatrix();
     }

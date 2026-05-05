@@ -68,14 +68,10 @@ public sealed class WorldWriter : IBlockWriter
 
     public bool SetBlockInternal(int x, int y, int z, int id, int meta = 0)
     {
-        if (x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000 && y >= 0)
-        {
-            var chunk = _host.GetChunk(x >> 4, z >> 4);
-            if (y >= ChuckFormat.WorldHeight) return false;
-            return chunk.SetBlock(x & 15, y, z & 15, id, meta);
-        }
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= ChuckFormat.WorldHeight) return false;
 
-        return false;
+        var chunk = _host.GetChunk(x >> 4, z >> 4);
+        return chunk.SetBlock(x & 15, y, z & 15, id, meta);
     }
 
     /// <summary>
@@ -103,16 +99,12 @@ public sealed class WorldWriter : IBlockWriter
 
     public bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, int meta, bool notifyBlockPlaced)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0)
-        {
-            return false;
-        }
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= ChuckFormat.WorldHeight) return false;
 
         int chunkX = x >> 4;
         int chunkZ = z >> 4;
 
         var chunk = _host.GetChunk(chunkX, chunkZ);
-        if (y >= ChuckFormat.WorldHeight) return false;
         bool changed = chunk.SetBlock(x & 15, y, z & 15, blockId, meta, notifyBlockPlaced);
 
         if (!changed || chunk.World is not ServerWorld serverWorld || serverWorld.IsRemote) return changed;
@@ -129,13 +121,12 @@ public sealed class WorldWriter : IBlockWriter
 
     public bool SetBlockWithoutNotifyingNeighbors(int x, int y, int z, int blockId, bool notifyBlockPlaced)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0) return false;
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= ChuckFormat.WorldHeight) return false;
 
         int chunkX = x >> 4;
         int chunkZ = z >> 4;
 
         var chunk = _host.GetChunk(chunkX, chunkZ);
-        if (y >= ChuckFormat.WorldHeight) return false;
         bool changed = chunk.SetBlock(x & 15, y, z & 15, blockId, notifyBlockPlaced);
 
         if (!changed || chunk.World is not ServerWorld serverWorld || serverWorld.IsRemote) return changed;
@@ -151,10 +142,9 @@ public sealed class WorldWriter : IBlockWriter
 
     public bool SetBlockMetaWithoutNotifyingNeighbors(int x, int y, int z, int meta)
     {
-        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0) return false;
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= ChuckFormat.WorldHeight) return false;
 
         var chunk = _host.GetChunk(x >> 4, z >> 4);
-        if (y >= ChuckFormat.WorldHeight) return false;
         chunk.SetBlockMeta(x & 15, y, z & 15, meta);
         return true;
     }

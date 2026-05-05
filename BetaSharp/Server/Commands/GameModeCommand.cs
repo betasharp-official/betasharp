@@ -71,7 +71,7 @@ public class GameModeCommand : Command.Command
     {
         p.GameModeHolder = holder;
         p.NetworkHandler.SendPacket(PlayerGameModeUpdateS2CPacket.Get(holder.Value));
-        string s = $"{p.name} game mode set to {holder.Value.Name}.";
+        string s = $"{p.Name} game mode set to {holder.Value.Name}.";
         s_logger.LogInformation(s);
         c.Output.SendMessage(s);
     }

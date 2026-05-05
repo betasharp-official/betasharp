@@ -68,7 +68,7 @@ public class FluidsRenderer : IBlockRenderer
             float centerV = (texV + 8.0f) / 256.0f;
 
             // If completely still, use standard flat UVs
-            if (flowAngle < -999.0F)
+            if (flowAngle <= -999.0F)
             {
                 flowAngle = 0.0F;
             }

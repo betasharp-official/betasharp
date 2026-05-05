@@ -68,7 +68,7 @@ internal class BlockChest : BlockWithEntity
             if ((BlocksOpaque[blockWest] || BlocksOpaque[corner1]) && !BlocksOpaque[blockEast] && !BlocksOpaque[corner2]) facing = Side.East;
             if ((BlocksOpaque[blockEast] || BlocksOpaque[corner2]) && !BlocksOpaque[blockWest] && !BlocksOpaque[corner1]) facing = Side.West;
 
-            bool isRightHalf = facing == Side.East ? isNorthPartner : !isNorthPartner;
+            bool isRightHalf = facing == Side.East ? !isNorthPartner : isNorthPartner;
 
             return GetDoubleChestTexture(side, facing, isRightHalf);
         }

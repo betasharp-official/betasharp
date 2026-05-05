@@ -68,22 +68,17 @@ public class MainMenuScreen(
         }
         Root.AddChild(btnMultiplayer);
 
-        Button btnMods = CreateButton();
-        btnMods.Text = translator.TranslateKey("menu.mods");
-        btnMods.OnClick += (e) => Context.Navigator.Navigate(new TexturePacksScreen(Context, this, texturePackList));
-        btnMods.Style.MarginBottom = 4;
-        Root.AddChild(btnMods);
-
         // Options and Quit side-by-side
         Panel footerButtons = new();
         footerButtons.Style.FlexDirection = FlexDirection.Row;
         footerButtons.Style.JustifyContent = Justify.SpaceBetween;
         footerButtons.Style.Width = 200;
+        footerButtons.Style.MarginTop = 16;
 
         Button btnOptions = CreateButton();
         btnOptions.Text = translator.TranslateKey("menu.options");
         btnOptions.Style.Width = 98;
-        btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this));
+        btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePackList));
 
         Button btnQuit = CreateButton();
         btnQuit.Text = translator.TranslateKey("menu.quit");
@@ -107,25 +102,15 @@ public class MainMenuScreen(
     private void AddBottomLabels()
     {
         // Version info
-        Label versionLabel = new()
+        Link versionLabel = new()
         {
             Text = "BetaSharp " + BetaSharp.Version,
-            TextColor = Guis.Color.White
+            TextColor = Guis.Color.White,
+            URL = "https://github.com/betasharp-official/betasharp"
         };
         versionLabel.Style.Position = PositionType.Absolute;
         versionLabel.Style.Left = 2;
         versionLabel.Style.Top = 2;
-        versionLabel.OnClick += (e) =>
-        {
-            var ps = new System.Diagnostics.ProcessStartInfo("https://github.com/betasharp-official/betasharp")
-            {
-                UseShellExecute = true,
-                Verb = "open"
-            };
-            System.Diagnostics.Process.Start(ps);
-        };
-        versionLabel.OnMouseEnter += (e) => versionLabel.TextColor = Color.HoverYellow;
-        versionLabel.OnMouseLeave += (e) => versionLabel.TextColor = Color.White;
 
         Root.AddChild(versionLabel);
 

@@ -8,26 +8,26 @@ internal struct PositionTextureVertex
     public float texturePositionX;
     public float texturePositionY;
 
-    public PositionTextureVertex(float var1, float var2, float var3, float var4, float var5) : this(new Vector3D<double>(var1, var2, var3), var4, var5)
+    public PositionTextureVertex(float x, float y, float z, float u, float v) : this(new Vector3D<double>(x, y, z), u, v)
     {
     }
 
-    public readonly PositionTextureVertex setTexturePosition(float var1, float var2)
+    public readonly PositionTextureVertex setTexturePosition(float u, float v)
     {
-        return new PositionTextureVertex(this, var1, var2);
+        return new PositionTextureVertex(this, u, v);
     }
 
-    public PositionTextureVertex(PositionTextureVertex var1, float var2, float var3)
+    public PositionTextureVertex(PositionTextureVertex vertex, float u, float v)
     {
-        vector3D = var1.vector3D;
-        texturePositionX = var2;
-        texturePositionY = var3;
+        vector3D = vertex.vector3D;
+        texturePositionX = u;
+        texturePositionY = v;
     }
 
-    public PositionTextureVertex(Vector3D<double> var1, float var2, float var3)
+    public PositionTextureVertex(Vector3D<double> vector, float u, float v)
     {
-        vector3D = var1;
-        texturePositionX = var2;
-        texturePositionY = var3;
+        vector3D = vector;
+        texturePositionX = u;
+        texturePositionY = v;
     }
 }

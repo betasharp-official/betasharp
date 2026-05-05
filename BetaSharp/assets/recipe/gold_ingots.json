@@ -1,0 +1,13 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "#"
+    ],
+    "key": {
+        "#": "betasharp:GoldBlock"
+    },
+    "result": {
+        "id": "betasharp:GoldIngot",
+        "count": 9
+    }
+}

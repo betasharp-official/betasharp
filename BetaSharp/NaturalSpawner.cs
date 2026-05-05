@@ -98,14 +98,14 @@ internal static class NaturalSpawner
                                 entity.SetPositionAndAnglesKeepPrevAngles(entityPos.x, entityPos.y, entityPos.z,
                                     world.Random.NextFloat() * 360.0F, 0.0F);
 
-                                if (entity.canSpawn())
+                                if (entity.CanSpawn())
                                 {
                                     spawnedCount++;
 
                                     world.Entities.SpawnEntity(entity);
 
                                     entity.PostSpawn();
-                                    if (spawnedCount >= entity.getMaxSpawnedInChunk())
+                                    if (spawnedCount >= entity.MaxSpawnedInChunk)
                                     {
                                         breakToNextChunk = true;
                                     }
@@ -160,7 +160,7 @@ internal static class NaturalSpawner
                     // can be inside stone and collision resolution rockets mobs to the surface.
                     entity.SetPositionAndAnglesKeepPrevAngles(spawnX + 0.5D, newSpawnY, spawnZ + 0.5D,
                         world.Random.NextFloat() * 360.0F, 0.0F);
-                    if (entity.canSpawn())
+                    if (entity.CanSpawn())
                     {
                         var pathEntity = world.Pathing.findPath(entity, player, 32.0F);
                         if (pathEntity != null && pathEntity.PathLength > 1)
@@ -177,8 +177,8 @@ internal static class NaturalSpawner
                                 entity.SetPositionAndAnglesKeepPrevAngles(wakeUpPos.X + 0.5F, wakeUpPos.Y, wakeUpPos.Z + 0.5F, 0.0F, 0.0F);
                                 world.Entities.SpawnEntity(entity);
                                 entity.PostSpawn();
-                                player.wakeUp(true, false, false);
-                                entity.playLivingSound();
+                                player.WakeUp(true, false, false);
+                                entity.PlayLivingSound();
                                 monstersSpawned = true;
                                 break;
                             }

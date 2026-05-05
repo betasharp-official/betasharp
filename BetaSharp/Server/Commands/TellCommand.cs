@@ -21,7 +21,7 @@ public class TellCommand : Command.Command
     {
         ServerPlayerEntity target = context.GetArgument<ServerPlayerEntity>("player");
         string message = context.GetArgument<string>("message");
-        s_logger.LogInformation("[" + context.Source.SenderName + "->" + target.name + "] " + message);
+        s_logger.LogInformation("[" + context.Source.SenderName + "->" + target.Name + "] " + message);
 
         string whisper = "§7" + context.Source.SenderName + " whispers " + message;
         s_logger.LogInformation(whisper);

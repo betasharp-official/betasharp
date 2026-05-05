@@ -42,6 +42,8 @@ public class UIElement
 
     public bool ClipToBounds { get; set; } = false;
 
+    public virtual bool DoTextMeasuring => false;
+
     public struct MeasureContext
     {
         public float AvailableWidth;

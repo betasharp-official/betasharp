@@ -1,0 +1,13 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "# #",
+        "###"
+    ],
+    "key": {
+        "#": "betasharp:Planks"
+    },
+    "result": {
+        "id": "betasharp:Boat"
+    }
+}

@@ -41,7 +41,7 @@ public class HealCommand : Command.Command
         }
 
         int old = player.Health;
-        player.heal(amount);
+        player.Heal(amount);
         context.Source.Output.SendMessage($"Healed for {player.Health - old} health.");
         return 1;
     }
@@ -55,8 +55,8 @@ public class HealCommand : Command.Command
         }
 
         int old = player.Health;
-        player.heal(amount);
-        context.Source.Output.SendMessage($"Healed {player.name} for {player.Health - old} health.");
+        player.Heal(amount);
+        context.Source.Output.SendMessage($"Healed {player.Name} for {player.Health - old} health.");
         return 1;
     }
 }

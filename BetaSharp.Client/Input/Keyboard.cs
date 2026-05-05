@@ -180,7 +180,7 @@ public class Keyboard
 
         foreach (var field in fields)
         {
-            if (field.IsLiteral && !field.IsInitOnly && field.Name.StartsWith("KEY_"))
+            if (field.IsLiteral && !field.IsInitOnly && field.Name.StartsWith("KEY_", StringComparison.Ordinal))
             {
                 int keyCode = (int)field.GetValue(null)!;
                 string keyName = field.Name[4..];
@@ -412,6 +412,12 @@ public class Keyboard
     public static void enableRepeatEvents(bool enable)
     {
         repeat_enabled = enable;
+    }
+
+    public static void Flush()
+    {
+        eventQueue.Clear();
+        charQueue.Clear();
     }
 
     public static bool areRepeatEventsEnabled() => repeat_enabled;

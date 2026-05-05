@@ -58,11 +58,11 @@ public class GameOptions
     public CycleOption GuiScaleOption { get; private set; }
     public CycleOption AnisotropicOption { get; private set; }
     public CycleOption MsaaOption { get; private set; }
-    public BoolOption ShowWTHITOption { get; private set; }
     public BoolOption ShowCoordinatesOption { get; private set; }
+    public BoolOption UICursorsOption { get; private set; }
 
 
-    public GameOption[] MainScreenOptions => [DifficultyOption, FovOption];
+    public GameOption[] MainScreenOptions => [FovOption, DifficultyOption];
     public GameOption[] AudioScreenOptions => [MusicVolumeOption, SoundVolumeOption, MenuMusicOption];
 
     public GameOption[] VideoScreenOptions =>
@@ -70,10 +70,10 @@ public class GameOptions
         RenderDistanceOption, FramerateLimitOption, VSyncOption,
         ViewBobbingOption, AnisotropicOption,
         MipmapsOption, MsaaOption, EnvironmentAnimationOption, ChunkFadeOption,
-        AlternateBlocksOption, ShowWTHITOption
+        AlternateBlocksOption
     ];
 
-    public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption];
+    public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption, UICursorsOption];
 
     public float MusicVolume
     {
@@ -107,11 +107,11 @@ public class GameOptions
     public int AnisotropicLevel => AnisotropicOption.Value;
     public int MSAALevel => MsaaOption.Value;
     public int INITIAL_MSAA;
-    public bool ShowWTHIT => ShowWTHITOption.Value;
     public bool ShowCoordinates => ShowCoordinatesOption.Value;
     public bool UseMipmaps => MipmapsOption.Value;
     public bool EnvironmentAnimation => EnvironmentAnimationOption.Value;
     public bool ChunkFade => ChunkFadeOption.Value;
+    public bool UICursors => UICursorsOption.Value;
     public bool AlternateBlocksEnabled => AlternateBlocksOption.Value;
     public bool MenuMusic => MenuMusicOption.Value;
 
@@ -132,10 +132,19 @@ public class GameOptions
     public KeyBinding[] KeyBindings;
     public ControllerBinding[] ControllerBindings;
 
+    // for keybindings screen
+    public struct KeyBindingGroup(string title, KeyBinding[] bindings)
+    {
+        public string Title { get; set; } = title;
+        public KeyBinding[] Bindings { get; set; } = bindings;
+    }
+
+    public KeyBindingGroup[] KeyBindingGroups;
+
     protected BetaSharp _game;
     private readonly string _optionsPath;
     public bool HideGUI = false;
-    public EnumCameraMode CameraMode = EnumCameraMode.FirstPerson;
+    public CameraMode CameraMode = CameraMode.FirstPerson;
     public bool ShowDebugInfo = false;
     public bool AdvancedItemTooltips = false;
     public string LastServer = "";
@@ -173,6 +182,28 @@ public class GameOptions
             KeyBindChat,
             KeyBindToggleFog,
             KeyBindZoom,
+        ];
+
+        KeyBindingGroups = [
+            new("Movement", [
+                KeyBindForward,
+                KeyBindLeft,
+                KeyBindBack,
+                KeyBindRight,
+                KeyBindJump,
+                KeyBindSneak,
+            ]),
+
+            new("View", [
+                KeyBindInventory,
+                KeyBindChat,
+                KeyBindToggleFog,
+                KeyBindZoom,
+            ]),
+
+            new("Other", [
+                KeyBindDrop
+            ]),
         ];
 
         ControllerBindings =
@@ -251,8 +282,8 @@ public class GameOptions
             Steps = 90,
             Formatter = (v, _) => (30 + (int)(v * 90.0f)).ToString()
         };
-        ShowWTHITOption = new BoolOption("WTHIT Overlay", "wthit");
         ShowCoordinatesOption = new BoolOption("Show Coordinates", "showCoordinates");
+        UICursorsOption = new BoolOption("UI Cursors", "uiCursors", true);
         GammaOption = new FloatOption("Gamma", "gamma", 0.5F)
         {
             LabelOverride = "Gamma",
@@ -353,25 +384,25 @@ public class GameOptions
         yield return GuiScaleOption;
         yield return AnisotropicOption;
         yield return MsaaOption;
-        yield return ShowWTHITOption;
         yield return ShowCoordinatesOption;
+        yield return UICursorsOption;
     }
 
 
-    public string GetKeyBindingDescription(int keyBindingIndex)
+    public string GetKeyBindingDescription(KeyBinding binding)
     {
         TranslationStorage translations = TranslationStorage.Instance;
-        return translations.TranslateKey(KeyBindings[keyBindingIndex].keyDescription);
+        return translations.TranslateKey(binding.keyDescription);
     }
 
-    public string GetOptionDisplayString(int keyBindingIndex)
+    public string GetOptionDisplayString(KeyBinding binding)
     {
-        return Keyboard.getKeyName(KeyBindings[keyBindingIndex].scanCode);
+        return Keyboard.getKeyName(binding.scanCode);
     }
 
-    public void SetKeyBinding(int keyBindingIndex, int keyCode)
+    public void SetKeyBinding(KeyBinding binding, int keyCode)
     {
-        KeyBindings[keyBindingIndex].scanCode = keyCode;
+        binding.scanCode = keyCode;
         SaveOptions();
     }
 
@@ -421,9 +452,9 @@ public class GameOptions
             case "skin": Skin = value; break;
             case "advancedItemTooltips": AdvancedItemTooltips = value == "true"; break;
             case "lastServer": LastServer = value; break;
-            case "cameraMode": CameraMode = (EnumCameraMode)int.Parse(value); break;
+            case "cameraMode": CameraMode = (CameraMode)int.Parse(value); break;
             case "thirdPersonView":
-                CameraMode = value == "true" ? EnumCameraMode.ThirdPerson : EnumCameraMode.FirstPerson;
+                CameraMode = value == "true" ? CameraMode.ThirdPerson : CameraMode.FirstPerson;
                 break;
             default:
                 if (key.StartsWith("controllerButton_"))

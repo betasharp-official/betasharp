@@ -8,7 +8,7 @@ namespace BetaSharp.Blocks.Entities;
 
 public class BlockEntityMobSpawner : BlockEntity
 {
-    public override BlockEntityType Type => BlockEntity.MobSpawner;
+    public override BlockEntityType Type => MobSpawner;
     public int SpawnDelay { get; set; } = -1;
     private string _spawnedEntityId = "Pig";
     public double Rotation { get; set; }
@@ -91,7 +91,7 @@ public class BlockEntityMobSpawner : BlockEntity
                         double posY = Y + World.Random.NextInt(3) - 1;
                         double posZ = Z + (World.Random.NextDouble() - World.Random.NextDouble()) * 4.0D;
                         entityLiving.SetPositionAndAnglesKeepPrevAngles(posX, posY, posZ, World.Random.NextFloat() * 360.0F, 0.0F);
-                        if (entityLiving.canSpawn())
+                        if (entityLiving.CanSpawn())
                         {
                             World.SpawnEntity(entityLiving);
 
@@ -104,7 +104,7 @@ public class BlockEntityMobSpawner : BlockEntity
                                 World.Broadcaster.AddParticle("flame", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                             }
 
-                            entityLiving.animateSpawn();
+                            entityLiving.AnimateSpawn();
                             ResetDelay();
                         }
                     }

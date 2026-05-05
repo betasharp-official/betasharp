@@ -12,7 +12,7 @@ public class PaintingEntityRenderer : EntityRenderer
         RenderPainting((EntityPainting)target, x, y, z, yaw);
     }
 
-    private void RenderPainting(EntityPainting painting, double x, double y, double z, float yaw)
+    private void RenderPainting(EntityPainting paintingEntity, double x, double y, double z, float yaw)
     {
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate((float)x, (float)y, (float)z);
@@ -21,17 +21,17 @@ public class PaintingEntityRenderer : EntityRenderer
 
         loadTexture("/art/kz.png");
 
-        EnumArt art = painting.Art;
+        Painting art = paintingEntity.Art;
         float pixelScale = 1.0F / 16.0F;
         GLManager.GL.Scale(pixelScale, pixelScale, pixelScale);
 
-        RenderPaintingQuads(painting, art.SizeX, art.SizeY, art.OffsetX, art.OffsetY);
+        RenderPaintingQuads(paintingEntity, art.SizeX, art.SizeY, art.OffsetX, art.OffsetY);
 
         GLManager.GL.Disable(GLEnum.RescaleNormal);
         GLManager.GL.PopMatrix();
     }
 
-    private void RenderPaintingQuads(EntityPainting painting, int width, int height, int textureX, int textureY)
+    private void RenderPaintingQuads(EntityPainting paintingEntity, int width, int height, int textureX, int textureY)
     {
         float leftBound = -width / 2.0F;
         float bottomBound = -height / 2.0F;
@@ -47,7 +47,7 @@ public class PaintingEntityRenderer : EntityRenderer
                 float yMax = bottomBound + (tileY + 1) * 16;
                 float yMin = bottomBound + tileY * 16;
 
-                UpdateLighting(painting, (xMax + xMin) / 2.0F, (yMax + yMin) / 2.0F);
+                UpdateLighting(paintingEntity, (xMax + xMin) / 2.0F, (yMax + yMin) / 2.0F);
 
                 float uMax = (textureX + width - tileX * 16) / 256.0F;
                 float uMin = (textureX + width - (tileX + 1) * 16) / 256.0F;
@@ -106,19 +106,19 @@ public class PaintingEntityRenderer : EntityRenderer
         }
     }
 
-    private void UpdateLighting(EntityPainting painting, float offsetX, float offsetY)
+    private void UpdateLighting(EntityPainting paintingEntity, float offsetX, float offsetY)
     {
-        int checkX = MathHelper.Floor(painting.X);
-        int checkY = MathHelper.Floor(painting.Y + (offsetY / 16.0F));
-        int checkZ = MathHelper.Floor(painting.Z);
+        int checkX = MathHelper.Floor(paintingEntity.X);
+        int checkY = MathHelper.Floor(paintingEntity.Y + (offsetY / 16.0F));
+        int checkZ = MathHelper.Floor(paintingEntity.Z);
 
         // Offset the light check based on orientation to ensure we aren't sampling inside the wall
-        switch (painting.Direction)
+        switch (paintingEntity.Direction)
         {
-            case 0: checkX = MathHelper.Floor(painting.X + (offsetX / 16.0F)); break;
-            case 1: checkZ = MathHelper.Floor(painting.Z - (offsetX / 16.0F)); break;
-            case 2: checkX = MathHelper.Floor(painting.X - (offsetX / 16.0F)); break;
-            case 3: checkZ = MathHelper.Floor(painting.Z + (offsetX / 16.0F)); break;
+            case 0: checkX = MathHelper.Floor(paintingEntity.X + (offsetX / 16.0F)); break;
+            case 1: checkZ = MathHelper.Floor(paintingEntity.Z - (offsetX / 16.0F)); break;
+            case 2: checkX = MathHelper.Floor(paintingEntity.X - (offsetX / 16.0F)); break;
+            case 3: checkZ = MathHelper.Floor(paintingEntity.Z + (offsetX / 16.0F)); break;
         }
 
         float light = Dispatcher.World.GetLuminance(checkX, checkY, checkZ);

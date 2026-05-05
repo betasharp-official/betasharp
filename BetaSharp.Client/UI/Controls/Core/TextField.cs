@@ -19,6 +19,8 @@ public partial class TextField : UIElement
 
     public string Placeholder { get; set; } = "";
 
+    public override bool DoTextMeasuring => true;
+    
     public int MaxLength
     {
         get => _buffer.MaxLength;

@@ -1,0 +1,13 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "#"
+    ],
+    "key": {
+        "#": "betasharp:Log"
+    },
+    "result": {
+        "id": "betasharp:Planks",
+        "count": 4
+    }
+}

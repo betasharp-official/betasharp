@@ -12,28 +12,34 @@ public class ControllerControlsScreen : BaseOptionsScreen
         TitleText = "Controller Settings";
     }
 
-    protected override IEnumerable<GameOption> GetOptions() => [];
+    protected override List<OptionSection> GetOptions() => [];
 
     protected override UIElement CreateContent()
     {
-        Panel list = CreateVerticalList();
+        Panel list = CreateTwoColumnList();
 
         // Sensitivity
         UIElement sens = CreateControlForOption(Options.ControllerSensitivityOption);
-        sens.Style.Width = 310;
+        sens.Style.Width = ButtonSize;
+        sens.Style.MarginLeft = ButtonPadding;
+        sens.Style.MarginRight = ButtonPadding;
         sens.Style.MarginBottom = 4;
         list.AddChild(sens);
 
         // Controller Type
         UIElement type = CreateControlForOption(Options.ControllerTypeOption);
-        type.Style.Width = 310;
-        type.Style.MarginBottom = 10;
+        type.Style.Width = ButtonSize;
+        type.Style.MarginLeft = ButtonPadding;
+        type.Style.MarginRight = ButtonPadding;
+        type.Style.MarginBottom = 4;
         list.AddChild(type);
 
         // Edit Bindings Button
         Button btnBindings = CreateButton();
         btnBindings.Text = "Edit Bindings...";
-        btnBindings.Style.Width = 310;
+        btnBindings.Style.Width = ButtonSize;
+        btnBindings.Style.MarginLeft = ButtonPadding;
+        btnBindings.Style.MarginRight = ButtonPadding;
         btnBindings.Style.MarginBottom = 4;
         btnBindings.OnClick += (e) =>
         {
@@ -43,8 +49,11 @@ public class ControllerControlsScreen : BaseOptionsScreen
 
         // Reset Button
         Button btnReset = CreateButton();
-        btnReset.Text = "Reset Bindings";
-        btnReset.Style.Width = 310;
+        btnReset.Style.Width = ButtonSize;
+        btnReset.Style.MarginLeft = ButtonPadding;
+        btnReset.Style.MarginRight = ButtonPadding;
+        btnReset.Style.MarginBottom = 4;
+        btnReset.Text = "Reset Bindings...";
         btnReset.OnClick += (e) =>
         {
             foreach (ControllerBinding cb in Options.ControllerBindings)

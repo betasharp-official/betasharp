@@ -1,0 +1,15 @@
+{
+    "type": "shaped",
+    "pattern": [
+        "###",
+        "XXX",
+        "###"
+    ],
+    "key": {
+        "#": "betasharp:Planks",
+        "X": "betasharp:Book"
+    },
+    "result": {
+        "id": "betasharp:Bookshelf"
+    }
+}

@@ -10,6 +10,11 @@ public static class Mouse
     private static Glfw s_glfw;
     private static unsafe WindowHandle* s_window;
 
+    private static unsafe Cursor* s_normalCursor;
+    private static unsafe Cursor* s_clickCursor;
+    private static unsafe Cursor* s_textCursor;
+    private static unsafe Cursor* s_disabledCursor;
+
     private static readonly bool[] s_buttons = new bool[8];
     private static int s_x, s_y;
     private static int s_dx, s_dy, s_dwheel;
@@ -49,6 +54,11 @@ public static class Mouse
         s_glfw.GetCursorPos(s_window, out double initX, out double initY);
         s_x = s_last_event_raw_x = (int)initX;
         s_y = s_last_event_raw_y = (int)initY;
+
+        s_normalCursor = s_glfw.CreateStandardCursor(CursorShape.Arrow);
+        s_clickCursor = s_glfw.CreateStandardCursor(CursorShape.Hand);
+        s_textCursor = s_glfw.CreateStandardCursor(CursorShape.IBeam);
+        s_disabledCursor = s_glfw.CreateStandardCursor(CursorShape.NotAllowed);
 
         s_created = true;
     }
@@ -260,14 +270,19 @@ public static class Mouse
 
     public static bool isCreated() => s_created;
 
-    public static void destroy()
+    public unsafe static void destroy()
     {
         if (!s_created) return;
         s_created = false;
         s_eventQueue.Clear();
+
+        s_glfw.DestroyCursor(s_normalCursor);
+        s_glfw.DestroyCursor(s_clickCursor);
+        s_glfw.DestroyCursor(s_textCursor);
+        s_glfw.DestroyCursor(s_disabledCursor);
     }
 
-    public static void ClearEvents()
+    public static void Flush()
     {
         if (!s_created) return;
         s_eventQueue.Clear();
@@ -282,6 +297,25 @@ public static class Mouse
     private static long GetNanos()
     {
         return DateTime.UtcNow.Ticks * 100; // Convert to nanoseconds
+    }
+
+    public unsafe static void SetNormalCursor() {
+        s_glfw.SetCursor(s_window, s_normalCursor);
+    }
+
+    public unsafe static void SetClickCursor()
+    {
+        s_glfw.SetCursor(s_window, s_clickCursor);
+    }
+
+    public unsafe static void SetTextCursor()
+    {
+        s_glfw.SetCursor(s_window, s_textCursor);
+    }
+
+    public unsafe static void SetDisabledCursor()
+    {
+        s_glfw.SetCursor(s_window, s_disabledCursor);
     }
 
     private struct MouseEvent

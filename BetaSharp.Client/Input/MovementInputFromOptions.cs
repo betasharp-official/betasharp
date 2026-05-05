@@ -14,56 +14,56 @@ public class MovementInputFromOptions : MovementInput
         _gameSettings = options;
     }
 
-    public override void checkKeyForMovementInput(int var1, bool var2)
+    public override void checkKeyForMovementInput(int scanCode, bool isPressed)
     {
-        int var3 = -1;
-        if (var1 == _gameSettings.KeyBindForward.scanCode)
+        int movementIndex = -1;
+        if (scanCode == _gameSettings.KeyBindForward.scanCode)
         {
-            var3 = 0;
+            movementIndex = 0;
         }
 
-        if (var1 == _gameSettings.KeyBindBack.scanCode)
+        if (scanCode == _gameSettings.KeyBindBack.scanCode)
         {
-            var3 = 1;
+            movementIndex = 1;
         }
 
-        if (var1 == _gameSettings.KeyBindLeft.scanCode)
+        if (scanCode == _gameSettings.KeyBindLeft.scanCode)
         {
-            var3 = 2;
+            movementIndex = 2;
         }
 
-        if (var1 == _gameSettings.KeyBindRight.scanCode)
+        if (scanCode == _gameSettings.KeyBindRight.scanCode)
         {
-            var3 = 3;
+            movementIndex = 3;
         }
 
-        if (var1 == _gameSettings.KeyBindJump.scanCode)
+        if (scanCode == _gameSettings.KeyBindJump.scanCode)
         {
-            var3 = 4;
+            movementIndex = 4;
         }
 
-        if (var1 == _gameSettings.KeyBindSneak.scanCode)
+        if (scanCode == _gameSettings.KeyBindSneak.scanCode)
         {
-            var3 = 5;
+            movementIndex = 5;
         }
 
-        if (var3 >= 0)
+        if (movementIndex >= 0)
         {
-            _movementKeyStates[var3] = var2;
+            _movementKeyStates[movementIndex] = isPressed;
         }
 
     }
 
     public override void resetKeyState()
     {
-        for (int var1 = 0; var1 < 10; ++var1)
+        for (int keyIndex = 0; keyIndex < 10; ++keyIndex)
         {
-            _movementKeyStates[var1] = false;
+            _movementKeyStates[keyIndex] = false;
         }
         ControllerManager.SneakToggle = false;
     }
 
-    public override void updatePlayerMoveState(EntityPlayer var1)
+    public override void updatePlayerMoveState(EntityPlayer player)
     {
         moveStrafe = 0.0F;
         moveForward = 0.0F;
