@@ -8,6 +8,7 @@ namespace BetaSharp;
 internal static class ItemLookup
 {
     private static readonly Dictionary<string, int> s_itemNameToId = [];
+    private static readonly Dictionary<string, (int id, int meta)> s_alias = [];
     private static bool s_lookupTablesBuilt;
 
     public static void Initialize() => BuildItemLookupTables();
@@ -30,8 +31,16 @@ internal static class ItemLookup
     }
 
     // TODO: respect namespace in item ID lookup.
-    internal static bool TryGetItemId(Namespace @namespace, string input, out int itemId) =>
-        TryGetItemId(input, out itemId, true);
+    internal static bool TryGetItemId(Namespace @namespace, string input, out int itemId)
+    {
+        if (s_alias.TryGetValue(input, out (int id, int meta) alias))
+        {
+            itemId = alias.id;
+            return true;
+        }
+
+        return TryGetItemId(input, out itemId, true);
+    }
 
     private static bool TryGetItemId(string input, out int itemId, bool haveNamespace)
     {
@@ -69,7 +78,7 @@ internal static class ItemLookup
             {
                 if (haveNamespace)
                 {
-                    throw new Exception("Inavlid item meta. Expected number found \"" + damageStr + "\"");
+                    throw new Exception("Invalid item meta. Expected number found \"" + damageStr + "\"");
                 }
 
                 // damageStr is the item name.
@@ -78,7 +87,13 @@ internal static class ItemLookup
             }
         }
 
-        if (!TryGetItemId(name, out int id))
+        if (s_alias.TryGetValue(name, out (int id, int meta) alias))
+        {
+            itemId = new ItemStack(alias.id, itemCount, alias.meta);
+            return true;
+        }
+
+        if (!TryGetItemId(name, out int id, haveNamespace))
         {
             itemId = null;
             return false;
@@ -127,6 +142,7 @@ internal static class ItemLookup
             if (field.GetValue(null) is Item item)
             {
                 s_itemNameToId.TryAdd(field.Name.ToLower(), item.id);
+                BuildItemLookupAlias(item);
             }
         }
 
@@ -137,6 +153,39 @@ internal static class ItemLookup
             if (field.GetValue(null) is Block block)
             {
                 s_itemNameToId.TryAdd(field.Name.ToLower(), block.id);
+                BuildItemLookupAlias(block);
+            }
+        }
+    }
+
+    private static void BuildItemLookupAlias(Item item)
+    {
+        foreach (string alias in item.GetItemAlias)
+        {
+            string s = alias.ToLower();
+            int i = s.LastIndexOf(':');
+            if (i == -1) s_itemNameToId.TryAdd(s, item.id);
+            else
+            {
+                int meta = int.Parse(s.Substring(i + 1, s.Length - i - 1));
+                if (meta == 0) s_itemNameToId.TryAdd(s.Substring(0, i), item.id);
+                else s_alias.TryAdd(s.Substring(0, i), (item.id, meta));
+            }
+        }
+    }
+
+    private static void BuildItemLookupAlias(Block block)
+    {
+        foreach (string alias in block.GetBlockAlias)
+        {
+            string s = alias.ToLower();
+            int i = s.LastIndexOf(':');
+            if (i == -1) s_itemNameToId.TryAdd(s, block.id);
+            else
+            {
+                int meta = int.Parse(s.Substring(i + 1, s.Length - i - 1));
+                if (meta == 0) s_itemNameToId.TryAdd(s.Substring(0, i), block.id);
+                else s_alias.TryAdd(s.Substring(0, i), (block.id, meta));
             }
         }
     }

@@ -57,4 +57,6 @@ internal class ItemDoor : Item
         itemStack.ConsumeItem(entityPlayer);
         return true;
     }
+
+    public override IReadOnlyList<string> GetItemAlias => doorMaterial == Material.Wood ? ["door", "woodDoor"] : [];
 }
