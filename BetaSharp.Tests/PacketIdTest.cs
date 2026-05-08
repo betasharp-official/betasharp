@@ -50,17 +50,35 @@ public class PacketIdTest
         foreach (MethodInfo method in methods)
         {
             object?[] args = method.GetParameters()
-                .Select(p => p.HasDefaultValue
-                    ? p.DefaultValue
-                    : (p.ParameterType.IsValueType
-                        ? Activator.CreateInstance(p.ParameterType)
-                        : p.ParameterType == typeof(string)
-                            ? ""
-                            : p.ParameterType.IsArray
-                                ? Array.CreateInstance(p.ParameterType.GetElementType()!, 0)
-                                : p.IsOptional || Nullable.GetUnderlyingType(p.ParameterType) != null
-                                    ? null
-                                    : throw new SkipException($"one or more parameters dont have default value. ({p.ParameterType})")))
+                .Select(p =>
+                {
+                    if (p.HasDefaultValue)
+                    {
+                        return p.DefaultValue;
+                    }
+
+                    if (p.ParameterType.IsValueType)
+                    {
+                        return Activator.CreateInstance(p.ParameterType);
+                    }
+
+                    if (p.ParameterType == typeof(string))
+                    {
+                        return "";
+                    }
+
+                    if (p.ParameterType.IsArray)
+                    {
+                        return Array.CreateInstance(p.ParameterType.GetElementType()!, 0);
+                    }
+
+                    if (p.IsOptional || Nullable.GetUnderlyingType(p.ParameterType) != null)
+                    {
+                        return null;
+                    }
+
+                    throw new SkipException($"one or more parameters dont have default value. ({p.ParameterType})");
+                })
                 .ToArray();
 
             object? packet = method.Invoke(null, args);
