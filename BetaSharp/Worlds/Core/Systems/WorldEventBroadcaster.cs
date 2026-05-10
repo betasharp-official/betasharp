@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
+using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Rules;
 using BetaSharp.Util.Maths;
 
@@ -122,6 +123,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
         }
     }
 
+    public void EntityEvent(Entity entity, EntityStatusS2CPacket.EntityState @event) => EntityEvent(entity, (byte)@event);
     public virtual void EntityEvent(Entity entity, byte @event)
     {
         for (int i = 0; i < eventListeners.Count; ++i)

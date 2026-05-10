@@ -145,4 +145,32 @@ internal class ItemDye : Item
         }
 
     }
+
+    public override IReadOnlyList<string> GetItemAlias => [
+        "blackDye:0",
+        "redDye:1",
+        "greenDye:2",
+        "brownDye:3",
+        "blueDye:4",
+        "purpleDye:5",
+        "cyanDye:6",
+        "silverDye:7",
+        "grayDye:8",
+        "pinkDye:9",
+        "limeDye:10",
+        "yellowDye:11",
+        "lightBlueDye:12",
+        "magentaDye:13",
+        "orangeDye:14",
+        "whiteDye:15",
+
+        "inkSac:0",
+        "roseRed:1",
+        "cactusGreen:2",
+        "lapisLazuli:4",
+        "lapis:4",
+        "lightGrayDye:7",
+        "dendelionYellow:11",
+        "boneMeal:15",
+    ];
 }

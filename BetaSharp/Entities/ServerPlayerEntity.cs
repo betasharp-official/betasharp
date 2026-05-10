@@ -491,8 +491,8 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         if (GameMode is { CanWalk: false, DisallowFlying: true })
         {
-            SidewaysSpeed = packet.getSideways();
-            ForwardSpeed = packet.getForward();
+            SidewaysSpeed = packet.Sideways;
+            ForwardSpeed = packet.Forward;
         }
         else
         {
@@ -500,10 +500,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             ForwardSpeed = 0;
         }
 
-        Jumping = packet.isJumping();
-        SetSneaking(packet.isSneaking());
-        Pitch = packet.getPitch();
-        Yaw = packet.getYaw();
+        Jumping = packet.Jumping;
+        SetSneaking(packet.Sneaking);
+        Pitch = packet.Pitch;
+        Yaw = packet.Yaw;
     }
 
 

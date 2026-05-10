@@ -59,6 +59,7 @@ public class GameOptions
     public CycleOption MsaaOption { get; private set; }
     public BoolOption ShowCoordinatesOption { get; private set; }
     public StringOption LanguageOption { get; private set; }
+    public BoolOption UICursorsOption { get; private set; }
 
 
     public GameOption[] MainScreenOptions => [FovOption, DifficultyOption];
@@ -72,7 +73,7 @@ public class GameOptions
         AlternateBlocksOption
     ];
 
-    public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption];
+    public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption, UICursorsOption];
 
 
     public float MusicVolume
@@ -121,6 +122,7 @@ public class GameOptions
     public bool UseMipmaps => MipmapsOption.Value;
     public bool EnvironmentAnimation => EnvironmentAnimationOption.Value;
     public bool ChunkFade => ChunkFadeOption.Value;
+    public bool UICursors => UICursorsOption.Value;
     public bool AlternateBlocksEnabled => AlternateBlocksOption.Value;
     public bool MenuMusic => MenuMusicOption.Value;
 
@@ -301,6 +303,7 @@ public class GameOptions
             Formatter = (v, _) => (30 + (int)(v * 90.0f)).ToString()
         };
         ShowCoordinatesOption = new BoolOption("Show Coordinates", "showCoordinates");
+        UICursorsOption = new BoolOption("UI Cursors", "uiCursors", true);
         GammaOption = new FloatOption("Gamma", "gamma", 0.5F)
         {
             LabelOverride = "Gamma",
@@ -404,6 +407,7 @@ public class GameOptions
         yield return AnisotropicOption;
         yield return MsaaOption;
         yield return ShowCoordinatesOption;
+        yield return UICursorsOption;
         yield return LanguageOption;
     }
 

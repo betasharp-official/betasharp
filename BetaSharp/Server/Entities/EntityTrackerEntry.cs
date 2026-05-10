@@ -115,21 +115,24 @@ internal class EntityTrackerEntry
                 currentTrackedEntity.Z = posZ / 32.0;
                 positionPacket = EntityPositionS2CPacket.Get(currentTrackedEntity.ID, posX, posY, posZ, (byte)rotYaw, (byte)rotPitch);
             }
-            else if (currentTrackedEntity is EntityArrow && (hasMoved || hasRotated)) // Special case for arrows to handle water and bounce physics more accurately
+            else if (hasMoved || hasRotated)
             {
-                positionPacket = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.ID, (byte)deltaX, (byte)deltaY, (byte)deltaZ, (byte)rotYaw, (byte)rotPitch);
-            }
-            else if (hasMoved && hasRotated)
-            {
-                positionPacket = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.ID, (byte)deltaX, (byte)deltaY, (byte)deltaZ, (byte)rotYaw, (byte)rotPitch);
-            }
-            else if (hasMoved)
-            {
-                positionPacket = EntityMoveRelativeS2CPacket.Get(currentTrackedEntity.ID, (byte)deltaX, (byte)deltaY, (byte)deltaZ);
-            }
-            else if (hasRotated)
-            {
-                positionPacket = EntityRotateS2CPacket.Get(currentTrackedEntity.ID, (byte)rotYaw, (byte)rotPitch);
+                if (currentTrackedEntity is EntityArrow) // Special case for arrows to handle water and bounce physics more accurately
+                {
+                    positionPacket = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.ID, (byte)deltaX, (byte)deltaY, (byte)deltaZ, (byte)rotYaw, (byte)rotPitch);
+                }
+                else if (hasMoved && hasRotated)
+                {
+                    positionPacket = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.ID, (byte)deltaX, (byte)deltaY, (byte)deltaZ, (byte)rotYaw, (byte)rotPitch);
+                }
+                else if (hasMoved)
+                {
+                    positionPacket = EntityMoveRelativeS2CPacket.Get(currentTrackedEntity.ID, (byte)deltaX, (byte)deltaY, (byte)deltaZ);
+                }
+                else
+                {
+                    positionPacket = EntityRotateS2CPacket.Get(currentTrackedEntity.ID, (byte)rotYaw, (byte)rotPitch);
+                }
             }
 
             if (positionPacket != null)
@@ -282,9 +285,9 @@ internal class EntityTrackerEntry
         if (currentTrackedEntity is EntityItem item)
         {
             var spawnPacket = ItemEntitySpawnS2CPacket.Get(item);
-            item.X = spawnPacket.x / 32.0;
-            item.Y = spawnPacket.y / 32.0;
-            item.Z = spawnPacket.z / 32.0;
+            item.X = spawnPacket.X / 32.0;
+            item.Y = spawnPacket.Y / 32.0;
+            item.Z = spawnPacket.Z / 32.0;
             return spawnPacket;
         }
         else if (currentTrackedEntity is ServerPlayerEntity p)
@@ -335,9 +338,9 @@ internal class EntityTrackerEntry
             else if (currentTrackedEntity is EntityFireball fireball)
             {
                 var packet = EntitySpawnS2CPacket.Get(fireball, 63, fireball.Owner.ID);
-                packet.velocityX = (int)(fireball.PowerX * 8000.0);
-                packet.velocityY = (int)(fireball.PowerY * 8000.0);
-                packet.velocityZ = (int)(fireball.PowerZ * 8000.0);
+                packet.VelocityX = (int)(fireball.PowerX * 8000.0);
+                packet.VelocityY = (int)(fireball.PowerY * 8000.0);
+                packet.VelocityZ = (int)(fireball.PowerZ * 8000.0);
 
                 return packet;
             }

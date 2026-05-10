@@ -1,41 +1,46 @@
-using System.Net.Sockets;
-
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-internal class EntityMoveRelativeS2CPacket() : EntityS2CPacket(PacketId.EntityMoveRelativeS2C)
+internal interface IEntityMoveRelativePacket : IPacketEntity
 {
+    sbyte DeltaX { get; }
+    sbyte DeltaY { get; }
+    sbyte DeltaZ { get; }
+}
+
+public class EntityMoveRelativeS2CPacket() : Packet(PacketId.EntityMoveRelativeS2C), IEntityMoveRelativePacket
+{
+    public int EntityId { get; private set; }
+    public sbyte DeltaX { get; private set; }
+    public sbyte DeltaY { get; private set; }
+    public sbyte DeltaZ { get; private set; }
 
     public static EntityMoveRelativeS2CPacket Get(int entityId, byte deltaX, byte deltaY, byte deltaZ)
     {
-        var p = Get<EntityMoveRelativeS2CPacket>(PacketId.EntityMoveRelativeS2C);
+        EntityMoveRelativeS2CPacket p = Get<EntityMoveRelativeS2CPacket>(PacketId.EntityMoveRelativeS2C);
         p.EntityId = entityId;
-        p.deltaX = (sbyte)deltaX;
-        p.deltaY = (sbyte)deltaY;
-        p.deltaZ = (sbyte)deltaZ;
-        p.yaw = 0;
-        p.pitch = 0;
-        p.rotate = false;
+        p.DeltaX = (sbyte)deltaX;
+        p.DeltaY = (sbyte)deltaY;
+        p.DeltaZ = (sbyte)deltaZ;
         return p;
     }
 
     public override void Read(Stream stream)
     {
-        base.Read(stream);
-        deltaX = (sbyte)stream.ReadByte();
-        deltaY = (sbyte)stream.ReadByte();
-        deltaZ = (sbyte)stream.ReadByte();
+        EntityId = stream.ReadInt();
+        DeltaX = (sbyte)stream.ReadByte();
+        DeltaY = (sbyte)stream.ReadByte();
+        DeltaZ = (sbyte)stream.ReadByte();
     }
 
     public override void Write(Stream stream)
     {
-        base.Write(stream);
-        stream.WriteByte((byte)deltaX);
-        stream.WriteByte((byte)deltaY);
-        stream.WriteByte((byte)deltaZ);
+        stream.WriteInt(EntityId);
+        stream.WriteByte((byte)DeltaX);
+        stream.WriteByte((byte)DeltaY);
+        stream.WriteByte((byte)DeltaZ);
     }
 
-    public override int Size()
-    {
-        return 7;
-    }
+    public override void Apply(NetHandler handler) => handler.onEntity(this);
+
+    public override int Size() => 7;
 }

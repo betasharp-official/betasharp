@@ -1,5 +1,3 @@
-using System.Net.Sockets;
-
 namespace BetaSharp.Network.Packets.S2CPlay;
 
 /// <summary>
@@ -8,6 +6,7 @@ namespace BetaSharp.Network.Packets.S2CPlay;
 /// </summary>
 public class FinishConfigurationS2CPacket() : ExtendedProtocolPacket(PacketId.FinishConfigurationS2C)
 {
+    public static FinishConfigurationS2CPacket Get() => Get<FinishConfigurationS2CPacket>(PacketId.FinishConfigurationS2C);
     public override void Read(Stream stream) { }
     public override void Write(Stream stream) { }
     public override void Apply(NetHandler handler) => handler.onFinishConfiguration(this);

@@ -39,10 +39,6 @@ internal class ServerWorldEventListener : IWorldEventListener
     public void WorldEvent(EntityPlayer? player, int @event, int x, int y, int z, int data)
     {
         server.playerManager.sendToAround(player, x, y, z, 64.0, world.Dimension.Id, WorldEventS2CPacket.Get(@event, x, y, z, data));
-        if (player is ServerPlayerEntity serverPlayer && serverPlayer.DimensionId == world.Dimension.Id)
-        {
-            serverPlayer.NetworkHandler.SendPacket(WorldEventS2CPacket.Get(@event, x, y, z, data));
-        }
     }
 
     public void BroadcastEntityEvent(Entity entity, byte @event)

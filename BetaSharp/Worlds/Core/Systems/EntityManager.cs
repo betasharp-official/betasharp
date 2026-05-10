@@ -603,17 +603,11 @@ public class EntityManager
         int collisionCount = 0;
         int maxCollisions = _world.Rules.GetInt(DefaultRules.MaxCollisions);
 
-        for (int i = 0; i < _tempCollisionEntities.Count; ++i)
+        foreach (var other in _tempCollisionEntities)
         {
-            Entity other = _tempCollisionEntities[i];
             if (other.Dead)
             {
                 continue;
-            }
-
-            if (collisionCount >= maxCollisions)
-            {
-                break;
             }
 
             Box? entityBox = other.GetBoundingBox();
@@ -629,9 +623,63 @@ public class EntityManager
                 collidingBoundingBoxes.Add(entityBox.Value);
                 collisionCount++;
             }
+
+            if (collisionCount >= maxCollisions)
+            {
+                break;
+            }
         }
 
         return collidingBoundingBoxes;
+    }
+
+    internal double GetMaxYEntityCollision(Entity entity, Box area)
+    {
+        const double expansion = 0.25D;
+        _tempCollisionEntities ??= new List<Entity>();
+        _tempCollisionEntities.Clear();
+
+        GetEntities(entity, area.Expand(expansion, expansion, expansion), _tempCollisionEntities);
+
+        int collisionCount = 0;
+        int maxCollisions = _world.Rules.GetInt(DefaultRules.MaxCollisions);
+
+        double maxY = 0.0D;
+
+        foreach (var other in _tempCollisionEntities)
+        {
+            if (other.Dead)
+            {
+                continue;
+            }
+
+            Box? entityBox = other.GetBoundingBox();
+            if (entityBox != null && entityBox.Value.Intersects(area))
+            {
+                if (entityBox.Value.MaxY > maxY)
+                {
+                    maxY = entityBox.Value.MaxY;
+                }
+                collisionCount++;
+            }
+
+            entityBox = entity.GetCollisionAgainstShape(other);
+            if (entityBox != null && entityBox.Value.Intersects(area))
+            {
+                if (entityBox.Value.MaxY > maxY)
+                {
+                    maxY = entityBox.Value.MaxY;
+                }
+                collisionCount++;
+            }
+
+            if (collisionCount >= maxCollisions)
+            {
+                break;
+            }
+        }
+
+        return maxY;
     }
 
     public List<Entity> GetEntities(Entity? excludeEntity, Box area) => GetEntities(excludeEntity, area, new List<Entity>());

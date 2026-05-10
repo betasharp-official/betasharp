@@ -1,40 +1,33 @@
-using System.Net.Sockets;
 using BetaSharp.Entities;
 
 namespace BetaSharp.Network.Packets.C2SPlay;
 
-public class ClientCommandC2SPacket() : Packet(PacketId.ClientCommandC2S)
+public class ClientCommandC2SPacket() : Packet(PacketId.ClientCommandC2S), IPacketEntity
 {
-    public int entityId;
-    public int mode;
+    public int Mode { get; private set; }
+    public int EntityId { get; private set; }
 
     public static ClientCommandC2SPacket Get(Entity ent, int mode)
     {
-        var p = Get<ClientCommandC2SPacket>(PacketId.ClientCommandC2S);
-        p.entityId = ent.ID;
-        p.mode = mode;
+        ClientCommandC2SPacket p = Get<ClientCommandC2SPacket>(PacketId.ClientCommandC2S);
+        p.EntityId = ent.ID;
+        p.Mode = mode;
         return p;
     }
 
     public override void Read(Stream stream)
     {
-        entityId = stream.ReadInt();
-        mode = (sbyte)stream.ReadByte();
+        EntityId = stream.ReadInt();
+        Mode = (sbyte)stream.ReadByte();
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteInt(entityId);
-        stream.WriteByte((byte)mode);
+        stream.WriteInt(EntityId);
+        stream.WriteByte((byte)Mode);
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.handleClientCommand(this);
-    }
+    public override void Apply(NetHandler handler) => handler.handleClientCommand(this);
 
-    public override int Size()
-    {
-        return 5;
-    }
+    public override int Size() => 5;
 }

@@ -76,11 +76,11 @@ public class ServerLoginNetworkHandler : NetHandler
         if (server.onlineMode)
         {
             serverId = random.NextLong().ToString("x");
-            connection.sendPacket(new HandshakePacket(serverId));
+            connection.sendPacket(HandshakePacket.Get(serverId));
         }
         else
         {
-            connection.sendPacket(new HandshakePacket("-"));
+            connection.sendPacket(HandshakePacket.Get("-"));
         }
     }
 
@@ -88,17 +88,17 @@ public class ServerLoginNetworkHandler : NetHandler
     {
         if (server is InternalServer)
         {
-            packet.username = "player";
+            packet.Username = "player";
         }
-        if (packet.worldSeed == LoginHelloPacket.BETASHARP_CLIENT_SIGNATURE)
+        if (packet.WorldSeed == LoginHelloPacket.BETASHARP_CLIENT_SIGNATURE)
         {
             connection.betaSharpClient = true;
         }
 
-        username = packet.username;
-        if (packet.protocolVersion != 14)
+        username = packet.Username;
+        if (packet.ProtocolVersion != 14)
         {
-            if (packet.protocolVersion > 14)
+            if (packet.ProtocolVersion > 14)
             {
                 disconnect("Outdated server!");
             }
@@ -126,7 +126,7 @@ public class ServerLoginNetworkHandler : NetHandler
     {
         try
         {
-            PlayerNameValidator.Validate(packet.username);
+            PlayerNameValidator.Validate(packet.Username);
         }
         catch (InvalidPlayerNameException ex)
         {
@@ -135,7 +135,7 @@ public class ServerLoginNetworkHandler : NetHandler
             return;
         }
 
-        ServerPlayerEntity? ent = server.playerManager.connectPlayer(this, packet.username);
+        ServerPlayerEntity? ent = server.playerManager.connectPlayer(this, packet.Username);
         if (ent != null)
         {
             server.playerManager.loadPlayerData(ent);
@@ -145,7 +145,7 @@ public class ServerLoginNetworkHandler : NetHandler
             ServerWorld playerWorld = server.getWorld(ent.DimensionId);
             Vec3i spawnPos = playerWorld.Properties.GetSpawnPos();
             ServerPlayNetworkHandler handler = new ServerPlayNetworkHandler(server, connection, ent);
-            handler.SendPacket(new LoginHelloPacket("", ent.ID, playerWorld.Seed, (sbyte)playerWorld.Dimension.Id));
+            handler.SendPacket(LoginHelloPacket.Get("", ent.ID, playerWorld.Seed, (sbyte)playerWorld.Dimension.Id));
             server.SendConfigurationTo(handler.SendPacket);
             handler.SendPacket(PlayerGameModeUpdateS2CPacket.Get(ent.GameMode));
             handler.SendPacket(PlayerSpawnPositionS2CPacket.Get(spawnPos.X, spawnPos.Y, spawnPos.Z));
