@@ -1,27 +1,26 @@
-using System.Net.Sockets;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class GlobalEntitySpawnS2CPacket() : Packet(PacketId.GlobalEntitySpawnS2C)
+public class GlobalEntitySpawnS2CPacket() : Packet(PacketId.GlobalEntitySpawnS2C), IPacketEntity
 {
-    public int id;
-    public int x;
-    public int y;
-    public int z;
-    public byte type;
+    public byte Type { get; private set; }
+    public int X { get; private set; }
+    public int Y { get; private set; }
+    public int Z { get; private set; }
+    public int EntityId { get; private set; }
 
     public static GlobalEntitySpawnS2CPacket Get(Entity ent)
     {
-        var p = Get<GlobalEntitySpawnS2CPacket>(PacketId.GlobalEntitySpawnS2C);
-        p.id = ent.ID;
-        p.x = MathHelper.Floor(ent.X * 32.0D);
-        p.y = MathHelper.Floor(ent.Y * 32.0D);
-        p.z = MathHelper.Floor(ent.Z * 32.0D);
+        GlobalEntitySpawnS2CPacket p = Get<GlobalEntitySpawnS2CPacket>(PacketId.GlobalEntitySpawnS2C);
+        p.EntityId = ent.ID;
+        p.X = MathHelper.Floor(ent.X * 32.0D);
+        p.Y = MathHelper.Floor(ent.Y * 32.0D);
+        p.Z = MathHelper.Floor(ent.Z * 32.0D);
         if (ent is EntityLightningBolt)
         {
-            p.type = 1;
+            p.Type = 1;
         }
 
         return p;
@@ -29,29 +28,23 @@ public class GlobalEntitySpawnS2CPacket() : Packet(PacketId.GlobalEntitySpawnS2C
 
     public override void Read(Stream stream)
     {
-        id = stream.ReadInt();
-        type = (byte)stream.ReadByte();
-        x = stream.ReadInt();
-        y = stream.ReadInt();
-        z = stream.ReadInt();
+        EntityId = stream.ReadInt();
+        Type = (byte)stream.ReadByte();
+        X = stream.ReadInt();
+        Y = stream.ReadInt();
+        Z = stream.ReadInt();
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteInt(id);
-        stream.WriteByte(type);
-        stream.WriteInt(x);
-        stream.WriteInt(y);
-        stream.WriteInt(z);
+        stream.WriteInt(EntityId);
+        stream.WriteByte(Type);
+        stream.WriteInt(X);
+        stream.WriteInt(Y);
+        stream.WriteInt(Z);
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.onLightningEntitySpawn(this);
-    }
+    public override void Apply(NetHandler handler) => handler.onLightningEntitySpawn(this);
 
-    public override int Size()
-    {
-        return 17;
-    }
+    public override int Size() => 17;
 }

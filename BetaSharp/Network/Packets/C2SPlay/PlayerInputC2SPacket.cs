@@ -1,73 +1,35 @@
-using System.Net.Sockets;
-
 namespace BetaSharp.Network.Packets.C2SPlay;
 
 public class PlayerInputC2SPacket() : Packet(PacketId.PlayerInputC2S)
 {
-    private float sideways;
-    private float forward;
-    private bool jumping;
-    private bool sneaking;
-    private float pitch;
-    private float yaw;
+    public float Forward { get; private set; }
+    public bool Jumping { get; private set; }
+    public float Pitch { get; private set; }
+    public float Sideways { get; private set; }
+    public bool Sneaking { get; private set; }
+    public float Yaw { get; private set; }
 
     public override void Read(Stream stream)
     {
-        sideways = stream.ReadFloat();
-        forward = stream.ReadFloat();
-        pitch = stream.ReadFloat();
-        yaw = stream.ReadFloat();
-        jumping = stream.ReadBoolean();
-        sneaking = stream.ReadBoolean();
+        Sideways = stream.ReadFloat();
+        Forward = stream.ReadFloat();
+        Pitch = stream.ReadFloat();
+        Yaw = stream.ReadFloat();
+        Jumping = stream.ReadBoolean();
+        Sneaking = stream.ReadBoolean();
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteFloat(sideways);
-        stream.WriteFloat(forward);
-        stream.WriteFloat(pitch);
-        stream.WriteFloat(yaw);
-        stream.WriteBoolean(jumping);
-        stream.WriteBoolean(sneaking);
+        stream.WriteFloat(Sideways);
+        stream.WriteFloat(Forward);
+        stream.WriteFloat(Pitch);
+        stream.WriteFloat(Yaw);
+        stream.WriteBoolean(Jumping);
+        stream.WriteBoolean(Sneaking);
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.onPlayerInput(this);
-    }
+    public override void Apply(NetHandler handler) => handler.onPlayerInput(this);
 
-    public override int Size()
-    {
-        return 18;
-    }
-
-    public float getSideways()
-    {
-        return sideways;
-    }
-
-    public float getPitch()
-    {
-        return pitch;
-    }
-
-    public float getForward()
-    {
-        return forward;
-    }
-
-    public float getYaw()
-    {
-        return yaw;
-    }
-
-    public bool isJumping()
-    {
-        return jumping;
-    }
-
-    public bool isSneaking()
-    {
-        return sneaking;
-    }
+    public override int Size() => 18;
 }

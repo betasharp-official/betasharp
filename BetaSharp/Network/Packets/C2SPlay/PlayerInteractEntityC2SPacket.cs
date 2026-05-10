@@ -1,43 +1,35 @@
-using System.Net.Sockets;
-
 namespace BetaSharp.Network.Packets.C2SPlay;
 
-public class PlayerInteractEntityC2SPacket() : Packet(PacketId.PlayerInteractEntityC2S)
+public class PlayerInteractEntityC2SPacket() : Packet(PacketId.PlayerInteractEntityC2S), IPacketEntity
 {
-    public int playerId;
-    public int entityId;
-    public int isLeftClick;
+    private int _playerId;
+    public int IsLeftClick { get; private set; }
+    public int EntityId { get; private set; }
 
     public static PlayerInteractEntityC2SPacket Get(int playerId, int entityId, int isLeftClick)
     {
-        var p = Get<PlayerInteractEntityC2SPacket>(PacketId.PlayerInteractEntityC2S);
-        p.playerId = playerId;
-        p.entityId = entityId;
-        p.isLeftClick = isLeftClick;
+        PlayerInteractEntityC2SPacket p = Get<PlayerInteractEntityC2SPacket>(PacketId.PlayerInteractEntityC2S);
+        p._playerId = playerId;
+        p.EntityId = entityId;
+        p.IsLeftClick = isLeftClick;
         return p;
     }
 
     public override void Read(Stream stream)
     {
-        playerId = stream.ReadInt();
-        entityId = stream.ReadInt();
-        isLeftClick = (sbyte)stream.ReadByte();
+        _playerId = stream.ReadInt();
+        EntityId = stream.ReadInt();
+        IsLeftClick = (sbyte)stream.ReadByte();
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteInt(playerId);
-        stream.WriteInt(entityId);
-        stream.WriteByte((byte)isLeftClick);
+        stream.WriteInt(_playerId);
+        stream.WriteInt(EntityId);
+        stream.WriteByte((byte)IsLeftClick);
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.handleInteractEntity(this);
-    }
+    public override void Apply(NetHandler handler) => handler.handleInteractEntity(this);
 
-    public override int Size()
-    {
-        return 9;
-    }
+    public override int Size() => 9;
 }

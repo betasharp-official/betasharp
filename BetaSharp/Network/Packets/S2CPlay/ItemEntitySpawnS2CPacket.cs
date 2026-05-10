@@ -3,70 +3,64 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class ItemEntitySpawnS2CPacket() : Packet(PacketId.ItemEntitySpawnS2C)
+public class ItemEntitySpawnS2CPacket() : Packet(PacketId.ItemEntitySpawnS2C), IPacketEntity
 {
-    public int id;
-    public int x;
-    public int y;
-    public int z;
-    public sbyte velocityX;
-    public sbyte velocityY;
-    public sbyte velocityZ;
-    public int itemRawId;
-    public int itemCount;
-    public int itemDamage;
+    public int ItemCount { get; private set; }
+    public int ItemDamage { get; private set; }
+    public int ItemRawId { get; private set; }
+    public sbyte VelocityX { get; private set; }
+    public sbyte VelocityY { get; private set; }
+    public sbyte VelocityZ { get; private set; }
+    public int X { get; private set; }
+    public int Y { get; private set; }
+    public int Z { get; private set; }
+    public int EntityId { get; private set; }
 
     public static ItemEntitySpawnS2CPacket Get(EntityItem item)
     {
-        var p = Get<ItemEntitySpawnS2CPacket>(PacketId.ItemEntitySpawnS2C);
-        p.id = item.ID;
-        p.itemRawId = item.Stack.ItemId;
-        p.itemCount = item.Stack.Count;
-        p.itemDamage = item.Stack.getDamage();
-        p.x = MathHelper.Floor(item.X * 32.0D);
-        p.y = MathHelper.Floor(item.Y * 32.0D);
-        p.z = MathHelper.Floor(item.Z * 32.0D);
-        p.velocityX = (sbyte)(int)(item.VelocityX * 128.0D);
-        p.velocityY = (sbyte)(int)(item.VelocityY * 128.0D);
-        p.velocityZ = (sbyte)(int)(item.VelocityZ * 128.0D);
+        ItemEntitySpawnS2CPacket p = Get<ItemEntitySpawnS2CPacket>(PacketId.ItemEntitySpawnS2C);
+        p.EntityId = item.ID;
+        p.ItemRawId = item.Stack.ItemId;
+        p.ItemCount = item.Stack.Count;
+        p.ItemDamage = item.Stack.getDamage();
+        p.X = MathHelper.Floor(item.X * 32.0D);
+        p.Y = MathHelper.Floor(item.Y * 32.0D);
+        p.Z = MathHelper.Floor(item.Z * 32.0D);
+        p.VelocityX = (sbyte)(int)(item.VelocityX * 128.0D);
+        p.VelocityY = (sbyte)(int)(item.VelocityY * 128.0D);
+        p.VelocityZ = (sbyte)(int)(item.VelocityZ * 128.0D);
         return p;
     }
 
     public override void Read(Stream stream)
     {
-        id = stream.ReadInt();
-        itemRawId = stream.ReadShort();
-        itemCount = (sbyte)stream.ReadByte();
-        itemDamage = stream.ReadShort();
-        x = stream.ReadInt();
-        y = stream.ReadInt();
-        z = stream.ReadInt();
-        velocityX = (sbyte)stream.ReadByte();
-        velocityY = (sbyte)stream.ReadByte();
-        velocityZ = (sbyte)stream.ReadByte();
+        EntityId = stream.ReadInt();
+        ItemRawId = stream.ReadShort();
+        ItemCount = (sbyte)stream.ReadByte();
+        ItemDamage = stream.ReadShort();
+        X = stream.ReadInt();
+        Y = stream.ReadInt();
+        Z = stream.ReadInt();
+        VelocityX = (sbyte)stream.ReadByte();
+        VelocityY = (sbyte)stream.ReadByte();
+        VelocityZ = (sbyte)stream.ReadByte();
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteInt(id);
-        stream.WriteShort((short)itemRawId);
-        stream.WriteByte((byte)itemCount);
-        stream.WriteShort((short)itemDamage);
-        stream.WriteInt(x);
-        stream.WriteInt(y);
-        stream.WriteInt(z);
-        stream.WriteByte((byte)velocityX);
-        stream.WriteByte((byte)velocityY);
-        stream.WriteByte((byte)velocityZ);
+        stream.WriteInt(EntityId);
+        stream.WriteShort((short)ItemRawId);
+        stream.WriteByte((byte)ItemCount);
+        stream.WriteShort((short)ItemDamage);
+        stream.WriteInt(X);
+        stream.WriteInt(Y);
+        stream.WriteInt(Z);
+        stream.WriteByte((byte)VelocityX);
+        stream.WriteByte((byte)VelocityY);
+        stream.WriteByte((byte)VelocityZ);
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.onItemEntitySpawn(this);
-    }
+    public override void Apply(NetHandler handler) => handler.onItemEntitySpawn(this);
 
-    public override int Size()
-    {
-        return 24;
-    }
+    public override int Size() => 24;
 }

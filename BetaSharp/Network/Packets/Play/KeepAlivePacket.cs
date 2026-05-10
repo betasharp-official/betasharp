@@ -1,11 +1,8 @@
-using System.Net.Sockets;
-
 namespace BetaSharp.Network.Packets.Play;
 
 public class KeepAlivePacket() : Packet(PacketId.KeepAlive)
 {
-
-    public static new Packet Get() => Get(PacketId.KeepAlive);
+    public static KeepAlivePacket Get() => Get<KeepAlivePacket>(PacketId.KeepAlive);
 
     public override void Apply(NetHandler handler) { }
 
@@ -13,8 +10,5 @@ public class KeepAlivePacket() : Packet(PacketId.KeepAlive)
 
     public override void Write(Stream stream) { }
 
-    public override int Size()
-    {
-        return 0;
-    }
+    public override int Size() => 0;
 }

@@ -1,73 +1,64 @@
-using System.Net.Sockets;
 using BetaSharp.Items;
 
 namespace BetaSharp.Network.Packets.C2SPlay;
 
 public class PlayerInteractBlockC2SPacket() : Packet(PacketId.PlayerInteractBlockC2S)
 {
-    public int x;
-    public int y;
-    public int z;
-    public int side;
-    public ItemStack stack;
+    public int Side { get; set; }
+    public ItemStack Stack { get; set; }
+    public int X { get; set; }
+    public int Y { get; set; }
+    public int Z { get; set; }
 
     public static PlayerInteractBlockC2SPacket Get(int x, int y, int z, int side, ItemStack stack)
     {
-        var p = Get<PlayerInteractBlockC2SPacket>(PacketId.PlayerInteractBlockC2S);
-        p.x = x;
-        p.y = y;
-        p.z = z;
-        p.side = side;
-        p.stack = stack;
+        PlayerInteractBlockC2SPacket p = Get<PlayerInteractBlockC2SPacket>(PacketId.PlayerInteractBlockC2S);
+        p.X = x;
+        p.Y = y;
+        p.Z = z;
+        p.Side = side;
+        p.Stack = stack;
         return p;
     }
 
     public override void Read(Stream stream)
     {
-        x = stream.ReadInt();
-        y = stream.ReadByte();
-        z = stream.ReadInt();
-        side = stream.ReadByte();
+        X = stream.ReadInt();
+        Y = stream.ReadByte();
+        Z = stream.ReadInt();
+        Side = stream.ReadByte();
         short itemId = stream.ReadShort();
         if (itemId >= 0)
         {
             sbyte count = (sbyte)stream.ReadByte();
             short damage = stream.ReadShort();
-            stack = new ItemStack(itemId, count, damage);
+            Stack = new ItemStack(itemId, count, damage);
         }
         else
         {
-            stack = null;
+            Stack = null;
         }
-
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteInt(x);
-        stream.WriteByte((byte)y);
-        stream.WriteInt(z);
-        stream.WriteByte((byte)side);
-        if (stack == null)
+        stream.WriteInt(X);
+        stream.WriteByte((byte)Y);
+        stream.WriteInt(Z);
+        stream.WriteByte((byte)Side);
+        if (Stack == null)
         {
-            stream.WriteShort((short)-1);
+            stream.WriteShort(-1);
         }
         else
         {
-            stream.WriteShort((short)stack.ItemId);
-            stream.WriteByte((byte)stack.Count);
-            stream.WriteShort((short)stack.getDamage());
+            stream.WriteShort((short)Stack.ItemId);
+            stream.WriteByte((byte)Stack.Count);
+            stream.WriteShort((short)Stack.getDamage());
         }
-
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.onPlayerInteractBlock(this);
-    }
+    public override void Apply(NetHandler handler) => handler.onPlayerInteractBlock(this);
 
-    public override int Size()
-    {
-        return 15;
-    }
+    public override int Size() => 15;
 }

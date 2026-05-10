@@ -21,8 +21,8 @@ public class AchievementToast : UIElement
     public void QueueAchievement(global::BetaSharp.Achievement ach)
     {
         _achievement = ach;
-        _title = "Achievement get!";
-        _description = ach.StatName;
+        _title = TranslationStorage.Instance.TranslateKey("achievement.get");
+        _description = ach.GetTranslatedTitle;
         _startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         _isInfo = false;
     }
@@ -30,8 +30,8 @@ public class AchievementToast : UIElement
     public void QueueInfo(global::BetaSharp.Achievement ach)
     {
         _achievement = ach;
-        _title = ach.StatName;
-        _description = ach.getTranslatedDescription();
+        _title = ach.GetTranslatedTitle;
+        _description = ach.GetTranslatedDescription;
         _startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 2500L;
         _isInfo = true;
     }

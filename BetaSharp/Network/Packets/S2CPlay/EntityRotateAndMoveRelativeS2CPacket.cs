@@ -1,49 +1,47 @@
-using System.Net.Sockets;
-
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-internal class EntityRotateAndMoveRelativeS2CPacket : EntityS2CPacket
+public class EntityRotateAndMoveRelativeS2CPacket() : Packet(PacketId.EntityRotateAndMoveRelativeS2C), IEntityMoveRelativePacket, IEntityRotatePacket
 {
-    public EntityRotateAndMoveRelativeS2CPacket() : base(PacketId.EntityRotateAndMoveRelativeS2C)
-    {
-        rotate = true;
-    }
+    public int EntityId { get; private set; }
+    public sbyte DeltaX { get; private set; }
+    public sbyte DeltaY { get; private set; }
+    public sbyte DeltaZ { get; private set; }
+    public sbyte Yaw { get; private set; }
+    public sbyte Pitch { get; private set; }
 
     public static EntityRotateAndMoveRelativeS2CPacket Get(int entityId, byte deltaX, byte deltaY, byte deltaZ, byte yaw, byte pitch)
     {
-        var p = Get<EntityRotateAndMoveRelativeS2CPacket>(PacketId.EntityRotateAndMoveRelativeS2C);
+        EntityRotateAndMoveRelativeS2CPacket p = Get<EntityRotateAndMoveRelativeS2CPacket>(PacketId.EntityRotateAndMoveRelativeS2C);
         p.EntityId = entityId;
-        p.deltaX = (sbyte)deltaX;
-        p.deltaY = (sbyte)deltaY;
-        p.deltaZ = (sbyte)deltaZ;
-        p.yaw = (sbyte)yaw;
-        p.pitch = (sbyte)pitch;
-        p.rotate = true;
+        p.DeltaX = (sbyte)deltaX;
+        p.DeltaY = (sbyte)deltaY;
+        p.DeltaZ = (sbyte)deltaZ;
+        p.Yaw = (sbyte)yaw;
+        p.Pitch = (sbyte)pitch;
         return p;
     }
 
     public override void Read(Stream stream)
     {
-        base.Read(stream);
-        deltaX = (sbyte)stream.ReadByte();
-        deltaY = (sbyte)stream.ReadByte();
-        deltaZ = (sbyte)stream.ReadByte();
-        yaw = (sbyte)stream.ReadByte();
-        pitch = (sbyte)stream.ReadByte();
+        EntityId = stream.ReadInt();
+        DeltaX = (sbyte)stream.ReadByte();
+        DeltaY = (sbyte)stream.ReadByte();
+        DeltaZ = (sbyte)stream.ReadByte();
+        Yaw = (sbyte)stream.ReadByte();
+        Pitch = (sbyte)stream.ReadByte();
     }
 
     public override void Write(Stream stream)
     {
-        base.Write(stream);
-        stream.WriteByte((byte)deltaX);
-        stream.WriteByte((byte)deltaY);
-        stream.WriteByte((byte)deltaZ);
-        stream.WriteByte((byte)yaw);
-        stream.WriteByte((byte)pitch);
+        stream.WriteInt(EntityId);
+        stream.WriteByte((byte)DeltaX);
+        stream.WriteByte((byte)DeltaY);
+        stream.WriteByte((byte)DeltaZ);
+        stream.WriteByte((byte)Yaw);
+        stream.WriteByte((byte)Pitch);
     }
 
-    public override int Size()
-    {
-        return 9;
-    }
+    public override void Apply(NetHandler handler) => handler.onEntity(this);
+
+    public override int Size() => 9;
 }

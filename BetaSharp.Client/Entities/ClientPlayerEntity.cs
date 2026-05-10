@@ -31,7 +31,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override EntityType Type => EntityRegistry.Player;
 
-    protected new float AirSpeed => GameMode.DisallowFlying || !_isFlying ? 0.02f : AirFlySpeedMult * 0.02f;
+    protected override float AirSpeed => GameMode.DisallowFlying || !_isFlying ? 0.02f : AirFlySpeedMult * 0.02f;
 
     protected override void TickLiving()
     {

@@ -32,7 +32,6 @@ public class GameOptions
 
     public static float MaxAnisotropy = 1.0f;
 
-
     public FloatOption MusicVolumeOption { get; private set; }
     public FloatOption SoundVolumeOption { get; private set; }
     public FloatOption MouseSensitivityOption { get; private set; }
@@ -59,6 +58,8 @@ public class GameOptions
     public CycleOption AnisotropicOption { get; private set; }
     public CycleOption MsaaOption { get; private set; }
     public BoolOption ShowCoordinatesOption { get; private set; }
+    public StringOption LanguageOption { get; private set; }
+    public BoolOption UICursorsOption { get; private set; }
 
 
     public GameOption[] MainScreenOptions => [FovOption, DifficultyOption];
@@ -72,7 +73,8 @@ public class GameOptions
         AlternateBlocksOption
     ];
 
-    public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption];
+    public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption, UICursorsOption];
+
 
     public float MusicVolume
     {
@@ -84,6 +86,16 @@ public class GameOptions
     {
         get => SoundVolumeOption.Value;
         set => SoundVolumeOption.Value = value;
+    }
+
+    public string Language
+    {
+        get => LanguageOption.Value;
+        set
+        {
+            LanguageOption.Value = value;
+            TranslationStorage.Instance.SwitchLanguage(Language);
+        }
     }
 
     public float MouseSensitivity => MouseSensitivityOption.Value;
@@ -110,6 +122,7 @@ public class GameOptions
     public bool UseMipmaps => MipmapsOption.Value;
     public bool EnvironmentAnimation => EnvironmentAnimationOption.Value;
     public bool ChunkFade => ChunkFadeOption.Value;
+    public bool UICursors => UICursorsOption.Value;
     public bool AlternateBlocksEnabled => AlternateBlocksOption.Value;
     public bool MenuMusic => MenuMusicOption.Value;
 
@@ -165,6 +178,8 @@ public class GameOptions
         _game = game;
         _optionsPath = System.IO.Path.Combine(gameDataDir, "options.txt");
 
+        TranslationStorage translationStorage = TranslationStorage.Instance;
+
         InitializeOptions();
 
         KeyBindings =
@@ -183,7 +198,7 @@ public class GameOptions
         ];
 
         KeyBindingGroups = [
-            new("Movement", [
+            new(translationStorage.TranslateKey("options.movement.text"), [
                 KeyBindForward,
                 KeyBindLeft,
                 KeyBindBack,
@@ -192,34 +207,43 @@ public class GameOptions
                 KeyBindSneak,
             ]),
 
-            new("View", [
+            new(translationStorage.TranslateKey("options.view.text"), [
                 KeyBindInventory,
                 KeyBindChat,
                 KeyBindToggleFog,
                 KeyBindZoom,
             ]),
 
-            new("Other", [
+            new(translationStorage.TranslateKey("options.other.text"), [
                 KeyBindDrop
             ]),
         ];
 
         ControllerBindings =
         [
-            new ControllerBinding("controller.jump", "Jump", GamepadButton.A),
-            new ControllerBinding("controller.inventory", "Inventory", GamepadButton.Y),
-            new ControllerBinding("controller.drop", "Drop", GamepadButton.B),
-            new ControllerBinding("controller.hotbarLeft", "Hotbar Left", GamepadButton.LeftBumper),
-            new ControllerBinding("controller.hotbarRight", "Hotbar Right", GamepadButton.RightBumper),
-            new ControllerBinding("controller.sneak", "Sneak", GamepadButton.RightStick),
-            new ControllerBinding("controller.zoom", "Zoom", (GamepadButton)(-1)),
-            new ControllerBinding("controller.pickBlock", "Pick Block", GamepadButton.DPadUp),
-            new ControllerBinding("controller.camera", "Camera Mode", GamepadButton.LeftStick),
-            new ControllerBinding("controller.pause", "Pause", GamepadButton.Start),
+            new ControllerBinding("controller.jump", translationStorage.TranslateKey("key.jump"), GamepadButton.A),
+            new ControllerBinding("controller.inventory", translationStorage.TranslateKey("key.inventory"), GamepadButton.Y),
+            new ControllerBinding("controller.drop", translationStorage.TranslateKey("key.drop"), GamepadButton.B),
+            new ControllerBinding("controller.hotbarLeft", translationStorage.TranslateKey("key.hotbarLeft"), GamepadButton.LeftBumper),
+            new ControllerBinding("controller.hotbarRight", translationStorage.TranslateKey("key.hotbarRight"), GamepadButton.RightBumper),
+            new ControllerBinding("controller.sneak", translationStorage.TranslateKey("key.sneak"), GamepadButton.RightStick),
+            new ControllerBinding("controller.zoom", translationStorage.TranslateKey("key.zoom"), (GamepadButton)(-1)),
+            new ControllerBinding("controller.pickBlock", translationStorage.TranslateKey("key.pickBlock"), GamepadButton.DPadUp),
+            new ControllerBinding("controller.camera", translationStorage.TranslateKey("key.camera"), GamepadButton.LeftStick),
+            new ControllerBinding("controller.pause", translationStorage.TranslateKey("key.pause"), GamepadButton.Start),
         ];
 
         LoadOptions();
         INITIAL_MSAA = MSAALevel;
+
+        if(AssetManager.Languages.ContainsKey(LanguageOption!.Value + ".json"))
+        {
+            Language = LanguageOption!.Value;
+        }
+        else
+        {
+            Language = "en_us";
+        }
     }
 
     public GameOptions()
@@ -240,7 +264,7 @@ public class GameOptions
             Steps = 100,
             OnChanged = _ => _game?.SoundManager.OnSoundOptionsChanged()
         };
-        MouseSensitivityOption = new FloatOption("options.sensitivity", "mouseSensitivity", 0.5F)
+        MouseSensitivityOption = new FloatOption("options.sensitivity.text", "mouseSensitivity", 0.5F)
         {
             Steps = 200,
             Formatter = (v, t) => v == 0.0F
@@ -249,7 +273,7 @@ public class GameOptions
                     ? t.TranslateKey("options.sensitivity.max")
                     : (int)(v * 200.0F) + "%"
         };
-        ControllerSensitivityOption = new FloatOption("Controller Sensitivity", "controllerSensitivity", 0.5F)
+        ControllerSensitivityOption = new FloatOption("options.sensitivity.controllerText", "controllerSensitivity", 0.5F)
         {
             Steps = 200,
             Formatter = (v, _) => (int)(v * 200.0F) + "%"
@@ -257,7 +281,7 @@ public class GameOptions
 
         string[] _ctlTypeLabels = [.. ControllerType.ControllerTypes.Select(x => x.Label)];
         string[] _ctlTypeKeys = [.. ControllerType.ControllerTypes.Select(x => x.Key)];
-        ControllerTypeOption = new CycleOption("Controller Type", "controllerType", _ctlTypeLabels, 1)
+        ControllerTypeOption = new CycleOption("options.controllerType", "controllerType", _ctlTypeLabels, 1)
         {
             Formatter = (v, _) => _ctlTypeLabels[v],
             OnChanged = v => ControlTooltip.ControllerType = ControllerType.ControllerTypes[v]
@@ -266,36 +290,37 @@ public class GameOptions
 
         FramerateLimitOption = new FloatOption("options.framerateLimit", "fpsLimit", 0.42857143f)
         {
-            LabelOverride = "Max FPS",
+            LabelOverride = TranslationStorage.Instance.TranslateKey("options.fps.maxFps"),
             Steps = 210,
             Formatter = (v, _) =>
             {
                 int fps = 30 + (int)(v * 210.0f);
-                return fps == 240 ? "Unlimited" : fps + " FPS";
+                return fps == 240 ? TranslationStorage.Instance.TranslateKey("options.fps.unlimited") : fps + " " + TranslationStorage.Instance.TranslateKey("options.fps.text");
             }
         };
         FovOption = new FloatOption("options.fov", "fov", 0.44444445F)
         {
-            LabelOverride = "FOV",
+            LabelOverride = TranslationStorage.Instance.TranslateKey("options.fov"),
             Steps = 90,
             Formatter = (v, _) => (30 + (int)(v * 90.0f)).ToString()
         };
-        ShowCoordinatesOption = new BoolOption("Show Coordinates", "showCoordinates");
-        GammaOption = new FloatOption("Gamma", "gamma", 0.5F)
+        ShowCoordinatesOption = new BoolOption("options.showCoordinates", "showCoordinates");
+        UICursorsOption = new BoolOption("options.uiCursors", "uiCursors", true);
+        GammaOption = new FloatOption("options.gamma", "gamma", 0.5F)
         {
-            LabelOverride = "Gamma",
+            LabelOverride = TranslationStorage.Instance.TranslateKey("options.gamma"),
             Steps = 100,
             Formatter = (v, _) => $"{(int)(v * 100.0f)}"
         };
 
         InvertMouseOption = new BoolOption("options.invertMouse", "invertYMouse");
         ViewBobbingOption = new BoolOption("options.viewBobbing", "bobView", true);
-        VSyncOption = new BoolOption("VSync", "vsync")
+        VSyncOption = new BoolOption("options.vSync", "vsync")
         {
-            LabelOverride = "VSync",
+            LabelOverride = TranslationStorage.Instance.TranslateKey("options.vSync"),
             OnChanged = v => Display.getGlfw().SwapInterval(v ? 1 : 0)
         };
-        MipmapsOption = new BoolOption("Mipmaps", "useMipmaps", true)
+        MipmapsOption = new BoolOption("options.mipmaps", "useMipmaps", true)
         {
             OnChanged = _ =>
             {
@@ -303,20 +328,18 @@ public class GameOptions
             }
         };
 
-        EnvironmentAnimationOption = new BoolOption("Environment Anim", "envAnimation", true);
-        ChunkFadeOption = new BoolOption("Chunk Fade", "chunkFade", true);
-        AlternateBlocksOption = new BoolOption("Alternate Blocks", "alternateBlocks", true)
+        EnvironmentAnimationOption = new BoolOption("options.environmentAnim", "envAnimation", true);
+        ChunkFadeOption = new BoolOption("options.chunkFade", "chunkFade", true);
+        AlternateBlocksOption = new BoolOption("options.alternateBlocks", "alternateBlocks", true)
         {
-            LabelOverride = "Alternate Blocks",
             OnChanged = _ => ReloadChunks.Invoke()
         };
-        MenuMusicOption = new BoolOption("Menu Music", "menuMusic", true);
+        MenuMusicOption = new BoolOption("options.menuMusic", "menuMusic", true);
 
-        RenderDistanceOption = new FloatOption("options.renderDistance", "viewDistance", 0.2f)
+        RenderDistanceOption = new FloatOption("options.renderDistance.text", "viewDistance", 0.2f)
         {
-            LabelOverride = "Render Distance",
             Steps = 28,
-            Formatter = (v, t) => $"{4 + (int)(v * 28.0f)} Chunks",
+            Formatter = (v, t) => $"{4 + (int)(v * 28.0f)} " + TranslationStorage.Instance.TranslateKey("options.renderDistance.chunks"),
             OnChanged = _ =>
             {
                 if (_game?.InternalServer != null)
@@ -325,9 +348,9 @@ public class GameOptions
                 }
             }
         };
-        DifficultyOption = new CycleOption("options.difficulty", "difficulty", DifficultyLabels, 2);
-        GuiScaleOption = new CycleOption("options.guiScale", "guiScale", GuiScaleLabels);
-        AnisotropicOption = new CycleOption("Aniso Level", "anisotropicLevel", AnisoLabels)
+        DifficultyOption = new CycleOption("options.difficulty.text", "difficulty", DifficultyLabels, 2);
+        GuiScaleOption = new CycleOption("options.guiScale.text", "guiScale", GuiScaleLabels);
+        AnisotropicOption = new CycleOption("options.anisoLevel", "anisotropicLevel", AnisoLabels)
         {
             Formatter = (v, t) => v == 0 ? t.TranslateKey("options.off") : AnisoLabels[v],
             OnChanged = v =>
@@ -341,7 +364,7 @@ public class GameOptions
                 ReloadTextures();
             }
         };
-        MsaaOption = new CycleOption("MSAA", "msaaLevel", MSAALabels)
+        MsaaOption = new CycleOption("options.msaa", "msaaLevel", MSAALabels)
         {
             Formatter = (v, t) =>
             {
@@ -349,6 +372,10 @@ public class GameOptions
                 if (v != INITIAL_MSAA) result += " (Reload required)";
                 return result;
             }
+        };
+        LanguageOption = new StringOption("Language", "language", "en_us")
+        {
+            OnChanged = _ => Language = LanguageOption.Value
         };
 
         _allOptions = [];
@@ -382,6 +409,8 @@ public class GameOptions
         yield return AnisotropicOption;
         yield return MsaaOption;
         yield return ShowCoordinatesOption;
+        yield return UICursorsOption;
+        yield return LanguageOption;
     }
 
 

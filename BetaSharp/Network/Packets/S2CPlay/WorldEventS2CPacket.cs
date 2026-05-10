@@ -1,51 +1,43 @@
-using System.Net.Sockets;
-
 namespace BetaSharp.Network.Packets.S2CPlay;
 
 public class WorldEventS2CPacket() : Packet(PacketId.WorldEventS2C)
 {
-    public int eventId;
-    public int data;
-    public int x;
-    public int y;
-    public int z;
+    public int Data { get; private set; }
+    public int EventId { get; private set; }
+    public int X { get; private set; }
+    public int Y { get; private set; }
+    public int Z { get; private set; }
 
     public static WorldEventS2CPacket Get(int eventId, int x, int y, int z, int data)
     {
-        var p = Get<WorldEventS2CPacket>(PacketId.WorldEventS2C);
-        p.eventId = eventId;
-        p.x = x;
-        p.y = y;
-        p.z = z;
-        p.data = data;
+        WorldEventS2CPacket p = Get<WorldEventS2CPacket>(PacketId.WorldEventS2C);
+        p.EventId = eventId;
+        p.X = x;
+        p.Y = y;
+        p.Z = z;
+        p.Data = data;
         return p;
     }
 
     public override void Read(Stream stream)
     {
-        eventId = stream.ReadInt();
-        x = stream.ReadInt();
-        y = (sbyte)stream.ReadByte();
-        z = stream.ReadInt();
-        data = stream.ReadInt();
+        EventId = stream.ReadInt();
+        X = stream.ReadInt();
+        Y = (sbyte)stream.ReadByte();
+        Z = stream.ReadInt();
+        Data = stream.ReadInt();
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteInt(eventId);
-        stream.WriteInt(x);
-        stream.WriteByte((byte)y);
-        stream.WriteInt(z);
-        stream.WriteInt(data);
+        stream.WriteInt(EventId);
+        stream.WriteInt(X);
+        stream.WriteByte((byte)Y);
+        stream.WriteInt(Z);
+        stream.WriteInt(Data);
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.onWorldEvent(this);
-    }
+    public override void Apply(NetHandler handler) => handler.onWorldEvent(this);
 
-    public override int Size()
-    {
-        return 20;
-    }
+    public override int Size() => 20;
 }

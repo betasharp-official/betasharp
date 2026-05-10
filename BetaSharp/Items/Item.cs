@@ -277,6 +277,8 @@ public class Item
         return translationKey;
     }
 
+    public virtual IReadOnlyList<string> GetItemAlias => [];
+
     public virtual string getItemNameIS(ItemStack itemStack)
     {
         return translationKey;

@@ -11,10 +11,12 @@ public class WorldListItem(WorldSaveInfo value) : ListItem<WorldSaveInfo>(value)
     {
         base.Render(renderer);
 
+        TranslationStorage translationStorage = TranslationStorage.Instance;
+
         string displayName = Value.DisplayName;
         if (string.IsNullOrEmpty(displayName))
         {
-            displayName = "World"; // Fallback
+            displayName = translationStorage.TranslateKey("world.world"); // Fallback
         }
 
         renderer.DrawText(displayName, 5, 5, Color.White);
@@ -26,7 +28,7 @@ public class WorldListItem(WorldSaveInfo value) : ListItem<WorldSaveInfo>(value)
 
         if (Value.IsUnsupported)
         {
-            secondary = "Unsupported Format! " + secondary;
+            secondary = translationStorage.TranslateKey("world.unsupportedFormat") + " " + secondary;
         }
 
         renderer.DrawText(secondary, 5, 17, Color.GrayA0);

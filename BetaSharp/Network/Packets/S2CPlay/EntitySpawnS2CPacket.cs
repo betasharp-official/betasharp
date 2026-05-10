@@ -1,32 +1,32 @@
-using System.Net.Sockets;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class EntitySpawnS2CPacket() : PacketBaseEntity(PacketId.EntitySpawnS2C)
+public class EntitySpawnS2CPacket() : Packet(PacketId.EntitySpawnS2C), IPacketEntity
 {
-    public int x;
-    public int y;
-    public int z;
-    public int velocityX;
-    public int velocityY;
-    public int velocityZ;
-    public int entityType;
-    public int entityData;
+    public int X { get; private set; }
+    public int Y { get; private set; }
+    public int Z { get; private set; }
+    public int VelocityX { get; set; }
+    public int VelocityY { get; set; }
+    public int VelocityZ { get; set; }
+    public int EntityType { get; private set; }
+    public int EntityData { get; set; }
+    public int EntityId { get; private set; }
 
     public static EntitySpawnS2CPacket Get(Entity entity, int entityType, int entityData = 0)
     {
-        var p = Get<EntitySpawnS2CPacket>(PacketId.EntitySpawnS2C);
+        EntitySpawnS2CPacket p = Get<EntitySpawnS2CPacket>(PacketId.EntitySpawnS2C);
         p.EntityId = entity.ID;
-        p.x = MathHelper.Floor(entity.X * 32.0);
-        p.y = MathHelper.Floor(entity.Y * 32.0);
-        p.z = MathHelper.Floor(entity.Z * 32.0);
-        p.entityType = entityType;
-        p.entityData = entityData;
-        p.velocityX = 0;
-        p.velocityY = 0;
-        p.velocityZ = 0;
+        p.X = MathHelper.Floor(entity.X * 32.0);
+        p.Y = MathHelper.Floor(entity.Y * 32.0);
+        p.Z = MathHelper.Floor(entity.Z * 32.0);
+        p.EntityType = entityType;
+        p.EntityData = entityData;
+        p.VelocityX = 0;
+        p.VelocityY = 0;
+        p.VelocityZ = 0;
 
         if (entityData > 0)
         {
@@ -64,9 +64,9 @@ public class EntitySpawnS2CPacket() : PacketBaseEntity(PacketId.EntitySpawnS2C)
                 velocityZ = maxVelocity;
             }
 
-            p.velocityX = (int)(velocityX * 8000.0);
-            p.velocityY = (int)(velocityY * 8000.0);
-            p.velocityZ = (int)(velocityZ * 8000.0);
+            p.VelocityX = (int)(velocityX * 8000.0);
+            p.VelocityY = (int)(velocityY * 8000.0);
+            p.VelocityZ = (int)(velocityZ * 8000.0);
         }
 
         return p;
@@ -74,45 +74,37 @@ public class EntitySpawnS2CPacket() : PacketBaseEntity(PacketId.EntitySpawnS2C)
 
     public override void Read(Stream stream)
     {
-        base.Read(stream);
-        entityType = (sbyte)stream.ReadByte();
-        x = stream.ReadInt();
-        y = stream.ReadInt();
-        z = stream.ReadInt();
-        entityData = stream.ReadInt();
-        if (entityData > 0)
+        EntityId = stream.ReadInt();
+        EntityType = (sbyte)stream.ReadByte();
+        X = stream.ReadInt();
+        Y = stream.ReadInt();
+        Z = stream.ReadInt();
+        EntityData = stream.ReadInt();
+        if (EntityData > 0)
         {
-            velocityX = stream.ReadShort();
-            velocityY = stream.ReadShort();
-            velocityZ = stream.ReadShort();
+            VelocityX = stream.ReadShort();
+            VelocityY = stream.ReadShort();
+            VelocityZ = stream.ReadShort();
         }
-
     }
 
     public override void Write(Stream stream)
     {
-        base.Write(stream);
-        stream.WriteByte((byte)entityType);
-        stream.WriteInt(x);
-        stream.WriteInt(y);
-        stream.WriteInt(z);
-        stream.WriteInt(entityData);
-        if (entityData > 0)
+        stream.WriteInt(EntityId);
+        stream.WriteByte((byte)EntityType);
+        stream.WriteInt(X);
+        stream.WriteInt(Y);
+        stream.WriteInt(Z);
+        stream.WriteInt(EntityData);
+        if (EntityData > 0)
         {
-            stream.WriteShort((short)velocityX);
-            stream.WriteShort((short)velocityY);
-            stream.WriteShort((short)velocityZ);
+            stream.WriteShort((short)VelocityX);
+            stream.WriteShort((short)VelocityY);
+            stream.WriteShort((short)VelocityZ);
         }
-
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.onEntitySpawn(this);
-    }
+    public override void Apply(NetHandler handler) => handler.onEntitySpawn(this);
 
-    public override int Size()
-    {
-        return 17 + PacketBaseEntitySize + entityData > 0 ? 6 : 0;
-    }
+    public override int Size() => 17 + IPacketEntity.PacketBaseEntitySize + EntityData > 0 ? 6 : 0;
 }

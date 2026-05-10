@@ -562,7 +562,7 @@ public abstract class BetaSharpServer : ICommandOutput
             send(packet);
         }
 
-        send(Packet.Get<FinishConfigurationS2CPacket>(PacketId.FinishConfigurationS2C));
+        send(FinishConfigurationS2CPacket.Get());
     }
 
     /// <summary>

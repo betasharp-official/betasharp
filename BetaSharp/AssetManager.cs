@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp;
@@ -62,6 +63,7 @@ public class AssetManager
     private static readonly object s_instanceLock = new();
     private static AssetManager? s_instance;
     private static AssetProfile? s_configuredProfile;
+    public static Dictionary<string, string> Languages = new Dictionary<string, string>();
 
     public static AssetManager Instance => s_instance ?? throw new InvalidOperationException("AssetManager was not initialized.");
 
@@ -102,6 +104,8 @@ public class AssetManager
             defineFullAssets();
         }
 
+        loadLanguages();
+
         _logger.LogInformation($"Asset profile: {_assetProfile}. Registered {_assetsToLoad.Count} assets.");
 
         extractNeccessaryAssets();
@@ -110,12 +114,57 @@ public class AssetManager
         _logger.LogInformation($"Loaded {_embeddedAssetsLoaded} embedded assets");
     }
 
+    private void loadLanguages()
+    {
+        string langPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "lang");
+
+        try
+        {
+            if (Directory.Exists(langPath))
+            {
+                var langFiles = Directory.EnumerateFiles(langPath, "*.json");
+
+                foreach (var file in langFiles)
+                {
+                    string? name = null;
+
+                    try
+                    {
+                        string json = File.ReadAllText(file);
+                        using JsonDocument doc = JsonDocument.Parse(json);
+
+                        if (doc.RootElement.TryGetProperty("lang", out var langObj) &&
+                            langObj.TryGetProperty("name", out var nameProp))
+                        {
+                            name = nameProp.GetString();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Invalid JSON in {file}: {ex.Message}");
+                    }
+
+                    string fileName = Path.GetFileName(file);
+
+                    Languages.Add(fileName, name ?? "Unknown");
+                    defineAsset("lang/" + fileName, AssetType.Text);
+                }
+            }
+            else
+            {
+                Console.WriteLine($"No languages folder!");
+            }
+        }
+        catch (IOException ex)
+        {
+            Console.WriteLine($"Unable to access files: {ex.Message}");
+        }
+    }
+
     private void defineHeadlessAssets()
     {
         defineAsset("font.txt", AssetType.Text);
         defineAsset("achievement/map.txt", AssetType.Text);
-        defineAsset("lang/en_US.lang", AssetType.Text);
-        defineAsset("lang/stats_US.lang", AssetType.Text);
     }
 
     private void defineFullAssets()
@@ -161,6 +210,8 @@ public class AssetManager
         defineAsset("gui/trap.png", AssetType.Binary);
         defineAsset("gui/unknown_pack.png", AssetType.Binary);
         defineAsset("gui/Pointer.png", AssetType.Binary);
+        defineAsset("gui/Globe.png", AssetType.Binary);
+
         defineAsset("gui/Logo.png", AssetType.Binary);
         
         string[] controllerIcons = [

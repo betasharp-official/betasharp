@@ -1,45 +1,37 @@
-using System.Net.Sockets;
-
 namespace BetaSharp.Network.Packets.Play;
 
 public class PlayerMoveLookAndOnGroundPacket : PlayerMovePacket
 {
-    public PlayerMoveLookAndOnGroundPacket() : base(PacketId.PlayerMoveLookAndOnGround)
-    {
-        changeLook = true;
-    }
+    public PlayerMoveLookAndOnGroundPacket() : base(PacketId.PlayerMoveLookAndOnGround) => ChangeLook = true;
 
     public static PlayerMoveLookAndOnGroundPacket Get(float yaw, float pitch, bool onGround)
     {
-        var p = Get<PlayerMoveLookAndOnGroundPacket>(PacketId.PlayerMoveLookAndOnGround);
-        p.x = 0;
-        p.y = 0;
-        p.z = 0;
-        p.eyeHeight = 0;
-        p.yaw = yaw;
-        p.pitch = pitch;
-        p.onGround = onGround;
-        p.changePosition = false;
-        p.changeLook = true;
+        PlayerMoveLookAndOnGroundPacket p = Get<PlayerMoveLookAndOnGroundPacket>(PacketId.PlayerMoveLookAndOnGround);
+        p.X = 0;
+        p.Y = 0;
+        p.Z = 0;
+        p.EyeHeight = 0;
+        p.Yaw = yaw;
+        p.Pitch = pitch;
+        p.OnGround = onGround;
+        p.ChangePosition = false;
+        p.ChangeLook = true;
         return p;
     }
 
     public override void Read(Stream stream)
     {
-        yaw = stream.ReadFloat();
-        pitch = stream.ReadFloat();
+        Yaw = stream.ReadFloat();
+        Pitch = stream.ReadFloat();
         base.Read(stream);
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteFloat(yaw);
-        stream.WriteFloat(pitch);
+        stream.WriteFloat(Yaw);
+        stream.WriteFloat(Pitch);
         base.Write(stream);
     }
 
-    public override int Size()
-    {
-        return 9;
-    }
+    public override int Size() => 9;
 }

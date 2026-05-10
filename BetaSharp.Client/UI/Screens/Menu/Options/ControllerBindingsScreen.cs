@@ -7,7 +7,7 @@ using Silk.NET.GLFW;
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
 public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
-    : BaseOptionsScreen(context, parent, "Button Bindings")
+    : BaseOptionsScreen(context, parent, "options.controllerBindings")
 {
     private int _listeningIndex = -1;
     private readonly ControllerListener _listener = new();
@@ -16,7 +16,7 @@ public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
 
     protected override void Init()
     {
-        TitleText = "Button Bindings";
+        TitleText = TranslationStorage.Instance.TranslateKey("options.controllerBindings");
         base.Init();
     }
 

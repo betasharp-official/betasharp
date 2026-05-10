@@ -14,6 +14,8 @@ public class OptionsScreen(
 
     protected override UIElement CreateContent()
     {
+        TranslationStorage translationStorage = TranslationStorage.Instance;
+  
         Panel list = CreateTwoColumnList();
 
         // Main options list
@@ -38,8 +40,6 @@ public class OptionsScreen(
         list.AddChild(separator);
 
         // Sub-menu buttons
-        TranslationStorage translations = TranslationStorage.Instance;
-
         void AddSubButton(string text, Action onClick)
         {
             Button btn = CreateButton();
@@ -57,12 +57,12 @@ public class OptionsScreen(
             list.AddChild(btn);
         }
 
-        AddSubButton(translations.TranslateKey("options.video"), () => Context.Navigator.Navigate(new VideoSettingsScreen(Context, this)));
-        AddSubButton("UI Settings", () => Context.Navigator.Navigate(new UISettingsScreen(Context, this)));
-        AddSubButton("Audio Settings", () => Context.Navigator.Navigate(new AudioSettingsScreen(Context, this)));
-        AddSubButton(translations.TranslateKey("options.controls"), () => Context.Navigator.Navigate(new AllControlsScreen(Context, this)));
-        AddSubButton("Texture Packs", () => Context.Navigator.Navigate(new TexturePacksScreen(Context, this, texturePacks)));
-        AddSubButton("Credits", () => Context.Navigator.Navigate(new CreditsScreen(Context, this)));
+        AddSubButton(translationStorage.TranslateKey("options.video.text"), () => Context.Navigator.Navigate(new VideoSettingsScreen(Context, this)));
+        AddSubButton(translationStorage.TranslateKey("options.uiSettings"), () => Context.Navigator.Navigate(new UISettingsScreen(Context, this)));
+        AddSubButton(translationStorage.TranslateKey("options.audioSettings"), () => Context.Navigator.Navigate(new AudioSettingsScreen(Context, this)));
+        AddSubButton(translationStorage.TranslateKey("options.controls"), () => Context.Navigator.Navigate(new AllControlsScreen(Context, this)));
+        AddSubButton(translationStorage.TranslateKey("menu.texturePacks"), () => Context.Navigator.Navigate(new TexturePacksScreen(Context, this, texturePacks)));
+        AddSubButton(translationStorage.TranslateKey("menu.credits"), () => Context.Navigator.Navigate(new CreditsScreen(Context, this)));
 
         return list;
     }

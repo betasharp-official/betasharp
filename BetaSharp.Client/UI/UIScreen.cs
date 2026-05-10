@@ -71,6 +71,7 @@ public abstract class UIScreen
     public virtual bool PausesGame => true;
     public virtual bool AllowUserInput => false;
     public Func<Button> CreateButton { get; }
+    public Func<ImageButton> CreateImageButton { get; }
     public Func<Slider> CreateSlider { get; }
     protected virtual bool AutoAddTooltipBar => true;
 
@@ -113,6 +114,7 @@ public abstract class UIScreen
         Renderer = new UIRenderer(context.TextRenderer, context.TextureManager, context.Options, context.DisplaySize);
 
         CreateButton = () => new(context.PlayClickSound);
+        CreateImageButton = () => new(context.PlayClickSound);
         CreateSlider = () => new(context.PlayClickSound);
     }
 
@@ -447,6 +449,21 @@ public abstract class UIScreen
                 _hoveredElement.IsHovered = true;
                 _hoveredElement.OnMouseEnter?.Invoke(new UIMouseEvent { Target = _hoveredElement, MouseX = (int)mouseX, MouseY = (int)mouseY });
             }
+        }
+
+        if (Context.Options.UICursors)
+        {
+            if (_hoveredElement is Button btn)
+            {
+                if (btn.Enabled) Mouse.SetClickCursor();
+                else Mouse.SetDisabledCursor();
+            }
+            else if (_hoveredElement is ListItem || _hoveredElement is Link) Mouse.SetClickCursor();
+            else if (_hoveredElement is TextField) Mouse.SetTextCursor();
+            else Mouse.SetNormalCursor();
+        } else
+        {
+            Mouse.SetNormalCursor();
         }
     }
 

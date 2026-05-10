@@ -20,6 +20,8 @@ public class DispenserScreen(
     {
         base.Init();
 
+        TranslationStorage translationStorage = TranslationStorage.Instance;
+
         // Background Image
         var background = new Image
         {
@@ -37,7 +39,7 @@ public class DispenserScreen(
         // Labels
         var lblDispenser = new Label
         {
-            Text = "Dispenser",
+            Text = translationStorage.TranslateKey("gui.container.dispenser"),
             HasShadow = false,
             TextColor = Color.Gray40
         };
@@ -48,7 +50,7 @@ public class DispenserScreen(
 
         var lblInventory = new Label
         {
-            Text = "Inventory",
+            Text = translationStorage.TranslateKey("gui.container.inventory"),
             HasShadow = false,
             TextColor = Color.Gray40
         };

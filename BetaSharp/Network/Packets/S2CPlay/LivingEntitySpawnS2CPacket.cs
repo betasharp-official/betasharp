@@ -1,31 +1,30 @@
-using System.Net.Sockets;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class LivingEntitySpawnS2CPacket() : Packet(PacketId.LivingEntitySpawnS2C)
+public class LivingEntitySpawnS2CPacket() : Packet(PacketId.LivingEntitySpawnS2C), IPacketEntity
 {
-    public int entityId;
-    public sbyte type;
-    public int xPosition;
-    public int yPosition;
-    public int zPosition;
-    public sbyte yaw;
-    public sbyte pitch;
-    public byte[] Data;
+    public byte[] Data { get; private set; } = [];
+    public sbyte Pitch { get; private set; }
+    public sbyte Type { get; private set; }
+    public int XPosition { get; private set; }
+    public int YPosition { get; private set; }
+    public int ZPosition { get; private set; }
+    public sbyte Yaw { get; private set; }
+    public int EntityId { get; private set; }
 
     public static LivingEntitySpawnS2CPacket Get(EntityLiving ent)
     {
-        var p = Get<LivingEntitySpawnS2CPacket>(PacketId.LivingEntitySpawnS2C);
-        p.entityId = ent.ID;
-        p.type = (sbyte)EntityRegistry.GetRawId(ent);
-        p.xPosition = MathHelper.Floor(ent.X * 32.0D);
-        p.yPosition = MathHelper.Floor(ent.Y * 32.0D);
-        p.zPosition = MathHelper.Floor(ent.Z * 32.0D);
-        p.yaw = (sbyte)(int)(ent.Yaw * 256.0F / 360.0F);
-        p.pitch = (sbyte)(int)(ent.Pitch * 256.0F / 360.0F);
-        var stream = new MemoryStream();
+        LivingEntitySpawnS2CPacket p = Get<LivingEntitySpawnS2CPacket>(PacketId.LivingEntitySpawnS2C);
+        p.EntityId = ent.ID;
+        p.Type = (sbyte)EntityRegistry.GetRawId(ent);
+        p.XPosition = MathHelper.Floor(ent.X * 32.0D);
+        p.YPosition = MathHelper.Floor(ent.Y * 32.0D);
+        p.ZPosition = MathHelper.Floor(ent.Z * 32.0D);
+        p.Yaw = (sbyte)(int)(ent.Yaw * 256.0F / 360.0F);
+        p.Pitch = (sbyte)(int)(ent.Pitch * 256.0F / 360.0F);
+        MemoryStream stream = new();
         ent.DataSynchronizer.WriteAll(stream);
         p.Data = stream.ToArray();
         return p;
@@ -33,36 +32,30 @@ public class LivingEntitySpawnS2CPacket() : Packet(PacketId.LivingEntitySpawnS2C
 
     public override void Read(Stream stream)
     {
-        entityId = stream.ReadInt();
-        type = (sbyte)stream.ReadByte();
-        xPosition = stream.ReadInt();
-        yPosition = stream.ReadInt();
-        zPosition = stream.ReadInt();
-        yaw = (sbyte)stream.ReadByte();
-        pitch = (sbyte)stream.ReadByte();
+        EntityId = stream.ReadInt();
+        Type = (sbyte)stream.ReadByte();
+        XPosition = stream.ReadInt();
+        YPosition = stream.ReadInt();
+        ZPosition = stream.ReadInt();
+        Yaw = (sbyte)stream.ReadByte();
+        Pitch = (sbyte)stream.ReadByte();
         Data = stream.ReadUntil(127);
     }
 
     public override void Write(Stream stream)
     {
-        stream.WriteInt(entityId);
-        stream.WriteByte((byte)type);
-        stream.WriteInt(xPosition);
-        stream.WriteInt(yPosition);
-        stream.WriteInt(zPosition);
-        stream.WriteByte((byte)yaw);
-        stream.WriteByte((byte)pitch);
+        stream.WriteInt(EntityId);
+        stream.WriteByte((byte)Type);
+        stream.WriteInt(XPosition);
+        stream.WriteInt(YPosition);
+        stream.WriteInt(ZPosition);
+        stream.WriteByte((byte)Yaw);
+        stream.WriteByte((byte)Pitch);
         stream.Write(Data);
         stream.WriteByte(127);
     }
 
-    public override void Apply(NetHandler handler)
-    {
-        handler.onLivingEntitySpawn(this);
-    }
+    public override void Apply(NetHandler handler) => handler.onLivingEntitySpawn(this);
 
-    public override int Size()
-    {
-        return 20;
-    }
+    public override int Size() => 20;
 }

@@ -36,4 +36,13 @@
   <ItemGroup>
     <None Include="assets\**\*" CopyToOutputDirectory="Always" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="assets\lang\en_us.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="assets\lang\pl_pl.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

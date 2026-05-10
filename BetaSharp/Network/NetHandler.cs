@@ -66,6 +66,21 @@ public abstract class NetHandler
         handle(packet);
     }
 
+    public virtual void onEntity(EntityRotateS2CPacket packet)
+    {
+        handle(packet);
+    }
+
+    public virtual void onEntity(EntityMoveRelativeS2CPacket s2CPacket)
+    {
+        handle(s2CPacket);
+    }
+
+    public virtual void onEntity(EntityRotateAndMoveRelativeS2CPacket s2CPacket)
+    {
+        handle(s2CPacket);
+    }
+
     public virtual void onEntityPosition(EntityPositionS2CPacket packet)
     {
         handle(packet);

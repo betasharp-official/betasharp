@@ -7,6 +7,7 @@ using BetaSharp.Client.UI.Controls.MainMenu;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Screens.Menu.Options;
 using BetaSharp.Client.UI.Screens.Menu.World;
+using Silk.NET.OpenGL;
 namespace BetaSharp.Client.UI.Screens.Menu;
 
 public class MainMenuScreen(
@@ -79,8 +80,16 @@ public class MainMenuScreen(
         Panel footerButtons = new();
         footerButtons.Style.FlexDirection = FlexDirection.Row;
         footerButtons.Style.JustifyContent = Justify.SpaceBetween;
-        footerButtons.Style.Width = 200;
-        footerButtons.Style.MarginTop = 16;
+        footerButtons.Style.Width = 224;
+        footerButtons.Style.MarginLeft = -26;
+
+        ImageButton btnLang = CreateImageButton();
+        btnLang.OnClick += (e) => Context.Navigator.Navigate(new LanguageSelectionScreen(Context, this));
+        btnLang.Texture = Renderer.TextureManager.GetTextureId("/gui/Globe.png");
+        btnLang.U = 0;
+        btnLang.V = 0;
+        btnLang.UWidth = 24;
+        btnLang.VHeight = 24;
 
         Button btnOptions = CreateButton();
         btnOptions.Text = translator.TranslateKey("menu.options");
@@ -92,6 +101,7 @@ public class MainMenuScreen(
         btnQuit.Style.Width = 98;
         btnQuit.OnClick += (e) => shutdown();
 
+        footerButtons.AddChild(btnLang);
         footerButtons.AddChild(btnOptions);
         if (!hideQuitButton)
         {
@@ -109,25 +119,15 @@ public class MainMenuScreen(
     private void AddBottomLabels()
     {
         // Version info
-        Label versionLabel = new()
+        Link versionLabel = new()
         {
             Text = "BetaSharp " + BetaSharp.Version,
-            TextColor = Guis.Color.White
+            TextColor = Guis.Color.White,
+            URL = "https://github.com/betasharp-official/betasharp"
         };
         versionLabel.Style.Position = PositionType.Absolute;
         versionLabel.Style.Left = 2;
         versionLabel.Style.Top = 2;
-        versionLabel.OnClick += (e) =>
-        {
-            var ps = new System.Diagnostics.ProcessStartInfo("https://github.com/betasharp-official/betasharp")
-            {
-                UseShellExecute = true,
-                Verb = "open"
-            };
-            System.Diagnostics.Process.Start(ps);
-        };
-        versionLabel.OnMouseEnter += (e) => versionLabel.TextColor = Color.HoverYellow;
-        versionLabel.OnMouseLeave += (e) => versionLabel.TextColor = Color.White;
 
         Root.AddChild(versionLabel);
 
