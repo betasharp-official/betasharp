@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using BetaSharp.Client;
+using BetaSharp.Server.Command;
 using HarmonyLib;
 
 namespace BetaSharp.Client.Modding;
@@ -16,7 +17,7 @@ public abstract class Mod
 
     public static BetaSharp Game { get; internal set; }
     protected Harmony HarmonyInstance { get; private set; }
-    protected Namespace Namespace { get; private set; }
+    protected Namespace? Namespace { get; private set; } = null;
 
     internal void ApplyPatches()
     {
@@ -40,4 +41,6 @@ public abstract class Mod
     }
 
     public abstract void Init();
+
+    public virtual void RegisterCommands(Action<Command> register) { }
 }

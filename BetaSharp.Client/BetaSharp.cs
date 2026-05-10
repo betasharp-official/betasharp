@@ -1327,7 +1327,7 @@ public partial class BetaSharp :
     public void StartWorld(string worldName, string mainMenuText, WorldSettings settings)
     {
         ChangeWorld(null);
-        Navigate(new LevelLoadingScreen(UIContext, CreateNetworkContext(), worldName, settings, this));
+        Navigate(new LevelLoadingScreen(UIContext, CreateNetworkContext(), worldName, settings, this, Mods));
     }
 
     public void ChangeWorld(World? newWorld, string loadingText = "", EntityPlayer? targetEntity = null)

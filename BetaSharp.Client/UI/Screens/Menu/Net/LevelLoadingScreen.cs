@@ -1,4 +1,5 @@
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Modding;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
@@ -16,7 +17,8 @@ public class LevelLoadingScreen(
     ClientNetworkContext networkContext,
     string worldDir,
     WorldSettings settings,
-    IInternalServerHost serverHost) : UIScreen(context)
+    IInternalServerHost serverHost,
+    ModManager mods) : UIScreen(context)
 {
     private readonly ILogger<LevelLoadingScreen> _logger = Log.Instance.For<LevelLoadingScreen>();
     private bool _serverStarted;
@@ -89,6 +91,8 @@ public class LevelLoadingScreen(
                 clientConnection.setNetworkHandler(clientHandler);
                 _logger.LogInformation("[Internal-Client] Sending HandshakePacket");
                 clientHandler.AddToSendQueue(HandshakePacket.Get(networkContext.Session.username));
+
+                mods.RegisterModCommands((command) => server.CommandHandler.Register(command));
 
                 Context.Navigator.Navigate(new ConnectingScreen(Context, clientHandler));
             }

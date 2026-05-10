@@ -12,7 +12,7 @@ public interface ICommandHandler
     public CommandDispatcher<Command.CommandSource> Dispatcher { get; }
 }
 
-internal class ServerCommandHandler : ICommandHandler
+public class ServerCommandHandler : ICommandHandler
 {
     private readonly HelpCommand _helpCommand = new();
 

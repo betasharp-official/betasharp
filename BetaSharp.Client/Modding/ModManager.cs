@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Reflection;
+using BetaSharp.Server.Command;
 using SixLabors.ImageSharp.Drawing.Processing;
 
 namespace BetaSharp.Client.Modding;
@@ -60,6 +61,11 @@ public class ModManager(string modsFolder, BetaSharp game)
     public void InitMods()
     {
         foreach (var mod in Mods) mod.InternalInit(game);
+    }
+
+    public void RegisterModCommands(Action<Command> register)
+    {
+        foreach (var mod in Mods) mod.RegisterCommands(register);
     }
 
     public void LoadMods()

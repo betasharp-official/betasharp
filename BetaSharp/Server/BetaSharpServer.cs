@@ -36,7 +36,7 @@ public abstract class BetaSharpServer : ICommandOutput
     public IServerConfiguration config;
     public ServerWorld[] worlds;
     public PlayerManager playerManager;
-    private ServerCommandHandler _commandHandler;
+    public ServerCommandHandler CommandHandler;
     public bool running = true;
     public bool stopped;
     private int _ticks;
@@ -82,7 +82,7 @@ public abstract class BetaSharpServer : ICommandOutput
 
     protected virtual bool Init()
     {
-        _commandHandler = new ServerCommandHandler(this);
+        CommandHandler = new ServerCommandHandler(this);
 
         RegisterReloadListener(new DefaultGameModeListener(this));
         RegisterReloadListener(new RecipeManager());
@@ -511,7 +511,7 @@ public abstract class BetaSharpServer : ICommandOutput
                 if (_pendingCommands.Count == 0) break;
                 cmd = _pendingCommands.Dequeue();
             }
-            _commandHandler.ExecuteCommand(cmd);
+            CommandHandler.ExecuteCommand(cmd);
         }
     }
 
