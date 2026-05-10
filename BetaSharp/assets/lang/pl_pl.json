@@ -19,7 +19,20 @@
         "create": "Stwórz",
         "customize": "Dostosuj",
         "achievements": "Osiągnięcia",
-        "stats": "Statystyki"
+        "stats": "Statystyki",
+        "container": {
+            "crafting": "Wytwarzanie",
+            "inventory": "Ekwipunek",
+            "dispenser": "Podajnik",
+            "furnace": "Piec",
+            "tip": {
+                "move": "Przenoszenie",
+                "quickMove": "Szybkie przenoszenie",
+                "takeHalf": "Wzięcie połowy",
+                "place": "Położenie",
+                "placeOne": "Położenie jednego"
+            }
+        }
     },
     "menu": {
         "singleplayer": "Jednoosobowy",
@@ -161,6 +174,7 @@
         "controls": "Sterowanie...",
         "keyboardControls": "Sterowanie klawiaturą...",
         "controllerSettings": "Ustawienia kontrolera...",
+        "controllerType": "Typ kontrolera",
         "video": {
             "text": "Ustawienia wideo...",
             "performance": "Wydajność",
@@ -180,6 +194,7 @@
         "environmentAnim": "Animacje otoczenia",
         "sensitivity": {
             "text": "Czułość",
+            "controllerText": "Czułość kontrolera",
             "min": "*yawn*",
             "max": "HIPERPRĘDKOŚĆ!!!"
         },
@@ -214,7 +229,32 @@
             "normal": "Normalny",
             "large": "Duży"
         },
-        "advancedOpengl": "Zaawansowany OpenGL"
+        "advancedOpengl": "Zaawansowany OpenGL",
+        "fps": {
+            "text": "FPS",
+            "maxFps": "Maks. FPS",
+            "unlimited": "Nielimitowane"
+        },
+        "showCoordinates": "Pokazuj współrzędne",
+        "uiCursors": "Kursory interfejsu",
+        "gamma": "Gamma",
+        "vSync": "VSync",
+        "mipmaps": "Mipmaps",
+        "menuMusic": "Muzyka menu",
+        "msaa": "MSAA",
+        "fov": "FOV",
+        "movement": {
+            "text": "Ruch"
+        },
+        "view": {
+            "text": "Widok"
+        },
+        "other": {
+            "text": "Inne"
+        },
+        "editBindings": "Edytuj przypisania...",
+        "resetBindings": "Resetuj przypisania...",
+        "controllerBindings": "Controller Bindings"
     },
     "performance": {
         "max": "Maks. FPS",
@@ -236,7 +276,12 @@
         "fog": "Przełączanie mgły",
         "sneak": "Skradanie",
         "playerlist": "Listya graczy",
-        "zoom": "Przybliżenie"
+        "zoom": "Przybliżenie",
+        "hotbarLeft": "Hotbar lewo",
+        "hotbarRight": "Hotbar prawo",
+        "pickBlock": "Wybierz blok",
+        "camera": "Tryb kamery",
+        "pause": "Pauza"
     },
     "texturePack": {
         "openFolder": "Otwórz folder z paczkami tekstur",

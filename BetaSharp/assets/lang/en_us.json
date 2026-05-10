@@ -19,7 +19,20 @@
         "create": "Create",
         "customize": "Customize",
         "achievements": "Achievements",
-        "stats": "Statistics"
+        "stats": "Statistics",
+        "container": {
+            "crafting": "Crafting",
+            "inventory": "Inventory",
+            "dispenser": "Dispenser",
+            "furnace": "Furnace",
+            "tip": {
+                "move": "Move",
+                "quickMove": "Quick Move",
+                "takeHalf": "Take Half",
+                "place": "Place",
+                "placeOne": "Place One"
+            }
+        }
     },
     "menu": {
         "singleplayer": "Singleplayer",
@@ -161,6 +174,7 @@
         "controls": "Controls...",
         "keyboardControls": "Keyboard Controls...",
         "controllerSettings": "Controller Settings...",
+        "controllerType": "Controller Type",
         "video": {
             "text": "Video Settings...",
             "performance": "Performance",
@@ -180,6 +194,7 @@
         "environmentAnim": "Environment Anim",
         "sensitivity": {
             "text": "Sensitivity",
+            "controllerText": "Controller Sensitivity",
             "min": "*yawn*",
             "max": "HYPERSPEED!!!"
         },
@@ -214,7 +229,32 @@
             "normal": "Normal",
             "large": "Large"
         },
-        "advancedOpengl": "Advanced OpenGL"
+        "advancedOpengl": "Advanced OpenGL",
+        "fps": {
+            "text": "FPS",
+            "maxFps": "Max FPS",
+            "unlimited": "Unlimited"
+        },
+        "showCoordinates": "Show Coordinates",
+        "uiCursors": "UI Cursors",
+        "gamma": "Gamma",
+        "vSync": "VSync",
+        "mipmaps": "Mipmaps",
+        "menuMusic": "Menu Music",
+        "msaa": "MSAA",
+        "fov": "FOV",
+        "movement": {
+            "text": "Movement"
+        },
+        "view": {
+            "text": "View"
+        },
+        "other": {
+            "text": "Other"
+        },
+        "editBindings": "Edit Bindings...",
+        "resetBindings": "Reset Bindings...",
+        "controllerBindings": "Controller Bindings"
     },
     "performance": {
         "max": "Max FPS",
@@ -236,7 +276,12 @@
         "fog": "Toggle Fog",
         "sneak": "Sneak",
         "playerlist": "List players",
-        "zoom": "Zoom"
+        "zoom": "Zoom",
+        "hotbarLeft": "Hotbar Left",
+        "hotbarRight": "Hotbar Right",
+        "pickBlock": "Pick Block",
+        "camera": "Camera Mode",
+        "pause": "Pause"
     },
     "texturePack": {
         "openFolder": "Open texture pack folder",

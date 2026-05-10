@@ -24,6 +24,8 @@ public class CraftingScreen(
     {
         base.Init();
 
+        TranslationStorage translationStorage = TranslationStorage.Instance;
+
         // Background Image
         var background = new Image
         {
@@ -39,14 +41,14 @@ public class CraftingScreen(
         _containerPanel.AddChild(background);
 
         // Labels
-        var lblCrafting = new Label { Text = "Crafting", HasShadow = false };
+        var lblCrafting = new Label { Text = translationStorage.TranslateKey("gui.container.crafting"), HasShadow = false };
         lblCrafting.TextColor = Color.Gray40;
         lblCrafting.Style.Position = PositionType.Absolute;
         lblCrafting.Style.Left = 28;
         lblCrafting.Style.Top = 6;
         _containerPanel.AddChild(lblCrafting);
 
-        var lblInventory = new Label { Text = "Inventory", HasShadow = false };
+        var lblInventory = new Label { Text = translationStorage.TranslateKey("gui.container.inventory"), HasShadow = false };
         lblInventory.TextColor = Color.Gray40;
         lblInventory.Style.Position = PositionType.Absolute;
         lblInventory.Style.Left = 8;
