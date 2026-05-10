@@ -5,6 +5,9 @@ using BetaSharp.Screens.Slots;
 
 namespace BetaSharp.Client.UI.Controls;
 
+/// <summary>
+/// UIElement for a single Slot on a inventory interface. Displays a Slot, and handles hovering.
+/// </summary>
 public class UISlot : UIElement
 {
     public Slot Slot { get; }

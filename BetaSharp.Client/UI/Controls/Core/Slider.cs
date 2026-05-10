@@ -4,6 +4,9 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
+/// <summary>
+/// Slider, used for options.
+/// </summary>
 public class Slider : UIElement
 {
     public float Value { get; set; } = 0f;

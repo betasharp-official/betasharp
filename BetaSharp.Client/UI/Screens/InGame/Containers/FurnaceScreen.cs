@@ -31,10 +31,7 @@ public class FurnaceScreen(
         var background = new Image
         {
             Texture = Renderer.TextureManager.GetTextureId("/gui/furnace.png"),
-            U = 0,
-            V = 0,
-            UWidth = 176,
-            VHeight = 166
+            UV = new (0, 0, 176, 166),
         };
         background.Style.Width = _xSize;
         background.Style.Height = _ySize;

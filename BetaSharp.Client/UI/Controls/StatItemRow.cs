@@ -4,6 +4,9 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Client.UI.Controls;
 
+/// <summary>
+/// Single row in the Statistics menu.
+/// </summary>
 public class StatItemRow : UIElement
 {
     private const float TextY = 8;
@@ -55,7 +58,7 @@ public class StatItemRow : UIElement
     {
         if (IsAlternate)
         {
-            renderer.DrawRect(0, 0, ComputedWidth, ComputedHeight, new Color(Color.White, 10));
+            renderer.DrawRect(0, 0, ComputedWidth, ComputedHeight, Color.White.WithAlpha(10));
         }
 
         if (IsHovered)

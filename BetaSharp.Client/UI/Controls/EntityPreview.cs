@@ -3,6 +3,10 @@ using BetaSharp.Entities;
 
 namespace BetaSharp.Client.UI.Controls;
 
+/// <summary>
+/// Shows a entity preview.
+/// </summary>
+/// <param name="getScreen"></param>
 public class EntityPreview(Func<UIScreen?> getScreen) : UIElement
 {
     public Entity? Entity { get; set; }

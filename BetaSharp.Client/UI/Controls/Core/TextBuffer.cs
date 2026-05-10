@@ -1,5 +1,8 @@
 namespace BetaSharp.Client.UI.Controls.Core;
 
+/// <summary>
+/// Helper class for TextField to implement cursor stuff.
+/// </summary>
 public class TextBuffer
 {
     private string _text = "";
@@ -16,7 +19,16 @@ public class TextBuffer
     }
 
     public int MaxLength { get; set; } = 32;
+
+    /// <summary>
+    /// Marks the current current position (index to insert at when typing). 0 is start, while this being
+    /// at Text.Length makes it at the end.
+    /// </summary>
     public int CursorPosition { get; set; } = 0;
+
+    /// <summary>
+    /// Provides the start of the selection. The end of the selection is marked by CursorPosition!
+    /// </summary>
     public int SelectionStart { get; set; } = 0;
 
     public bool HasSelection => SelectionStart != CursorPosition;
@@ -32,6 +44,10 @@ public class TextBuffer
         }
     }
 
+    /// <summary>
+    /// Insert text at the current position.
+    /// Deletes selection if we have it, to override it!
+    /// </summary>
     public void Insert(string input)
     {
         DeleteSelection();
@@ -46,6 +62,9 @@ public class TextBuffer
         SelectionStart = CursorPosition;
     }
 
+    /// <summary>
+    /// Delete the part of the current selection.
+    /// </summary>
     public void DeleteSelection()
     {
         if (!HasSelection) return;
@@ -58,6 +77,9 @@ public class TextBuffer
         SelectionStart = CursorPosition;
     }
 
+    /// <summary>
+    /// Remove one character behind the cursor, or delete a selection.
+    /// </summary>
     public void Backspace()
     {
         if (HasSelection)
@@ -72,6 +94,10 @@ public class TextBuffer
         }
     }
 
+
+    /// <summary>
+    /// Remove one character in front of the cursor, or delete a selection.
+    /// </summary>
     public void Delete()
     {
         if (HasSelection)
@@ -84,12 +110,20 @@ public class TextBuffer
         }
     }
 
+    /// <summary>
+    /// Move the cursor a amount of steps.
+    /// </summary>
+    /// <param name="select">If it should select (e.g. shift pressed)</param>
     public void MoveCursor(int delta, bool select)
     {
         CursorPosition = Math.Clamp(CursorPosition + delta, 0, _text.Length);
         if (!select) SelectionStart = CursorPosition;
     }
 
+    /// <summary>
+    /// Move the cursor to a position.
+    /// </summary>
+    /// <param name="select">If it should select (e.g. shift pressed)</param>
     public void MoveTo(int position, bool select)
     {
         CursorPosition = Math.Clamp(position, 0, _text.Length);

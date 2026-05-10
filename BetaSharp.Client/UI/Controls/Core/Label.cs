@@ -3,18 +3,16 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
+/// <summary>
+/// UI element, able to render text.
+/// </summary>
 public class Label : UIElement
 {
     public string Text { get; set; } = "";
     public Color TextColor { get; set; } = Color.White;
     public bool Centered { get; set; } = false;
 
-    // Scale is rounded to the nearest whole number for pixel art consistency.
-    public float Scale
-    {
-        get;
-        set => field = MathF.Round(value);
-    } = 1.0f;
+    public float Scale { get; set; } = 1.0f;
     public bool HasShadow { get; set; } = true;
 
     public override bool DoTextMeasuring => true;

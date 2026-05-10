@@ -2,17 +2,20 @@ using BetaSharp.Client.Input;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
+// handles input for the textfield
+
 public partial class TextField
 {
     private void HandleKeyDown(UIKeyEvent e)
     {
         if (!IsFocused || !e.IsDown) return;
 
+        // get control keys
         bool control = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_LMETA) || Keyboard.isKeyDown(Keyboard.KEY_RMETA);
         bool shift = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
 
         string oldText = _buffer.Text;
-        bool handled = false;
+        bool handled = false; // flag for each concurrent handling
 
         if (control)
         {
@@ -24,12 +27,14 @@ public partial class TextField
             handled = HandleFunctionalKey(e.KeyCode, shift);
         }
 
+        // insert?
         if (!handled && !control && e.KeyChar >= 32 && e.KeyChar != 127)
         {
             _buffer.Insert(e.KeyChar.ToString());
             handled = true;
         }
 
+        // call OnTextChanged if handled
         if (handled)
         {
             if (oldText != _buffer.Text)
@@ -40,6 +45,7 @@ public partial class TextField
         }
     }
 
+    // handle a shortcut (e.g. ctrl-a)
     private bool HandleShortcut(int keyCode)
     {
         switch (keyCode)
@@ -68,6 +74,7 @@ public partial class TextField
         return false;
     }
 
+    // handle a functional key, e.g. escape or delete
     private bool HandleFunctionalKey(int keyCode, bool shift)
     {
         switch (keyCode)

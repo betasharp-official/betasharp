@@ -3,6 +3,9 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
+/// <summary>
+/// Base class for any ListItem, e.g. a world in the world select screen.
+/// </summary>
 public abstract class ListItem : UIElement
 {
     public bool IsSelected { get; set; }
@@ -57,6 +60,9 @@ public abstract class ListItem : UIElement
     }
 }
 
+/// <summary>
+/// Represents a ListItem with a Value of type T, and a constructor to set it.
+/// </summary>
 public class ListItem<T>(T value) : ListItem
 {
     public T Value { get; set; } = value;

@@ -4,6 +4,9 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
+/// <summary>
+/// Element for entering single-line text.
+/// </summary>
 public partial class TextField : UIElement
 {
     private readonly TextBuffer _buffer = new();

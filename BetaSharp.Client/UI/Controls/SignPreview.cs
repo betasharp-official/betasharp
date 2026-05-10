@@ -3,6 +3,9 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls;
 
+/// <summary>
+/// Displays a sign.
+/// </summary>
 public class SignPreview : UIElement
 {
     public BlockEntitySign? Sign { get; set; }

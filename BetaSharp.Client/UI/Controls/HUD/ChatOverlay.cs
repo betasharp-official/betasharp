@@ -3,6 +3,9 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
 
+/// <summary>
+/// UIElement for the chat overlay (i.e. the chat messages list.)
+/// </summary>
 public class ChatOverlay : UIElement
 {
     private const int LineHeight = 9;

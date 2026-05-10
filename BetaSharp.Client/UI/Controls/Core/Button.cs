@@ -4,6 +4,9 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
+/// <summary>
+/// UIElement for a button, a clickable object with text inside it.
+/// </summary>
 public class Button : UIElement
 {
     public string Text { get; set; } = "";
@@ -14,6 +17,9 @@ public class Button : UIElement
     public override bool DoTextMeasuring => true;
 
 
+    /// <summary>
+    /// Create a button, with a sound to play when clicked.
+    /// </summary>
     public Button(Action clickSound)
     {
         Style.Width = 200;

@@ -1,16 +1,21 @@
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.UI.Rendering;
+using SixLabors.ImageSharp;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
+/// <summary>
+/// UIElement that displays the image in a TextureHandle
+/// </summary>
 public class Image : UIElement
 {
     public TextureHandle? Texture { get; set; }
 
-    public float? U { get; set; }
-    public float? V { get; set; }
-    public float? UWidth { get; set; }
-    public float? VHeight { get; set; }
+    /// <summary>
+    /// If not null, describes the rectangle in UV space of where
+    /// in the TextureHandle to render the image.
+    /// </summary>
+    public RectangleF? UV { get; set; }
 
     public override List<string> GetInspectorProperties()
     {
@@ -18,9 +23,9 @@ public class Image : UIElement
         if (Texture != null)
         {
             props.Add($"Texture:  Id={Texture.Id}  {Texture.Texture?.Source ?? "null"}");
-            if (U.HasValue && V.HasValue && UWidth.HasValue && VHeight.HasValue)
+            if (UV is RectangleF uv)
             {
-                props.Add($"UV:       ({U:F1}, {V:F1})  {UWidth:F1}×{VHeight:F1}");
+                props.Add($"UV:       ({uv.X:F1}, {uv.Y:F1})  {uv.Width:F1}×{uv.Height:F1}");
             }
         }
         else
@@ -34,9 +39,9 @@ public class Image : UIElement
     {
         if (Texture != null)
         {
-            if (U.HasValue && V.HasValue && UWidth.HasValue && VHeight.HasValue)
+            if (UV is RectangleF uv)
             {
-                renderer.DrawTexturedModalRect(Texture, 0, 0, U.Value, V.Value, UWidth.Value, VHeight.Value);
+                renderer.DrawTexturedModalRect(Texture, 0, 0, uv.X, uv.Y, uv.Width, uv.Height);
             }
             else
             {

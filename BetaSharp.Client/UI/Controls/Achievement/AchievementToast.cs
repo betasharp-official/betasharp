@@ -3,9 +3,14 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.Achievement;
 
+using Achievement = global::BetaSharp.Achievement;
+
+/// <summary>
+/// UI element for a Achievement toast, displayed when a player gets a Achievement; displaying info about it.
+/// </summary>
 public class AchievementToast : UIElement
 {
-    private global::BetaSharp.Achievement? _achievement;
+    private Achievement? _achievement;
     private string? _title;
     private string? _description;
     private long _startTime;
@@ -18,7 +23,10 @@ public class AchievementToast : UIElement
         Style.Height = 32;
     }
 
-    public void QueueAchievement(global::BetaSharp.Achievement ach)
+    /// <summary>
+    /// Queue the achievement get message
+    /// </summary>
+    public void QueueAchievement(Achievement ach)
     {
         _achievement = ach;
         _title = "Achievement get!";
@@ -27,7 +35,10 @@ public class AchievementToast : UIElement
         _isInfo = false;
     }
 
-    public void QueueInfo(global::BetaSharp.Achievement ach)
+    /// <summary>
+    /// Queue the achievement info message
+    /// </summary>
+    public void QueueInfo(Achievement ach)
     {
         _achievement = ach;
         _title = ach.StatName;

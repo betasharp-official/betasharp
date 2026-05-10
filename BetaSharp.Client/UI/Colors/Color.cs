@@ -2,9 +2,15 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace BetaSharp.Client.Guis;
 
+/// <summary>
+/// Struct for a Color, mostly for UI. Stored interrnally as a int.
+/// Fully readonly! You can not modify this after initalized.
+/// </summary>
 public readonly partial struct Color
 {
     private readonly int _value;
+
+    // Channel extractors
 
     public int A => BitConverter.IsLittleEndian ? _value >> 24 : _value & 0xFF;
     public int R => BitConverter.IsLittleEndian ? _value & 0xFF : _value >> 24;
@@ -21,6 +27,9 @@ public readonly partial struct Color
         _value = value;
     }
 
+    /// <summary>
+    /// Get a Color from a combined "v" value, in the format 0xAARRGGBB.
+    /// </summary>
     public static Color FromArgb(uint v)
     {
         if (BitConverter.IsLittleEndian)
@@ -33,6 +42,10 @@ public readonly partial struct Color
         }
     }
 
+    /// <summary>
+    /// Get a color from a combined "v" value, in the format 0x00RRGGBB.
+    /// Note that the alpha value is filled with FF!
+    /// </summary>
     public static Color FromRgb(uint v)
     {
         if (BitConverter.IsLittleEndian)
@@ -45,6 +58,19 @@ public readonly partial struct Color
         }
     }
 
+    /// <summary>
+    /// Convert a color code to a Color, with a optinal alpha value, or a option to "darken" it.
+    ///
+    /// Color code is in the format 0bARGB, where A, R, G, and B are all bits (binary!)
+    /// "A" decides if the final channels should all have 85 added to them.
+    /// R, G, and B are all bits, where 1 is 170 and 0 is just 0.
+    /// </summary>
+    /// <example>
+    /// This should return rgb(255, 170, 255):
+    /// <code>
+    /// Color.FromColorCode(0b1101);
+    /// </code>
+    /// </example>
     public static Color FromColorCode(int colorCode, byte alpha = 0xFF, bool darken = false)
     {
         int baseColorOffset = (colorCode >> 3 & 1) * 85;
@@ -71,6 +97,9 @@ public readonly partial struct Color
         }
     }
 
+    /// <summary>
+    /// Returns a new copy of this color, darkened.
+    /// </summary>
     public Color Darken()
     {
         if (BitConverter.IsLittleEndian)
@@ -85,6 +114,10 @@ public readonly partial struct Color
         }
     }
 
+    /// <summary>
+    /// Create a color from R, G, and B byte values, as well as a optional
+    /// Alpha value. (0xFF is opauqe)
+    /// </summary>
     public Color(byte r, byte g, byte b, byte a = 0xFF)
     {
         if (BitConverter.IsLittleEndian)
@@ -97,25 +130,27 @@ public readonly partial struct Color
         }
     }
 
-    public Color(Color c, byte a = 0xFF)
-    {
+    /// <summary>
+    /// Return the current color but overriding the alpha with a.
+    /// </summary>
+    public Color WithAlpha(byte a) {
         if (BitConverter.IsLittleEndian)
         {
-            _value = (int)((uint)c & 0x00FFFFFF) | a << 24;
+            return new((int)((uint)this & 0x00FFFFFF) | a << 24);
         }
         else
         {
-            _value = (int)((uint)c & 0xFFFFFF00) | a;
+            return new((int)((uint)this & 0xFFFFFF00) | a);
         }
     }
 
-    public Color(float r, float g, float b, float a = 1f) : this((byte)(r * 0xFF), (byte)(g * 0xFF), (byte)(b * 0xFF), (byte)(a * 0xFF)) { }
-
+    // Converters
     public static explicit operator uint(Color color) => (uint)color._value;
     public static explicit operator int(Color color) => color._value;
     public static explicit operator Color(uint color) => new(color);
     public static explicit operator Color(int color) => new(color);
 
+    // Some other stuffs
     public override string ToString() => _value.ToString("x8");
     public override bool Equals([NotNullWhen(true)] object? obj) => _value.Equals(obj);
     public override int GetHashCode() => _value;
