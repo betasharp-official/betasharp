@@ -5,10 +5,10 @@ namespace BetaSharp.Registries.Data;
 public interface IDataAsset
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public string Name { get; internal set; }
+    public string Name { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public Namespace Namespace { get; internal set; }
+    public Namespace Namespace { get; set; }
 
     int GetHashCode() => HashCode.Combine(Name.GetHashCode(), Namespace.GetHashCode());
     string? ToString() => Namespace + ':' + Name;

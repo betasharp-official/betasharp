@@ -8,6 +8,6 @@ internal static class RegistryDefinitions
         new(RegistryKeys.GameModes, "gamemode");
 
     public static readonly RegistryDefinition<RecipeDefinition> Recipes =
-        new(RegistryKeys.Recipes, "recipe", serversideOnly: true);
+        new(RegistryKeys.Recipes, "recipe");
 
 }
