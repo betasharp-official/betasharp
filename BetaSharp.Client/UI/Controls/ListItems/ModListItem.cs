@@ -11,7 +11,8 @@ public class ModListItem(Mod value) : ListItem<Mod>(value)
     {
         base.Render(renderer);
 
+        
         renderer.DrawText(Value.Name, 5, 5, Color.White);
-        renderer.DrawText($"By {Value.Author}", 5, 17, Color.GrayA0);
+        renderer.DrawText(TranslationStorage.Instance.TranslateKeyFormat("mods.by", Value.Author), 5, 17, Color.GrayA0);
     }
 }

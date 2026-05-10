@@ -71,7 +71,7 @@ public class MainMenuScreen(
         Root.AddChild(btnMultiplayer);
 
         Button btnMods = CreateButton();
-        btnMods.Text = "Mods";
+        btnMods.Text = translator.TranslateKey("mods.text");
         btnMods.OnClick += (e) => Context.Navigator.Navigate(new ModsScreen(Context, game.Mods));
         btnMods.Style.MarginBottom = 4;
         Root.AddChild(btnMods);

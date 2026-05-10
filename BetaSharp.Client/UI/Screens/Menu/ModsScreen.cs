@@ -24,10 +24,12 @@ public class ModsScreen(UIContext context, ModManager modMan) : UIScreen(context
     {
         Root.AddChild(new Background());
 
+        TranslationStorage translations = TranslationStorage.Instance;
+
         Root.Style.AlignItems = Align.Center;
         Root.Style.SetPadding(20);
 
-        Label title = new() { Text = "Mods", TextColor = Color.White };
+        Label title = new() { Text = translations.TranslateKey("mods.text"), TextColor = Color.White };
         title.Style.MarginBottom = 8;
         Root.AddChild(title);
 
@@ -58,8 +60,8 @@ public class ModsScreen(UIContext context, ModManager modMan) : UIScreen(context
                 _description.Visible = true;
 
                 _title.Text = mod.Name;
-                _author.Text = $"Made by {mod.Author}";
-                _id.Text = $"ID: {mod.ID}";
+                _author.Text = translations.TranslateKeyFormat("mods.by", mod.Author);
+                _id.Text = translations.TranslateKeyFormat("mods.id", mod.ID);
                 _description.Text = mod.Description;
             };
 
@@ -93,7 +95,7 @@ public class ModsScreen(UIContext context, ModManager modMan) : UIScreen(context
 
 
         Button btnDone = CreateButton();
-        btnDone.Text = "Done";
+        btnDone.Text = translations.TranslateKey("gui.done");
         btnDone.Style.Width = 150;
         btnDone.Style.MarginTop = 8;
         btnDone.OnClick += (e) => Context.Navigator.Navigate(null);

@@ -1292,5 +1292,10 @@
             "title": "When Pigs Fly",
             "desc": "Fly a pig off a cliff"
         }
+    },
+    "mods": {
+        "text": "Mods",
+        "by": "By %1$s",
+        "id": "Mod ID: %1$s"
     }
 }
