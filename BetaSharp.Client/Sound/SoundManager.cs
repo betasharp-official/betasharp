@@ -320,6 +320,17 @@ public class SoundManager : IDisposable
         CurrentStreamingName = entry.SoundName;
     }
 
+    public void PlayBrakeSound(BlockSoundGroup soundGroup, int x, int y, int z) =>
+        PlaySound(soundGroup.BreakSound, x + 0.5F, y + 0.5F, z + 0.5F, (soundGroup.Volume + 1.0F) / 2.0F, soundGroup.Pitch * 0.8F);
+
+    public void PlayStepSound(BlockSoundGroup soundGroup, int x, int y, int z) =>
+        PlaySound(soundGroup.StepSound, x + 0.5F, y + 0.5F, z + 0.5F, (soundGroup.Volume + 1.0F) / 8.0F, soundGroup.Pitch * 0.5F);
+
+    public void PlayDoorSound(int x, int y, int z) => PlayDoorSound(x, y, z, _rand.NextDouble() < 0.5D);
+
+    public void PlayDoorSound(int x, int y, int z, bool state) =>
+        PlaySound(state ? "random.door_open" : "random.door_close", x + 0.5F, y + 0.5F, z + 0.5F, 1.0F, _rand.NextFloat() * 0.1F + 0.9F);
+
     public void PlaySound(string name, float x, float y, float z, float volume, float pitch)
     {
         if (!(s_started && _options.SoundVolume != 0.0F)) return;

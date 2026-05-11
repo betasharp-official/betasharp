@@ -3,6 +3,7 @@ using BetaSharp.Client.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Input;
 
@@ -95,7 +96,7 @@ public class PlayerController
 
     public virtual bool sendPlaceBlock(
         ClientPlayerEntity player,
-        World world,
+        IWorldContext world,
         ItemStack selectedItem,
         int blockX,
         int blockY,

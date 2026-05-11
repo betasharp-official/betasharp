@@ -6,6 +6,7 @@ using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Input;
 
@@ -51,6 +52,11 @@ public class PlayerControllerMP : PlayerController
             }
         }
 
+        if (blockRemoved)
+        {
+            Game.SoundManager.PlayBrakeSound(Block.Blocks[blockId].SoundGroup, x, y, z);
+        }
+
         return blockRemoved;
     }
 
@@ -92,7 +98,6 @@ public class PlayerControllerMP : PlayerController
 
     public override void sendBlockRemoving(int x, int y, int z, int direction)
     {
-        if (!Game.Player.GameMode.CanBreak) return;
         if (isHittingBlock)
         {
             syncCurrentPlayItem();
@@ -104,6 +109,8 @@ public class PlayerControllerMP : PlayerController
             {
                 if (x == currentBlockX && y == currentBlockY && z == currentblockZ)
                 {
+                    if (!Game.Player.GameMode.CanBreak) return;
+
                     int blockId = Game.World.Reader.GetBlockId(x, y, z);
                     if (blockId == 0)
                     {
@@ -111,18 +118,29 @@ public class PlayerControllerMP : PlayerController
                         return;
                     }
 
-                    Block block = Block.Blocks[blockId];
-                    curBlockDamageMP += block.getHardness(Game.Player);
-                    if (_mineSoundTimer % 4 == 0 && block != null)
+                    Block? block = Block.Blocks[blockId];
+
+                    // If it's an unknown block id, break behavior will be handled on server.
+                    if (block == null)
                     {
-                        Game.SoundManager.PlaySound(block.SoundGroup.StepSound, (float)x + 0.5F, (float)y + 0.5F, (float)z + 0.5F, (block.SoundGroup.Volume + 1.0F) / 8.0F, block.SoundGroup.Pitch * 0.5F);
+                        if (_mineSoundTimer++ % 4 == 0)
+                        {
+                            Game.SoundManager.PlayStepSound(Block.Bedrock.SoundGroup, x, y, z);
+                        }
+                        return;
                     }
 
-                    ++_mineSoundTimer;
+                    curBlockDamageMP += block.getHardness(Game.Player);
+                    if (_mineSoundTimer++ % 4 == 0)
+                    {
+                        Game.SoundManager.PlayStepSound(block.SoundGroup, x, y, z);
+                    }
+
                     if (curBlockDamageMP >= 1.0F)
                     {
                         isHittingBlock = false;
                         netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(2, x, y, z, direction));
+                        Game.WorldRenderer.WorldEventBreak(block, 2001, x, y, z);;
                         sendBlockRemoved(x, y, z, direction);
                         curBlockDamageMP = 0.0F;
                         prevBlockDamageMP = 0.0F;
@@ -178,7 +196,7 @@ public class PlayerControllerMP : PlayerController
 
     public override bool sendPlaceBlock(
         ClientPlayerEntity player,
-        World world,
+        IWorldContext world,
         ItemStack selectedItem,
         int blockX,
         int blockY,

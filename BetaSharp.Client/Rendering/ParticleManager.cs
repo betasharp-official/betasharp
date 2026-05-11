@@ -363,7 +363,7 @@ public class ParticleManager
             RandomJitterX(), RandomJitterY(), (short)RandomBaseMaxAge());
     }
 
-    public void addBlockDestroyEffects(int x, int y, int z, int blockId, int meta)
+    public void AddBlockDestroyEffects(int x, int y, int z, int blockId, int meta)
     {
         if (blockId == 0)
         {
@@ -371,6 +371,11 @@ public class ParticleManager
         }
 
         Block block = Block.Blocks[blockId];
+        AddBlockDestroyEffects(x, y, z, block, meta);
+    }
+
+    public void AddBlockDestroyEffects(int x, int y, int z, Block block, int meta)
+    {
         byte particlesPerAxis = 4;
 
         for (int gridX = 0; gridX < particlesPerAxis; ++gridX)

@@ -1305,7 +1305,6 @@ public partial class BetaSharp :
     public void LoadWorld(string dir, string displayName, WorldSettings settings)
     {
         StatFileWriter.ReadStat(Stats.Stats.LoadWorldStat, 1);
-        PlayerController = new PlayerControllerSP(this);
         StartWorld(dir, displayName, settings);
     }
 

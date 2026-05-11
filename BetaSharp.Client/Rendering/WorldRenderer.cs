@@ -850,14 +850,7 @@ public class WorldRenderer : IWorldEventListener
                 _game.SoundManager.PlaySound("random.bow", x, y, z, 1.0F, 1.2F);
                 break;
             case 1003:
-                if (Random.Shared.NextDouble() < 0.5D)
-                {
-                    _game.SoundManager.PlaySound("random.door_open", x + 0.5F, y + 0.5F, z + 0.5F, 1.0F, _world.Random.NextFloat() * 0.1F + 0.9F);
-                }
-                else
-                {
-                    _game.SoundManager.PlaySound("random.door_close", x + 0.5F, y + 0.5F, z + 0.5F, 1.0F, _world.Random.NextFloat() * 0.1F + 0.9F);
-                }
+                _game.SoundManager.PlayDoorSound(x, y, z);
                 break;
             case 1004:
                 _game.SoundManager.PlaySound("random.fizz", x + 0.5F, y + 0.5F, z + 0.5F, 0.5F, 2.6F + (random.NextFloat() - random.NextFloat()) * 0.8F);
@@ -898,17 +891,22 @@ public class WorldRenderer : IWorldEventListener
 
                 return;
             case 2001: // This is for breaking a block
-                blockId = data & 255;
-                if (blockId > 0)
-                {
-                    Block block = Block.Blocks[blockId];
-                    _game.SoundManager.PlaySound(block.SoundGroup.BreakSound, x + 0.5F, y + 0.5F, z + 0.5F, (block.SoundGroup.Volume + 1.0F) / 2.0F, block.SoundGroup.Pitch * 0.8F);
-                }
-
-                _game.ParticleManager.addBlockDestroyEffects(x, y, z, data & 255, data >> 8 & 255);
+                WorldEventBreak( data & 255, (data >> 8) & 255, x, y, z);
                 break;
         }
+    }
 
+    public void WorldEventBreak(int blockId, int meta, int x, int y, int z)
+    {
+        if (blockId == 0) return;
+        Block block = Block.Blocks[blockId];
+        WorldEventBreak(block, meta, x, y, z);
+    }
+
+    public void WorldEventBreak(Block block, int meta, int x, int y, int z)
+    {
+        _game.SoundManager.PlayBrakeSound(block.SoundGroup, x, y, z);
+        _game.ParticleManager.AddBlockDestroyEffects(x, y, z, block, meta);
     }
 
     public void PlayNote(int x, int y, int z, int soundType, int pitch) { }
