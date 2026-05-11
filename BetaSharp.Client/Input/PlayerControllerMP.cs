@@ -12,7 +12,6 @@ namespace BetaSharp.Client.Input;
 
 public class PlayerControllerMP : PlayerController
 {
-
     private int currentBlockX = -1;
     private int currentBlockY = -1;
     private int currentblockZ = -1;
@@ -50,11 +49,6 @@ public class PlayerControllerMP : PlayerController
                 ItemStack.onRemoved(Game.Player);
                 Game.Player.ClearStackInHand();
             }
-        }
-
-        if (blockRemoved)
-        {
-            Game.SoundManager.PlayBrakeSound(Block.Blocks[blockId].SoundGroup, x, y, z);
         }
 
         return blockRemoved;
@@ -127,6 +121,7 @@ public class PlayerControllerMP : PlayerController
                         {
                             Game.SoundManager.PlayStepSound(Block.Bedrock.SoundGroup, x, y, z);
                         }
+
                         return;
                     }
 
@@ -140,8 +135,11 @@ public class PlayerControllerMP : PlayerController
                     {
                         isHittingBlock = false;
                         netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(2, x, y, z, direction));
-                        Game.WorldRenderer.WorldEventBreak(block, Game.World.Reader.GetBlockMeta(x, y, z), x, y, z);
-                        sendBlockRemoved(x, y, z, direction);
+                        if (sendBlockRemoved(x, y, z, direction))
+                        {
+                            Game.WorldRenderer.WorldEventBreak(blockId, Game.World.Reader.GetBlockMeta(x, y, z), x, y, z);
+                        }
+
                         curBlockDamageMP = 0.0F;
                         prevBlockDamageMP = 0.0F;
                         _mineSoundTimer = 0;
@@ -152,7 +150,6 @@ public class PlayerControllerMP : PlayerController
                 {
                     clickBlock(x, y, z, direction);
                 }
-
             }
         }
     }
@@ -168,7 +165,6 @@ public class PlayerControllerMP : PlayerController
             float partialDamage = prevBlockDamageMP + (curBlockDamageMP - prevBlockDamageMP) * tickDelta;
             Game.WorldRenderer.DamagePartialTime = partialDamage;
         }
-
     }
 
     public override float getBlockReachDistance()
@@ -191,7 +187,6 @@ public class PlayerControllerMP : PlayerController
             currentPlayerItem = selectedSlot;
             netClientHandler.AddToSendQueue(UpdateSelectedSlotC2SPacket.Get(currentPlayerItem));
         }
-
     }
 
     public override bool sendPlaceBlock(
@@ -247,8 +242,6 @@ public class PlayerControllerMP : PlayerController
 
     public override void OnGuiClosed(int windowId, EntityPlayer player)
     {
-        if (windowId != -9999)
-        {
-        }
+        if (windowId != -9999) { }
     }
 }

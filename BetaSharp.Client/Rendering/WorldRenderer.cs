@@ -160,7 +160,6 @@ public class WorldRenderer : IWorldEventListener
             world.EventListeners.Add(this);
             LoadRenderers();
         }
-
     }
 
     public void Tick(Entity view, float partialTicks)
@@ -242,6 +241,7 @@ public class WorldRenderer : IWorldEventListener
                         continue;
                     }
                 }
+
                 if (entity.ShouldRender(cameraPos) && (entity.IgnoreFrustumCheck || culler.IsBoundingBoxInFrustum(entity.BoundingBox)) && (entity != _game.Camera || _game.Options.CameraMode != CameraMode.FirstPerson || _game.Camera.IsSleeping))
                 {
                     int yFloor = MathHelper.Floor(entity.Y);
@@ -498,6 +498,7 @@ public class WorldRenderer : IWorldEventListener
                                 tessellator.addVertexWithUV((double)(x + edgeSlice + 0.0F), (double)(0.0F), (double)(z + 0.0F), (double)((uvX + edgeSlice + 0.5F) * uvScale), (double)((uvZ + 0.0F) * uvScale));
                             }
                         }
+
                         if (tileX <= 1)
                         {
                             tessellator.setNormal(1.0F, 0.0F, 0.0F);
@@ -524,6 +525,7 @@ public class WorldRenderer : IWorldEventListener
                                 tessellator.addVertexWithUV((double)(x + 0.0F), (double)(0.0F), (double)(z + edgeSlice + 0.0F), (double)((uvX + 0.0F) * uvScale), (double)((uvZ + edgeSlice + 0.5F) * uvScale));
                             }
                         }
+
                         if (tileZ <= 1)
                         {
                             tessellator.setNormal(0.0F, 0.0F, 1.0F);
@@ -538,6 +540,7 @@ public class WorldRenderer : IWorldEventListener
                     }
                 }
             }
+
             tessellator.draw();
             GLManager.GL.EndList();
         }
@@ -688,7 +691,6 @@ public class WorldRenderer : IWorldEventListener
             GLManager.GL.Enable(GLEnum.Texture2D);
             GLManager.GL.Disable(GLEnum.Blend);
         }
-
     }
 
     private static void DrawOutlinedBoundingBox(Box box)
@@ -778,7 +780,6 @@ public class WorldRenderer : IWorldEventListener
         {
             _game.SoundManager.PlaySound(soundName, (float)x, (float)y, (float)z, volume, pitch);
         }
-
     }
 
     public void SpawnParticle(string particleName, double x, double y, double z, double velocityX, double velocityY, double velocityZ)
@@ -810,7 +811,6 @@ public class WorldRenderer : IWorldEventListener
                     case "slime": pm.AddSlime(x, y, z, Item.Slimeball); break;
                     case "heart": pm.AddHeart(x, y, z, velocityX, velocityY, velocityZ); break;
                 }
-
             }
         }
     }
@@ -821,18 +821,14 @@ public class WorldRenderer : IWorldEventListener
         EntityRenderDispatcher.Instance.SkinManager.RequestDownload((entity as EntityPlayer)?.Name);
     }
 
-    public void NotifyEntityRemoved(Entity entity)
-    {
-    }
+    public void NotifyEntityRemoved(Entity entity) { }
 
     public void NotifyAmbientDarknessChanged()
     {
         ChunkRenderer.UpdateAllRenderers();
     }
 
-    public void UpdateBlockEntity(int x, int y, int z, BlockEntity blockEntity)
-    {
-    }
+    public void UpdateBlockEntity(int x, int y, int z, BlockEntity blockEntity) { }
 
     public void WorldEvent(EntityPlayer player, int eventId, int x, int y, int z, int data)
     {
@@ -869,6 +865,7 @@ public class WorldRenderer : IWorldEventListener
                 {
                     _game.SoundManager.PlayStreaming(null, x, y, z, 1.0F, 1.0F);
                 }
+
                 break;
             case 2000:
                 int offsetX = data % 3 - 1;
@@ -891,7 +888,7 @@ public class WorldRenderer : IWorldEventListener
 
                 return;
             case 2001: // This is for breaking a block
-                WorldEventBreak( data & 255, (data >> 8) & 255, x, y, z);
+                WorldEventBreak(data & 255, (data >> 8) & 255, x, y, z);
                 break;
         }
     }
@@ -905,7 +902,7 @@ public class WorldRenderer : IWorldEventListener
 
     public void WorldEventBreak(Block block, int meta, int x, int y, int z)
     {
-        _game.SoundManager.PlayBrakeSound(block.SoundGroup, x, y, z);
+        _game.SoundManager.PlayBreakSound(block.SoundGroup, x, y, z);
         _game.ParticleManager.AddBlockDestroyEffects(x, y, z, block, meta);
     }
 
