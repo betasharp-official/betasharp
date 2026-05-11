@@ -322,7 +322,6 @@ public class Chunk
 
         World.Lighting.QueueLightUpdate(LightType.Block, worldX, y, worldZ, worldX, y, worldZ);
         LightGaps(localX, localZ);
-        Meta.SetNibble(localX, y, localZ, meta);
 
         if (notifyBlockPlaced && rawId != 0 && !World.IsRemote)
         {

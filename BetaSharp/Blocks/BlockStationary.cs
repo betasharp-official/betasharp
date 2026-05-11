@@ -15,10 +15,7 @@ internal class BlockStationary : BlockFluid
     {
         base.neighborUpdate(@event);
         if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) != id) return;
-
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, id - 1, meta, false);
-        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id - 1, getTickRate());
+        convertToFlowing(@event);
     }
 
     private void convertToFlowing(OnTickEvent @event)
@@ -32,7 +29,6 @@ internal class BlockStationary : BlockFluid
     public override void onTick(OnTickEvent @event)
     {
         (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
-        if (@event.World.Reader.GetBlockId(x, y, z) == id) convertToFlowing(@event);
 
         if (material != Material.Lava) return;
 
