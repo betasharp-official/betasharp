@@ -84,9 +84,9 @@ internal class BlockDoor : Block
         }
     }
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvent @event) => updateDorState(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
+    public override void onBlockBreakStart(OnBlockBreakStartEvent @event) => UpdateDoorState(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
 
-    private bool updateDorState(EntityPlayer player, IWorldContext world, int x, int y, int z)
+    private bool UpdateDoorState(EntityPlayer player, IWorldContext world, int x, int y, int z)
     {
         if (material == Material.Metal)
         {
@@ -99,6 +99,7 @@ internal class BlockDoor : Block
             if (world.Reader.GetBlockId(x, y - 1, z) == id)
             {
                 y--;
+                meta = world.Reader.GetBlockMeta(x, y, z);
             }
             else
             {
@@ -121,7 +122,7 @@ internal class BlockDoor : Block
     }
 
 
-    public override bool onUse(OnUseEvent @event) => updateDorState(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
+    public override bool onUse(OnUseEvent @event) => UpdateDoorState(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
     public static int SetOpen(int meta) => (meta & 4) == 0 ? (meta - 1) & 3 : meta & 3;
 
     public void SetOpen(IWorldContext world, int x, int y, int z, bool open)

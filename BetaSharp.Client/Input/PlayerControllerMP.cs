@@ -140,7 +140,7 @@ public class PlayerControllerMP : PlayerController
                     {
                         isHittingBlock = false;
                         netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(2, x, y, z, direction));
-                        Game.WorldRenderer.WorldEventBreak(block, 2001, x, y, z);
+                        Game.WorldRenderer.WorldEventBreak(block, Game.World.Reader.GetBlockMeta(x, y, z), x, y, z);
                         sendBlockRemoved(x, y, z, direction);
                         curBlockDamageMP = 0.0F;
                         prevBlockDamageMP = 0.0F;
