@@ -18,15 +18,59 @@ public class RecipeManager : IRegistryReloadListener
 
     public void OnRegistriesRebuilt(RegistryAccess registryAccess)
     {
+        var a = registryAccess.GetOrThrow(RegistryKeys.Recipes);
+        if (!a.Any())
+        {
+            s_logger.LogCritical("Registries Rebuilt with 0 recipes. ignoring recipes reload.");
+            return;
+        }
+
         ClearRecipes();
         BuildRecipes(registryAccess.GetOrThrow(RegistryKeys.Recipes));
     }
 
-    private static void BuildRecipes(IReadableRegistry<RecipeDefinition> registry)
+    public static void Rebuild(IEnumerable<RecipeDefinition> items)
+    {
+        ClearRecipes();
+        BuildRecipes(items);
+    }
+
+    public static void Rebuild(IEnumerable<Holder<RecipeDefinition>> items)
+    {
+        ClearRecipes();
+        BuildRecipes(items);
+    }
+
+    private static void BuildRecipes(IEnumerable<RecipeDefinition> items)
     {
         ItemLookup.Initialize();
 
-        foreach (RecipeDefinition def in registry)
+        foreach (RecipeDefinition def in items)
+        {
+            try
+            {
+                if (!BuildRecipe(def))
+                {
+                    throw new InvalidOperationException($"Unknown crafting type: {def.Type}");
+                }
+            }
+            catch (Exception ex)
+            {
+                s_logger.LogWarning(ex, "Failed to load recipe '{Name}'", def.Name);
+            }
+        }
+
+        foreach (ICraftingRegistry craftingType in CraftingTypes)
+        {
+            s_logger.LogInformation("{Count} {Type} recipes loaded.", craftingType.Count, craftingType.Name);
+        }
+    }
+
+    private static void BuildRecipes(IEnumerable<Holder<RecipeDefinition>> items)
+    {
+        ItemLookup.Initialize();
+
+        foreach (RecipeDefinition def in items)
         {
             try
             {

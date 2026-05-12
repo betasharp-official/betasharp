@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Registries;
 using BetaSharp.Registries.Data;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Network;
 
@@ -12,6 +13,9 @@ namespace BetaSharp.Client.Network;
 /// </summary>
 internal sealed class ClientRegistryAccess
 {
+
+    ILogger<ClientRegistryAccess> _logger = Log.Instance.For<ClientRegistryAccess>();
+
     private static readonly JsonSerializerOptions s_options = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
@@ -34,30 +38,44 @@ internal sealed class ClientRegistryAccess
         }
 
         _raw[packet.RegistryId!] = entries;
+
+        _logger.LogDebug($"Received {packet.Entries.Count} entries for {packet.RegistryId}");
+
+        // TODO: this is a hack to force the recipe manager to rebuild.
+        //       this should be done using listeners instead.
+        if (packet.RegistryId!.IsVanilla && packet.RegistryId!.Path == "recipe")
+        {
+            Recipes.RecipeManager.Rebuild(GetAll<Recipes.RecipeDefinition>(packet.RegistryId!).Values);
+        }
     }
 
     /// <summary>
     /// Returns a holder for a single entry by name, or <c>null</c> if not found.
     /// The holder is stable across resyncs.
     /// </summary>
-    public Holder<T>? Get<T>(RegistryKey<T> key, string name) where T : DataAsset, new()
+    public Holder<T>? Get<T>(RegistryKey<T> key, string name) where T :  class, IDataAsset, new()
         => GetAll(key).GetValueOrDefault(name);
 
     /// <summary>
     /// Returns a holder for a single entry by resource location, or <c>null</c> if not found.
     /// The holder is stable across resyncs.
     /// </summary>
-    public Holder<T>? Get<T>(RegistryKey<T> key, ResourceLocation item) where T : DataAsset, new()
+    public Holder<T>? Get<T>(RegistryKey<T> key, ResourceLocation item) where T :  class, IDataAsset, new()
         => GetAll(key).GetValueOrDefault(item);
 
     /// <summary>
     /// Returns all entries for a registry as a name -> holder dictionary.
     /// </summary>
-    public IReadOnlyDictionary<ResourceLocation, Holder<T>> GetAll<T>(RegistryKey<T> key) where T : DataAsset, new()
+    public IReadOnlyDictionary<ResourceLocation, Holder<T>> GetAll<T>(RegistryKey<T> key) where T : class, IDataAsset, new() => GetAll<T>(key.Location);
+
+    /// <summary>
+    /// Returns all entries for a registry as a name -> holder dictionary.
+    /// </summary>
+    public IReadOnlyDictionary<ResourceLocation, Holder<T>> GetAll<T>(ResourceLocation key) where T :  class, IDataAsset, new()
     {
-        if (!_raw.TryGetValue(key.Location, out Dictionary<ResourceLocation, string?>? raw))
+        if (!_raw.TryGetValue(key, out Dictionary<ResourceLocation, string?>? raw))
         {
-            if (_cache.TryGetValue(key.Location, out object? existing))
+            if (_cache.TryGetValue(key, out object? existing))
             {
                 return (Dictionary<ResourceLocation, Holder<T>>)existing;
             }
@@ -65,25 +83,25 @@ internal sealed class ClientRegistryAccess
             return new Dictionary<ResourceLocation, Holder<T>>();
         }
 
-        _raw.Remove(key.Location);
+        _raw.Remove(key);
 
-        if (_cache.TryGetValue(key.Location, out object? cached))
+        if (_cache.TryGetValue(key, out object? cached))
         {
             var existing = (Dictionary<ResourceLocation, Holder<T>>)cached;
-            MergeIntoHolders(existing, raw);
+            MergeIntoHolders(existing, raw);//
             return existing;
         }
         else
         {
             Dictionary<ResourceLocation, Holder<T>> dict = DeserializeToHolders<T>(raw);
-            _cache[key.Location] = dict;
+            _cache[key] = dict;
             return dict;
         }
     }
 
     private static Dictionary<ResourceLocation, Holder<T>> DeserializeToHolders<T>(
         Dictionary<ResourceLocation, string?> raw)
-        where T : DataAsset, new()
+        where T :  class, IDataAsset, new()
     {
         var result = new Dictionary<ResourceLocation, Holder<T>>(raw.Count);
         foreach ((ResourceLocation key, string? json) in raw)
@@ -101,7 +119,7 @@ internal sealed class ClientRegistryAccess
     private static void MergeIntoHolders<T>(
         Dictionary<ResourceLocation, Holder<T>> holders,
         Dictionary<ResourceLocation, string?> raw)
-        where T : DataAsset, new()
+        where T : class, IDataAsset, new()
     {
         foreach ((ResourceLocation key, string? json) in raw)
         {
