@@ -1,0 +1,1296 @@
+﻿{
+    "lang": {
+        "name": "Lietuvių (Lietuva)"
+    },
+    "gui": {
+        "edit": "Redaguoti",
+        "refresh": "Atnaujinti",
+        "done": "Atlikta",
+        "cancel": "Atšaukti",
+        "delete": "Ištrinti",
+        "toMenu": "Grįžti į pradinį ekraną",
+        "up": "Aukštyn",
+        "down": "Žemyn",
+        "yes": "Taip",
+        "no": "Ne",
+        "connect": "Prisijungti",
+        "directConnect": "Tiesioginis prisijungimas",
+        "addServer": "Pridėti serverį",
+        "create": "Sukurti",
+        "customize": "Pritaikyti",
+        "achievements": "Pasiekimai",
+        "stats": "Statistika",
+        "container": {
+            "crafting": "Gamyba",
+            "inventory": "Inventorius",
+            "dispenser": "Dalytuvas",
+            "furnace": "Krosnis",
+            "tip": {
+                "move": "Perkelti",
+                "quickMove": "Greitas perkėlimas",
+                "takeHalf": "Paimti pusę",
+                "place": "Padėti",
+                "placeOne": "Padėti vieną"
+            }
+        }
+    },
+    "menu": {
+        "singleplayer": "Žaidimas vieman",
+        "multiplayer": "Žaidimas tinkle",
+        "texturePacks": "Tekstūrų paketai",
+        "options": "Nustatymai...",
+        "language": "Kalba",
+        "quit": "Išeiti",
+        "credits": "Kūrėjai",
+        "sendFeedback": "Siųsti atsiliepimą",
+        "reportBugs": "Pranešti apie klaidas",
+        "saveAndQuitToTitle": "Išsaugoti ir grįžti į pradinį ekraną",
+        "disconnect": "Atsijungti"
+    },
+    "selectWorld": {
+        "title": "Pasirinkti pasaulį",
+        "empty": "tuščia",
+        "world": "Pasaulis",
+        "select": "Žaisti pasirinktame pasaulyje",
+        "create": "Sukurti naują pasaulį",
+        "createDemo": "Žaisti naują demonstracinį pasaulį",
+        "rename": "Pervadinti",
+        "deleteQuestion": "Ar tikrai norite ištrinti šį pasaulį?",
+        "deleteWarning": "bus prarasta amžiams! (Ilgam laikui!)",
+        "renameButton": "Pervadinti",
+        "renameTitle": "Pervadinti pasaulį",
+        "conversion": "Turi būti konvertuotas!",
+        "newWorld": "Naujas pasaulis",
+        "enterName": "Pasaulio pavadinimas",
+        "resultFolder": "Bus išsaugota:",
+        "enterSeed": "Pasaulio generatoriaus sėkla",
+        "seedInfo": "Palikite tuščią atsitiktinei sėklai",
+        "selectWorldType": "Pasirinkti pasaulio tipą",
+        "worldType": "Pasaulio tipas",
+        "customize": "Pritaikyti",
+        "moreWorldOptions": "Daugiau pasaulio parinkčių..."
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "Pritaikyti superplokščią pasaulį"
+            },
+            "removeLayer": "Pašalinti sluoksnį",
+            "presets": "Išankstiniai nustatymai"
+        }
+    },
+    "world": {
+        "world": "Pasaulis",
+        "unsupportedFormat": "Nepalaikomas formatas!"
+    },
+    "multiplayer": {
+        "title": "Žaisti su keliais žaidėjais",
+        "betasharpServer": "BetaSharp serveris",
+        "info1": "Minecraft kelių žaidėjų režimas šiuo metu nebaigtas, bet",
+        "info2": "vyksta ankstyvasis testavimas su klaidomis.",
+        "ipinfo": "Įveskite IP serverį, kad prie jo prisijungtumėte:",
+        "deleteQuestion": "Ar tikrai norite ištrinti šį serverį?",
+        "deleteWarning": "bus prarasta amžiams! (Ilgam laikui!)",
+        "downloadingTerrain": "Atsisiunčiamas reljefas",
+        "stopSleeping": "Išlipti iš lovos"
+    },
+    "loading": {
+        "loadingLevel": "Įkeliamas lygis",
+        "startingServer": "Paleidžiamas serveris..."
+    },
+    "achievements": {
+        "title": "Pasiekimai"
+    },
+    "gameover": {
+        "title": "Žaidimas baigtas!",
+        "score": "Rezultatas",
+        "respawn": "Prisikelti",
+        "titleMenu": "Pradinis meniu"
+    },
+    "gamemenu": {
+        "title": "Žaidimo meniu",
+        "backToGame": "Grįžti į žaidimą"
+    },
+    "sign": {
+        "title": "Redaguoti ženklo pranešimą:"
+    },
+    "stats": {
+        "title": "Statistika",
+        "general": "Bendra",
+        "blocks": {
+            "name": "Blokai",
+            "mined": "Iškasta",
+            "crafted": "Pagaminta",
+            "used": "Panaudota"
+        },
+        "items": {
+            "name": "Daiktai",
+            "broken": "Sulaužyta",
+            "crafted": "Pagaminta",
+            "used": "Panaudota"
+        },
+        "item": "Daiktas",
+        "done": "Atlikta"
+    },
+    "demo": {
+        "day": {
+            "1": "Ši demonstracija truks penkias žaidimo dienas, pasistenkite!",
+            "2": "Antra diena",
+            "3": "Trečia diena",
+            "4": "Ketvirta diena",
+            "5": "Tai jūsų paskutinė diena!",
+            "warning": "Jūsų laikas beveik baigėsi!",
+            "6": "Praėjote penktą dieną, naudokite F2, kad išsaugotumėte savo kūrinio ekrano kopiją"
+        },
+        "reminder": "Demonstracijos laikas baigėsi, nusipirkite žaidimą, kad tęstumėte, arba pradėkite naują pasaulį!",
+        "help": {
+            "movement": "Naudokite %1$s, %2$s, %3$s, %4$s ir pelę, kad judėtumėte",
+            "jump": "Šokinėkite paspaudę %1$s",
+            "inventory": "Naudokite %1$s, kad atidarytumėte inventorių"
+        }
+    },
+    "connect": {
+        "connecting": "Jungiamasi prie serverio...",
+        "authorizing": "Prisijungiama...",
+        "failed": "Nepavyko prisijungti prie serverio"
+    },
+    "disconnect": {
+        "genericReason": "%1$s",
+        "disconnected": "Atjungė serverį",
+        "lost": "Ryšys nutrūko",
+        "kicked": "Išmestas iš žaidimo",
+        "timeout": "Baigėsi laikas",
+        "closed": "Ryšys uždarytas",
+        "loginFailed": "Nepavyko prisijungti",
+        "loginFailedInfo": "Nepavyko prisijungti: %s",
+        "quitting": "Išeinama",
+        "endOfStream": "Srauto pabaiga",
+        "overflow": "Buferio perpildymas"
+    },
+    "options": {
+        "off": "IŠJUNGTA",
+        "on": "ĮJUNGTA",
+        "title": "Parinktys",
+        "controls": "Valdymas...",
+        "keyboardControls": "Klaviatūros valdymas...",
+        "controllerSettings": "Pultelio nustatymai...",
+        "controllerType": "Pultelio tipas",
+        "video": {
+            "text": "Vaizdo nustatymai...",
+            "performance": "Našumas",
+            "display": "Ekranas"
+        },
+        "uiSettings": "Sąsajos nustatymai...",
+        "audioSettings": "Garso ir muzikos...",
+        "audioTitle": "Garso ir Muzikos Nustatymai",
+        "videoTitle": "Vaizdo nustatymai",
+        "language": "Kalba...",
+        "anisoLevel": "Anizotropinis lygis",
+        "music": "Muzika",
+        "sound": "Garsas",
+        "invertMouse": "Invertuoti pelę",
+        "alternateBlocks": "Alternatyvūs blokai",
+        "chunkFade": "Sklandus atsiradimas",
+        "environmentAnim": "Aplinkos animacijos",
+        "sensitivity": {
+            "text": "Jautrumas",
+            "controllerText": "Pultelio jautrumas",
+            "min": "*žiovulys*",
+            "max": "HIPERGREITIS!!!"
+        },
+        "renderDistance": {
+            "text": "Matomumo atstumas",
+            "chunks": "Blokų fragmentai (Chunks)",
+            "tiny": "Mažas",
+            "short": "Trumpas",
+            "normal": "Normalus",
+            "far": "Toli"
+        },
+        "viewBobbing": "Vaizdo siūbavimas",
+        "ao": "Sklandus apšvietimas",
+        "anaglyph": "3D anaglifas",
+        "framerateLimit": "Našumas",
+        "difficulty": {
+            "text": "Sunkumas",
+            "peaceful": "Taikus",
+            "easy": "Lengvas",
+            "normal": "Normalus",
+            "hard": "Sunkus"
+        },
+        "graphics": {
+            "text": "Grafika",
+            "fancy": "Prašmatnus",
+            "fast": "Greita"
+        },
+        "guiScale": {
+            "text": "Sąsajos dydis",
+            "auto": "Automatinis",
+            "small": "Mažas",
+            "normal": "Normalus",
+            "large": "Didelis"
+        },
+        "advancedOpengl": "Išplėstinis OpenGL",
+        "fps": {
+            "text": "Didž kadrų dažnis",
+            "maxFps": "Maksimalus kadrų dažnis",
+            "unlimited": "Neribotas"
+        },
+        "showCoordinates": "Rodyti koordinates",
+        "uiCursors": "Sąsajos žymekliai",
+        "gamma": "Gama",
+        "vSync": "VSync",
+        "mipmaps": "Mipmaps",
+        "menuMusic": "Meniu muzika",
+        "msaa": "MSAA",
+        "fov": "Regėjimo laukas",
+        "movement": {
+            "text": "Judėjimas"
+        },
+        "view": {
+            "text": "Vaizdas"
+        },
+        "other": {
+            "text": "Kita"
+        },
+        "editBindings": "Redaguoti klavišus...",
+        "resetBindings": "Atkurti klavišus...",
+        "controllerBindings": "Pultelio mygtukai"
+    },
+    "performance": {
+        "max": "Maksimalus kadrų dažnis",
+        "balanced": "Subalansuotas",
+        "powersaver": "Energijos taupymas"
+    },
+    "controls": {
+        "title": "Valdymas"
+    },
+    "key": {
+        "forward": "Pirmyn",
+        "left": "Kairėn",
+        "back": "Atgal",
+        "right": "Dešinėn",
+        "jump": "Šokti",
+        "inventory": "Inventorius",
+        "drop": "Išmesti",
+        "chat": "Pokalbis",
+        "fog": "Rūkas",
+        "sneak": "Sėlinti",
+        "playerlist": "Žaidėjų sąrašas",
+        "zoom": "Priartinti",
+        "hotbarLeft": "Apatinė juosta kairėn",
+        "hotbarRight": "Apatinė juosta dešinėn",
+        "pickBlock": "Paimti bloką",
+        "camera": "Kameros režimas",
+        "pause": "Pauzė"
+    },
+    "texturePack": {
+        "openFolder": "Atverti tekstūrų aplanką",
+        "title": "Pasirinkti tekstūrų paketą",
+        "folderInfo": "(Įdėkite tekstūrų paketų failus čia)"
+    },
+    "tile": {
+        "stone": {
+            "name": "Akmuo",
+            "desc": ""
+        },
+        "grass": {
+            "name": "Žolės blokas",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "Žemė",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "Skaldytas akmuo",
+            "desc": ""
+        },
+        "wood": {
+            "name": "Medinės lentos",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "Sodinukas",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "Pamatinė uoliena",
+            "desc": ""
+        },
+        "water": {
+            "name": "Vanduo",
+            "desc": ""
+        },
+        "lava": {
+            "name": "Lava",
+            "desc": ""
+        },
+        "sand": {
+            "name": "Smėlis",
+            "desc": ""
+        },
+        "sandStone": { "name": "Smiltainis" },
+        "gravel": {
+            "name": "Žvyras",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "Aukso rūda",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "Geležies rūda",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "Akmens anglies rūda",
+            "desc": ""
+        },
+        "log": {
+            "name": "Mediena",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Lapai",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "Kempinė",
+            "desc": ""
+        },
+        "glass": {
+            "name": "Stiklas",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "Vilna",
+            "desc": "",
+            "black": {
+                "name": "Juoda vilna",
+                "desc": ""
+            },
+            "red": {
+                "name": "Raudona vilna",
+                "desc": ""
+            },
+            "green": {
+                "name": "Žalia vilna",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Ruda vilna",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Mėlyna vilna",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Purpurinė vilna",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Žydra vilna",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Šviesiai pilka vilna",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Pilka vilna",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Rausva vilna",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Šviesiai žalia vilna",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Geltona vilna",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Šviesiai mėlyna vilna",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Rausvai raudona vilna",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Oranžinė vilna",
+                "desc": ""
+            },
+            "white": {
+                "name": "Vilna",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "Gėlė",
+            "desc": ""
+        },
+        "rose": {
+            "name": "Rožė",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "Grybas",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "Aukso blokas",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "Geležies blokas",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "Akmeninė pusplytė",
+                "desc": ""
+            },
+            "sand": {
+                "name": "Smiltainio pusplytė",
+                "desc": ""
+            },
+            "wood": {
+                "name": "Medinė pusplytė",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "Akmeninė pusplytė",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "Plytos",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "TNT",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "Knygų lentyna",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "Samanotas akmuo",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "Obsidianas",
+            "desc": ""
+        },
+        "torch": {
+            "name": "Deglas",
+            "desc": ""
+        },
+        "fire": {
+            "name": "Ugnis",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "Monstrų generatorius",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "Mediniai laiptai",
+            "desc": ""
+        },
+        "chest": {
+            "name": "Skrynia",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "Redstono dulkės",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "Deimantų rūda",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "Deimantų blokas",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "Darbastalis",
+            "desc": ""
+        },
+        "crops": {
+            "name": "Pasėliai",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "Išdirbta žemė",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "Krosnis",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Ženklas",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Medinės durys",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "Kopėčios",
+            "desc": ""
+        },
+        "rail": {
+            "name": "Bėgiai",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "Greitintuvas",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "Detektoriniai bėgiai",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "Akmeniniai laiptai",
+            "desc": ""
+        },
+        "lever": {
+            "name": "Svirtis",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "Slėgio plokštė",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Geležinės durys",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "Redstono rūda",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "Redstono deglas",
+            "desc": ""
+        },
+        "button": {
+            "name": "Mygtukas",
+            "desc": ""
+        },
+        "snow": {
+            "name": "Sniegas",
+            "desc": ""
+        },
+        "ice": {
+            "name": "Ledas",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "Kaktusas",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Molis",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "Cukranendrės",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "Diskų grotuvas",
+            "desc": ""
+        },
+        "fence": {
+            "name": "Tvora",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "Moliūgas",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "Moliūgo žibintas",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "Pragaro akmuo",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "Sielų smėlis",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "Šviesakmenis",
+            "desc": ""
+        },
+        "portal": {
+            "name": "Portalas",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "Lazurito rūda",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "Lazurito blokas",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "Dalytuvas",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "Natų Blokas",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Tortas",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Lova",
+            "desc": "",
+            "occupied": "Ši lova užimta",
+            "noSleep": "Galite miegoti tik naktį",
+            "notValid": "Jūsų namų lovos nėra arba ji užblokuota"
+        },
+        "lockedchest": {
+            "name": "Užrakinta skrynia",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "Liukas",
+            "desc": ""
+        },
+        "web": {
+            "name": "Voratinklis",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "Akmeninės plytos",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "Stūmoklis",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "Lipnus stūmoklis",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "Geležinis kastuvas",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "Geležinis kirtiklis",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "Geležinis kirvis",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "Titnagas ir geležis",
+            "desc": ""
+        },
+        "apple": {
+            "name": "Obuolys",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "Sausainis",
+            "desc": ""
+        },
+        "bow": {
+            "name": "Lankas",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "Strėlė",
+            "desc": ""
+        },
+        "coal": {
+            "name": "Anglis",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "Medžio anglis",
+            "desc": ""
+        },
+        "emerald": {
+            "name": "Deimantas",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "Geležies luitas",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "Aukso luitas",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "Geležinis kardas",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "Medinis kardas",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "Medinis kastuvas",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "Medinis kirtiklis",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "Medinis kirvis",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "Akmeninis kardas",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "Akmeninis kastuvas",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "Akmeninis kirtiklis",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "Akmeninis kirvis",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "Deimantinis kardas",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "Deimantinis kastuvas",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "Deimantinis kirtiklis",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "Deimantinis kirvis",
+            "desc": ""
+        },
+        "stick": {
+            "name": "Pagalys",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "Dubuo",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "Grybų troškinys",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "Auksinis kardas",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "Auksinis kastuvas",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "Auksinis kirtiklis",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "Auksinis kirvis",
+            "desc": ""
+        },
+        "string": {
+            "name": "Siūlas",
+            "desc": ""
+        },
+        "feather": {
+            "name": "Plunksna",
+            "desc": ""
+        },
+        "sulphur": {
+            "name": "Parakas",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "Medinis kauptukas",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "Akmeninis kauptukas",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "Geležinis kauptukas",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "Deimantinis kauptukas",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "Auksinis kauptukas",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "Sėklos",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "Kviečiai",
+            "desc": ""
+        },
+        "bread": {
+            "name": "Duona",
+            "desc": ""
+        },
+        "helmetCloth": {
+            "name": "Odinė kepurė",
+            "desc": ""
+        },
+        "chestplateCloth": {
+            "name": "Odinė tunika",
+            "desc": ""
+        },
+        "leggingsCloth": {
+            "name": "Odinės kelnės",
+            "desc": ""
+        },
+        "bootsCloth": {
+            "name": "Odiniai batai",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "Grandinėlinis šalmas",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "Grandinėliniai šarvai",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "Grandinėlinės kelnės",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "Grandinėliniai batai",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "Geležinis šalmas",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "Geležiniai šarvai",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "Geležinės kelnės",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "Geležiniai batai",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "Deimantinis šalmas",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "Deimantiniai šarvai",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "Deimantinės kelnės",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "Deimantiniai batai",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "Auksinis šalmas",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "Auksiniai šarvai",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "Auksinės kelnės",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "Auksiniai batai",
+            "desc": ""
+        },
+        "flint": {
+            "name": "Titnagas",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "Žalia kiauliena",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "Kepta kiauliena",
+            "desc": ""
+        },
+        "painting": {
+            "name": "Paveikslas",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "Auksinis obuolys",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Ženklas",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Medinės durys",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "Kibiras",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "Kibiras vandens",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "Lavos kibiras",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "Vagonėlis",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "Balnas",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Geležinės durys",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "Redstonas",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "Sniego gniūžtė",
+            "desc": ""
+        },
+        "boat": {
+            "name": "Valtis",
+            "desc": ""
+        },
+        "leather": {
+            "name": "Oda",
+            "desc": ""
+        },
+        "milk": {
+            "name": "Pienas",
+            "desc": ""
+        },
+        "brick": {
+            "name": "Plyta",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Molis",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "Cukranendrės",
+            "desc": ""
+        },
+        "paper": {
+            "name": "Popierius",
+            "desc": ""
+        },
+        "book": {
+            "name": "Knyga",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "Gleivių kamuoliukas",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "Vagonėlis su skrynia",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "Vagonėlis su krosnimi",
+            "desc": ""
+        },
+        "egg": {
+            "name": "Kiaušinis",
+            "desc": ""
+        },
+        "compass": {
+            "name": "Kompasas",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "Meškerė",
+            "desc": ""
+        },
+        "clock": {
+            "name": "Laikrodis",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "Šviesakmenio dulkės",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "Žalia žuvis",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "Kepta žuvis",
+            "desc": ""
+        },
+        "record": {
+            "name": "Muzikos plokštelė",
+            "desc": ""
+        },
+        "bone": {
+            "name": "Kaulas",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "Rašalo maišelis",
+                "desc": ""
+            },
+            "red": {
+                "name": "Rožės raudonis",
+                "desc": ""
+            },
+            "green": {
+                "name": "Kaktusų žaluma",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Kakavos pupelės",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Lazuritas",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Purpuriniai dažai",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Žydri dažai",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Šviesiai pilki dažai",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Pilki dažai",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Rausvi dažai",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Šviesiai žali dažai",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Pienės geltonis",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Šviesiai mėlyni dažai",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Rausvai raudoni dažai",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Oranžiniai dažai",
+                "desc": ""
+            },
+            "white": {
+                "name": "Kaulų miltai",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "Cukrus",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Tortas",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Lova",
+            "desc": ""
+        },
+        "diode": {
+            "name": "Redstono kartotuvas",
+            "desc": ""
+        },
+        "map": {
+            "name": "Žemėlapis",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Lapai",
+            "desc": ""
+        },
+        "shears": {
+            "name": "Žirklės",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "Bendra",
+        "blocksButton": "Blokai",
+        "itemsButton": "Daiktai",
+        "used": "Kiek kartų naudota",
+        "mined": "Kiek kartų iškasta",
+        "depleted": "Kiek kartų sunaudota",
+        "crafted": "Kiek kartų pagaminta",
+        "startGame": "Kiek kartų žaista",
+        "createWorld": "Žaista pasaulių",
+        "loadWorld": "Įkelta išsaugojimų",
+        "joinMultiplayer": "Prisijungta prie kelių žaidėjų",
+        "leaveGame": "Išeita iš žaidimų",
+        "playOneMinute": "Žaista minučių",
+        "walkOneCm": "Nueitas atstumas",
+        "fallOneCm": "Nukristas atstumas",
+        "swimOneCm": "Nuplauktas atstumas",
+        "flyOneCm": "Nuskristas atstumas",
+        "climbOneCm": "Užliptas atstumas",
+        "diveOneCm": "Nenertas atstumas",
+        "minecartOneCm": "Atstumas vagonėliu",
+        "boatOneCm": "Atstumas valtimi",
+        "pigOneCm": "Atstumas ant kiaulės",
+        "jump": "Šuoliai",
+        "drop": "Išmesti daiktai",
+        "damageDealt": "Padaryta žala",
+        "damageTaken": "Gauta žala",
+        "deaths": "Mirčių skaičius",
+        "mobKills": "Nužudyta monstrų",
+        "playerKills": "Nužudyta žaidėjų",
+        "fishCaught": "Pagauta žuvų",
+        "mineBlock": "Iškasta {0}",
+        "craftItem": "Pagaminta {0}",
+        "useItem": "Panaudota {0}",
+        "breakItem": "Sunaudota {0}"
+    },
+    "achievements.title": "Pasiekimai",
+    "achievement": {
+        "get": "Gautas pasiekimas!",
+        "taken": "Paimta!",
+        "challenge": "IŠŠŪKIS",
+        "unlocked": "ATRAKINTA",
+        "locked": "UŽRAKINTA",
+        "requires": "Reikalauja '{0}'",
+        "openInventory": {
+            "title": "Inventoriaus patikrinimas",
+            "desc": "Atidarykite savo inventorių."
+        },
+        "mineWood": {
+            "title": "Kertame medieną",
+            "desc": "Daužykite medį, kol iškris medienos blokas"
+        },
+        "buildWorkBench": {
+            "title": "Laikas darbui",
+            "desc": "Pagaminkite darbastalį iš keturių medinių lentų"
+        },
+        "buildPickaxe": {
+            "title": "Laikas kasti!",
+            "desc": "Naudokite lentas ir pagalius kirtikliui pagaminti"
+        },
+        "buildFurnace": {
+            "title": "Karšta tema",
+            "desc": "Pastatykite krosnį iš aštuonių akmens blokų"
+        },
+        "acquireIron": {
+            "title": "Aparatūros įgijimas",
+            "desc": "Išlydykite geležies luitą"
+        },
+        "buildHoe": {
+            "title": "Laikas ūkininkauti!",
+            "desc": "Naudokite lentas ir pagalius kauptukui pagaminti"
+        },
+        "makeBread": {
+            "title": "Iškepti duoną",
+            "desc": "Paverskite kviečius duona"
+        },
+        "bakeCake": {
+            "title": "Melas",
+            "desc": "Kviečiai, cukrus, pienas ir kiaušiniai!"
+        },
+        "buildBetterPickaxe": {
+            "title": "Gauname patobulinimą",
+            "desc": "Pagaminkite geresnį kirtiklį"
+        },
+        "cookFish": {
+            "title": "Skani žuvis",
+            "desc": "Pagausite ir iškepkite žuvį!"
+        },
+        "onARail": {
+            "title": "Ant bėgių",
+            "desc": "Keliaukite vagonėliu bent 1 km nuo vietos, kurioje pradėjote"
+        },
+        "buildSword": {
+            "title": "Laikas pulti!",
+            "desc": "Naudokite lentas ir pagalius kardui pagaminti"
+        },
+        "killEnemy": {
+            "title": "Monstrų medžiotojas",
+            "desc": "Pulkite ir sunaikinkite monstrą"
+        },
+        "killCow": {
+            "title": "Karvių medžiotojas",
+            "desc": "Surinkite šiek tiek odos"
+        },
+        "flyPig": {
+            "title": "Kai kiaulės skraido",
+            "desc": "Nuskriskite su kiaule nuo skardžio"
+        }
+    }
+}

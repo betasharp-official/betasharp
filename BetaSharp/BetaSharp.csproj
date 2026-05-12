@@ -41,6 +41,9 @@
     <None Update="assets\lang\en_us.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="assets\lang\lt_lt.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="assets\lang\pl_pl.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
