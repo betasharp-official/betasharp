@@ -45,23 +45,25 @@
             <TextBlock Text="This looks rather empty..." Opacity="0.5" HorizontalAlignment="Center"
                        Classes.hidden="{CompiledBinding Releases.Count}" />
 
-            <Grid RowDefinitions="Auto *" RowSpacing="5" Classes="hidden" Classes.shown="{CompiledBinding Releases.Count}">
+            <Grid RowDefinitions="Auto *" RowSpacing="15" HorizontalAlignment="Center" Classes="hidden" Classes.shown="{CompiledBinding Releases.Count}">
                 <TextBlock Text="Releases" Grid.Row="0" />
 
-                <ListBox ItemsSource="{CompiledBinding Releases}" Grid.Row="1">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{CompiledBinding Name}" />
-                                    <TextBlock Text="{CompiledBinding Date}" Opacity="0.5" />
-                                </StackPanel>
+                <ScrollViewer CornerRadius="{StaticResource ControlCornerRadius}" Grid.Row="1">
+                    <ItemsControl ItemsSource="{CompiledBinding Releases}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0 0 0 15">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{CompiledBinding Name}" />
+                                        <TextBlock Text="{CompiledBinding Date}" Opacity="0.5" />
+                                    </StackPanel>
 
-                                <SelectableTextBlock Text="{CompiledBinding Url}" TextTrimming="CharacterEllipsis" Opacity="0.5" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                                    <TextBlock Text="{CompiledBinding Url}" TextTrimming="CharacterEllipsis" Opacity="0.5" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </Grid>
         </Grid>
 
