@@ -198,11 +198,11 @@ public partial class BetaSharp :
 
     #region Initialization & Lifecycle
 
-    public BetaSharp(CMDOptions opts, bool isFullscreen)
+    public BetaSharp(CMDOptions opts)
     {
         _loadingScreen = new LoadingScreenRenderer(this);
         _tempDisplayHeight = opts.WindowHeight;
-        _fullscreen = isFullscreen;
+        _fullscreen = opts.Fullscreen;
         _cmdOptions = opts;
         DisplayWidth = opts.WindowWidth;
         DisplayHeight = opts.WindowHeight;
@@ -1871,6 +1871,9 @@ public partial class BetaSharp :
         [Option('h', "height", Required = false, HelpText = "Window height.", Default = 480)]
         public int WindowHeight { get; set; }
 
+        [Option('f', "fullscreen", Required = false, HelpText = "Start as fullscreen.")]
+        public bool Fullscreen { get; set; }
+
         public Session Session => new(Username is null ? $"Player{Random.Shared.Next()}" : Username, SessionToken);
     }
 
@@ -1900,7 +1903,7 @@ public partial class BetaSharp :
 
         Thread.CurrentThread.Name = "BetaSharp Main Thread";
 
-        BetaSharp game = new(opts, false);
+        BetaSharp game = new(opts);
         game.Session = session;
 
         if (opts.SessionToken == "-")
