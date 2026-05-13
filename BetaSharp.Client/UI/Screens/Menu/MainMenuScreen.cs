@@ -113,10 +113,10 @@ public class MainMenuScreen(
         }
         Root.AddChild(footerButtons);
 
-        AddBottomLabels();
+        AddLabels();
     }
 
-    private void AddBottomLabels()
+    private void AddLabels()
     {
         // Version info
         Link versionLabel = new()
@@ -130,6 +130,19 @@ public class MainMenuScreen(
         versionLabel.Style.Top = 2;
 
         Root.AddChild(versionLabel);
+
+        // Mod info
+        Link modsLabel = new()
+        {
+            Text = game.Mods.Mods.Count > 0 ? $"{game.Mods.Mods.Count} mods loaded" : "No mods loaded",
+            TextColor = Guis.Color.White
+        };
+        modsLabel.Style.Position = PositionType.Absolute;
+        modsLabel.Style.Left = 2;
+        modsLabel.Style.Bottom = 2;
+        modsLabel.OnClick += (e) => Context.Navigator.Navigate(new ModsScreen(Context, game.Mods));
+
+        Root.AddChild(modsLabel);
 
         // Copyright info
         Panel copyrightPanel = new();
