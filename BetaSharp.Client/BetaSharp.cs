@@ -29,7 +29,6 @@ using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Profiling;
-using BetaSharp.Recipes;
 using BetaSharp.Registries;
 using BetaSharp.Server.Internal;
 using BetaSharp.Stats;
@@ -102,8 +101,17 @@ public partial class BetaSharp :
 
     #region Rendering & Display Systems
 
-    public int DisplayWidth { get; private set; }
-    public int DisplayHeight { get; private set; }
+    public int DisplayWidth
+    {
+        get;
+        private set => field = value + (value & 1);
+    }
+
+    public int DisplayHeight
+    {
+        get;
+        private set => field = value + (value & 1);
+    }
 
     /// <summary>
     /// When the debug viewport is active, the top-left pixel offset of the game viewport
