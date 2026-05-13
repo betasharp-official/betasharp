@@ -59,7 +59,7 @@ public abstract class ContainerScreen(
         bool isShiftClick = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
         int mouseBtn = (button == MouseButton.Right) ? 1 : 0;
 
-        playerController.func_27174_a(InventorySlots.SyncId, slotId, mouseBtn, isShiftClick, player);
+        playerController.OnSlotClick(InventorySlots.SyncId, slotId, mouseBtn, isShiftClick, player);
     }
 
     public override void Update(float partialTicks)
@@ -142,9 +142,9 @@ public abstract class ContainerScreen(
             {
                 int slotId = uiSlot.Slot.id;
                 if (button == GamepadButton.Y)
-                    playerController.func_27174_a(InventorySlots.SyncId, slotId, 0, true, player);
+                    playerController.OnSlotClick(InventorySlots.SyncId, slotId, 0, true, player);
                 else
-                    playerController.func_27174_a(InventorySlots.SyncId, slotId, 1, false, player);
+                    playerController.OnSlotClick(InventorySlots.SyncId, slotId, 1, false, player);
                 return;
             }
         }

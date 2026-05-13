@@ -685,7 +685,7 @@ public partial class BetaSharp :
 
                     if (!SkipRenderWorld)
                     {
-                        PlayerController?.setPartialTime(Timer.renderPartialTicks);
+                        PlayerController?.SetPartialTime(Timer.renderPartialTicks);
 
                         TextureStats.StartFrame();
 
@@ -866,7 +866,7 @@ public partial class BetaSharp :
         {
             if (!IsGamePaused && World != null)
             {
-                PlayerController.updateController();
+                PlayerController.UpdateController();
             }
         }
 
@@ -1199,12 +1199,12 @@ public partial class BetaSharp :
             {
                 if (mouseButton == 0)
                 {
-                    PlayerController.attackEntity(Player, ObjectMouseOver.Entity);
+                    PlayerController.AttackEntity(Player, ObjectMouseOver.Entity);
                 }
 
                 if (mouseButton == 1)
                 {
-                    PlayerController.interactWithEntity(Player, ObjectMouseOver.Entity);
+                    PlayerController.InteractWithEntity(Player, ObjectMouseOver.Entity);
                 }
             }
             else if (ObjectMouseOver.Type == HitResultType.TILE)
@@ -1215,13 +1215,13 @@ public partial class BetaSharp :
                 int blockSide = ObjectMouseOver.Side;
                 if (mouseButton == 0)
                 {
-                    PlayerController.clickBlock(blockX, blockY, blockZ, ObjectMouseOver.Side);
+                    PlayerController.ClickBlock(blockX, blockY, blockZ, ObjectMouseOver.Side);
                 }
                 else
                 {
                     ItemStack selectedItem = Player.Inventory.ItemInHand;
                     int itemCountBefore = selectedItem != null ? selectedItem.Count : 0;
-                    if (PlayerController.sendPlaceBlock(Player, World, selectedItem, blockX, blockY, blockZ, blockSide))
+                    if (PlayerController.SendPlaceBlock(Player, World, selectedItem, blockX, blockY, blockZ, blockSide))
                     {
                         shouldPerformSecondaryAction = false;
                         Player.SwingHand();
@@ -1246,7 +1246,7 @@ public partial class BetaSharp :
             if (shouldPerformSecondaryAction && mouseButton == 1)
             {
                 ItemStack selectedItem = Player.Inventory.ItemInHand;
-                if (selectedItem != null && PlayerController.sendUseItem(Player, World, selectedItem))
+                if (selectedItem != null && PlayerController.SendUseItem(Player, World, selectedItem))
                 {
                     GameRenderer.itemRenderer.ResetEquippedProgress();
                 }
@@ -1287,12 +1287,12 @@ public partial class BetaSharp :
                     int blockX = ObjectMouseOver.BlockX;
                     int blockY = ObjectMouseOver.BlockY;
                     int blockZ = ObjectMouseOver.BlockZ;
-                    PlayerController.sendBlockRemoving(blockX, blockY, blockZ, ObjectMouseOver.Side);
+                    PlayerController.SendBlockRemoving(blockX, blockY, blockZ, ObjectMouseOver.Side);
                     ParticleManager.addBlockHitEffects(blockX, blockY, blockZ, ObjectMouseOver.Side);
                 }
                 else
                 {
-                    PlayerController.resetBlockRemoving();
+                    PlayerController.ResetBlockRemoving();
                 }
             }
         }
@@ -1341,16 +1341,16 @@ public partial class BetaSharp :
 
             if (Player == null)
             {
-                Player = (ClientPlayerEntity)PlayerController.createPlayer(newWorld);
+                Player = (ClientPlayerEntity)PlayerController.CreatePlayer(newWorld);
                 Player.TeleportToTop();
-                PlayerController.flipPlayer(Player);
+                PlayerController.FlipPlayer(Player);
             }
 
             Player.movementInput = new MovementInputFromOptions(Options);
             WorldRenderer?.ChangeWorld(newWorld);
             ParticleManager?.clearEffects(newWorld);
 
-            PlayerController.fillHotbar(Player);
+            PlayerController.FillHotbar(Player);
             if (targetEntity != null)
             {
                 World.SaveWorldData();
@@ -1406,7 +1406,7 @@ public partial class BetaSharp :
             World.Entities.Remove(Player);
         }
 
-        Player = (ClientPlayerEntity)PlayerController.createPlayer(World);
+        Player = (ClientPlayerEntity)PlayerController.CreatePlayer(World);
         Player.DimensionId = newDimensionId;
         Player.TeleportToTop();
 
@@ -1421,12 +1421,12 @@ public partial class BetaSharp :
                 0.0F);
         }
 
-        PlayerController.flipPlayer(Player);
+        PlayerController.FlipPlayer(Player);
         World.AddPlayer(Player);
         Player.movementInput = new MovementInputFromOptions(Options);
         Player.ID = previousPlayerId;
         Player.Spawn();
-        PlayerController.fillHotbar(Player);
+        PlayerController.FillHotbar(Player);
 
         ShowText("Respawning");
 

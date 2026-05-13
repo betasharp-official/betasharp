@@ -62,7 +62,7 @@ public class Hotbar : UIElement
     {
         ClientPlayerEntity? player = _getPlayer();
         if (player == null) return;
-        if (!(_getPlayerController()?.shouldDrawHUD() ?? false)) return;
+        if (!(_getPlayerController()?.ShouldDrawHUD() ?? false)) return;
 
         renderer.TextureManager.BindTexture(renderer.TextureManager.GetTextureId("/gui/icons.png"));
 

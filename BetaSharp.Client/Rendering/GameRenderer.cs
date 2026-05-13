@@ -76,7 +76,7 @@ public class GameRenderer
             return;
         }
 
-        double reachDistance = (double)_client.PlayerController.getBlockReachDistance();
+        double reachDistance = (double)_client.PlayerController.GetBlockReachDistance();
         _client.ObjectMouseOver = _client.Camera.RayTrace(reachDistance, tickDelta);
         Vec3D cameraPosition = _client.Camera.GetPosition(tickDelta);
 
