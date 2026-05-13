@@ -164,6 +164,8 @@ public partial class BetaSharp :
     private readonly LavaSprite _textureLavaFX = new();
     private readonly DebugTelemetry _debugTelemetry = new();
 
+    private readonly CMDOptions _cmdOptions;
+
     private readonly string _serverName;
     private readonly int _serverPort;
     private readonly bool _hideQuitButton;
@@ -196,13 +198,14 @@ public partial class BetaSharp :
 
     #region Initialization & Lifecycle
 
-    public BetaSharp(int width, int height, bool isFullscreen)
+    public BetaSharp(CMDOptions opts, bool isFullscreen)
     {
         _loadingScreen = new LoadingScreenRenderer(this);
-        _tempDisplayHeight = height;
+        _tempDisplayHeight = opts.WindowHeight;
         _fullscreen = isFullscreen;
-        DisplayWidth = width;
-        DisplayHeight = height;
+        _cmdOptions = opts;
+        DisplayWidth = opts.WindowWidth;
+        DisplayHeight = opts.WindowHeight;
     }
 
     public void StartGame()
@@ -1854,7 +1857,7 @@ public partial class BetaSharp :
     #endregion
 
     #region Application Entry Point
-    private class CMDOptions
+    public class CMDOptions
     {
         [Option('n', "username", Required = false, HelpText = "Player name.", Default = null)]
         public string? Username { get; set; }
@@ -1897,7 +1900,7 @@ public partial class BetaSharp :
 
         Thread.CurrentThread.Name = "BetaSharp Main Thread";
 
-        BetaSharp game = new(opts.WindowWidth, opts.WindowHeight, false);
+        BetaSharp game = new(opts, false);
         game.Session = session;
 
         if (opts.SessionToken == "-")
