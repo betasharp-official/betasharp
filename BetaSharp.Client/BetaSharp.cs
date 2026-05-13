@@ -1862,13 +1862,32 @@ public partial class BetaSharp :
         [Option('t', "token", Required = false, HelpText = "Session token, '-' for no account.", Default = "-")]
         public string SessionToken { get; set; }
 
+        [Option('w', "width", Required = false, HelpText = "Window width.", Default = 850)]
+        public int WindowWidth { get; set; }
+
+        [Option('h', "height", Required = false, HelpText = "Window height.", Default = 480)]
+        public int WindowHeight { get; set; }
+
         public Session Session => new(Username is null ? $"Player{Random.Shared.Next()}" : Username, SessionToken);
     }
 
     public static void Startup(string[] args)
     {
-        Parser.Default.ParseArguments<CMDOptions>(args)
-            .WithParsed<CMDOptions>(StartMainThread);
+        var result = new Parser((set) =>
+            {
+                set.AutoHelp = true;
+            })
+            .ParseArguments<CMDOptions>(args);
+
+        result.MapResult(
+            (CMDOptions opts) =>
+            {
+                StartMainThread(opts);
+                return 0;
+            },
+            errs => 1
+        );
+
     }
 
     private static void StartMainThread(CMDOptions opts)
@@ -1878,7 +1897,7 @@ public partial class BetaSharp :
 
         Thread.CurrentThread.Name = "BetaSharp Main Thread";
 
-        BetaSharp game = new(850, 480, false);
+        BetaSharp game = new(opts.WindowWidth, opts.WindowHeight, false);
         game.Session = session;
 
         if (opts.SessionToken == "-")
