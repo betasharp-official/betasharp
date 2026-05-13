@@ -33,9 +33,7 @@ internal class BlockPressurePlate : Block
 
     public override bool canPlaceAt(CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
 
-    public override void onPlaced(OnPlacedEvent @event)
-    {
-    }
+    public override void onPlaced(OnPlacedEvent @event) { }
 
     public override void neighborUpdate(OnTickEvent @event)
     {
@@ -49,70 +47,62 @@ internal class BlockPressurePlate : Block
 
     public override void onTick(OnTickEvent @event)
     {
-        if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) != 0)
+        bool wasPressed = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) > 0;
+        if (wasPressed)
         {
-            updatePlateState(@event.World, @event.X, @event.Y, @event.Z);
+            UpdatePlateState(@event.World, @event.X, @event.Y, @event.Z, wasPressed);
+        }
+    }
+
+    public override void onMetadataChange(OnMetadataChangeEvent @event)
+    {
+        if (!@event.World.IsRemote) return;
+
+        if (@event.Meta == 0)
+        {
+            UpdatePlateState(@event.World, @event.X, @event.Y, @event.Z, true, false);
         }
     }
 
     public override void onEntityCollision(OnEntityCollisionEvent @event)
     {
-        if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) != 1)
+        bool wasPressed = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) > 0;
+        if (!wasPressed)
         {
-            updatePlateState(@event.World, @event.X, @event.Y, @event.Z);
+            UpdatePlateState(@event.World, @event.X, @event.Y, @event.Z, wasPressed);
         }
     }
 
-    private void updatePlateState(IWorldContext ctx, int x, int y, int z)
+    private void UpdatePlateState(IWorldContext ctx, int x, int y, int z, bool wasPressed)
     {
-        bool wasPressed = ctx.Reader.GetBlockMeta(x, y, z) == 1;
-        bool shouldBePressed = false;
-
-        List<Entity>? entitiesInBox = _activationRule switch
+        bool shouldBePressed = _activationRule switch
         {
-            PressurePlateActiviationRule.EVERYTHING => ctx.Entities.CollectEntitiesOfType<Entity>(new Box(x + DetectionInset, y, z + DetectionInset, x + 1 - DetectionInset, y + 0.25D, z + 1 - DetectionInset)),
-            PressurePlateActiviationRule.MOBS => ctx.Entities.CollectEntitiesOfType<EntityLiving>(new Box(x + DetectionInset, y, z + DetectionInset, x + 1 - DetectionInset, y + 0.25D, z + 1 - DetectionInset)).Cast<Entity>().ToList(),
-            PressurePlateActiviationRule.PLAYERS => ctx.Entities.CollectEntitiesOfType<EntityPlayer>(new Box(x + DetectionInset, y, z + DetectionInset, x + 1 - DetectionInset, y + 0.25D, z + 1 - DetectionInset)).Cast<Entity>().ToList(),
-            _ => null
+            PressurePlateActiviationRule.EVERYTHING => ctx.Entities.CollectEntitiesOfType<Entity>(new Box(x + DetectionInset, y, z + DetectionInset, x + 1 - DetectionInset, y + 0.25D, z + 1 - DetectionInset)).Any(),
+            PressurePlateActiviationRule.MOBS => ctx.Entities.CollectEntitiesOfType<EntityLiving>(new Box(x + DetectionInset, y, z + DetectionInset, x + 1 - DetectionInset, y + 0.25D, z + 1 - DetectionInset)).Any(),
+            PressurePlateActiviationRule.PLAYERS => ctx.Entities.CollectEntitiesOfType<EntityPlayer>(new Box(x + DetectionInset, y, z + DetectionInset, x + 1 - DetectionInset, y + 0.25D, z + 1 - DetectionInset)).Any(),
+            _ => false
         };
 
-        if (entitiesInBox?.Count > 0)
+        UpdatePlateState(ctx, x, y, z, wasPressed, shouldBePressed);
+    }
+
+    private void UpdatePlateState(IWorldContext ctx, int x, int y, int z, bool wasPressed, bool shouldBePressed)
+    {
+        if (shouldBePressed != wasPressed)
         {
-            shouldBePressed = true;
+            ctx.Writer.SetBlockMeta(x, y, z, shouldBePressed ? 1 : 0);
+            if (!ctx.IsRemote)
+            {
+                ctx.Broadcaster.NotifyNeighborsFloor(x, y, z, id);
+                ctx.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
+            }
+            else
+            {
+                ctx.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.1D, z + 0.5D, "random.click", 0.3F, shouldBePressed ? 0.6f : 0.5f);
+            }
         }
 
-        switch (shouldBePressed)
-        {
-            case true when !wasPressed:
-                if (!ctx.IsRemote)
-                {
-                    ctx.Writer.SetBlockMeta(x, y, z, 1);
-                    ctx.Broadcaster.NotifyNeighbors(x, y, z, id);
-                    ctx.Broadcaster.NotifyNeighbors(x, y - 1, z, id);
-                    ctx.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
-                }
-                else
-                {
-                    ctx.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.1D, z + 0.5D, "random.click", 0.3F, 0.6F);
-                }
-                break;
-
-            case false when wasPressed:
-                if (!ctx.IsRemote)
-                {
-                    ctx.Writer.SetBlockMeta(x, y, z, 0);
-                    ctx.Broadcaster.NotifyNeighbors(x, y, z, id);
-                    ctx.Broadcaster.NotifyNeighbors(x, y - 1, z, id);
-                    ctx.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
-                }
-                else
-                {
-                    ctx.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.1D, z + 0.5D, "random.click", 0.3F, 0.5F);
-                }
-                break;
-        }
-
-        if (shouldBePressed && !ctx.IsRemote)
+        if (shouldBePressed)
         {
             ctx.TickScheduler.ScheduleBlockUpdate(x, y, z, id, getTickRate());
         }
