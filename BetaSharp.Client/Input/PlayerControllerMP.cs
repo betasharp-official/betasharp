@@ -5,42 +5,41 @@ using BetaSharp.Client.Sound;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Network.Packets.C2SPlay;
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Input;
 
 public class PlayerControllerMP : PlayerController
 {
-
-    private int currentBlockX = -1;
-    private int currentBlockY = -1;
-    private int currentblockZ = -1;
-    private float curBlockDamageMP;
-    private float prevBlockDamageMP;
+    private Vec3i _targetBlockPos = new();
+    private float _curBlockDamageMp;
+    private float _prevBlockDamageMp;
     private byte _mineSoundTimer;
-    private int blockHitDelay;
-    private bool isHittingBlock;
-    private readonly ClientNetworkHandler netClientHandler;
-    private int currentPlayerItem;
+    private int _blockHitDelay;
+    private bool _isHittingBlock;
+    private readonly ClientNetworkHandler _netClientHandler;
+    private int _currentPlayerItem;
 
     public PlayerControllerMP(BetaSharp game, ClientNetworkHandler networkHandler) : base(game)
     {
-        netClientHandler = networkHandler;
+        _netClientHandler = networkHandler;
     }
 
-    public override void flipPlayer(EntityPlayer playerEntity)
+    public override void FlipPlayer(EntityPlayer playerEntity)
     {
         playerEntity.Yaw = -180.0F;
         playerEntity.PrevYaw = -180.0F;
     }
 
-    public override bool sendBlockRemoved(int x, int y, int z, int direction)
+    public override bool SendBlockRemoved(int x, int y, int z, int direction)
     {
         if (!Game.Player.GameMode.CanBreak) return false;
 
         int blockId = Game.World.Reader.GetBlockId(x, y, z);
-        bool blockRemoved = base.sendBlockRemoved(x, y, z, direction);
-        ItemStack hand = Game.Player.GetHand();
+        bool blockRemoved = base.SendBlockRemoved(x, y, z, direction);
+        ItemStack? hand = Game.Player.GetHand();
         if (hand != null)
         {
             hand.postMine(blockId, x, y, z, Game.Player);
@@ -54,13 +53,13 @@ public class PlayerControllerMP : PlayerController
         return blockRemoved;
     }
 
-    public override void clickBlock(int x, int y, int z, int direction)
+    public override void ClickBlock(int x, int y, int z, int direction)
     {
-        if (!isHittingBlock || x != currentBlockX || y != currentBlockY || z != currentblockZ)
+        if (!_isHittingBlock || x != _targetBlockPos.X || y != _targetBlockPos.Y || z != _targetBlockPos.Z)
         {
-            netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(0, x, y, z, direction));
+            _netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(0, x, y, z, direction));
             int blockId = Game.World.Reader.GetBlockId(x, y, z);
-            if (blockId > 0 && curBlockDamageMP == 0.0F && Game.Player.GameMode.CanInteract)
+            if (blockId > 0 && _curBlockDamageMp == 0.0F && Game.Player.GameMode.CanInteract)
             {
                 Block.Blocks[blockId].onBlockBreakStart(new OnBlockBreakStartEvent(Game.World, Game.Player, x, y, z));
             }
@@ -69,116 +68,124 @@ public class PlayerControllerMP : PlayerController
 
             if (blockId > 0 && Block.Blocks[blockId].getHardness(Game.Player) >= Game.Player.GameMode.BrakeSpeed)
             {
-                sendBlockRemoved(x, y, z, direction);
+                SendBlockRemoved(x, y, z, direction);
             }
             else
             {
-                isHittingBlock = true;
-                currentBlockX = x;
-                currentBlockY = y;
-                currentblockZ = z;
-                curBlockDamageMP = 0.0F;
-                prevBlockDamageMP = 0.0F;
+                _isHittingBlock = true;
+                _targetBlockPos = new Vec3i(x, y, z);
+                _curBlockDamageMp = 0.0F;
+                _prevBlockDamageMp = 0.0F;
                 _mineSoundTimer = 0;
             }
         }
     }
 
-    public override void resetBlockRemoving()
+    public override void ResetBlockRemoving()
     {
-        curBlockDamageMP = 0.0F;
-        isHittingBlock = false;
+        _curBlockDamageMp = 0.0F;
+        _isHittingBlock = false;
     }
 
-    public override void sendBlockRemoving(int x, int y, int z, int direction)
+    public override void SendBlockRemoving(int x, int y, int z, int direction)
     {
-        if (!Game.Player.GameMode.CanBreak) return;
-        if (isHittingBlock)
+        if (_isHittingBlock)
         {
-            syncCurrentPlayItem();
-            if (blockHitDelay > 0)
+            SyncCurrentPlayItem();
+            if (_blockHitDelay > 0)
             {
-                --blockHitDelay;
+                --_blockHitDelay;
             }
             else
             {
-                if (x == currentBlockX && y == currentBlockY && z == currentblockZ)
+                if (x == _targetBlockPos.X && y == _targetBlockPos.Y && z == _targetBlockPos.Z)
                 {
+                    if (!Game.Player.GameMode.CanBreak) return;
+
                     int blockId = Game.World.Reader.GetBlockId(x, y, z);
                     if (blockId == 0)
                     {
-                        isHittingBlock = false;
+                        _isHittingBlock = false;
                         return;
                     }
 
-                    Block block = Block.Blocks[blockId];
-                    curBlockDamageMP += block.getHardness(Game.Player);
-                    if (_mineSoundTimer % 4 == 0 && block != null)
+                    Block? block = Block.Blocks[blockId];
+
+                    // If it's an unknown block id, break behavior will be handled on server.
+                    if (block == null)
                     {
-                        Game.SoundManager.PlaySound(block.SoundGroup.StepSound, (float)x + 0.5F, (float)y + 0.5F, (float)z + 0.5F, (block.SoundGroup.Volume + 1.0F) / 8.0F, block.SoundGroup.Pitch * 0.5F);
+                        if (_mineSoundTimer++ % 4 == 0)
+                        {
+                            Game.SoundManager.PlayStepSound(Block.Bedrock.SoundGroup, x, y, z);
+                        }
+
+                        return;
                     }
 
-                    ++_mineSoundTimer;
-                    if (curBlockDamageMP >= 1.0F)
+                    _curBlockDamageMp += block.getHardness(Game.Player);
+                    if (_mineSoundTimer++ % 4 == 0)
                     {
-                        isHittingBlock = false;
-                        netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(2, x, y, z, direction));
-                        sendBlockRemoved(x, y, z, direction);
-                        curBlockDamageMP = 0.0F;
-                        prevBlockDamageMP = 0.0F;
+                        Game.SoundManager.PlayStepSound(block.SoundGroup, x, y, z);
+                    }
+
+                    if (_curBlockDamageMp >= 1.0F)
+                    {
+                        _isHittingBlock = false;
+                        _netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(2, x, y, z, direction));
+                        if (SendBlockRemoved(x, y, z, direction))
+                        {
+                            Game.WorldRenderer.WorldEventBreak(blockId, Game.World.Reader.GetBlockMeta(x, y, z), x, y, z);
+                        }
+
+                        _curBlockDamageMp = 0.0F;
+                        _prevBlockDamageMp = 0.0F;
                         _mineSoundTimer = 0;
-                        blockHitDelay = 5;
+                        _blockHitDelay = 5;
                     }
                 }
                 else
                 {
-                    clickBlock(x, y, z, direction);
+                    ClickBlock(x, y, z, direction);
                 }
-
             }
         }
     }
 
-    public override void setPartialTime(float tickDelta)
+    public override void SetPartialTime(float tickDelta)
     {
-        if (curBlockDamageMP <= 0.0F)
+        if (_curBlockDamageMp <= 0.0F)
         {
             Game.WorldRenderer.DamagePartialTime = 0.0F;
         }
         else
         {
-            float partialDamage = prevBlockDamageMP + (curBlockDamageMP - prevBlockDamageMP) * tickDelta;
+            float partialDamage = _prevBlockDamageMp + (_curBlockDamageMp - _prevBlockDamageMp) * tickDelta;
             Game.WorldRenderer.DamagePartialTime = partialDamage;
         }
-
     }
 
-    public override float getBlockReachDistance()
-    {
-        return 4.0F;
-    }
+    public override float GetBlockReachDistance() => 4.0F;
 
-    public override void updateController()
+    public override void UpdateController()
     {
-        syncCurrentPlayItem();
-        prevBlockDamageMP = curBlockDamageMP;
+        SyncCurrentPlayItem();
+        _prevBlockDamageMp = _curBlockDamageMp;
         Game.SoundManager.PlayRandomMusicIfReady(DefaultMusicCategories.Game);
     }
 
-    private void syncCurrentPlayItem()
+    private void SyncCurrentPlayItem()
     {
         int selectedSlot = Game.Player.Inventory.SelectedSlot;
-        if (selectedSlot != currentPlayerItem)
+        if (selectedSlot != _currentPlayerItem)
         {
-            currentPlayerItem = selectedSlot;
-            netClientHandler.AddToSendQueue(UpdateSelectedSlotC2SPacket.Get(currentPlayerItem));
+            _currentPlayerItem = selectedSlot;
+            _netClientHandler.AddToSendQueue(UpdateSelectedSlotC2SPacket.Get(_currentPlayerItem));
         }
-
     }
 
-    public override bool sendPlaceBlock(
+    public override bool SendPlaceBlock(
         ClientPlayerEntity player,
-        World world,
+        IWorldContext world,
         ItemStack selectedItem,
         int blockX,
         int blockY,
@@ -186,51 +193,47 @@ public class PlayerControllerMP : PlayerController
         int blockSide
     )
     {
-        syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(blockX, blockY, blockZ, blockSide, player.Inventory.ItemInHand));
-        bool placed = base.sendPlaceBlock(player, world, selectedItem, blockX, blockY, blockZ, blockSide);
+        SyncCurrentPlayItem();
+        _netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(blockX, blockY, blockZ, blockSide, player.Inventory.ItemInHand));
+        bool placed = base.SendPlaceBlock(player, world, selectedItem, blockX, blockY, blockZ, blockSide);
         return placed;
     }
 
-    public override bool sendUseItem(EntityPlayer player, World world, ItemStack stack)
+    public override bool SendUseItem(EntityPlayer player, World world, ItemStack stack)
     {
-        syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(-1, -1, -1, 255, player.Inventory.ItemInHand));
-        bool usedItem = base.sendUseItem(player, world, stack);
+        SyncCurrentPlayItem();
+        _netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(-1, -1, -1, 255, player.Inventory.ItemInHand));
+        bool usedItem = base.SendUseItem(player, world, stack);
         return usedItem;
     }
 
-    public override EntityPlayer createPlayer(World world)
-    {
-        return new EntityClientPlayerMP(Game, world, Game.Session, netClientHandler);
-    }
+    public override EntityPlayer CreatePlayer(World world) =>
+        new EntityClientPlayerMP(Game, world, Game.Session, _netClientHandler);
 
-    public override void attackEntity(EntityPlayer player, Entity target)
+    public override void AttackEntity(EntityPlayer player, Entity target)
     {
-        syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(player.ID, target.ID, 1));
+        SyncCurrentPlayItem();
+        _netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(player.ID, target.ID, 1));
         player.Attack(target);
     }
 
-    public override void interactWithEntity(EntityPlayer player, Entity target)
+    public override void InteractWithEntity(EntityPlayer player, Entity target)
     {
-        syncCurrentPlayItem();
-        netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(player.ID, target.ID, 0));
+        SyncCurrentPlayItem();
+        _netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(player.ID, target.ID, 0));
         player.Interact(target);
     }
 
-    public override ItemStack func_27174_a(int windowId, int slotIndex, int mouseButton, bool shiftClick, EntityPlayer player)
+    public override ItemStack OnSlotClick(int windowId, int slotIndex, int mouseButton, bool shiftClick, EntityPlayer player)
     {
         short revision = player.CurrentScreenHandler.nextRevision(player.Inventory);
-        ItemStack resultStack = base.func_27174_a(windowId, slotIndex, mouseButton, shiftClick, player);
-        netClientHandler.AddToSendQueue(ClickSlotC2SPacket.Get(windowId, slotIndex, mouseButton, shiftClick, resultStack, revision));
+        ItemStack resultStack = base.OnSlotClick(windowId, slotIndex, mouseButton, shiftClick, player);
+        _netClientHandler.AddToSendQueue(ClickSlotC2SPacket.Get(windowId, slotIndex, mouseButton, shiftClick, resultStack, revision));
         return resultStack;
     }
 
     public override void OnGuiClosed(int windowId, EntityPlayer player)
     {
-        if (windowId != -9999)
-        {
-        }
+        if (windowId != -9999) { }
     }
 }

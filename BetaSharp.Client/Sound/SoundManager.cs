@@ -36,6 +36,7 @@ public class SoundManager : IDisposable
                 if (_soundChannels[i] != null && _soundChannels[i].Status == SoundStatus.Playing)
                     count++;
             }
+
             return count;
         }
     }
@@ -80,7 +81,6 @@ public class SoundManager : IDisposable
 
     private void TryToSetLibraryAndCodecs()
     {
-
         float soundVolume = _options.SoundVolume;
         float musicVolume = _options.MusicVolume;
         _options.SoundVolume = 0.0F;
@@ -132,7 +132,6 @@ public class SoundManager : IDisposable
 
     private void LoadSoundBuffer(string name, FileInfo file)
     {
-
         string filepath = SanitizePath(file.FullName);
         string resourceName = name;
 
@@ -160,7 +159,6 @@ public class SoundManager : IDisposable
 
         SoundBuffer buffer = new(filepath);
         value.Add(buffer);
-
     }
 
     private SoundBuffer getRandomSoundBuffer(string name)
@@ -320,6 +318,17 @@ public class SoundManager : IDisposable
         CurrentStreamingName = entry.SoundName;
     }
 
+    public void PlayBreakSound(BlockSoundGroup soundGroup, int x, int y, int z) =>
+        PlaySound(soundGroup.BreakSound, x + 0.5F, y + 0.5F, z + 0.5F, (soundGroup.Volume + 1.0F) / 2.0F, soundGroup.Pitch * 0.8F);
+
+    public void PlayStepSound(BlockSoundGroup soundGroup, int x, int y, int z) =>
+        PlaySound(soundGroup.StepSound, x + 0.5F, y + 0.5F, z + 0.5F, (soundGroup.Volume + 1.0F) / 8.0F, soundGroup.Pitch * 0.5F);
+
+    public void PlayDoorSound(int x, int y, int z) => PlayDoorSound(x, y, z, _rand.NextDouble() < 0.5D);
+
+    public void PlayDoorSound(int x, int y, int z, bool state) =>
+        PlaySound(state ? "random.door_open" : "random.door_close", x + 0.5F, y + 0.5F, z + 0.5F, 1.0F, _rand.NextFloat() * 0.1F + 0.9F);
+
     public void PlaySound(string name, float x, float y, float z, float volume, float pitch)
     {
         if (!(s_started && _options.SoundVolume != 0.0F)) return;
@@ -340,6 +349,7 @@ public class SoundManager : IDisposable
         {
             minDistance *= volume;
         }
+
         sound.MinDistance = minDistance;
         sound.Attenuation = 2.0F;
 
@@ -350,6 +360,7 @@ public class SoundManager : IDisposable
         {
             finalVolume = 1.0F;
         }
+
         sound.Volume = finalVolume * _options.SoundVolume * 100.0F;
 
         sound.Play();
@@ -376,6 +387,7 @@ public class SoundManager : IDisposable
         {
             finalVolume = 1.0F;
         }
+
         finalVolume *= 0.25F;
         sound.Volume = finalVolume * _options.SoundVolume * 100.0F;
 
@@ -413,7 +425,7 @@ public class SoundManager : IDisposable
                 buffer.Dispose();
             }
         }
-        _soundBuffers.Clear();
 
+        _soundBuffers.Clear();
     }
 }

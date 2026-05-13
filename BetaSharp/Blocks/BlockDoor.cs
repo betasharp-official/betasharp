@@ -84,15 +84,10 @@ internal class BlockDoor : Block
         }
     }
 
-    public override void onBlockBreakStart(OnBlockBreakStartEvent @event) => updateDorState(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
+    public override void onBlockBreakStart(OnBlockBreakStartEvent @event) => UpdateDoorState(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
 
-    private bool updateDorState(EntityPlayer player, IWorldContext world, int x, int y, int z)
+    private bool UpdateDoorState(EntityPlayer player, IWorldContext world, int x, int y, int z)
     {
-        if (world.IsRemote)
-        {
-            return true;
-        }
-
         if (material == Material.Metal)
         {
             return true;
@@ -103,25 +98,31 @@ internal class BlockDoor : Block
         {
             if (world.Reader.GetBlockId(x, y - 1, z) == id)
             {
-                updateDorState(player, world, x, y - 1, z);
+                y--;
+                meta = world.Reader.GetBlockMeta(x, y, z);
             }
-
-            return true;
+            else
+            {
+                return true;
+            }
         }
 
         if (world.Reader.GetBlockId(x, y + 1, z) == id)
         {
-            world.Writer.SetBlockMeta(x, y + 1, z, (meta ^ 4) + 8);
+            if (world.IsRemote) world.Writer.SetBlockMeta(x, y + 1, z, (meta ^ 4) + 8);
+            else world.Writer.SetBlockMetaWithoutNotifyingNeighbors(x, y + 1, z, (meta ^ 4) + 8);
         }
 
-        world.Writer.SetBlockMeta(x, y, z, meta ^ 4);
+        if (world.IsRemote) world.Writer.SetBlockMeta(x, y, z, meta ^ 4);
+        else world.Writer.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, meta ^ 4);
+
         world.Broadcaster.SetBlocksDirty(x, y - 1, z, x, y, z);
         world.Broadcaster.WorldEvent(player, 1003, x, y, z, 0);
         return true;
     }
 
 
-    public override bool onUse(OnUseEvent @event) => updateDorState(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
+    public override bool onUse(OnUseEvent @event) => UpdateDoorState(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
     public static int SetOpen(int meta) => (meta & 4) == 0 ? (meta - 1) & 3 : meta & 3;
 
     public void SetOpen(IWorldContext world, int x, int y, int z, bool open)
