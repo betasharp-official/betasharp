@@ -134,7 +134,7 @@ public class MainMenuScreen(
         // Mod info
         Link modsLabel = new()
         {
-            Text = game.Mods.Mods.Count > 0 ? $"{game.Mods.Mods.Count} mods loaded" : "No mods loaded",
+            Text = game.Mods.Count > 0 ? $"{game.Mods.Count} mods loaded" : "No mods loaded",
             TextColor = Guis.Color.White
         };
         modsLabel.Style.Position = PositionType.Absolute;

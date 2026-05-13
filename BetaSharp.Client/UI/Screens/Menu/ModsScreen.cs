@@ -10,7 +10,7 @@ using BetaSharp.NBT;
 
 namespace BetaSharp.Client.UI.Screens.Menu;
 
-public class ModsScreen(UIContext context, ModManager modMan) : UIScreen(context)
+public class ModsScreen(UIContext context, ModManager mods) : UIScreen(context)
 {
     private Mod? _currentMod = null;
     private ModListItem? _currentItem = null;
@@ -38,12 +38,12 @@ public class ModsScreen(UIContext context, ModManager modMan) : UIScreen(context
         middle.Style.FlexGrow = 1;
         middle.Style.SetPadding(20);
 
-        ScrollView mods = new ScrollView();
-        mods.Style.Width = 150;
-        mods.Style.BackgroundColor = Color.BackgroundBlackAlpha;
-        mods.Style.MarginRight = 4;
+        ScrollView scroll = new ScrollView();
+        scroll.Style.Width = 150;
+        scroll.Style.BackgroundColor = Color.BackgroundBlackAlpha;
+        scroll.Style.MarginRight = 4;
 
-        foreach (Mod mod in modMan.Mods) {
+        foreach (Mod mod in mods) {
             var item = new ModListItem(mod);
             item.Style.Width = 140;
             item.OnClick += (e) =>
@@ -65,10 +65,10 @@ public class ModsScreen(UIContext context, ModManager modMan) : UIScreen(context
                 _description.Text = mod.Description;
             };
 
-            mods.AddContent(item);
+            scroll.AddContent(item);
         }
 
-        middle.AddChild(mods);
+        middle.AddChild(scroll);
 
         Panel info = new Panel();
         info.Style.FlexGrow = 1;

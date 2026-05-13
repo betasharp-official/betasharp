@@ -1,3 +1,4 @@
+using System.Collections;
 using System.IO.Compression;
 using System.Reflection;
 using BetaSharp.Server.Command;
@@ -5,9 +6,9 @@ using SixLabors.ImageSharp.Drawing.Processing;
 
 namespace BetaSharp.Client.Modding;
 
-public class ModManager(string modsFolder, BetaSharp game)
+public class ModManager(string modsFolder, BetaSharp game) : IEnumerable<Mod>
 {
-    public List<Mod> Mods = new List<Mod>();
+    public List<Mod> Mods { get; private set; } = new List<Mod>();
 
     private void LoadModAssembly(Assembly assembly, ZipArchive? assetArchive = null)
     {
@@ -115,5 +116,19 @@ public class ModManager(string modsFolder, BetaSharp game)
                 }
             }
         }
+    }
+
+    public int Count => Mods.Count;
+
+    public Mod this[int index] => Mods[index];
+
+    public IEnumerator<Mod> GetEnumerator()
+    {
+        return Mods.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }

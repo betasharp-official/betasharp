@@ -546,9 +546,9 @@ public partial class BetaSharp :
 
         Mods = new(Path.Combine(BetaSharpDir, "mods"), this);
         Mods.LoadMods();
-        _logger.LogInformation("Loaded {Count} mods", Mods.Mods.Count);
+        _logger.LogInformation("Loaded {Count} mods", Mods.Count);
 
-        foreach (Mod mod in Mods.Mods)
+        foreach (Mod mod in Mods)
         {
             _logger.LogInformation("    Mod {ID} ({Name}): {Description}", mod.ID, mod.Name, mod.Description);
         }
