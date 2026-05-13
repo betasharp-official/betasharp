@@ -448,7 +448,8 @@ internal class ChunkMap
 
             if (_dirtyBlockCount < MaxDirtyBlocks)
             {
-                short blockArrayIndex = (short)(ChuckFormat.GetIndex(x, y, z));
+                // for some reason, this uses a 255 value for y.
+                short blockArrayIndex = (short)(x << 12 | z << 8 | y);
 
                 for (int i = 0; i < _dirtyBlockCount; i++)
                 {
