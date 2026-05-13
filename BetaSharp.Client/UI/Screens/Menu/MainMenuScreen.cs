@@ -63,7 +63,7 @@ public class MainMenuScreen(
         btnMultiplayer.OnClick += (e) => Context.Navigator.Navigate(new MultiplayerScreen(Context, networkContext));
         btnMultiplayer.Style.MarginBottom = 4;
 
-        if (session == null || session.sessionId == "-")
+        if (session == null || session.SessionToken == "-")
         {
             btnMultiplayer.Enabled = false;
         }

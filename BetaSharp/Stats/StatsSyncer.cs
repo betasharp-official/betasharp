@@ -25,7 +25,7 @@ internal class StatsSynchronizer
 
     public StatsSynchronizer(Session session, StatFileWriter statFileWriter, string statsFolder)
     {
-        string usernameLower = session.username.ToLowerInvariant();
+        string usernameLower = session.Username.ToLowerInvariant();
 
         _unsentStatsFile = System.IO.Path.Combine(statsFolder, $"stats_{usernameLower}_unsent.dat");
         _statsFile = System.IO.Path.Combine(statsFolder, $"stats_{usernameLower}.dat");
@@ -34,14 +34,14 @@ internal class StatsSynchronizer
         _tempUnsentStatsFile = System.IO.Path.Combine(statsFolder, $"stats_{usernameLower}_unsent.tmp");
         _tempStatsFile = System.IO.Path.Combine(statsFolder, $"stats_{usernameLower}.tmp");
 
-        if (usernameLower != session.username)
+        if (usernameLower != session.Username)
         {
-            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}_unsent.dat", _unsentStatsFile);
-            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}.dat", _statsFile);
-            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}_unsent.old", _oldUnsentStatsFile);
-            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}.old", _oldStatsFile);
-            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}_unsent.tmp", _tempUnsentStatsFile);
-            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.username}.tmp", _tempStatsFile);
+            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.Username}_unsent.dat", _unsentStatsFile);
+            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.Username}.dat", _statsFile);
+            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.Username}_unsent.old", _oldUnsentStatsFile);
+            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.Username}.old", _oldStatsFile);
+            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.Username}_unsent.tmp", _tempUnsentStatsFile);
+            EnsureStatFileIsLowercase(statsFolder, $"stats_{session.Username}.tmp", _tempStatsFile);
         }
 
         _statFileWriter = statFileWriter;
@@ -91,7 +91,7 @@ internal class StatsSynchronizer
     {
         try
         {
-            string jsonContent = StatFileWriter.SerializeStats(_session.username, "local", statsMap);
+            string jsonContent = StatFileWriter.SerializeStats(_session.Username, "local", statsMap);
             File.WriteAllText(tempUnsentFile, jsonContent);
 
             if (File.Exists(oldUnsentFile))

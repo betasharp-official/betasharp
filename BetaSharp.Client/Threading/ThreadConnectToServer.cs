@@ -35,7 +35,7 @@ public class ThreadConnectToServer(
                 return;
             }
 
-            connectingScreen.ClientHandler.AddToSendQueue(HandshakePacket.Get(context.Session.username));
+            connectingScreen.ClientHandler.AddToSendQueue(HandshakePacket.Get(context.Session.Username));
         }
         catch (SocketException ex) when (ex.SocketErrorCode == SocketError.HostNotFound)
         {

@@ -537,7 +537,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onHandshake(HandshakePacket packet)
     {
-        AddToSendQueue(LoginHelloPacket.Get(_context.Session.username, 14, LoginHelloPacket.BETASHARP_CLIENT_SIGNATURE, 0));
+        AddToSendQueue(LoginHelloPacket.Get(_context.Session.Username, 14, LoginHelloPacket.BETASHARP_CLIENT_SIGNATURE, 0));
     }
 
     public void Disconnect()

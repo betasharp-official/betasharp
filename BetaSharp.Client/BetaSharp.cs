@@ -41,10 +41,12 @@ using BetaSharp.Worlds.Colors;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
+using CommandLine;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Backends.GLFW;
 using Hexa.NET.ImGui.Backends.OpenGL3;
 using Microsoft.Extensions.Logging;
+using Silk.NET.Core.Native;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
@@ -454,7 +456,7 @@ public partial class BetaSharp :
 
         FramebufferManager = new FramebufferManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
 
-        EntityRenderDispatcher.Instance.SkinManager.RequestDownload(Session.username, true);
+        EntityRenderDispatcher.Instance.SkinManager.RequestDownload(Session.Username, true);
     }
 
     private void LoadVersion()
@@ -1852,39 +1854,36 @@ public partial class BetaSharp :
     #endregion
 
     #region Application Entry Point
+    private class CMDOptions
+    {
+        [Option('n', "username", Required = false, HelpText = "Player name.", Default = null)]
+        public string? Username { get; set; }
+
+        [Option('t', "token", Required = false, HelpText = "Session token, '-' for no account.", Default = "-")]
+        public string SessionToken { get; set; }
+
+        public Session Session => new(Username is null ? $"Player{Random.Shared.Next()}" : Username, SessionToken);
+    }
 
     public static void Startup(string[] args)
     {
-        (string Name, string Session) result = args.Length switch
-        {
-            0 => ($"Player{Random.Shared.Next()}", "-"),
-            1 => (args[0], "-"),
-            _ => (args[0], args[1]),
-        };
-
-        PlayerNameValidator.Validate(result.Name);
-
-        StartMainThread(result.Name, result.Session);
+        Parser.Default.ParseArguments<CMDOptions>(args)
+            .WithParsed<CMDOptions>(StartMainThread);
     }
 
-    private static void StartMainThread(string? playerName, string? sessionToken)
+    private static void StartMainThread(CMDOptions opts)
     {
+        Session session = opts.Session;
+        PlayerNameValidator.Validate(session.Username);
+
         Thread.CurrentThread.Name = "BetaSharp Main Thread";
 
         BetaSharp game = new(850, 480, false);
+        game.Session = session;
 
-        if (playerName != null && sessionToken != null)
+        if (opts.SessionToken == "-")
         {
-            game.Session = new Session(playerName, sessionToken);
-
-            if (sessionToken == "-")
-            {
-                HasPaidCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            }
-        }
-        else
-        {
-            throw new Exception("Player name and session token were not provided!");
+            HasPaidCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         }
 
         game.Run();
