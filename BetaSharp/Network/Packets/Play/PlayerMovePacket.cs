@@ -1,29 +1,11 @@
 namespace BetaSharp.Network.Packets.Play;
 
-public class PlayerMovePacket(PacketId id = PacketId.PlayerMove) : Packet(id)
+public class PlayerMovePacket() : PacketPlayerMoveAbstract(PacketId.PlayerMove)
 {
-    public double X { get; set; }
-    public double Y { get; set; }
-    public double Z { get; set; }
-    public double EyeHeight { get; set; }
-    public float Yaw { get; protected set; }
-    public float Pitch { get; protected set; }
-    public bool OnGround { get; protected set; }
-    public bool ChangePosition { get; set; }
-    public bool ChangeLook { get; protected set; }
-
     public static PlayerMovePacket Get(bool onGround)
     {
         PlayerMovePacket p = Get<PlayerMovePacket>(PacketId.PlayerMove);
-        p.X = 0;
-        p.Y = 0;
-        p.Z = 0;
-        p.EyeHeight = 0;
-        p.Yaw = 0;
-        p.Pitch = 0;
         p.OnGround = onGround;
-        p.ChangePosition = false;
-        p.ChangeLook = false;
         return p;
     }
 

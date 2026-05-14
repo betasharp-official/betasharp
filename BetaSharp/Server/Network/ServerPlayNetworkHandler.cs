@@ -73,14 +73,23 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public override void onPlayerInput(PlayerInputC2SPacket packet) => player.updateInput(packet);
 
-    public override void onPlayerMove(PlayerMovePacket packet)
+    public override void onPlayerMove(PacketPlayerMoveAbstract packet)
     {
         ServerWorld sWorld = server.getWorld(player.DimensionId);
         moved = true;
         if (!teleported)
         {
-            double teleportDeltaY = packet.Y - teleportTargetY;
-            if (packet.X == teleportTargetX && teleportDeltaY * teleportDeltaY < 0.01 && packet.Z == teleportTargetZ)
+            double moveX = 0.0;
+            double moveY = 0.0;
+            double moveZ = 0.0;
+            if (packet is IPlayerMovePos packetMove)
+            {
+                moveX = packetMove.X;
+                moveY = packetMove.Y;
+                moveZ = packetMove.Z;
+            }
+            double teleportDeltaY = moveY - teleportTargetY;
+            if (teleportDeltaY * teleportDeltaY < 0.01 && Math.Abs(moveZ - teleportTargetZ) + Math.Abs(moveX - teleportTargetX) < 0.001)
             {
                 teleported = true;
             }
@@ -88,26 +97,28 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
         if (teleported)
         {
+            float yaw = player.Yaw;
+            float pitch = player.Pitch;
+
+            if (packet is IPlayerMoveLook packetLook)
+            {
+                yaw = packetLook.Yaw;
+                pitch = packetLook.Pitch;
+            }
+
             if (player.Vehicle != null)
             {
-                float yaw = player.Yaw;
-                float pitch = player.Pitch;
                 player.Vehicle.UpdatePassengerPosition();
                 double vehicleX = player.X;
                 double vehicleY = player.Y;
                 double vehicleZ = player.Z;
                 double moveX = 0.0;
                 double moveZ = 0.0;
-                if (packet.ChangeLook)
-                {
-                    yaw = packet.Yaw;
-                    pitch = packet.Pitch;
-                }
 
-                if (packet.ChangePosition && packet.Y <= -999.0 && packet.EyeHeight <= -999.0)
+                if (packet is IPlayerMovePos packetMove && packetMove.Y <= -999.0 && packetMove.EyeHeight <= -999.0)
                 {
-                    moveX = packet.X;
-                    moveZ = packet.Z;
+                    moveX = packetMove.X;
+                    moveZ = packetMove.Z;
                 }
 
                 player.OnGround = packet.OnGround;
@@ -149,42 +160,34 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             double targetX = player.X;
             double targetY = player.Y;
             double targetZ = player.Z;
-            float targetYaw = player.Yaw;
-            float targetPitch = player.Pitch;
-            if (packet.ChangePosition && packet.Y <= -999.0 && packet.EyeHeight <= -999.0)
-            {
-                packet.ChangePosition = false;
-            }
 
-            if (packet.ChangePosition)
+            if (packet is IPlayerMovePos packetMove2)
             {
-                targetX = packet.X;
-                targetY = packet.Y;
-                targetZ = packet.Z;
-                double stanceHeight = packet.EyeHeight - packet.Y;
-                if (!player.IsSleeping && (stanceHeight > 1.65 || stanceHeight < 0.1))
+                if (!(packetMove2.Y <= -999.0 && packetMove2.EyeHeight <= -999.0))
                 {
-                    disconnect("Illegal stance");
-                    _logger.LogWarning($"{player.Name} had an illegal stance: {stanceHeight}");
-                    return;
+                    targetX = packetMove2.X;
+                    targetY = packetMove2.Y;
+                    targetZ = packetMove2.Z;
+                    double stanceHeight = packetMove2.EyeHeight - packetMove2.Y;
+                    if (!player.IsSleeping && (stanceHeight > 1.65 || stanceHeight < 0.1))
+                    {
+                        disconnect("Illegal stance");
+                        _logger.LogWarning($"{player.Name} had an illegal stance: {stanceHeight}");
+                        return;
+                    }
+
+                    if (Math.Abs(packetMove2.X) > 3.2E7 || Math.Abs(packetMove2.Z) > 3.2E7)
+                    {
+                        disconnect("Illegal position");
+                        return;
+                    }
                 }
 
-                if (Math.Abs(packet.X) > 3.2E7 || Math.Abs(packet.Z) > 3.2E7)
-                {
-                    disconnect("Illegal position");
-                    return;
-                }
-            }
-
-            if (packet.ChangeLook)
-            {
-                targetYaw = packet.Yaw;
-                targetPitch = packet.Pitch;
             }
 
             player.PlayerTick(false);
             player.CameraOffset = 0.0F;
-            player.SetPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, targetYaw, targetPitch);
+            player.SetPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, yaw, pitch);
             if (!teleported)
             {
                 return;
@@ -222,11 +225,11 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 _logger.LogInformation($"Expected {player.X}, {player.Y}, {player.Z}");
             }
 
-            player.SetPositionAndAngles(targetX, targetY, targetZ, targetYaw, targetPitch);
+            player.SetPositionAndAngles(targetX, targetY, targetZ, yaw, pitch);
             bool isClearNow = sWorld.Entities.GetEntityCollisionsScratch(player, player.BoundingBox.Contract(collisionPadding, collisionPadding, collisionPadding)).Count == 0;
             if (wasClear && (validMove || !isClearNow) && !player.IsSleeping)
             {
-                teleport(teleportTargetX, teleportTargetY, teleportTargetZ, targetYaw, targetPitch);
+                teleport(teleportTargetX, teleportTargetY, teleportTargetZ, yaw, pitch);
                 return;
             }
 

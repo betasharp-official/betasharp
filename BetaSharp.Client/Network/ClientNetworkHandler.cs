@@ -365,7 +365,7 @@ public class ClientNetworkHandler : NetHandler
         _worldClient.RemoveEntityFromWorld(packet.EntityId);
     }
 
-    public override void onPlayerMove(PlayerMovePacket packet)
+    public override void onPlayerMove(PacketPlayerMoveAbstract packet)
     {
         ClientPlayerEntity ent = _context.PlayerHost.Player;
         double x = ent.X;
@@ -373,26 +373,31 @@ public class ClientNetworkHandler : NetHandler
         double z = ent.Z;
         float yaw = ent.Yaw;
         float pitch = ent.Pitch;
-        if (packet.ChangePosition)
+        if (packet is IPlayerMovePos packetMove)
         {
-            x = packet.X;
-            y = packet.Y;
-            z = packet.Z;
+            x = packetMove.X;
+            y = packetMove.Y;
+            z = packetMove.Z;
         }
 
-        if (packet.ChangeLook)
+        if (packet is IPlayerMoveLook packetLook)
         {
-            yaw = packet.Yaw;
-            pitch = packet.Pitch;
+            yaw = packetLook.Yaw;
+            pitch = packetLook.Pitch;
         }
 
         ent.CameraOffset = 0.0F;
         ent.VelocityX = ent.VelocityY = ent.VelocityZ = 0.0D;
         ent.SetPositionAndAngles(x, y, z, yaw, pitch);
-        packet.X = ent.X;
-        packet.Y = ent.BoundingBox.MinY;
-        packet.Z = ent.Z;
-        packet.EyeHeight = ent.Y;
+
+        if (packet is IPlayerMovePos packetMove2)
+        {
+            packetMove2.X = ent.X;
+            packetMove2.Y = ent.BoundingBox.MinY;
+            packetMove2.Z = ent.Z;
+            packetMove2.EyeHeight = ent.Y;
+        }
+
         SendPacket(packet);
         if (!_terrainLoaded)
         {
