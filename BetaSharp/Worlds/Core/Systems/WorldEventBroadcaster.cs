@@ -73,6 +73,21 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
         NotifyUpdate(x, y, z + 1, blockId);
     }
 
+    /// <summary>
+    /// Like <see cref="NotifyNeighbors"/>, but also notifies around the block below
+    /// </summary>
+    public void NotifyNeighborsFloor(int x, int y, int z, int blockId)
+    {
+        NotifyNeighbors(x, y, z, blockId);
+
+        y--;
+        NotifyUpdate(x - 1, y, z, blockId);
+        NotifyUpdate(x + 1, y, z, blockId);
+        NotifyUpdate(x, y - 1, z, blockId);
+        NotifyUpdate(x, y, z - 1, blockId);
+        NotifyUpdate(x, y, z + 1, blockId);
+    }
+
     private void NotifyUpdate(int x, int y, int z, int blockId)
     {
         if (isRemote) return;

@@ -419,7 +419,6 @@ public abstract class World : IWorldContext
 
     public virtual void Tick()
     {
-        TickScheduler.Tick();
         Environment.UpdateWeatherCycles();
 
         long nextWorldTime;

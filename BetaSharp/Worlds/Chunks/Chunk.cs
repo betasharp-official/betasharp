@@ -293,7 +293,8 @@ public class Chunk
         int height = HeightMap[localZ << 4 | localX];
         int oldId = Blocks[pos];
 
-        if (oldId == rawId && Meta.GetNibble(localX, y, localZ) == meta) return false;
+        bool sameId = oldId == rawId;
+        if (sameId && Meta.GetNibble(localX, y, localZ) == meta) return false;
 
         int worldX = X * 16 + localX;
         int worldZ = Z * 16 + localZ;
@@ -323,9 +324,17 @@ public class Chunk
         World.Lighting.QueueLightUpdate(LightType.Block, worldX, y, worldZ, worldX, y, worldZ);
         LightGaps(localX, localZ);
 
-        if (notifyBlockPlaced && rawId != 0 && !World.IsRemote)
+        if (notifyBlockPlaced)
         {
-            Block.Blocks[rawId].onPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
+            if (rawId != 0 && !World.IsRemote)
+            {
+                Block.Blocks[rawId].onPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
+            }
+
+            if (sameId)
+            {
+                Block.Blocks[rawId].onMetadataChange(new OnMetadataChangeEvent(World, worldX, y, worldZ, meta));
+            }
         }
 
         Dirty = true;
