@@ -765,13 +765,14 @@ public class EntityManager
     {
         double minDistanceSquared = -1.0D;
         EntityPlayer? closestPlayer = null;
+        double rangeSquared = range * range;
 
         foreach (var player in Players)
         {
-            if (!player.GameMode.VisibleToWorld) return null;
+            if (!player.GameMode.VisibleToWorld) continue;
             double distanceSquared = player.GetSquaredDistance(x, y, z);
 
-            bool withinRange = range < 0.0D || distanceSquared < range * range;
+            bool withinRange = range < 0.0D || distanceSquared < rangeSquared;
             bool isClosestSoFar = minDistanceSquared == -1.0D || distanceSquared < minDistanceSquared;
 
             if (withinRange && isClosestSoFar)
@@ -788,13 +789,14 @@ public class EntityManager
     {
         double minDistanceSquared = -1.0D;
         EntityPlayer? closestPlayer = null;
+        double rangeSquared = range * range;
 
         foreach (var player in Players)
         {
-            if (!player.GameMode.CanBeTargeted) return null;
+            if (!player.GameMode.CanBeTargeted || !player.IsAlive) continue;
             double distanceSquared = player.GetSquaredDistance(x, y, z);
 
-            bool withinRange = range < 0.0D || distanceSquared < range * range;
+            bool withinRange = range < 0.0D || distanceSquared < rangeSquared;
             bool isClosestSoFar = minDistanceSquared == -1.0D || distanceSquared < minDistanceSquared;
 
             if (withinRange && isClosestSoFar)
