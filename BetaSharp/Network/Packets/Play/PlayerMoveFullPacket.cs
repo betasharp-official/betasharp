@@ -1,12 +1,13 @@
 namespace BetaSharp.Network.Packets.Play;
 
-public class PlayerMoveFullPacket : PlayerMovePacket
+public class PlayerMoveFullPacket() : PacketPlayerMoveAbstract(PacketId.PlayerMoveFull), IPlayerMoveLook, IPlayerMovePos
 {
-    public PlayerMoveFullPacket() : base(PacketId.PlayerMoveFull)
-    {
-        ChangeLook = true;
-        ChangePosition = true;
-    }
+    public double X { get; set; }
+    public double Y { get; set; }
+    public double Z { get; set; }
+    public double EyeHeight { get; set; }
+    public float Yaw { get; private set; }
+    public float Pitch { get; private set; }
 
     public static PlayerMoveFullPacket Get(double x, double y, double eyeHeight, double z, float yaw, float pitch, bool onGround)
     {
@@ -18,10 +19,10 @@ public class PlayerMoveFullPacket : PlayerMovePacket
         p.Yaw = yaw;
         p.Pitch = pitch;
         p.OnGround = onGround;
-        p.ChangeLook = true;
-        p.ChangePosition = true;
         return p;
     }
+
+    public override void Apply(NetHandler handler) => handler.onPlayerMove(this);
 
     public override void Read(Stream stream)
     {
@@ -31,7 +32,7 @@ public class PlayerMoveFullPacket : PlayerMovePacket
         Z = stream.ReadDouble();
         Yaw = stream.ReadFloat();
         Pitch = stream.ReadFloat();
-        base.Read(stream);
+        OnGround = stream.ReadBoolean();
     }
 
     public override void Write(Stream stream)
@@ -42,7 +43,7 @@ public class PlayerMoveFullPacket : PlayerMovePacket
         stream.WriteDouble(Z);
         stream.WriteFloat(Yaw);
         stream.WriteFloat(Pitch);
-        base.Write(stream);
+        stream.WriteBoolean(OnGround);
     }
 
     public override int Size() => 41;

@@ -31,7 +31,7 @@ public abstract class NetHandler
         handle(packet);
     }
 
-    public virtual void onPlayerMove(PlayerMovePacket packet)
+    public virtual void onPlayerMove(PacketPlayerMoveAbstract packet)
     {
         handle(packet);
     }
