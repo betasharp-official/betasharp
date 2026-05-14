@@ -1542,18 +1542,21 @@ public partial class BetaSharp :
             HUD.Chat.ClearMessages();
         }
 
+        if (InternalServer != null)
+        {
+            bool shouldPause = newScreen?.PausesGame ?? false;
+            if (shouldPause || (CurrentScreen?.PausesGame ?? false))
+            {
+                InternalServer.Paused = shouldPause;
+            }
+        }
+
         CurrentScreen = newScreen;
 
         if (CurrentScreen != null)
         {
             Vector2D<int> inputSizeForReset = UIContext.InputDisplaySize;
             VirtualCursor.Reset(inputSizeForReset.X, inputSizeForReset.Y);
-        }
-
-        if (InternalServer != null)
-        {
-            bool shouldPause = newScreen?.PausesGame ?? false;
-            InternalServer.SetPaused(shouldPause);
         }
 
         if (newScreen != null)

@@ -51,14 +51,24 @@ public class HelpCommand : Command.Command
         string arg = context.GetArgument<string>("command");
         string s = context.Input;
         s = s.Substring(s.IndexOf(' ') + 1);
+        bool found = false;
 
-        CommandNode<CommandSource>? a = c.Handler.Dispatcher.FindNode(s.Split(' '));
-        if (a != null)
+        var command = _helpEntries.Find(v => v.Names.Contains(arg, StringComparer.OrdinalIgnoreCase));
+        if (command != null && !(c.Server is InternalServer && command.DisallowInternalServer))
         {
-            BuildHelp('/' + s, c.Output, a);
+            CommandNode<CommandSource>? a = c.Handler.Dispatcher.FindNode(s.Split(' '));
+            if (a != null)
+            {
+                found = true;
+                BuildHelp('/' + s, c.Output, a);
+            }
         }
 
-        c.Output.SendMessage($"Command \"{arg}\" not found, use /help to list all commands");
+        if (!found)
+        {
+            c.Output.SendMessage($"Command \"{arg}\" not found, use /help to list all commands");
+        }
+
         return 1;
     }
 

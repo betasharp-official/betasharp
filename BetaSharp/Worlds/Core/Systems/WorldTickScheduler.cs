@@ -11,6 +11,17 @@ public class WorldTickScheduler
     private readonly PriorityQueue<BlockUpdate, (long, long)> _scheduledUpdates = new();
     private readonly HashSet<ScheduledBlockTick> _pendingScheduledKeys = new();
 
+    public long Count
+    {
+        get
+        {
+            lock (_queueLock)
+            {
+                return _scheduledUpdates.Count;
+            }
+        }
+    }
+
     private readonly record struct ScheduledBlockTick(int X, int Y, int Z, int BlockId);
 
     public WorldTickScheduler(IWorldContext context) => _context = context;

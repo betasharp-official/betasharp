@@ -59,6 +59,9 @@ public abstract class BetaSharpServer : ICommandOutput
 
     private volatile bool _isPaused;
 
+    private long _tickLenght = 50L;
+    private long _accumulatedTime;
+
     public float Tps
     {
         get
@@ -70,10 +73,17 @@ public abstract class BetaSharpServer : ICommandOutput
         }
     }
 
-    public void SetPaused(bool paused)
+    public int TickRate
     {
-        _isPaused = paused;
+        get => (1000 / (int)_tickLenght);
+        set
+        {
+            _tickLenght = 1000 / value;
+            _accumulatedTime %= _tickLenght;
+        }
     }
+
+    public bool Paused { get => _isPaused; set => _isPaused = value; }
 
     protected BetaSharpServer(IServerConfiguration config)
     {
@@ -311,10 +321,11 @@ public abstract class BetaSharpServer : ICommandOutput
             if (Init())
             {
                 long lastTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                long accumulatedTime = 0L;
+                long accumulatedFixedTime = 0L;
                 _lastTpsTime = lastTime;
                 _ticksThisSecond = 0;
                 var tickStopwatch = new Stopwatch();
+                var fixedTickStopwatch = new Stopwatch();
 
                 while (running)
                 {
@@ -332,12 +343,22 @@ public abstract class BetaSharpServer : ICommandOutput
                         tickLength = 0L;
                     }
 
-                    accumulatedTime += tickLength;
+                    _accumulatedTime += tickLength;
+                    accumulatedFixedTime += tickLength;
                     lastTime = currentTime;
+
+                    if (accumulatedFixedTime >= 50L)
+                    {
+                        accumulatedFixedTime -= 50L;
+                        fixedTickStopwatch.Restart();
+                        TickFixed();
+                        fixedTickStopwatch.Stop();
+                        MetricRegistry.Set(ServerMetrics.Mspft, (float)fixedTickStopwatch.Elapsed.TotalMilliseconds);
+                    }
 
                     if (_isPaused)
                     {
-                        accumulatedTime = 0L;
+                        _accumulatedTime = 0L;
                         lock (_tpsLock)
                         {
                             _currentTps = 0.0f;
@@ -347,11 +368,11 @@ public abstract class BetaSharpServer : ICommandOutput
                         continue;
                     }
 
-                    while (accumulatedTime >= 50L && running)
+                    while (_accumulatedTime >= _tickLenght && running)
                     {
-                        accumulatedTime -= 50L;
+                        _accumulatedTime -= _tickLenght;
                         tickStopwatch.Restart();
-                        tick();
+                        Tick();
                         tickStopwatch.Stop();
                         MetricRegistry.Set(ServerMetrics.Mspt, (float)tickStopwatch.Elapsed.TotalMilliseconds);
                         _ticksThisSecond++;
@@ -431,7 +452,7 @@ public abstract class BetaSharpServer : ICommandOutput
         }
     }
 
-    private void tick()
+    private void TickFixed()
     {
         // Snapshot keys to allow safe mutation during iteration.
         var keysSnapshot = new List<string>(GIVE_COMMANDS_COOLDOWNS.Keys);
@@ -446,6 +467,27 @@ public abstract class BetaSharpServer : ICommandOutput
             }
         }
 
+        try
+        {
+            RunPendingCommands();
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning($"Unexpected exception while parsing console command: {e}");
+        }
+
+        connections.Tick();
+        playerManager.updateAllChunks();
+        playerManager.flushPendingChunkUpdates();
+
+        foreach (EntityTracker t in entityTrackers)
+        {
+            t.tick();
+        }
+    }
+
+    public void Tick()
+    {
         _ticks++;
 
         for (int i = 0; i < worlds.Length; i++)
@@ -472,24 +514,6 @@ public abstract class BetaSharpServer : ICommandOutput
 
                 world.Entities.TickEntities();
             }
-        }
-
-        connections?.Tick();
-        playerManager.updateAllChunks();
-        playerManager.flushPendingChunkUpdates();
-
-        foreach (EntityTracker t in entityTrackers)
-        {
-            t.tick();
-        }
-
-        try
-        {
-            RunPendingCommands();
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning($"Unexpected exception while parsing console command: {e}");
         }
     }
 

@@ -12,6 +12,11 @@ public static class ServerMetrics
     /// </summary>
     public static readonly MetricHandle<float> Mspt = MetricRegistry.Register<float>("server:mspt");
 
+    /// <summary>
+    /// Amount of milliseconds each fixed tick takes, in float.
+    /// </summary>
+    public static readonly MetricHandle<float> Mspft = MetricRegistry.Register<float>("server:mspft");
+
     public static readonly MetricHandle<int> EntityCount = MetricRegistry.Register<int>("server:entity_count");
     public static readonly MetricHandle<int> PlayerCount = MetricRegistry.Register<int>("server:player_count");
 
