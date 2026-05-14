@@ -129,7 +129,7 @@ public static unsafe class Display
 
             if (_fullscreen)
             {
-                switchDisplayMode();
+                SetFullscreen();
             }
             else
             {
@@ -180,17 +180,17 @@ public static unsafe class Display
 
             if (isFullscreen())
             {
-                switchDisplayMode();
+                SetFullscreen();
             }
             else
             {
-                resetDisplayMode();
+                ResetDisplayMode();
                 _window!.Size = new Vector2D<int>(mode.getWidth(), mode.getHeight());
             }
         }
     }
 
-    private static void switchDisplayMode()
+    private static void SetFullscreen(bool windowedMode = true)
     {
         if (!_currentMode.isFullscreenCapable())
         {
@@ -199,7 +199,12 @@ public static unsafe class Display
 
         if (_window != null && _glfw != null)
         {
-            Silk.NET.GLFW.Monitor* monitor = _glfw.GetPrimaryMonitor();
+            Silk.NET.GLFW.Monitor* monitor = null;
+            if (!windowedMode)
+            {
+                monitor = _glfw.GetPrimaryMonitor();
+            }
+
             unsafe
             {
                 _glfw.SetWindowMonitor(
@@ -214,7 +219,7 @@ public static unsafe class Display
         }
     }
 
-    private static void resetDisplayMode()
+    private static void ResetDisplayMode()
     {
         if (_window != null && _glfw != null)
         {
@@ -495,7 +500,7 @@ public static unsafe class Display
 
             if (isFullscreen())
             {
-                switchDisplayMode();
+                SetFullscreen();
             }
 
             _window.Initialize();
@@ -630,7 +635,7 @@ public static unsafe class Display
             _framebufferHeight = 0;
             _framebufferSizeCallback = null;
 
-            resetDisplayMode();
+            ResetDisplayMode();
         }
     }
 
