@@ -31,7 +31,9 @@ public abstract class ContainerScreen(
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
 
-        Root.AddChild(new Background(BackgroundType.World));
+        var background = new Background(BackgroundType.World);
+        background.OnMouseDown += (e) => OnSlotClick(null, e.Button);
+        Root.AddChild(background);
 
         _containerPanel = new Panel();
         _containerPanel.Style.Width = _xSize;
@@ -53,9 +55,9 @@ public abstract class ContainerScreen(
         }
     }
 
-    private void OnSlotClick(UISlot uiSlot, MouseButton button)
+    private void OnSlotClick(UISlot? uiSlot, MouseButton button)
     {
-        int slotId = uiSlot.Slot.id;
+        int slotId = uiSlot == null ? ScreenHandler.NullSlot : uiSlot.Slot.id;
         bool isShiftClick = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
         int mouseBtn = (button == MouseButton.Right) ? 1 : 0;
 

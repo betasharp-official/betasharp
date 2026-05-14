@@ -7,11 +7,12 @@ namespace BetaSharp.Screens;
 
 public abstract class ScreenHandler
 {
+
+    public const int NullSlot = -999;
+
     protected List<ScreenHandlerListener> Listeners { get; private set; } = [];
     private short _revision;
     private HashSet<EntityPlayer> _players = new HashSet<EntityPlayer>();
-
-
 
     public List<ItemStack?> TrackedStacks { get; private set; } = [];
     public List<Slot> Slots { get; private set; } = [];
@@ -101,9 +102,9 @@ public abstract class ScreenHandler
         if (button == 0 || button == 1)
         {
             InventoryPlayer playerInventory = player.Inventory;
-            if (index == -999)
+            if (index == NullSlot)
             {
-                if (playerInventory.GetCursorStack() is not null && index == -999)
+                if (playerInventory.GetCursorStack() is not null)
                 {
                     if (button == 0)
                     {
