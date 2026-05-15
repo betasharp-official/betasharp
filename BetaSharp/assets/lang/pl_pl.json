@@ -3,6 +3,7 @@
         "name": "Polski"
     },
     "gui": {
+        "rename": "Zmień nazwę",
         "edit": "Edytuj",
         "refresh": "Odśwież",
         "done": "Gotowe",
@@ -54,7 +55,6 @@
         "select": "Graj w wybranym świecie",
         "create": "Stwórz nowy świat",
         "createDemo": "Zagraj w nowym świecie demo",
-        "rename": "Zmień nazwę",
         "deleteQuestion": "Czy na pewno chcesz usunąć ten świat?",
         "deleteWarning": "zostanie utracony na zawsze! (to bardzo długo!)",
         "renameButton": "Zmień nazwę",

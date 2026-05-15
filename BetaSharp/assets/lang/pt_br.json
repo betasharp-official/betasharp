@@ -3,6 +3,7 @@
         "name": "Português (Brasil)"
     },
     "gui": {
+        "rename": "Renomear",
         "edit": "Editar",
         "refresh": "Atualizar",
         "done": "Concluído",
@@ -54,7 +55,6 @@
         "select": "Jogar no Mundo Selecionado",
         "create": "Criar Novo Mundo",
         "createDemo": "Jogar Novo Mundo de Demonstração",
-        "rename": "Renomear",
         "deleteQuestion": "Tem certeza que deseja excluir este mundo?",
         "deleteWarning": "será perdido para sempre! (Muito tempo!)",
         "renameButton": "Renomear",
