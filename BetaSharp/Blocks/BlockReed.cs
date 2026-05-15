@@ -60,9 +60,9 @@ internal class BlockReed : Block
                evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z + 1) == Material.Water;
     }
 
-    public override void neighborUpdate(OnTickEvent @event) => breakIfCannotGrow(@event);
+    public override void neighborUpdate(OnTickEvent @event) => BreakIfCannotGrow(@event);
 
-    protected void breakIfCannotGrow(OnTickEvent @event)
+    private void BreakIfCannotGrow(OnTickEvent @event)
     {
         if (canGrow(@event)) return;
 
