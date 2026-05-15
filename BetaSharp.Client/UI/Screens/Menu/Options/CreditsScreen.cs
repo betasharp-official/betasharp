@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Net.Http.Json;
 using System.Runtime.InteropServices;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
@@ -8,8 +9,19 @@ using BetaSharp.Client.UI.Layout.Flexbox;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
+public class GitHubContributor
+{
+    public string login { get; set; }
+    public string html_url { get; set; }
+    public string type { get; set; }
+}
+
 public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(context)
 {
+
+    string githubContributorsUrl = "https://github.com/betasharp-official/betasharp/contributors";
+    string githubContributorsApiUrl = "https://api.github.com/repos/betasharp-official/betasharp/contributors";
+
     protected override void Init()
     {
         Root.Style.AlignItems = Align.Center;
@@ -110,7 +122,47 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
         Link("ImGui - Debug UI", "https://github.com/ocornut/imgui");
         Link("SFML.NET - Audio", "https://github.com/SFML/SFML.Net");
         Link("SixLabors - Fonts, image processing", "https://github.com/sixlabors");
+        Seperator();
+
+        Header("Contributors");
+        Task.Run(async () =>
+        {
+            try
+            {
+                var contributors = await FetchContributors();
+
+                if (contributors != null)
+                {
+                    foreach (var c in contributors)
+                    {
+                        if (c.type != "Bot")
+                            Link(c.login, c.html_url);
+                    }
+                }
+                else
+                {
+                    Link("View on GitHub", githubContributorsUrl);
+                }
+            } catch {
+                Link("View on GitHub", githubContributorsUrl);
+            }
+        });
     }
 
-    
+    private async Task<List<GitHubContributor>?> FetchContributors()
+    {
+        try
+        {
+            using HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "BetaSharp-Client");
+
+            return await client.GetFromJsonAsync<List<GitHubContributor>>(githubContributorsApiUrl);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+
 }
