@@ -42,7 +42,7 @@ public sealed class EntityCombatBehaviorTests
         Assert.True(world.Entities.SpawnEntity(pig));
 
         // know good seed for leap attack.
-        spider.Random = new JavaRandom(0);
+        spider.Random.SetSeed(0);
         spider.ForceAttack(pig, 3.0f);
         Assert.True(spider.VelocityY > 0.0);
     }
