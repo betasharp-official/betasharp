@@ -44,9 +44,11 @@ internal class BlockReed : Block
     {
         int blockBelowId = evt.World.Reader.GetBlockId(evt.X, evt.Y - 1, evt.Z);
 
+        // Can always place on self
+        if (blockBelowId == id) return true;
+
         // valid block below
-        if (blockBelowId == id ||
-            blockBelowId == GrassBlock.id ||
+        if (blockBelowId == GrassBlock.id ||
             blockBelowId == Dirt.id ||
             blockBelowId == Sand.id ||
             blockBelowId == Gravel.id) return false;
