@@ -1,5 +1,4 @@
 using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls;
@@ -11,22 +10,15 @@ public enum BackgroundType
     GameOver
 }
 
-public class Background : UIElement
+public class Background : FullscreenElement
 {
     public BackgroundType Type { get; set; } = BackgroundType.Dirt;
     public string TexturePath { get; set; } = "/gui/background.png";
     public float Scale { get; set; } = 32.0f;
 
-    public Background()
-    {
-        Style.Position = PositionType.Absolute;
-        Style.Top = 0;
-        Style.Left = 0;
-        Style.Right = 0;
-        Style.Bottom = 0;
-    }
+    public Background() { }
 
-    public Background(BackgroundType type) : this()
+    public Background(BackgroundType type)
     {
         Type = type;
     }

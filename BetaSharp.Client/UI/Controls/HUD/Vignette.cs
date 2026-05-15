@@ -5,7 +5,7 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
 
-public class Vignette(Func<ClientPlayerEntity?> getPlayer) : UIElement
+public class Vignette(Func<ClientPlayerEntity?> getPlayer) : FullscreenElement
 {
     private float _prevVignetteBrightness = 1.0f;
 
