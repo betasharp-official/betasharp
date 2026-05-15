@@ -40,10 +40,7 @@ public class HUD : UIScreen
         Root.Style.AlignItems = Align.Center;
 
         // Overlay elements
-        var vignette = new Vignette(_hudContext.GetPlayer);
-        vignette.Style.Position = PositionType.Absolute;
-        vignette.Style.Top = vignette.Style.Left = vignette.Style.Right = vignette.Style.Bottom = 0;
-        Root.AddChild(vignette);
+        Root.AddChild(new Vignette(_hudContext.GetPlayer));
 
         var portal = new PortalOverlay(_hudContext.GetPlayer);
         portal.Style.Position = PositionType.Absolute;
