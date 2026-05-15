@@ -1,7 +1,7 @@
-using System.Linq;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.NBT;
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Tests.Entities;
@@ -29,7 +29,7 @@ public sealed class EntityCombatBehaviorTests
     }
 
     [Fact]
-    public void Spider_attack_eventually_performs_leap()
+    public void Spider_attack_performs_leap()
     {
         FakeWorldContext world = new();
         var spider = new TestSpider(world);
@@ -41,18 +41,10 @@ public sealed class EntityCombatBehaviorTests
         pig.SetPositionAndAngles(11.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(pig));
 
-        bool leaped = false;
-        for (int i = 0; i < 64; i++)
-        {
-            spider.ForceAttack(pig, 3.0f);
-            if (spider.VelocityY > 0.0)
-            {
-                leaped = true;
-                break;
-            }
-        }
-
-        Assert.True(leaped);
+        // know good seed for leap attack.
+        spider.Random = new JavaRandom(0);
+        spider.ForceAttack(pig, 3.0f);
+        Assert.True(spider.VelocityY > 0.0);
     }
 
     [Fact]

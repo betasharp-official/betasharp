@@ -89,7 +89,7 @@ public abstract class Entity
     protected float StepHeight { get; init; }
     protected bool NoClip { get; init; }
     protected static float PushSpeedReduction => 0.0F;
-    protected JavaRandom Random { get; } = new();
+    public JavaRandom Random { get; set; } = new();
     public int Age { get; private set; }
     protected int FireImmunityTicks { get; init; } = 1;
     protected int FireTicks { get; set; }
