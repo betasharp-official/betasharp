@@ -14,6 +14,7 @@ public abstract class Mod
     public abstract string Author { get; }
     public abstract bool AddNamespace { get; }
     public virtual List<(string path, AssetManager.AssetType type)> Assets => new() {};
+    public virtual string Icon => "gui/ModDefaultIcon.png";
 
     public static BetaSharp Game { get; internal set; }
     protected Harmony HarmonyInstance { get; private set; }

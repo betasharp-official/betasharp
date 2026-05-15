@@ -39,13 +39,13 @@ public class ModsScreen(UIContext context, ModManager mods) : UIScreen(context)
         middle.Style.SetPadding(20);
 
         ScrollView scroll = new ScrollView();
-        scroll.Style.Width = 150;
+        scroll.Style.Width = 200;
         scroll.Style.BackgroundColor = Color.BackgroundBlackAlpha;
         scroll.Style.MarginRight = 4;
 
         foreach (Mod mod in mods) {
             var item = new ModListItem(mod);
-            item.Style.Width = 140;
+            item.Style.Width = 190;
             item.OnClick += (e) =>
             {
                 item.IsSelected = true;

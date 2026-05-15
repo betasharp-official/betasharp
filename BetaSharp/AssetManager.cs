@@ -211,6 +211,7 @@ public class AssetManager
         defineAsset("gui/unknown_pack.png", AssetType.Binary);
         defineAsset("gui/Pointer.png", AssetType.Binary);
         defineAsset("gui/Globe.png", AssetType.Binary);
+        defineAsset("gui/ModDefaultIcon.png", AssetType.Binary);
 
         defineAsset("gui/Logo.png", AssetType.Binary);
         
