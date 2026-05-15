@@ -3,8 +3,8 @@
         "name": "日本語"
     },
     "gui": {
-        "edit": "編集",
         "rename": "名前を変更",
+        "edit": "編集",
         "refresh": "更新",
         "done": "完了",
         "cancel": "キャンセル",
@@ -55,7 +55,6 @@
         "select": "選択したワールドで遊ぶ",
         "create": "ワールド新規作成",
         "createDemo": "新しいデモワールドで遊ぶ",
-        "rename": "名前を変更",
         "deleteQuestion": "このワールドを削除しますか？",
         "deleteWarning": "は完全に削除され、二度と元に戻せません！",
         "renameButton": "名前を変更",
