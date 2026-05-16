@@ -8,67 +8,23 @@ namespace BetaSharp.Network.Packets;
 
 public abstract class Packet
 {
-    public static readonly ObjectFactoryPool<Packet, PacketRegisterItem> Registry = new(256);
+    public static readonly ObjectFactory<Packet, PacketRegisterItem> Registry = new(256);
     private static readonly ILogger<Packet> s_logger = Log.Instance.For<Packet>();
 
     private static readonly Dictionary<int, PacketTracker> s_trackers = new();
 
-    public long CreationTime;
+    public long CreationTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
     public readonly byte Id;
-
-    /// <summary>
-    /// When sending to multiple clients, we only want to return when all packages have been sent
-    /// </summary>
-    public int UseCount;
-
-#if DEBUG
-    public string AllocationTrace = string.Empty;
-    public string ReturnTrace = string.Empty;
-    public bool IsReturned = false;
-#endif
 
     protected Packet(byte id)
     {
         Id = id;
-        UseCount = 1;
     }
 
     protected Packet(PacketId id)
     {
         Id = (byte)id;
-        UseCount = 1;
-    }
-
-    public void Return()
-    {
-        Interlocked.Decrement(ref UseCount);
-        ReturnNoCount();
-    }
-
-    protected void ReturnNoCount()
-    {
-        if (Volatile.Read(ref UseCount) > 0)
-        {
-            return;
-        }
-
-#if DEBUG
-        if (IsReturned)
-        {
-            throw new InvalidOperationException($"Packet double-returned! It was freed by an earlier call.\nAllocated at:\n{AllocationTrace}\n\nPreviously returned at:\n{ReturnTrace}\n\nDouble return at:\n{Environment.StackTrace}");
-        }
-        IsReturned = true;
-        ReturnTrace = Environment.StackTrace;
-#endif
-
-        if (Registry.TryGet(Id, out PacketRegisterItem? item))
-        {
-            item.Return(this);
-            return;
-        }
-
-        s_logger.LogError("Packet id " + Id + " not found");
     }
 
     public static T Get<T>(PacketId id) where T : Packet
@@ -91,7 +47,7 @@ public abstract class Packet
             throw new Exception("Unable to get packet id " + id);
         }
 
-        return packetR.Get();
+        return packetR.New();
     }
 
     public static Packet? Read(Stream stream, bool server)
@@ -126,7 +82,7 @@ public abstract class Packet
                 }
             }
 
-            packet = packetR.Get();
+            packet = packetR.New();
 
             packet.Read(stream);
         }
@@ -157,7 +113,6 @@ public abstract class Packet
 #endif
         stream.WriteByte(packet.Id);
         packet.Write(stream);
-        packet.Return();
     }
 
     public abstract void Read(Stream stream);
@@ -236,34 +191,11 @@ public abstract class Packet
             New(PacketId.Disconnect, true, true, false, () => new DisconnectPacket())
         ]);
 
-    public class PacketRegisterItem(byte rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) : FactoryPoolItem<Packet>(rawId, factory, PoolSize(rawId))
+    public class PacketRegisterItem(byte rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) : FactoryItem<Packet>(rawId, factory)
     {
         public readonly bool ClientBound = clientBound;
         public readonly bool ServerBound = serverBound;
         public readonly bool WorldPacket = worldPacket;
-
-        private static int PoolSize(byte rawId) =>
-            rawId switch
-            {
-                (byte)PacketId.EntityRotateAndMoveRelativeS2C or (byte)PacketId.EntityMoveRelativeS2C or (byte)PacketId.EntityPositionS2C => 256,
-                (byte)PacketId.ChunkStatusUpdateS2C or (byte)PacketId.BlockUpdateS2C or (byte)PacketId.PlayerActionC2S or (byte)PacketId.ChunkDataS2C or (byte)PacketId.LivingEntitySpawnS2C or (byte)PacketId.EntityDestroyS2C => 64,
-                (byte)PacketId.KeepAlive or (byte)PacketId.UpdateSign or (byte)PacketId.PlayerConnectionUpdateS2C or (byte)PacketId.PlayerGameModeUpdateS2C or (byte)PacketId.Disconnect or (byte)PacketId.LoginHello or (byte)PacketId.Handshake or (byte)PacketId.ChatMessage or (byte)PacketId.EntityEquipmentUpdateS2C or (byte)PacketId.PlayerSpawnPositionS2C or (byte)PacketId.PaintingEntitySpawnS2C => 16,
-                _ => 32
-            };
-
-        public override Packet Get()
-        {
-            Packet p = Item.Get();
-            // note. DateTimeOffset.UtcNow.UtcTicks would be slightly faster as no conversion would be needed
-            p.CreationTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            p.UseCount = 1;
-#if DEBUG
-            p.IsReturned = false;
-            p.AllocationTrace = Environment.StackTrace;
-            p.ReturnTrace = string.Empty;
-#endif
-            return p;
-        }
     }
 
     private static PacketRegisterItem New(PacketId rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) =>

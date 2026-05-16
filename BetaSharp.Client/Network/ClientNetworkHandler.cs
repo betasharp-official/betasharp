@@ -92,10 +92,6 @@ public class ClientNetworkHandler : NetHandler
             _netManager.sendPacket(packet);
             _lastKeepAliveTime = _ticks;
         }
-        else
-        {
-            packet.Return();
-        }
     }
 
     public override void onHello(LoginHelloPacket packet)
