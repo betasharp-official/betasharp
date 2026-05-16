@@ -135,7 +135,7 @@ public class ClientNetworkHandler : NetHandler
         double x = packet.X / 32.0D;
         double y = packet.Y / 32.0D;
         double z = packet.Z / 32.0D;
-        object? entity = null;
+        Entity? entity = null;
         if (packet.EntityType == 10)
         {
             entity = new EntityMinecart(_worldClient, x, y, z, 0);
@@ -199,13 +199,13 @@ public class ClientNetworkHandler : NetHandler
 
         if (entity != null)
         {
-            ((Entity)entity).TrackedPosX = packet.X;
-            ((Entity)entity).TrackedPosY = packet.Y;
-            ((Entity)entity).TrackedPosZ = packet.Z;
-            ((Entity)entity).Yaw = 0.0F;
-            ((Entity)entity).Pitch = 0.0F;
-            ((Entity)entity).ID = packet.EntityId;
-            _worldClient.ForceEntity(packet.EntityId, (Entity)entity);
+            entity.TrackedPosX = packet.X;
+            entity.TrackedPosY = packet.Y;
+            entity.TrackedPosZ = packet.Z;
+            entity.Yaw = 0.0F;
+            entity.Pitch = 0.0F;
+            entity.ID = packet.EntityId;
+            _worldClient.ForceEntity(packet.EntityId, entity);
             if (packet.EntityData > 0)
             {
                 if (packet.EntityType == 60)
@@ -217,7 +217,7 @@ public class ClientNetworkHandler : NetHandler
                     }
                 }
 
-                ((Entity)entity).SetVelocityClient(packet.VelocityX / 8000.0D, packet.VelocityY / 8000.0D, packet.VelocityZ / 8000.0D);
+                entity.SetVelocityClient(packet.VelocityX / 8000.0D, packet.VelocityY / 8000.0D, packet.VelocityZ / 8000.0D);
             }
         }
 
@@ -297,7 +297,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntityPosition(EntityPositionS2CPacket packet)
     {
-        Entity ent = GetEntityById(packet);
+        Entity? ent = GetEntityById(packet);
         if (ent != null)
         {
             ent.TrackedPosX = packet.X;
@@ -311,21 +311,16 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntity(EntityS2CPacket packet)
     {
-        Entity ent = GetEntityById(packet);
+        Entity? ent = GetEntityById(packet);
         if (ent != null)
         {
-            ent.TrackedPosX += packet.DeltaX;
-            ent.TrackedPosY += packet.DeltaY;
-            ent.TrackedPosZ += packet.DeltaZ;
-            float yaw = packet.Rotate ? packet.Yaw * 360 / 256.0F : ent.Yaw;
-            float pitch = packet.Rotate ? packet.Pitch * 360 / 256.0F : ent.Pitch;
-            ent.SetPositionAndAnglesAvoidEntities(yaw, pitch, 5);
+            ent.SetPositionAndAnglesAvoidEntities(5);
         }
     }
 
     public override void onEntity(EntityRotateS2CPacket packet)
     {
-        Entity ent = GetEntityById(packet);
+        Entity? ent = GetEntityById(packet);
         if (ent != null)
         {
             float yaw = packet.Yaw * 360 / 256.0F;
@@ -336,7 +331,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntity(EntityMoveRelativeS2CPacket s2CPacket)
     {
-        Entity ent = GetEntityById(s2CPacket);
+        Entity? ent = GetEntityById(s2CPacket);
         if (ent != null)
         {
             ent.TrackedPosX += s2CPacket.DeltaX;
@@ -348,7 +343,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntity(EntityRotateAndMoveRelativeS2CPacket s2CPacket)
     {
-        Entity ent = GetEntityById(s2CPacket);
+        Entity? ent = GetEntityById(s2CPacket);
         if (ent != null)
         {
             ent.TrackedPosX += s2CPacket.DeltaX;
@@ -367,44 +362,39 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onPlayerMove(PacketPlayerMoveAbstract packet)
     {
-        ClientPlayerEntity ent = _context.PlayerHost.Player;
-        double x = ent.X;
-        double y = ent.Y;
-        double z = ent.Z;
-        float yaw = ent.Yaw;
-        float pitch = ent.Pitch;
+        // Previously this called ent.SetPositionAndAngles(x, y, z, yaw, pitch);
+
+        ClientPlayerEntity? ent = _context.PlayerHost.Player;
+        if (ent == null) return;
+
+        ent.CameraOffset = 0.0F;
+
         if (packet is IPlayerMovePos packetMove)
         {
-            x = packetMove.X;
-            y = packetMove.Y;
-            z = packetMove.Z;
+            ent.PrevX = ent.X = packetMove.X;
+            ent.PrevY = ent.Y = packetMove.Y;
+            ent.PrevZ = ent.Z = packetMove.Z;
+
+            ent.VelocityX = ent.VelocityY = ent.VelocityZ = 0.0D;
+
+            ent.UpdateBoundingBox();
+
+            packetMove.Y = ent.BoundingBox.MinY;
+            packetMove.EyeHeight = ent.Y;
         }
 
         if (packet is IPlayerMoveLook packetLook)
         {
-            yaw = packetLook.Yaw;
-            pitch = packetLook.Pitch;
-        }
-
-        ent.CameraOffset = 0.0F;
-        ent.VelocityX = ent.VelocityY = ent.VelocityZ = 0.0D;
-        ent.SetPositionAndAngles(x, y, z, yaw, pitch);
-
-        if (packet is IPlayerMovePos packetMove2)
-        {
-            packetMove2.X = ent.X;
-            packetMove2.Y = ent.BoundingBox.MinY;
-            packetMove2.Z = ent.Z;
-            packetMove2.EyeHeight = ent.Y;
+            ent.PrevYaw = ent.Yaw = packetLook.Yaw % 360.0F;
+            ent.PrevPitch = ent.Pitch = packetLook.Pitch % 360.0F;
         }
 
         SendPacket(packet);
         if (!_terrainLoaded)
         {
-            ClientPlayerEntity player = _context.PlayerHost.Player;
-            player.PrevX = player.X;
-            player.PrevY = player.Y;
-            player.PrevZ = player.Z;
+            ent.PrevX = ent.X;
+            ent.PrevY = ent.Y;
+            ent.PrevZ = ent.Z;
             _terrainLoaded = true;
             _context.Navigator.Navigate(null);
         }
