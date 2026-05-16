@@ -13,6 +13,7 @@ public class TranslationStorage
 
     private TranslationStorage(string lang)
     {
+        LoadLanguageFile("en_us");
         LoadLanguageFile(lang);
     }
 

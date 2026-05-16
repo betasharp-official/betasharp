@@ -73,6 +73,9 @@ public class SelectWorldTypeScreen(
         _listItems.Clear();
         foreach (WorldType type in _types)
         {
+            type.SetDisplayName(TranslationStorage.Instance.TranslateKey($"selectWorld.type.{type.Name.ToLowerInvariant()}.title"))
+                .SetDescription(TranslationStorage.Instance.TranslateKey($"selectWorld.type.{type.Name.ToLowerInvariant()}.description"));
+
             int index = _listItems.Count;
             var item = new SelectWorldTypeListItem(type);
             item.OnClick += (e) => SelectItem(index);
