@@ -55,7 +55,7 @@ public class HUD : UIScreen
         Hotbar = new Hotbar(_hudContext.GetPlayer, _hudContext.GetPlayerController, Context.ControllerState);
         Root.AddChild(Hotbar);
 
-        Chat = new ChatOverlay();
+        Chat = new ChatOverlay(() => Context.Options.ChatScale * 1.5f + .5f, () => Context.Options.ChatWidth * 2 - 1);
         Chat.Style.Position = PositionType.Absolute;
         Chat.Style.Bottom = 48;
         Chat.Style.Left = 2;
