@@ -40,7 +40,7 @@ public class TranslationStorage
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to load language file {LanguageFile}", assetPath);
+            _logger.LogError(ex, $"Failed to load language file {assetPath}", assetPath);
         }
     }
 
