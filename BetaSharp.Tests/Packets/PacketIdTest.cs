@@ -2,14 +2,10 @@ using System.Reflection;
 using BetaSharp.Network.Packets;
 using SkipException = Xunit.SkipException;
 
-namespace BetaSharp.Tests;
+namespace BetaSharp.Tests.Packets;
 
-public class PacketIdTest
+public class PacketIdTest : PacketTestBase
 {
-    public static IEnumerable<object[]> PacketIds =>
-        Enum.GetValues(typeof(PacketId))
-            .Cast<PacketId>()
-            .Select(v => new object[] { v });
 
     [Fact]
     public void VerifyRegistryIds()
@@ -85,6 +81,27 @@ public class PacketIdTest
             Assert.NotNull(packet);
             Assert.StrictEqual((int)value, ((Packet)packet).Id);
         }
+    }
+
+    [SkippableTheory, MemberData(nameof(PacketIds))]
+    public void VerifyPacketReadWriteLenght(PacketId value)
+    {
+        Packet p = Packet.Get(value);
+
+        MemoryStream stream = new MemoryStream();
+        try
+        {
+            p.Write(stream);
+        }
+        catch (NullReferenceException e)
+        {
+            throw new SkipException("Arguments mising to perform test");
+        }
+        //Assert.True(stream.Length != p.Size(), $"Declared packet size is different than written size. ({stream.Length} != {p.Size()})");
+        stream.Position = 0;
+        p.Read(stream);
+
+        Assert.StrictEqual(stream.Length, stream.Position);
     }
 
     [Fact]

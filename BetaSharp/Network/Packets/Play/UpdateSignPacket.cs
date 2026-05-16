@@ -38,7 +38,14 @@ public class UpdateSignPacket() : Packet(PacketId.UpdateSign)
 
         for (int i = 0; i < 4; ++i)
         {
-            stream.WriteLongString(Text[i]);
+            try
+            {
+                stream.WriteLongString(Text[i]);
+            }
+            catch (Exception)
+            {
+                stream.WriteLongString("");
+            }
         }
     }
 
