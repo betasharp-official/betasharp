@@ -225,6 +225,12 @@
             "normal": "Normal",
             "large": "Large"
         },
+        "chatScale": {
+            "text": "Chat Scale"
+        },
+        "chatWidth": {
+            "text": "Chat Width"
+        },
         "advancedOpengl": "Advanced OpenGL",
         "fps": {
             "text": "FPS",

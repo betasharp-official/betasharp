@@ -359,8 +359,10 @@ public class TextRenderer
         {
             for (; text.Length > i + 1 && text[i] == ColorCodeChar; i += 2)
             {
-                int colorCode = HexToDec(text[i + 1]);
-                tessellator.setColorRGBA(Guis.Color.FromColorCode(colorCode, (byte)color.A, darken));
+                if (TryHexToDec(text[i + 1], out int colorCode))
+                {
+                    tessellator.setColorRGBA(Guis.Color.FromColorCode(colorCode, (byte)color.A, darken));
+                }
             }
 
             if (i < text.Length)
@@ -391,6 +393,27 @@ public class TextRenderer
         else if (c <= 'f') v += 10 - 'a';
         else return 15;
         return v <= 0 ? 0 : v;
+    }
+
+    private static bool TryHexToDec(char c, out int result)
+    {
+        int v = c;
+        if (c <= '9') v -= '0';
+        else if (c <= 'F') v += 10 - 'A';
+        else if (c <= 'f') v += 10 - 'a';
+        else
+        {
+            result = 15;
+            return false;
+        }
+
+        if (v <= 0)
+        {
+            result = 0;
+            return false;
+        }
+        result = v;
+        return true;
     }
 
     public int GetStringWidth(ReadOnlySpan<char> text)
