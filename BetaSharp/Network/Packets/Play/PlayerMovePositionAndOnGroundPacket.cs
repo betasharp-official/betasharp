@@ -15,7 +15,6 @@ public class PlayerMovePositionAndOnGroundPacket() : PacketPlayerMoveAbstract(Pa
     public double Y { get; set; }
     public double Z { get; set; }
     public double EyeHeight { get; set; }
-    public bool ChangePosition => true;
 
     public static PlayerMovePositionAndOnGroundPacket Get(double x, double y, double eyeHeight, double z, bool onGround)
     {

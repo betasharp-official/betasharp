@@ -184,9 +184,20 @@ public abstract class Entity
         X = x;
         Y = y;
         Z = z;
+        UpdateBoundingBox();
+    }
+
+    public void UpdateBoundingBox()
+    {
         float halfWidth = Width / 2.0F;
-        float height = Height;
-        BoundingBox = new Box(x - halfWidth, y - StandingEyeHeight + CameraOffset, z - halfWidth, x + halfWidth, y - StandingEyeHeight + CameraOffset + height, z + halfWidth);
+        BoundingBox = new Box(X - halfWidth, Y - StandingEyeHeight + CameraOffset, Z - halfWidth, X + halfWidth, Y - StandingEyeHeight + CameraOffset + Height, Z + halfWidth);
+    }
+
+    public void SetPosition(double y)
+    {
+        Y = y;
+        BoundingBox.MinY = y - StandingEyeHeight + CameraOffset;
+        BoundingBox.MaxY = y - StandingEyeHeight + CameraOffset + Height;
     }
 
     /// <summary>
@@ -1140,11 +1151,12 @@ public abstract class Entity
     {
         SetPosition(x, y, z);
         SetRotation(yaw, pitch);
-        double maxY = World.Entities.GetMaxYEntityCollision(this, BoundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
+        const double bound = 1.0D / 32.0D;
+        double maxY = World.Entities.GetMaxYEntityCollision(this, BoundingBox.Contract(bound, 0.0D, bound));
         if (maxY <= 0) return;
 
         y += maxY - BoundingBox.MinY;
-        SetPosition(x, y, z);
+        SetPosition(y);
     }
 
     public virtual void TickPortalCooldown()
