@@ -27,6 +27,14 @@ public class GameOptions
         "options.guiScale.large",
     ];
 
+    private static readonly string[] CloudsQualityLabels =
+    [
+        "options.cloudsQuality.legacy",
+        "options.cloudsQuality.off",
+        "options.cloudsQuality.2d",
+        "options.cloudsQuality.parallax"
+    ];
+
     private static readonly string[] AnisoLabels = ["options.off", "2x", "4x", "8x", "16x"];
     private static readonly string[] MSAALabels = ["options.off", "2x", "4x", "8x"];
 
@@ -55,6 +63,7 @@ public class GameOptions
 
 
     public FloatOption RenderDistanceOption { get; private set; }
+    public CycleOption CloudsQualityOption { get; private set; }
     public CycleOption DifficultyOption { get; private set; }
     public CycleOption GuiScaleOption { get; private set; }
     public CycleOption AnisotropicOption { get; private set; }
@@ -66,14 +75,6 @@ public class GameOptions
 
     public GameOption[] MainScreenOptions => [FovOption, DifficultyOption];
     public GameOption[] AudioScreenOptions => [MusicVolumeOption, SoundVolumeOption, MenuMusicOption];
-
-    public GameOption[] VideoScreenOptions =>
-    [
-        RenderDistanceOption, FramerateLimitOption, VSyncOption,
-        ViewBobbingOption, AnisotropicOption,
-        MipmapsOption, MsaaOption, EnvironmentAnimationOption, ChunkFadeOption,
-        AlternateBlocksOption
-    ];
 
     public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption, UICursorsOption, ChatScaleOption, ChatWidthOption];
 
@@ -113,6 +114,7 @@ public class GameOptions
     }
 
     public int renderDistance => 4 + (int)(RenderDistanceOption.Value * 28.0f);
+    public int CloudsQuality => CloudsQualityOption.Value;
     public bool ViewBobbing => ViewBobbingOption.Value;
     public bool VSync => VSyncOption.Value;
     public int Difficulty => DifficultyOption.Value;
@@ -362,6 +364,11 @@ public class GameOptions
             Steps = 64,
             Formatter = (f, _) => $"{(int)(f * 64 + 32f)}"
         };
+        CloudsQualityOption = new CycleOption("options.cloudsQuality.text", "cloudsQuality", CloudsQualityLabels, 4, 6)
+        {
+            Formatter = (v, t) =>
+                t.TranslateKeyFormat(v < CloudsQualityOption.Labels.Length ? CloudsQualityOption.Labels[v] : CloudsQualityOption.Labels.Last(), v - 2)
+        };
         DifficultyOption = new CycleOption("options.difficulty.text", "difficulty", DifficultyLabels, 2);
         GuiScaleOption = new CycleOption("options.guiScale.text", "guiScale", GuiScaleLabels);
         AnisotropicOption = new CycleOption("options.anisoLevel", "anisotropicLevel", AnisoLabels)
@@ -419,6 +426,7 @@ public class GameOptions
         yield return MenuMusicOption;
         yield return RenderDistanceOption;
         yield return DifficultyOption;
+        yield return CloudsQualityOption;
         yield return GuiScaleOption;
         yield return ChatScaleOption;
         yield return ChatWidthOption;

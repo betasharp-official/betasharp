@@ -40,6 +40,15 @@ public class WorldRenderer : IWorldEventListener
     private int _glCloudsList = -1;
     private int _renderDistance = -1;
     private int _renderEntitiesStartupCounter = 2;
+    private readonly Shader _skyShader;
+    private readonly int _skyShaderMvLoc;
+    private readonly int _skyShaderProjLoc;
+    private readonly Shader _cloudShader;
+    private readonly int _cloudShaderMvLoc;
+    private readonly int _cloudShaderProjLoc;
+    private readonly int _cloudShaderTexMatLoc;
+    private Vector3D<float> _skyColor;
+    private Vector3D<float> _fogColor;
 
     public WorldRenderer(BetaSharp gameInstance, TextureManager textureManager)
     {
@@ -95,8 +104,21 @@ public class WorldRenderer : IWorldEventListener
 
         tessellator.draw();
         GLManager.GL.EndList();
-        BuildCloudDisplayLists();
+        if (_game.Options.CloudsQuality <= 0) BuildCloudDisplayListsLegacy();
+        else if (_game.Options.CloudsQuality > 1) BuildCloudDisplayLists();
+
+        _skyShader = new Shader(AssetManager.Instance.getAsset("shaders/sky.vert").GetTextContent(), AssetManager.Instance.getAsset("shaders/sky.frag").GetTextContent());
+        _skyShaderMvLoc = _skyShader.GetUniformLocation("u_ModelView");
+        _skyShaderProjLoc = _skyShader.GetUniformLocation("u_Projection");
+
+        _cloudShader = new Shader(AssetManager.Instance.getAsset("shaders/cloud.vert").GetTextContent(), AssetManager.Instance.getAsset("shaders/cloud.frag").GetTextContent());
+        _cloudShaderMvLoc = _cloudShader.GetUniformLocation("u_ModelView");
+        _cloudShaderProjLoc = _cloudShader.GetUniformLocation("u_Projection");
+        _cloudShaderTexMatLoc = _cloudShader.GetUniformLocation("u_TextureMatrix");
     }
+
+    public void SetSkyColor(float r, float g, float b) => _skyColor = new(r, g, b);
+    public void SetFogColor(float r, float g, float b) => _fogColor = new(r, g, b);
 
     private static void RenderStars()
     {
@@ -318,118 +340,109 @@ public class WorldRenderer : IWorldEventListener
 
     public void RenderSky(float tickDelta)
     {
-        if (!_game.World.Dimension.IsNether)
+        if (_game.World.Dimension.IsNether) return;
+
+        Vector3D<double> skyColorVec = _world.Environment.GetSkyColor(_game.Camera, tickDelta);
+        float skyRed = (float)skyColorVec.X;
+        float skyGreen = (float)skyColorVec.Y;
+        float skyBlue = (float)skyColorVec.Z;
+
+        float groundR = _world.Dimension.HasGround ? skyRed * 0.2F + 0.04F : skyRed;
+        float groundG = _world.Dimension.HasGround ? skyGreen * 0.2F + 0.04F : skyGreen;
+        float groundB = _world.Dimension.HasGround ? skyBlue * 0.6F + 0.1F : skyBlue;
+
+        _skyShader.Bind();
+        _skyShader.SetUniform1("u_Texture", 0);
+        _skyShader.SetUniform1("u_UseTexture", 0);
+        _skyShader.SetUniform1("u_FogStart", ChunkRenderer.FogStart);
+        _skyShader.SetUniform1("u_FogEnd", ChunkRenderer.FogEnd);
+        _skyShader.SetUniform3("u_SkyColor", new Vector3D<float>(skyRed, skyGreen, skyBlue));
+        _skyShader.SetUniform3("u_GroundColor", new Vector3D<float>(groundR, groundG, groundB));
+        GLManager.GL.BeginExternalShader(_skyShaderMvLoc, _skyShaderProjLoc);
+
+        Tessellator tessellator = Tessellator.instance;
+        GLManager.GL.DepthMask(false);
+
+        // Sky dome (top + bottom) — angle-based gradient
+        _skyShader.SetUniform1("u_GradientMode", 1);
+        GLManager.GL.Enable(GLEnum.Blend);
+        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        GLManager.GL.Color3(1.0F, 1.0F, 1.0F);
+        GLManager.GL.CallList((uint)_glSkyList);
+        GLManager.GL.CallList((uint)_glSkyList2);
+
+        // Sunrise/sunset fan
+        _skyShader.SetUniform1("u_GradientMode", 0);
+        GLManager.GL.Disable(GLEnum.AlphaTest);
+        GLManager.GL.Enable(GLEnum.Blend);
+        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        Lighting.turnOff();
+        float[] backgroundColor = _world.Dimension.GetBackgroundColor(_world.GetTime(tickDelta), tickDelta);
+        if (backgroundColor != null)
         {
-            GLManager.GL.Disable(GLEnum.Texture2D);
-            Vector3D<double> skyColor = _world.Environment.GetSkyColor(_game.Camera, tickDelta);
-            float skyRed = (float)skyColor.X;
-            float skyGreen = (float)skyColor.Y;
-            float skyBlue = (float)skyColor.Z;
-            float rainFade;
-            float celestialAngle;
-
-            GLManager.GL.Color3(skyRed, skyGreen, skyBlue);
-            Tessellator tessellator = Tessellator.instance;
-            GLManager.GL.DepthMask(false);
-            GLManager.GL.Enable(GLEnum.Fog);
-            GLManager.GL.Color3(skyRed, skyGreen, skyBlue);
-            GLManager.GL.CallList((uint)_glSkyList);
-            GLManager.GL.Disable(GLEnum.Fog);
-            GLManager.GL.Disable(GLEnum.AlphaTest);
-            GLManager.GL.Enable(GLEnum.Blend);
-            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-            Lighting.turnOff();
-            float[] backgroundColor = _world.Dimension.GetBackgroundColor(_world.GetTime(tickDelta), tickDelta);
-            float sunriseRed;
-            float sunriseGreen;
-            float sunQuadSize;
-            float starBrightness;
-            if (backgroundColor != null)
-            {
-                GLManager.GL.Disable(GLEnum.Texture2D);
-                GLManager.GL.ShadeModel(GLEnum.Smooth);
-                GLManager.GL.PushMatrix();
-                GLManager.GL.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
-                celestialAngle = _world.GetTime(tickDelta);
-                GLManager.GL.Rotate(celestialAngle > 0.5F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
-                sunriseRed = backgroundColor[0];
-                sunriseGreen = backgroundColor[1];
-                sunQuadSize = backgroundColor[2];
-                float angle;
-
-                tessellator.startDrawing(6);
-                tessellator.setColorRGBA_F(sunriseRed, sunriseGreen, sunQuadSize, backgroundColor[3]);
-                tessellator.addVertex(0.0D, 100.0D, 0.0D);
-                byte segments = 16;
-                tessellator.setColorRGBA_F(backgroundColor[0], backgroundColor[1], backgroundColor[2], 0.0F);
-
-                for (int segment = 0; segment <= segments; ++segment)
-                {
-                    angle = segment * (float)Math.PI * 2.0F / segments;
-                    float ringX = MathHelper.Sin(angle);
-                    float ringY = MathHelper.Cos(angle);
-                    tessellator.addVertex((double)(ringX * 120.0F), (double)(ringY * 120.0F), (double)(-ringY * 40.0F * backgroundColor[3]));
-                }
-
-                tessellator.draw();
-                GLManager.GL.PopMatrix();
-                GLManager.GL.ShadeModel(GLEnum.Flat);
-            }
-
-            GLManager.GL.Enable(GLEnum.Texture2D);
-            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.One);
+            GLManager.GL.ShadeModel(GLEnum.Smooth);
             GLManager.GL.PushMatrix();
-            rainFade = 1.0F - _world.Environment.GetRainGradient(tickDelta);
-            celestialAngle = 0.0F;
-            sunriseRed = 0.0F;
-            sunriseGreen = 0.0F;
-            GLManager.GL.Color4(1.0F, 1.0F, 1.0F, rainFade);
-            GLManager.GL.Translate(celestialAngle, sunriseRed, sunriseGreen);
-            GLManager.GL.Rotate(0.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Rotate(_world.GetTime(tickDelta) * 360.0F, 1.0F, 0.0F, 0.0F);
-            sunQuadSize = 30.0F;
-            _textureManager.BindTexture(_textureManager.GetTextureId("/terrain/sun.png"));
-            tessellator.startDrawingQuads();
-            tessellator.addVertexWithUV((double)-sunQuadSize, 100.0D, (double)-sunQuadSize, 0.0D, 0.0D);
-            tessellator.addVertexWithUV((double)sunQuadSize, 100.0D, (double)-sunQuadSize, 1.0D, 0.0D);
-            tessellator.addVertexWithUV((double)sunQuadSize, 100.0D, (double)sunQuadSize, 1.0D, 1.0D);
-            tessellator.addVertexWithUV((double)-sunQuadSize, 100.0D, (double)sunQuadSize, 0.0D, 1.0D);
-            tessellator.draw();
-            sunQuadSize = 20.0F;
-            _textureManager.BindTexture(_textureManager.GetTextureId("/terrain/moon.png"));
-            tessellator.startDrawingQuads();
-            tessellator.addVertexWithUV((double)-sunQuadSize, -100.0D, (double)sunQuadSize, 1.0D, 1.0D);
-            tessellator.addVertexWithUV((double)sunQuadSize, -100.0D, (double)sunQuadSize, 0.0D, 1.0D);
-            tessellator.addVertexWithUV((double)sunQuadSize, -100.0D, (double)-sunQuadSize, 0.0D, 0.0D);
-            tessellator.addVertexWithUV((double)-sunQuadSize, -100.0D, (double)-sunQuadSize, 1.0D, 0.0D);
-            tessellator.draw();
-            GLManager.GL.Disable(GLEnum.Texture2D);
-            starBrightness = _world.CalculateSkyLightIntensity(tickDelta) * rainFade;
-            if (starBrightness > 0.0F)
+            GLManager.GL.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
+            float celestialAngle = _world.GetTime(tickDelta);
+            GLManager.GL.Rotate(celestialAngle > 0.5F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
+            tessellator.startDrawing(6);
+            tessellator.setColorRGBA_F(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
+            tessellator.addVertex(0.0D, 100.0D, 0.0D);
+            tessellator.setColorRGBA_F(backgroundColor[0], backgroundColor[1], backgroundColor[2], 0.0F);
+            for (int segment = 0; segment <= 16; ++segment)
             {
-                GLManager.GL.Color4(starBrightness, starBrightness, starBrightness, starBrightness);
-                GLManager.GL.CallList((uint)_starGLCallList);
+                float angle = segment * (float)Math.PI * 2.0F / 16;
+                float ringX = MathHelper.Sin(angle);
+                float ringY = MathHelper.Cos(angle);
+                tessellator.addVertex((ringX * 120.0F), (ringY * 120.0F), (-ringY * 40.0F * backgroundColor[3]));
             }
-
-            GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-            GLManager.GL.Disable(GLEnum.Blend);
-            GLManager.GL.Enable(GLEnum.AlphaTest);
-            GLManager.GL.Enable(GLEnum.Fog);
+            tessellator.draw();
             GLManager.GL.PopMatrix();
-            if (_world.Dimension.HasGround)
-            {
-                GLManager.GL.Color3(skyRed * 0.2F + 0.04F, skyGreen * 0.2F + 0.04F, skyBlue * 0.6F + 0.1F);
-            }
-            else
-            {
-                GLManager.GL.Color3(skyRed, skyGreen, skyBlue);
-            }
-
-            GLManager.GL.Disable(GLEnum.Texture2D);
-            GLManager.GL.CallList((uint)_glSkyList2);
-            GLManager.GL.Enable(GLEnum.Texture2D);
-            GLManager.GL.DepthMask(true);
+            GLManager.GL.ShadeModel(GLEnum.Flat);
         }
+
+        // Sun and Moon (textured)
+        _skyShader.SetUniform1("u_UseTexture", 1);
+        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.One);
+        GLManager.GL.PushMatrix();
+        float rainFade = 1.0F - _world.Environment.GetRainGradient(tickDelta);
+        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, rainFade);
+        GLManager.GL.Rotate(_world.GetTime(tickDelta) * 360.0F, 1.0F, 0.0F, 0.0F);
+        float sunQuadSize = 30.0F;
+        _textureManager.BindTexture(_textureManager.GetTextureId("/terrain/sun.png"));
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV(-sunQuadSize, 100.0D, -sunQuadSize, 0.0D, 0.0D);
+        tessellator.addVertexWithUV(sunQuadSize, 100.0D, -sunQuadSize, 1.0D, 0.0D);
+        tessellator.addVertexWithUV(sunQuadSize, 100.0D, sunQuadSize, 1.0D, 1.0D);
+        tessellator.addVertexWithUV(-sunQuadSize, 100.0D, sunQuadSize, 0.0D, 1.0D);
+        tessellator.draw();
+        sunQuadSize = 20.0F;
+        _textureManager.BindTexture(_textureManager.GetTextureId("/terrain/moon.png"));
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV(-sunQuadSize, -100.0D, sunQuadSize, 1.0D, 1.0D);
+        tessellator.addVertexWithUV(sunQuadSize, -100.0D, sunQuadSize, 0.0D, 1.0D);
+        tessellator.addVertexWithUV(sunQuadSize, -100.0D, -sunQuadSize, 0.0D, 0.0D);
+        tessellator.addVertexWithUV(-sunQuadSize, -100.0D, -sunQuadSize, 1.0D, 0.0D);
+        tessellator.draw();
+
+        // Stars
+        _skyShader.SetUniform1("u_UseTexture", 0);
+        _skyShader.SetUniform1("u_GradientMode", 0);
+        float starBrightness = _world.CalculateSkyLightIntensity(tickDelta) * rainFade;
+        if (starBrightness > 0.0F)
+        {
+            GLManager.GL.Color4(starBrightness, starBrightness, starBrightness, starBrightness);
+            GLManager.GL.CallList((uint)_starGLCallList);
+        }
+
+        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.GL.Disable(GLEnum.Blend);
+        GLManager.GL.Enable(GLEnum.AlphaTest);
+        GLManager.GL.PopMatrix();
+
+        GLManager.GL.EndExternalShader();
+        GLManager.GL.UseProgram(0);
+        GLManager.GL.DepthMask(true);
     }
 
     public void RenderClouds(float tickDelta)
@@ -438,12 +451,52 @@ public class WorldRenderer : IWorldEventListener
         {
             if (!_game.World.Dimension.IsNether)
             {
-                RenderCloudsFancy(tickDelta);
+                if (_game.Options.CloudsQuality <= 0)
+                {
+                    RenderLegacyCloudsFancy(tickDelta);
+                }
+                // 1 - No clouds
+                else if (_game.Options.CloudsQuality >= 2)
+                {
+                    RenderCloudsFancy(tickDelta);
+                }
             }
         }
     }
 
     private void BuildCloudDisplayLists()
+    {
+        _glCloudsList = GLAllocation.generateDisplayLists(1);
+        Tessellator tessellator = Tessellator.instance;
+
+        GLManager.GL.NewList((uint)_glCloudsList, GLEnum.Compile);
+        tessellator.startDrawingQuads();
+        float uvScale = 1.0F / 256.0F;
+        byte tileSize = 8;
+        byte cloudRadius = 3;
+
+        for (int tileX = -cloudRadius + 1; tileX <= cloudRadius; ++tileX)
+        {
+            for (int tileZ = -cloudRadius + 1; tileZ <= cloudRadius; ++tileZ)
+            {
+                float uvX = tileX * tileSize;
+                float uvZ = tileZ * tileSize;
+                float x = uvX;
+                float z = uvZ;
+
+                tessellator.setNormal(0.0F, -1.0F, 0.0F);
+                tessellator.addVertexWithUV((x + 0.0F), 0.0, (z + tileSize), ((uvX + 0.0F) * uvScale), ((uvZ + tileSize) * uvScale));
+                tessellator.addVertexWithUV((x + tileSize), 0.0, (z + tileSize), ((uvX + tileSize) * uvScale), ((uvZ + tileSize) * uvScale));
+                tessellator.addVertexWithUV((x + tileSize), 0.0, (z + 0.0F), ((uvX + tileSize) * uvScale), ((uvZ + 0.0F) * uvScale));
+                tessellator.addVertexWithUV((x + 0.0F), 0.0, (z + 0.0F), ((uvX + 0.0F) * uvScale), ((uvZ + 0.0F) * uvScale));
+            }
+        }
+
+        tessellator.draw();
+        GLManager.GL.EndList();
+    }
+
+    private void BuildCloudDisplayListsLegacy()
     {
         _glCloudsList = GLAllocation.generateDisplayLists(4);
         Tessellator tessellator = Tessellator.instance;
@@ -549,11 +602,10 @@ public class WorldRenderer : IWorldEventListener
     private void RenderCloudsFancy(float tickDelta)
     {
         GLManager.GL.Disable(GLEnum.CullFace);
-        float cameraY = (float)(_game.Camera.LastTickY + (_game.Camera.Y - _game.Camera.LastTickY) * (double)tickDelta);
-        float cloudScale = 12.0F;
-        float cloudHeight = 4.0F;
-        double cloudOffsetX = (_game.Camera.PrevX + (_game.Camera.X - _game.Camera.PrevX) * (double)tickDelta + (double)((_cloudOffsetX + tickDelta) * 0.03F)) / (double)cloudScale;
-        double cloudOffsetZ = (_game.Camera.PrevZ + (_game.Camera.Z - _game.Camera.PrevZ) * (double)tickDelta) / (double)cloudScale + (double)0.33F;
+        float cameraY = (float)(_game.Camera.LastTickY + (_game.Camera.Y - _game.Camera.LastTickY) * tickDelta);
+        const float cloudScale = 12.0F;
+        double cloudOffsetX = (_game.Camera.PrevX + (_game.Camera.X - _game.Camera.PrevX) * tickDelta + ((_cloudOffsetX + tickDelta) * 0.03F)) / cloudScale;
+        double cloudOffsetZ = (_game.Camera.PrevZ + (_game.Camera.Z - _game.Camera.PrevZ) * tickDelta) / cloudScale + 0.33F;
         float cloudY = _world.Dimension.CloudHeight - cameraY + 0.33F;
         int cloudChunkX = MathHelper.Floor(cloudOffsetX / 2048.0D);
         int cloudChunkZ = MathHelper.Floor(cloudOffsetZ / 2048.0D);
@@ -567,7 +619,71 @@ public class WorldRenderer : IWorldEventListener
         float cloudGreen = (float)cloudColor.Y;
         float cloudBlue = (float)cloudColor.Z;
 
-        float textureScale = 1 / 256f;
+        const float textureScale = 1 / 256f;
+        float textureOffsetU = MathHelper.Floor(cloudOffsetX) * textureScale;
+        float textureOffsetV = MathHelper.Floor(cloudOffsetZ) * textureScale;
+        float subCloudOffsetX = (float)(cloudOffsetX - MathHelper.Floor(cloudOffsetX));
+        float subCloudOffsetZ = (float)(cloudOffsetZ - MathHelper.Floor(cloudOffsetZ));
+
+        _cloudShader.Bind();
+        _cloudShader.SetUniform1("u_Texture", 0);
+        _cloudShader.SetUniform3("u_FogColor", _fogColor);
+        _cloudShader.SetUniform1("u_FogStart", ChunkRenderer.FogStart);
+        _cloudShader.SetUniform1("u_FogEnd", ChunkRenderer.FogEnd);
+        _cloudShader.SetUniform3("u_CloudOffset", new Vector3D<float>(-subCloudOffsetX, cloudY, -subCloudOffsetZ));
+        _cloudShader.SetUniform1("u_CloudScale", cloudScale);
+        _cloudShader.SetUniform1("u_Quality", _game.Options.CloudsQuality - 2);
+        GLManager.GL.BeginExternalShader(_cloudShaderMvLoc, _cloudShaderProjLoc, _cloudShaderTexMatLoc);
+
+        GLManager.GL.Scale(cloudScale, 1.0F, cloudScale);
+        GLManager.GL.PushMatrix();
+        //GLManager.GL.Translate(0, cloudY, 0);
+        GLManager.GL.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
+
+        GLManager.GL.MatrixMode(GLEnum.Texture);
+        GLManager.GL.PushMatrix();
+        GLManager.GL.Translate(textureOffsetU, textureOffsetV, 0.0F);
+        GLManager.GL.MatrixMode(GLEnum.Modelview);
+
+        GLManager.GL.Color4(cloudRed, cloudGreen, cloudBlue, 0.8F);
+        GLManager.GL.CallList((uint)_glCloudsList);
+
+        GLManager.GL.MatrixMode(GLEnum.Texture);
+        GLManager.GL.PopMatrix();
+        GLManager.GL.MatrixMode(GLEnum.Modelview);
+
+        GLManager.GL.PopMatrix();
+
+        GLManager.GL.EndExternalShader();
+        GLManager.GL.UseProgram(0);
+
+        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.GL.Disable(GLEnum.Blend);
+        GLManager.GL.Enable(GLEnum.CullFace);
+    }
+
+    private void RenderLegacyCloudsFancy(float tickDelta)
+    {
+        GLManager.GL.Disable(GLEnum.CullFace);
+        float cameraY = (float)(_game.Camera.LastTickY + (_game.Camera.Y - _game.Camera.LastTickY) * tickDelta);
+        const float cloudScale = 12.0F;
+        const float cloudHeight = 4.0F;
+        double cloudOffsetX = (_game.Camera.PrevX + (_game.Camera.X - _game.Camera.PrevX) * tickDelta + ((_cloudOffsetX + tickDelta) * 0.03F)) / cloudScale;
+        double cloudOffsetZ = (_game.Camera.PrevZ + (_game.Camera.Z - _game.Camera.PrevZ) * tickDelta) / cloudScale + 0.33F;
+        float cloudY = _world.Dimension.CloudHeight - cameraY + 0.33F;
+        int cloudChunkX = MathHelper.Floor(cloudOffsetX / 2048.0D);
+        int cloudChunkZ = MathHelper.Floor(cloudOffsetZ / 2048.0D);
+        cloudOffsetX -= cloudChunkX * 2048;
+        cloudOffsetZ -= cloudChunkZ * 2048;
+        _textureManager.BindTexture(_textureManager.GetTextureId("/environment/clouds.png"));
+        GLManager.GL.Enable(GLEnum.Blend);
+        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        Vector3D<double> cloudColor = _world.Environment.GetCloudColor(tickDelta);
+        float cloudRed = (float)cloudColor.X;
+        float cloudGreen = (float)cloudColor.Y;
+        float cloudBlue = (float)cloudColor.Z;
+
+        const float textureScale = 1 / 256f;
         float textureOffsetU = MathHelper.Floor(cloudOffsetX) * textureScale;
         float textureOffsetV = MathHelper.Floor(cloudOffsetZ) * textureScale;
         float subCloudOffsetX = (float)(cloudOffsetX - MathHelper.Floor(cloudOffsetX));

@@ -224,6 +224,13 @@
             "fancy": "Fancy",
             "fast": "Fast"
         },
+        "cloudsQuality": {
+            "text": "Clouds Quality",
+            "off": "No Clouds",
+            "legacy": "Old Clouds",
+            "2d": "2D Clouds",
+            "parallax": "Parallax %1$s"
+        },
         "guiScale": {
             "text": "GUI Scale",
             "auto": "Auto",

@@ -10,6 +10,8 @@ public class Shader : IDisposable
     private readonly uint _id;
     private readonly Dictionary<string, int> _uniformLocations = [];
 
+    public uint ProgramId => _id;
+
     public Shader(string vertexShaderSource, string fragmentShaderSource)
     {
         IGL gl = GLManager.GL;
@@ -90,7 +92,7 @@ public class Shader : IDisposable
         GLManager.GL.Uniform4(location, vec.X, vec.Y, vec.Z, vec.W);
     }
 
-    private int GetUniformLocation(string name)
+    public int GetUniformLocation(string name)
     {
         if (_uniformLocations.TryGetValue(name, out int location))
         {

@@ -37,6 +37,9 @@ public class GameRenderer
     private float _fogColorRed;
     private float _fogColorGreen;
     private float _fogColorBlue;
+    private float _skyColorRed;
+    private float _skyColorGreen;
+    private float _skyColorBlue;
     private bool? _appliedVSyncState;
 
     private readonly Stopwatch _fpsTimer = Stopwatch.StartNew();
@@ -864,6 +867,9 @@ public class GameRenderer
         float skyRed = (float)skyColor.X;
         float skyGreen = (float)skyColor.Y;
         float skyBlue = (float)skyColor.Z;
+        _skyColorRed = skyRed;
+        _skyColorGreen = skyGreen;
+        _skyColorBlue = skyBlue;
         Vector3D<double> fogColor = world.GetFogColor(tickDelta);
         _fogColorRed = (float)fogColor.X;
         _fogColorGreen = (float)fogColor.Y;
@@ -925,6 +931,8 @@ public class GameRenderer
         EntityLiving camera = _client.Camera;
         GLManager.GL.Fog(GLEnum.FogColor, updateFogColorBuffer(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0F));
         _client.WorldRenderer.ChunkRenderer.SetFogColor(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
+        _client.WorldRenderer.SetSkyColor(_skyColorRed, _skyColorGreen, _skyColorBlue);
+        _client.WorldRenderer.SetFogColor(_fogColorRed, _fogColorGreen, _fogColorBlue);
         GLManager.GL.Normal3(0.0F, -1.0F, 0.0F);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         if (_cloudFog)

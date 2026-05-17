@@ -117,4 +117,6 @@ public unsafe interface IGL
     void DeleteFramebuffer(uint framebuffer);
     void DeleteRenderbuffer(uint renderbuffer);
     void ActiveTexture(GLEnum texture);
+    void BeginExternalShader(int mvLoc, int projLoc, int texMatLoc = -1);
+    void EndExternalShader();
 }

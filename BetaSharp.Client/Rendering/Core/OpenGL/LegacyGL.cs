@@ -420,4 +420,7 @@ public abstract unsafe class LegacyGL : IGL
     public void DeleteRenderbuffer(uint renderbuffer) => SilkGL.DeleteRenderbuffer(renderbuffer);
 
     public void ActiveTexture(GLEnum texture) => SilkGL.ActiveTexture((TextureUnit)texture.ToModern());
+
+    public virtual void BeginExternalShader(int mvLoc, int projLoc, int texMatLoc = -1) { }
+    public virtual void EndExternalShader() { }
 }

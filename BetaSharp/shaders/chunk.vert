@@ -1,9 +1,9 @@
 ﻿#version 410
 
-layout(location = 0) in vec3 inPosition;
-layout(location = 1) in uvec2 inUV;
-layout(location = 2) in vec4 inColor;
-layout(location = 3) in uint inLight;
+layout (location = 0) in vec3 inPosition;
+layout (location = 1) in uvec2 inUV;
+layout (location = 2) in vec4 inColor;
+layout (location = 3) in uint inLight;
 
 out vec4 vertexColor;
 out vec2 texCoord;
@@ -94,25 +94,25 @@ void applyWaving(inout vec3 worldPos, in vec3 position, in int textureIndex, in 
     }
 }
 
-void main() 
+void main()
 {
     vec3 position = unpackPosition(inPosition);
     vec2 uv = vec2(inUV & 0x7FFFu) / 32767.0;
     uvec2 signBits = (inUV >> 15u) & 1u;
-    
+
     const float epsilon = 1.0 / 65536.0;
     vec2 bias = vec2(
-        (signBits.x == 0u) ? epsilon : -epsilon,
-        (signBits.y == 0u) ? epsilon : -epsilon
+    (signBits.x == 0u) ? epsilon : -epsilon,
+    (signBits.y == 0u) ? epsilon : -epsilon
     );
-    
+
     uv += bias;
 
     if (envAnim)
     {
         int textureIndex = atlasIndexFromUV(uv);
         vec3 worldPos = position + vec3(chunkPos.x, 0.0, chunkPos.y);
-    
+
         applyWaving(worldPos, position, textureIndex, 1.0);
 
         position = worldPos - vec3(chunkPos.x, 0.0, chunkPos.y);
@@ -122,7 +122,7 @@ void main()
 
     vec4 viewPos = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * viewPos;
-    
+
     vertexColor = color;
     texCoord = uv;
 
