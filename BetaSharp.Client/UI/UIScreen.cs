@@ -4,6 +4,7 @@ using BetaSharp.Client.UI.Controls.HUD;
 using BetaSharp.Client.UI.Layout;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Rendering;
+using BetaSharp.Client.UI.Screens.InGame;
 using Silk.NET.GLFW;
 using Silk.NET.Maths;
 
@@ -451,6 +452,12 @@ public abstract class UIScreen
             }
         }
 
+        // dont do cursors on hud, it makes stuff like the chat bar act bad
+        if (this is not HUD) UpdateCursors();
+    }
+
+    private void UpdateCursors()
+    {
         if (Context.Options.UICursors)
         {
             if (_hoveredElement is Button btn)
@@ -461,7 +468,8 @@ public abstract class UIScreen
             else if (_hoveredElement is ListItem || _hoveredElement is Link) Mouse.SetClickCursor();
             else if (_hoveredElement is TextField) Mouse.SetTextCursor();
             else Mouse.SetNormalCursor();
-        } else
+        }
+        else
         {
             Mouse.SetNormalCursor();
         }
