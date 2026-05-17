@@ -225,7 +225,7 @@ public abstract class BetaSharpServer : ICommandOutput
                     long currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                     if (currentTime > lastTimeLogged + 1000L)
                     {
-                        logProgress("Preparing spawn area", (idx + 1) * 100 / totalChunks);
+                        logProgress(TranslationStorage.Instance.TranslateKey("loading.preparingSpawnArea"), (idx + 1) * 100 / totalChunks);
                         lastTimeLogged = currentTime;
                     }
 
