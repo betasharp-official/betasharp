@@ -61,7 +61,6 @@ public class Connection
 
         if (!closed)
         {
-            Interlocked.Increment(ref packet.UseCount);
             _sendQueue.Enqueue(packet);
         }
     }
@@ -135,7 +134,6 @@ public class Connection
         while (readQueue.TryDequeue(out Packet? packet) && maxPacketsPerTick-- >= 0)
         {
             packet.Apply(netHandler);
-            packet.Return();
         }
     }
 
@@ -198,10 +196,8 @@ public class Connection
 
                 while (_sendQueue.TryDequeue(out packet))
                 {
-                    Interlocked.Increment(ref packet.UseCount);
                     int pSize = packet.Size();
                     Packet.Write(packet, _networkStream);
-                    packet.Return();
                     BytesWritten += pSize;
                     PacketsWritten++;
                     wrotePacket = true;

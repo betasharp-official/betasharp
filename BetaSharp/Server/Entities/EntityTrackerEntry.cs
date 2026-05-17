@@ -175,7 +175,6 @@ internal class EntityTrackerEntry
         {
             player.NetworkHandler.SendPacket(packet);
         }
-        packet.Return();
     }
 
     public void sendToAround(Packet packet)
@@ -188,7 +187,6 @@ internal class EntityTrackerEntry
         {
             entity.NetworkHandler.SendPacket(packet);
         }
-        packet.Return();
     }
 
     public void notifyEntityRemoved()

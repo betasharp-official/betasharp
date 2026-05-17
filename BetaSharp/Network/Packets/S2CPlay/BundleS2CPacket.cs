@@ -33,7 +33,6 @@ public class BundleS2CPacket() : ExtendedProtocolPacket(PacketId.BundleS2C)
         foreach (Packet p in Packets)
         {
             p.Apply(handler);
-            p.Return();
         }
 
         Packets.Clear();
