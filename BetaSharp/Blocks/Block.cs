@@ -532,7 +532,7 @@ public class Block
         return this;
     }
 
-    public string translateBlockName() => StatCollector.TranslateToLocal($"{getBlockName()}.name");
+    public string translateBlockName() => TranslationStorage.Instance.TranslateKey($"{getBlockName()}.name");
 
     public string getBlockName() => _blockName;
 

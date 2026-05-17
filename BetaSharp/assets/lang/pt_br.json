@@ -57,7 +57,6 @@
         "createDemo": "Jogar Novo Mundo de Demonstração",
         "deleteQuestion": "Tem certeza que deseja excluir este mundo?",
         "deleteWarning": "será perdido para sempre! (Muito tempo!)",
-        "renameButton": "Renomear",
         "renameTitle": "Renomear Mundo",
         "conversion": "Precisa ser convertido!",
         "newWorld": "Novo Mundo",
@@ -129,25 +128,7 @@
             "crafted": "Criados",
             "used": "Usados"
         },
-        "item": "Item",
-        "done": "Concluído"
-    },
-    "demo": {
-        "day": {
-            "1": "Esta demonstração durará cinco dias no jogo, dê o seu melhor!",
-            "2": "Dia Dois",
-            "3": "Dia Três",
-            "4": "Dia Quatro",
-            "5": "Este é o seu último dia!",
-            "warning": "Seu tempo está quase acabando!",
-            "6": "Você passou do seu quinto dia, use F2 para salvar uma captura de tela da sua criação"
-        },
-        "reminder": "O tempo da demonstração expirou, compre o jogo para continuar ou inicie um novo mundo!",
-        "help": {
-            "movement": "Use %1$s, %2$s, %3$s, %4$s e o mouse para se mover",
-            "jump": "Pule pressionando %1$s",
-            "inventory": "Use %1$s para abrir seu inventário"
-        }
+        "item": "Item"
     },
     "connect": {
         "connecting": "Conectando ao servidor...",
@@ -155,14 +136,13 @@
         "failed": "Falha ao conectar ao servidor"
     },
     "disconnect": {
-        "genericReason": "%1$s",
+        "genericReason": "{0}",
         "disconnected": "Desconectado pelo Servidor",
         "lost": "Conexão Perdida",
         "kicked": "Foi expulso do jogo",
         "timeout": "Tempo esgotado",
         "closed": "Conexão encerrada",
         "loginFailed": "Falha no login",
-        "loginFailedInfo": "Falha no login: %s",
         "quitting": "Saindo",
         "endOfStream": "Fim do fluxo",
         "overflow": "Estouro de buffer"

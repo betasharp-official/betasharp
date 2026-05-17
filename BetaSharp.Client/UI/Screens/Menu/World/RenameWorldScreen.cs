@@ -45,7 +45,7 @@ public class RenameWorldScreen(
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
         Button btnRename = CreateButton();
-        btnRename.Text = translations.TranslateKey("selectWorld.renameButton");
+        btnRename.Text = translations.TranslateKey("gui.rename");
         btnRename.Style.Width = 100;
         btnRename.Style.SetMargin(2);
         btnRename.OnClick += (e) =>

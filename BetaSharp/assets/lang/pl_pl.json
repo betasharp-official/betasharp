@@ -57,7 +57,6 @@
         "createDemo": "Zagraj w nowym świecie demo",
         "deleteQuestion": "Czy na pewno chcesz usunąć ten świat?",
         "deleteWarning": "zostanie utracony na zawsze! (to bardzo długo!)",
-        "renameButton": "Zmień nazwę",
         "renameTitle": "Zmiana nazwy świata",
         "conversion": "Musi być skonwertowany!",
         "newWorld": "Nowy świat",
@@ -68,7 +67,21 @@
         "selectWorldType": "Wybierz typ świata",
         "worldType": "Typ świata",
         "customize": "Dostosuj",
-        "moreWorldOptions": "Więcej opcji świata..."
+        "moreWorldOptions": "Więcej opcji świata...",
+        "type": {
+            "default": {
+                "title": "Domyślny",
+                "description": "Standardowy świat Minecrafta."
+            },
+            "flat": {
+                "title": "Płaski",
+                "description": "Kompletnie płaski świat."
+            },
+            "sky": {
+                "title": "Niebo",
+                "description": "Świat unoszący się w niebie."
+            }
+        }
     },
     "newWorld": {
         "customize": {
@@ -76,7 +89,9 @@
                 "title": "Dostosuj super płaski świat"
             },
             "removeLayer": "Usuń warstwę",
-            "presets": "Szablony"
+            "presets": "Szablony",
+            "height": "Wysokość",
+            "unknown": "???"
         }
     },
     "world": {
@@ -129,25 +144,7 @@
             "crafted": "Stworzone",
             "used": "Użyte"
         },
-        "item": "Przedmiot",
-        "done": "Gotowe"
-    },
-    "demo": {
-        "day": {
-            "1": "This demo will last five game days, do your best!",
-            "2": "Day Two",
-            "3": "Day Three",
-            "4": "Day Four",
-            "5": "This is your last day!",
-            "warning": "Your time is almost up!",
-            "6": "You have passed your fifth day, use F2 to save a screenshot of your creation"
-        },
-        "reminder": "The demo time has expired, buy the game to continue or start a new world!",
-        "help": {
-            "movement": "Use %1$s, %2$s, %3$s, %4$s and the mouse to move around",
-            "jump": "Jump by pressing %1$s",
-            "inventory": "Use %1$s to open your inventory"
-        }
+        "item": "Przedmiot"
     },
     "connect": {
         "connecting": "Łączenie z serwerem...",
@@ -155,14 +152,13 @@
         "failed": "Nie udało się połączyć z serwerem"
     },
     "disconnect": {
-        "genericReason": "%s",
+        "genericReason": "{0}",
         "disconnected": "Rozłączono przez serwer",
         "lost": "Utracono połączenie",
         "kicked": "Wyrzucono z serwera",
         "timeout": "Czas połączenia upłynął",
         "closed": "Połączenie zamknięte",
         "loginFailed": "Nie udało się zalogować",
-        "loginFailedInfo": "Nie udało się zalogować: %s",
         "quitting": "Wychodzenie",
         "endOfStream": "Koniec strumienia",
         "overflow": "Przeładowanie bufera"

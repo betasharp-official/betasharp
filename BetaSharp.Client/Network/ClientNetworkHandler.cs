@@ -453,7 +453,7 @@ public class ClientNetworkHandler : NetHandler
         _netManager.disconnect("disconnect.kicked");
         Disconnected = true;
         _context.WorldHost.ChangeWorld(null);
-        _context.Navigator.Navigate(_context.Factory.CreateFailedScreen("disconnect.disconnected", "disconnect.genericReason", [packet.Reason]));
+        _context.Navigator.Navigate(_context.Factory.CreateFailedScreen("disconnect.disconnected", string.Format(TranslationStorage.Instance.TranslateKey("disconnect.genericReason"), packet.Reason), [packet.Reason]));
     }
 
     public override void onDisconnected(string reason, object[]? args)
