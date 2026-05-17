@@ -3,6 +3,7 @@
         "name": "English (United States)"
     },
     "gui": {
+        "joinServer": "Join Server",
         "rename": "Rename",
         "edit": "Edit",
         "refresh": "Refresh",
@@ -107,11 +108,16 @@
         "deleteQuestion": "Are you sure you want to delete this server?",
         "deleteWarning": "will be lost forever! (A long time!)",
         "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed"
+        "stopSleeping": "Leave Bed",
+        "editServerTitle": "Edit Server Info",
+        "addServerTitle": "Add Server Info",
+        "serverName": "Server Name",
+        "serverAddress": "Server Address"
     },
     "loading": {
         "loadingLevel": "Loading level",
-        "startingServer": "Starting server..."
+        "startingServer": "Starting server...",
+        "preparingSpawnArea": "Preparing spawn area"
     },
     "achievements": {
         "title": "Achievements"

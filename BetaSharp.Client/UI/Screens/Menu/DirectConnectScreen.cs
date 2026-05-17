@@ -17,16 +17,18 @@ public class DirectConnectScreen(
 
     protected override void Init()
     {
+        TranslationStorage translationStorage = TranslationStorage.Instance;
+
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
         Root.Style.SetPadding(20);
 
-        Label title = new() { Text = "Direct Connect", TextColor = Color.White };
+        Label title = new() { Text = translationStorage.TranslateKey("gui.directConnect"), TextColor = Color.White };
         title.Style.MarginBottom = 10;
         Root.AddChild(title);
 
-        Label label = new() { Text = "Server Address", TextColor = Color.GrayA0 };
+        Label label = new() { Text = translationStorage.TranslateKey("multiplayer.serverAddress"), TextColor = Color.GrayA0 };
         label.Style.MarginBottom = 4;
         Root.AddChild(label);
 
@@ -40,7 +42,7 @@ public class DirectConnectScreen(
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
         Button btnJoin = CreateButton();
-        btnJoin.Text = "Join Server";
+        btnJoin.Text = translationStorage.TranslateKey("gui.joinServer");
         btnJoin.Style.Width = 100;
         btnJoin.Style.SetMargin(0, 4, 0, 0);
         btnJoin.OnClick += (e) =>
@@ -53,7 +55,7 @@ public class DirectConnectScreen(
         buttonPanel.AddChild(btnJoin);
 
         Button btnCancel = CreateButton();
-        btnCancel.Text = "Cancel";
+        btnCancel.Text = translationStorage.TranslateKey("gui.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
         buttonPanel.AddChild(btnCancel);

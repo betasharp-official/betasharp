@@ -3,6 +3,7 @@
         "name": "Polski"
     },
     "gui": {
+        "joinServer": "Dołącz do serwera",
         "rename": "Zmień nazwę",
         "edit": "Edytuj",
         "refresh": "Odśwież",
@@ -107,11 +108,16 @@
         "deleteQuestion": "Czy na pewno chcesz usunąć ten serwer?",
         "deleteWarning": "zostanie utracony na zawsze! (to bardzo długo!)",
         "downloadingTerrain": "Pobieranie terenu",
-        "stopSleeping": "Wstań z łóżka"
+        "stopSleeping": "Wstań z łóżka",
+        "editServerTitle": "Edytuj serwer",
+        "addServerTitle": "Dodaj nowy serwer",
+        "serverName": "Nazwa serwera",
+        "serverAddress": "Adres serwera"
     },
     "loading": {
         "loadingLevel": "Wczytywanie poziomu",
-        "startingServer": "Uruchamianie serwera..."
+        "startingServer": "Uruchamianie serwera...",
+        "preparingSpawnArea": "Przygotowywanie punktu odrodzenia"
     },
     "achievements": {
         "title": "Osiągnięcia"
