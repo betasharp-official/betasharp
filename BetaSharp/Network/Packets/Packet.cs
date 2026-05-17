@@ -105,12 +105,6 @@ public abstract class Packet
 
     public static void Write(Packet packet, Stream stream)
     {
-#if DEBUG
-        if (packet.IsReturned)
-        {
-            throw new InvalidOperationException($"Packet used after return (Write). Allocated at:\n{packet.AllocationTrace}\n\nReturned at:\n{packet.ReturnTrace}\n\nWritten at:\n{Environment.StackTrace}");
-        }
-#endif
         stream.WriteByte(packet.Id);
         packet.Write(stream);
     }
