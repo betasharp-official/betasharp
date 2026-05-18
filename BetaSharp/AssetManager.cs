@@ -212,6 +212,13 @@ public class AssetManager
         defineAsset("gui/Pointer.png", AssetType.Binary);
         defineAsset("gui/Globe.png", AssetType.Binary);
 
+        defineAsset("gui/panorama/panorama_0.png", AssetType.Binary);
+        defineAsset("gui/panorama/panorama_1.png", AssetType.Binary);
+        defineAsset("gui/panorama/panorama_2.png", AssetType.Binary);
+        defineAsset("gui/panorama/panorama_3.png", AssetType.Binary);
+        defineAsset("gui/panorama/panorama_4.png", AssetType.Binary);
+        defineAsset("gui/panorama/panorama_5.png", AssetType.Binary);
+
         defineAsset("gui/Logo.png", AssetType.Binary);
         
         string[] controllerIcons = [

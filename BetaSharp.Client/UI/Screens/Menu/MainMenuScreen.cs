@@ -27,7 +27,7 @@ public class MainMenuScreen(
         Root.Style.JustifyContent = Justify.FlexStart;
         Root.Style.PaddingTop = LogoTopPadding;
 
-        Root.AddChild(new Background());
+        Root.AddChild(new Background(BackgroundType.Panorama));
 
         // --- Logo and Splash ---
         Panel headerPanel = new();

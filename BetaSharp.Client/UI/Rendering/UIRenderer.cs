@@ -478,4 +478,114 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         GLManager.GL.Disable(GLEnum.DepthTest);
         GLManager.GL.Disable(GLEnum.RescaleNormal);
     }
+
+    public void DrawPanorama(TextureHandle[] textures, float rotation, float width, float height, float scale)
+    {
+        var gl = GLManager.GL;
+
+        gl.MatrixMode(GLEnum.Projection);
+        gl.PushMatrix();
+
+        gl.MatrixMode(GLEnum.Modelview);
+        gl.PushMatrix();
+
+        gl.MatrixMode(GLEnum.Projection);
+        gl.LoadIdentity();
+
+        float aspect = width / height;
+        Perspective(70.0f, aspect, 0.05f, 10.0f);
+
+        gl.MatrixMode(GLEnum.Modelview);
+        gl.LoadIdentity();
+
+        gl.Disable(GLEnum.CullFace);
+        gl.Disable(GLEnum.AlphaTest);
+        gl.Disable(GLEnum.DepthTest);
+
+        gl.Enable(GLEnum.Texture2D);
+        gl.Enable(GLEnum.Blend);
+
+        gl.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+
+        gl.Translate(0.0f, 0.0f, -1.0f);
+
+        gl.Rotate(180.0f, 0.0f, 1.0f, 0.0f);
+
+        gl.Rotate(rotation * 25.0f, 0.0f, 1.0f, 0.0f);
+        gl.Rotate(10.0f, 1.0f, 0.0f, 0.0f);
+
+        gl.Color4(1f, 1f, 1f, 1f);
+
+        for (int i = 0; i < 6; i++)
+        {
+            gl.PushMatrix();
+
+            switch (i)
+            {
+                case 0: // front
+                    break;
+
+                case 1: // right
+                    gl.Rotate(90f, 0f, 1f, 0f);
+                    break;
+
+                case 2: // back
+                    gl.Rotate(180f, 0f, 1f, 0f);
+                    break;
+
+                case 3: // left
+                    gl.Rotate(-90f, 0f, 1f, 0f);
+                    break;
+
+                case 4: // top
+                    gl.Rotate(-90f, 1f, 0f, 0f);
+                    break;
+
+                case 5: // bottom
+                    gl.Rotate(90f, 1f, 0f, 0f);
+                    break;
+            }
+
+            TextureManager.BindTexture(textures[i]);
+
+            Tessellator tess = Tessellator.instance;
+
+            tess.startDrawingQuads();
+
+            float s = scale + 0.001f;
+
+            tess.addVertexWithUV(-s, -s, s, 0.0, 1.0);
+            tess.addVertexWithUV(s, -s, s, 1.0, 1.0);
+            tess.addVertexWithUV(s, s, s, 1.0, 0.0);
+            tess.addVertexWithUV(-s, s, s, 0.0, 0.0);
+
+            tess.draw();
+
+            gl.PopMatrix();
+        }
+
+        gl.MatrixMode(GLEnum.Projection);
+        gl.PopMatrix();
+
+        gl.MatrixMode(GLEnum.Modelview);
+        gl.PopMatrix();
+
+        gl.Enable(GLEnum.AlphaTest);
+        gl.Enable(GLEnum.DepthTest);
+    }
+
+    private static void Perspective(float fovY, float aspect, float zNear, float zFar)
+    {
+        float fH = MathF.Tan(fovY / 360.0f * MathF.PI) * zNear;
+        float fW = fH * aspect;
+
+        GLManager.GL.Frustum(
+            -fW,
+             fW,
+            -fH,
+             fH,
+             zNear,
+             zFar
+        );
+    }
 }
