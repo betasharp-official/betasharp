@@ -291,6 +291,10 @@
         "folderInfo": "(Upuść tutaj paczkę tekstur)"
     },
     "tile": {
+        "tallgrass": {
+            "name": "Wysoka trawa",
+            "desc": ""
+        },
         "stone": {
             "name": "Kamień",
             "desc": ""
