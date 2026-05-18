@@ -43,17 +43,26 @@ internal class BlockReed : Block
     public override bool canPlaceAt(CanPlaceAtContext evt)
     {
         int blockBelowId = evt.World.Reader.GetBlockId(evt.X, evt.Y - 1, evt.Z);
-        return blockBelowId == id ||
-               (blockBelowId == GrassBlock.id ||
-                blockBelowId == Dirt.id) && (evt.World.Reader.GetMaterial(evt.X - 1, evt.Y - 1, evt.Z) == Material.Water ||
-                                             evt.World.Reader.GetMaterial(evt.X + 1, evt.Y - 1, evt.Z) == Material.Water ||
-                                             evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z - 1) == Material.Water ||
-                                             evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z + 1) == Material.Water);
+
+        // Can always place on self
+        if (blockBelowId == id) return true;
+
+        // valid block below
+        if (blockBelowId == GrassBlock.id ||
+            blockBelowId == Dirt.id ||
+            blockBelowId == Sand.id ||
+            blockBelowId == Gravel.id) return false;
+
+        // water adjacent
+        return evt.World.Reader.GetMaterial(evt.X - 1, evt.Y - 1, evt.Z) == Material.Water ||
+               evt.World.Reader.GetMaterial(evt.X + 1, evt.Y - 1, evt.Z) == Material.Water ||
+               evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z - 1) == Material.Water ||
+               evt.World.Reader.GetMaterial(evt.X, evt.Y - 1, evt.Z + 1) == Material.Water;
     }
 
-    public override void neighborUpdate(OnTickEvent @event) => breakIfCannotGrow(@event);
+    public override void neighborUpdate(OnTickEvent @event) => BreakIfCannotGrow(@event);
 
-    protected void breakIfCannotGrow(OnTickEvent @event)
+    private void BreakIfCannotGrow(OnTickEvent @event)
     {
         if (canGrow(@event)) return;
 

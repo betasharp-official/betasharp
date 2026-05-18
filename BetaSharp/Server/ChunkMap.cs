@@ -472,7 +472,6 @@ internal class ChunkMap
                     serverPlayer.NetworkHandler.SendPacket(packet);
                 }
             }
-            packet.Return();
         }
 
         public void updateChunk()

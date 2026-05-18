@@ -183,7 +183,7 @@ public abstract class BaseOptionsScreen(
             slider.Text = option.GetDisplayString(translations);
             slider.OnValueChanged += (v) =>
             {
-                floatOpt.Value = v;
+                floatOpt.Set(v);
                 slider.Text = option.GetDisplayString(translations);
             };
             return slider;

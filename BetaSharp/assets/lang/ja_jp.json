@@ -57,7 +57,6 @@
         "createDemo": "新しいデモワールドで遊ぶ",
         "deleteQuestion": "このワールドを削除しますか？",
         "deleteWarning": "は完全に削除され、二度と元に戻せません！",
-        "renameButton": "名前を変更",
         "renameTitle": "ワールド名を変更",
         "conversion": "ワールドデータを変換する必要があります",
         "newWorld": "新規ワールド",
@@ -129,25 +128,7 @@
             "crafted": "作った回数",
             "used": "使った回数"
         },
-        "item": "アイテム",
-        "done": "完了"
-    },
-    "demo": {
-        "day": {
-            "1": "トライアルバージョンでは5日間ご利用いただけます。頑張ってください！",
-            "2": "2日目",
-            "3": "3日目",
-            "4": "4日目",
-            "5": "今日が最終日です！",
-            "warning": "もうすぐ時間切れです！",
-            "6": "5日目が終了しました。F2ボタンであなたの作品のスクリーンショットが撮れます。"
-        },
-        "reminder": "デモ版の期限が終了しました。ゲームを購入するか、新しくワールドを作成して下さい！",
-        "help": {
-            "movement": "%1$s, %2$s, %3$s, %4$s とマウスで移動します",
-            "jump": "%1$sでジャンプします",
-            "inventory": "%1$sで所持品を確認できます"
-        }
+        "item": "アイテム"
     },
     "connect": {
         "connecting": "サーバーに接続中…",
@@ -155,14 +136,13 @@
         "failed": "サーバーへの接続に失敗しました"
     },
     "disconnect": {
-        "genericReason": "%s",
+        "genericReason": "{0}",
         "disconnected": "サーバーから切断されました",
         "lost": "接続を維持できません",
         "kicked": "ゲームからキックされました",
         "timeout": "タイムアウトしました",
         "closed": "接続が終了しました",
         "loginFailed": "ログイン失敗",
-        "loginFailedInfo": "ログイン失敗: %s",
         "quitting": "終了中",
         "endOfStream": "接続が終了されました",
         "overflow": "バッファオーバーフローが発生しました"
@@ -252,7 +232,7 @@
         "other": {
             "text": "その他"
         },
-                "editBindings": "割り当てを編集…",
+        "editBindings": "割り当てを編集…",
         "resetBindings": "割り当てのリセット…",
         "controllerBindings": "コントローラーの割り当て"
     },
@@ -1228,69 +1208,69 @@
         "unlocked": "解除済み",
         "locked": "未解除",
         "requires": "「{0}」が必要",
-    "openInventory": {
-        "title": "所持品の確認",
-        "desc": "持ち物をみる"
-    },
-    "mineWood": {
-        "title": "木を手に入れる",
-        "desc": "ブロックになるまで木を叩く"
-    },
-    "buildWorkBench": {
-        "title": "土台作り",
-        "desc": "木材を4つ使い、作業台を作る"
-    },
-    "buildPickaxe": {
-        "title": "いざ採掘！",
-        "desc": "木材と棒を使い、ツルハシを作る"
-    },
-    "buildFurnace": {
-        "title": "ホットな話題",
-        "desc": "石のブロックを8つ使い、かまどを作る"
-    },
-    "acquireIron": {
-        "title": "金属を手に入れる",
-        "desc": "鉄鉱石を製錬する"
-    },
-    "buildHoe": {
-        "title": "いざ農業！",
-        "desc": "木材と棒を使い、クワを作る"
-    },
-    "makeBread": {
-        "title": "パンを焼く",
-        "desc": "小麦をパンにする"
-    },
-    "bakeCake": {
-        "title": "the cake is a lie",
-        "desc": "小麦に砂糖、牛乳、それから卵！"
-    },
-    "buildBetterPickaxe": {
-        "title": "上位互換",
-        "desc": "よりよいツルハシをつくる"
-    },
-    "cookFish": {
-        "title": "美味しい魚",
-        "desc": "魚を釣って焼く！"
-    },
-    "onARail": {
-        "title": "線路の上で",
-        "desc": "トロッコに乗って出発地点から1km以上走行する"
-    },
-    "buildSword": {
-        "title": "いざ突撃！",
-        "desc": "木材と棒を使い、剣を作る"
-    },
-    "killEnemy": {
-        "title": "モンスターハンター",
-        "desc": "モンスターを攻撃して倒す"
-    },
-    "killCow": {
-        "title": "牛転がし",
-        "desc": "革を手に入れる"
-    },
-    "flyPig": {
-        "title": "ブタさんの飛ぶ頃に",
-        "desc": "ブタに乗って崖から落ちる"
-    }
+        "openInventory": {
+            "title": "所持品の確認",
+            "desc": "持ち物をみる"
+        },
+        "mineWood": {
+            "title": "木を手に入れる",
+            "desc": "ブロックになるまで木を叩く"
+        },
+        "buildWorkBench": {
+            "title": "土台作り",
+            "desc": "木材を4つ使い、作業台を作る"
+        },
+        "buildPickaxe": {
+            "title": "いざ採掘！",
+            "desc": "木材と棒を使い、ツルハシを作る"
+        },
+        "buildFurnace": {
+            "title": "ホットな話題",
+            "desc": "石のブロックを8つ使い、かまどを作る"
+        },
+        "acquireIron": {
+            "title": "金属を手に入れる",
+            "desc": "鉄鉱石を製錬する"
+        },
+        "buildHoe": {
+            "title": "いざ農業！",
+            "desc": "木材と棒を使い、クワを作る"
+        },
+        "makeBread": {
+            "title": "パンを焼く",
+            "desc": "小麦をパンにする"
+        },
+        "bakeCake": {
+            "title": "the cake is a lie",
+            "desc": "小麦に砂糖、牛乳、それから卵！"
+        },
+        "buildBetterPickaxe": {
+            "title": "上位互換",
+            "desc": "よりよいツルハシをつくる"
+        },
+        "cookFish": {
+            "title": "美味しい魚",
+            "desc": "魚を釣って焼く！"
+        },
+        "onARail": {
+            "title": "線路の上で",
+            "desc": "トロッコに乗って出発地点から1km以上走行する"
+        },
+        "buildSword": {
+            "title": "いざ突撃！",
+            "desc": "木材と棒を使い、剣を作る"
+        },
+        "killEnemy": {
+            "title": "モンスターハンター",
+            "desc": "モンスターを攻撃して倒す"
+        },
+        "killCow": {
+            "title": "牛転がし",
+            "desc": "革を手に入れる"
+        },
+        "flyPig": {
+            "title": "ブタさんの飛ぶ頃に",
+            "desc": "ブタに乗って崖から落ちる"
+        }
     }
 }

@@ -40,6 +40,8 @@ public class GameOptions
     public FloatOption FramerateLimitOption { get; private set; }
     public FloatOption FovOption { get; private set; }
     public FloatOption GammaOption { get; private set; }
+    public FloatOption ChatScaleOption { get; private set; }
+    public FloatOption ChatWidthOption { get; private set; }
 
 
     public BoolOption InvertMouseOption { get; private set; }
@@ -73,7 +75,7 @@ public class GameOptions
         AlternateBlocksOption
     ];
 
-    public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption, UICursorsOption];
+    public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption, UICursorsOption, ChatScaleOption, ChatWidthOption];
 
 
     public float MusicVolume
@@ -118,6 +120,8 @@ public class GameOptions
     public int AnisotropicLevel => AnisotropicOption.Value;
     public int MSAALevel => MsaaOption.Value;
     public int INITIAL_MSAA;
+    public float ChatScale => ChatScaleOption.Value;
+    public float ChatWidth => ChatWidthOption.Value;
     public bool ShowCoordinates => ShowCoordinatesOption.Value;
     public bool UseMipmaps => MipmapsOption.Value;
     public bool EnvironmentAnimation => EnvironmentAnimationOption.Value;
@@ -348,6 +352,16 @@ public class GameOptions
                 }
             }
         };
+        ChatScaleOption = new FloatOption("options.chatScale.text", "chatScale", 1f/3f)
+        {
+            Steps = 30,
+            Formatter = (f, _) => $"{(int)(f * 150.0F + 50f)}%"
+        };
+        ChatWidthOption = new FloatOption("options.chatWidth.text", "chatWidth", 0.5f)
+        {
+            Steps = 64,
+            Formatter = (f, _) => $"{(int)(f * 64 + 32f)}"
+        };
         DifficultyOption = new CycleOption("options.difficulty.text", "difficulty", DifficultyLabels, 2);
         GuiScaleOption = new CycleOption("options.guiScale.text", "guiScale", GuiScaleLabels);
         AnisotropicOption = new CycleOption("options.anisoLevel", "anisotropicLevel", AnisoLabels)
@@ -406,6 +420,8 @@ public class GameOptions
         yield return RenderDistanceOption;
         yield return DifficultyOption;
         yield return GuiScaleOption;
+        yield return ChatScaleOption;
+        yield return ChatWidthOption;
         yield return AnisotropicOption;
         yield return MsaaOption;
         yield return ShowCoordinatesOption;

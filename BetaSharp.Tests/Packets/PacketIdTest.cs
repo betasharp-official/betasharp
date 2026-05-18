@@ -23,7 +23,7 @@ public class PacketIdTest : PacketTestBase
         for (int i = 0; i < Packet.Registry.Count; i++)
         {
             if (Packet.Registry[i] == null) continue;
-            Assert.StrictEqual(i, Packet.Registry[i]!.Get().Id);
+            Assert.StrictEqual(i, Packet.Registry[i]!.New().Id);
         }
     }
 
@@ -36,7 +36,7 @@ public class PacketIdTest : PacketTestBase
     [SkippableTheory, MemberData(nameof(PacketIds))]
     public void VerifyPacketGetMethods(PacketId value)
     {
-        var t = Packet.Registry[(int)value]!.Get().GetType();
+        var t = Packet.Registry[(int)value]!.New().GetType();
         var methods = t.GetMethods(BindingFlags.Static | BindingFlags.Public)
             .Where(m => m.Name == "Get");
 

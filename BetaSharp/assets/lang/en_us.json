@@ -3,6 +3,7 @@
         "name": "English (United States)"
     },
     "gui": {
+        "joinServer": "Join Server",
         "rename": "Rename",
         "edit": "Edit",
         "refresh": "Refresh",
@@ -57,7 +58,6 @@
         "createDemo": "Play New Demo World",
         "deleteQuestion": "Are you sure you want to delete this world?",
         "deleteWarning": "will be lost forever! (A long time!)",
-        "renameButton": "Rename",
         "renameTitle": "Rename World",
         "conversion": "Must be converted!",
         "newWorld": "New World",
@@ -68,7 +68,21 @@
         "selectWorldType": "Select World Type",
         "worldType": "World Type",
         "customize": "Customize",
-        "moreWorldOptions": "More World Options..."
+        "moreWorldOptions": "More World Options...",
+        "type": {
+            "default": {
+                "title": "Default",
+                "description": "The standard Minecraft world."
+            },
+            "flat": {
+                "title": "Flat",
+                "description": "A completely flat world."
+            },
+            "sky": {
+                "title": "Sky",
+                "description": "A world floating in the sky."
+            }
+        }
     },
     "newWorld": {
         "customize": {
@@ -76,7 +90,9 @@
                 "title": "Customize Superflat World"
             },
             "removeLayer": "Remove Layer",
-            "presets": "Presets"
+            "presets": "Presets",
+            "height": "Height",
+            "unknown": "???"
         }
     },
     "world": {
@@ -92,11 +108,16 @@
         "deleteQuestion": "Are you sure you want to delete this server?",
         "deleteWarning": "will be lost forever! (A long time!)",
         "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed"
+        "stopSleeping": "Leave Bed",
+        "editServerTitle": "Edit Server Info",
+        "addServerTitle": "Add Server Info",
+        "serverName": "Server Name",
+        "serverAddress": "Server Address"
     },
     "loading": {
         "loadingLevel": "Loading level",
-        "startingServer": "Starting server..."
+        "startingServer": "Starting server...",
+        "preparingSpawnArea": "Preparing spawn area"
     },
     "achievements": {
         "title": "Achievements"
@@ -129,25 +150,7 @@
             "crafted": "Crafted",
             "used": "Used"
         },
-        "item": "Item",
-        "done": "Done"
-    },
-    "demo": {
-        "day": {
-            "1": "This demo will last five game days, do your best!",
-            "2": "Day Two",
-            "3": "Day Three",
-            "4": "Day Four",
-            "5": "This is your last day!",
-            "warning": "Your time is almost up!",
-            "6": "You have passed your fifth day, use F2 to save a screenshot of your creation"
-        },
-        "reminder": "The demo time has expired, buy the game to continue or start a new world!",
-        "help": {
-            "movement": "Use %1$s, %2$s, %3$s, %4$s and the mouse to move around",
-            "jump": "Jump by pressing %1$s",
-            "inventory": "Use %1$s to open your inventory"
-        }
+        "item": "Item"
     },
     "connect": {
         "connecting": "Connecting to the server...",
@@ -155,14 +158,13 @@
         "failed": "Failed to connect to the server"
     },
     "disconnect": {
-        "genericReason": "%1$s",
+        "genericReason": "{0}",
         "disconnected": "Disconnected by Server",
         "lost": "Connection Lost",
         "kicked": "Was kicked from the game",
         "timeout": "Timed out",
         "closed": "Connection closed",
         "loginFailed": "Failed to login",
-        "loginFailedInfo": "Failed to login: %s",
         "quitting": "Quitting",
         "endOfStream": "End of stream",
         "overflow": "Buffer overflow"
@@ -228,6 +230,12 @@
             "small": "Small",
             "normal": "Normal",
             "large": "Large"
+        },
+        "chatScale": {
+            "text": "Chat Scale"
+        },
+        "chatWidth": {
+            "text": "Chat Width"
         },
         "advancedOpengl": "Advanced OpenGL",
         "fps": {

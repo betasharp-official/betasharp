@@ -24,41 +24,30 @@ public static class RegistryReloadPipeline
 
         List<RegistryDataS2CPacket> syncPackets = [.. registries.BuildSyncPackets()];
 
-        try
+        // Pack registry data into every player's bundle
+        foreach (RegistryDataS2CPacket rp in syncPackets)
         {
-            // Pack registry data into every player's bundle
-            foreach (RegistryDataS2CPacket rp in syncPackets)
+            foreach (BundleS2CPacket bundle in bundles.Values)
             {
-                foreach (BundleS2CPacket bundle in bundles.Values)
-                {
-                    Interlocked.Increment(ref rp.UseCount);
-                    bundle.Packets.Add(rp);
-                }
-            }
-
-            // Collect per-player migration packets from each listener
-            foreach ((ServerPlayerEntity player, BundleS2CPacket bundle) in bundles)
-            {
-                foreach (IRegistryReloadListener listener in listeners)
-                {
-                    Packet[] packets = listener.GetSyncPackets(registries, player);
-
-                    foreach (Packet packet in packets)
-                    {
-                        bundle.Packets.Add(packet);
-                    }
-                }
-
-                bundle.Packets.Add(Packet.Get<FinishConfigurationS2CPacket>(PacketId.FinishConfigurationS2C));
-                player.NetworkHandler.SendPacket(bundle);
+                bundle.Packets.Add(rp);
             }
         }
-        finally
+
+        // Collect per-player migration packets from each listener
+        foreach ((ServerPlayerEntity player, BundleS2CPacket bundle) in bundles)
         {
-            foreach (RegistryDataS2CPacket rp in syncPackets)
+            foreach (IRegistryReloadListener listener in listeners)
             {
-                rp.Return();
+                Packet[] packets = listener.GetSyncPackets(registries, player);
+
+                foreach (Packet packet in packets)
+                {
+                    bundle.Packets.Add(packet);
+                }
             }
+
+            bundle.Packets.Add(Packet.Get<FinishConfigurationS2CPacket>(PacketId.FinishConfigurationS2C));
+            player.NetworkHandler.SendPacket(bundle);
         }
     }
 }

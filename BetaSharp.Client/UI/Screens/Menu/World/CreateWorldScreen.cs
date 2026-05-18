@@ -40,7 +40,7 @@ public class CreateWorldScreen(
 
         TranslationStorage translationStorage = TranslationStorage.Instance;
 
-        Label title = new() { Text = translationStorage.TranslateKey("gui.create"), TextColor = Color.White };
+        Label title = new() { Text = translationStorage.TranslateKey("selectWorld.create"), TextColor = Color.White };
         title.Style.MarginBottom = 20;
         Root.AddChild(title);
 
@@ -69,7 +69,7 @@ public class CreateWorldScreen(
             Root.AddChild(_txfSeed);
 
             _btnWorldType = CreateButton();
-            _btnWorldType.Text = translationStorage.TranslateKey("selectWorld.worldType") + ": " + _selectedWorldType.DisplayName;
+            _btnWorldType.Text = translationStorage.TranslateKey("selectWorld.worldType") + ": " + translationStorage.TranslateKey($"selectWorld.type.{_selectedWorldType.Name.ToLowerInvariant()}.title");
             _btnWorldType.Style.MarginBottom = 4;
             _btnWorldType.OnClick += (e) => Context.Navigator.Navigate(new SelectWorldTypeScreen(Context, this, _selectedWorldType));
             Root.AddChild(_btnWorldType);
