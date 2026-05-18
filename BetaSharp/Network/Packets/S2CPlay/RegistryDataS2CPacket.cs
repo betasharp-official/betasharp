@@ -22,8 +22,6 @@ public class RegistryDataS2CPacket() : ExtendedProtocolPacket(PacketId.RegistryD
     public static RegistryDataS2CPacket Get<T>(RegistryKey<T> key, IReadableRegistry<T> registry)
         where T : class, IDataAsset
     {
-        RegistryDataS2CPacket p = Get<RegistryDataS2CPacket>(PacketId.RegistryDataS2C);
-        p.RegistryId = key.Location;
         List<Entry> entries = new();
         foreach (ResourceLocation entryKey in registry.Keys)
         {
@@ -36,6 +34,13 @@ public class RegistryDataS2CPacket() : ExtendedProtocolPacket(PacketId.RegistryD
             entries.Add(new Entry(entryKey, JsonSerializer.Serialize(value, s_writeOptions)));
         }
 
+        return Get(key.Location, entries);
+    }
+
+    public static RegistryDataS2CPacket Get(ResourceLocation key, IReadOnlyList<Entry> entries)
+    {
+        RegistryDataS2CPacket p = Get<RegistryDataS2CPacket>(PacketId.RegistryDataS2C);
+        p.RegistryId = key;
         p.Entries = entries;
         return p;
     }
