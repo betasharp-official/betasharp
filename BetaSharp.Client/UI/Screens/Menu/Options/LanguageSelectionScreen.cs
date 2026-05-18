@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls;
@@ -8,7 +9,7 @@ using BetaSharp.Worlds.Storage;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
-public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : BaseOptionsScreen(context, parent, "options.videoTitle") {
+public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : BaseOptionsScreen(context, parent, "options.language") {
 
     protected override List<OptionSection> GetOptions() => [];
 

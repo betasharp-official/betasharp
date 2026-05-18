@@ -85,12 +85,29 @@ public class IngameMenuScreen(
         feedbackRow.AddChild(btnReport);
         Root.AddChild(feedbackRow);
 
+        Panel optionsRow = new();
+        optionsRow.Style.FlexDirection = FlexDirection.Row;
+        optionsRow.Style.JustifyContent = Justify.SpaceBetween;
+        optionsRow.Style.Width = 224;
+        optionsRow.Style.MarginLeft = -26;
+
+        ImageButton btnLang = CreateImageButton();
+        btnLang.OnClick += (e) => Context.Navigator.Navigate(new LanguageSelectionScreen(Context, this));
+        btnLang.Texture = Renderer.TextureManager.GetTextureId("/gui/Globe.png");
+        btnLang.U = 0;
+        btnLang.V = 0;
+        btnLang.UWidth = 24;
+        btnLang.VHeight = 24;
+        optionsRow.AddChild(btnLang);
+
         Button btnOptions = CreateButton();
         btnOptions.Text = translationStorage.TranslateKey("menu.options");
         btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePacks));
         btnOptions.Style.MarginBottom = 4;
-        Root.AddChild(btnOptions);
-   
+        optionsRow.AddChild(btnOptions);
+
+        Root.AddChild(optionsRow);
+
         Button btnQuit = CreateButton();
         btnQuit.Text = quitButtonText;
         btnQuit.OnClick += (e) =>
