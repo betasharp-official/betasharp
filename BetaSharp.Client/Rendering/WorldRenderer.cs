@@ -47,7 +47,6 @@ public class WorldRenderer : IWorldEventListener
     private readonly int _cloudShaderMvLoc;
     private readonly int _cloudShaderProjLoc;
     private readonly int _cloudShaderTexMatLoc;
-    private Vector3D<float> _skyColor;
     private Vector3D<float> _fogColor;
 
     public WorldRenderer(BetaSharp gameInstance, TextureManager textureManager)
@@ -77,10 +76,10 @@ public class WorldRenderer : IWorldEventListener
             for (planeZ = -skyPlaneStep * skyPlaneRadius; planeZ <= skyPlaneStep * skyPlaneRadius; planeZ += skyPlaneStep)
             {
                 tessellator.startDrawingQuads();
-                tessellator.addVertex(planeX + 0, (double)skyPlaneY, planeZ + 0);
-                tessellator.addVertex(planeX + skyPlaneStep, (double)skyPlaneY, planeZ + 0);
-                tessellator.addVertex(planeX + skyPlaneStep, (double)skyPlaneY, planeZ + skyPlaneStep);
-                tessellator.addVertex(planeX + 0, (double)skyPlaneY, planeZ + skyPlaneStep);
+                tessellator.addVertex(planeX + 0, skyPlaneY, planeZ + 0);
+                tessellator.addVertex(planeX + skyPlaneStep, skyPlaneY, planeZ + 0);
+                tessellator.addVertex(planeX + skyPlaneStep, skyPlaneY, planeZ + skyPlaneStep);
+                tessellator.addVertex(planeX + 0, skyPlaneY, planeZ + skyPlaneStep);
                 tessellator.draw();
             }
         }
@@ -95,10 +94,10 @@ public class WorldRenderer : IWorldEventListener
         {
             for (planeZ = -skyPlaneStep * skyPlaneRadius; planeZ <= skyPlaneStep * skyPlaneRadius; planeZ += skyPlaneStep)
             {
-                tessellator.addVertex(planeX + skyPlaneStep, (double)skyPlaneY, planeZ + 0);
-                tessellator.addVertex(planeX + 0, (double)skyPlaneY, planeZ + 0);
-                tessellator.addVertex(planeX + 0, (double)skyPlaneY, planeZ + skyPlaneStep);
-                tessellator.addVertex(planeX + skyPlaneStep, (double)skyPlaneY, planeZ + skyPlaneStep);
+                tessellator.addVertex(planeX + skyPlaneStep, skyPlaneY, planeZ + 0);
+                tessellator.addVertex(planeX + 0, skyPlaneY, planeZ + 0);
+                tessellator.addVertex(planeX + 0, skyPlaneY, planeZ + skyPlaneStep);
+                tessellator.addVertex(planeX + skyPlaneStep, skyPlaneY, planeZ + skyPlaneStep);
             }
         }
 
@@ -117,7 +116,6 @@ public class WorldRenderer : IWorldEventListener
         _cloudShaderTexMatLoc = _cloudShader.GetUniformLocation("u_TextureMatrix");
     }
 
-    public void SetSkyColor(float r, float g, float b) => _skyColor = new(r, g, b);
     public void SetFogColor(float r, float g, float b) => _fogColor = new(r, g, b);
 
     private static void RenderStars()
@@ -128,10 +126,10 @@ public class WorldRenderer : IWorldEventListener
 
         for (int starIndex = 0; starIndex < 1500; ++starIndex)
         {
-            double dirX = (double)(random.NextDouble() * 2.0 - 1.0);
-            double dirY = (double)(random.NextDouble() * 2.0 - 1.0);
-            double dirZ = (double)(random.NextDouble() * 2.0 - 1.0);
-            double starSize = (double)(0.25 + random.NextDouble() * 0.25);
+            double dirX = random.NextDouble() * 2.0 - 1.0;
+            double dirY = random.NextDouble() * 2.0 - 1.0;
+            double dirZ = random.NextDouble() * 2.0 - 1.0;
+            double starSize = (0.25 + random.NextDouble() * 0.25);
             double dirLengthSq = dirX * dirX + dirY * dirY + dirZ * dirZ;
             if (dirLengthSq < 1.0 && dirLengthSq > 0.01)
             {
@@ -223,12 +221,12 @@ public class WorldRenderer : IWorldEventListener
             CountEntitiesRendered = 0;
             CountEntitiesHidden = 0;
             EntityLiving camera = _game.Camera;
-            EntityRenderDispatcher.OffsetX = camera.LastTickX + (camera.X - camera.LastTickX) * (double)partialTicks;
-            EntityRenderDispatcher.OffsetY = camera.LastTickY + (camera.Y - camera.LastTickY) * (double)partialTicks;
-            EntityRenderDispatcher.OffsetZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * (double)partialTicks;
-            BlockEntityRenderer.StaticPlayerX = camera.LastTickX + (camera.X - camera.LastTickX) * (double)partialTicks;
-            BlockEntityRenderer.StaticPlayerY = camera.LastTickY + (camera.Y - camera.LastTickY) * (double)partialTicks;
-            BlockEntityRenderer.StaticPlayerZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * (double)partialTicks;
+            EntityRenderDispatcher.OffsetX = camera.LastTickX + (camera.X - camera.LastTickX) * partialTicks;
+            EntityRenderDispatcher.OffsetY = camera.LastTickY + (camera.Y - camera.LastTickY) * partialTicks;
+            EntityRenderDispatcher.OffsetZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * partialTicks;
+            BlockEntityRenderer.StaticPlayerX = camera.LastTickX + (camera.X - camera.LastTickX) * partialTicks;
+            BlockEntityRenderer.StaticPlayerY = camera.LastTickY + (camera.Y - camera.LastTickY) * partialTicks;
+            BlockEntityRenderer.StaticPlayerZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * partialTicks;
             List<Entity> entities = _world.Entities.Entities;
             CountEntitiesTotal = entities.Count;
 
@@ -396,6 +394,7 @@ public class WorldRenderer : IWorldEventListener
                 float ringY = MathHelper.Cos(angle);
                 tessellator.addVertex((ringX * 120.0F), (ringY * 120.0F), (-ringY * 40.0F * backgroundColor[3]));
             }
+
             tessellator.draw();
             GLManager.GL.PopMatrix();
             GLManager.GL.ShadeModel(GLEnum.Flat);
@@ -485,10 +484,10 @@ public class WorldRenderer : IWorldEventListener
                 float z = uvZ;
 
                 tessellator.setNormal(0.0F, -1.0F, 0.0F);
-                tessellator.addVertexWithUV((x + 0.0F), 0.0, (z + tileSize), ((uvX + 0.0F) * uvScale), ((uvZ + tileSize) * uvScale));
+                tessellator.addVertexWithUV((x + 0.0F), 0.0, (z + tileSize), (uvX * uvScale), ((uvZ + tileSize) * uvScale));
                 tessellator.addVertexWithUV((x + tileSize), 0.0, (z + tileSize), ((uvX + tileSize) * uvScale), ((uvZ + tileSize) * uvScale));
                 tessellator.addVertexWithUV((x + tileSize), 0.0, (z + 0.0F), ((uvX + tileSize) * uvScale), ((uvZ + 0.0F) * uvScale));
-                tessellator.addVertexWithUV((x + 0.0F), 0.0, (z + 0.0F), ((uvX + 0.0F) * uvScale), ((uvZ + 0.0F) * uvScale));
+                tessellator.addVertexWithUV((x + 0.0F), 0.0, (z + 0.0F), (uvX * uvScale), ((uvZ + 0.0F) * uvScale));
             }
         }
 
@@ -523,19 +522,19 @@ public class WorldRenderer : IWorldEventListener
                     if (i == 0)
                     {
                         tessellator.setNormal(0.0F, -1.0F, 0.0F);
-                        tessellator.addVertexWithUV((double)(x + 0.0F), (double)(0.0F), (double)(z + tileSize), (double)((uvX + 0.0F) * uvScale), (double)((uvZ + tileSize) * uvScale));
-                        tessellator.addVertexWithUV((double)(x + tileSize), (double)(0.0F), (double)(z + tileSize), (double)((uvX + tileSize) * uvScale), (double)((uvZ + tileSize) * uvScale));
-                        tessellator.addVertexWithUV((double)(x + tileSize), (double)(0.0F), (double)(z + 0.0F), (double)((uvX + tileSize) * uvScale), (double)((uvZ + 0.0F) * uvScale));
-                        tessellator.addVertexWithUV((double)(x + 0.0F), (double)(0.0F), (double)(z + 0.0F), (double)((uvX + 0.0F) * uvScale), (double)((uvZ + 0.0F) * uvScale));
+                        tessellator.addVertexWithUV(x, 0.0, z + tileSize, uvX * uvScale, (uvZ + tileSize) * uvScale);
+                        tessellator.addVertexWithUV(x + tileSize, 0.0, z + tileSize, (uvX + tileSize) * uvScale, (uvZ + tileSize) * uvScale);
+                        tessellator.addVertexWithUV(x + tileSize, 0.0, z, (uvX + tileSize) * uvScale, uvZ * uvScale);
+                        tessellator.addVertexWithUV(x, 0.0, z, uvX * uvScale, uvZ * uvScale);
                     }
 
                     else if (i == 1)
                     {
                         tessellator.setNormal(0.0F, 1.0F, 0.0F);
-                        tessellator.addVertexWithUV((double)(x + 0.0F), (double)(cloudHeight - edgeInset), (double)(z + tileSize), (double)((uvX + 0.0F) * uvScale), (double)((uvZ + tileSize) * uvScale));
-                        tessellator.addVertexWithUV((double)(x + tileSize), (double)(cloudHeight - edgeInset), (double)(z + tileSize), (double)((uvX + tileSize) * uvScale), (double)((uvZ + tileSize) * uvScale));
-                        tessellator.addVertexWithUV((double)(x + tileSize), (double)(cloudHeight - edgeInset), (double)(z + 0.0F), (double)((uvX + tileSize) * uvScale), (double)((uvZ + 0.0F) * uvScale));
-                        tessellator.addVertexWithUV((double)(x + 0.0F), (double)(cloudHeight - edgeInset), (double)(z + 0.0F), (double)((uvX + 0.0F) * uvScale), (double)((uvZ + 0.0F) * uvScale));
+                        tessellator.addVertexWithUV(x, cloudHeight - edgeInset, z + tileSize, uvX * uvScale, (uvZ + tileSize) * uvScale);
+                        tessellator.addVertexWithUV(x + tileSize, cloudHeight - edgeInset, z + tileSize, (uvX + tileSize) * uvScale, (uvZ + tileSize) * uvScale);
+                        tessellator.addVertexWithUV(x + tileSize, cloudHeight - edgeInset, z, (uvX + tileSize) * uvScale, uvZ * uvScale);
+                        tessellator.addVertexWithUV(x, cloudHeight - edgeInset, z, uvX * uvScale, uvZ * uvScale);
                     }
 
                     else if (i == 2)
@@ -545,10 +544,10 @@ public class WorldRenderer : IWorldEventListener
                             tessellator.setNormal(-1.0F, 0.0F, 0.0F);
                             for (int edgeSlice = 0; edgeSlice < tileSize; ++edgeSlice)
                             {
-                                tessellator.addVertexWithUV((double)(x + edgeSlice + 0.0F), (double)(0.0F), (double)(z + tileSize), (double)((uvX + edgeSlice + 0.5F) * uvScale), (double)((uvZ + tileSize) * uvScale));
-                                tessellator.addVertexWithUV((double)(x + edgeSlice + 0.0F), (double)(cloudHeight), (double)(z + tileSize), (double)((uvX + edgeSlice + 0.5F) * uvScale), (double)((uvZ + tileSize) * uvScale));
-                                tessellator.addVertexWithUV((double)(x + edgeSlice + 0.0F), (double)(cloudHeight), (double)(z + 0.0F), (double)((uvX + edgeSlice + 0.5F) * uvScale), (double)((uvZ + 0.0F) * uvScale));
-                                tessellator.addVertexWithUV((double)(x + edgeSlice + 0.0F), (double)(0.0F), (double)(z + 0.0F), (double)((uvX + edgeSlice + 0.5F) * uvScale), (double)((uvZ + 0.0F) * uvScale));
+                                tessellator.addVertexWithUV(x + edgeSlice, 0.0, z + tileSize, (uvX + edgeSlice + 0.5F) * uvScale, (uvZ + tileSize) * uvScale);
+                                tessellator.addVertexWithUV(x + edgeSlice, cloudHeight, z + tileSize, (uvX + edgeSlice + 0.5F) * uvScale, (uvZ + tileSize) * uvScale);
+                                tessellator.addVertexWithUV(x + edgeSlice, cloudHeight, z, (uvX + edgeSlice + 0.5F) * uvScale, uvZ * uvScale);
+                                tessellator.addVertexWithUV(x + edgeSlice, 0.0, z, (uvX + edgeSlice + 0.5F) * uvScale, uvZ * uvScale);
                             }
                         }
 
@@ -557,10 +556,10 @@ public class WorldRenderer : IWorldEventListener
                             tessellator.setNormal(1.0F, 0.0F, 0.0F);
                             for (int edgeSlice = 0; edgeSlice < tileSize; ++edgeSlice)
                             {
-                                tessellator.addVertexWithUV((double)(x + edgeSlice + 1.0F - edgeInset), (double)(0.0F), (double)(z + tileSize), (double)((uvX + edgeSlice + 0.5F) * uvScale), (double)((uvZ + tileSize) * uvScale));
-                                tessellator.addVertexWithUV((double)(x + edgeSlice + 1.0F - edgeInset), (double)(cloudHeight), (double)(z + tileSize), (double)((uvX + edgeSlice + 0.5F) * uvScale), (double)((uvZ + tileSize) * uvScale));
-                                tessellator.addVertexWithUV((double)(x + edgeSlice + 1.0F - edgeInset), (double)(cloudHeight), (double)(z + 0.0F), (double)((uvX + edgeSlice + 0.5F) * uvScale), (double)((uvZ + 0.0F) * uvScale));
-                                tessellator.addVertexWithUV((double)(x + edgeSlice + 1.0F - edgeInset), (double)(0.0F), (double)(z + 0.0F), (double)((uvX + edgeSlice + 0.5F) * uvScale), (double)((uvZ + 0.0F) * uvScale));
+                                tessellator.addVertexWithUV(x + edgeSlice + 1.0F - edgeInset, 0.0, z + tileSize, (uvX + edgeSlice + 0.5F) * uvScale, (uvZ + tileSize) * uvScale);
+                                tessellator.addVertexWithUV(x + edgeSlice + 1.0F - edgeInset, cloudHeight, z + tileSize, (uvX + edgeSlice + 0.5F) * uvScale, (uvZ + tileSize) * uvScale);
+                                tessellator.addVertexWithUV(x + edgeSlice + 1.0F - edgeInset, cloudHeight, z, (uvX + edgeSlice + 0.5F) * uvScale, uvZ * uvScale);
+                                tessellator.addVertexWithUV(x + edgeSlice + 1.0F - edgeInset, 0.0, z, (uvX + edgeSlice + 0.5F) * uvScale, uvZ * uvScale);
                             }
                         }
                     }
@@ -572,10 +571,10 @@ public class WorldRenderer : IWorldEventListener
                             tessellator.setNormal(0.0F, 0.0F, -1.0F);
                             for (int edgeSlice = 0; edgeSlice < tileSize; ++edgeSlice)
                             {
-                                tessellator.addVertexWithUV((double)(x + 0.0F), (double)(cloudHeight), (double)(z + edgeSlice + 0.0F), (double)((uvX + 0.0F) * uvScale), (double)((uvZ + edgeSlice + 0.5F) * uvScale));
-                                tessellator.addVertexWithUV((double)(x + tileSize), (double)(cloudHeight), (double)(z + edgeSlice + 0.0F), (double)((uvX + tileSize) * uvScale), (double)((uvZ + edgeSlice + 0.5F) * uvScale));
-                                tessellator.addVertexWithUV((double)(x + tileSize), (double)(0.0F), (double)(z + edgeSlice + 0.0F), (double)((uvX + tileSize) * uvScale), (double)((uvZ + edgeSlice + 0.5F) * uvScale));
-                                tessellator.addVertexWithUV((double)(x + 0.0F), (double)(0.0F), (double)(z + edgeSlice + 0.0F), (double)((uvX + 0.0F) * uvScale), (double)((uvZ + edgeSlice + 0.5F) * uvScale));
+                                tessellator.addVertexWithUV(x + 0.0F, cloudHeight, z + edgeSlice + 0.0F, uvX * uvScale, (uvZ + edgeSlice + 0.5F) * uvScale);
+                                tessellator.addVertexWithUV(x + tileSize, cloudHeight, z + edgeSlice + 0.0F, (uvX + tileSize) * uvScale, (uvZ + edgeSlice + 0.5F) * uvScale);
+                                tessellator.addVertexWithUV(x + tileSize, 0.0, z + edgeSlice + 0.0F, (uvX + tileSize) * uvScale, (uvZ + edgeSlice + 0.5F) * uvScale);
+                                tessellator.addVertexWithUV(x + 0.0F, 0.0, z + edgeSlice + 0.0F, uvX * uvScale, (uvZ + edgeSlice + 0.5F) * uvScale);
                             }
                         }
 
@@ -584,10 +583,10 @@ public class WorldRenderer : IWorldEventListener
                             tessellator.setNormal(0.0F, 0.0F, 1.0F);
                             for (int edgeSlice = 0; edgeSlice < tileSize; ++edgeSlice)
                             {
-                                tessellator.addVertexWithUV((double)(x + 0.0F), (double)(cloudHeight), (double)(z + edgeSlice + 1.0F - edgeInset), (double)((uvX + 0.0F) * uvScale), (double)((uvZ + edgeSlice + 0.5F) * uvScale));
-                                tessellator.addVertexWithUV((double)(x + tileSize), (double)(cloudHeight), (double)(z + edgeSlice + 1.0F - edgeInset), (double)((uvX + tileSize) * uvScale), (double)((uvZ + edgeSlice + 0.5F) * uvScale));
-                                tessellator.addVertexWithUV((double)(x + tileSize), (double)(0.0F), (double)(z + edgeSlice + 1.0F - edgeInset), (double)((uvX + tileSize) * uvScale), (double)((uvZ + edgeSlice + 0.5F) * uvScale));
-                                tessellator.addVertexWithUV((double)(x + 0.0F), (double)(0.0F), (double)(z + edgeSlice + 1.0F - edgeInset), (double)((uvX + 0.0F) * uvScale), (double)((uvZ + edgeSlice + 0.5F) * uvScale));
+                                tessellator.addVertexWithUV(x + 0.0F, cloudHeight, z + edgeSlice + 1.0F - edgeInset, uvX * uvScale, (uvZ + edgeSlice + 0.5F) * uvScale);
+                                tessellator.addVertexWithUV(x + tileSize, cloudHeight, z + edgeSlice + 1.0F - edgeInset, (uvX + tileSize) * uvScale, (uvZ + edgeSlice + 0.5F) * uvScale);
+                                tessellator.addVertexWithUV(x + tileSize, 0.0, z + edgeSlice + 1.0F - edgeInset, (uvX + tileSize) * uvScale, (uvZ + edgeSlice + 0.5F) * uvScale);
+                                tessellator.addVertexWithUV(x + 0.0F, 0.0, z + edgeSlice + 1.0F - edgeInset, uvX * uvScale, (uvZ + edgeSlice + 0.5F) * uvScale);
                             }
                         }
                     }
@@ -759,9 +758,9 @@ public class WorldRenderer : IWorldEventListener
         int targetBlockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
         Block targetBlock = targetBlockId > 0 ? Block.Blocks[targetBlockId] : Block.Stone;
 
-        double renderX = entityPlayer.LastTickX + (entityPlayer.X - entityPlayer.LastTickX) * (double)tickDelta;
-        double renderY = entityPlayer.LastTickY + (entityPlayer.Y - entityPlayer.LastTickY) * (double)tickDelta;
-        double renderZ = entityPlayer.LastTickZ + (entityPlayer.Z - entityPlayer.LastTickZ) * (double)tickDelta;
+        double renderX = entityPlayer.LastTickX + (entityPlayer.X - entityPlayer.LastTickX) * tickDelta;
+        double renderY = entityPlayer.LastTickY + (entityPlayer.Y - entityPlayer.LastTickY) * tickDelta;
+        double renderZ = entityPlayer.LastTickZ + (entityPlayer.Z - entityPlayer.LastTickZ) * tickDelta;
 
         tessellator.startDrawingQuads();
         tessellator.setTranslationD(-renderX, -renderY, -renderZ);
@@ -796,10 +795,10 @@ public class WorldRenderer : IWorldEventListener
             if (blockId > 0)
             {
                 Block.Blocks[blockId].updateBoundingBox(_world.Reader, hit.BlockX, hit.BlockY, hit.BlockZ);
-                double renderX = player.LastTickX + (player.X - player.LastTickX) * (double)tickDelta;
-                double renderY = player.LastTickY + (player.Y - player.LastTickY) * (double)tickDelta;
-                double renderZ = player.LastTickZ + (player.Z - player.LastTickZ) * (double)tickDelta;
-                DrawOutlinedBoundingBox(Block.Blocks[blockId].getBoundingBox(_world.Reader, _world.Entities, hit.BlockX, hit.BlockY, hit.BlockZ).Expand((double)outlinePadding, (double)outlinePadding, (double)outlinePadding).Offset(-renderX, -renderY, -renderZ));
+                double renderX = player.LastTickX + (player.X - player.LastTickX) * tickDelta;
+                double renderY = player.LastTickY + (player.Y - player.LastTickY) * tickDelta;
+                double renderZ = player.LastTickZ + (player.Z - player.LastTickZ) * tickDelta;
+                DrawOutlinedBoundingBox(Block.Blocks[blockId].getBoundingBox(_world.Reader, _world.Entities, hit.BlockX, hit.BlockY, hit.BlockZ).Expand(outlinePadding, outlinePadding, outlinePadding).Offset(-renderX, -renderY, -renderZ));
             }
 
             GLManager.GL.DepthMask(true);
@@ -891,7 +890,7 @@ public class WorldRenderer : IWorldEventListener
             maxDistance *= volume;
         }
 
-        if (_game.Camera.GetSquaredDistance(x, y, z) < (double)(maxDistance * maxDistance))
+        if (_game.Camera.GetSquaredDistance(x, y, z) < maxDistance * maxDistance)
         {
             _game.SoundManager.PlaySound(soundName, (float)x, (float)y, (float)z, volume, pitch);
         }
