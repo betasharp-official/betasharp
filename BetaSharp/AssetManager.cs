@@ -299,10 +299,13 @@ public class AssetManager
 
         defineAsset("terrain.png", AssetType.Binary);
 
+        defineEmbeddedAsset("shaders/blur.frag", AssetType.Text);
         defineEmbeddedAsset("shaders/chunk.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/chunk.frag", AssetType.Text);
         defineEmbeddedAsset("shaders/cloud.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/cloud.frag", AssetType.Text);
+        defineEmbeddedAsset("shaders/gamma.frag", AssetType.Text);
+        defineEmbeddedAsset("shaders/quad.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/sky.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/sky.frag", AssetType.Text);
     }

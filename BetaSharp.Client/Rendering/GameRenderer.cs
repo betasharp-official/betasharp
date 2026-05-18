@@ -488,7 +488,10 @@ public class GameRenderer
             renderChunkBorders(tickDelta);
         }
 
+        bool cloudBlurPass = _client.Options.CloudsQuality >= 3;
+        if (cloudBlurPass) _client.FramebufferManager.BeginCloudPass();
         worldRenderer.RenderClouds(tickDelta);
+        if (cloudBlurPass) _client.FramebufferManager.EndCloudPass();
         GLManager.GL.Disable(GLEnum.Fog);
         applyFog(1);
 

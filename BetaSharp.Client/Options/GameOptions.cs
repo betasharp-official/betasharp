@@ -364,7 +364,7 @@ public class GameOptions
             Steps = 64,
             Formatter = (f, _) => $"{(int)(f * 64 + 32f)}"
         };
-        CloudsQualityOption = new CycleOption("options.cloudsQuality.text", "cloudsQuality", CloudsQualityLabels, 4, 6)
+        CloudsQualityOption = new CycleOption("options.cloudsQuality.text", "cloudsQuality", CloudsQualityLabels, 4, 7)
         {
             Formatter = (v, t) =>
                 t.TranslateKeyFormat(v < CloudsQualityOption.Labels.Length ? CloudsQualityOption.Labels[v] : CloudsQualityOption.Labels.Last(), v - 2)

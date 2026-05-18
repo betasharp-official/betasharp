@@ -658,7 +658,6 @@ public class WorldRenderer : IWorldEventListener
         GLManager.GL.UseProgram(0);
 
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.GL.Disable(GLEnum.Blend);
         GLManager.GL.Enable(GLEnum.CullFace);
     }
 
