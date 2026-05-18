@@ -64,6 +64,7 @@ public class GameOptions
 
     public FloatOption RenderDistanceOption { get; private set; }
     public CycleOption CloudsQualityOption { get; private set; }
+    public BoolOption SoftCloudsOption { get; private set; }
     public CycleOption DifficultyOption { get; private set; }
     public CycleOption GuiScaleOption { get; private set; }
     public CycleOption AnisotropicOption { get; private set; }
@@ -115,6 +116,7 @@ public class GameOptions
 
     public int renderDistance => 4 + (int)(RenderDistanceOption.Value * 28.0f);
     public int CloudsQuality => CloudsQualityOption.Value;
+    public bool SoftClouds => SoftCloudsOption.Value;
     public bool ViewBobbing => ViewBobbingOption.Value;
     public bool VSync => VSyncOption.Value;
     public int Difficulty => DifficultyOption.Value;
@@ -369,6 +371,7 @@ public class GameOptions
             Formatter = (v, t) =>
                 t.TranslateKeyFormat(v < CloudsQualityOption.Labels.Length ? CloudsQualityOption.Labels[v] : CloudsQualityOption.Labels.Last(), v - 2)
         };
+        SoftCloudsOption = new BoolOption("options.softClouds.text", "softClouds", true);
         DifficultyOption = new CycleOption("options.difficulty.text", "difficulty", DifficultyLabels, 2);
         GuiScaleOption = new CycleOption("options.guiScale.text", "guiScale", GuiScaleLabels);
         AnisotropicOption = new CycleOption("options.anisoLevel", "anisotropicLevel", AnisoLabels)
@@ -427,6 +430,7 @@ public class GameOptions
         yield return RenderDistanceOption;
         yield return DifficultyOption;
         yield return CloudsQualityOption;
+        yield return SoftCloudsOption;
         yield return GuiScaleOption;
         yield return ChatScaleOption;
         yield return ChatWidthOption;

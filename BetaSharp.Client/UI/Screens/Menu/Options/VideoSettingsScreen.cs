@@ -13,7 +13,8 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
             Options.MsaaOption,
             Options.MipmapsOption,
             Options.AnisotropicOption,
-            Options.CloudsQualityOption
+            Options.CloudsQualityOption,
+            Options.SoftCloudsOption
         ]),
 
         new(TranslationStorage.Instance.TranslateKey("options.video.display"), [

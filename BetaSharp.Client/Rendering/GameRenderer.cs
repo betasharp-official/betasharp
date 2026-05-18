@@ -488,7 +488,7 @@ public class GameRenderer
             renderChunkBorders(tickDelta);
         }
 
-        bool cloudBlurPass = _client.Options.CloudsQuality >= 3;
+        bool cloudBlurPass = _client.Options is { SoftClouds: true, CloudsQuality: >= 2 };
         if (cloudBlurPass) _client.FramebufferManager.BeginCloudPass();
         worldRenderer.RenderClouds(tickDelta);
         if (cloudBlurPass) _client.FramebufferManager.EndCloudPass();
