@@ -212,6 +212,7 @@ public class AssetManager
         defineAsset("gui/Pointer.png", AssetType.Binary);
         defineAsset("gui/Globe.png", AssetType.Binary);
 
+        defineAsset("gui/BetaSharp.png", AssetType.Binary);
         defineAsset("gui/Logo.png", AssetType.Binary);
         
         string[] controllerIcons = [

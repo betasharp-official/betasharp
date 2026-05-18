@@ -5,8 +5,8 @@ namespace BetaSharp.Client.UI.Controls.MainMenu;
 
 public class MainMenuLogo : UIElement
 {
-    private const short LogoWidth = 274;
-    private const byte LogoHeight = 44;
+    private const short LogoWidth = 260;
+    private const byte LogoHeight = 40;
 
     public MainMenuLogo()
     {
@@ -16,11 +16,10 @@ public class MainMenuLogo : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        TextureHandle logoTexture = renderer.TextureManager.GetTextureId("/title/mclogo.png");
+        TextureHandle logoTexture = renderer.TextureManager.GetTextureId("/gui/BetaSharp.png");
 
         // Match legacy rendering logic (split into two textured quads)
-        renderer.DrawTexturedModalRect(logoTexture, 0, 0, 0, 0, 155, 44);
-        renderer.DrawTexturedModalRect(logoTexture, 155, 0, 0, 45, 155, 44);
+        renderer.DrawTexture(logoTexture, 0, 0, 256, 64);
 
         base.Render(renderer);
     }
