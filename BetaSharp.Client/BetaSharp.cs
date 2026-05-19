@@ -40,10 +40,12 @@ using BetaSharp.Worlds.Colors;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
+using CommandLine;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Backends.GLFW;
 using Hexa.NET.ImGui.Backends.OpenGL3;
 using Microsoft.Extensions.Logging;
+using Silk.NET.Core.Native;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
@@ -162,6 +164,8 @@ public partial class BetaSharp :
     private readonly LavaSprite _textureLavaFX = new();
     private readonly DebugTelemetry _debugTelemetry = new();
 
+    private readonly CMDOptions _cmdOptions;
+
     private readonly string _serverName;
     private readonly int _serverPort;
     private readonly bool _hideQuitButton;
@@ -194,13 +198,14 @@ public partial class BetaSharp :
 
     #region Initialization & Lifecycle
 
-    public BetaSharp(int width, int height, bool isFullscreen)
+    public BetaSharp(CMDOptions opts)
     {
         _loadingScreen = new LoadingScreenRenderer(this);
-        _tempDisplayHeight = height;
-        _fullscreen = isFullscreen;
-        DisplayWidth = width;
-        DisplayHeight = height;
+        _tempDisplayHeight = opts.WindowHeight;
+        _fullscreen = opts.Fullscreen;
+        _cmdOptions = opts;
+        DisplayWidth = opts.WindowWidth;
+        DisplayHeight = opts.WindowHeight;
     }
 
     public void StartGame()
@@ -454,7 +459,7 @@ public partial class BetaSharp :
 
         FramebufferManager = new FramebufferManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
 
-        EntityRenderDispatcher.Instance.SkinManager.RequestDownload(Session.username, true);
+        EntityRenderDispatcher.Instance.SkinManager.RequestDownload(Session.Username, true);
     }
 
     private void LoadVersion()
@@ -1854,39 +1859,58 @@ public partial class BetaSharp :
     #endregion
 
     #region Application Entry Point
+    public class CMDOptions
+    {
+        [Option('n', "username", Required = false, HelpText = "Player name.", Default = null)]
+        public string? Username { get; set; }
+
+        [Option('t', "token", Required = false, HelpText = "Session token, '-' for no account.", Default = "-")]
+        public string SessionToken { get; set; }
+
+        [Option('w', "width", Required = false, HelpText = "Window width.", Default = 850)]
+        public int WindowWidth { get; set; }
+
+        [Option('h', "height", Required = false, HelpText = "Window height.", Default = 480)]
+        public int WindowHeight { get; set; }
+
+        [Option('f', "fullscreen", Required = false, HelpText = "Start as fullscreen.")]
+        public bool Fullscreen { get; set; }
+
+        public Session Session => new(Username is null ? $"Player{Random.Shared.Next()}" : Username, SessionToken);
+    }
 
     public static void Startup(string[] args)
     {
-        (string Name, string Session) result = args.Length switch
-        {
-            0 => ($"Player{Random.Shared.Next()}", "-"),
-            1 => (args[0], "-"),
-            _ => (args[0], args[1]),
-        };
+        var result = new Parser((set) =>
+            {
+                set.AutoHelp = true;
+            })
+            .ParseArguments<CMDOptions>(args);
 
-        PlayerNameValidator.Validate(result.Name);
+        result.MapResult(
+            (CMDOptions opts) =>
+            {
+                StartMainThread(opts);
+                return 0;
+            },
+            errs => 1
+        );
 
-        StartMainThread(result.Name, result.Session);
     }
 
-    private static void StartMainThread(string? playerName, string? sessionToken)
+    private static void StartMainThread(CMDOptions opts)
     {
+        Session session = opts.Session;
+        PlayerNameValidator.Validate(session.Username);
+
         Thread.CurrentThread.Name = "BetaSharp Main Thread";
 
-        BetaSharp game = new(850, 480, false);
+        BetaSharp game = new(opts);
+        game.Session = session;
 
-        if (playerName != null && sessionToken != null)
+        if (opts.SessionToken == "-")
         {
-            game.Session = new Session(playerName, sessionToken);
-
-            if (sessionToken == "-")
-            {
-                HasPaidCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            }
-        }
-        else
-        {
-            throw new Exception("Player name and session token were not provided!");
+            HasPaidCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         }
 
         game.Run();

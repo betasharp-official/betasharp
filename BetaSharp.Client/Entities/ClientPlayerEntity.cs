@@ -26,7 +26,7 @@ public class ClientPlayerEntity : EntityPlayer
     {
         Game = game;
         DimensionId = dimensionId;
-        Name = session.username;
+        Name = session.Username;
     }
 
     public override EntityType Type => EntityRegistry.Player;
