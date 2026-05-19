@@ -80,6 +80,11 @@ public class Connection
             this.disconnectReasonArgs = disconnectReasonArgs;
             open = false;
 
+            foreach (var packet in _sendQueue)
+            {
+                WritePacket(packet);
+            }
+
             try
             {
                 _networkStream?.Close();
@@ -191,26 +196,13 @@ public class Connection
             try
             {
                 ArgumentNullException.ThrowIfNull(_networkStream);
-                Packet? packet;
-                bool wrotePacket = false;
 
-                while (_sendQueue.TryDequeue(out packet))
+                while (_sendQueue.TryDequeue(out var packet))
                 {
-                    int pSize = packet.Size();
-                    Packet.Write(packet, _networkStream);
-                    BytesWritten += pSize;
-                    PacketsWritten++;
-                    wrotePacket = true;
+                    WritePacket(packet);
                 }
 
-                if (wrotePacket)
-                {
-                    _networkStream.Flush();
-                }
-                else
-                {
-                    await Task.Delay(1);
-                }
+                await Task.Delay(1);
             }
             catch (Exception exception)
             {
@@ -221,5 +213,17 @@ public class Connection
                 break;
             }
         }
+    }
+
+    private void WritePacket(Packet packet)
+    {
+        ArgumentNullException.ThrowIfNull(_networkStream);
+
+        Packet.Write(packet, _networkStream);
+
+        BytesWritten += packet.Size();
+        PacketsWritten++;
+
+        _networkStream.Flush();
     }
 }
