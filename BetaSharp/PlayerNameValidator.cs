@@ -16,6 +16,7 @@ public static class PlayerNameValidator
         if (name is null) throw InvalidPlayerNameException.NameNull();
         string trimmed = name.Trim();
         if (trimmed.Length == 0) throw InvalidPlayerNameException.NameEmpty();
+        if (trimmed.Length < 3) throw InvalidPlayerNameException.TooShort();
         if (trimmed.Length != name.Length) throw InvalidPlayerNameException.TrimDifferent();
         if (trimmed.Length > MaxLength) throw InvalidPlayerNameException.TooLong();
         if (ContainsIllegalCharacters(trimmed)) throw InvalidPlayerNameException.InvalidChar();

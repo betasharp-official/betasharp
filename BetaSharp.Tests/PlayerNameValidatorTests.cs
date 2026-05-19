@@ -45,6 +45,13 @@ public class PlayerNameValidatorTests
     }
 
     [Fact]
+    public void Validate_throws_on_too_short()
+    {
+        InvalidPlayerNameException ex = Assert.Throws<InvalidPlayerNameException>(() => PlayerNameValidator.Validate("A"));
+        Assert.Equal(InvalidPlayerNameException.TooShort().Message, ex.Message);
+    }
+
+    [Fact]
     public void Validate_throws_on_leading_whitespace()
     {
         InvalidPlayerNameException ex = Assert.Throws<InvalidPlayerNameException>(() => PlayerNameValidator.Validate(" x"));
