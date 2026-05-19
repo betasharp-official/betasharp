@@ -54,14 +54,14 @@ public class PlayerNameValidatorTests
     [Fact]
     public void Validate_throws_on_leading_whitespace()
     {
-        InvalidPlayerNameException ex = Assert.Throws<InvalidPlayerNameException>(() => PlayerNameValidator.Validate(" x"));
+        InvalidPlayerNameException ex = Assert.Throws<InvalidPlayerNameException>(() => PlayerNameValidator.Validate(" xxx"));
         Assert.Equal(InvalidPlayerNameException.TrimDifferent().Message, ex.Message);
     }
 
     [Fact]
     public void Validate_throws_on_trailing_whitespace()
     {
-        InvalidPlayerNameException ex = Assert.Throws<InvalidPlayerNameException>(() => PlayerNameValidator.Validate("x "));
+        InvalidPlayerNameException ex = Assert.Throws<InvalidPlayerNameException>(() => PlayerNameValidator.Validate("xxx "));
         Assert.Equal(InvalidPlayerNameException.TrimDifferent().Message, ex.Message);
     }
 
