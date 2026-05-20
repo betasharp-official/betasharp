@@ -29,4 +29,7 @@ void main()
         }
         FragColor = result;
     }
+
+    // restore lost transparency
+    FragColor.a *= 2;
 }

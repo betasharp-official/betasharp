@@ -14,7 +14,7 @@ uniform float u_CloudScale;
 const int minParalax = 4;
 const int extraParalax = 32;
 const int TextSize = 256;
-const float CloudHeight = 2.0;
+const float CloudHeight = 4.0;
 const float ScaledTextSize = CloudHeight / TextSize;
 const float shadow = 0.66;
 

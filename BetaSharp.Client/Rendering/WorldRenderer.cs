@@ -24,6 +24,8 @@ namespace BetaSharp.Client.Rendering;
 
 public class WorldRenderer : IWorldEventListener
 {
+    private const int CloudsRenderDistance = 128;
+
     public int CountEntitiesTotal { get; private set; }
     public int CountEntitiesRendered { get; private set; }
     public int CountEntitiesHidden { get; private set; }
@@ -48,6 +50,7 @@ public class WorldRenderer : IWorldEventListener
     private readonly int _cloudShaderProjLoc;
     private readonly int _cloudShaderTexMatLoc;
     private Vector3D<float> _fogColor;
+    private int _cloudsQuality = -1;
 
     public WorldRenderer(BetaSharp gameInstance, TextureManager textureManager)
     {
@@ -103,8 +106,8 @@ public class WorldRenderer : IWorldEventListener
 
         tessellator.draw();
         GLManager.GL.EndList();
-        if (_game.Options.CloudsQuality <= 0) BuildCloudDisplayListsLegacy();
-        else if (_game.Options.CloudsQuality > 1) BuildCloudDisplayLists();
+
+        OnCloudsQualityChanged();
 
         _skyShader = new Shader(AssetManager.Instance.getAsset("shaders/sky.vert").GetTextContent(), AssetManager.Instance.getAsset("shaders/sky.frag").GetTextContent());
         _skyShaderMvLoc = _skyShader.GetUniformLocation("u_ModelView");
@@ -114,6 +117,18 @@ public class WorldRenderer : IWorldEventListener
         _cloudShaderMvLoc = _cloudShader.GetUniformLocation("u_ModelView");
         _cloudShaderProjLoc = _cloudShader.GetUniformLocation("u_Projection");
         _cloudShaderTexMatLoc = _cloudShader.GetUniformLocation("u_TextureMatrix");
+    }
+
+    private void OnCloudsQualityChanged()
+    {
+        if (_cloudsQuality == _game.Options.CloudsQuality) return;
+        if (_cloudsQuality == -1 || _game.Options.CloudsQuality == 0 || _game.Options.CloudsQuality == 2)
+        {
+            if (_game.Options.CloudsQuality <= 0) BuildCloudDisplayListsLegacy();
+            else if (_game.Options.CloudsQuality > 1) BuildCloudDisplayLists();
+        }
+
+        _cloudsQuality = _game.Options.CloudsQuality;
     }
 
     public void SetFogColor(float r, float g, float b) => _fogColor = new(r, g, b);
@@ -189,6 +204,7 @@ public class WorldRenderer : IWorldEventListener
             return;
         }
 
+        OnCloudsQualityChanged();
         double viewX = view.LastTickX + (view.X - view.LastTickX) * partialTicks;
         double viewY = view.LastTickY + (view.Y - view.LastTickY) * partialTicks;
         double viewZ = view.LastTickZ + (view.Z - view.LastTickZ) * partialTicks;
@@ -471,25 +487,15 @@ public class WorldRenderer : IWorldEventListener
         GLManager.GL.NewList((uint)_glCloudsList, GLEnum.Compile);
         tessellator.startDrawingQuads();
         float uvScale = 1.0F / 256.0F;
-        byte tileSize = 8;
+        byte tileSize = CloudsRenderDistance;
+        float tile = tileSize * uvScale;
         byte cloudRadius = 3;
 
-        for (int tileX = -cloudRadius + 1; tileX <= cloudRadius; ++tileX)
-        {
-            for (int tileZ = -cloudRadius + 1; tileZ <= cloudRadius; ++tileZ)
-            {
-                float uvX = tileX * tileSize;
-                float uvZ = tileZ * tileSize;
-                float x = uvX;
-                float z = uvZ;
-
                 tessellator.setNormal(0.0F, -1.0F, 0.0F);
-                tessellator.addVertexWithUV((x + 0.0F), 0.0, (z + tileSize), (uvX * uvScale), ((uvZ + tileSize) * uvScale));
-                tessellator.addVertexWithUV((x + tileSize), 0.0, (z + tileSize), ((uvX + tileSize) * uvScale), ((uvZ + tileSize) * uvScale));
-                tessellator.addVertexWithUV((x + tileSize), 0.0, (z + 0.0F), ((uvX + tileSize) * uvScale), ((uvZ + 0.0F) * uvScale));
-                tessellator.addVertexWithUV((x + 0.0F), 0.0, (z + 0.0F), (uvX * uvScale), ((uvZ + 0.0F) * uvScale));
-            }
-        }
+                tessellator.addVertexWithUV(0, 0.0, tileSize, 0, tile);
+                tessellator.addVertexWithUV(tileSize, 0.0, tileSize, tile, tile);
+                tessellator.addVertexWithUV(tileSize, 0.0, 0, tile, 0);
+                tessellator.addVertexWithUV(0, 0.0, 0, 0, 0);
 
         tessellator.draw();
         GLManager.GL.EndList();
@@ -621,8 +627,8 @@ public class WorldRenderer : IWorldEventListener
         const float textureScale = 1 / 256f;
         float textureOffsetU = MathHelper.Floor(cloudOffsetX) * textureScale;
         float textureOffsetV = MathHelper.Floor(cloudOffsetZ) * textureScale;
-        float subCloudOffsetX = (float)(cloudOffsetX - MathHelper.Floor(cloudOffsetX));
-        float subCloudOffsetZ = (float)(cloudOffsetZ - MathHelper.Floor(cloudOffsetZ));
+        float subCloudOffsetX = (float)(cloudOffsetX - MathHelper.Floor(cloudOffsetX)) + (CloudsRenderDistance / 2);
+        float subCloudOffsetZ = (float)(cloudOffsetZ - MathHelper.Floor(cloudOffsetZ)) + (CloudsRenderDistance / 2);
 
         _cloudShader.Bind();
         _cloudShader.SetUniform1("u_Texture", 0);
@@ -636,7 +642,6 @@ public class WorldRenderer : IWorldEventListener
 
         GLManager.GL.Scale(cloudScale, 1.0F, cloudScale);
         GLManager.GL.PushMatrix();
-        //GLManager.GL.Translate(0, cloudY, 0);
         GLManager.GL.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
 
         GLManager.GL.MatrixMode(GLEnum.Texture);
