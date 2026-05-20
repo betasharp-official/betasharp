@@ -48,10 +48,10 @@ internal class BlockReed : Block
         if (blockBelowId == id) return true;
 
         // valid block below
-        if (blockBelowId == GrassBlock.id ||
-            blockBelowId == Dirt.id ||
-            blockBelowId == Sand.id ||
-            blockBelowId == Gravel.id) return false;
+        if (blockBelowId != GrassBlock.id &&
+            blockBelowId != Dirt.id &&
+            blockBelowId != Sand.id &&
+            blockBelowId != Gravel.id) return false;
 
         // water adjacent
         return evt.World.Reader.GetMaterial(evt.X - 1, evt.Y - 1, evt.Z) == Material.Water ||
