@@ -297,6 +297,10 @@
         "folderInfo": "(Place texture pack files here)"
     },
     "tile": {
+        "tallgrass": {
+            "name": "Tallgrass",
+            "desc": ""
+        },
         "stone": {
             "name": "Stone",
             "desc": ""

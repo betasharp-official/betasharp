@@ -31,16 +31,34 @@ public class StatItemRow : UIElement
 
     public override void Render(UIRenderer renderer)
     {
+        if (Item.ITEMS[ItemId] == null) return;
+
         DrawBackground(renderer);
 
+        ItemStack itemStack = new ItemStack(ItemId, 1, 0);
+
         renderer.DrawRect(IconX, IconY, IconSize, IconSize, Color.BackgroundBlackAlpha);
-        renderer.DrawItem(new ItemStack(ItemId, 1, 0), IconX + 1, IconY + 1);
+        renderer.DrawItem(itemStack, IconX + 1, IconY + 1);
 
         // don't draw unlocalized names for now
-        string? name = TranslationStorage.Instance.TranslateKey($"tile.{Item.ITEMS[ItemId]?.getStatName().ToLower()}.name");
-        if (name != null && !name.Contains('.'))
+        string? tileName = itemStack.getItemName();
+
+        if (tileName.StartsWith("item."))
+            tileName = tileName.Replace("item.", "tile.");
+
+        string? name = TranslationStorage.Instance.TranslateKey($"{tileName}.name");
+
+        if (!string.IsNullOrWhiteSpace(name) && !name.Contains('.'))
         {
             renderer.DrawText(name, 28, TextY, Color.White);
+        }
+        else
+        {
+        #if DEBUG
+            renderer.DrawText($"{tileName} ({name})", 28, TextY, Color.White);
+        #else
+            renderer.DrawText("???", 28, TextY, Color.White);
+        #endif
         }
 
         float rightOffset = ComputedWidth - 10;

@@ -41,7 +41,6 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
         _btnItems = CreateTabButton(translationStorage.TranslateKey("stat.itemsButton"), Tab.Items);
 
         tabBar.AddChild(_btnGeneral);
-        tabBar.AddChild(_btnGeneral);
         tabBar.AddChild(_btnBlocks);
         tabBar.AddChild(_btnItems);
         Root.AddChild(tabBar);
@@ -114,6 +113,8 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
 
     private void PopulateGeneralStats(Panel list)
     {
+        TranslationStorage translationStorage = TranslationStorage.Instance;
+
         List<StatBase> stats = Stats.Stats.GeneralStats;
         for (int i = 0; i < stats.Count; i++)
         {
@@ -130,7 +131,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
             row.Style.Height = 22;
             if (i % 2 == 1) row.Style.BackgroundColor = new Color(255, 255, 255, 10);
 
-            row.AddChild(new Label { Text = stat.StatName, TextColor = Color.White });
+            row.AddChild(new Label { Text = translationStorage.TranslateKey(stat.StatName), TextColor = Color.White });
             row.AddChild(new Label { Text = formatted, TextColor = Color.White });
             list.AddChild(row);
         }
