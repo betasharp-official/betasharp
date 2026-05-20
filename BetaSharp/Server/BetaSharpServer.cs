@@ -59,7 +59,7 @@ public abstract class BetaSharpServer : ICommandOutput
 
     private volatile bool _isPaused;
 
-    private long _tickLenght = 50L;
+    private long _tickLength = 50L;
     private long _accumulatedTime;
 
     public float Tps
@@ -75,11 +75,11 @@ public abstract class BetaSharpServer : ICommandOutput
 
     public int TickRate
     {
-        get => (1000 / (int)_tickLenght);
+        get => (1000 / (int)_tickLength);
         set
         {
-            _tickLenght = 1000 / value;
-            _accumulatedTime %= _tickLenght;
+            _tickLength = 1000 / value;
+            _accumulatedTime %= _tickLength;
         }
     }
 
@@ -368,9 +368,9 @@ public abstract class BetaSharpServer : ICommandOutput
                         continue;
                     }
 
-                    while (_accumulatedTime >= _tickLenght && running)
+                    while (_accumulatedTime >= _tickLength && running)
                     {
-                        _accumulatedTime -= _tickLenght;
+                        _accumulatedTime -= _tickLength;
                         tickStopwatch.Restart();
                         Tick();
                         tickStopwatch.Stop();

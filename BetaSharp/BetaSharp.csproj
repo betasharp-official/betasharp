@@ -26,26 +26,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="shaders/chunk.vert" />
-    <EmbeddedResource Include="shaders/chunk.frag" />
+    <EmbeddedResource Include="shaders\**\*" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="BetaSharp.Tests" />
   </ItemGroup>
-
   <ItemGroup>
     <None Include="assets\**\*" CopyToOutputDirectory="Always" />
-
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="assets\lang\en_us.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="assets\lang\pt_br.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="assets\lang\pl_pl.json">
+    <None Update="assets\lang\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

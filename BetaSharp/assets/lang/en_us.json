@@ -172,6 +172,7 @@
     "options": {
         "off": "OFF",
         "on": "ON",
+        "disabled": "Disabled",
         "title": "Options",
         "controls": "Controls...",
         "keyboardControls": "Keyboard Controls...",
@@ -223,6 +224,16 @@
             "text": "Graphics",
             "fancy": "Fancy",
             "fast": "Fast"
+        },
+        "cloudsQuality": {
+            "text": "Clouds Quality",
+            "off": "No Clouds",
+            "legacy": "Old Clouds",
+            "2d": "2D Clouds",
+            "parallax": "Parallax %1$s"
+        },
+        "softClouds": {
+            "text": "Soft Clouds"
         },
         "guiScale": {
             "text": "GUI Scale",

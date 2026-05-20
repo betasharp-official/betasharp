@@ -11,42 +11,25 @@ public class FramebufferManager
 {
     private readonly Framebuffer _mainFbo;
     private readonly Shader _gammaShader;
+    private readonly Shader _blurShader;
     private readonly uint _vao;
     private readonly uint _vbo;
     private readonly GameOptions _options;
+
+    private uint _cloudFboId;
+    private uint _cloudTexId;
+    private uint _cloudDepthRboId;
+    private uint _pingPongFboId;
+    private uint _pingPongTexId;
 
     public FramebufferManager(int w, int h, GameOptions options)
     {
         _options = options;
         _mainFbo = new Framebuffer(w, h);
 
-        _gammaShader = new Shader(
-            @"#version 330 core
-                layout (location = 0) in vec2 aPos;
-                layout (location = 1) in vec2 aTexCoords;
-
-                out vec2 TexCoords;
-
-                void main()
-                {
-                    TexCoords = aTexCoords;
-                    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
-                }",
-            @"#version 330 core
-                out vec4 FragColor;
-
-                in vec2 TexCoords;
-
-                uniform sampler2D screenTexture;
-                uniform float gamma;
-
-                void main()
-                {
-                    vec4 col = texture(screenTexture, TexCoords);
-                    vec3 washedOutColor = pow(col.rgb, vec3(1.0 / gamma));
-                    FragColor = vec4(washedOutColor, col.a);
-                }"
-        );
+        string quadVert = AssetManager.Instance.getAsset("shaders/quad.vert").GetTextContent();
+        _gammaShader = new Shader(quadVert,AssetManager.Instance.getAsset("shaders/gamma.frag").GetTextContent());
+        _blurShader = new Shader(quadVert,AssetManager.Instance.getAsset("shaders/blur.frag").GetTextContent());
 
         float[] quadVertices = [
             -1.0f,  1.0f,  0.0f, 1.0f,
@@ -80,6 +63,8 @@ public class FramebufferManager
         unsafe { gl.VertexAttribPointer(1, 2, GLEnum.Float, false, 4 * sizeof(float), (void*)(2 * sizeof(float))); }
 
         gl.BindVertexArray(0);
+
+        CreateCloudFbos(w, h);
     }
 
     /// <summary>The OpenGL texture ID of the rendered frame. Valid after <see cref="End"/> is called.</summary>
@@ -111,6 +96,8 @@ public class FramebufferManager
         gl.Disable(GLEnum.DepthTest);
         gl.Clear(ClearBufferMask.ColorBufferBit);
 
+        gl.Disable(GLEnum.Blend);
+
         if (!SkipBlit)
         {
             // TODO: make indivdual post processing passes control their shaders.
@@ -134,11 +121,128 @@ public class FramebufferManager
         gl.Enable(GLEnum.DepthTest);
     }
 
+    /// <summary>Binds the cloud FBO for cloud rendering. Clouds rendered after this call are captured separately for blurring.</summary>
+    public void BeginCloudPass()
+    {
+        IGL gl = GLManager.GL;
+
+        // Copy scene depth into cloud FBO so clouds are occluded by terrain
+        gl.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _mainFbo.FboId);
+        gl.BindFramebuffer(FramebufferTarget.DrawFramebuffer, _cloudFboId);
+        gl.BlitFramebuffer(0, 0, _mainFbo.Width, _mainFbo.Height, 0, 0, _mainFbo.Width, _mainFbo.Height,
+            (uint)ClearBufferMask.DepthBufferBit, BlitFramebufferFilter.Nearest);
+
+        gl.BindFramebuffer(FramebufferTarget.Framebuffer, _cloudFboId);
+        gl.Viewport(0, 0, (uint)_mainFbo.Width, (uint)_mainFbo.Height);
+        gl.Clear(ClearBufferMask.ColorBufferBit);
+        gl.Enable(GLEnum.DepthTest);
+        gl.Disable(GLEnum.Blend);
+    }
+
+    /// <summary>Applies a separable Gaussian blur to the captured cloud layer and composites it over the main FBO.</summary>
+    public void EndCloudPass()
+    {
+        IGL gl = GLManager.GL;
+
+        // Horizontal blur: cloud FBO
+        gl.BindFramebuffer(FramebufferTarget.Framebuffer, _pingPongFboId);
+        gl.Viewport(0, 0, (uint)_mainFbo.Width, (uint)_mainFbo.Height);
+        _blurShader.Bind();
+        _blurShader.SetUniform1("u_Texture", 0);
+        _blurShader.SetUniform1("u_Horizontal", 1);
+        gl.ActiveTexture(GLEnum.Texture0);
+        gl.BindTexture(GLEnum.Texture2D, _cloudTexId);
+        gl.BindVertexArray(_vao);
+        gl.DrawArrays(GLEnum.Triangles, 0, 6);
+
+        // Vertical blur -> main FBO with premultiplied blend (soft glow)
+        _mainFbo.Bind();
+        gl.Viewport(0, 0, (uint)_mainFbo.Width, (uint)_mainFbo.Height);
+        _blurShader.SetUniform1("u_Horizontal", 0);
+        //gl.Enable(GLEnum.Blend);
+        gl.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        gl.DrawArrays(GLEnum.Triangles, 0, 6);
+
+        gl.BindVertexArray(0);
+        gl.Disable(GLEnum.Blend);
+        gl.UseProgram(0);
+        gl.Enable(GLEnum.DepthTest);
+    }
+
     public void Resize(int width, int height)
     {
         if (width > 0 && height > 0)
         {
             _mainFbo.Resize(width, height);
+            DestroyCloudFbos();
+            CreateCloudFbos(width, height);
         }
+    }
+
+    private void CreateCloudFbos(int w, int h)
+    {
+        IGL gl = GLManager.GL;
+        (_cloudFboId, _cloudTexId, _cloudDepthRboId) = CreateCloudCaptureFbo(gl, w, h);
+        (_pingPongFboId, _pingPongTexId) = CreateColorOnlyFbo(gl, w, h);
+    }
+
+    private void DestroyCloudFbos()
+    {
+        IGL gl = GLManager.GL;
+        if (_cloudFboId != 0) { gl.DeleteFramebuffer(_cloudFboId); _cloudFboId = 0; }
+        if (_cloudTexId != 0) { gl.DeleteTexture(_cloudTexId); _cloudTexId = 0; }
+        if (_cloudDepthRboId != 0) { gl.DeleteRenderbuffer(_cloudDepthRboId); _cloudDepthRboId = 0; }
+        if (_pingPongFboId != 0) { gl.DeleteFramebuffer(_pingPongFboId); _pingPongFboId = 0; }
+        if (_pingPongTexId != 0) { gl.DeleteTexture(_pingPongTexId); _pingPongTexId = 0; }
+    }
+
+    private static (uint fboId, uint texId, uint depthRboId) CreateCloudCaptureFbo(IGL gl, int w, int h)
+    {
+        uint fbo = gl.GenFramebuffer();
+        gl.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
+
+        uint tex = gl.GenTexture();
+        gl.BindTexture(GLEnum.Texture2D, tex);
+        unsafe
+        {
+            gl.TexImage2D(GLEnum.Texture2D, 0, (int)InternalFormat.Rgba8, (uint)w, (uint)h, 0, GLEnum.Rgba, GLEnum.UnsignedByte, null);
+        }
+        gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMinFilter, (int)TextureMinFilter.Linear);
+        gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMagFilter, (int)TextureMagFilter.Linear);
+        gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+        gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+        gl.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, tex, 0);
+
+        uint[] rboArr = new uint[1];
+        gl.GenRenderbuffers(rboArr);
+        uint depthRbo = rboArr[0];
+        gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, depthRbo);
+        gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.Depth24Stencil8, (uint)w, (uint)h);
+        gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthStencilAttachment, RenderbufferTarget.Renderbuffer, depthRbo);
+
+        gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        return (fbo, tex, depthRbo);
+    }
+
+    private static (uint fboId, uint texId) CreateColorOnlyFbo(IGL gl, int w, int h)
+    {
+        uint fbo = gl.GenFramebuffer();
+        gl.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
+
+        uint tex = gl.GenTexture();
+        gl.BindTexture(GLEnum.Texture2D, tex);
+        unsafe
+        {
+            gl.TexImage2D(GLEnum.Texture2D, 0, (int)InternalFormat.Rgba8, (uint)w, (uint)h, 0, GLEnum.Rgba, GLEnum.UnsignedByte, null);
+        }
+        gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMinFilter, (int)TextureMinFilter.Linear);
+        gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMagFilter, (int)TextureMagFilter.Linear);
+        gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+        gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+
+        gl.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, tex, 0);
+
+        gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        return (fbo, tex);
     }
 }

@@ -63,10 +63,10 @@ public readonly partial struct Color
         // remove "0x" hex header.
         if (colorStr.StartsWith("0x")) colorStr = colorStr.Substring(2);
 
-        int lenght = colorStr.Length;
-        if (lenght > 8) throw new ArgumentException($"Invalid json color format \"{colorStr}\"", nameof(colorStr));
+        int length = colorStr.Length;
+        if (length > 8) throw new ArgumentException($"Invalid json color format \"{colorStr}\"", nameof(colorStr));
 
-        Color color = lenght <= 6 ? FromRgb(Convert.ToUInt32(colorStr, 16)) : FromArgb(Convert.ToUInt32(colorStr, 16));
+        Color color = length <= 6 ? FromRgb(Convert.ToUInt32(colorStr, 16)) : FromArgb(Convert.ToUInt32(colorStr, 16));
         prop.SetValue(null, color);
     }
 }

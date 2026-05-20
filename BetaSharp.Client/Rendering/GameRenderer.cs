@@ -23,8 +23,8 @@ public class GameRenderer
     private readonly bool _cloudFog = false;
     private readonly BetaSharp _client;
     private float _viewDistance;
-    public HeldItemRenderer itemRenderer;
-    public CameraController cameraController;
+    public readonly HeldItemRenderer ItemRenderer;
+    public readonly CameraController CameraController;
     private int _ticks;
     private Entity _targetedEntity;
     private readonly MouseFilter _mouseFilterXAxis = new();
@@ -44,19 +44,19 @@ public class GameRenderer
     public GameRenderer(BetaSharp game)
     {
         _client = game;
-        itemRenderer = new HeldItemRenderer(game);
-        cameraController = new CameraController(game);
+        ItemRenderer = new HeldItemRenderer(game);
+        CameraController = new CameraController(game);
     }
 
-    public void updateCamera()
+    public void UpdateCamera()
     {
-        cameraController.UpdateCamera();
+        CameraController.UpdateCamera();
         ++_ticks;
-        itemRenderer.updateEquippedItem();
-        renderRain();
+        ItemRenderer.updateEquippedItem();
+        RenderRain();
     }
 
-    public void tick(float tickDelta)
+    public void Tick(float tickDelta)
     {
         if (_client.WorldRenderer != null)
         {
@@ -76,7 +76,7 @@ public class GameRenderer
             return;
         }
 
-        double reachDistance = (double)_client.PlayerController.GetBlockReachDistance();
+        double reachDistance = _client.PlayerController.GetBlockReachDistance();
         _client.ObjectMouseOver = _client.Camera.RayTrace(reachDistance, tickDelta);
         Vec3D cameraPosition = _client.Camera.GetPosition(tickDelta);
 
@@ -95,16 +95,15 @@ public class GameRenderer
         _targetedEntity = null;
 
         float searchMargin = 1.0F;
-        List<Entity> entities = _client.World.Entities.GetEntities(_client.Camera, _client.Camera.BoundingBox.Stretch(lookVec.x * reachDistance, lookVec.y * reachDistance, lookVec.z * reachDistance).Expand((double)searchMargin, (double)searchMargin, (double)searchMargin));
+        List<Entity> entities = _client.World.Entities.GetEntities(_client.Camera, _client.Camera.BoundingBox.Stretch(lookVec.x * reachDistance, lookVec.y * reachDistance, lookVec.z * reachDistance).Expand(searchMargin, searchMargin, searchMargin));
 
         double closestDistance = 0.0D;
-        for (int i = 0; i < entities.Count; ++i)
+        foreach (var ent in entities)
         {
-            Entity ent = entities[i];
             if (ent.HasCollision)
             {
                 float targetingMargin = ent.TargetingMargin;
-                Box box = ent.BoundingBox.Expand((double)targetingMargin, (double)targetingMargin, (double)targetingMargin);
+                Box box = ent.BoundingBox.Expand(targetingMargin, targetingMargin, targetingMargin);
                 HitResult hit = box.Raycast(cameraPosition, targetVec);
 
                 if (box.Contains(cameraPosition))
@@ -134,30 +133,30 @@ public class GameRenderer
     }
 
 
-    private void renderWorld(float tickDelta)
+    private void RenderWorld(float tickDelta)
     {
         _viewDistance = _client.Options.renderDistance * 16.0f;
         GLManager.GL.MatrixMode(GLEnum.Projection);
         GLManager.GL.LoadIdentity();
 
-        if (cameraController.CameraZoom != 1.0D)
+        if (CameraController.CameraZoom != 1.0D)
         {
-            GLManager.GL.Translate((float)cameraController.CameraYaw, (float)-cameraController.CameraPitch, 0.0F);
-            GLManager.GL.Scale(cameraController.CameraZoom, cameraController.CameraZoom, 1.0D);
-            GLU.gluPerspective(cameraController.GetFov(tickDelta), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F, _viewDistance * 2.0F);
+            GLManager.GL.Translate((float)CameraController.CameraYaw, (float)-CameraController.CameraPitch, 0.0F);
+            GLManager.GL.Scale(CameraController.CameraZoom, CameraController.CameraZoom, 1.0D);
+            GLU.gluPerspective(CameraController.GetFov(tickDelta), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F, _viewDistance * 2.0F);
         }
         else
         {
-            GLU.gluPerspective(cameraController.GetFov(tickDelta), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F, _viewDistance * 2.0F);
+            GLU.gluPerspective(CameraController.GetFov(tickDelta), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F, _viewDistance * 2.0F);
         }
 
         GLManager.GL.MatrixMode(GLEnum.Modelview);
         GLManager.GL.LoadIdentity();
 
-        cameraController.ApplyDamageTiltEffect(tickDelta);
+        CameraController.ApplyDamageTiltEffect(tickDelta);
         if (_client.Options.ViewBobbing)
         {
-            cameraController.ApplyViewBobbing(tickDelta);
+            CameraController.ApplyViewBobbing(tickDelta);
         }
 
         float screenDistortion = _client.Player.LastScreenDistortion + (_client.Player.ChangeDimensionCooldown - _client.Player.LastScreenDistortion) * tickDelta;
@@ -170,49 +169,49 @@ public class GameRenderer
             GLManager.GL.Rotate(-(_ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
         }
 
-        cameraController.ApplyCameraTransform(tickDelta);
+        CameraController.ApplyCameraTransform(tickDelta);
     }
 
-    private void renderFirstPersonHand(float tickDelta)
+    private void RenderFirstPersonHand(float tickDelta)
     {
         GLManager.GL.MatrixMode(GLEnum.Projection);
         GLManager.GL.LoadIdentity();
-        if (cameraController.CameraZoom != 1.0D)
+        if (CameraController.CameraZoom != 1.0D)
         {
-            GLManager.GL.Translate((float)cameraController.CameraYaw, (float)-cameraController.CameraPitch, 0.0F);
-            GLManager.GL.Scale(cameraController.CameraZoom, cameraController.CameraZoom, 1.0D);
+            GLManager.GL.Translate((float)CameraController.CameraYaw, (float)-CameraController.CameraPitch, 0.0F);
+            GLManager.GL.Scale(CameraController.CameraZoom, CameraController.CameraZoom, 1.0D);
         }
 
-        GLU.gluPerspective(cameraController.GetFov(tickDelta, true), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F, _viewDistance * 2.0F);
+        GLU.gluPerspective(CameraController.GetFov(tickDelta, true), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F, _viewDistance * 2.0F);
         GLManager.GL.MatrixMode(GLEnum.Modelview);
         GLManager.GL.LoadIdentity();
 
         GLManager.GL.PushMatrix();
-        cameraController.ApplyDamageTiltEffect(tickDelta);
+        CameraController.ApplyDamageTiltEffect(tickDelta);
         if (_client.Options.ViewBobbing)
         {
-            cameraController.ApplyViewBobbing(tickDelta);
+            CameraController.ApplyViewBobbing(tickDelta);
         }
 
         if (_client.Options.CameraMode == CameraMode.FirstPerson && !_client.Camera.IsSleeping && !_client.Options.HideGUI)
         {
-            itemRenderer.renderItemInFirstPerson(tickDelta);
+            ItemRenderer.renderItemInFirstPerson(tickDelta);
         }
 
         GLManager.GL.PopMatrix();
         if (_client.Options.CameraMode == CameraMode.FirstPerson && !_client.Camera.IsSleeping)
         {
-            itemRenderer.renderOverlays(tickDelta);
-            cameraController.ApplyDamageTiltEffect(tickDelta);
+            ItemRenderer.renderOverlays(tickDelta);
+            CameraController.ApplyDamageTiltEffect(tickDelta);
         }
 
         if (_client.Options.ViewBobbing)
         {
-            cameraController.ApplyViewBobbing(tickDelta);
+            CameraController.ApplyViewBobbing(tickDelta);
         }
     }
 
-    public void onFrameUpdate(float tickDelta)
+    public void OnFrameUpdate(float tickDelta)
     {
         if (!Display.isActive())
         {
@@ -256,11 +255,12 @@ public class GameRenderer
                 yawDelta = _mouseFilterXAxis.Smooth(yawDelta, 0.05F * lookScale);
                 pitchDelta = _mouseFilterYAxis.Smooth(pitchDelta, 0.05F * lookScale);
             }
+
             _client.Player.ChangeLookDirection(yawDelta, pitchDelta * invertMultiplier);
         }
 
         bool zoomHeld = (_client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.scanCode)) || ControllerManager.IsZoomHeld();
-        cameraController.SetZoomState(zoomHeld, _client.Options.ZoomScale);
+        CameraController.SetZoomState(zoomHeld, _client.Options.ZoomScale);
 
         if (!_client.SkipRenderWorld)
         {
@@ -281,6 +281,7 @@ public class GameRenderer
                 scaledMouseX = (Mouse.getX() - vpOffsetX) * scaledWidth / _client.DisplayWidth;
                 scaledMouseY = scaledHeight - (Mouse.getY() - vpOffsetY) * scaledHeight / _client.DisplayHeight - 1;
             }
+
             int targetFps = 30 + (int)(_client.Options.LimitFramerate * 210.0f);
             bool desiredVSync = _client.Options.VSync && targetFps >= 240;
 
@@ -296,14 +297,14 @@ public class GameRenderer
             {
                 using (Profiler.Begin("RenderWorld"))
                 {
-                    renderFrame(tickDelta, 0L);
+                    RenderFrame(tickDelta, 0L);
                 }
 
                 using (Profiler.Begin("RenderGameOverlay"))
                 {
                     if (!_client.Options.HideGUI || _client.CurrentScreen != null)
                     {
-                        setupHudRender();
+                        SetupHudRender();
                         _client.HUD.Render(scaledMouseX, scaledMouseY, tickDelta);
                     }
                 }
@@ -315,13 +316,13 @@ public class GameRenderer
                 GLManager.GL.LoadIdentity();
                 GLManager.GL.MatrixMode(GLEnum.Modelview);
                 GLManager.GL.LoadIdentity();
-                setupHudRender();
+                SetupHudRender();
             }
 
             if (_client.CurrentScreen != null)
             {
                 GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
-                setupHudRender();
+                SetupHudRender();
                 _client.CurrentScreen.Render(scaledMouseX, scaledMouseY, tickDelta);
 
                 if (_client.IsControllerMode)
@@ -368,7 +369,7 @@ public class GameRenderer
         }
     }
 
-    public void renderFrame(float tickDelta, long time)
+    public void RenderFrame(float tickDelta, long time)
     {
         GLManager.GL.Enable(GLEnum.CullFace);
         GLManager.GL.Enable(GLEnum.DepthTest);
@@ -381,39 +382,40 @@ public class GameRenderer
         EntityLiving entity = _client.Camera;
         WorldRenderer worldRenderer = _client.WorldRenderer;
         ParticleManager particleManager = _client.ParticleManager;
-        double entX = entity.LastTickX + (entity.X - entity.LastTickX) * (double)tickDelta;
-        double entY = entity.LastTickY + (entity.Y - entity.LastTickY) * (double)tickDelta;
-        double entZ = entity.LastTickZ + (entity.Z - entity.LastTickZ) * (double)tickDelta;
+        double entX = entity.LastTickX + (entity.X - entity.LastTickX) * tickDelta;
+        double entY = entity.LastTickY + (entity.Y - entity.LastTickY) * tickDelta;
+        double entZ = entity.LastTickZ + (entity.Z - entity.LastTickZ) * tickDelta;
 
         using (Profiler.Begin("UpdateFog"))
         {
             GLManager.GL.Viewport(0, 0, (uint)_client.FramebufferManager.FramebufferWidth, (uint)_client.FramebufferManager.FramebufferHeight);
-            updateSkyAndFogColors(tickDelta);
+            UpdateSkyAndFogColors(tickDelta);
         }
+
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
         GLManager.GL.Enable(GLEnum.CullFace);
-        renderWorld(tickDelta);
+        RenderWorld(tickDelta);
         Frustum.Instance();
         if (_client.Options.renderDistance >= 8)
         {
-            applyFog(-1);
+            ApplyFog(-1);
             worldRenderer.RenderSky(tickDelta);
         }
 
         GLManager.GL.Enable(GLEnum.Fog);
-        applyFog(1);
+        ApplyFog(1);
 
         FrustrumCuller frustrumCuller = new();
         frustrumCuller.SetPosition(entX, entY, entZ);
 
-        applyFog(0);
+        ApplyFog(0);
         GLManager.GL.Enable(GLEnum.Fog);
         _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/terrain.png"));
         Lighting.turnOff();
 
         using (Profiler.Begin("SortAndRender"))
         {
-            worldRenderer.SortAndRender(entity, 0, (double)tickDelta, frustrumCuller);
+            worldRenderer.SortAndRender(entity, 0, tickDelta, frustrumCuller);
         }
 
         GLManager.GL.ShadeModel(GLEnum.Flat);
@@ -427,14 +429,14 @@ public class GameRenderer
         particleManager.renderSpecialParticles(entity, tickDelta);
 
         Lighting.turnOff();
-        applyFog(0);
+        ApplyFog(0);
 
         using (Profiler.Begin("RenderParticles"))
         {
             particleManager.renderParticles(entity, tickDelta);
         }
 
-        EntityPlayer entityPlayer = default;
+        EntityPlayer entityPlayer;
         if (_client.ObjectMouseOver.Type != HitResultType.MISS && entity.IsInFluid(Material.Water) && entity is EntityPlayer)
         {
             entityPlayer = (EntityPlayer)entity;
@@ -445,7 +447,7 @@ public class GameRenderer
         }
 
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-        applyFog(0);
+        ApplyFog(0);
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.Disable(GLEnum.CullFace);
         _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/terrain.png"));
@@ -462,7 +464,7 @@ public class GameRenderer
         GLManager.GL.DepthMask(true);
         GLManager.GL.Enable(GLEnum.CullFace);
         GLManager.GL.Disable(GLEnum.Blend);
-        if (!cameraController.IsZoomActive && entity is EntityPlayer && _client.ObjectMouseOver.Type != HitResultType.MISS && !entity.IsInFluid(Material.Water))
+        if (!CameraController.IsZoomActive && entity is EntityPlayer && _client.ObjectMouseOver.Type != HitResultType.MISS && !entity.IsInFluid(Material.Water))
         {
             entityPlayer = (EntityPlayer)entity;
             GLManager.GL.Disable(GLEnum.AlphaTest);
@@ -471,32 +473,33 @@ public class GameRenderer
             GLManager.GL.Enable(GLEnum.AlphaTest);
         }
 
-        renderSnow(tickDelta);
+        RenderSnow(tickDelta);
         GLManager.GL.Disable(GLEnum.Fog);
-        if (_targetedEntity != null)
-        {
-        }
+        if (_targetedEntity != null) { }
 
-        applyFog(0);
+        ApplyFog(0);
         GLManager.GL.Enable(GLEnum.Fog);
 
         if (_client.ShowChunkBorders)
         {
-            renderChunkBorders(tickDelta);
+            RenderChunkBorders(tickDelta);
         }
 
+        bool cloudBlurPass = _client.Options is { SoftClouds: true, CloudsQuality: >= 2 };
+        if (cloudBlurPass) _client.FramebufferManager.BeginCloudPass();
         worldRenderer.RenderClouds(tickDelta);
+        if (cloudBlurPass) _client.FramebufferManager.EndCloudPass();
         GLManager.GL.Disable(GLEnum.Fog);
-        applyFog(1);
+        ApplyFog(1);
 
-        if (!cameraController.IsZoomActive)
+        if (!CameraController.IsZoomActive)
         {
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
-            renderFirstPersonHand(tickDelta);
+            RenderFirstPersonHand(tickDelta);
         }
     }
 
-    private void renderChunkBorders(float tickDelta)
+    private void RenderChunkBorders(float tickDelta)
     {
         EntityLiving camera = _client.Camera;
         double camX = camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
@@ -591,7 +594,7 @@ public class GameRenderer
         GLManager.GL.Enable(GLEnum.Texture2D);
     }
 
-    private void renderRain()
+    private void RenderRain()
     {
         float rainGradient = _client.World.Environment.GetRainGradient(1.0F);
 
@@ -630,9 +633,9 @@ public class GameRenderer
                             ++validDropCount;
                             if (_random.NextInt(validDropCount) == 0)
                             {
-                                rainSoundX = (double)(sampleX + xOffset);
-                                rainSoundY = (double)(topSolidY + 0.1F) - Block.Blocks[blockBelowId].BoundingBox.MinY;
-                                rainSoundZ = (double)(sampleZ + zOffset);
+                                rainSoundX = (sampleX + xOffset);
+                                rainSoundY = (topSolidY + 0.1) - Block.Blocks[blockBelowId].BoundingBox.MinY;
+                                rainSoundZ = (sampleZ + zOffset);
                             }
 
                             _client.ParticleManager.AddRain(sampleX + xOffset, topSolidY + 0.1F - Block.Blocks[blockBelowId].BoundingBox.MinY, sampleZ + zOffset);
@@ -656,7 +659,7 @@ public class GameRenderer
         }
     }
 
-    protected void renderSnow(float tickDelta)
+    protected void RenderSnow(float tickDelta)
     {
         float rainGradient = _client.World.Environment.GetRainGradient(tickDelta);
         if (rainGradient > 0.0F)
@@ -673,9 +676,9 @@ public class GameRenderer
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
             GLManager.GL.AlphaFunc(GLEnum.Greater, 0.01F);
             _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/environment/snow.png"));
-            double renderX = camera.LastTickX + (camera.X - camera.LastTickX) * (double)tickDelta;
-            double renderY = camera.LastTickY + (camera.Y - camera.LastTickY) * (double)tickDelta;
-            double renderZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * (double)tickDelta;
+            double renderX = camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
+            double renderY = camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
+            double renderZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * tickDelta;
             int cameraYFloor = MathHelper.Floor(renderY);
             byte renderRadius = 10;
 
@@ -728,21 +731,21 @@ public class GameRenderer
                             float textureVOffset = ((_ticks & 511) + tickDelta) / 512.0F;
                             float textureUDrift = _random.NextFloat() + animationTime * 0.01F * (float)_random.NextGaussian();
                             float textureVDrift = _random.NextFloat() + animationTime * (float)_random.NextGaussian() * 0.001F;
-                            double dx = (double)(sampleX + 0.5F) - camera.X;
-                            double dz = (double)(sampleZ + 0.5F) - camera.Z;
+                            double dx = (sampleX + 0.5) - camera.X;
+                            double dz = (sampleZ + 0.5) - camera.Z;
                             float distanceFactor = MathHelper.Sqrt(dx * dx + dz * dz) / renderRadius;
                             tessellator.startDrawingQuads();
                             float brightness = world.GetLuminance(sampleX, minY, sampleZ);
                             GLManager.GL.Color4(brightness, brightness, brightness, ((1.0F - distanceFactor * distanceFactor) * 0.3F + 0.5F) * rainGradient);
                             tessellator.setTranslationD(-renderX * 1.0D, -renderY * 1.0D, -renderZ * 1.0D);
-                            tessellator.addVertexWithUV(sampleX + 0, maxY, sampleZ + 0.5D, (double)(0.0F * textureScroll + textureUDrift), (double)(maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
-                            tessellator.addVertexWithUV(sampleX + 1, maxY, sampleZ + 0.5D, (double)(1.0F * textureScroll + textureUDrift), (double)(maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
-                            tessellator.addVertexWithUV(sampleX + 1, maxRenderY, sampleZ + 0.5D, (double)(1.0F * textureScroll + textureUDrift), (double)(maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
-                            tessellator.addVertexWithUV(sampleX + 0, maxRenderY, sampleZ + 0.5D, (double)(0.0F * textureScroll + textureUDrift), (double)(maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 0, (double)(0.0F * textureScroll + textureUDrift), (double)(maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 1, (double)(1.0F * textureScroll + textureUDrift), (double)(maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, maxRenderY, sampleZ + 1, (double)(1.0F * textureScroll + textureUDrift), (double)(maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, maxRenderY, sampleZ + 0, (double)(0.0F * textureScroll + textureUDrift), (double)(maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 0, maxY, sampleZ + 0.5D, (0.0F * textureScroll + textureUDrift), (maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 1, maxY, sampleZ + 0.5D, (1.0F * textureScroll + textureUDrift), (maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 1, maxRenderY, sampleZ + 0.5D, (1.0F * textureScroll + textureUDrift), (maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 0, maxRenderY, sampleZ + 0.5D, (0.0F * textureScroll + textureUDrift), (maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 0, (0.0F * textureScroll + textureUDrift), (maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 1, (1.0F * textureScroll + textureUDrift), (maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxRenderY, sampleZ + 1, (1.0F * textureScroll + textureUDrift), (maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxRenderY, sampleZ + 0, (0.0F * textureScroll + textureUDrift), (maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
                             tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
                             tessellator.draw();
                         }
@@ -780,21 +783,21 @@ public class GameRenderer
                         {
                             _random.SetSeed(sampleX * sampleX * 3121 + sampleX * 45238971 + sampleZ * sampleZ * 418711 + sampleZ * 13761);
                             textureScroll = ((_ticks + sampleX * sampleX * 3121 + sampleX * 45238971 + sampleZ * sampleZ * 418711 + sampleZ * 13761 & 31) + tickDelta) / 32.0F * (3.0F + _random.NextFloat());
-                            double rainDx = (double)(sampleX + 0.5F) - camera.X;
-                            double rainDz = (double)(sampleZ + 0.5F) - camera.Z;
+                            double rainDx = (sampleX + 0.5) - camera.X;
+                            double rainDz = (sampleZ + 0.5) - camera.Z;
                             float rainDistanceFactor = MathHelper.Sqrt(rainDx * rainDx + rainDz * rainDz) / renderRadius;
                             tessellator.startDrawingQuads();
                             float rainBrightness = world.GetLuminance(sampleX, 128, sampleZ) * 0.85F + 0.15F;
                             GLManager.GL.Color4(rainBrightness, rainBrightness, rainBrightness, ((1.0F - rainDistanceFactor * rainDistanceFactor) * 0.5F + 0.5F) * rainGradient);
                             tessellator.setTranslationD(-renderX * 1.0D, -renderY * 1.0D, -renderZ * 1.0D);
-                            tessellator.addVertexWithUV(sampleX + 0, minY, sampleZ + 0.5D, (double)(0.0F * rainUvScale), (double)(minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
-                            tessellator.addVertexWithUV(sampleX + 1, minY, sampleZ + 0.5D, (double)(1.0F * rainUvScale), (double)(minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
-                            tessellator.addVertexWithUV(sampleX + 1, maxY, sampleZ + 0.5D, (double)(1.0F * rainUvScale), (double)(maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
-                            tessellator.addVertexWithUV(sampleX + 0, maxY, sampleZ + 0.5D, (double)(0.0F * rainUvScale), (double)(maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, minY, sampleZ + 0, (double)(0.0F * rainUvScale), (double)(minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, minY, sampleZ + 1, (double)(1.0F * rainUvScale), (double)(minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 1, (double)(1.0F * rainUvScale), (double)(maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
-                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 0, (double)(0.0F * rainUvScale), (double)(maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 0, minY, sampleZ + 0.5D, 0, (minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 1, minY, sampleZ + 0.5D, rainUvScale, (minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 1, maxY, sampleZ + 0.5D, rainUvScale, (maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 0, maxY, sampleZ + 0.5D, 0, (maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, minY, sampleZ + 0, 0, (minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, minY, sampleZ + 1, rainUvScale, (minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 1, rainUvScale, (maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
+                            tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 0, 0, (maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
                             tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
                             tessellator.draw();
                         }
@@ -808,7 +811,7 @@ public class GameRenderer
         }
     }
 
-    public void setupHudRender()
+    public void SetupHudRender()
     {
         ScaledResolution sr = new(_client.Options, _client.DisplayWidth, _client.DisplayHeight);
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
@@ -853,12 +856,12 @@ public class GameRenderer
         }
     }
 
-    private void updateSkyAndFogColors(float tickDelta)
+    private void UpdateSkyAndFogColors(float tickDelta)
     {
         World world = _client.World;
         EntityLiving camera = _client.Camera;
         float fogBlend = 4.0F / _client.Options.renderDistance;
-        fogBlend = System.Math.Clamp(fogBlend, 0.25f, 1.0f);
+        fogBlend = Math.Clamp(fogBlend, 0.25f, 1.0f);
         fogBlend = 1.0F - (float)Math.Pow(fogBlend, 0.25D);
         Vector3D<double> skyColor = world.Environment.GetSkyColor(_client.Camera, tickDelta);
         float skyRed = (float)skyColor.X;
@@ -912,7 +915,7 @@ public class GameRenderer
             _fogColorBlue = 0.0F;
         }
 
-        fogBrightness = cameraController.LastViewBob + (cameraController.ViewBob - cameraController.LastViewBob) * tickDelta;
+        fogBrightness = CameraController.LastViewBob + (CameraController.ViewBob - CameraController.LastViewBob) * tickDelta;
         _fogColorRed *= fogBrightness;
         _fogColorGreen *= fogBrightness;
         _fogColorBlue *= fogBrightness;
@@ -920,11 +923,12 @@ public class GameRenderer
         GLManager.GL.ClearColor(_fogColorRed, _fogColorGreen, _fogColorBlue, 0.0F);
     }
 
-    private void applyFog(int mode)
+    private void ApplyFog(int mode)
     {
         EntityLiving camera = _client.Camera;
-        GLManager.GL.Fog(GLEnum.FogColor, updateFogColorBuffer(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0F));
+        GLManager.GL.Fog(GLEnum.FogColor, UpdateFogColorBuffer(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0F));
         _client.WorldRenderer.ChunkRenderer.SetFogColor(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
+        _client.WorldRenderer.SetFogColor(_fogColorRed, _fogColorGreen, _fogColorBlue);
         GLManager.GL.Normal3(0.0F, -1.0F, 0.0F);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         if (_cloudFog)
@@ -975,7 +979,7 @@ public class GameRenderer
         GLManager.GL.ColorMaterial(GLEnum.Front, GLEnum.Ambient);
     }
 
-    private float[] updateFogColorBuffer(float red, float green, float blue, float alpha)
+    private float[] UpdateFogColorBuffer(float red, float green, float blue, float alpha)
     {
         _fogColorBuffer[0] = red;
         _fogColorBuffer[1] = green;

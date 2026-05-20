@@ -116,5 +116,8 @@ public unsafe interface IGL
     Silk.NET.OpenGL.GLEnum CheckFramebufferStatus(FramebufferTarget target);
     void DeleteFramebuffer(uint framebuffer);
     void DeleteRenderbuffer(uint renderbuffer);
+    void BlitFramebuffer(int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0, int dstX1, int dstY1, uint mask, BlitFramebufferFilter filter);
     void ActiveTexture(GLEnum texture);
+    void BeginExternalShader(int mvLoc, int projLoc, int texMatLoc = -1);
+    void EndExternalShader();
 }

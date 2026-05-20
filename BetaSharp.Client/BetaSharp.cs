@@ -691,7 +691,7 @@ public partial class BetaSharp :
 
                         using (Profiler.Begin("Render"))
                         {
-                            GameRenderer.onFrameUpdate(Timer.renderPartialTicks);
+                            GameRenderer.OnFrameUpdate(Timer.renderPartialTicks);
                         }
 
                         TextureStats.EndFrame();
@@ -860,7 +860,7 @@ public partial class BetaSharp :
         }
 
         GameRenderer.UpdateTargetedEntity(1.0F);
-        GameRenderer.tick(partialTicks);
+        GameRenderer.Tick(partialTicks);
 
         using (Profiler.Begin("UpdatePlayerController"))
         {
@@ -936,7 +936,7 @@ public partial class BetaSharp :
             {
                 if (!IsGamePaused)
                 {
-                    GameRenderer.updateCamera();
+                    GameRenderer.UpdateCamera();
                 }
             }
 
@@ -1238,7 +1238,7 @@ public partial class BetaSharp :
                     }
                     else if (selectedItem.Count != itemCountBefore)
                     {
-                        GameRenderer.itemRenderer.ResetEquippedProgress();
+                        GameRenderer.ItemRenderer.ResetEquippedProgress();
                     }
                 }
             }
@@ -1248,7 +1248,7 @@ public partial class BetaSharp :
                 ItemStack selectedItem = Player.Inventory.ItemInHand;
                 if (selectedItem != null && PlayerController.SendUseItem(Player, World, selectedItem))
                 {
-                    GameRenderer.itemRenderer.ResetEquippedProgress();
+                    GameRenderer.ItemRenderer.ResetEquippedProgress();
                 }
             }
         }

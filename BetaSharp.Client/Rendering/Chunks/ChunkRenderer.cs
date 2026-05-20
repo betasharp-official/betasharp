@@ -284,6 +284,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _fogColor = new(r, g, b, a);
     }
 
+    public float FogStart => _fogStart;
+    public float FogEnd => _fogEnd;
+
     public void RenderTransparent(ChunkRenderParams renderParams)
     {
         _chunkShader.Bind();

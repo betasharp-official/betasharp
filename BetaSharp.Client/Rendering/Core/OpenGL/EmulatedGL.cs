@@ -69,6 +69,11 @@ public unsafe class EmulatedGL : LegacyGL
 
     private readonly DisplayListCompiler _displayLists;
 
+    private bool _externalShaderActive;
+    private int _externalMvUniform = -1;
+    private int _externalProjUniform = -1;
+    private int _externalTexMatUniform = -1;
+
     public EmulatedGL(GL gl) : base(gl)
     {
         _immediateVao = gl.GenVertexArray();
@@ -97,6 +102,29 @@ public unsafe class EmulatedGL : LegacyGL
 
     internal void ActivateShader()
     {
+        if (_externalShaderActive)
+        {
+            if (_dirtyState.DirtyModelView && _externalMvUniform >= 0)
+            {
+                Matrix4X4<float> m = _modelViewStack.Top;
+                unsafe { SilkGL.UniformMatrix4(_externalMvUniform, 1, false, (float*)&m); }
+                _dirtyState.DirtyModelView = false;
+            }
+            if (_dirtyState.DirtyProjection && _externalProjUniform >= 0)
+            {
+                Matrix4X4<float> m = _projectionStack.Top;
+                unsafe { SilkGL.UniformMatrix4(_externalProjUniform, 1, false, (float*)&m); }
+                _dirtyState.DirtyProjection = false;
+            }
+            if (_dirtyState.DirtyTextureMatrix && _externalTexMatUniform >= 0)
+            {
+                Matrix4X4<float> m = _textureStack.Top;
+                unsafe { SilkGL.UniformMatrix4(_externalTexMatUniform, 1, false, (float*)&m); }
+                _dirtyState.DirtyTextureMatrix = false;
+            }
+            return;
+        }
+
         if (_currentProgram != _shader.Program)
         {
             SilkGL.UseProgram(_shader.Program);
@@ -493,7 +521,7 @@ public unsafe class EmulatedGL : LegacyGL
             return;
         }
 
-        if (_currentProgram == 0 || _currentProgram == _shader.Program)
+        if (_currentProgram == 0 || _currentProgram == _shader.Program || _externalShaderActive)
         {
             ActivateShader();
         }
@@ -544,6 +572,22 @@ public unsafe class EmulatedGL : LegacyGL
                 System.Buffer.MemoryCopy(&m, dst, 64, 64);
             }
         }
+    }
+
+    public override void BeginExternalShader(int mvLoc, int projLoc, int texMatLoc = -1)
+    {
+        _externalShaderActive = true;
+        _externalMvUniform = mvLoc;
+        _externalProjUniform = projLoc;
+        _externalTexMatUniform = texMatLoc;
+        _dirtyState.DirtyModelView = true;
+        _dirtyState.DirtyProjection = true;
+        _dirtyState.DirtyTextureMatrix = true;
+    }
+
+    public override void EndExternalShader()
+    {
+        _externalShaderActive = false;
     }
 
     public override void LineWidth(float width)

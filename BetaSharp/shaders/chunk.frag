@@ -16,7 +16,7 @@ uniform int fogMode;
 uniform bool chunkFadeEnabled;
 uniform float fadeProgress;
 
-void main() 
+void main()
 {
     vec4 texColor = texture(textureSampler, texCoord);
     vec4 finalColor = texColor * vertexColor;
@@ -25,20 +25,20 @@ void main()
     {
         discard;
     }
-    
+
     float fogFactor;
-    
-    if (fogMode == 0) 
+
+    if (fogMode == 0)
     {
         fogFactor = (fogEnd - fogDistance) / (fogEnd - fogStart);
-    } 
-    else 
+    }
+    else
     {
         fogFactor = exp(-fogDensity * fogDistance);
     }
-    
+
     fogFactor = clamp(fogFactor, 0.0, 1.0);
-    
+
     vec4 fogAppliedColor = mix(fogColor, finalColor, fogFactor);
 
     if (chunkFadeEnabled)
