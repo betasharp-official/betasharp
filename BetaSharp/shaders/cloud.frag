@@ -26,7 +26,6 @@ uniform int u_Quality;
 
 void main()
 {
-    vec4 color = v_Color;
     vec3 normal = v_LocalPos + u_CloudOffset;
 
     float dist = length(normal.xz) * u_CloudScale / 2.0;
@@ -42,27 +41,9 @@ void main()
     }
     else
     {
-        // handel cases when the effect brakes
-        if (normal.y > -3 && normal.y < 1) {
-            FragColor = texture(u_Texture, v_TexCoord - normal.xz * (1.0 / TextSize));
-            if (FragColor.a >= 0.1) {
-                // player inside a cloud
-                FragColor *= v_Color;
-                if (normal.y < 0) return;
-                normal.y *= 0.5;
-                FragColor.rgb = FragColor.rgb * ((1 - normal.y) + shadow * (normal.y));
-                return;
-            } else {
-                // player outide cloud but is same height.
-                // as the effect breaks down at this height.
-                if (normal.y < -1) color.a *= (-normal.y - 1) * 0.5;
-                else if (normal.y < 0) discard;
-                else color.a *= normal.y;
-            }
-        }
-
         texColor = texture(u_Texture, v_TexCoord);
         float len = length(normal);
+        if (len < 1.0) len = 1.0;
 
         if (texColor.a < 0.1) {
 
@@ -158,6 +139,6 @@ void main()
         }
     }
 
-    FragColor = texColor * color;
+    FragColor = texColor * v_Color;
     FragColor.a *= fogFactor;
 }
