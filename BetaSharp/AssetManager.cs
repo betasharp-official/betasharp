@@ -211,6 +211,7 @@ public class AssetManager
         defineAsset("gui/unknown_pack.png", AssetType.Binary);
         defineAsset("gui/Pointer.png", AssetType.Binary);
         defineAsset("gui/Globe.png", AssetType.Binary);
+        defineAsset("gui/ModDefaultIcon.png", AssetType.Binary);
 
         defineAsset("gui/Logo.png", AssetType.Binary);
         
@@ -392,6 +393,16 @@ public class AssetManager
         _logger.LogInformation($"Loaded {_assetsToLoad.Count} assets");
 
         _assetsToLoad.Clear();
+    }
+
+    public void AddBinaryAsset(string path, byte[] data)
+    {
+        _loadedAssets[path] = new(data);
+    }
+
+    public void AddTextAsset(string path, string data)
+    {
+        _loadedAssets[path] = new(data);
     }
 
     private void defineAsset(string assetPath, AssetType type)

@@ -5,6 +5,8 @@ namespace BetaSharp;
 public partial class Namespace
 {
     public static readonly Namespace BetaSharp = new(0, "betasharp");
+    private static int _nextIndex = 1;
+
     private static readonly List<Namespace> s_idToName = [BetaSharp];
 
     private static readonly Dictionary<string, int> s_nameToId = new()
@@ -71,6 +73,16 @@ public partial class Namespace
         }
 
         return null;
+    }
+
+    public static Namespace Add(string name)
+    {
+        Namespace ns = new(_nextIndex, name);
+        s_idToName.Add(ns);
+        s_nameToId.Add(name, _nextIndex);
+        _nextIndex++;
+
+        return ns;
     }
 
     public static List<Namespace> FindNamespaces(string name, bool allowShortName)

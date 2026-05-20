@@ -17,7 +17,8 @@ public class MainMenuScreen(
     ISingleplayerHost singleplayerHost,
     ClientNetworkContext networkContext,
     TexturePacks texturePackList,
-    Action shutdown) : UIScreen(context)
+    Action shutdown,
+    BetaSharp game) : UIScreen(context)
 {
     private const float LogoTopPadding = 30f;
 
@@ -69,6 +70,12 @@ public class MainMenuScreen(
         }
         Root.AddChild(btnMultiplayer);
 
+        Button btnMods = CreateButton();
+        btnMods.Text = translator.TranslateKey("mods.text");
+        btnMods.OnClick += (e) => Context.Navigator.Navigate(new ModsScreen(Context, game.Mods));
+        btnMods.Style.MarginBottom = 4;
+        Root.AddChild(btnMods);
+
         // Options and Quit side-by-side
         Panel footerButtons = new();
         footerButtons.Style.FlexDirection = FlexDirection.Row;
@@ -106,10 +113,10 @@ public class MainMenuScreen(
         }
         Root.AddChild(footerButtons);
 
-        AddBottomLabels();
+        AddLabels();
     }
 
-    private void AddBottomLabels()
+    private void AddLabels()
     {
         // Version info
         Link versionLabel = new()
@@ -123,6 +130,19 @@ public class MainMenuScreen(
         versionLabel.Style.Top = 2;
 
         Root.AddChild(versionLabel);
+
+        // Mod info
+        Link modsLabel = new()
+        {
+            Text = game.Mods.Count > 0 ? $"{game.Mods.Count} mods loaded" : "No mods loaded",
+            TextColor = Guis.Color.White
+        };
+        modsLabel.Style.Position = PositionType.Absolute;
+        modsLabel.Style.Left = 2;
+        modsLabel.Style.Bottom = 2;
+        modsLabel.OnClick += (e) => Context.Navigator.Navigate(new ModsScreen(Context, game.Mods));
+
+        Root.AddChild(modsLabel);
 
         // Copyright info
         Panel copyrightPanel = new();
